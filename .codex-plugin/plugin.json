@@ -1,0 +1,21 @@
+{
+  "name": "design-dna",
+  "version": "2.2.0",
+  "description": "Cross-host web-design craft and verification for specific, contemporary, truthful interfaces.",
+  "author": {
+    "name": "Motty"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Design DNA",
+    "shortDescription": "Specific, contemporary web design craft.",
+    "longDescription": "Build, redesign, or review websites through project evidence, task-derived routes, truthful claims and media, purposeful art direction, coherent systems, responsive implementation, and rendered adversarial verification.",
+    "developerName": "Motty",
+    "category": "Productivity",
+    "capabilities": ["Write"],
+    "defaultPrompt": [
+      "Use Design DNA to ground this web task in project evidence, implement real states, and perform rendered specificity review."
+    ],
+    "brandColor": "#164E63"
+  }
+}

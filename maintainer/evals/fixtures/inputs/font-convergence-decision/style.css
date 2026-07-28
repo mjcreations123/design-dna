@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&display=swap");
+
+:root {
+  color: #172131;
+  background: #edf1f5;
+  font-family: "Instrument Sans", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(72rem, calc(100% - 2rem));
+  margin: 3rem auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-variant-numeric: tabular-nums;
+}
+
+th,
+td {
+  padding: 0.7rem;
+  border: 1px solid #cbd4df;
+  text-align: start;
+}
+
+.exception {
+  max-width: 70ch;
+  overflow-wrap: anywhere;
+}

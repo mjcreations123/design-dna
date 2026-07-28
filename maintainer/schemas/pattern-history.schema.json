@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_pseudonym",
+        "scope_category",
+        "date",
+        "palette",
+        "type_roles",
+        "composition",
+        "icon_concepts",
+        "imagery_concepts",
+        "motion_concepts",
+        "rationale"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+        "project_pseudonym": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,63}$"
+        },
+        "scope_category": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+){1,5}$"
+        },
+        "date": {"type": "string", "format": "date"},
+        "palette": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["archetype", "roles"],
+          "properties": {
+            "archetype": {"type": "string", "minLength": 2, "maxLength": 120},
+            "roles": {
+              "type": "array",
+              "maxItems": 16,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["role", "hex"],
+                "properties": {
+                  "role": {"type": "string", "minLength": 1, "maxLength": 60},
+                  "hex": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"}
+                }
+              }
+            }
+          }
+        },
+        "type_roles": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "family"],
+            "properties": {
+              "role": {"type": "string", "minLength": 1, "maxLength": 60},
+              "family": {"type": "string", "minLength": 1, "maxLength": 100}
+            }
+          }
+        },
+        "composition": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 120}
+        },
+        "icon_concepts": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 120}
+        },
+        "imagery_concepts": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 120}
+        },
+        "motion_concepts": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 120}
+        },
+        "rationale": {"type": "string", "minLength": 5, "maxLength": 400}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "entries": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "unevaluatedProperties": false,
+        "allOf": [
+          {"$ref": "#/$defs/signature"},
+          {
+            "type": "object",
+            "required": ["id"]
+          }
+        ]
+      }
+    }
+  }
+}

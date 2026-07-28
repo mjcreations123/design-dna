@@ -1,0 +1,34 @@
+:root {
+  color: #f8f7ff;
+  background: #0e0b1a;
+  font: 16px/1.5 Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at top, #4c1d95, #0e0b1a 60%);
+}
+
+main {
+  width: min(52rem, calc(100% - 3rem));
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(3rem, 10vw, 7rem);
+}
+
+.badge,
+.button {
+  display: inline-block;
+  border-radius: 999px;
+}
+
+.button {
+  padding: 0.8rem 1.2rem;
+  color: white;
+  background: #7c3aed;
+}

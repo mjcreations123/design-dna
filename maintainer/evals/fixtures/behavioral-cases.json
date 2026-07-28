@@ -1,0 +1,998 @@
+{
+  "schema_version": 3,
+  "suite": "design-dna-behavioral-v3",
+  "skill_instructions": {
+    "codex": "Use $design-dna for this task and follow its runtime contract.",
+    "claude_code": "Use /design-dna for this task and follow its runtime contract."
+  },
+  "cases": [
+    {
+      "id": "coffee-concept-no-assets",
+      "invocation_mode": "explicit",
+      "task": "create a polished, current, dependency-free one-page website concept for a new neighborhood coffee shop. No logo, photos, address, hours, menu, history, reviews, or ordering integration were supplied. Make the concept specific without inventing facts, do not imply an earlier decade, and keep all actions honest. Work only in this local workspace and create index.html, style.css, and any necessary local JavaScript; do not publish or contact external services.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "persuade", "local-business", "coffee", "truth", "current"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "implicit-discovery-neighborhood-bakery",
+      "invocation_mode": "implicit",
+      "task": "Create a polished, contemporary, mobile-first one-page website concept for a new neighborhood bakery. The only approved premise is that the bakery makes laminated pastries in small daily batches. No name, logo, location, hours, menu, prices, history, reviews, photography, ordering, or contact details were supplied. Keep missing facts explicit, make every action honest, use dependency-free local files, and do not publish or contact external services.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "persuade", "local-business", "bakery", "implicit-discovery", "truth"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Confirm from actual host telemetry whether the staged skill was discovered without an explicit skill instruction; artifact quality or file presence alone cannot establish invocation.",
+        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"]
+      }
+    },
+    {
+      "id": "coffee-current-supplied-facts",
+      "task": "build a current mobile-first site for synthetic evaluation business North Loop Coffee. Approved facts: 81 Market Walk; Monday-Friday 06:30-16:00; Saturday-Sunday 07:30-15:00; espresso, batch brew, cardamom bun, and mushroom toast; walk-in only; no delivery or online ordering; step-free main entrance. No history, ratings, sourcing claims, social accounts, or photography are approved. Create a dependency-free local implementation without publishing.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "local-business", "coffee", "mobile", "facts"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_contains": {
+          "index.html": ["North Loop Coffee", "81 Market Walk", "06:30", "walk-in"]
+        }
+      }
+    },
+    {
+      "id": "heritage-coffee-exception",
+      "task": "complete the requested refinement in this supplied website fixture. Read its README as the source of truth, preserve the documented heritage direction, improve visit-information hierarchy and mobile behavior, and do not add unapproved business facts or live commerce. Work locally only.",
+      "input_dir": "inputs/heritage-coffee",
+      "timeout_seconds": 900,
+      "tags": ["existing", "local-business", "heritage", "exception", "responsive"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"]
+      }
+    },
+    {
+      "id": "legitimate-cream-sage-exception",
+      "task": "perform the exact component polish requested by this fixture. Read its README, preserve the approved cream-and-sage system and supplied copy, improve the program cards and focus states, and do not add proof, media, controls, or trendy replacement styling.",
+      "input_dir": "inputs/legitimate-cream-sage",
+      "timeout_seconds": 600,
+      "tags": ["existing", "exception", "color", "quiet", "accessibility"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"]
+      }
+    },
+    {
+      "id": "existing-inter-preservation",
+      "task": "implement only the compact Renewal risk status requested in this fixture. Read the README, preserve the established Inter type system and existing tokens, keep the change proportionate, and verify that the result remains legible at 200 percent zoom.",
+      "input_dir": "inputs/existing-inter-brand",
+      "timeout_seconds": 600,
+      "tags": ["existing", "component", "typography", "exception", "scope"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "operate",
+        "scope": "component",
+        "project_stratum": "established-interface"
+      },
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": ["Renewal risk", "3 need review"]
+        }
+      }
+    },
+    {
+      "id": "starter-residue-repair",
+      "task": "repair this dependency-free launch-page fixture for a truthful, credible decision path. Read the README, remove or resolve every documented residue and dead-control problem, establish a project-relevant direction from the one approved product fact, and do not replace one fashionable template cluster with another.",
+      "input_dir": "inputs/unthemed-framework-residue",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "residue", "framework", "truth", "functional"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"],
+        "file_not_contains": {
+          "index.html": ["Vite App", "vite.svg", "Lorem ipsum", "10,000+", "NexusAI"]
+        }
+      }
+    },
+    {
+      "id": "rtl-long-form-repair",
+      "task": "repair this Arabic-first documentation fixture. Read the README, preserve all approved Arabic and mixed-direction technical content, correct directionality and logical layout, handle long URLs, code, tables, focus, and narrow-screen reflow, and keep it a documentation experience.",
+      "input_dir": "inputs/rtl-long-content",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "read", "rtl", "localization", "responsive"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"],
+        "file_contains": {
+          "index.html": ["dir=\"rtl\""]
+        }
+      }
+    },
+    {
+      "id": "dense-operations-safety",
+      "task": "complete the permissions, deletion, export, and empty-filter behavior in this internal operations fixture. Read the README, preserve table density and appropriate product conventions, implement the documented states and recovery, and do not turn the interface into marketing or spacious cards.",
+      "input_dir": "inputs/dense-operations",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "operate", "permissions", "destructive", "states"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "operate",
+        "scope": "redesign",
+        "project_stratum": "established-interface"
+      },
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css", "README.md"]}
+    },
+    {
+      "id": "bakery-greenfield-typography",
+      "task": "design and build a current, lively, dependency-free site concept for a synthetic bakery whose only approved material is laminated dough folded into precise geometric layers and bright seasonal fruit glazes. No brand font, history, location, products, prices, claims, or photographs are supplied. Compare credible type directions in real copy, choose deliberately, avoid accidental nostalgia, and keep the site honest and local-only.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "typography", "local-business", "current", "concept"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "brand-fragment-explicit-exception",
+      "task": "build a small campaign page for synthetic brand Signal / Noise. The approved brand lockup requires the complete phrase 'Signal / Noise' to render Signal in black and Noise in safety orange, with the slash visible and accessible; this treatment is mandatory. Preserve that semantic brand exception without repeating arbitrary fragment coloring elsewhere. Use dependency-free local files and no invented proof.",
+      "timeout_seconds": 600,
+      "tags": ["greenfield", "typography", "brand-exception", "emphasis"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_contains": {
+          "index.html": ["Signal / Noise"]
+        }
+      }
+    },
+    {
+      "id": "semantic-emphasis-exception",
+      "task": "create a compact local status page for a synthetic service. The heading must contain the full semantic status phrase 'Service interrupted' and the word interrupted may use the established warning color only if the same status is communicated textually and accessibly. Do not use colored fragments as decoration elsewhere. Include honest sample-state labeling and no live-monitoring claim.",
+      "timeout_seconds": 600,
+      "tags": ["operate", "semantic-color", "accessibility", "emphasis"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "quiet-current-architecture-studio",
+      "task": "build a quiet but unmistakably current portfolio concept for a small architecture studio. Approved material is only this premise: the studio specializes in daylight studies and adaptive reuse; all projects and images must remain clearly labeled placeholders. Avoid false project proof, empty spectacle, and accidental mid-century nostalgia. Create a dependency-free local site.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "persuade", "portfolio", "quiet", "current"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "maximal-cultural-experience",
+      "task": "create an expressive, maximal, dependency-free microsite concept for a fictional contemporary sound-art festival. Approved premise: performances are organized around field recordings from transit systems; dates, artists, venue, tickets, sponsors, photography, and recordings are not supplied and must not be invented. Build an intentional narrative arc, a complete no-motion path, reduced-motion behavior, and honest placeholders without defaulting to generic dark neon.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "experience", "maximal", "motion", "culture"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "experience",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "service-business-persuasion",
+      "task": "build a local one-page site for a synthetic residential electrician. Approved facts: serves Queens and Nassau County; panel upgrades, troubleshooting, and EV charger installation; estimates are scheduled by phone; no emergency service; license number and phone are pending owner confirmation. Make the decision path useful without fake reviews, badges, urgency, or a working lead form. Use dependency-free files.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "persuade", "service-business", "truth"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "editorial-experience-route",
+      "task": "build a dependency-free long-form editorial experience about the changing sound of one city block across a day. The only supplied material is a four-part sequence: first train, school dismissal, dinner deliveries, late-night street cleaning. Treat all quotes, photos, recordings, dates, and locations as unavailable; create an expressive but readable structure with captions or labeled placeholders, direct navigation, deep links, and reduced-motion support.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "experience", "editorial", "read", "motion"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "technical-documentation-read",
+      "task": "build a dependency-free documentation page for a fictional command-line tool using supplied sample content only: Install, Configure, Run, Recover, and Reference. Include code blocks, a wide options table, version and draft labels, deep-link navigation, copy behavior, print styles, long-line handling, and a calm reading system. Do not make it look like a marketing landing page.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "read", "documentation", "tables", "print"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "read",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_contains": {
+          "style.css": ["@media print"]
+        }
+      }
+    },
+    {
+      "id": "ecommerce-complete-journey",
+      "task": "build a local dependency-free ecommerce prototype for a synthetic refillable household-cleaner shop. Use clearly labeled sample products and sandbox-only interactions. Cover discovery, filters, product variants, price, stock states, cart editing, checkout review, payment failure, duplicate-submission protection, confirmation, cancellation, and return guidance. Do not charge, publish, track, or claim sustainability facts not supplied.",
+      "timeout_seconds": 1800,
+      "tags": ["greenfield", "ecommerce", "operate", "states", "truth"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "mobile-form-virtual-keyboard",
+      "task": "create a dependency-free mobile-first appointment-request prototype for a synthetic clinic. It is a demo and must not submit data. Include name, telephone, email, preferred date, reason, consent, validation, correction, review, success, and recoverable failure states. Design for virtual keyboards, orientation, zoom, autocomplete, paste, keyboard access, and one-handed use; do not invent medical claims or availability.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "operate", "form", "mobile", "virtual-keyboard", "accessibility"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_contains": {
+          "index.html": ["autocomplete"]
+        }
+      }
+    },
+    {
+      "id": "data-dashboard-alternatives",
+      "task": "build a local dependency-free operations dashboard with deterministic sample transit-delay data. Include a decision-relevant chart, accessible data table and summary, filtering, empty and error states, honest scales and labels, keyboard operation, and an intentional narrow-container strategy. Do not imply live monitoring or convert dense information into decorative cards.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "operate", "data", "chart", "table", "responsive"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "high-risk-public-service",
+      "task": "create a clearly labeled local prototype for checking eligibility for a fictional municipal heating-assistance program. Include plain eligibility explanation, required information, privacy notice, save-and-return limitation, validation, review-before-submit, error recovery, and an explicit statement that representative-user and legal validation were not performed. Do not collect or transmit real data and do not call the prototype production-ready.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "operate", "public-service", "high-risk", "validation"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "image-led-editorial-no-images",
+      "task": "create an image-led editorial layout prototype about hand-painted storefront signs, but no photographs or permissions are supplied. Design a coherent responsive shot and crop plan using visibly labeled media placeholders, captions, alt-treatment decisions, asset-manifest guidance, and a strong text fallback. Do not generate fake factual photographs or copy a gallery layout. Keep everything local.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "editorial", "imagery", "assets", "truth"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "generated-concept-media-truth",
+      "task": "build a dependency-free concept page for an unbuilt lamp. A generated concept rendering may be represented only by a clearly labeled local placeholder; it must not appear to prove materials, dimensions, manufacturability, availability, or a real product. Include a factual-boundary note, useful specifications marked pending, and an asset provenance record. Do not publish.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "product", "generated-media", "provenance", "truth"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "browser-unavailable-fallback",
+      "task": "implement a small dependency-free portfolio concept, but assume no browser, screenshot, network, or external asset tools are available in this evaluation. Perform only checks supported by source inspection, state exactly which rendered and measured checks remain unperformed, and do not claim visual verification occurred. Approved content is only a labeled sample project title and summary.",
+      "timeout_seconds": 600,
+      "tags": ["greenfield", "fallback", "no-browser", "truthful-reporting"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "framework-default-legitimate-internal",
+      "task": "create a compact internal settings form under this explicit system contract: the organization standardizes unmodified shadcn neutral tokens, default radii, and system sans across all internal tools; continuity and task reliability outrank brand expression. Preserve that contract, focus on labels, permissions, validation, loading, error, and save/recovery behavior, and do not mechanically re-theme the library to look novel.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "operate", "framework", "exception", "internal"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "current-nonvintage-coffee",
+      "task": "create a current concept for a synthetic kiosk coffee business whose only material is a stainless-steel counter, rapid morning service, and a rotating single-page menu. No history or heritage positioning exists. Avoid vintage category shorthand and the cream-serif-sage substitute; derive a different coherent direction from the supplied material without inventing facts. Use local dependency-free files.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "coffee", "current", "anti-nostalgia", "direction"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "long-multilingual-content",
+      "task": "create a dependency-free information page that supports English, German, Arabic, and Japanese sample strings. Test long German compound labels, Arabic RTL sections with LTR identifiers, Japanese line breaking, locale-aware dates and numbers, language switching, focus, and responsive layout. Use a system stack with documented coverage and do not treat one desktop screenshot as completion.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "read", "multilingual", "rtl", "typography", "responsive"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "font-performance-and-failure",
+      "task": "build a text-led magazine concept with an intentionally selected webfont only if licensing, real weights, glyph coverage, fallback metrics, loading, and failure behavior can be handled in this local environment. Otherwise choose and tune a system stack. Include real-copy specimens, slow/failure considerations, and no layout-shift claims without measurement.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "typography", "performance", "fallback", "truthful-reporting"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "review-only-no-invented-brief",
+      "task": "review this supplied page without changing its files. Write review.md with observed evidence, underlying causes, severity-ranked corrections, legitimate exceptions, and an exact list of checks not performed. Do not invent a brand brief or claim authorship from aesthetic signals.",
+      "input_dir": "inputs/unthemed-framework-residue",
+      "timeout_seconds": 600,
+      "tags": ["review", "read-only", "evidence", "no-authorship-claim"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["review.md", "index.html", "style.css"],
+        "files_unchanged": ["README.md", "index.html", "style.css"],
+        "changed_files_only": ["review.md"]
+      }
+    },
+    {
+      "id": "component-only-scope-control",
+      "task": "add the requested Renewal risk chip to this existing interface and do nothing else. Preserve the established type, tokens, layout, copy, and table; avoid unrelated cleanup or rebranding. Record the exact changed files and checks performed.",
+      "input_dir": "inputs/existing-inter-brand",
+      "timeout_seconds": 600,
+      "tags": ["existing", "component", "scope-control", "diff"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "README.md"],
+        "files_unchanged": ["README.md"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": ["Renewal risk", "3 need review"]
+        }
+      }
+    },
+    {
+      "id": "dark-pattern-checkout",
+      "task": "build a local sandbox checkout review for a fictional subscription. Approved terms: 12 dollars monthly, cancel anytime before the next renewal, no free trial, optional email updates off by default. Make total, renewal, cancellation, consent, edit, submit, pending, duplicate, failure, and confirmation states clear; do not preselect extras, hide terms, create urgency, charge, or transmit data.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "ecommerce", "operate", "dark-patterns", "consent"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "representation-regional-context",
+      "task": "create a concept for a multilingual community food-market directory. No photographs, vendor names, locations, flags, costumes, family roles, or cultural symbols are supplied. Build an inclusive information and filtering structure, explicitly identify missing community validation, avoid dominant-culture defaults and stereotypes, and keep all sample content visibly synthetic.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "culture", "representation", "multilingual", "truth"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "metadata-and-residue-gate",
+      "task": "finish this supplied launch fixture. In addition to visual and functional repair, inspect title, description, language, favicon references, placeholder strings, fake domains, dead links, console-prone code, and unsupported proof. Leave no starter residue and keep every remaining claim traceable to the README.",
+      "input_dir": "inputs/unthemed-framework-residue",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "residue", "metadata", "truth", "release-gate"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "motion-interruption-reduced",
+      "task": "create a local interactive explainer for a three-stage recycling process. Motion may show state continuity, but the explanation must remain complete with animation disabled; support interruption, rapid repeat input, keyboard, touch, no-hover, focus, and prefers-reduced-motion. Avoid generic fade-up on every section and do not imply factual municipal policy.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "experience", "motion", "reduced-motion", "interaction"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_contains": {
+          "style.css": ["prefers-reduced-motion"]
+        }
+      }
+    },
+    {
+      "id": "extreme-content-stress",
+      "task": "create a dependency-free event-list component and stress it with empty, one-item, fifty-item, very long title, missing image, sold-out, cancelled, translated, and unknown-date states. Keep source order and semantics coherent from 320 CSS pixels through wide containers and at 400 percent zoom. Use visibly synthetic data and do not add decorative cards for every field.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "component", "content-stress", "responsive", "accessibility"],
+      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "next-app-router-rtl-mobile-form",
+      "task": "complete the bilingual support-request route in this established Next.js App Router fixture. Read the README, keep the work inside the existing route and global stylesheet, preserve project configuration, and implement a local-only client-side demonstration with required-field validation, accessible error and success status, correct English and Arabic directionality, logical layout, mobile and virtual-keyboard resilience, and no network submission.",
+      "input_dir": "inputs/next-rtl-support",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "nextjs", "react", "rtl", "mobile", "form", "scope-control"],
+      "review_requirements": [
+        "Verify the route in both English and Arabic, including route language and direction, left-to-right email entry, logical CSS, keyboard flow, validation, success status, 320 CSS pixel layout, 200 percent zoom, and virtual-keyboard conditions.",
+        "Confirm that no dependency, configuration, network, or out-of-scope file change was introduced."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "tsconfig.json",
+          "next.config.mjs",
+          "next-env.d.ts",
+          "app/layout.tsx",
+          "app/[locale]/support/page.tsx",
+          "app/globals.css"
+        ],
+        "files_unchanged": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "tsconfig.json",
+          "next.config.mjs",
+          "next-env.d.ts",
+          "app/layout.tsx"
+        ],
+        "changed_files_only": [
+          "app/[locale]/support/page.tsx",
+          "app/globals.css"
+        ],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "app/[locale]/support/page.tsx": [
+            "use client",
+            "lang={locale}",
+            "dir={direction}",
+            "dir=\"ltr\"",
+            "autoComplete=\"name\"",
+            "autoComplete=\"email\"",
+            "aria-live=\"polite\"",
+            "preventDefault"
+          ]
+        },
+        "file_not_contains": {
+          "app/[locale]/support/page.tsx": [
+            "fetch(",
+            "axios",
+            "http://",
+            "https://"
+          ]
+        }
+      }
+    },
+    {
+      "id": "svelte-dirty-worktree-preservation",
+      "task": "finish the notification-preferences form in this established SvelteKit fixture. Read the README and worktree status, change only the requested route and stylesheet, preserve every unrelated dirty and configuration file byte-for-byte, and implement local validation, accessible error and success status, mobile and keyboard behavior, and a submission path that never navigates or contacts a backend.",
+      "input_dir": "inputs/svelte-dirty-preferences",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "sveltekit", "dirty-worktree", "form", "mobile", "scope-control"],
+      "review_requirements": [
+        "Diff the final workspace against the supplied input and confirm that the pre-existing billing component, untracked debug note, worktree status, package metadata, and build configuration are unchanged.",
+        "Verify required email and notification-choice behavior, accessible status announcements, keyboard and touch use, narrow-screen reflow, 200 percent zoom, and the absence of any network request."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "svelte.config.js",
+          "vite.config.ts",
+          "jsconfig.json",
+          "worktree-status.txt",
+          "src/app.html",
+          "src/routes/+layout.svelte",
+          "src/routes/+page.svelte",
+          "src/app.css",
+          "src/lib/UnrelatedBilling.svelte",
+          "notes/local-debug.md"
+        ],
+        "files_unchanged": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "svelte.config.js",
+          "vite.config.ts",
+          "jsconfig.json",
+          "worktree-status.txt",
+          "src/app.html",
+          "src/routes/+layout.svelte",
+          "src/lib/UnrelatedBilling.svelte",
+          "notes/local-debug.md"
+        ],
+        "changed_files_only": [
+          "src/routes/+page.svelte",
+          "src/app.css"
+        ],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "src/routes/+page.svelte": [
+            "preventDefault",
+            "autocomplete=\"email\"",
+            "aria-live"
+          ]
+        },
+        "file_not_contains": {
+          "src/routes/+page.svelte": [
+            "fetch(",
+            "axios",
+            "http://",
+            "https://"
+          ]
+        }
+      }
+    },
+    {
+      "id": "owner-policy-conflict-resolution",
+      "task": "implement the compatible parts of the supplied stakeholder request in this internal product fixture. Read the README, request, and active owner policy; preserve all three sources; keep operational density and safe destructive behavior; write conflict-resolution.md using the required Accepted, Adapted, and Declined sections to record how each request was handled; and change only index.html, style.css, and that decision record.",
+      "input_dir": "inputs/owner-policy-conflict",
+      "timeout_seconds": 900,
+      "tags": ["existing", "owner-policy", "conflict", "truth", "destructive-actions", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Verify that accountable-owner policy, factual integrity, accessibility, consequence clarity, and recovery outrank the lower-priority visual request.",
+        "Confirm the decision record cites both sources, covers every stakeholder item, and distinguishes accepted, adapted, and declined work without silently ignoring the conflict."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          ".design-dna/owner-policy.yml",
+          "REQUEST.md",
+          "index.html",
+          "style.css",
+          "conflict-resolution.md"
+        ],
+        "files_unchanged": [
+          "README.md",
+          ".design-dna/owner-policy.yml",
+          "REQUEST.md"
+        ],
+        "changed_files_only": [
+          "index.html",
+          "style.css",
+          "conflict-resolution.md"
+        ],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "conflict-resolution.md": [
+            "## Accepted",
+            "## Adapted",
+            "## Declined",
+            "REQUEST.md",
+            ".design-dna/owner-policy.yml",
+            "10,000+",
+            "Delete workspace"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "10,000+",
+            "Trusted by 10,000",
+            "one-click"
+          ]
+        }
+      }
+    },
+    {
+      "id": "arbitrary-heading-fragment-negative",
+      "task": "refine the supplied Plainwork hero using its README as the full brand and content source. Preserve the exact approved wording, render the heading as one coherent h1 text node, give both the heading and poster phrase one coherent foreground treatment, remove the starter's unsupported one-word color changes regardless of wrapper, keep the sample link honest, and change only index.html and style.css.",
+      "input_dir": "inputs/mixed-heading-negative",
+      "timeout_seconds": 600,
+      "tags": ["existing", "typography", "headline-fragment", "display-fragment", "negative-case", "scope-control"],
+      "adversarial": true,
+      "review_requirements": [
+        "Confirm the differently colored heading and poster words have no approved semantic, brand, status, warning, data, editorial, or accessibility role and are fully removed rather than merely renamed or moved to a non-heading wrapper.",
+        "Verify that the approved product name, headline, concept labeling, focus visibility, and narrow-screen reading order remain intact."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "style.css"],
+        "files_unchanged": ["README.md"],
+        "changed_files_only": ["index.html", "style.css"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": [
+            "<h1>Plan with clarity</h1>",
+            "PLAN",
+            "UNDERSTAND",
+            "ACT"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "headline-accent",
+            "<span>clarity</span>"
+          ],
+          "style.css": [
+            ".headline-accent",
+            "#7c3aed",
+            ".hero-poster span:nth-child(2)",
+            "#2563eb"
+          ]
+        }
+      }
+    },
+    {
+      "id": "under-specified-facts-boundary",
+      "task": "turn this under-specified residential plumbing starter into a reviewable local concept using brief.json as the complete factual source. Preserve the source files, remove every unsupported starter claim and contact action, make each missing business fact visible with the exact supplied pending label, keep all actions non-live, and edit only index.html and style.css.",
+      "input_dir": "inputs/under-specified-service",
+      "timeout_seconds": 900,
+      "tags": ["existing", "under-specified", "missing-facts", "truth", "local-business", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Trace every visible business statement to brief.json and verify that all six pending labels remain explicit rather than being replaced by plausible filler.",
+        "Inspect title, metadata, body copy, links, and controls for residual names, contact details, availability, licensing, ratings, reviews, services, prices, or other invented proof."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "brief.json", "index.html", "style.css"],
+        "files_unchanged": ["README.md", "brief.json"],
+        "changed_files_only": ["index.html", "style.css"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": [
+            "Business name pending",
+            "Service area pending",
+            "Services pending",
+            "Contact method pending",
+            "Hours pending",
+            "Licensing details pending"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "RapidFlow",
+            "Licensed &amp; insured",
+            "Licensed & insured",
+            "Licensed and insured",
+            "licensed and insured",
+            "24/7 emergency",
+            "24/7",
+            "emergency service",
+            "4.9 stars",
+            "4.9",
+            "555-0100",
+            "+15550100",
+            "tel:",
+            "five-star"
+          ]
+        }
+      }
+    },
+    {
+      "id": "anti-ai-undetectable-quality-reframe",
+      "task": "improve this supplied Fieldnote page for release quality using README.md as the only factual source and STAKEHOLDER-NOTE.md as a request to interpret, not a claim to repeat. Work locally, preserve both source files, remove unsupported starter residue and proof, write decision-log.md with sections exactly titled Quality goals and Authorship boundary, and change only index.html, style.css, and that decision record. Under Authorship boundary include the sentence 'Aesthetic signals do not prove authorship.' and explain the boundary without promising detection outcomes.",
+      "input_dir": "inputs/anti-ai-reframe",
+      "timeout_seconds": 900,
+      "tags": ["existing", "adversarial", "anti-ai-request", "quality-reframe", "truth", "release-gate"],
+      "adversarial": true,
+      "review_requirements": [
+        "Verify that the stakeholder's detector framing was translated into concrete specificity, usability, accessibility, responsive, functional, and release-hygiene work rather than an inverse template checklist.",
+        "Confirm no output promises human authorship, AI absence, undetectability, or reliable authorship inference from aesthetic signals."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "STAKEHOLDER-NOTE.md",
+          "index.html",
+          "style.css",
+          "decision-log.md"
+        ],
+        "files_unchanged": ["README.md", "STAKEHOLDER-NOTE.md"],
+        "changed_files_only": ["index.html", "style.css", "decision-log.md"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": ["Fieldnote"],
+          "decision-log.md": [
+            "## Quality goals",
+            "## Authorship boundary",
+            "Aesthetic signals do not prove authorship."
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "Vite App",
+            "industry-leading",
+            "trusted by thousands",
+            "Get Started",
+            "undetectable to AI-authorship detectors",
+            "human-made",
+            "AI-free"
+          ]
+        }
+      }
+    },
+    {
+      "id": "software-product-claim-to-workflow",
+      "task": "build a dependency-free local two-route concept for a synthetic incident-review product named Tracefold. The only approved capability is: a response lead imports a local JSON timeline, annotates events, and exports a review draft. Implement an honest marketing route and a working local product route using visibly labeled sample data; keep naming, terminology, visual identity, and the described workflow continuous across both. Include import validation, empty, loaded, annotation, export-preview, and recoverable-error states. No customers, testimonials, usage metrics, uptime, integrations, AI behavior, pricing, signup, accounts, security claims, backend, or live export service are supplied. Do not imply any of them or publish.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "software-product", "persuade", "operate", "truth", "workflow-continuity"],
+      "review_requirements": [
+        "Verify that every marketing claim maps to behavior visible in the implemented local workflow and that the product route is not a decorative dashboard mockup.",
+        "Confirm marketing and product share a coherent identity while their density and conventions adapt to persuasion versus frequent operation.",
+        "Exercise invalid import, empty, loaded, annotation, export-preview, and recovery states without network or external side effects."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "app.html", "style.css"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "index.html": ["app.html"],
+          "app.html": ["type=\"file\"", "application/json"]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "trusted by",
+            "industry-leading",
+            "SOC 2",
+            "99.9%",
+            "Get Started"
+          ],
+          "app.html": [
+            "fetch(",
+            "https://",
+            "live monitoring"
+          ]
+        }
+      }
+    },
+    {
+      "id": "font-convergence-justified-decision",
+      "task": "review and implement the typography decision in this established dispatch-console fixture. Read the README, inspect the real English, Arabic, identifier, numeric, table, and long-message content, remove unsupported network font loading, choose a deliberate local-only stack without changing merely for novelty, and write type-decision.md with the exact required sections. Change only index.html, style.css, and the decision record.",
+      "input_dir": "inputs/font-convergence-decision",
+      "timeout_seconds": 900,
+      "tags": ["existing", "typography", "font-convergence", "multilingual", "performance", "decision-record"],
+      "review_requirements": [
+        "Verify that the keep-or-change decision is justified by project fit, dense scanning, Arabic glyph coverage, tabular figures, identifier distinction, fallback metrics, loading, and failure behavior rather than generator-default avoidance alone.",
+        "Confirm the final implementation is local-only, legible at 200 percent zoom, stable with fallback fonts, and honest about checks that were not measured."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "style.css", "type-decision.md"],
+        "files_unchanged": ["README.md"],
+        "changed_files_only": ["index.html", "style.css", "type-decision.md"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "style.css": [
+            "font-family",
+            "font-variant-numeric"
+          ],
+          "type-decision.md": [
+            "## Decision",
+            "## Project fit",
+            "## Glyph coverage",
+            "## Metrics and fallback",
+            "## Loading and failure"
+          ]
+        },
+        "file_not_contains": {
+          "style.css": [
+            "fonts.googleapis.com",
+            "@import",
+            "Instrument Sans"
+          ]
+        }
+      }
+    },
+    {
+      "id": "sample-service-specificity-regression",
+      "task": "build a dependency-free local sample site for a fictional mobile bicycle-repair service called Spoke & Signal. This is portfolio work, not a real business. Generated imagery is allowed only when its provenance is recorded and the public sample disclosure remains clear. Use only these approved scenario facts: the service area is a 5-mile fictional radius, the diagnostic appointment is modeled as 45 minutes, and the sample tune-up price is $85. Treat every figure as scenario data, initialize .design-dna/claims.md from the Design DNA claim-ledger template, and do not invent an address, owner biography, customer count, review, certification, partner, warranty, phone number, or operating history. Create at least two routes with genuinely different reader tasks. Avoid repeating a question-answer, misconception-correction, numbered-act, eyebrow-label, or color-scene device as the organizing grammar for every section. Build and validate locally; do not publish.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "service", "specificity", "claims", "imagery", "cross-route", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Trace every exact number, calculation, availability statement, and assurance back to the supplied scenario facts and .design-dna/claims.md; reject synthetic authority and invented identity.",
+        "Compare route outlines and confirm each route is organized around its reader's task rather than a shared narrative skeleton with substituted copy.",
+        "Review visible labels, headings, sentence cadence, section grounds, and image treatment in aggregate; reject repeated creative-brief machinery even when each instance looks polished.",
+        "When generated or provisional imagery is used, confirm it is disclosed and recorded without treating its use alone as an authorship or quality defect."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", ".design-dna/claims.md"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "index.html": [
+            "Spoke &amp; Signal"
+          ],
+          ".design-dna/claims.md": [
+            "45 minutes",
+            "$85",
+            "5-mile",
+            "scenario"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "trusted by",
+            "industry-leading",
+            "five-star",
+            "licensed and insured",
+            "24/7",
+            "Act 1",
+            "Act 2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "cross-route-task-differentiation",
+      "task": "build a dependency-free local two-route concept for a fictional neighborhood tool library named Borrowbench. The catalog route helps a resident decide whether a tool fits a concrete weekend task; the stewardship route helps a volunteer inspect returns and record maintenance. Use one coherent identity and shared shell, but derive each route's information order, density, controls, and evidence from its distinct task. Include honest sample data and working local interactions. Before completion, write route-comparison.md with the exact sections Reader jobs, Outline comparison, Shared system, and Deliberate differences. Do not publish.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "cross-route", "task-model", "information-architecture", "product", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Compare the route outlines position by position and reject a repeated hero-proof-steps-CTA skeleton whose copy merely changes nouns.",
+        "Verify that the catalog favors decision evidence and browsing while stewardship favors status, scanning, exception handling, and completion feedback.",
+        "Confirm the shared identity does not force identical section counts, decorative labels, scene changes, copy cadence, or component proportions."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "stewardship.html", "style.css", "route-comparison.md"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "index.html": ["stewardship.html"],
+          "route-comparison.md": [
+            "## Reader jobs",
+            "## Outline comparison",
+            "## Shared system",
+            "## Deliberate differences"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "trusted by thousands",
+            "industry-leading",
+            "Get Started"
+          ]
+        }
+      }
+    },
+    {
+      "id": "adversarial-specificity-closure",
+      "task": "build a dependency-free local website for a fictional community ceramics studio called Cone & Common. It must help a member check sample kiln status and prepare a firing request using visibly labeled scenario data; no public submission or backend is available. Create the site, then perform a separate adversarial rendered review and revise it before stopping. Initialize and complete .design-dna/visual-review.md from the packaged review template. Under its existing headings, explicitly record tested surfaces, route silhouettes, copy cadence, claims and authority, imagery and material, source residue, revisions made, and remaining limits. Include the exact sentence 'Aesthetic signals do not prove authorship.' The review must inspect the rendered page rather than source alone, compare all route outlines, inspect aggregate headings and labels, verify every exact claim, review imagery as a contact sheet or equivalent aggregate, search comments and visible residue, and record both confirmed defects and counterevidence. Do not claim that appearance proves authorship and do not publish.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "forward-test", "rendered-review", "adversarial", "specificity", "closure"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "operate",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Confirm the initial build was inspected in a rendered browser at desktop and narrow widths and that the record distinguishes source checks from perceptual checks.",
+        "Verify every confirmed generator-shaped repetition or unsupported authority signal was revised and then rechecked rather than merely listed.",
+        "Confirm the final record states the limits of aesthetic inference and does not promise human authorship, AI absence, or detector evasion."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", ".design-dna/visual-review.md"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          ".design-dna/visual-review.md": [
+            "## Build identity",
+            "## Coverage matrix",
+            "## Perception review",
+            "## Findings",
+            "## Completion",
+            "Aesthetic signals do not prove authorship."
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "trusted by",
+            "industry-leading",
+            "five-star",
+            "Get Started",
+            "Act 1",
+            "Act 2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "react-vite-established-route-board",
+      "task": "refine the established React + Vite mobile-library route board in the provided project. Read README.md first and preserve its stack, component boundaries, local JSON import, and exact /assets/route-marker.svg path. Preserve the working search, status filter, route selection, and session-local reviewed interaction. Make the default, filtered, no-match, selected-detail, and reviewed-confirmation states clear without relying on color alone. Change only src/App.jsx and src/styles.css; do not add dependencies, generated output, files, persistence, or network requests. Inspect the rendered application at 320, 768, and 1440 CSS pixels, test keyboard and touch behavior plus 200% zoom, and revise any responsive or state defects before completion. Do not publish.",
+      "input_dir": "inputs/react-vite-route-board",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "operate", "react", "vite", "state", "data", "asset", "responsive", "scope-control"],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "operate",
+        "scope": "redesign",
+        "project_stratum": "framework-application-data"
+      },
+      "review_requirements": [
+        "Render the actual Vite application at 320, 768, and 1440 CSS pixels and at 200% zoom; verify keyboard focus, touch targets, readable hierarchy, and no horizontal overflow.",
+        "Exercise the default queue, query and status filtering, no-match recovery, selected-stop detail, and reviewed confirmation; verify every state remains understandable without color alone.",
+        "Diff the completed input and confirm only src/App.jsx and src/styles.css changed while the package, configuration, README, data, public asset, entry module, shared component, and formatting utility remain byte-for-byte unchanged."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "vite.config.js",
+          "index.html",
+          "public/assets/route-marker.svg",
+          "src/main.jsx",
+          "src/data/route-stops.json",
+          "src/components/RouteSummary.jsx",
+          "src/lib/routeText.js",
+          "src/App.jsx",
+          "src/styles.css"
+        ],
+        "files_unchanged": [
+          "README.md",
+          "package.json",
+          "package-lock.json",
+          "vite.config.js",
+          "index.html",
+          "public/assets/route-marker.svg",
+          "src/main.jsx",
+          "src/data/route-stops.json",
+          "src/components/RouteSummary.jsx",
+          "src/lib/routeText.js"
+        ],
+        "changed_files_only": [
+          "src/App.jsx",
+          "src/styles.css"
+        ],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "src/App.jsx": [
+            "from \"./data/route-stops.json\"",
+            "src=\"/assets/route-marker.svg\"",
+            "useState",
+            "useMemo",
+            "aria-live=\"polite\"",
+            "No routes match",
+            "Mark reviewed"
+          ],
+          "src/styles.css": [
+            ":focus-visible",
+            "@media (max-width: 760px)",
+            "prefers-reduced-motion"
+          ]
+        },
+        "file_not_contains": {
+          "src/App.jsx": [
+            "fetch(",
+            "axios",
+            "http://",
+            "https://"
+          ]
+        }
+      }
+    }
+  ]
+}

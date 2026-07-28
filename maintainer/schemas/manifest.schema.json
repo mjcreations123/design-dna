@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "package", "version", "content_sha256", "plugin_manifest_sha256", "compatibility_matrix_sha256", "trusted_adapters_sha256", "components", "release_sha256", "generated_at", "files"],
+  "properties": {
+    "schema_version": {"const": 4},
+    "package": {"const": "design-dna"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"},
+    "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "plugin_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "compatibility_matrix_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "trusted_adapters_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime",
+        "plugin_manifest",
+        "compatibility_matrix",
+        "trusted_adapters",
+        "maintainer_tooling",
+        "schemas",
+        "tests",
+        "eval_contract",
+        "evidence",
+        "eval_proof",
+        "compatibility_verification",
+        "distribution_docs"
+      ],
+      "properties": {
+        "runtime": {"$ref": "#/$defs/sha256"},
+        "plugin_manifest": {"$ref": "#/$defs/sha256"},
+        "compatibility_matrix": {"$ref": "#/$defs/sha256"},
+        "trusted_adapters": {"$ref": "#/$defs/sha256"},
+        "maintainer_tooling": {"$ref": "#/$defs/sha256"},
+        "schemas": {"$ref": "#/$defs/sha256"},
+        "tests": {"$ref": "#/$defs/sha256"},
+        "eval_contract": {"$ref": "#/$defs/sha256"},
+        "evidence": {"$ref": "#/$defs/sha256"},
+        "eval_proof": {"$ref": "#/$defs/sha256"},
+        "compatibility_verification": {"$ref": "#/$defs/sha256"},
+        "distribution_docs": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "release_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "type", "size", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "(?:^[/\\\\]|^[A-Za-z]:|\\\\|//|(?:^|/)\\.{1,2}(?:/|$)|[\\u0000-\\u001f\\u007f])"
+                }
+              },
+              {"not": {"pattern": "/$"}},
+              {"not": {"pattern": "^\\s|\\s$"}}
+            ]
+          },
+          "type": {"enum": ["file", "directory"]},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+        },
+        "allOf": [
+          {"if": {"properties": {"type": {"const": "file"}}}, "then": {"properties": {"sha256": {"type": "string"}, "size": {"type": "integer"}}}},
+          {"if": {"properties": {"type": {"const": "directory"}}}, "then": {"properties": {"sha256": {"type": "null"}, "size": {"const": 0}}}}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

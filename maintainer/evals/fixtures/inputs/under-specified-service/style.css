@@ -1,0 +1,21 @@
+:root {
+  color: #16202d;
+  background: #f2f6f8;
+  font: 16px/1.5 system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(64rem, calc(100% - 3rem));
+  margin: 6rem auto;
+  padding: 3rem;
+  background: white;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  line-height: 1;
+}

@@ -1,0 +1,66 @@
+schema_version: 1
+created_with: "__DESIGN_DNA_VERSION__"
+classification: "internal"
+assets:
+  - id: "ASSET-001"
+    usage_locations: []
+    content_job: ""
+    source_url: ""
+    source_path: ""
+    creator: ""
+    origin: "owner-supplied"
+    obtained_date: ""
+    license_or_terms: ""
+    attribution_required: false
+    attribution_text: ""
+    modification_limits: ""
+    modifications: ""
+    factual_status: "pending"
+    depicts_or_claim: ""
+    privacy_review: "pending"
+    privacy_review_owner: ""
+    privacy_review_date: ""
+    privacy_review_reason: ""
+    owner_approval: "pending"
+    owner_approval_owner: ""
+    owner_approval_date: ""
+    owner_approval_reason: ""
+    generated:
+      used: false
+      tool_or_model: ""
+      source_inputs: []
+      disclosure_required: false
+      disclosure_text: ""
+    generated_media_provenance:
+      applicability: "pending"
+      jurisdiction: ""
+      roles: []
+      transformation_chain: []
+      credential_detected: "pending"
+      credential_validated: "pending"
+      credential_preserved: "pending"
+      visible_disclosure_basis: ""
+      visible_disclosure_text: ""
+      legal_review_status: "pending"
+      legal_review_owner: ""
+      legal_review_date: ""
+      legal_review_reason: ""
+    art_direction:
+      subject: ""
+      crop_or_safe_zone: ""
+      lighting_palette_perspective: ""
+      set_consistency_notes: ""
+    delivery:
+      source_dimensions: ""
+      output_dimensions: []
+      formats: []
+      responsive_behavior: ""
+      intrinsic_dimensions_reserved: false
+    accessibility:
+      treatment: "pending"
+      alt_text: ""
+      caption_or_transcript: ""
+    replacement:
+      status: "not-needed"
+      owner: ""
+      due_date: ""

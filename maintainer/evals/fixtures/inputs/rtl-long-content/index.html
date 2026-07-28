@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة مفاتيح الوصول — دليل مرساة</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><a href="#main">دليل مرساة</a><span>الإصدار 4.2</span></header>
+  <div class="layout">
+    <aside>
+      <nav aria-label="أقسام الدليل">
+        <a href="#overview">نظرة عامة</a>
+        <a href="#rotation">تدوير المفاتيح</a>
+        <a href="#recovery">الاسترداد</a>
+      </nav>
+    </aside>
+    <main id="main">
+      <p class="crumb"><a href="#">الأمان</a> / إدارة مفاتيح الوصول</p>
+      <article>
+        <h1 id="overview">إدارة مفاتيح الوصول في البيئات المشتركة</h1>
+        <p>يشرح هذا الدليل كيف تنشئ فرق التشغيل مفاتيح محدودة الصلاحية، وكيف توثّق مالك كل مفتاح والغرض منه وتاريخ مراجعته. اقرأ الخطوات كاملة قبل إجراء أي تغيير في بيئة الإنتاج، واحتفظ بمسار استرداد مستقل يمكن لفريق المناوبة الوصول إليه.</p>
+        <p>لا ترسل قيمة المفتاح عبر البريد أو المحادثات العامة. استخدم مخزن الأسرار المعتمد، وسجّل اسم الخدمة والبيئة والمسؤول المباشر وموعد الانتهاء. إذا لم تكن صلاحياتك كافية، اطلب المراجعة بدل استخدام حساب مشترك.</p>
+        <h2 id="rotation">تدوير المفتاح دون انقطاع</h2>
+        <ol>
+          <li>أنشئ مفتاحاً ثانياً بصلاحيات مطابقة، ثم تحقّق من سجل التدقيق.</li>
+          <li>حدّث الخدمة واختبر طلباً واحداً في بيئة الاختبار قبل النشر.</li>
+          <li>راقب الأخطاء، ثم ألغِ المفتاح السابق بعد انتهاء فترة التداخل.</li>
+        </ol>
+        <pre><code>marasa keys rotate --service reports-api --environment production</code></pre>
+        <p class="long-url">مرجع سجل التدقيق: https://docs.example.invalid/security/audit/events/access-key-rotation?environment=production&amp;owner=operations</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الحالة</th><th>المعنى</th><th>الإجراء التالي</th></tr></thead>
+            <tbody><tr><td><code>pending_review</code></td><td>بانتظار موافقة مسؤول مختلف</td><td>راجع المالك والنطاق</td></tr></tbody>
+          </table>
+        </div>
+        <h2 id="recovery">عند فشل التدوير</h2>
+        <p>أعد الخدمة إلى المفتاح السابق ما دام صالحاً، وثبّت سبب الفشل في سجل الحادث. لا تحذف المفتاح الجديد حتى تتأكد من أن جميع النسخ العاملة تستخدم القيمة الصحيحة، ثم أخبر فريق المناوبة بالنتيجة وخطوة المتابعة.</p>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

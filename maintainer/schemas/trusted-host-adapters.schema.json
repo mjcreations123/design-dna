@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "owner", "adapters"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "owner": {"type": "string", "minLength": 3, "maxLength": 256},
+    "adapters": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "minLength": 3,
+        "maxLength": 96
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "host",
+          "source_id",
+          "source_version",
+          "method",
+          "implementation_path",
+          "implementation_sha256"
+        ],
+        "properties": {
+          "host": {"enum": ["codex", "claude_code"]},
+          "source_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 256,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "source_version": {"type": "string", "minLength": 3, "maxLength": 256},
+          "method": {
+            "enum": [
+              "host-adapter-event",
+              "host-api-telemetry",
+              "host-runtime-log"
+            ]
+          },
+          "implementation_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "not": {
+              "pattern": "(?:^[/\\\\]|^[A-Za-z]:|\\\\|//|(?:^|/)\\.{1,2}(?:/|$)|[\\u0000-\\u001f\\u007f])"
+            }
+          },
+          "implementation_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  }
+}

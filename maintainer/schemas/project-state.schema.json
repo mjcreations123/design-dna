@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "created_with", "created", "classification", "records"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "created_with": {"type": "string", "pattern": "^design-dna (0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"},
+    "created": {"type": "string", "format": "date"},
+    "classification": {"const": "internal"},
+    "records": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["direction", "direction-proof", "visual-review", "claims", "assets", "user-validation"]}
+    }
+  }
+}

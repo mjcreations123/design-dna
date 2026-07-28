@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "owner", "scope", "status", "defaults", "headline_fragment_exceptions", "interpretation"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "owner": {"type": "string", "minLength": 1},
+    "scope": {"type": "string", "minLength": 1},
+    "status": {"enum": ["active", "retired"]},
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_unless_brief_says_otherwise", "infer_vintage_from_category", "arbitrary_headline_fragment_emphasis", "arbitrary_prominent_copy_fragment_emphasis", "gradient_headline_text_without_semantic_or_brand_reason", "unexamined_generator_default_typography", "hierarchy_follows_content_and_task", "semantic_maintainable_implementation", "motion_has_user_or_experience_purpose", "release_residue", "fabricated_proof_or_business_facts", "visibly_unfinished_controls", "cross_project_pattern_history", "representation_and_cultural_context"],
+      "properties": {
+        "current_unless_brief_says_otherwise": {"type": "boolean"},
+        "infer_vintage_from_category": {"type": "boolean"},
+        "arbitrary_headline_fragment_emphasis": {"enum": ["avoid", "investigate", "allow"]},
+        "arbitrary_prominent_copy_fragment_emphasis": {"enum": ["avoid", "investigate", "allow"]},
+        "gradient_headline_text_without_semantic_or_brand_reason": {"enum": ["avoid", "investigate", "allow"]},
+        "unexamined_generator_default_typography": {"enum": ["avoid", "investigate", "allow"]},
+        "hierarchy_follows_content_and_task": {"enum": ["require", "investigate", "allow"]},
+        "semantic_maintainable_implementation": {"enum": ["require", "investigate", "allow"]},
+        "motion_has_user_or_experience_purpose": {"enum": ["require", "investigate", "allow"]},
+        "release_residue": {"enum": ["prohibit", "investigate", "allow"]},
+        "fabricated_proof_or_business_facts": {"enum": ["prohibit", "investigate", "allow"]},
+        "visibly_unfinished_controls": {"enum": ["prohibit", "investigate", "allow"]},
+        "cross_project_pattern_history": {"enum": ["opt-in", "off", "on"]},
+        "representation_and_cultural_context": {"enum": ["require-review", "investigate", "allow"]}
+      }
+    },
+    "headline_fragment_exceptions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 5}},
+    "interpretation": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 5}}
+  }
+}

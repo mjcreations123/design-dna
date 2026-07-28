@@ -1,0 +1,55 @@
+schema_version: 1
+last_updated: "2026-07-28"
+package_version: "2.2.0"
+
+discovery_roots:
+  - "C:/Users/motty/.agents/skills"
+  - "C:/Users/motty/.claude/skills"
+  - "C:/Users/motty/.codex/plugins/cache"
+  - "C:/Users/motty/.codex/skills"
+
+hosts:
+  codex:
+    discovery_route: "C:/Users/motty/.agents/skills/design-dna"
+    designed: true
+    static_validation: "passed"
+    isolated_behavioral_eval: "pending"
+    rendered_eval: "pending"
+    installed_sync: "passed"
+    evidence:
+      - "maintainer/attestations/test-attestation.json"
+      - "maintainer/attestations/route-verification.json"
+    notes:
+      - "The direct .agents route is the single intended visible Codex skill."
+      - "Package plugin metadata is a portable source artifact, not a second installed route."
+      - "Local forward builds and rendered QA runs are diagnostic evidence, not trusted host-native release evidence."
+      - "The Codex desktop CLI version probe was unavailable; no host-native model run is claimed."
+  claude_code:
+    discovery_route: "C:/Users/motty/.claude/skills/design-dna"
+    designed: true
+    static_validation: "passed"
+    isolated_behavioral_eval: "blocked_not_authenticated"
+    rendered_eval: "blocked_not_authenticated"
+    installed_sync: "passed"
+    evidence:
+      - "maintainer/attestations/test-attestation.json"
+      - "maintainer/attestations/route-verification.json"
+    notes:
+      - "The direct .claude route is the single intended visible Claude skill."
+      - "A new Claude session may be required after sync."
+      - "Claude Code 2.1.177 reported loggedIn false on 2026-07-28."
+
+portable_contract:
+  skill_entrypoint: "skills/design-dna/SKILL.md"
+  host_specific_runtime_references:
+    - "skills/design-dna/references/platform-codex.md"
+    - "skills/design-dna/references/platform-claude.md"
+  unsupported_claims:
+    - "Identical model output across hosts"
+    - "Guaranteed invocation when the user does not request relevant web-design work"
+    - "Guaranteed human-only appearance or undetectable AI involvement"
+
+release_limitations:
+  - "No trusted host-native adapter is registered for controlled Codex or Claude Code behavioral evidence."
+  - "Claude Code 2.1.177 reported loggedIn false on 2026-07-28."
+  - "No formal controlled host evaluations or independent rendered-review records are promoted for v2.2.0; local forward builds remain diagnostic evidence only."

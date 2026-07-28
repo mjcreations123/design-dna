@@ -1,0 +1,23 @@
+schema_version: 1
+owner: "Queue North product owner"
+scope: "Queue North internal ticket-triage fixture"
+status: "active"
+
+defaults:
+  current_unless_brief_says_otherwise: true
+  infer_vintage_from_category: false
+  arbitrary_headline_fragment_emphasis: "avoid"
+  gradient_headline_text_without_semantic_or_brand_reason: "avoid"
+  unexamined_generator_default_typography: "investigate"
+  fabricated_proof_or_business_facts: "prohibit"
+  visibly_unfinished_controls: "prohibit"
+  cross_project_pattern_history: "off"
+  representation_and_cultural_context: "require-review"
+
+headline_fragment_exceptions:
+  - "complete semantic warning or operational status phrase"
+
+interpretation:
+  - "Factual, accessibility, permission, and recovery requirements outrank visual requests."
+  - "Unverified marketing proof must not enter this internal product."
+  - "Destructive actions require a clear consequence and recovery path."

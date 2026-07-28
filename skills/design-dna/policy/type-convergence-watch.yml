@@ -1,0 +1,46 @@
+schema_version: 1
+status: "active"
+last_reviewed: "2026-07-28"
+review_due: "2026-10-24"
+scope: "Greenfield public-facing visual identity work"
+
+interpretation:
+  policy: "Prefer an equally suitable non-watched family; never replace a better fit merely for novelty."
+  authorship_claim: "A watched family is not evidence that AI made a site."
+  expired_policy: "After review_due, use this only as a prompt to research current defaults."
+  preserve_existing_systems: true
+  preserve_explicit_brand_fonts: true
+  named_lists_are_not_candidate_menus: true
+
+selection_rule:
+  - "Do not use this policy as a font shortlist; derive candidates from project voice, content, scripts, reading, rights, delivery, and performance."
+  - "Define voice, content, scripts, reading conditions, license, delivery, and performance before naming fonts."
+  - "Compare at least three credible candidates in real copy for consequential greenfield identity work."
+  - "When practical, include at least two credible candidates outside the documented-first-choice list."
+  - "If a documented first/default family wins, record a project-specific reason and avoid stacking it with other watched accent defaults without a separate reason."
+  - "For applications, dashboards, documentation, localization, and existing systems, continuity, density, coverage, and performance may outweigh convergence."
+
+documented_first_or_default:
+  - family: "Inter"
+    contexts: ["Pagesmith default", "Framer new text default", "Bolt-reported AI default"]
+    evidence: ["EVD-007", "EVD-008", "EVD-022"]
+  - family: "Inter Display"
+    contexts: ["Framer new text default"]
+    evidence: ["EVD-022"]
+  - family: "Roboto"
+    contexts: ["Bolt-reported AI default"]
+    evidence: ["EVD-008"]
+  - family: "Geist"
+    contexts: ["Vercel/v0 design-system default candidate"]
+    evidence: ["EVD-023"]
+  - family: "Geist Mono"
+    contexts: ["Vercel/v0 design-system default candidate"]
+    evidence: ["EVD-023"]
+
+community_attention:
+  evidence: ["EVD-009", "EVD-010", "EVD-012", "EVD-013"]
+  note: "Low-confidence perception candidates; investigate combinations, not individual use."
+  combinations:
+    - "neutral sans plus display serif used as instant editorial personality"
+    - "decorative mono in every eyebrow, badge, or metadata label"
+    - "huge display type paired with tiny, thin, low-contrast support text"

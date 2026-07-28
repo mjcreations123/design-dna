@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Route marker</title>
+  <path fill="#17384d" d="M32 4C20.4 4 11 13.4 11 25c0 15.8 21 35 21 35s21-19.2 21-35C53 13.4 43.6 4 32 4Z"/>
+  <circle cx="32" cy="25" r="10" fill="#f5c451"/>
+  <path fill="none" stroke="#17384d" stroke-linecap="round" stroke-width="4" d="M26 25h12"/>
+</svg>

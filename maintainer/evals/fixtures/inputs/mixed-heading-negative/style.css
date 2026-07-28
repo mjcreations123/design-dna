@@ -1,0 +1,42 @@
+:root {
+  color: #182033;
+  background: #f4f6fa;
+  font: 16px/1.5 system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.hero,
+#sample {
+  width: min(64rem, calc(100% - 3rem));
+  margin-inline: auto;
+  padding-block: 5rem;
+}
+
+h1 {
+  max-width: 12ch;
+  margin-block: 0.5rem 1rem;
+  font-size: clamp(2.75rem, 8vw, 6rem);
+  line-height: 0.95;
+}
+
+.headline-accent {
+  color: #7c3aed;
+}
+
+.hero-poster {
+  display: grid;
+  margin-block-start: 2rem;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.hero-poster span:nth-child(2) {
+  color: #2563eb;
+}
+
+a {
+  color: #165f87;
+}

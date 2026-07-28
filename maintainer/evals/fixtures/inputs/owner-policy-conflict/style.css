@@ -1,0 +1,38 @@
+:root {
+  color: #182131;
+  background: #edf1f5;
+  font: 15px/1.45 system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(70rem, calc(100% - 2rem));
+  margin: 2rem auto;
+}
+
+header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+form {
+  margin-block: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  border: 1px solid #cbd4df;
+  text-align: left;
+}

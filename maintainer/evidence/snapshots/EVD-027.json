@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "evidence_id": "EVD-027",
+  "retrieved": "2026-07-28",
+  "url": "https://ui.shadcn.com/docs/theming",
+  "locator": "Current theming tokens, preset configuration, and default neutral scaffold",
+  "excerpt": "Current theming documentation exposes preset configuration, semantic tokens, a derived radius scale, base colors, and a default neutral OKLCH scaffold."
+}

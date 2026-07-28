@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "approved": {
+    "category": "residential plumbing service concept",
+    "tone": "clear and calm",
+    "prototype_status": "local concept only"
+  },
+  "required_pending_labels": [
+    "Business name pending",
+    "Service area pending",
+    "Services pending",
+    "Contact method pending",
+    "Hours pending",
+    "Licensing details pending"
+  ],
+  "not_supplied": [
+    "business name",
+    "service area",
+    "services",
+    "contact details",
+    "hours",
+    "licensing",
+    "emergency availability",
+    "reviews",
+    "ratings",
+    "prices",
+    "photography"
+  ]
+}

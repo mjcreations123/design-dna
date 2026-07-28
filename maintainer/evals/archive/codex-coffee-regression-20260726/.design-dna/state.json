@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "created_with": "design-dna 2.0.0",
+  "created": "2026-07-26",
+  "classification": "internal",
+  "records": [
+    "direction",
+    "visual-review"
+  ]
+}

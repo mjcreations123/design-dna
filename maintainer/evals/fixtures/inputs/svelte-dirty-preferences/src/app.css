@@ -1,0 +1,39 @@
+:root {
+  color: #182034;
+  background: #eef2f7;
+  font-family: system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.settings-shell {
+  width: min(44rem, calc(100% - 4rem));
+  margin: 5rem auto;
+  padding: 2.5rem;
+  background: #fff;
+  border: 1px solid #d8deea;
+}
+
+.preference-form {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.preference-form input[type="email"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.75rem;
+}
+
+.preference-form button {
+  width: fit-content;
+  padding: 0.75rem 1rem;
+}

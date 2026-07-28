@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "last_reviewed",
+    "review_due",
+    "scope",
+    "interpretation",
+    "selection_rule",
+    "documented_first_or_default",
+    "community_attention"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "status": {"enum": ["active", "retired"]},
+    "last_reviewed": {"type": "string", "format": "date"},
+    "review_due": {"type": "string", "format": "date"},
+    "scope": {"type": "string", "minLength": 10},
+    "interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy",
+        "authorship_claim",
+        "expired_policy",
+        "preserve_existing_systems",
+        "preserve_explicit_brand_fonts",
+        "named_lists_are_not_candidate_menus"
+      ],
+      "properties": {
+        "policy": {"type": "string", "minLength": 10},
+        "authorship_claim": {"type": "string", "minLength": 10},
+        "expired_policy": {"type": "string", "minLength": 10},
+        "preserve_existing_systems": {"const": true},
+        "preserve_explicit_brand_fonts": {"const": true},
+        "named_lists_are_not_candidate_menus": {"const": true}
+      }
+    },
+    "selection_rule": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 10}
+    },
+    "documented_first_or_default": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "contexts", "evidence"],
+        "properties": {
+          "family": {"type": "string", "minLength": 1},
+          "contexts": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 3}
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^EVD-[0-9]{3,}$"}
+          }
+        }
+      }
+    },
+    "community_attention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence", "note", "combinations"],
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^EVD-[0-9]{3,}$"}
+        },
+        "note": {"type": "string", "minLength": 10},
+        "combinations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 10}
+        }
+      }
+    }
+  }
+}

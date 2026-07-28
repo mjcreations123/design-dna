@@ -1,0 +1,101 @@
+schema_version: 2
+owner: "Motty"
+last_reviewed: "2026-07-28"
+next_review: "2026-10-24"
+
+risks:
+  RISK-IA-001:
+    status: "active"
+    evidence: ["EVD-001", "EVD-002"]
+  RISK-SYS-001:
+    status: "active"
+    evidence: ["EVD-001", "EVD-002"]
+  RISK-HIER-001:
+    status: "active"
+    evidence: ["EVD-019"]
+  RISK-COPY-001:
+    status: "active"
+    evidence: ["EVD-019"]
+  RISK-TRUTH-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-UX-001:
+    status: "active"
+    evidence: ["EVD-004", "EVD-005", "EVD-018"]
+  RISK-RESP-001:
+    status: "active"
+    evidence: ["EVD-004", "EVD-016"]
+  RISK-CODE-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-ASSET-001:
+    status: "active"
+    evidence: ["EVD-014", "EVD-017", "EVD-025", "EVD-028"]
+  RISK-MOTION-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-CONTEXT-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-CULTURE-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-DARK-001:
+    status: "active"
+    evidence: ["EVD-020"]
+  RISK-NOV-001:
+    status: "active"
+    evidence: ["EVD-002", "EVD-003", "EVD-024", "EVD-025"]
+  RISK-REPEAT-001:
+    status: "active"
+    evidence: ["EVD-001", "EVD-002", "EVD-024"]
+  RISK-RESIDUE-001:
+    status: "active"
+    basis: "owner_policy"
+  RISK-SEC-001:
+    status: "active"
+    evidence: ["EVD-029", "EVD-030"]
+  RISK-FWK-001:
+    status: "candidate"
+    evidence: ["EVD-001", "EVD-009", "EVD-027"]
+  RISK-VIS-001:
+    status: "candidate"
+    evidence: ["EVD-003", "EVD-008", "EVD-009", "EVD-011", "EVD-012"]
+  RISK-VIS-002:
+    status: "candidate"
+    evidence: ["EVD-010", "EVD-012"]
+  RISK-SURFACE-001:
+    status: "candidate"
+    evidence: ["EVD-009", "EVD-012"]
+  RISK-EMPH-001:
+    status: "active"
+    evidence: ["EVD-015", "EVD-021"]
+  RISK-TYPE-001:
+    status: "candidate"
+    evidence: ["EVD-003", "EVD-007", "EVD-008", "EVD-009", "EVD-010", "EVD-013", "EVD-022", "EVD-023", "EVD-025"]
+  RISK-TYPE-002:
+    status: "active"
+    evidence: ["EVD-006"]
+  RISK-ICON-001:
+    status: "candidate"
+    evidence: ["EVD-009", "EVD-012"]
+  RISK-MOCKUP-001:
+    status: "candidate"
+    evidence: ["EVD-011", "EVD-012"]
+  RISK-DENSITY-001:
+    status: "candidate"
+    evidence: ["EVD-012", "EVD-013"]
+  RISK-LABEL-001:
+    status: "candidate"
+    evidence: ["EVD-013"]
+  RISK-COPYFORM-001:
+    status: "candidate"
+    evidence: ["EVD-019", "EVD-013"]
+
+rejected_hypotheses:
+  mesh_or_aurora_as_strong_detector:
+    evidence: ["EVD-009"]
+    reason: "The reproducible community synthesis rejected the signal as a keyword artifact."
+  bento_grid_as_high_priority_detector:
+    evidence: ["EVD-009"]
+    reason: "The measured community signal was weak and contested."

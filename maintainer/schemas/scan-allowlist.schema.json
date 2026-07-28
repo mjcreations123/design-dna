@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "allow"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "allow": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule", "path", "fingerprint", "reason", "owner", "expires"],
+        "properties": {
+          "rule": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1, "pattern": "\\S", "not": {"pattern": "(?:^[/\\\\]|^[A-Za-z]:|(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))"}},
+          "fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "line": {"type": "integer", "minimum": 1},
+          "reason": {"type": "string", "minLength": 5, "pattern": "\\S[\\s\\S]{3,}\\S"},
+          "owner": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "expires": {"type": "string", "format": "date"}
+        }
+      }
+    },
+    "acknowledge_skipped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "reason", "owner", "expires"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "allOf": [
+              {"not": {"pattern": "(?:^[/\\\\]|^[A-Za-z]:|(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))"}},
+              {"not": {"pattern": "\\\\"}}
+            ]
+          },
+          "reason": {"type": "string", "minLength": 5, "pattern": "\\S[\\s\\S]{3,}\\S"},
+          "owner": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "expires": {"type": "string", "format": "date"}
+        }
+      }
+    }
+  }
+}

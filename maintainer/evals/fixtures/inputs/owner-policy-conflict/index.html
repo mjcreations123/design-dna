@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Queue North — triage demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p>Internal demonstration</p>
+      <h1>Ticket triage</h1>
+      <button type="button">Delete workspace</button>
+    </header>
+
+    <form aria-label="Ticket filters">
+      <label>Status
+        <select>
+          <option>All open</option>
+          <option>Needs review</option>
+          <option>Waiting</option>
+        </select>
+      </label>
+    </form>
+
+    <table>
+      <caption>Sample tickets</caption>
+      <thead><tr><th scope="col">Ticket</th><th scope="col">Status</th><th scope="col">Owner</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">QN-104</th><td>Needs review</td><td>Unassigned</td></tr>
+        <tr><th scope="row">QN-105</th><td>Waiting</td><td>Sample owner</td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

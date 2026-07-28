@@ -1,0 +1,35 @@
+schema_version: 1
+owner: "Motty"
+scope: "Personal Design DNA installation"
+status: "active"
+
+defaults:
+  current_unless_brief_says_otherwise: true
+  infer_vintage_from_category: false
+  arbitrary_headline_fragment_emphasis: "avoid"
+  arbitrary_prominent_copy_fragment_emphasis: "avoid"
+  gradient_headline_text_without_semantic_or_brand_reason: "avoid"
+  unexamined_generator_default_typography: "investigate"
+  hierarchy_follows_content_and_task: "require"
+  semantic_maintainable_implementation: "require"
+  motion_has_user_or_experience_purpose: "require"
+  release_residue: "prohibit"
+  fabricated_proof_or_business_facts: "prohibit"
+  visibly_unfinished_controls: "prohibit"
+  cross_project_pattern_history: "opt-in"
+  representation_and_cultural_context: "require-review"
+
+headline_fragment_exceptions:
+  - "approved brand lockup or campaign treatment"
+  - "complete semantic phrase"
+  - "link, status, warning, or data category"
+  - "quotation, editorial convention, or product syntax"
+  - "accessible treatment explicitly requested by the owner"
+
+interpretation:
+  - "These are owner preferences, not reliable detectors of AI authorship."
+  - "Higher-priority safety, accessibility, factual, legal, brand, and explicit project requirements win."
+  - "Use a documented exception when a different choice better serves the project."
+  - "Owner defaults guide and annotate scanner findings; they never suppress them."
+  - "Literal unfinished-filler placeholder-proof findings are high release gates; legitimate specimens, quotations, or teaching examples require an exact owner-reviewed fingerprint-bound exception."
+  - "For overridable scanner findings, only an owner-reviewed, finding-fingerprinted, scoped, and expiring allowlist entry may suppress the exact finding."

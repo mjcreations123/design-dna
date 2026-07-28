@@ -1,0 +1,68 @@
+[
+  {
+    "id": "ml-101",
+    "sequence": 1,
+    "name": "Maple and Third",
+    "zone": "North loop",
+    "status": "ready",
+    "arrival": "09:10–09:30",
+    "load": "4 hold bins",
+    "access": "Curbside bay",
+    "note": "Scenario note: hold shelf loaded and curb lane clear."
+  },
+  {
+    "id": "ml-102",
+    "sequence": 2,
+    "name": "Juniper Court",
+    "zone": "North loop",
+    "status": "attention",
+    "arrival": "10:05–10:25",
+    "load": "2 hold bins",
+    "access": "East entrance",
+    "note": "Scenario note: confirm the temporary entrance sign before arrival."
+  },
+  {
+    "id": "ml-201",
+    "sequence": 3,
+    "name": "Canal Market",
+    "zone": "River loop",
+    "status": "delayed",
+    "arrival": "11:20–11:50",
+    "load": "6 hold bins",
+    "access": "Loading lane B",
+    "note": "Scenario note: demonstration delay caused by an earlier route check."
+  },
+  {
+    "id": "ml-202",
+    "sequence": 4,
+    "name": "Foundry Square",
+    "zone": "River loop",
+    "status": "ready",
+    "arrival": "12:35–12:55",
+    "load": "3 hold bins",
+    "access": "South plaza",
+    "note": "Scenario note: standard setup with no open dispatch exception."
+  },
+  {
+    "id": "ml-301",
+    "sequence": 5,
+    "name": "Orchard Commons",
+    "zone": "West loop",
+    "status": "attention",
+    "arrival": "14:10–14:35",
+    "load": "5 hold bins",
+    "access": "Community room door",
+    "note": "Scenario note: verify the portable ramp location at check-in."
+  },
+  {
+    "id": "ml-302",
+    "sequence": 6,
+    "name": "Pine Ridge",
+    "zone": "West loop",
+    "status": "ready",
+    "arrival": "15:20–15:40",
+    "load": "1 hold bin",
+    "access": "Main circle",
+    "note": "Scenario note: final sample stop on the local evaluation route."
+  }
+]

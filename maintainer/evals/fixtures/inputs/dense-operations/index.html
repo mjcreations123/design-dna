@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account operations — Sample data</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside>
+    <a class="product" href="#main">Ledger Admin</a>
+    <nav aria-label="Operations"><a aria-current="page" href="#accounts">Accounts</a><a href="#audit">Audit log</a></nav>
+    <p class="role">Signed in as <strong>Viewer</strong></p>
+  </aside>
+  <main id="main">
+    <header>
+      <div><p class="eyebrow">Operations / sample data</p><h1 id="accounts">Accounts</h1></div>
+      <button id="export" type="button">Export</button>
+    </header>
+    <div class="filters">
+      <label>Filter <input type="search" placeholder="Account or owner"></label>
+      <label>Status <select><option>All</option><option>Active</option><option>Suspended</option></select></label>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Account</th><th>Owner</th><th>Status</th><th>Legal hold</th><th>Updated</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+          <tr><td>Sample / Pine-104</td><td>D. Chen</td><td><span class="status active">Active</span></td><td>No</td><td>09:42</td><td><button class="danger" popovertarget="delete-dialog">Delete</button></td></tr>
+          <tr><td>Sample / Reed-208</td><td>M. Okafor</td><td><span class="status suspended">Suspended</span></td><td>Unchecked</td><td>08:17</td><td><button class="danger" popovertarget="delete-dialog">Delete</button></td></tr>
+          <tr><td>Sample / Lake-311</td><td>S. Ali</td><td><span class="status active">Active</span></td><td>No</td><td>Yesterday</td><td><button class="danger" popovertarget="delete-dialog">Delete</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <section id="audit" aria-labelledby="audit-title">
+      <h2 id="audit-title">Audit log</h2>
+      <p>No audit event is selected.</p>
+    </section>
+    <!-- Intentionally incomplete workflow for evaluation. -->
+    <section id="delete-dialog" popover aria-labelledby="delete-title">
+      <h2 id="delete-title">Delete account?</h2>
+      <p>This action cannot be undone.</p>
+      <div class="dialog-actions">
+        <button type="button" popovertarget="delete-dialog" popovertargetaction="hide">Cancel</button>
+        <button class="danger danger--solid" type="button">Delete</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
