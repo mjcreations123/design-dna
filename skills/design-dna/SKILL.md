@@ -226,6 +226,14 @@ change direction; otherwise decide and note it.
 Do not preload the library. Load the smallest set that answers the current
 decision, then return to the router.
 
+Load in phases, because when guidance arrives changes what it does. Read the
+direction references before the first candidate exists, and load the
+diagnostic or finish references only after a render exists to diagnose. A
+post-render vocabulary consulted while choosing turns into an inverse
+prompt: the work starts being assembled to dodge a list instead of to answer
+the brief, which is the mechanism that produces something safe, generic, and
+already covered by [the two axes](#two-axes-and-the-default-is-awesome).
+
 | Decision or risk now | Load |
 | --- | --- |
 | Any build or revision nearing done | [Preship gate](templates/preship-gate.md); it is mandatory, not optional. |
@@ -233,10 +241,10 @@ decision, then return to the router.
 | Decorative labels, HUD text, eyebrows, "random text," copy texture | [Parseable text](references/quality/parseable-text.md). |
 | Starting any direction; avoiding self-repetition | [Ledger](references/quality/ledger.md). |
 | Missing, sparse, or contradictory project material | [Content discovery](references/quality/content-discovery.md). |
-| New direction, redesign, "generic," "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
+| New direction, redesign, "generic," or "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
 | Open brief, greenfield direction, materially different options | [Creative exploration](references/craft/creative-exploration.md), then [art direction](references/craft/art-direction.md). |
 | "Make it impressive," premium, showcase, "too plain," "boring" | [Creative freedom](references/creative-freedom.md), [creative exploration](references/craft/creative-exploration.md), [expression and energy](references/craft/expression-energy.md); revision verbs via [design tuning passes](references/craft/design-tuning-passes.md); [finish and polish](references/quality/finish-polish.md) after direction works. |
-| First complete render or durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
+| First complete render or observed durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
 | Explicit AI-looking, vibe-coded, templated, house-style concern | Direction from project evidence first; after a render, the [convergence review](references/convergence-watch.md); close with the [specificity review](references/quality/specificity-review.md). |
 | Palette, depth, composition | [Color and composition](references/craft/color-composition.md). |
 | Grid, grouping, rhythm, density | [Layout and density](references/craft/layout-density.md). |

@@ -3141,12 +3141,22 @@ async function inspectDocument(page) {
       const parsed = Number.parseFloat(String(value || ""));
       return Number.isFinite(parsed) ? parsed : null;
     };
+    // A person can type into these, so whatever they hold belongs to the
+    // operator or the visitor, not to the page. Their type is still
+    // measured; their characters are never persisted. Only the length
+    // survives, which is all the measure and line-length checks need.
+    const userEditable = (element) =>
+      element.localName === "input" ||
+      element.localName === "textarea" ||
+      element.isContentEditable === true;
+    const typographyTextOf = (element) =>
+      element.textContent || element.value || "";
     const typographyCandidates = [
       ...document.querySelectorAll(
         "h1,h2,h3,h4,h5,h6,[role='heading'],p,blockquote,li,dt,dd,figcaption,caption,label,legend,a[href],button,input,select,textarea,summary,code,pre,kbd,samp",
       ),
     ]
-      .filter((element) => visible(element) && compact(element.textContent || element.value || "", 1))
+      .filter((element) => visible(element) && compact(typographyTextOf(element), 1))
       .map((element) => ({ element, role: typographyRoleFor(element) }));
     const typographySampling = stratifiedTypographySample(
       typographyCandidates,
@@ -3161,8 +3171,13 @@ async function inspectDocument(page) {
           selector: selectorFor(element),
           tag: element.localName,
           role,
-          text_sample: compact(element.textContent || element.value || "", 160),
-          text_length: compact(element.textContent || element.value || "", 100000).length,
+          // An empty sample beside a non-zero length is the redaction: the
+          // report keeps what typography needs and drops what it must not
+          // carry. The schema is a published contract, so this adds no field.
+          text_sample: userEditable(element)
+            ? ""
+            : compact(typographyTextOf(element), 160),
+          text_length: compact(typographyTextOf(element), 100000).length,
           rect,
           family,
           primary_family: family.split(",")[0]?.trim().replace(/^['"]|['"]$/g, "") || "",

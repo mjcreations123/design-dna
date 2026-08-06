@@ -11,6 +11,18 @@ two-lane rule lives in the [owner absolutes](../policy/absolutes.md). One
 exception: the font-cluster tables below are also consumed at selection time
 when HARD 1's comparison protocol requires it.
 
+Every cluster below is a period observation, not a standing rule, and this
+file intentionally contains no claim that any named example is still current,
+still converged, or ever universally wrong. The clusters are examples of a
+mechanism, and the mechanism outlives the examples. Treat an expired entry as
+a prompt to look again at what is actually converging now, never as a
+licence to keep flagging a choice because it once appeared here.
+
+The installed skill does not depend on this file being fresh. Its absolutes,
+protocols, gates, and router all function with these tables stale or absent,
+so it is not a portable runtime dependency: it is a dated aid whose value
+decays, kept separate for exactly that reason.
+
 ## Contents
 
 - [Neutral-alone rule](#neutral-alone-rule)

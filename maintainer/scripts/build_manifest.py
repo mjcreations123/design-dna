@@ -524,6 +524,35 @@ def manifest_semantic_failures(
     return failures
 
 
+def _load_sbom_helpers():
+    """Resolve the sibling SBOM module from this file's own directory.
+
+    A plain ``from build_sbom import ...`` here only works while the scripts
+    directory happens to be on ``sys.path``. A caller that imports this module
+    under a temporary path entry and then restores ``sys.path`` (which the
+    maintainer tests correctly do) would otherwise fail at call time, long
+    after the import that looked successful.
+    """
+    try:
+        from build_sbom import generate_sbom, validate_sbom
+    except ModuleNotFoundError:
+        import importlib.util
+
+        source = Path(__file__).resolve().parent / "build_sbom.py"
+        spec = importlib.util.spec_from_file_location("build_sbom", source)
+        if spec is None or spec.loader is None:  # pragma: no cover - defensive
+            raise ToolFailure(
+                "sbom-module-unavailable",
+                "The SBOM module could not be loaded from the scripts directory.",
+                source,
+            )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        generate_sbom = module.generate_sbom
+        validate_sbom = module.validate_sbom
+    return generate_sbom, validate_sbom
+
+
 def package_manifest(
     skill_root: Path,
     *,
@@ -654,7 +683,7 @@ def package_manifest(
             "SBOM creationInfo.created is missing.",
             sbom_path,
         )
-    from build_sbom import generate_sbom, validate_sbom
+    generate_sbom, validate_sbom = _load_sbom_helpers()
 
     validate_sbom(sbom, plugin_root)
     if generate_sbom(plugin_root, created_at=sbom_created) != sbom:

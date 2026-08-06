@@ -108,6 +108,20 @@ exercised. Named lists decay (Instrument Serif went from recommendation to
 tell in about a year), so re-verify this list against current discourse
 after mid-2027 and date any replacement.
 
+There is no runtime list of permitted or refused families, and this bench is
+not one. It is a dated starting point for a comparison, and every entry is
+beatable by the project's own evidence. Judge a face by what it does for this
+project, at this size, in this composition, holding two things in mind:
+
+- a familiar choice is not automatically generic, and frequency of use is
+  never the finding by itself;
+- an unusual choice is not automatically distinctive, and novelty is no
+  substitute for fit.
+
+The first question is never how often a face is used. It is whether the face
+says what this project needs said, and whether it holds up rendered at the
+sizes this page actually uses.
+
 The single canonical watch list of saturated and studio-burned faces lives
 in [convergence-watch](../convergence-watch.md); HARD 1 in the
 [owner absolutes](../../policy/absolutes.md) gates every face on it. A bench

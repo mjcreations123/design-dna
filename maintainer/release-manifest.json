@@ -2,19 +2,19 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "5.0.2",
-  "distribution_sha256": "bf8a25cdd7cafa663ca034b244b35f04b3f90d222b11928d42cbdeb1eeb8d6aa",
-  "content_sha256": "e2370c6bad55fd89b6a44768fac6c8d5068c953afdf1b5f72466ea7a86b1b6d9",
+  "distribution_sha256": "cfb0033fe91cf261bc2783e6b135ca06b34fcab716d1e8c3d452c55fab0b6f97",
+  "content_sha256": "e058d09565843e0b15923d57d74ac492ef5a3f1a69655c13fabf4d95f772b24d",
   "codex_plugin_manifest_sha256": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
   "claude_plugin_manifest_sha256": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-  "sbom_sha256": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9",
+  "sbom_sha256": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff",
   "compatibility_matrix_sha256": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "bf8a25cdd7cafa663ca034b244b35f04b3f90d222b11928d42cbdeb1eeb8d6aa",
-    "runtime": "e2370c6bad55fd89b6a44768fac6c8d5068c953afdf1b5f72466ea7a86b1b6d9",
+    "distribution_tree": "cfb0033fe91cf261bc2783e6b135ca06b34fcab716d1e8c3d452c55fab0b6f97",
+    "runtime": "e058d09565843e0b15923d57d74ac492ef5a3f1a69655c13fabf4d95f772b24d",
     "codex_plugin_manifest": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
     "claude_plugin_manifest": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-    "sbom": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9",
+    "sbom": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff",
     "compatibility_matrix": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "f770d885e650ddb71594b60fed7a3a51dda1b3501fee2f72c6a3430189a7e873",
@@ -22,18 +22,18 @@
     "eval_contract": "13991bcec02bff58cc4586582bc636b7ebc59d99d469d506ace14f30a37bc3d8",
     "eval_proof": "620b5a607cc75af514649227aef43f7c0f6fceb456bb429b7a8c29e1530624bd",
     "evidence": "fc7237df45cd1bc8372ca6dea1511c64cee4fad7ca69ca831398c47dca467d2a",
-    "maintainer_tooling": "cc20ef3e9aee433c2b210d0826c08a70649125a9aa5b51a951701b2947da3299",
+    "maintainer_tooling": "12c9cb083b8b1872319857605f3c6842d2a9320f9e2fa128c0474d1925b6b905",
     "schemas": "2dfb712ac5b4b755f23c39ef4fb26a9065a7dc229753b5dfb712df2a84fac85a",
     "tests": "521465d5e72b134e55f78202e7a8b4874e0db14f482ebf1dd40019a4a3456df7"
   },
-  "release_sha256": "7020fae426f5bf86a0ed7c7570e046760adca667ef34fd8be5a50c6fe6481961",
-  "generated_at": "2026-08-06T21:03:09.117901+00:00",
+  "release_sha256": "2f6eccbcc2c9b0b11e6eca4846f1b7516e248efb4a8e2ff43c82b1d9fd6efebd",
+  "generated_at": "2026-08-06T22:24:08.851395+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 24754,
-      "sha256": "17b87f7954e06959b51e3130a812f1d46ef2b2945776ee6e18c77559482b60e3"
+      "size": 25284,
+      "sha256": "e662c56f9330a5826edb5531a221d335a1c8dd3fc578770d32924ae55a643274"
     },
     {
       "path": "agents",
@@ -74,8 +74,8 @@
     {
       "path": "references/convergence-watch.md",
       "type": "file",
-      "size": 20044,
-      "sha256": "0e3ab3cfe6dbc03115ffc9b64386a8954eee67e76fa4e4e42376c659f15e8617"
+      "size": 20762,
+      "sha256": "05719700e31f3ff41420560c8497d03e3c1eb34034ebdb2f2fcf9f67078fafa8"
     },
     {
       "path": "references/craft",
@@ -188,8 +188,8 @@
     {
       "path": "references/craft/typography.md",
       "type": "file",
-      "size": 22466,
-      "sha256": "3b8eb40c19ff95c4c6a025d543c4c1888d8d41ec1ff219d30f9d3349f54aa35f"
+      "size": 23153,
+      "sha256": "5b26f4487f806fc5663a83f7ffd6e681fed48e5343eefa0af668f24fae1fc716"
     },
     {
       "path": "references/creative-freedom.md",
@@ -566,8 +566,8 @@
     {
       "path": "scripts/rendered_review.mjs",
       "type": "file",
-      "size": 182478,
-      "sha256": "f35905b5cffc8ee971338e69696f8422ee391f7b93e7b39df58286ba5e9bf53b"
+      "size": 183248,
+      "sha256": "cb7a64e66a4159d35bd93cf68609bd820471def941f02340d97bb09f90a98a56"
     },
     {
       "path": "scripts/route_family_audit.py",
@@ -2741,7 +2741,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9"
+      "sha256": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff"
     },
     {
       "path": "maintainer/schemas",
@@ -2986,8 +2986,8 @@
     {
       "path": "maintainer/scripts/build_manifest.py",
       "type": "file",
-      "size": 33675,
-      "sha256": "6de66ff0e6d4fda5e8149380c38ce15f87ff1b9b8a9c85c1ec0500a93e052209"
+      "size": 34909,
+      "sha256": "fe5d9ab481a9701ff8863418618638fbbb6d671525a4e0ae0f1b144e351ead79"
     },
     {
       "path": "maintainer/scripts/build_sbom.py",
@@ -3268,8 +3268,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 24754,
-      "sha256": "17b87f7954e06959b51e3130a812f1d46ef2b2945776ee6e18c77559482b60e3"
+      "size": 25284,
+      "sha256": "e662c56f9330a5826edb5531a221d335a1c8dd3fc578770d32924ae55a643274"
     },
     {
       "path": "skills/design-dna/agents",
@@ -3310,8 +3310,8 @@
     {
       "path": "skills/design-dna/references/convergence-watch.md",
       "type": "file",
-      "size": 20044,
-      "sha256": "0e3ab3cfe6dbc03115ffc9b64386a8954eee67e76fa4e4e42376c659f15e8617"
+      "size": 20762,
+      "sha256": "05719700e31f3ff41420560c8497d03e3c1eb34034ebdb2f2fcf9f67078fafa8"
     },
     {
       "path": "skills/design-dna/references/craft",
@@ -3424,8 +3424,8 @@
     {
       "path": "skills/design-dna/references/craft/typography.md",
       "type": "file",
-      "size": 22466,
-      "sha256": "3b8eb40c19ff95c4c6a025d543c4c1888d8d41ec1ff219d30f9d3349f54aa35f"
+      "size": 23153,
+      "sha256": "5b26f4487f806fc5663a83f7ffd6e681fed48e5343eefa0af668f24fae1fc716"
     },
     {
       "path": "skills/design-dna/references/creative-freedom.md",
@@ -3802,8 +3802,8 @@
     {
       "path": "skills/design-dna/scripts/rendered_review.mjs",
       "type": "file",
-      "size": 182478,
-      "sha256": "f35905b5cffc8ee971338e69696f8422ee391f7b93e7b39df58286ba5e9bf53b"
+      "size": 183248,
+      "sha256": "cb7a64e66a4159d35bd93cf68609bd820471def941f02340d97bb09f90a98a56"
     },
     {
       "path": "skills/design-dna/scripts/route_family_audit.py",
