@@ -41,6 +41,19 @@ Confirm completeness mechanically: the capture height matches
 `scrollHeight` at the UNCHANGED viewport, and the bottom rows sample as
 footer pixels, not mid-section content.
 
+On a vh-driven layout, `captureBeyondViewport` can fail to converge at
+all. Chrome grows the surface to the content height, the vh-sized sections
+grow with it, the content height grows again, and the capture spins: this
+studio watched a 375-wide page that shot fine at 1440 run past 170 seconds
+and produce nothing, while a viewport-only shot of the same page returned
+in two. Pinning the offending elements to pixel heights first did not fix
+it. When a page's structure is built on vh, do not full-page capture it.
+Capture viewport-sized slices at known scroll offsets instead: set
+`scrollBehavior=auto` first (smooth scrolling silently returns the old
+position, so every slice comes back identical), scroll, wait, then shoot.
+The slices are also the honest artifact, since they are what a visitor
+actually sees.
+
 `captureBeyondViewport` never fires `loading="lazy"` images; a far-below-
 fold image captures as an empty box while nearer ones happen to load. Before
 the capture, sweep the scroll position through the full document height,
@@ -77,6 +90,22 @@ Never sample screenshots at hardcoded pixel offsets; any layout change
 silently moves the target and the numbers describe the wrong region. Probe
 `getBoundingClientRect()` (plus `scrollY`) for every element under test in
 the same run as the capture, and drive the sampler from those rects.
+
+## Measure the glyphs, not the box
+
+An element's `getBoundingClientRect()` is the BLOCK, and a block-level
+heading spans the whole column while its words occupy a fraction of it.
+Sampling that rect reports the worst pixel anywhere in the column, which is
+usually empty photograph, and the run fills with failures that are not
+real: a 13px eyebrow measured 2.13:1 across its 856px block and 5.31:1
+across the 83px its letters actually cover.
+
+Drive the sampler from Range rects instead. Walk the text nodes, and for
+each one `document.createRange(); range.selectNodeContents(node)` then take
+`getClientRects()`: one rect per rendered LINE, tight to the glyphs.
+Read `fontSize` and `fontWeight` off the parent at the same time and let
+them pick the floor, because a padded box is not large text just because
+the padding made it 24 pixels tall.
 
 ## Pixel-sampled contrast, done right
 
