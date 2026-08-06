@@ -57,6 +57,20 @@ re-navigate before probing. The same applies to media-feature emulation:
 re-navigate after `Emulation.setEmulatedMedia` or the override may not
 take.
 
+## Never run an interaction twice
+
+An interaction expression passed as BOTH the shot's `evalAfter` and a probe
+runs twice, and every toggle it performs is undone. This studio spent a
+debugging cycle on three "broken" features that were correct: claim, hold
+and pin had each been clicked twice. Separate the two roles absolutely:
+`evalAfter` ACTS, the probe only READS. Stash anything the action needs to
+report on `window.__x` and read it back in the probe.
+
+Subscribe to `Runtime.exceptionThrown` as well as console and network
+events. A module that throws during import attaches no listeners, so every
+control silently does nothing while the console stays empty; without
+exception capture that reads exactly like a state bug.
+
 ## Element-anchored measurement
 
 Never sample screenshots at hardcoded pixel offsets; any layout change

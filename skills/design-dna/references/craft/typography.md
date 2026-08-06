@@ -190,7 +190,11 @@ If the photo can change, the scrim alone must guarantee the floor.
 - Subset against the site's real corpus including punctuation, curly quotes,
   diacritics, and currency; a probe string can pass while the headline's
   apostrophe paints in the fallback.
-- Maximum 4 font files or 1 to 2 variable files; woff2 only.
+- Maximum 4 font files or 1 to 2 variable files; woff2 only. Before
+  shipping a family at several weights, hash the files: font services hand
+  out the SAME variable file under every weight name, so four `@font-face`
+  blocks can be four downloads of one file. Identical hashes mean one
+  declaration with a `font-weight` RANGE and `format("woff2-variations")`.
 - On Windows, write files as explicit UTF-8 and grep shippable files for the
   mojibake signature after any edit touching typographic punctuation: use
   the encoding-proof spelling `[\xC2\xC3\xE2]` in ripgrep (the literal
