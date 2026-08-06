@@ -41,17 +41,20 @@ except ImportError as exc:  # pragma: no cover - exercised without dev dependenc
     BOOTSTRAP_FAILURES.append(f"jsonschema: {exc}")
 
 from common import (
+    LOCAL_TOOL_DIRECTORY_NAMES,
     ToolFailure,
     absolute,
     assert_no_reparse_path,
     content_manifest,
     emit,
+    entry_record,
     entry_exists,
     eval_content_manifest,
     is_within,
     load_json,
     reject_compiled_python_residue,
     strict_format_checker,
+    walk_entries,
 )
 
 
@@ -91,6 +94,9 @@ IDENTITY_GROUPS: dict[str, tuple[str, ...]] = {
     "maintainer_tooling": (
         "maintainer/scripts",
         "maintainer/requirements-dev.txt",
+        "maintainer/requirements-dev.lock",
+        "maintainer/package.json",
+        "maintainer/package-lock.json",
     ),
     "schemas": ("maintainer/schemas",),
     "tests": ("maintainer/tests",),
@@ -112,13 +118,26 @@ IDENTITY_GROUPS: dict[str, tuple[str, ...]] = {
         "maintainer/attestations",
     ),
     "distribution_docs": (
+        ".gitattributes",
+        ".gitignore",
+        ".github",
         "README.md",
         "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "DATA_HANDLING.md",
+        "LICENSE",
+        "SECURITY.md",
+        "SUPPORT.md",
+        "THIRD_PARTY_NOTICES.md",
+        "docs",
     ),
 }
 IDENTITY_COMPONENTS = {
+    "distribution_tree",
     "runtime",
-    "plugin_manifest",
+    "codex_plugin_manifest",
+    "claude_plugin_manifest",
+    "sbom",
     "compatibility_matrix",
     "trusted_adapters",
     *IDENTITY_GROUPS,
@@ -234,6 +253,41 @@ def identity_group_hashes(plugin_root: Path) -> dict[str, str]:
     }
 
 
+def distribution_manifest(
+    plugin_root: Path,
+) -> tuple[list[dict[str, object]], str]:
+    """Bind every distributable worktree entry except the circular manifest."""
+    excluded = {"maintainer/release-manifest.json"}
+
+    def collect() -> list[dict[str, object]]:
+        records = [
+            entry_record(path, plugin_root)
+            for path in walk_entries(
+                plugin_root,
+                ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
+            )
+            if path.relative_to(plugin_root).as_posix() not in excluded
+        ]
+        records.sort(key=lambda item: str(item["path"]))
+        return records
+
+    records = collect()
+    if records != collect():
+        raise ToolFailure(
+            "unstable-distribution-tree",
+            "Distributable package content changed while it was hashed.",
+            plugin_root,
+        )
+    digest = manifest_content_sha256(records)
+    if digest is None:
+        raise ToolFailure(
+            "distribution-tree-invalid",
+            "Distributable package records could not be hashed.",
+            plugin_root,
+        )
+    return records, digest
+
+
 def release_identity_sha256(components: dict[str, str]) -> str:
     digest = hashlib.sha256()
     for name, value in sorted(components.items()):
@@ -258,7 +312,7 @@ def strict_yaml_bytes(raw: bytes, path: Path) -> object:
     if yaml is None:
         raise ToolFailure(
             "dependency-missing",
-            "Install maintainer/requirements-dev.txt (PyYAML is required).",
+            "Install maintainer/requirements-dev.lock with --require-hashes (PyYAML is required).",
             path,
         )
     try:
@@ -271,7 +325,7 @@ def require_schema(instance: object, schema_path: Path, label: Path) -> None:
     if Draft202012Validator is None or FormatChecker is None:
         raise ToolFailure(
             "dependency-missing",
-            "Install maintainer/requirements-dev.txt (jsonschema is required).",
+            "Install maintainer/requirements-dev.lock with --require-hashes (jsonschema is required).",
             label,
         )
     schema = load_json(schema_path)
@@ -402,6 +456,23 @@ def manifest_semantic_failures(
             "path": display,
             "message": "content_sha256 does not match the ordered file records.",
         })
+    distribution_files = payload.get("distribution_files")
+    recomputed_distribution = manifest_content_sha256(distribution_files)
+    if recomputed_distribution is None:
+        failures.append({
+            "code": "manifest-distribution-files-invalid",
+            "path": display,
+            "message": "distribution_files cannot be deterministically hashed.",
+        })
+    elif payload.get("distribution_sha256") != recomputed_distribution:
+        failures.append({
+            "code": "manifest-distribution-hash-inconsistent",
+            "path": display,
+            "message": (
+                "distribution_sha256 does not match the complete distributable "
+                "tree records."
+            ),
+        })
     components = payload.get("components")
     if isinstance(components, dict):
         component_names = set(components)
@@ -415,8 +486,15 @@ def manifest_semantic_failures(
                 ),
             })
         aliases = {
+            "distribution_tree": payload.get("distribution_sha256"),
             "runtime": payload.get("content_sha256"),
-            "plugin_manifest": payload.get("plugin_manifest_sha256"),
+            "codex_plugin_manifest": payload.get(
+                "codex_plugin_manifest_sha256"
+            ),
+            "claude_plugin_manifest": payload.get(
+                "claude_plugin_manifest_sha256"
+            ),
+            "sbom": payload.get("sbom_sha256"),
             "compatibility_matrix": payload.get("compatibility_matrix_sha256"),
             "trusted_adapters": payload.get("trusted_adapters_sha256"),
         }
@@ -495,7 +573,9 @@ def package_manifest(
         schemas / "release.schema.json",
         release_path,
     )
-    plugin_path = plugin_root / ".codex-plugin" / "plugin.json"
+    codex_plugin_path = plugin_root / ".codex-plugin" / "plugin.json"
+    claude_plugin_path = plugin_root / ".claude-plugin" / "plugin.json"
+    sbom_path = plugin_root / "maintainer" / "sbom.spdx.json"
     compatibility_path = plugin_root / "maintainer" / "compatibility" / "matrix.yml"
     trusted_adapters_path = (
         plugin_root
@@ -503,22 +583,85 @@ def package_manifest(
         / "compatibility"
         / "trusted-host-adapters.yml"
     )
-    plugin_raw = stable_bytes(plugin_path, stop=plugin_root)
+    codex_plugin_raw = stable_bytes(codex_plugin_path, stop=plugin_root)
+    claude_plugin_raw = stable_bytes(claude_plugin_path, stop=plugin_root)
+    sbom_raw = stable_bytes(sbom_path, stop=plugin_root)
     compatibility_raw = stable_bytes(compatibility_path, stop=plugin_root)
     trusted_adapters_raw = stable_bytes(trusted_adapters_path, stop=plugin_root)
-    plugin = strict_json_bytes(plugin_raw, plugin_path)
-    require_schema(plugin, schemas / "plugin.schema.json", plugin_path)
-    if not isinstance(release, dict) or not isinstance(plugin, dict):
+    codex_plugin = strict_json_bytes(codex_plugin_raw, codex_plugin_path)
+    claude_plugin = strict_json_bytes(claude_plugin_raw, claude_plugin_path)
+    sbom = strict_json_bytes(sbom_raw, sbom_path)
+    require_schema(
+        codex_plugin,
+        schemas / "plugin.schema.json",
+        codex_plugin_path,
+    )
+    require_schema(
+        claude_plugin,
+        schemas / "claude-plugin.schema.json",
+        claude_plugin_path,
+    )
+    require_schema(sbom, schemas / "sbom.schema.json", sbom_path)
+    if (
+        not isinstance(release, dict)
+        or not isinstance(codex_plugin, dict)
+        or not isinstance(claude_plugin, dict)
+        or not isinstance(sbom, dict)
+    ):
         raise ToolFailure(
             "invalid-release-input",
-            "Release and plugin metadata must be objects.",
+            "Release and both host plugin manifests must be objects.",
             plugin_root,
         )
-    if plugin.get("version") != release.get("version"):
+    if codex_plugin.get("version") != release.get("version"):
         raise ToolFailure(
             "version-mismatch",
-            "Plugin and runtime release versions must match.",
-            plugin_path,
+            "Codex plugin and runtime release versions must match.",
+            codex_plugin_path,
+        )
+    if claude_plugin.get("version") != release.get("version"):
+        raise ToolFailure(
+            "version-mismatch",
+            "Claude plugin and runtime release versions must match.",
+            claude_plugin_path,
+        )
+    sbom_packages = sbom.get("packages")
+    root_sbom_packages = [
+        package
+        for package in sbom_packages
+        if isinstance(package, dict)
+        and package.get("SPDXID") == "SPDXRef-Package-design-dna"
+    ] if isinstance(sbom_packages, list) else []
+    if (
+        len(root_sbom_packages) != 1
+        or root_sbom_packages[0].get("versionInfo") != release.get("version")
+        or digest not in str(root_sbom_packages[0].get("sourceInfo", ""))
+    ):
+        raise ToolFailure(
+            "sbom-runtime-identity-mismatch",
+            "SBOM root package must bind the current version and runtime hash.",
+            sbom_path,
+        )
+    creation_info = sbom.get("creationInfo")
+    sbom_created = (
+        creation_info.get("created")
+        if isinstance(creation_info, dict)
+        else None
+    )
+    if not isinstance(sbom_created, str):
+        raise ToolFailure(
+            "sbom-created-at-invalid",
+            "SBOM creationInfo.created is missing.",
+            sbom_path,
+        )
+    from build_sbom import generate_sbom, validate_sbom
+
+    validate_sbom(sbom, plugin_root)
+    if generate_sbom(plugin_root, created_at=sbom_created) != sbom:
+        raise ToolFailure(
+            "sbom-drift",
+            "SBOM differs from the current runtime, manifests, license, or dependency locks.",
+            sbom_path,
         )
     compatibility = strict_yaml_bytes(compatibility_raw, compatibility_path)
     require_schema(
@@ -544,31 +687,41 @@ def package_manifest(
         schemas / "trusted-host-adapters.schema.json",
         trusted_adapters_path,
     )
-    plugin_digest = hashlib.sha256(plugin_raw).hexdigest()
+    codex_plugin_digest = hashlib.sha256(codex_plugin_raw).hexdigest()
+    claude_plugin_digest = hashlib.sha256(claude_plugin_raw).hexdigest()
+    sbom_digest = hashlib.sha256(sbom_raw).hexdigest()
     compatibility_digest = hashlib.sha256(compatibility_raw).hexdigest()
     trusted_adapters_digest = hashlib.sha256(
         trusted_adapters_raw
     ).hexdigest()
+    distribution_files, distribution_digest = distribution_manifest(plugin_root)
     components = {
+        "distribution_tree": distribution_digest,
         "runtime": digest,
-        "plugin_manifest": plugin_digest,
+        "codex_plugin_manifest": codex_plugin_digest,
+        "claude_plugin_manifest": claude_plugin_digest,
+        "sbom": sbom_digest,
         "compatibility_matrix": compatibility_digest,
         "trusted_adapters": trusted_adapters_digest,
         **identity_group_hashes(plugin_root),
     }
     release_digest = release_identity_sha256(components)
     manifest = {
-        "schema_version": 4,
+        "schema_version": 6,
         "package": "design-dna",
         "version": release.get("version"),
+        "distribution_sha256": distribution_digest,
         "content_sha256": digest,
-        "plugin_manifest_sha256": plugin_digest,
+        "codex_plugin_manifest_sha256": codex_plugin_digest,
+        "claude_plugin_manifest_sha256": claude_plugin_digest,
+        "sbom_sha256": sbom_digest,
         "compatibility_matrix_sha256": compatibility_digest,
         "trusted_adapters_sha256": trusted_adapters_digest,
         "components": components,
         "release_sha256": release_digest,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "files": files,
+        "distribution_files": distribution_files,
     }
     verification_files, verification_digest = content_manifest(skill_root)
     if verification_files != files or verification_digest != digest:
@@ -578,7 +731,10 @@ def package_manifest(
             skill_root,
         )
     if (
-        stable_bytes(plugin_path, stop=plugin_root) != plugin_raw
+        stable_bytes(codex_plugin_path, stop=plugin_root) != codex_plugin_raw
+        or stable_bytes(claude_plugin_path, stop=plugin_root)
+        != claude_plugin_raw
+        or stable_bytes(sbom_path, stop=plugin_root) != sbom_raw
         or stable_bytes(compatibility_path, stop=plugin_root) != compatibility_raw
         or stable_bytes(trusted_adapters_path, stop=plugin_root)
         != trusted_adapters_raw
@@ -592,9 +748,21 @@ def package_manifest(
         raise ToolFailure(
             "unstable-release-identity-input",
             (
-                "Plugin, maintainer, evidence, evaluation, or compatibility inputs changed "
+                "Plugin manifests, maintainer, evidence, evaluation, or compatibility inputs changed "
                 "while identity was assembled."
             ),
+            plugin_root,
+        )
+    verification_distribution_files, verification_distribution_digest = (
+        distribution_manifest(plugin_root)
+    )
+    if (
+        verification_distribution_files != distribution_files
+        or verification_distribution_digest != distribution_digest
+    ):
+        raise ToolFailure(
+            "unstable-distribution-tree",
+            "Distributable package content changed while identity was assembled.",
             plugin_root,
         )
     semantic = manifest_semantic_failures(manifest, skill_root)
@@ -611,6 +779,44 @@ def package_manifest(
 
 def comparable(payload: dict[str, object]) -> dict[str, object]:
     return {key: value for key, value in payload.items() if key != "generated_at"}
+
+
+def historical_manifest_identity(
+    payload: object,
+    path: Path,
+) -> tuple[str, str]:
+    """Read the immutable comparison fields across manifest schema versions."""
+    if not isinstance(payload, dict):
+        raise ToolFailure(
+            "previous-manifest-invalid",
+            "Previous manifest must be a JSON object.",
+            path,
+        )
+    schema_version = payload.get("schema_version")
+    version = payload.get("version")
+    identity = payload.get("release_sha256", payload.get("content_sha256"))
+    if (
+        payload.get("package") != "design-dna"
+        or not isinstance(schema_version, int)
+        or schema_version < 1
+        or not isinstance(version, str)
+        or not re.fullmatch(
+            r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\."
+            r"(?:0|[1-9][0-9]*)(?:[-+][0-9A-Za-z.-]+)?",
+            version,
+        )
+        or not isinstance(identity, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", identity)
+    ):
+        raise ToolFailure(
+            "previous-manifest-invalid",
+            (
+                "Previous manifest must contain a valid schema version, "
+                "Design DNA package/version, and release or content identity."
+            ),
+            path,
+        )
+    return version, identity
 
 
 def atomic_write(path: Path, payload: dict[str, object]) -> None:
@@ -643,7 +849,7 @@ def main() -> int:
             "failures": [{
                 "code": "dependency-missing",
                 "message": (
-                    "Install maintainer/requirements-dev.txt. Missing: "
+                    "Install maintainer/requirements-dev.lock with --require-hashes. Missing: "
                     + "; ".join(BOOTSTRAP_FAILURES)
                 ),
                 "severity": "error",
@@ -689,20 +895,12 @@ def main() -> int:
         if previous_path is not None:
             assert_no_reparse_path(previous_path)
             prior = load_json(previous_path)
-            require_schema(
+            prior_version, prior_identity = historical_manifest_identity(
                 prior,
-                plugin_root / "maintainer" / "schemas" / "manifest.schema.json",
                 previous_path,
             )
-            failures.extend(manifest_semantic_failures(prior, previous_path))
-            prior_identity = (
-                prior.get("release_sha256", prior.get("content_sha256"))
-                if isinstance(prior, dict)
-                else None
-            )
             if (
-                isinstance(prior, dict)
-                and prior.get("version") == generated.get("version")
+                prior_version == generated.get("version")
                 and prior_identity != generated.get("release_sha256")
             ):
                 failures.append({

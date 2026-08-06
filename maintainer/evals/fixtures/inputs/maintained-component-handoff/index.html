@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Northstar Account</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="shell">
+      <a href="#main">Northstar Account</a>
+      <nav aria-label="Account">
+        <a href="#overview">Overview</a>
+        <a href="#details">Account details</a>
+      </nav>
+    </header>
+    <main id="main" class="shell">
+      <h1>Account overview</h1>
+      <section id="overview" aria-labelledby="overview-title">
+        <h2 id="overview-title">Overview</h2>
+        <div class="service-banner" data-level="warning">
+          <strong>Some requests are delayed</strong>
+          <p>Try again in a few minutes.</p>
+          <button type="button" data-dismiss>Dismiss</button>
+        </div>
+      </section>
+      <section id="details" aria-labelledby="details-title">
+        <h2 id="details-title">Account details</h2>
+        <div class="service-banner" data-level="ok">
+          <strong>Account tools are available</strong>
+          <p>You can continue managing this sample account.</p>
+          <button type="button" data-dismiss>Dismiss</button>
+        </div>
+      </section>
+      <fieldset>
+        <legend>Sample service state</legend>
+        <button type="button" data-level-control="ok">Available</button>
+        <button type="button" data-level-control="warning">Delayed</button>
+        <button type="button" data-level-control="critical">Unavailable</button>
+      </fieldset>
+    </main>
+  </body>
+</html>

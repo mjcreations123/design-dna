@@ -18,16 +18,24 @@ exec(
 del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 
 import argparse
+import hashlib
 import html.parser
+import http.client
 import ipaddress
 import re
 import socket
-import urllib.error
+import ssl
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
-from common import ToolFailure, absolute, emit, is_within, walk_files
+from common import (
+    LOCAL_TOOL_DIRECTORY_NAMES,
+    ToolFailure,
+    absolute,
+    emit,
+    is_within,
+    walk_files,
+)
 
 
 REFERENCE_DEF = re.compile(
@@ -40,11 +48,38 @@ ALLOWED_SCHEMES = {"http", "https", "mailto", "tel", "data"}
 MAX_REDIRECTS = 5
 SOURCE_SUFFIXES = {".md", ".markdown", ".html", ".htm"}
 HTML_SUFFIXES = {".html", ".htm"}
-
-
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
+# Behavioral fixture inputs are inert test data. Some deliberately contain
+# broken, fragment-only, or project-root-relative links so the eval runner can
+# prove the matching failure mode. Package-wide link validation must not
+# reinterpret those frozen site roots as links relative to the plugin root.
+FIXTURE_INPUT_PREFIX = ("maintainer", "evals", "fixtures", "inputs")
+TRUSTED_ONLINE_HOSTS = {
+    "almanac.httparchive.org",
+    "arxiv.org",
+    "atlassian.design",
+    "aux.engineering.ucsc.edu",
+    "bolt.new",
+    "carbondesignsystem.com",
+    "community.vercel.com",
+    "designsystem.digital.gov",
+    "digital-strategy.ec.europa.eu",
+    "help.figma.com",
+    "newsroom.pinterest.com",
+    "owasp.org",
+    "pagesmith.ai",
+    "raw.githubusercontent.com",
+    "resources.relume.io",
+    "storybook.js.org",
+    "ui.shadcn.com",
+    "web.dev",
+    "www.framer.com",
+    "www.ftc.gov",
+    "www.gov.uk",
+    "www.newwebsite.ai",
+    "www.reddit.com",
+    "www.w3.org",
+}
+REDIRECT_CODES = {301, 302, 303, 307, 308}
 
 
 class HTMLLinks(html.parser.HTMLParser):
@@ -173,77 +208,235 @@ def anchors(path: Path) -> tuple[set[str], set[str]]:
     return explicit, generated
 
 
-def validate_external_target(
+def normalized_hostname(hostname: str) -> str:
+    try:
+        return hostname.rstrip(".").encode("idna").decode("ascii").casefold()
+    except UnicodeError as exc:
+        raise ValueError("hostname cannot be encoded as IDNA") from exc
+
+
+def safe_url_label(url: str) -> str:
+    """Return a credential- and query-free URL label for diagnostics."""
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        hostname = parsed.hostname
+        if not hostname:
+            return "<redacted-url>"
+        host = normalized_hostname(hostname)
+        if ":" in host:
+            host = f"[{host}]"
+        try:
+            port = parsed.port
+        except ValueError:
+            return f"{parsed.scheme.casefold()}://{host}/<invalid-port>"
+        default_port = 443 if parsed.scheme.casefold() == "https" else 80
+        authority = host if port in {None, default_port} else f"{host}:{port}"
+        path = parsed.path or "/"
+        if path != "/":
+            digest = hashlib.sha256(path.encode("utf-8")).hexdigest()[:12]
+            path = f"/<path-redacted:{digest}>"
+        return urllib.parse.urlunsplit(
+            (parsed.scheme.casefold(), authority, path, "", "")
+        )
+    except (TypeError, ValueError):
+        return "<redacted-url>"
+
+
+def resolve_external_target(
     url: str,
     allow_private_hosts: set[str],
-) -> tuple[bool, str]:
+    allowed_online_hosts: set[str],
+) -> tuple[bool, str, str | None, int | None, tuple[str, ...]]:
     try:
         parsed = urllib.parse.urlsplit(url)
         hostname = parsed.hostname
         port = parsed.port
     except ValueError as exc:
-        return False, f"malformed URL: {exc}"
+        return False, f"malformed URL: {exc}", None, None, ()
     if parsed.scheme not in {"http", "https"} or not hostname:
-        return False, "external URL needs http(s) and a hostname"
-    normalized = hostname.casefold().rstrip(".")
-    if normalized in {host.casefold().rstrip(".") for host in allow_private_hosts}:
-        return True, "explicit private-host allowance"
+        return (
+            False,
+            "external URL needs http(s) and a hostname",
+            None,
+            None,
+            (),
+        )
+    if parsed.username is not None or parsed.password is not None:
+        return False, "credential-bearing URL refused", None, None, ()
+    if parsed.query:
+        return False, "query-bearing URL refused", None, None, ()
+    if any(ord(character) < 32 or ord(character) == 127 for character in url):
+        return False, "control character in URL refused", None, None, ()
+    try:
+        normalized = normalized_hostname(hostname)
+    except ValueError as exc:
+        return False, str(exc), None, None, ()
+    private_allowlist = {
+        normalized_hostname(host) for host in allow_private_hosts
+    }
+    online_allowlist = {
+        normalized_hostname(host) for host in allowed_online_hosts
+    }
+    private_allowed = normalized in private_allowlist
+    if not private_allowed and normalized not in online_allowlist:
+        return (
+            False,
+            "online host is not allowlisted",
+            normalized,
+            port,
+            (),
+        )
+    target_port = port or (443 if parsed.scheme == "https" else 80)
     try:
         addresses = {
-            item[4][0]
+            item[4][0].split("%", 1)[0]
             for item in socket.getaddrinfo(
-                hostname,
-                port or (443 if parsed.scheme == "https" else 80),
+                normalized,
+                target_port,
                 type=socket.SOCK_STREAM,
             )
         }
     except socket.gaierror as exc:
-        return False, f"DNS failure: {exc}"
+        return False, f"DNS failure: {exc}", normalized, target_port, ()
     if not addresses:
-        return False, "hostname resolved to no addresses"
+        return (
+            False,
+            "hostname resolved to no addresses",
+            normalized,
+            target_port,
+            (),
+        )
     for address in addresses:
         try:
-            value = ipaddress.ip_address(address.split("%", 1)[0])
+            value = ipaddress.ip_address(address)
         except ValueError:
-            return False, f"invalid resolved address: {address}"
-        if not value.is_global:
-            return False, f"non-public address refused: {address}"
-    return True, "public"
+            return (
+                False,
+                "hostname resolved to an invalid address",
+                normalized,
+                target_port,
+                (),
+            )
+        if not private_allowed and not value.is_global:
+            return (
+                False,
+                "hostname resolved to a non-public address",
+                normalized,
+                target_port,
+                (),
+            )
+    return (
+        True,
+        "explicit private-host allowance" if private_allowed else "public",
+        normalized,
+        target_port,
+        tuple(sorted(addresses)),
+    )
+
+
+def validate_external_target(
+    url: str,
+    allow_private_hosts: set[str],
+    allowed_online_hosts: set[str] | None = None,
+) -> tuple[bool, str]:
+    safe, reason, _, _, _ = resolve_external_target(
+        url,
+        allow_private_hosts,
+        allowed_online_hosts or TRUSTED_ONLINE_HOSTS,
+    )
+    return safe, reason
+
+
+def pinned_head(
+    url: str,
+    *,
+    hostname: str,
+    port: int,
+    addresses: tuple[str, ...],
+    timeout: float,
+) -> tuple[int, str | None]:
+    """Issue HEAD to one prevalidated address without a second DNS lookup."""
+    parsed = urllib.parse.urlsplit(url)
+    path = urllib.parse.quote(
+        parsed.path or "/",
+        safe="/:@!$&'()*+,;=-._~%",
+    )
+    failures: list[str] = []
+    for address in addresses:
+        raw_socket: socket.socket | None = None
+        transport: socket.socket | ssl.SSLSocket | None = None
+        try:
+            raw_socket = socket.create_connection((address, port), timeout)
+            raw_socket.settimeout(timeout)
+            if parsed.scheme == "https":
+                transport = ssl.create_default_context().wrap_socket(
+                    raw_socket,
+                    server_hostname=hostname,
+                )
+            else:
+                transport = raw_socket
+            default_port = 443 if parsed.scheme == "https" else 80
+            authority = (
+                hostname if port == default_port else f"{hostname}:{port}"
+            )
+            request = (
+                f"HEAD {path} HTTP/1.1\r\n"
+                f"Host: {authority}\r\n"
+                "User-Agent: design-dna-maintainer/3 link-check\r\n"
+                "Accept: */*\r\n"
+                "Connection: close\r\n\r\n"
+            ).encode("ascii")
+            transport.sendall(request)
+            response = http.client.HTTPResponse(transport)
+            response.begin()
+            location = response.getheader("Location")
+            return response.status, location
+        except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+            failures.append(type(exc).__name__)
+        finally:
+            if transport is not None:
+                transport.close()
+            elif raw_socket is not None:
+                raw_socket.close()
+    detail = ", ".join(sorted(set(failures))) or "connection failed"
+    raise OSError(f"all pinned connection attempts failed ({detail})")
 
 
 def external_status(
     url: str,
     timeout: float,
     allow_private_hosts: set[str] | None = None,
+    allowed_online_hosts: set[str] | None = None,
 ) -> tuple[bool, str]:
-    """Probe with HEAD only; validate every redirect before following it."""
+    """Probe with pinned-address HEAD; validate every redirect before following."""
     allow_private_hosts = allow_private_hosts or set()
-    headers = {"User-Agent": "design-dna-maintainer/2 link-check"}
-    opener = urllib.request.build_opener(NoRedirect)
+    allowed_online_hosts = allowed_online_hosts or TRUSTED_ONLINE_HOSTS
     current = url
     for _ in range(MAX_REDIRECTS + 1):
-        safe, reason = validate_external_target(current, allow_private_hosts)
+        safe, reason, hostname, port, addresses = resolve_external_target(
+            current,
+            allow_private_hosts,
+            allowed_online_hosts,
+        )
         if not safe:
             return False, reason
-        request = urllib.request.Request(
-            current,
-            headers=headers,
-            method="HEAD",
-        )
+        assert hostname is not None
+        assert port is not None
         try:
-            with opener.open(request, timeout=timeout) as response:
-                return 200 <= response.status < 400, str(response.status)
-        except urllib.error.HTTPError as exc:
-            if 300 <= exc.code < 400:
-                location = exc.headers.get("Location")
+            status, location = pinned_head(
+                current,
+                hostname=hostname,
+                port=port,
+                addresses=addresses,
+                timeout=timeout,
+            )
+            if status in REDIRECT_CODES:
                 if not location:
-                    return False, f"{exc.code} without Location"
+                    return False, f"{status} without Location"
                 current = urllib.parse.urljoin(current, location)
                 continue
-            return False, str(exc.code)
-        except (urllib.error.URLError, TimeoutError, ValueError) as exc:
-            if isinstance(exc, urllib.error.URLError):
-                return False, str(exc.reason)
+            return 200 <= status < 400, str(status)
+        except (OSError, ValueError) as exc:
             return False, str(exc)
     return False, "too many redirects"
 
@@ -280,16 +473,30 @@ def check(
     online: bool,
     timeout: float,
     allow_private_hosts: set[str] | None = None,
+    allowed_online_hosts: set[str] | None = None,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     failures: list[dict[str, str]] = []
     warnings: list[dict[str, str]] = []
     external_seen: dict[str, tuple[bool, str]] = {}
     allow_private_hosts = allow_private_hosts or set()
-    sources = [
-        path
-        for path in walk_files(root)
-        if path.suffix.lower() in SOURCE_SUFFIXES
-    ]
+    allowed_online_hosts = allowed_online_hosts or TRUSTED_ONLINE_HOSTS
+    sources = []
+    for path in walk_files(
+        root,
+        ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
+    ):
+        if path.suffix.lower() not in SOURCE_SUFFIXES:
+            continue
+        relative_parts = path.relative_to(root).parts
+        if (
+            len(relative_parts) >= len(FIXTURE_INPUT_PREFIX)
+            and tuple(part.casefold() for part in relative_parts[
+                : len(FIXTURE_INPUT_PREFIX)
+            ])
+            == FIXTURE_INPUT_PREFIX
+        ):
+            continue
+        sources.append(path)
     for source in sources:
         try:
             text = source.read_text(encoding="utf-8")
@@ -319,11 +526,13 @@ def check(
                     base = urllib.parse.urlunsplit(
                         (parsed.scheme, parsed.netloc, parsed.path, parsed.query, "")
                     )
-                    if base not in external_seen:
-                        external_seen[base] = external_status(
+                    label = safe_url_label(base)
+                    if label not in external_seen:
+                        external_seen[label] = external_status(
                             base,
                             timeout,
                             allow_private_hosts,
+                            allowed_online_hosts,
                         )
                 continue
             if scheme:
@@ -403,6 +612,15 @@ def main() -> int:
         default=[],
         help="Explicit intranet hostname allowed during online checks; repeatable.",
     )
+    parser.add_argument(
+        "--allow-online-host",
+        action="append",
+        default=[],
+        help=(
+            "Add an exact public hostname to the built-in evidence-source "
+            "allowlist; repeatable."
+        ),
+    )
     args = parser.parse_args()
     try:
         if not 0 < args.timeout <= 60:
@@ -416,6 +634,9 @@ def main() -> int:
             online=args.online,
             timeout=args.timeout,
             allow_private_hosts=set(args.allow_private_host),
+            allowed_online_hosts=(
+                TRUSTED_ONLINE_HOSTS | set(args.allow_online_host)
+            ),
         )
         emit({
             "ok": not failures,

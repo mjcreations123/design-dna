@@ -1,0 +1,782 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/route-family-audit.schema.json",
+  "title": "Design DNA deterministic route-family audit report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "tool",
+    "generated_at",
+    "execution_ok",
+    "review_required",
+    "automatic_aesthetic_pass",
+    "authorship_classification",
+    "audit_status",
+    "project",
+    "contract",
+    "route_resolution",
+    "link_graph",
+    "silhouette_analysis",
+    "rendered_coverage",
+    "route_atlas",
+    "findings",
+    "limitations",
+    "resource_usage"
+  ],
+  "properties": {
+    "schema_version": {"const": 2},
+    "artifact_type": {"const": "design-dna-route-family-audit"},
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "report_schema"],
+      "properties": {
+        "name": {"const": "design-dna-route-family-audit"},
+        "version": {"const": "2.0.0"},
+        "report_schema": {"const": "route-family-audit.schema.json"}
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "execution_ok": {"type": "boolean"},
+    "review_required": {"const": true},
+    "automatic_aesthetic_pass": {"const": false},
+    "authorship_classification": {"const": "not-performed"},
+    "audit_status": {
+      "enum": [
+        "execution-incomplete",
+        "contract-invalid",
+        "structural-findings",
+        "manual-review-required"
+      ]
+    },
+    "project": {"const": "project:/"},
+    "contract": {"$ref": "#/$defs/contract"},
+    "route_resolution": {"$ref": "#/$defs/route_resolution"},
+    "link_graph": {"$ref": "#/$defs/link_graph"},
+    "silhouette_analysis": {"$ref": "#/$defs/silhouette_analysis"},
+    "rendered_coverage": {"$ref": "#/$defs/rendered_coverage"},
+    "route_atlas": {"$ref": "#/$defs/route_atlas"},
+    "findings": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 20, "maxLength": 1000}
+    },
+    "resource_usage": {"$ref": "#/$defs/resource_usage"},
+    "error": {
+      "oneOf": [
+        {"$ref": "#/$defs/error"},
+        {"type": "null"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"execution_ok": {"const": false}},
+        "required": ["execution_ok"]
+      },
+      "then": {
+        "required": ["error"],
+        "properties": {
+          "audit_status": {"const": "execution-incomplete"},
+          "error": {"$ref": "#/$defs/error"}
+        }
+      },
+      "else": {
+        "properties": {"error": {"type": "null"}}
+      }
+    },
+    {
+      "if": {
+        "properties": {"audit_status": {"const": "contract-invalid"}},
+        "required": ["audit_status"]
+      },
+      "then": {
+        "properties": {
+          "contract": {
+            "allOf": [
+              {"$ref": "#/$defs/contract"},
+              {
+                "properties": {"status": {"const": "invalid"}},
+                "required": ["status"]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,47}$"
+    },
+    "route_path": {
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^/(?!/)(?!\\.{1,2}(?:/|$))(?!.*?/\\.{1,2}(?:/|$))[^?#\\\\\\u0000-\\u0020\\u007f]*$"
+    },
+    "portable_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "allOf": [
+        {
+          "not": {
+            "pattern": "(?:^[/\\\\]|^[A-Za-z]:|\\\\|//|(?:^|/)\\.{1,2}(?:/|$)|[\\u0000-\\u001f\\u007f])"
+          }
+        },
+        {"not": {"pattern": "/$"}}
+      ]
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/portable_path"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {"type": "string", "minLength": 3, "maxLength": 100},
+        "message": {"type": "string", "minLength": 1, "maxLength": 4000}
+      }
+    },
+    "contract_error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "code", "message"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 512},
+        "code": {"type": "string", "minLength": 3, "maxLength": 100},
+        "message": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "contract_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/route_path"}
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "path",
+        "sha256",
+        "requested_route_count",
+        "declared_route_count",
+        "routes",
+        "errors"
+      ],
+      "properties": {
+        "status": {"enum": ["loaded", "invalid", "missing"]},
+        "path": {"$ref": "#/$defs/portable_path"},
+        "sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "requested_route_count": {
+          "type": ["integer", "null"],
+          "minimum": 2
+        },
+        "declared_route_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/contract_route"}
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {"$ref": "#/$defs/contract_error"}
+        }
+      }
+    },
+    "resolved_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "path",
+        "status",
+        "resolution_kind",
+        "source_path",
+        "alternative_paths",
+        "redirect_target",
+        "discovered"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/route_path"},
+        "status": {"enum": ["resolved", "missing", "ambiguous", "redirect"]},
+        "resolution_kind": {
+          "enum": [
+            "static-html",
+            "astro",
+            "next-app",
+            "next-pages",
+            "sveltekit",
+            "nuxt",
+            "remix",
+            "unknown"
+          ]
+        },
+        "source_path": {
+          "oneOf": [
+            {"$ref": "#/$defs/portable_path"},
+            {"type": "null"}
+          ]
+        },
+        "alternative_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/portable_path"}
+        },
+        "redirect_target": {
+          "oneOf": [
+            {"$ref": "#/$defs/route_path"},
+            {"type": "null"}
+          ]
+        },
+        "discovered": {"type": "boolean"}
+      }
+    },
+    "duplicate_destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["destination", "route_ids", "paths"],
+      "properties": {
+        "destination": {"type": "string", "minLength": 1, "maxLength": 512},
+        "route_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "paths": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/route_path"}
+        }
+      }
+    },
+    "route_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detected_stacks",
+        "declared_count",
+        "discovered_count",
+        "routes",
+        "discovered_paths",
+        "undeclared_paths",
+        "duplicate_destinations",
+        "limitations"
+      ],
+      "properties": {
+        "detected_stacks": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "static-html",
+              "astro",
+              "next-app",
+              "next-pages",
+              "sveltekit",
+              "nuxt",
+              "remix"
+            ]
+          }
+        },
+        "declared_count": {"type": "integer", "minimum": 0},
+        "discovered_count": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "routes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/resolved_route"}
+        },
+        "discovered_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/route_path"}
+        },
+        "undeclared_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/route_path"}
+        },
+        "duplicate_destinations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/duplicate_destination"}
+        },
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 20}
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_route_id", "target_path", "href", "evidence"],
+      "properties": {
+        "source_route_id": {"$ref": "#/$defs/id"},
+        "target_path": {"$ref": "#/$defs/route_path"},
+        "href": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "evidence": {"$ref": "#/$defs/portable_path"}
+      }
+    },
+    "broken_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_route_id", "href", "target_path", "evidence"],
+      "properties": {
+        "source_route_id": {"$ref": "#/$defs/id"},
+        "href": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "target_path": {"$ref": "#/$defs/route_path"},
+        "evidence": {"$ref": "#/$defs/portable_path"}
+      }
+    },
+    "orphan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_id", "path", "evidence_status"],
+      "properties": {
+        "route_id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/route_path"},
+        "evidence_status": {
+          "enum": ["confirmed-static-markup", "candidate-framework-source"]
+        }
+      }
+    },
+    "link_graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "edges",
+        "broken_links",
+        "orphaned_routes",
+        "external_links",
+        "dynamic_links_skipped",
+        "limitations"
+      ],
+      "properties": {
+        "basis": {
+          "enum": ["resolved-static-source", "mixed-source-advisory", "not-available"]
+        },
+        "edges": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {"$ref": "#/$defs/edge"}
+        },
+        "broken_links": {
+          "type": "array",
+          "maxItems": 2000,
+          "items": {"$ref": "#/$defs/broken_link"}
+        },
+        "orphaned_routes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/orphan"}
+        },
+        "external_links": {"type": "integer", "minimum": 0},
+        "dynamic_links_skipped": {"type": "integer", "minimum": 0},
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 20}
+        }
+      }
+    },
+    "silhouette_viewport_signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "viewport_id",
+        "width",
+        "report_evidence",
+        "screenshot_evidence",
+        "signature"
+      ],
+      "properties": {
+        "viewport_id": {"$ref": "#/$defs/id"},
+        "width": {"type": "integer", "minimum": 240, "maximum": 3840},
+        "report_evidence": {"$ref": "#/$defs/evidence_ref"},
+        "screenshot_evidence": {"$ref": "#/$defs/evidence_ref"},
+        "signature": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 160}
+        }
+      }
+    },
+    "silhouette_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_id", "path", "signature", "viewport_signatures"],
+      "properties": {
+        "route_id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/route_path"},
+        "signature": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 160}
+        },
+        "viewport_signatures": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/silhouette_viewport_signature"}
+        }
+      }
+    },
+    "silhouette_cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "classification",
+        "advisory_only",
+        "viewport_width",
+        "viewport_ids",
+        "route_ids",
+        "signatures"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^cluster-[0-9]{2,}$"},
+        "classification": {"const": "repeated-skeleton-candidate"},
+        "advisory_only": {"const": true},
+        "viewport_width": {
+          "type": "integer",
+          "minimum": 240,
+          "maximum": 3840
+        },
+        "viewport_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "route_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "signatures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1, "maxLength": 160}
+          }
+        }
+      }
+    },
+    "silhouette_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "normalization",
+        "routes",
+        "clusters",
+        "manual_review_required",
+        "limitations"
+      ],
+      "properties": {
+        "basis": {"enum": ["rendered-review", "not-available"]},
+        "normalization": {
+          "const": "visible-direct-main-children-excluding-navigation-contentinfo-and-shared-legal-source-strips; copy-font-family-palette-element-names-and-media-identity-excluded; computed-geometry-layout-topology-and-media-control-density-bucketed"
+        },
+        "routes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/silhouette_route"}
+        },
+        "clusters": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/silhouette_cluster"}
+        },
+        "manual_review_required": {"const": true},
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 20}
+        }
+      }
+    },
+    "viewport_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_id", "viewport_id", "width"],
+      "properties": {
+        "route_id": {"$ref": "#/$defs/id"},
+        "viewport_id": {"$ref": "#/$defs/id"},
+        "width": {"type": "integer", "minimum": 240, "maximum": 3840}
+      }
+    },
+    "coverage_capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "viewport_id",
+        "width",
+        "status",
+        "report",
+        "screenshot"
+      ],
+      "properties": {
+        "viewport_id": {"$ref": "#/$defs/id"},
+        "width": {"type": "integer", "minimum": 240, "maximum": 3840},
+        "status": {"enum": ["matched", "incomplete", "missing"]},
+        "report": {
+          "oneOf": [
+            {"$ref": "#/$defs/evidence_ref"},
+            {"type": "null"}
+          ]
+        },
+        "screenshot": {
+          "oneOf": [
+            {"$ref": "#/$defs/evidence_ref"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "coverage_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_id", "path", "status", "captures"],
+      "properties": {
+        "route_id": {"$ref": "#/$defs/id"},
+        "path": {"$ref": "#/$defs/route_path"},
+        "status": {"enum": ["matched", "incomplete", "missing"]},
+        "captures": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 6,
+          "items": {"$ref": "#/$defs/coverage_capture"}
+        }
+      }
+    },
+    "rendered_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reports",
+        "requirements",
+        "routes",
+        "matched_route_count",
+        "complete",
+        "limitations"
+      ],
+      "properties": {
+        "reports": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/evidence_ref"}
+        },
+        "requirements": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/viewport_requirement"}
+        },
+        "routes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/coverage_route"}
+        },
+        "matched_route_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "complete": {"type": "boolean"},
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 20}
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1, "maximum": 32768},
+        "height": {"type": "integer", "minimum": 1, "maximum": 32768}
+      }
+    },
+    "route_atlas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "path",
+        "sha256",
+        "media_type",
+        "dimensions",
+        "image_count",
+        "missing",
+        "limitations"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-requested",
+            "pillow-unavailable",
+            "no-eligible-screenshots",
+            "created",
+            "incomplete"
+          ]
+        },
+        "path": {
+          "oneOf": [
+            {"$ref": "#/$defs/portable_path"},
+            {"type": "null"}
+          ]
+        },
+        "sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "media_type": {
+          "oneOf": [
+            {"const": "image/png"},
+            {"const": "text/html"},
+            {"type": "null"}
+          ]
+        },
+        "dimensions": {
+          "oneOf": [
+            {"$ref": "#/$defs/dimensions"},
+            {"type": "null"}
+          ]
+        },
+        "image_count": {"type": "integer", "minimum": 0},
+        "missing": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 160}
+        },
+        "limitations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 20}
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "severity",
+        "blocking",
+        "category",
+        "route_ids",
+        "paths",
+        "message",
+        "evidence"
+      ],
+      "properties": {
+        "code": {"type": "string", "pattern": "^[a-z][a-z0-9-]{2,99}$"},
+        "severity": {"enum": ["high", "medium", "low", "note"]},
+        "blocking": {"type": "boolean"},
+        "category": {
+          "enum": [
+            "contract",
+            "routes",
+            "links",
+            "silhouettes",
+            "rendered",
+            "atlas"
+          ]
+        },
+        "route_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 2048}
+        },
+        "message": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 1000}
+        }
+      }
+    },
+    "resource_usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries_observed",
+        "source_files_read",
+        "source_bytes_read",
+        "render_reports_read",
+        "render_report_bytes_read",
+        "report_bytes",
+        "elapsed_milliseconds",
+        "limits"
+      ],
+      "properties": {
+        "entries_observed": {"type": "integer", "minimum": 0},
+        "source_files_read": {"type": "integer", "minimum": 0},
+        "source_bytes_read": {"type": "integer", "minimum": 0},
+        "render_reports_read": {"type": "integer", "minimum": 0},
+        "render_report_bytes_read": {"type": "integer", "minimum": 0},
+        "report_bytes": {"type": "integer", "minimum": 1, "maximum": 8388608},
+        "elapsed_milliseconds": {"type": "number", "minimum": 0},
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entries",
+            "source_file_bytes",
+            "source_total_bytes",
+            "render_report_bytes",
+            "render_report_total_bytes",
+            "report_bytes"
+          ],
+          "properties": {
+            "entries": {"const": 50000},
+            "source_file_bytes": {"const": 5242880},
+            "source_total_bytes": {"const": 67108864},
+            "render_report_bytes": {"const": 8388608},
+            "render_report_total_bytes": {"const": 67108864},
+            "report_bytes": {"const": 8388608}
+          }
+        }
+      }
+    }
+  }
+}

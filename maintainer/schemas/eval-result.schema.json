@@ -70,7 +70,16 @@
             "established-interface",
             "framework-application-data"
           ]
-        }
+        },
+        "expressive_perception_gate": {"const": true},
+        "quiet_perception_gate": {"const": true},
+        "generated_media_capability_gate": {"const": true}
+      },
+      "not": {
+        "required": [
+          "expressive_perception_gate",
+          "quiet_perception_gate"
+        ]
       }
     },
     "review_requirement": {
@@ -154,6 +163,112 @@
         }
       ]
     },
+    "model_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaration_status",
+        "provider",
+        "model",
+        "model_version",
+        "reasoning_effort",
+        "generation_config",
+        "declaration_source",
+        "sha256"
+      ],
+      "properties": {
+        "declaration_status": {"enum": ["declared", "unreported"]},
+        "provider": {
+          "type": ["string", "null"],
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$"
+        },
+        "model": {
+          "type": ["string", "null"],
+          "minLength": 2,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]*$"
+        },
+        "model_version": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]*$",
+          "not": {
+            "enum": ["latest", "current", "default", "unknown", "unreported"]
+          }
+        },
+        "reasoning_effort": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$"
+        },
+        "generation_config": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "enum": [
+              "temperature",
+              "top_p",
+              "top_k",
+              "seed",
+              "max_output_tokens",
+              "max_tokens",
+              "reasoning_budget",
+              "thinking_budget",
+              "response_format",
+              "tool_choice",
+              "parallel_tool_calls"
+            ]
+          },
+          "additionalProperties": {
+            "type": ["string", "number", "integer", "boolean"],
+            "maxLength": 64
+          }
+        },
+        "declaration_source": {
+          "enum": ["maintainer-cli", "inherited-from-skill", "not-provided"]
+        },
+        "sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["declaration_status"],
+            "properties": {"declaration_status": {"const": "declared"}}
+          },
+          "then": {
+            "properties": {
+              "provider": {"type": "string"},
+              "model": {"type": "string"},
+              "model_version": {"type": "string"},
+              "reasoning_effort": {"type": "string"},
+              "declaration_source": {
+                "enum": ["maintainer-cli", "inherited-from-skill"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["declaration_status"],
+            "properties": {"declaration_status": {"const": "unreported"}}
+          },
+          "then": {
+            "properties": {
+              "provider": {"type": "null"},
+              "model": {"type": "null"},
+              "model_version": {"type": "null"},
+              "reasoning_effort": {"type": "null"},
+              "generation_config": {"maxProperties": 0},
+              "declaration_source": {"const": "not-provided"}
+            }
+          }
+        }
+      ]
+    },
     "driver": {
       "type": "object",
       "additionalProperties": false,
@@ -162,14 +277,16 @@
         "resolved",
         "sha256",
         "argument_template_sha256",
-        "argument_count"
+        "argument_count",
+        "model_context"
       ],
       "properties": {
         "requested": {"type": "string", "minLength": 1, "maxLength": 4096},
         "resolved": {"type": "string", "minLength": 1, "maxLength": 32768},
         "sha256": {"$ref": "#/$defs/sha256"},
         "argument_template_sha256": {"$ref": "#/$defs/sha256"},
-        "argument_count": {"type": "integer", "minimum": 0, "maximum": 256}
+        "argument_count": {"type": "integer", "minimum": 0, "maximum": 256},
+        "model_context": {"$ref": "#/$defs/model_context"}
       }
     },
     "snapshot": {
@@ -253,6 +370,58 @@
         "bytes": {"type": "integer", "minimum": 0},
         "source": {"const": "promoted-workspace"}
       }
+    },
+    "sensitive_artifact_scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "performed",
+        "complete",
+        "detected",
+        "finding_count",
+        "path_sha256",
+        "findings_truncated"
+      ],
+      "properties": {
+        "performed": {"type": "boolean"},
+        "complete": {"type": "boolean"},
+        "detected": {"type": "boolean"},
+        "finding_count": {"type": "integer", "minimum": 0},
+        "path_sha256": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sha256"}
+        },
+        "findings_truncated": {"type": "boolean"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["detected"],
+            "properties": {"detected": {"const": false}}
+          },
+          "then": {
+            "properties": {
+              "finding_count": {"const": 0},
+              "path_sha256": {"maxItems": 0},
+              "findings_truncated": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["performed"],
+            "properties": {"performed": {"const": false}}
+          },
+          "then": {
+            "properties": {
+              "complete": {"const": true},
+              "detected": {"const": false}
+            }
+          }
+        }
+      ]
     },
     "host_native_challenge": {
       "type": "object",
@@ -479,7 +648,8 @@
         "baseline_instruction",
         "task_text_identical",
         "implicit_uses_natural_task_only",
-        "invocation_modes"
+        "invocation_modes",
+        "installation_modes"
       ],
       "properties": {
         "skill_instruction": {
@@ -496,6 +666,12 @@
           "minProperties": 1,
           "propertyNames": {"$ref": "#/$defs/slug"},
           "additionalProperties": {"enum": ["explicit", "implicit"]}
+        },
+        "installation_modes": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/slug"},
+          "additionalProperties": {"const": "direct-skill"}
         }
       }
     },
@@ -514,6 +690,7 @@
           "started_at",
           "finished_at",
           "invocation_mode",
+          "installation_mode",
           "passed",
           "problems",
           "returncode",
@@ -551,6 +728,7 @@
           "workspace_bytes",
           "files",
           "changed_paths",
+          "sensitive_artifact_scan",
           "artifact_bundle",
           "workspace"
         ],
@@ -563,6 +741,7 @@
           "started_at": {"type": "string", "format": "date-time"},
           "finished_at": {"type": "string", "format": "date-time"},
           "invocation_mode": {"enum": ["explicit", "implicit"]},
+          "installation_mode": {"const": "direct-skill"},
           "passed": {"type": "boolean"},
           "problems": {
             "type": "array",
@@ -661,6 +840,9 @@
             "type": "array",
             "uniqueItems": true,
             "items": {"$ref": "#/$defs/relative_path"}
+          },
+          "sensitive_artifact_scan": {
+            "$ref": "#/$defs/sensitive_artifact_scan"
           },
           "artifact_bundle": {
             "oneOf": [

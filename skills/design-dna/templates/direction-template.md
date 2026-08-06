@@ -2,96 +2,57 @@
 schema_version: 1
 created_with: "__DESIGN_DNA_VERSION__"
 classification: "internal"
+evidence_contract: "proportional-evidence-v1"
 ---
 
-# Direction brief
+# Direction record
 
-Use for a new build, redesign, or other substantial visual decision. Omit irrelevant fields; do not invent answers.
+<!-- proportional-evidence-v1 -->
 
-## Outcome
+Keep this record proportional to the work. The four sections below are proof
+anchors, not design slots. Write in the project's own language, add any useful
+sections, and do not fill irrelevant fields merely to satisfy a template.
 
-- Audience and context:
-- Primary task or decision:
-- Success condition:
-- Critical risk or unknown:
-- Launch state: concept, demo, staging, or production
+## Identity and intent
 
-## Routes and modes
+__REPLACE_WITH_THE_PROJECT_IDENTITY_AUDIENCE_SITUATION_AND_CONSEQUENTIAL_INTENT__
 
-| Route or component | User task | Primary mode | Source/readiness | Required states and QA |
-| --- | --- | --- | --- | --- |
-|  |  | Persuade, Experience, Operate, or Read | approved, pending, placeholder, or prohibited |  |
+State what this exact candidate or build is for and what decision, task,
+understanding, invitation, encounter, or response it should support. Define
+success or failure in terms appropriate to this project; do not force an art,
+narrative, editorial, cultural, or entertainment experience into a conversion
+task. Do not prescribe a hero, palette, type register, layout pattern, motion
+device, or page formula.
 
-## Evidence and content
+## Truth and provenance
 
-| Content, claim, proof, or integration | Status | Source/owner | Public treatment |
-| --- | --- | --- | --- |
-|  | approved, pending, placeholder, or prohibited |  | show, label, replace, defer, or omit |
+__REPLACE_WITH_THE_APPLICABLE_SOURCES_AUTHORITIES_ASSET_RIGHTS_AND_OPEN_UNKNOWNS__
 
-- Approved brand assets and constraints:
-- Existing-system decisions to preserve:
-- Product, place, cultural, or operational raw material:
-- Trace from raw material to consequential system decisions:
-- Open assumptions and reversible placeholders:
-- Content owner, review date, and expiration needs:
-- Exact-claim ledger coverage, owners, locale/scope, and public treatment:
+Bind facts, content, identity, media, and operational claims to their real
+sources. Mark assumptions, placeholders, unavailable authority, generated
+material, expiry, and owner decisions honestly. Omit categories that do not
+apply.
 
-## Research
+## Responsive, accessible, and functional behavior
 
-| Dated reference | Kind | Transferable lesson | Limitation or do-not-copy note |
-| --- | --- | --- | --- |
-|  | category peer, adjacent field, project material, or standard |  |  |
+__REPLACE_WITH_THE_APPLICABLE_USER_JOBS_STATES_BREAKPOINTS_INPUTS_AND_FAILURES__
 
-- Category mean:
-- Dated shorthand to avoid using unexamined:
-- Current fashionable default to avoid using unexamined:
-- Local, cultural, language, or representation considerations:
-- Research not performed and why:
+Describe the behavior that must survive content change, narrow and wide
+containers, zoom, keyboard or touch input, relevant assistive technology,
+preferences, loading, empty, error, and unsupported conditions. Select only
+conditions the product can actually encounter.
 
-## Chosen direction
+## Owner and release state
 
-- Direction statement:
-- Real material it amplifies:
-- Intended relationship to time, in project-specific language (examples may include current, forward-looking, heritage, archival, or timeless):
-- Project-defined ambition and conditions that justify it (example registers may be useful, but are not a closed list):
-- Why it serves the task:
-- Familiar conventions intentionally retained:
-- Conspicuous choices and their rationale:
-- Direction rejected and why:
+__REPLACE_WITH_OWNER_SCOPE_CURRENT_DISPOSITION_RELEASE_INTENT_AND_OPEN_BLOCKERS__
 
-## System
+Separate producer judgment from accountable-owner acceptance. Name the exact
+candidate or build, reversible checkpoint, known limitations, applicable
+specialist gates, and the honest current release state.
 
-- Type roles, specimen result, license, language coverage, and fallback:
-- Heading and textual-emphasis rule:
-- Color and semantic roles:
-- Grid, spacing rhythm, density, and optical exceptions:
-- Component and dependency theming:
-- Project signature, anti-house-style test, and the restraint rule that keeps it coherent:
-- Route silhouettes and task-justified shared structure:
-- Copy texture and rhetorical-restraint rule:
-- Evidence-to-polish boundary for diagrams, calculators, comparisons, and proof modules:
-- Imagery, illustration, icon, asset, and truthful-documentary-variance direction:
-- Motion, interaction, and reduced-motion intent:
-- Responsive recomposition:
-- Content, navigation, taxonomy, and microcopy:
-- Production-comment and meta-language boundary:
+## Project-specific logic and extensions
 
-## Quality contract
-
-- Accessibility target and specialist handoff:
-- Proposed or approved performance objectives:
-- Engineering and browser constraints:
-- Localization and RTL:
-- Privacy, security, legal, and data constraints:
-- Integrations, tracking, embeds, and deployment authority:
-- Discoverability, metadata, indexing, sharing, redirects, and not-found intent:
-- Required specialist gates, accountable owners, and readiness dimensions that remain unverified:
-
-## Acceptance
-
-- Critical user tasks:
-- Viewport, container, input, theme, locale, and state matrix:
-- Content stress cases:
-- Required build, functional, accessibility, performance, and visual checks:
-- Required user validation or explicit `not performed` disclosure:
-- Public release blockers:
+Optional. Record the relationships, tensions, rituals, content behavior,
+creative logic, local exceptions, or risks that make this project itself. Use
+any structure and vocabulary that communicates them accurately; extension
+records may also be registered in `state.json`.

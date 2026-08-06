@@ -24,8 +24,10 @@ exec(
 del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 
 import argparse
+import base64
 import hashlib
 import json
+import math
 import os
 import re
 import secrets
@@ -64,12 +66,35 @@ MAX_INSPECT_TEXT_BYTES = 5 * 1024 * 1024
 DEFAULT_HOST_EVIDENCE_WAIT_SECONDS = 5.0
 MAX_HOST_EVIDENCE_WAIT_SECONDS = 60.0
 HOST_EVIDENCE_CLOCK_SKEW_SECONDS = 5.0
+MIN_PASSED_ENV_VALUE_LENGTH = 8
+MAX_SENSITIVE_SCAN_ENTRIES = 50_000
+MAX_SENSITIVE_SCAN_BYTES = 750 * 1024 * 1024
 NONCE_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 SEMVER_PATTERN = re.compile(
     r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
     r"(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)"
     r"(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+)
+MODEL_COMPONENT_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/+-]*$")
+PROVIDER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
+REASONING_EFFORT_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
+GENERATION_CONFIG_KEYS = {
+    "temperature",
+    "top_p",
+    "top_k",
+    "seed",
+    "max_output_tokens",
+    "max_tokens",
+    "reasoning_budget",
+    "thinking_budget",
+    "response_format",
+    "tool_choice",
+    "parallel_tool_calls",
+}
+SENSITIVE_TEXT = re.compile(
+    r"(?i)(?:api[_-]?key|access[_-]?token|authorization|bearer\s|"
+    r"password|private[_-]?key|secret|(?:^|[^a-z0-9])sk-[A-Za-z0-9])"
 )
 
 
@@ -96,6 +121,207 @@ def digest_mapping(value: dict[str, str]) -> str:
         ensure_ascii=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def parse_generation_config(
+    values: list[str],
+    *,
+    label: str,
+) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for raw in values:
+        if "=" not in raw:
+            raise ToolFailure(
+                "invalid-generation-config",
+                f"{label} entries must use KEY=VALUE.",
+            )
+        key, encoded = raw.split("=", 1)
+        key = key.strip()
+        encoded = encoded.strip()
+        if key not in GENERATION_CONFIG_KEYS:
+            raise ToolFailure(
+                "invalid-generation-config-key",
+                (
+                    f"{label} key {key!r} is not an approved non-secret "
+                    "generation setting."
+                ),
+            )
+        if key in result:
+            raise ToolFailure(
+                "duplicate-generation-config-key",
+                f"{label} repeats {key!r}.",
+            )
+        if not encoded:
+            raise ToolFailure(
+                "invalid-generation-config",
+                f"{label} value for {key!r} is empty.",
+            )
+        try:
+            parsed = json.loads(encoded)
+        except json.JSONDecodeError:
+            parsed = encoded
+        if (
+            parsed is None
+            or isinstance(parsed, (list, dict))
+            or not isinstance(parsed, (str, int, float, bool))
+        ):
+            raise ToolFailure(
+                "invalid-generation-config-value",
+                (
+                    f"{label} value for {key!r} must be a short JSON scalar "
+                    "or plain string."
+                ),
+            )
+        if isinstance(parsed, float) and not math.isfinite(parsed):
+            raise ToolFailure(
+                "invalid-generation-config-value",
+                f"{label} value for {key!r} must be finite.",
+            )
+        if isinstance(parsed, str):
+            if len(parsed) > 64:
+                raise ToolFailure(
+                    "generation-config-value-too-long",
+                    f"{label} value for {key!r} exceeds 64 characters.",
+                )
+            if SENSITIVE_TEXT.search(parsed):
+                raise ToolFailure(
+                    "sensitive-generation-config-refused",
+                    (
+                        f"{label} value for {key!r} resembles a secret. "
+                        "Evaluation metadata must never store credentials."
+                    ),
+                )
+        result[key] = parsed
+    return dict(sorted(result.items()))
+
+
+def finalize_model_context(payload: dict[str, object]) -> dict[str, object]:
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return {**payload, "sha256": digest_text(encoded)}
+
+
+def model_context(
+    *,
+    provider: str | None,
+    model: str | None,
+    model_version: str | None,
+    reasoning_effort: str | None,
+    generation_config: list[str],
+    label: str,
+    inherited: dict[str, object] | None = None,
+) -> dict[str, object]:
+    raw_values = (provider, model, model_version, reasoning_effort)
+    any_declared = any(value is not None for value in raw_values) or bool(
+        generation_config
+    )
+    if not any_declared and inherited is not None:
+        inherited_core = {
+            key: value
+            for key, value in inherited.items()
+            if key != "sha256"
+        }
+        inherited_core["declaration_source"] = "inherited-from-skill"
+        return finalize_model_context(inherited_core)
+    if not any_declared:
+        return finalize_model_context({
+            "declaration_status": "unreported",
+            "provider": None,
+            "model": None,
+            "model_version": None,
+            "reasoning_effort": None,
+            "generation_config": {},
+            "declaration_source": "not-provided",
+        })
+    fields = {
+        "provider": provider,
+        "model": model,
+        "model_version": model_version,
+        "reasoning_effort": reasoning_effort,
+    }
+    missing = [name for name, value in fields.items() if value is None]
+    if missing:
+        raise ToolFailure(
+            "incomplete-model-context",
+            f"{label} is missing: {', '.join(missing)}.",
+        )
+    assert provider is not None
+    assert model is not None
+    assert model_version is not None
+    assert reasoning_effort is not None
+    for field_name, value in (
+        ("provider", provider),
+        ("model", model),
+        ("model_version", model_version),
+        ("reasoning_effort", reasoning_effort),
+    ):
+        if SENSITIVE_TEXT.search(value):
+            raise ToolFailure(
+                "sensitive-model-context-refused",
+                (
+                    f"{label} {field_name} resembles a secret. Evaluation "
+                    "metadata must never store credentials."
+                ),
+            )
+    if (
+        len(provider) > 64
+        or len(provider) < 2
+        or not PROVIDER_PATTERN.fullmatch(provider)
+    ):
+        raise ToolFailure(
+            "invalid-model-provider",
+            f"{label} provider has an unsupported format.",
+        )
+    for field_name, value in (
+        ("model", model),
+        ("model_version", model_version),
+    ):
+        if (
+            len(value) > 256
+            or not MODEL_COMPONENT_PATTERN.fullmatch(value)
+        ):
+            raise ToolFailure(
+                "invalid-model-identity",
+                f"{label} {field_name} has an unsupported format.",
+            )
+    if model_version.casefold() in {
+        "latest",
+        "current",
+        "default",
+        "unknown",
+        "unreported",
+    }:
+        raise ToolFailure(
+            "nonreproducible-model-version",
+            (
+                f"{label} model_version must be a concrete provider revision "
+                "or observed version, not a moving alias."
+            ),
+        )
+    if (
+        len(reasoning_effort) > 64
+        or not REASONING_EFFORT_PATTERN.fullmatch(reasoning_effort)
+    ):
+        raise ToolFailure(
+            "invalid-reasoning-effort",
+            f"{label} reasoning effort has an unsupported format.",
+        )
+    return finalize_model_context({
+        "declaration_status": "declared",
+        "provider": provider,
+        "model": model,
+        "model_version": model_version,
+        "reasoning_effort": reasoning_effort,
+        "generation_config": parse_generation_config(
+            generation_config,
+            label=label,
+        ),
+        "declaration_source": "maintainer-cli",
+    })
 
 
 def case_review_contract(case: dict[str, object]) -> dict[str, object]:
@@ -556,6 +782,122 @@ def redact_text(value: str, secrets: dict[str, str]) -> str:
     return result
 
 
+def redact_json_value(
+    value: object,
+    secrets: dict[str, str],
+) -> object:
+    """Redact explicitly passed values from externally supplied JSON records."""
+    if isinstance(value, str):
+        return redact_text(value, secrets)
+    if isinstance(value, list):
+        return [redact_json_value(item, secrets) for item in value]
+    if isinstance(value, dict):
+        return {
+            str(key): redact_json_value(item, secrets)
+            for key, item in value.items()
+        }
+    return value
+
+
+def secret_byte_patterns(secrets: dict[str, str]) -> tuple[bytes, ...]:
+    patterns: set[bytes] = set()
+    for secret in secrets.values():
+        utf8 = secret.encode("utf-8")
+        candidates = (
+            utf8,
+            secret.encode("utf-16-le"),
+            secret.encode("utf-16-be"),
+            base64.b64encode(utf8),
+            base64.urlsafe_b64encode(utf8),
+        )
+        patterns.update(candidate for candidate in candidates if candidate)
+    return tuple(sorted(patterns, key=len, reverse=True))
+
+
+def sensitive_artifact_scan(
+    root: Path,
+    secrets: dict[str, str],
+    *,
+    maximum_findings: int = 100,
+) -> dict[str, object]:
+    """Scan a temporary run tree without persisting secret values or paths."""
+    if not secrets:
+        return {
+            "performed": False,
+            "complete": True,
+            "detected": False,
+            "finding_count": 0,
+            "path_sha256": [],
+            "findings_truncated": False,
+        }
+    patterns = secret_byte_patterns(secrets)
+    path_hashes: list[str] = []
+    finding_count = 0
+    entries = 0
+    inspected_bytes = 0
+    for entry in walk_eval_entries(root):
+        entries += 1
+        if entries > MAX_SENSITIVE_SCAN_ENTRIES:
+            raise ToolFailure(
+                "sensitive-scan-entry-limit",
+                "Sensitive-artifact scan exceeded its entry limit.",
+                root,
+            )
+        relative = entry.relative_to(root).as_posix()
+        encoded_path = relative.encode("utf-8", errors="surrogatepass")
+        contaminated = any(pattern in encoded_path for pattern in patterns)
+        if entry.is_file():
+            try:
+                size = entry.stat().st_size
+            except OSError as exc:
+                raise ToolFailure(
+                    "sensitive-scan-stat-failed",
+                    str(exc),
+                    entry,
+                ) from exc
+            inspected_bytes += size
+            if inspected_bytes > MAX_SENSITIVE_SCAN_BYTES:
+                raise ToolFailure(
+                    "sensitive-scan-byte-limit",
+                    "Sensitive-artifact scan exceeded its byte limit.",
+                    root,
+                )
+            if not contaminated:
+                longest = max(len(pattern) for pattern in patterns)
+                overlap = max(longest - 1, 0)
+                tail = b""
+                try:
+                    with entry.open("rb") as handle:
+                        while block := handle.read(1024 * 1024):
+                            combined = tail + block
+                            if any(
+                                pattern in combined for pattern in patterns
+                            ):
+                                contaminated = True
+                                break
+                            tail = combined[-overlap:] if overlap else b""
+                except OSError as exc:
+                    raise ToolFailure(
+                        "sensitive-scan-read-failed",
+                        str(exc),
+                        entry,
+                    ) from exc
+        if contaminated:
+            finding_count += 1
+            if len(path_hashes) < maximum_findings:
+                path_hashes.append(
+                    hashlib.sha256(encoded_path).hexdigest()
+                )
+    return {
+        "performed": True,
+        "complete": True,
+        "detected": finding_count > 0,
+        "finding_count": finding_count,
+        "path_sha256": path_hashes,
+        "findings_truncated": finding_count > maximum_findings,
+    }
+
+
 def cap_stored_text(value: str) -> tuple[str, bool]:
     if len(value) <= MAX_CAPTURE_CHARS:
         return value, False
@@ -663,7 +1005,16 @@ def explicit_environment(names: list[str]) -> dict[str, str]:
                 "missing-pass-env",
                 f"Requested environment variable is not set: {name!r}.",
             )
-        result[canonical] = os.environ[match]
+        value = os.environ[match]
+        if len(value) < MIN_PASSED_ENV_VALUE_LENGTH:
+            raise ToolFailure(
+                "unsafe-short-pass-env",
+                (
+                    f"Environment variable {name!r} is too short to pass "
+                    "without unreliable artifact-leak detection."
+                ),
+            )
+        result[canonical] = value
     return result
 
 
@@ -825,7 +1176,19 @@ def atomic_result(path: Path, payload: dict[str, object]) -> None:
             pass
 
 
-def host_route(fake_home: Path, host: str) -> Path:
+def host_route(
+    fake_home: Path,
+    host: str,
+    installation_mode: str,
+) -> Path:
+    if installation_mode != "direct-skill":
+        raise ToolFailure(
+            "unsupported-eval-installation-mode",
+            (
+                "The evaluation runner can stage only direct-skill installs. "
+                "It does not simulate a packaged plugin as a direct skill."
+            ),
+        )
     if host == "codex":
         return fake_home / ".agents" / "skills" / "design-dna"
     return fake_home / ".claude" / "skills" / "design-dna"
@@ -835,9 +1198,10 @@ def install_exact_skill(
     skill_root: Path,
     fake_home: Path,
     host: str,
+    installation_mode: str,
     expected_records: list[dict[str, object]],
 ) -> tuple[Path, str]:
-    route = host_route(fake_home, host)
+    route = host_route(fake_home, host, installation_mode)
     route.parent.mkdir(parents=True)
     copy_tree(skill_root, route)
     installed_records, installed_hash = content_manifest(route)
@@ -1339,6 +1703,34 @@ def main() -> int:
     )
     parser.add_argument("--baseline-driver")
     parser.add_argument("--baseline-arg", action="append", default=[])
+    parser.add_argument("--skill-provider")
+    parser.add_argument("--skill-model")
+    parser.add_argument("--skill-model-version")
+    parser.add_argument("--skill-reasoning-effort")
+    parser.add_argument(
+        "--skill-generation-config",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Record one approved non-secret generation setting; repeatable. "
+            "This metadata does not alter the driver command."
+        ),
+    )
+    parser.add_argument("--baseline-provider")
+    parser.add_argument("--baseline-model")
+    parser.add_argument("--baseline-model-version")
+    parser.add_argument("--baseline-reasoning-effort")
+    parser.add_argument(
+        "--baseline-generation-config",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Record one baseline generation setting. When omitted, a declared "
+            "skill model context is inherited for a controlled comparison."
+        ),
+    )
     parser.add_argument("--runs", type=int, default=1)
     parser.add_argument("--case", action="append", default=[])
     parser.add_argument("--work-root", type=Path)
@@ -1401,6 +1793,45 @@ def main() -> int:
     try:
         if args.runs < 1 or args.runs > 20:
             raise ToolFailure("invalid-run-count", "--runs must be from 1 through 20.")
+        skill_model_context = model_context(
+            provider=args.skill_provider,
+            model=args.skill_model,
+            model_version=args.skill_model_version,
+            reasoning_effort=args.skill_reasoning_effort,
+            generation_config=args.skill_generation_config,
+            label="skill model context",
+        )
+        baseline_model_arguments = (
+            args.baseline_provider,
+            args.baseline_model,
+            args.baseline_model_version,
+            args.baseline_reasoning_effort,
+            *args.baseline_generation_config,
+        )
+        if not args.baseline_driver and any(
+            value is not None and value != ""
+            for value in baseline_model_arguments
+        ):
+            raise ToolFailure(
+                "baseline-model-without-driver",
+                "Baseline model metadata requires --baseline-driver.",
+            )
+        baseline_model_context: dict[str, object] | None = None
+        if args.baseline_driver:
+            inherited = (
+                skill_model_context
+                if skill_model_context["declaration_status"] == "declared"
+                else None
+            )
+            baseline_model_context = model_context(
+                provider=args.baseline_provider,
+                model=args.baseline_model,
+                model_version=args.baseline_model_version,
+                reasoning_effort=args.baseline_reasoning_effort,
+                generation_config=args.baseline_generation_config,
+                label="baseline model context",
+                inherited=inherited,
+            )
         if (
             args.host_native_evidence_timeout < 0
             or args.host_native_evidence_timeout
@@ -1426,7 +1857,7 @@ def main() -> int:
         except ImportError as exc:
             raise ToolFailure(
                 "dependency-missing",
-                "Install maintainer/requirements-dev.txt.",
+                "Install maintainer/requirements-dev.lock with --require-hashes.",
                 None,
             ) from exc
         schema_errors = list(
@@ -1471,6 +1902,26 @@ def main() -> int:
             raise ToolFailure(
                 "unknown-eval-case",
                 ", ".join(sorted(missing_cases)),
+                fixture_path,
+            )
+        unsupported_installation_cases = [
+            str(case["id"])
+            for case in cases
+            if str(case.get("installation_mode", "direct-skill"))
+            != "direct-skill"
+        ]
+        if unsupported_installation_cases:
+            raise ToolFailure(
+                "unsupported-eval-installation-mode",
+                (
+                    "The current runner stages only direct-skill routes. "
+                    "Claude Code direct-skill runs use "
+                    "<fake-home>/.claude/skills/design-dna with /design-dna. "
+                    "It cannot produce packaged-plugin evidence for a "
+                    ".claude/plugins/cache installation invoked as "
+                    "/design-dna:design-dna. Unsupported cases: "
+                    + ", ".join(unsupported_installation_cases)
+                ),
                 fixture_path,
             )
 
@@ -1670,6 +2121,7 @@ def main() -> int:
                     json.dumps(args.driver_arg, separators=(",", ":"))
                 ),
                 "argument_count": len(args.driver_arg),
+                "model_context": skill_model_context,
             },
             "baseline": None,
         }
@@ -1680,12 +2132,16 @@ def main() -> int:
                     json.dumps(args.baseline_arg, separators=(",", ":"))
                 ),
                 "argument_count": len(args.baseline_arg),
+                "model_context": baseline_model_context,
             }
 
         for case in cases:
             case_id = str(case["id"])
             task = str(case["task"]).strip()
             invocation_mode = str(case.get("invocation_mode", "explicit"))
+            installation_mode = str(
+                case.get("installation_mode", "direct-skill")
+            )
             frozen = input_snapshots[case_id]
             for run_number in range(1, args.runs + 1):
                 ordered_drivers = (
@@ -1721,13 +2177,24 @@ def main() -> int:
                             skill_root,
                             fake_home,
                             args.host,
+                            installation_mode,
                             skill_records,
                         )
-                    elif entry_exists(host_route(fake_home, args.host)):
+                    elif entry_exists(
+                        host_route(
+                            fake_home,
+                            args.host,
+                            installation_mode,
+                        )
+                    ):
                         raise ToolFailure(
                             "baseline-skill-present",
                             "Baseline fake home unexpectedly contains Design DNA.",
-                            host_route(fake_home, args.host),
+                            host_route(
+                                fake_home,
+                                args.host,
+                                installation_mode,
+                            ),
                         )
 
                     run_started_at = utc_now().isoformat()
@@ -1775,6 +2242,7 @@ def main() -> int:
                         "host": args.host,
                         "run": run_number,
                         "invocation_mode": invocation_mode,
+                        "installation_mode": installation_mode,
                         "prompt_file": str(prompt_file),
                         "workspace": str(workspace),
                         "home": str(fake_home),
@@ -1889,7 +2357,11 @@ def main() -> int:
                             )
 
                     skill_route_verified_after = True
-                    route = host_route(fake_home, args.host)
+                    route = host_route(
+                        fake_home,
+                        args.host,
+                        installation_mode,
+                    )
                     try:
                         if variant == "skill":
                             route_records, route_hash = content_manifest(route)
@@ -1942,6 +2414,11 @@ def main() -> int:
                         expected_skill_hash=staged_hash,
                     )
                     problems.extend(driver_report_problems)
+                    if driver_report is not None:
+                        driver_report = redact_json_value(
+                            driver_report,
+                            passed_environment,
+                        )
                     (
                         host_native_evidence_status,
                         host_native_evidence,
@@ -1955,6 +2432,11 @@ def main() -> int:
                         wait_seconds=args.host_native_evidence_timeout,
                     )
                     problems.extend(host_native_evidence_problems)
+                    if host_native_evidence is not None:
+                        host_native_evidence = redact_json_value(
+                            host_native_evidence,
+                            passed_environment,
+                        )
                     run_finished_at = utc_now().isoformat()
                     monitor_records = safe_monitor_after(
                         monitor_roots,
@@ -1964,6 +2446,33 @@ def main() -> int:
                     workspace_file_count = 0
                     workspace_entry_count = 0
                     workspace_bytes = 0
+                    retention_safe = True
+                    try:
+                        sensitive_scan = sensitive_artifact_scan(
+                            run_root,
+                            passed_environment,
+                        )
+                        if sensitive_scan["detected"]:
+                            retention_safe = False
+                            problems.append(
+                                "passed environment value detected in "
+                                "temporary run artifacts; promotion and "
+                                "retention were refused"
+                            )
+                    except ToolFailure as exc:
+                        retention_safe = False
+                        sensitive_scan = {
+                            "performed": bool(passed_environment),
+                            "complete": False,
+                            "detected": False,
+                            "finding_count": 0,
+                            "path_sha256": [],
+                            "findings_truncated": False,
+                        }
+                        problems.append(
+                            "sensitive-artifact scan could not complete; "
+                            f"promotion and retention were refused: {exc}"
+                        )
                     try:
                         (
                             workspace_entry_count,
@@ -1979,7 +2488,7 @@ def main() -> int:
                         )
                         files, workspace_hash = [], None
                     artifact_bundle: dict[str, object] | None = None
-                    if isinstance(workspace_hash, str):
+                    if isinstance(workspace_hash, str) and retention_safe:
                         try:
                             artifact_bundle = promote_artifact_bundle(
                                 workspace,
@@ -2002,6 +2511,7 @@ def main() -> int:
                         "started_at": run_started_at,
                         "finished_at": run_finished_at,
                         "invocation_mode": invocation_mode,
+                        "installation_mode": installation_mode,
                         "passed": not problems,
                         "problems": problems,
                         "returncode": returncode,
@@ -2039,12 +2549,15 @@ def main() -> int:
                         "workspace_bytes": workspace_bytes,
                         "files": files,
                         "changed_paths": changes,
+                        "sensitive_artifact_scan": sensitive_scan,
                         "artifact_bundle": artifact_bundle,
                         "workspace": (
-                            str(workspace) if args.keep_workspaces else None
+                            str(workspace)
+                            if args.keep_workspaces and retention_safe
+                            else None
                         ),
                     }
-                    if not args.keep_workspaces:
+                    if not args.keep_workspaces or not retention_safe:
                         try:
                             assert_contained(run_root, session_root)
                             list(walk_eval_entries(run_root))
@@ -2143,6 +2656,12 @@ def main() -> int:
                 "invocation_modes": {
                     str(case["id"]): str(
                         case.get("invocation_mode", "explicit")
+                    )
+                    for case in cases
+                },
+                "installation_modes": {
+                    str(case["id"]): str(
+                        case.get("installation_mode", "direct-skill")
                     )
                     for case in cases
                 },

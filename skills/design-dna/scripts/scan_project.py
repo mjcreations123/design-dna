@@ -8,7 +8,6 @@ import fnmatch
 import hashlib
 import html
 import json
-import math
 import os
 import re
 import stat
@@ -23,7 +22,11 @@ MINIMUM_PYTHON = (3, 10)
 if sys.version_info < MINIMUM_PYTHON:  # pragma: no cover - requires an old interpreter
     print(
         json.dumps({
+            "schema_version": 1,
+            "artifact_type": "design-dna-source-scan",
             "ok": False,
+            "execution_ok": False,
+            "execution": {"status": "failed", "ok": False},
             "error": {
                 "code": "python-version-unsupported",
                 "message": "scan_project.py requires Python 3.10 or newer.",
@@ -37,10 +40,12 @@ if sys.version_info < MINIMUM_PYTHON:  # pragma: no cover - requires an old inte
 
 
 TEXT_SUFFIXES = {
-    ".astro", ".cjs", ".cshtml", ".css", ".erb", ".handlebars", ".hbs",
-    ".html", ".htm", ".js", ".jsx", ".liquid", ".md", ".mdx", ".mjs",
-    ".mustache", ".njk", ".php", ".pug", ".razor", ".scss", ".svelte",
-    ".svg", ".ts", ".tsx", ".twig", ".vue",
+    ".astro", ".cjs", ".cshtml", ".css", ".ejs", ".erb", ".gohtml",
+    ".handlebars", ".hbs", ".html", ".htm", ".j2", ".jinja", ".jinja2",
+    ".js", ".jsx", ".less", ".liquid", ".md", ".mdx", ".mjs",
+    ".mustache", ".njk", ".php", ".pug", ".razor", ".scss", ".styl",
+    ".stylus", ".svelte", ".svg", ".tmpl", ".tpl", ".ts", ".tsx",
+    ".twig", ".vue",
 }
 STRUCTURED_CONTENT_SUFFIXES = {".json", ".yaml", ".yml"}
 SENSITIVE_STRUCTURED_PART = re.compile(
@@ -57,28 +62,38 @@ SENSITIVE_STRUCTURED_DIRS_CASEFOLD = {
     name.casefold() for name in SENSITIVE_STRUCTURED_DIRS
 }
 PROMINENT_MARKUP_SUFFIXES = {
-    ".astro", ".cshtml", ".erb", ".handlebars", ".hbs", ".html", ".htm",
-    ".jsx", ".liquid", ".mdx", ".mustache", ".njk", ".php", ".razor",
-    ".svelte", ".svg", ".tsx", ".twig", ".vue",
+    ".astro", ".cshtml", ".ejs", ".erb", ".gohtml", ".handlebars", ".hbs",
+    ".html", ".htm", ".j2", ".jinja", ".jinja2", ".jsx", ".liquid",
+    ".mdx", ".mustache", ".njk", ".php", ".razor", ".svelte", ".svg",
+    ".tmpl", ".tpl", ".tsx", ".twig", ".vue",
 }
 STATIC_MARKUP_SUFFIXES = {
-    ".astro", ".handlebars", ".hbs", ".html", ".htm", ".jsx", ".liquid",
-    ".mdx", ".mustache", ".njk", ".svelte", ".svg", ".tsx", ".twig",
-    ".vue",
-}
-STATIC_ROUTE_SUFFIXES = {
-    ".cshtml", ".erb", ".handlebars", ".hbs", ".html", ".htm", ".liquid",
-    ".mustache", ".njk", ".php", ".razor", ".twig",
+    ".astro", ".ejs", ".gohtml", ".handlebars", ".hbs", ".html", ".htm",
+    ".j2", ".jinja", ".jinja2", ".jsx", ".liquid", ".mdx", ".mustache",
+    ".njk", ".svelte", ".svg", ".tmpl", ".tpl", ".tsx", ".twig", ".vue",
 }
 HTML_VOID_ELEMENTS = {
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
     "meta", "param", "source", "track", "wbr",
 }
-IGNORED_DIRS = {
-    ".design-dna", ".git", ".next", ".nuxt", ".output", ".svelte-kit", "build", "coverage",
-    "dist", "node_modules", "vendor",
+ALWAYS_IGNORED_DIRS = {
+    ".design-dna", ".git", "coverage", "node_modules", "vendor",
 }
-IGNORED_DIRS_CASEFOLD = {name.casefold() for name in IGNORED_DIRS}
+INITIALIZER_EVIDENCE_DIR_PATTERN = re.compile(
+    r"^\.design-dna\.(?:backup|failed)-"
+    r"\d{8}-\d{6}-\d{6}"
+    r"(?:-(?:[2-9]|[1-9]\d+))?$",
+    re.I,
+)
+INITIALIZER_EVIDENCE_DIR_LABELS = {
+    ".design-dna.backup-YYYYMMDD-HHMMSS-ffffff[-N]",
+    ".design-dna.failed-YYYYMMDD-HHMMSS-ffffff[-N]",
+}
+BUILT_OUTPUT_DIRS = {
+    ".next", ".nuxt", ".output", ".svelte-kit", "build", "dist",
+}
+IGNORED_DIRS = ALWAYS_IGNORED_DIRS | BUILT_OUTPUT_DIRS
+DEPENDENCY_VENDOR_DIRS = {"node_modules", "vendor"}
 DEFAULT_CONTENT_EXCLUDED_DIRS = {
     ".storybook", "__fixtures__", "__tests__", "docs", "documentation",
     "fixtures", "reference", "references", "stories", "storybook", "test",
@@ -108,57 +123,21 @@ EXAMPLE_ALLOWLIST_LIFETIME_DAYS = 30
 MAX_ALLOWLIST_FUTURE_DAYS = 90
 FINGERPRINT_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 ISO_DATE_PATTERN = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
-OWNER_POLICY_DEFAULT_KEYS = {
-    "current_unless_brief_says_otherwise",
-    "infer_vintage_from_category",
-    "arbitrary_headline_fragment_emphasis",
-    "arbitrary_prominent_copy_fragment_emphasis",
-    "gradient_headline_text_without_semantic_or_brand_reason",
-    "unexamined_generator_default_typography",
-    "hierarchy_follows_content_and_task",
-    "semantic_maintainable_implementation",
-    "motion_has_user_or_experience_purpose",
-    "release_residue",
-    "fabricated_proof_or_business_facts",
-    "visibly_unfinished_controls",
-    "cross_project_pattern_history",
-    "representation_and_cultural_context",
-}
-OWNER_POLICY_DEFAULT_ENUMS = {
-    "arbitrary_headline_fragment_emphasis": {
-        "avoid", "investigate", "allow",
-    },
-    "arbitrary_prominent_copy_fragment_emphasis": {
-        "avoid", "investigate", "allow",
-    },
-    "gradient_headline_text_without_semantic_or_brand_reason": {
-        "avoid", "investigate", "allow",
-    },
-    "unexamined_generator_default_typography": {
-        "avoid", "investigate", "allow",
-    },
-    "hierarchy_follows_content_and_task": {
-        "require", "investigate", "allow",
-    },
-    "semantic_maintainable_implementation": {
-        "require", "investigate", "allow",
-    },
-    "motion_has_user_or_experience_purpose": {
-        "require", "investigate", "allow",
-    },
-    "release_residue": {"prohibit", "investigate", "allow"},
-    "fabricated_proof_or_business_facts": {
-        "prohibit", "investigate", "allow",
-    },
-    "visibly_unfinished_controls": {
-        "prohibit", "investigate", "allow",
-    },
-    "cross_project_pattern_history": {"opt-in", "off", "on"},
-    "representation_and_cultural_context": {
-        "require-review", "investigate", "allow",
-    },
+OWNER_POLICY_DEFAULT_ID = re.compile(r"^[a-z][a-z0-9_]{1,63}$")
+OWNER_POLICY_DEFAULT_VALUES = {
+    "require",
+    "require-review",
+    "investigate",
+    "allow",
+    "ask",
+    "prohibit",
+    "opt-in",
+    "off",
+    "on",
 }
 MAX_TEXT_FILE_BYTES = 5 * 1024 * 1024
+SCAN_RESULT_SCHEMA_VERSION = 2
+SCAN_RESULT_ARTIFACT_TYPE = "design-dna-source-scan"
 PROMINENT_CLASS = re.compile(
     r"(?<![A-Za-z0-9])(?:[A-Za-z0-9]+[-_])*"
     r"(?:hero|headline|tagline|poster|wordmark|display)"
@@ -177,29 +156,6 @@ SEMANTIC_STATUS_TEXT = {
     "error", "failed", "inactive", "offline", "online", "open", "pending",
     "success", "unavailable", "warning",
 }
-DECORATIVE_SECTION_LABEL_CLASS = re.compile(
-    r"(?:^|[-_])(?:eyebrow|kicker|overline)(?:$|[-_])|"
-    r"(?:^|[-_])section[-_]label(?:$|[-_])|^sectionLabel$",
-    re.I,
-)
-SEMANTIC_SECTION_LABEL_CLASS = re.compile(
-    r"(?:^|[-_])(?:status|state|badge|chip|tag|taxonomy|category|breadcrumb|"
-    r"step|phase|severity|priority|success|error|warning|danger|price|amount|"
-    r"metric|data|availability|field|form|input|control|legend|caption|"
-    r"sr[-_]?only|visually[-_]?hidden)(?:$|[-_])",
-    re.I,
-)
-SEMANTIC_SECTION_LABEL_TEXT = re.compile(
-    r"^(?:status|state|priority|severity|availability|category|tag|"
-    r"step(?:\s+\d+(?:\s+of\s+\d+)?)?|"
-    r"phase(?:\s+\d+(?:\s+of\s+\d+)?)?)$",
-    re.I,
-)
-SEMANTIC_SECTION_LABEL_ATTR = re.compile(
-    r"\b(?:role\s*=\s*[\"'](?:status|alert|meter|progressbar)[\"']|"
-    r"aria-live\s*=|data-(?:status|state|severity|priority)\s*=)",
-    re.I,
-)
 TAILWIND_FOREGROUND = re.compile(
     r"(?:^|\s)(?:[a-z0-9_-]+:)*text-(?:"
     r"(?:purple|violet|indigo|blue|emerald|amber|rose|red|green|cyan|teal|"
@@ -218,13 +174,14 @@ NEGATIVE_OR_EXAMPLE_CONTEXT = re.compile(
     r"example\s+of|should\s+not|cannot\s+claim)\b",
     re.I,
 )
-RHETORICAL_LABEL_TEXT = re.compile(
-    r"^(?:"
-    r"question\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)"
-    r"|the\s+(?:arithmetic|awkward\s+question|cheap\s+move|"
-    r"part\s+nobody\s+explains|bottom\s+line|catch)"
-    r"|(?:last|next|final)\s+step"
-    r")$",
+FILLER_NEGATIVE_CONTEXT = re.compile(
+    r"\b(?:do\s+not|don['’]t|must\s+not|never|avoid|remove|reject|"
+    r"forbid(?:den)?|should\s+not)\b",
+    re.I,
+)
+VISIBLE_FILLER = re.compile(r"\blorem(?:[\s\u00a0]+)ipsum\b", re.I)
+RAW_FILLER = re.compile(
+    r"\blorem(?:[\s\u00a0]|&(?:nbsp|#160|#x0*a0);)+ipsum\b",
     re.I,
 )
 QUANTITATIVE_CLAIM = re.compile(
@@ -238,110 +195,24 @@ QUANTITATIVE_CLAIM = re.compile(
     r")",
     re.I,
 )
-CONTRAST_COPY_FORMULA = re.compile(
-    r"(?:"
-    r"\bnot\b[^.!?]{0,120}\b(?:but|instead|it\s+is|it['’]s|that\s+is)\b"
-    r"|\bthe\s+(?:cheapest|fastest|easiest|hardest|best|worst|biggest|"
-    r"smallest)\b[^.!?]{0,140}\bis\b"
-    r"|\balmost\s+every\b[^.!?]{0,140}\balmost\s+none\b"
-    r")",
-    re.I,
-)
-PARALLEL_LIST_SENTENCE = re.compile(
-    r"\b[^.!?\n,]{2,60},\s+[^.!?\n,]{2,60},\s+"
-    r"(?:and|or)\s+[^.!?\n]{2,80}[.!?]?",
-    re.I,
-)
-SCENE_COMMENT_MARKER = re.compile(
-    r"\b(?:ACT|SCENE|CHAPTER|BEAT)\s+\d+\b|\bSIGNATURE\s+MOMENT\b",
-    re.I,
-)
-COMMENT_RATIONALE_MARKER = re.compile(
-    r"\b(?:on\s+purpose|reads?\s+as|felt,?\s+not|rather\s+than|"
-    r"one\s+[^.\n]{1,80}\s+per\s+role|one\s+hue|signature\s+moment)\b",
-    re.I,
-)
 GENERATED_MEDIA_MARKER = re.compile(
     r"\b(?:AI[- ]generated|generated\s+(?:image|imagery|photo|photography)|"
-    r"synthetic\s+(?:image|imagery|photo|photography))\b",
+    r"synthetic\s+(?:image|imagery|photo|photography)|"
+    r"(?:image|imagery|photo|photography)\s+is\s+"
+    r"(?:AI[- ]generated|generated|synthetic))\b",
     re.I,
 )
-CONCEPT_MARKER = re.compile(
-    r"\b(?:sample\s+(?:site|website|concept)|demo\s+(?:site|form|concept)|"
-    r"not\s+a\s+real\s+(?:company|business)|concept\s+(?:site|website))\b",
+PUBLIC_META_COPY_MARKER = re.compile(
+    r"\b(?:design\s+(?:test|proof|direction)|"
+    r"(?:(?:client|owner|project)\s+)?"
+    r"(?:assets?|brand\s+materials?|approved\s+copy|client\s+details?)\s+"
+    r"(?:are\s+|remain\s+)?"
+    r"(?:missing|unavailable|not\s+(?:supplied|connected|approved))|"
+    r"inspect\s+the\s+proposed|choose\s+(?:a|the)\s+(?:page\s+)?route|"
+    r"route\s+study|truth\s+(?:list|before\s+theater))\b",
     re.I,
-)
-MISSING_IDENTITY_SIGNALS = (
-    ("example-contact", re.compile(r"\b[A-Z0-9._%+-]+@example\.com\b", re.I)),
-    ("zero-phone", re.compile(r"\(\s*000\s*\)\s*000[-\s]0000")),
-    ("service-area-placeholder", re.compile(r"\byour\s+service\s+area\b", re.I)),
-    (
-        "licence-placeholder",
-        re.compile(r"\b(?:electrical\s+)?licen[cs]e\s+number\b", re.I),
-    ),
-    ("placeholder-language", re.compile(r"\bplaceholders?\b", re.I)),
 )
 CSS_DECLARATION_BLOCK = re.compile(r"(?P<header>[^{}]*)\{(?P<body>[^{}]*)\}", re.S)
-OKLCH_COMPONENT = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:%)?"
-OKLCH_VALUE = re.compile(
-    rf"^\s*(?P<lightness>{OKLCH_COMPONENT})\s+"
-    rf"(?P<chroma>{OKLCH_COMPONENT})\s+"
-    rf"(?P<hue>{OKLCH_COMPONENT})"
-    rf"(?:\s*/\s*(?P<alpha>{OKLCH_COMPONENT}))?\s*$",
-    re.I,
-)
-SHADCN_OKLCH_DECLARATION = re.compile(
-    r"--(?P<token>"
-    r"background|foreground|card|card-foreground|popover|popover-foreground|"
-    r"primary|primary-foreground|secondary|secondary-foreground|muted|"
-    r"muted-foreground|accent|accent-foreground|destructive|border|input|ring"
-    r")\s*:\s*oklch\((?P<value>[^)]+)\)",
-    re.I,
-)
-SHADCN_CURRENT_OKLCH_DEFAULTS = {
-    "light": {
-        "background": (1.0, 0.0, 0.0, None),
-        "foreground": (0.145, 0.0, 0.0, None),
-        "card": (1.0, 0.0, 0.0, None),
-        "card-foreground": (0.145, 0.0, 0.0, None),
-        "popover": (1.0, 0.0, 0.0, None),
-        "popover-foreground": (0.145, 0.0, 0.0, None),
-        "primary": (0.205, 0.0, 0.0, None),
-        "primary-foreground": (0.985, 0.0, 0.0, None),
-        "secondary": (0.97, 0.0, 0.0, None),
-        "secondary-foreground": (0.205, 0.0, 0.0, None),
-        "muted": (0.97, 0.0, 0.0, None),
-        "muted-foreground": (0.556, 0.0, 0.0, None),
-        "accent": (0.97, 0.0, 0.0, None),
-        "accent-foreground": (0.205, 0.0, 0.0, None),
-        "destructive": (0.577, 0.245, 27.325, None),
-        "border": (0.922, 0.0, 0.0, None),
-        "input": (0.922, 0.0, 0.0, None),
-        "ring": (0.708, 0.0, 0.0, None),
-    },
-    "dark": {
-        "background": (0.145, 0.0, 0.0, None),
-        "foreground": (0.985, 0.0, 0.0, None),
-        "card": (0.205, 0.0, 0.0, None),
-        "card-foreground": (0.985, 0.0, 0.0, None),
-        "popover": (0.205, 0.0, 0.0, None),
-        "popover-foreground": (0.985, 0.0, 0.0, None),
-        "primary": (0.922, 0.0, 0.0, None),
-        "primary-foreground": (0.205, 0.0, 0.0, None),
-        "secondary": (0.269, 0.0, 0.0, None),
-        "secondary-foreground": (0.985, 0.0, 0.0, None),
-        "muted": (0.269, 0.0, 0.0, None),
-        "muted-foreground": (0.708, 0.0, 0.0, None),
-        "accent": (0.269, 0.0, 0.0, None),
-        "accent-foreground": (0.985, 0.0, 0.0, None),
-        "destructive": (0.704, 0.191, 22.216, None),
-        "border": (1.0, 0.0, 0.0, 0.1),
-        "input": (1.0, 0.0, 0.0, 0.15),
-        "ring": (0.556, 0.0, 0.0, None),
-    },
-}
-# Require at least five-sixths of the 18-token core scaffold in one block.
-SHADCN_CURRENT_OKLCH_MIN_MATCHES = 15
 
 
 @dataclass(frozen=True)
@@ -355,39 +226,26 @@ class Rule:
     classification: str = "advisory"
 
 
+# Keep automatic rules evidence-bound. Aesthetic ingredients belong in
+# rendered, project-specific review and must not re-enter this table as
+# portable name or count heuristics.
 RULES = (
-    Rule("generic-gradient-text", "medium", re.compile(r"(?:bg-clip-text|background-clip\s*:\s*text).{0,160}(?:gradient|linear-gradient)|(?:gradient|linear-gradient).{0,160}(?:bg-clip-text|background-clip\s*:\s*text)", re.I), "Gradient headline treatment can become a repeated default when it has no semantic or brand role.", "Confirm a project-specific role or use a coherent foreground color."),
-    Rule("uniform-pill-language", "low", re.compile(r"\brounded-full\b|border-radius\s*:\s*(?:9999|999|100)%?px?", re.I), "Frequent pill geometry can flatten hierarchy.", "Count occurrences in context and reserve pills for controls or semantic tokens that benefit from the shape.", 4),
-    Rule("stock-fade-up", "medium", re.compile(r"\b(?:fade[-_ ]?up|animate-in|slide-in-from-bottom)\b", re.I), "Repeated entrance animation often adds motion without explaining state or continuity.", "Review motion purpose, choreography, interruption, and reduced-motion behavior.", 3),
-    Rule("generic-hover-lift", "low", re.compile(r"(?:hover:(?:-translate-y|scale-|shadow-)|:hover[^{]*\{[^}]*(?:transform|box-shadow))", re.I), "Uniform hover lift or glow can make unrelated components behave identically.", "Tie feedback to affordance and component semantics.", 3),
     Rule(
-        "repeated-decorative-section-label",
-        "low",
-        None,
-        "Repeated eyebrow, kicker, overline, or section-label treatment can flatten hierarchy when every section receives the same garnish.",
-        "Keep labels that communicate taxonomy, sequence, or state; otherwise let the heading and content establish hierarchy.",
-        4,
-    ),
-    Rule(
-        "rhetorical-label-cluster",
-        "low",
-        None,
-        "Repeated rhetorical section labels can make unrelated sections inherit one presentation formula.",
-        "Keep only labels that orient the reader; vary section structure according to the information job rather than rotating stock narrative phrases.",
-    ),
-    Rule("decorative-headline-span", "medium", None, "A short differently colored headline fragment can look ornamental when it has no semantic or brand meaning.", "Use one coherent headline color unless the fragment carries documented meaning."),
-    Rule(
-        "decorative-display-fragment",
+        "deferred-content-visibility",
         "medium",
-        None,
-        "A one- or two-word color change in prominent display copy can be the same arbitrary emphasis shortcut even when it is not an HTML heading.",
-        "Use one coherent treatment or document the complete semantic, approved brand, status, data, quotation, or editorial reason.",
+        re.compile(
+            r"\.(?:reveal|fade(?:-?in)?|animate-in)[^{]{0,120}\{[^}]{0,300}"
+            r"(?:opacity\s*:\s*0(?:\s*!important)?\s*(?:;|})|"
+            r"visibility\s*:\s*hidden(?:\s*!important)?\s*(?:;|}))",
+            re.I,
+        ),
+        "Entrance styling that hides content by default can fail closed when JavaScript, observation, reduced-motion handling, or full-page capture does not reveal every target.",
+        "Keep essential content visible by default, opt into animation only after capability initialization, and verify JavaScript-disabled, reduced-motion, and no-pre-scroll captures.",
     ),
-    Rule("emoji-as-interface-icon", "medium", re.compile(r"(?:<button|<a|<li|<div)[^>]*>[^<]{0,80}[\U0001F300-\U0001FAFF]"), "Emoji used as interface icons vary by platform and often signal placeholder iconography.", "Use text or an intentional accessible icon system."),
     Rule(
         "placeholder-proof",
         "high",
-        re.compile(r"\blorem ipsum\b", re.I),
+        RAW_FILLER,
         "Visible filler text is definite unfinished residue.",
         "Replace it with approved content, an honest project-specific pending state, or omit the section.",
         classification="gate",
@@ -402,17 +260,6 @@ RULES = (
         ),
         "Broad proof-shaped marketing language needs an accountable source; source text alone cannot establish that it is false.",
         "Trace the claim to approved evidence, qualify it precisely, label it as illustrative, or remove it.",
-    ),
-    Rule("generic-cta-copy", "low", re.compile(r">\s*(?:Get Started|Learn More|Start Today|Explore More|Transform Your [^<]{1,40})\s*<", re.I), "Interchangeable calls to action hide the actual next step.", "Name the action and expected outcome."),
-    Rule("untouched-shadcn-token", "low", re.compile(r"--(?:background|foreground|primary|secondary|muted|accent):\s*\d+(?:\.\d+)?\s+\d+(?:\.\d+)?%\s+\d+(?:\.\d+)?%"), "An unmodified component-library token set may carry a recognizable default visual system.", "Verify tokens against real brand and product requirements rather than changing them mechanically.", 6),
-    Rule("repeated-sparkle-icon", "low", re.compile(r"\b(?:Sparkles|WandSparkles|Rocket|Zap)\b"), "Decorative magic and launch icons recur in generated first drafts.", "Use only when the metaphor is accurate and the icon family is deliberately art-directed.", 3),
-    Rule("hardcoded-large-section-gap", "low", re.compile(r"\b(?:py-(?:20|24|28|32)|padding-block\s*:\s*(?:8|10|12)rem)\b"), "Uniform oversized section spacing can reduce useful density.", "Review rhythm with real content across intermediate viewport sizes.", 4),
-    Rule(
-        "presentation-script-comment-cluster",
-        "low",
-        None,
-        "A production source tree organized as numbered acts or creative-brief beats can retain presentation-script residue that is not useful maintainer documentation.",
-        "Keep comments that explain durable constraints or non-obvious behavior; condense staging narration that merely restates the visual treatment.",
     ),
 )
 
@@ -435,7 +282,19 @@ def is_reparse(path: Path) -> bool:
     return True
 
 
-def iter_files(root: Path, suffixes: set[str]):
+def is_ignored_directory(name: str, ignored_names: set[str]) -> bool:
+    return (
+        name.casefold() in ignored_names
+        or INITIALIZER_EVIDENCE_DIR_PATTERN.fullmatch(name) is not None
+    )
+
+
+def iter_files(
+    root: Path,
+    suffixes: set[str],
+    *,
+    include_built_output: bool = False,
+):
     def fail_walk(error: OSError) -> None:
         raise RuntimeError(
             f"tree-enumeration-failed: {error.filename or root}: {error}"
@@ -448,9 +307,18 @@ def iter_files(root: Path, suffixes: set[str]):
         onerror=fail_walk,
     ):
         current_path = Path(current)
+        ignored = {
+            name.casefold()
+            for name in (
+                ALWAYS_IGNORED_DIRS
+                if include_built_output
+                else IGNORED_DIRS
+            )
+        }
         dirs[:] = [
-            name for name in dirs
-            if name.casefold() not in IGNORED_DIRS_CASEFOLD
+            name
+            for name in dirs
+            if not is_ignored_directory(name, ignored)
         ]
         unsafe = [name for name in dirs if is_reparse(current_path / name)]
         if unsafe:
@@ -488,6 +356,32 @@ def assert_no_reparse_path(path: Path, *, stop: Path) -> None:
         if candidate == stop:
             return
         candidate = candidate.parent
+
+
+def report_input_label(
+    path: Path,
+    *,
+    project: Path,
+    skill_root: Path,
+    role: str,
+) -> str:
+    """Return useful provenance without embedding a machine-local path."""
+
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    for prefix, root in (("project", project), ("skill", skill_root)):
+        try:
+            relative = absolute.relative_to(root)
+        except ValueError:
+            continue
+        suffix = relative.as_posix()
+        return f"{prefix}:/{suffix}" if suffix else f"{prefix}:/"
+    try:
+        digest = hashlib.sha256(absolute.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise ValueError(
+            f"unable to identify external {role} input"
+        ) from exc
+    return f"external:{role}:sha256:{digest}"
 
 
 def exact_iso_date(value: object, *, label: str) -> date:
@@ -621,13 +515,17 @@ def load_allowlist(
     for entry in acknowledgement_entries:
         if not isinstance(entry, dict):
             raise ValueError("each skipped-source acknowledgement must be an object")
-        required = {"path", "reason", "owner", "expires"}
+        required = {
+            "path", "sha256", "size_bytes", "reason", "owner", "expires",
+        }
         if set(entry) != required:
             raise ValueError(
-                "each skipped-source acknowledgement needs only path, reason, "
-                "owner, and expires"
+                "each skipped-source acknowledgement needs only path, sha256, "
+                "size_bytes, reason, owner, and expires"
             )
         pattern = entry.get("path")
+        digest = entry.get("sha256")
+        size_bytes = entry.get("size_bytes")
         reason = entry.get("reason")
         owner = entry.get("owner")
         expires = entry.get("expires")
@@ -638,6 +536,23 @@ def load_allowlist(
             raise ValueError(
                 "skipped-source acknowledgement path must be a nonempty "
                 "project-relative forward-slash glob"
+            )
+        if (
+            not isinstance(digest, str)
+            or not FINGERPRINT_PATTERN.fullmatch(digest)
+        ):
+            raise ValueError(
+                "skipped-source acknowledgement sha256 must be a lowercase "
+                "SHA-256 source digest"
+            )
+        if (
+            not isinstance(size_bytes, int)
+            or isinstance(size_bytes, bool)
+            or size_bytes < 0
+        ):
+            raise ValueError(
+                "skipped-source acknowledgement size_bytes must be a "
+                "nonnegative integer"
             )
         if not isinstance(reason, str) or len(reason.strip()) < 5:
             raise ValueError(
@@ -675,53 +590,6 @@ def load_allowlist(
     )
 
 
-def load_type_watch(path: Path) -> tuple[Rule, dict[str, object]]:
-    if is_reparse(path) or not path.is_file():
-        raise ValueError(f"type-convergence policy is unavailable or unsafe: {path}")
-    text = path.read_text(encoding="utf-8")
-    due_matches = re.findall(r'(?m)^review_due:\s*["\']?([0-9]{4}-[0-9]{2}-[0-9]{2})["\']?\s*$', text)
-    if len(due_matches) != 1:
-        raise ValueError("type-convergence policy must contain exactly one review_due date")
-    review_due = date.fromisoformat(due_matches[0])
-    section = re.search(
-        r"(?ms)^documented_first_or_default:\s*\n(.*?)(?=^[A-Za-z_][A-Za-z0-9_-]*:\s*(?:\n|$)|\Z)",
-        text,
-    )
-    if not section:
-        raise ValueError("type-convergence policy is missing documented_first_or_default")
-    families = re.findall(
-        r'(?m)^\s*-\s+family:\s*["\']([^"\']+)["\']\s*$',
-        section.group(1),
-    )
-    if not families or len(families) != len(set(name.casefold() for name in families)):
-        raise ValueError("type-convergence policy needs unique documented default families")
-    family_pattern = "|".join(
-        re.escape(name).replace(r"\ ", r"(?:\s|\+)+")
-        for name in sorted(families, key=len, reverse=True)
-    )
-    rule = Rule(
-        "unexamined-default-font",
-        "low",
-        re.compile(
-            rf"(?:font-family|fontFamily|--[A-Za-z0-9_-]*font[A-Za-z0-9_-]*|family=)"
-            rf"[^\n]{{0,160}}(?:{family_pattern})\b|"
-            rf"\b(?:{family_pattern})\b[^\n]{{0,100}}"
-            rf"(?:next/font|fontFamily|font-family)|"
-            rf"(?:^|[;{{])\s*font\s*:[^;\n{{}}]{{0,160}}"
-            rf"(?:{family_pattern})\b",
-            re.I,
-        ),
-        "A documented builder-default family is worth checking when it supplies identity by itself.",
-        "Keep it when project fit, language coverage, metrics, and the existing system justify it; otherwise compare real-copy alternatives.",
-    )
-    return rule, {
-        "path": str(path),
-        "review_due": review_due.isoformat(),
-        "expired": review_due < date.today(),
-        "families": families,
-    }
-
-
 def without_comments(text: str) -> str:
     preserve_lines = lambda match: "\n" * match.group(0).count("\n")
     text = re.sub(r"<!--.*?-->", preserve_lines, text, flags=re.S)
@@ -732,109 +600,6 @@ def without_comments(text: str) -> str:
         text,
     )
     return text
-
-
-def source_comments(path: Path, text: str) -> list[dict[str, object]]:
-    """Extract comments for a dedicated residue review without scanning strings."""
-    comments: list[dict[str, object]] = []
-    code_comment_suffixes = {
-        ".astro", ".cjs", ".css", ".js", ".jsx", ".mjs", ".scss",
-        ".svelte", ".ts", ".tsx", ".vue",
-    }
-    index = 0
-    while index < len(text):
-        if text.startswith("<!--", index):
-            close = text.find("-->", index + 4)
-            end = len(text) if close < 0 else close + 3
-            comments.append({
-                "line": line_number(text, index),
-                "text": text[index + 4:close if close >= 0 else len(text)],
-            })
-            index = end
-            continue
-        if path.suffix.lower() not in code_comment_suffixes:
-            index += 1
-            continue
-        if text[index] in "\"'`":
-            index = skip_quoted_source(text, index)
-            continue
-        if text.startswith("/*", index):
-            close = text.find("*/", index + 2)
-            end = len(text) if close < 0 else close + 2
-            comments.append({
-                "line": line_number(text, index),
-                "text": text[index + 2:close if close >= 0 else len(text)],
-            })
-            index = end
-            continue
-        if text.startswith("//", index):
-            close = text.find("\n", index + 2)
-            end = len(text) if close < 0 else close
-            comments.append({
-                "line": line_number(text, index),
-                "text": text[index + 2:end],
-            })
-            index = end
-            continue
-        index += 1
-    return comments
-
-
-def presentation_script_comment_candidates(
-    raw_records: list[tuple[Path, str, str]],
-) -> list[dict[str, object]]:
-    scene_evidence: list[dict[str, object]] = []
-    rationale_evidence: list[dict[str, object]] = []
-    scene_by_file: dict[str, int] = {}
-    for path, relative, text in raw_records:
-        for comment in source_comments(path, text):
-            value = " ".join(str(comment["text"]).split())
-            if not value:
-                continue
-            if SCENE_COMMENT_MARKER.search(value):
-                scene_by_file[relative] = scene_by_file.get(relative, 0) + 1
-                scene_evidence.append({
-                    "file": relative,
-                    "line": comment["line"],
-                    "excerpt": value[:160],
-                })
-            if COMMENT_RATIONALE_MARKER.search(value):
-                rationale_evidence.append({
-                    "file": relative,
-                    "line": comment["line"],
-                    "excerpt": value[:160],
-                })
-    concentrated = any(count >= 4 for count in scene_by_file.values())
-    distributed = len(scene_evidence) >= 6 and len(rationale_evidence) >= 2
-    if not concentrated and not distributed:
-        return []
-    first = scene_evidence[0]
-    rule = next(
-        item
-        for item in RULES
-        if item.id == "presentation-script-comment-cluster"
-    )
-    return [{
-        "rule": rule.id,
-        "severity": rule.severity,
-        "classification": rule.classification,
-        "file": first["file"],
-        "line": first["line"],
-        "excerpt": (
-            f"{len(scene_evidence)} scene/beat marker(s) and "
-            f"{len(rationale_evidence)} creative-rationale marker(s)"
-        ),
-        "matched_signal": {
-            "scene_marker_count": len(scene_evidence),
-            "rationale_marker_count": len(rationale_evidence),
-            "scene_markers_by_file": dict(sorted(scene_by_file.items())),
-            "examples": (scene_evidence + rationale_evidence)[:8],
-            "basis": "dedicated production-source comment review",
-        },
-        "rationale": rule.rationale,
-        "suggestion": rule.suggestion,
-        "owner_policy": None,
-    }]
 
 
 def owner_policy_scalar(raw: str, *, line: int) -> object:
@@ -862,10 +627,7 @@ def load_owner_policy(path: Path) -> dict[str, str]:
         raise RuntimeError(f"reparse-point-refused: {path}")
     top_level: dict[str, object] = {}
     defaults: dict[str, object] = {}
-    lists: dict[str, list[str]] = {
-        "headline_fragment_exceptions": [],
-        "interpretation": [],
-    }
+    lists: dict[str, list[str]] = {"interpretation": []}
     section: str | None = None
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not line.strip() or line.lstrip().startswith("#"):
@@ -930,7 +692,6 @@ def load_owner_policy(path: Path) -> dict[str, str]:
         "scope",
         "status",
         "defaults",
-        "headline_fragment_exceptions",
         "interpretation",
     }
     if set(top_level) != required:
@@ -940,8 +701,8 @@ def load_owner_policy(path: Path) -> dict[str, str]:
             "owner-policy top-level contract mismatch; "
             f"missing={missing}, unknown={unknown}"
         )
-    if top_level["schema_version"] != 1:
-        raise ValueError("owner-policy schema_version must be 1")
+    if top_level["schema_version"] != 2:
+        raise ValueError("owner-policy schema_version must be 2")
     for field in ("owner", "scope"):
         if (
             not isinstance(top_level[field], str)
@@ -950,25 +711,19 @@ def load_owner_policy(path: Path) -> dict[str, str]:
             raise ValueError(f"owner-policy {field} must be nonempty text")
     if top_level["status"] != "active":
         raise ValueError("owner-policy status must be active")
-    if set(defaults) != OWNER_POLICY_DEFAULT_KEYS:
-        missing = sorted(OWNER_POLICY_DEFAULT_KEYS - set(defaults))
-        unknown = sorted(set(defaults) - OWNER_POLICY_DEFAULT_KEYS)
+    if not 1 <= len(defaults) <= 64:
         raise ValueError(
-            "owner-policy defaults contract mismatch; "
-            f"missing={missing}, unknown={unknown}"
+            "owner-policy defaults must contain 1 through 64 scoped concerns"
         )
-    for field in (
-        "current_unless_brief_says_otherwise",
-        "infer_vintage_from_category",
-    ):
-        if not isinstance(defaults[field], bool):
-            raise ValueError(f"owner-policy default {field} must be boolean")
-    for field, allowed_values in OWNER_POLICY_DEFAULT_ENUMS.items():
-        value = defaults[field]
-        if not isinstance(value, str) or value not in allowed_values:
+    for field, value in defaults.items():
+        if OWNER_POLICY_DEFAULT_ID.fullmatch(field) is None:
+            raise ValueError(
+                f"owner-policy default {field!r} is not a portable concern ID"
+            )
+        if not isinstance(value, str) or value not in OWNER_POLICY_DEFAULT_VALUES:
             raise ValueError(
                 f"owner-policy default {field} must be one of "
-                f"{sorted(allowed_values)}"
+                f"{sorted(OWNER_POLICY_DEFAULT_VALUES)}"
             )
     for section_name, values in lists.items():
         if not values:
@@ -1046,12 +801,32 @@ def allowlist_entry(
 
 def skipped_acknowledgement(
     relative: str,
+    sha256: str,
+    size_bytes: int,
     entries: list[dict[str, object]],
 ) -> Optional[dict[str, object]]:
     for entry in entries:
-        if fnmatch.fnmatchcase(relative, str(entry["path"])):
+        if (
+            fnmatch.fnmatchcase(relative, str(entry["path"]))
+            and entry["sha256"] == sha256
+            and entry["size_bytes"] == size_bytes
+        ):
             return entry
     return None
+
+
+def file_sha256_and_size(path: Path) -> tuple[str, int]:
+    """Hash the exact bytes used to bind a skipped-source acknowledgement."""
+    digest = hashlib.sha256()
+    size_bytes = 0
+    try:
+        with path.open("rb") as source:
+            while chunk := source.read(1024 * 1024):
+                digest.update(chunk)
+                size_bytes += len(chunk)
+    except OSError as exc:
+        raise RuntimeError(f"file-read-failed: {path}: {exc}") from exc
+    return digest.hexdigest(), size_bytes
 
 
 def suppressed_finding(
@@ -1376,6 +1151,8 @@ def sentence_is_negative(
     value: str,
     start: int,
     end: int,
+    *,
+    context_pattern: re.Pattern[str] = NEGATIVE_OR_EXAMPLE_CONTEXT,
 ) -> bool:
     sentence_start = 0
     for boundary in re.finditer(r"[.!?;]+[\"'”’)\]]*\s*", value[:start]):
@@ -1383,7 +1160,7 @@ def sentence_is_negative(
     boundary = re.search(r"[.!?;]+", value[end:])
     sentence_end = len(value) if not boundary else end + boundary.end()
     sentence = html.unescape(value[sentence_start:sentence_end])
-    return bool(NEGATIVE_OR_EXAMPLE_CONTEXT.search(sentence))
+    return bool(context_pattern.search(sentence))
 
 
 def enclosing_source_literal(
@@ -1426,6 +1203,7 @@ def classify_placeholder_proof(
             text[node_start:node_end],
             start - node_start,
             end - node_start,
+            context_pattern=FILLER_NEGATIVE_CONTEXT,
         ):
             return None
         return "gate", {
@@ -1440,6 +1218,7 @@ def classify_placeholder_proof(
             text[literal_start:literal_end],
             start - literal_start,
             end - literal_start,
+            context_pattern=FILLER_NEGATIVE_CONTEXT,
         ):
             return None
     return "advisory", {
@@ -1449,6 +1228,113 @@ def classify_placeholder_proof(
             "supported renderable markup format"
         ),
     }
+
+
+def html_unescape_with_raw_offsets(
+    value: str,
+) -> tuple[str, list[int]]:
+    """Decode semicolon-terminated entities while retaining raw source offsets."""
+    decoded: list[str] = []
+    raw_offsets: list[int] = []
+    entity = re.compile(r"&(?:#[0-9]+|#x[0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]+);")
+    cursor = 0
+    for match in entity.finditer(value):
+        prefix = value[cursor:match.start()]
+        decoded.append(prefix)
+        raw_offsets.extend(range(cursor, match.start()))
+        token = match.group(0)
+        replacement = html.unescape(token)
+        if replacement == token:
+            decoded.append(token)
+            raw_offsets.extend(range(match.start(), match.end()))
+        else:
+            decoded.append(replacement)
+            raw_offsets.extend([match.start()] * len(replacement))
+        cursor = match.end()
+    suffix = value[cursor:]
+    decoded.append(suffix)
+    raw_offsets.extend(range(cursor, len(value)))
+    return "".join(decoded), raw_offsets
+
+
+def placeholder_proof_candidates(
+    path: Path,
+    relative: str,
+    text: str,
+    rule: Rule,
+    owner_policy: Optional[str],
+) -> list[dict[str, object]]:
+    """Classify filler after decoding visible text, without trusting labels."""
+    findings: list[dict[str, object]] = []
+    node_ranges = (
+        static_markup_text_records(text)
+        if path.suffix.lower() in STATIC_MARKUP_SUFFIXES
+        else []
+    )
+    for node_start, node_end, _stack in node_ranges:
+        raw_node = text[node_start:node_end]
+        decoded_node, offsets = html_unescape_with_raw_offsets(raw_node)
+        for match in VISIBLE_FILLER.finditer(decoded_node):
+            if sentence_is_negative(
+                decoded_node,
+                match.start(),
+                match.end(),
+                context_pattern=FILLER_NEGATIVE_CONTEXT,
+            ):
+                continue
+            raw_start = (
+                node_start + offsets[match.start()]
+                if offsets and match.start() < len(offsets)
+                else node_start
+            )
+            findings.append(bind_finding({
+                "rule": rule.id,
+                "severity": rule.severity,
+                "classification": "gate",
+                "file": relative,
+                "line": line_number(text, raw_start),
+                "excerpt": " ".join(match.group(0).split())[:160],
+                "matched_signal": {
+                    "match": match.group(0),
+                    "basis": (
+                        "HTML-decoded literal text in a supported renderable "
+                        "markup text node"
+                    ),
+                },
+                "rationale": rule.rationale,
+                "suggestion": rule.suggestion,
+                "owner_policy": owner_policy,
+            }))
+
+    for match in RAW_FILLER.finditer(text):
+        if any(
+            node_start <= match.start() and match.end() <= node_end
+            for node_start, node_end, _stack in node_ranges
+        ):
+            continue
+        classification = classify_placeholder_proof(
+            path,
+            text,
+            match.start(),
+            match.end(),
+            html.unescape(match.group(0)),
+        )
+        if classification is None:
+            continue
+        finding_classification, matched_signal = classification
+        findings.append(bind_finding({
+            "rule": rule.id,
+            "severity": rule.severity,
+            "classification": finding_classification,
+            "file": relative,
+            "line": line_number(text, match.start()),
+            "excerpt": " ".join(html.unescape(match.group(0)).split())[:160],
+            "matched_signal": matched_signal,
+            "rationale": rule.rationale,
+            "suggestion": rule.suggestion,
+            "owner_policy": owner_policy,
+        }))
+    return findings
 
 
 def strip_markup(value: str) -> str:
@@ -1474,112 +1360,6 @@ def semantic_fragment(attrs: str, text: str, body_prefix: str) -> bool:
 
 def line_number(text: str, position: int) -> int:
     return text.count("\n", 0, position) + 1
-
-
-def oklch_signature(
-    value: str,
-) -> Optional[tuple[float, float, float, Optional[float]]]:
-    match = OKLCH_VALUE.fullmatch(value)
-    if not match:
-        return None
-
-    def component(name: str, *, percent_allowed: bool) -> Optional[float]:
-        raw = match.group(name)
-        if raw is None:
-            return None
-        is_percent = raw.endswith("%")
-        if is_percent and not percent_allowed:
-            raise ValueError
-        number = float(raw[:-1] if is_percent else raw)
-        if is_percent:
-            number /= 100
-        return round(number, 6)
-
-    try:
-        lightness = component("lightness", percent_allowed=True)
-        chroma = component("chroma", percent_allowed=False)
-        hue = component("hue", percent_allowed=False)
-        alpha = component("alpha", percent_allowed=True)
-    except ValueError:
-        return None
-    if lightness is None or chroma is None or hue is None:
-        return None
-    return lightness, chroma, hue, alpha
-
-
-def current_shadcn_oklch_candidates(
-    records: list[tuple[Path, str, str]],
-    rule: Rule,
-) -> list[dict[str, object]]:
-    """Find a near-complete current default in one CSS declaration block."""
-    findings: list[dict[str, object]] = []
-    for _path, relative, text in records:
-        for block in CSS_DECLARATION_BLOCK.finditer(text):
-            declarations: dict[
-                str,
-                tuple[
-                    tuple[float, float, float, Optional[float]],
-                    int,
-                ],
-            ] = {}
-            body = block.group("body")
-            for declaration in SHADCN_OKLCH_DECLARATION.finditer(body):
-                signature = oklch_signature(declaration.group("value"))
-                if signature is None:
-                    continue
-                declarations[declaration.group("token").casefold()] = (
-                    signature,
-                    declaration.start(),
-                )
-            if len(declarations) < SHADCN_CURRENT_OKLCH_MIN_MATCHES:
-                continue
-
-            candidates = []
-            for profile, expected in SHADCN_CURRENT_OKLCH_DEFAULTS.items():
-                matching_tokens = sorted(
-                    token
-                    for token, (signature, _position) in declarations.items()
-                    if expected.get(token) == signature
-                )
-                if len(matching_tokens) >= SHADCN_CURRENT_OKLCH_MIN_MATCHES:
-                    candidates.append(
-                        (len(matching_tokens), profile, matching_tokens)
-                    )
-            if not candidates:
-                continue
-
-            matched_count, profile, matching_tokens = max(candidates)
-            first_position = min(
-                declarations[token][1] for token in matching_tokens
-            )
-            findings.append({
-                "rule": rule.id,
-                "severity": rule.severity,
-                "classification": rule.classification,
-                "file": relative,
-                "line": line_number(
-                    text,
-                    block.start("body") + first_position,
-                ),
-                "excerpt": (
-                    f"{matched_count}/{len(SHADCN_CURRENT_OKLCH_DEFAULTS[profile])} "
-                    f"current shadcn neutral {profile} OKLCH tokens match "
-                    "within one declaration block"
-                ),
-                "matched_signal": {
-                    "profile": profile,
-                    "matched_count": matched_count,
-                    "expected_count": len(
-                        SHADCN_CURRENT_OKLCH_DEFAULTS[profile]
-                    ),
-                    "matched_tokens": matching_tokens,
-                    "basis": "same CSS declaration block",
-                },
-                "rationale": rule.rationale,
-                "suggestion": rule.suggestion,
-                "owner_policy": None,
-            })
-    return findings
 
 
 def foreground_css_classes(
@@ -1661,164 +1441,6 @@ def literal_class_values(attrs: str) -> list[str]:
     return values
 
 
-def decorative_section_label_instances(
-    records: list[tuple[Path, str, str]],
-) -> list[dict[str, object]]:
-    instances: list[dict[str, object]] = []
-    tag_pattern = re.compile(
-        r"<(?P<tag>h[1-6]|div|p|span|small)\b(?P<attrs>[^>]*)>"
-        r"(?P<direct_text>[^<]{0,160})",
-        re.I | re.S,
-    )
-    for path, relative, text in records:
-        if path.suffix.lower() not in PROMINENT_MARKUP_SUFFIXES:
-            continue
-        for match in tag_pattern.finditer(text):
-            if context_is_negative_or_example(
-                text,
-                match.start(),
-                match.end(),
-            ):
-                continue
-            attrs = match.group("attrs")
-            class_tokens = [
-                token.rsplit(":", 1)[-1]
-                for value in literal_class_values(attrs)
-                for token in value.split()
-            ]
-            matched_classes = sorted({
-                token
-                for token in class_tokens
-                if DECORATIVE_SECTION_LABEL_CLASS.search(token)
-            })
-            if not matched_classes:
-                continue
-            if any(
-                SEMANTIC_SECTION_LABEL_CLASS.search(token)
-                for token in class_tokens
-            ):
-                continue
-            if SEMANTIC_SECTION_LABEL_ATTR.search(attrs):
-                continue
-            direct_text = " ".join(match.group("direct_text").split())
-            normalized_text = direct_text.casefold()
-            if (
-                normalized_text in SEMANTIC_STATUS_TEXT
-                or SEMANTIC_SECTION_LABEL_TEXT.fullmatch(direct_text)
-            ):
-                continue
-            instances.append({
-                "file": relative,
-                "line": line_number(text, match.start()),
-                "position": match.start(),
-                "excerpt": " ".join(match.group(0).split())[:160],
-                "matched_signal": {
-                    "classes": matched_classes,
-                    "direct_text": direct_text or None,
-                    "basis": "literal class on a content element",
-                },
-            })
-    return instances
-
-
-def aggregate_label_candidates(
-    instances: list[dict[str, object]],
-    rule: Rule,
-) -> list[dict[str, object]]:
-    by_file: dict[str, list[dict[str, object]]] = {}
-    for instance in instances:
-        by_file.setdefault(str(instance["file"]), []).append(instance)
-    findings: list[dict[str, object]] = []
-    for relative in sorted(by_file):
-        matched = sorted(
-            by_file[relative],
-            key=lambda item: (int(item["line"]), int(item["position"])),
-        )
-        if len(matched) < rule.min_occurrences:
-            continue
-        labels = [
-            {
-                "line": item["line"],
-                "classes": item["matched_signal"]["classes"],
-                "text": item["matched_signal"]["direct_text"],
-            }
-            for item in matched
-        ]
-        findings.append({
-            "rule": rule.id,
-            "severity": rule.severity,
-            "classification": rule.classification,
-            "file": relative,
-            "line": matched[0]["line"],
-            "excerpt": (
-                f"{len(matched)} decorative section-label treatments "
-                "in one renderable source"
-            ),
-            "matched_signal": {
-                "count": len(matched),
-                "labels": labels[:12],
-                "basis": "route-scoped literal section-label cluster",
-            },
-            "rationale": rule.rationale,
-            "suggestion": rule.suggestion,
-            "owner_policy": None,
-        })
-    return findings
-
-
-def rhetorical_label_candidates(
-    instances: list[dict[str, object]],
-) -> list[dict[str, object]]:
-    rule = next(
-        item for item in RULES if item.id == "rhetorical-label-cluster"
-    )
-    by_file: dict[str, list[dict[str, object]]] = {}
-    for instance in instances:
-        by_file.setdefault(str(instance["file"]), []).append(instance)
-    findings: list[dict[str, object]] = []
-    for relative in sorted(by_file):
-        all_labels = by_file[relative]
-        rhetorical = [
-            item
-            for item in all_labels
-            if RHETORICAL_LABEL_TEXT.fullmatch(
-                str(item["matched_signal"]["direct_text"] or "").strip()
-            )
-        ]
-        if len(all_labels) < 4 or len(rhetorical) < 3:
-            continue
-        rhetorical.sort(
-            key=lambda item: (int(item["line"]), int(item["position"]))
-        )
-        findings.append({
-            "rule": rule.id,
-            "severity": rule.severity,
-            "classification": rule.classification,
-            "file": relative,
-            "line": rhetorical[0]["line"],
-            "excerpt": (
-                f"{len(rhetorical)} rhetorical labels among "
-                f"{len(all_labels)} decorative labels"
-            ),
-            "matched_signal": {
-                "rhetorical_count": len(rhetorical),
-                "decorative_label_count": len(all_labels),
-                "labels": [
-                    {
-                        "line": item["line"],
-                        "text": item["matched_signal"]["direct_text"],
-                    }
-                    for item in rhetorical[:12]
-                ],
-                "basis": "route-scoped literal rhetorical-label cluster",
-            },
-            "rationale": rule.rationale,
-            "suggestion": rule.suggestion,
-            "owner_policy": None,
-        })
-    return findings
-
-
 def visible_prose_records(
     path: Path,
     text: str,
@@ -1846,9 +1468,8 @@ def visible_prose_records(
 
 def quantitative_claim_candidates(
     records: list[tuple[Path, str, str]],
-) -> tuple[list[dict[str, object]], dict[str, dict[str, object]]]:
+) -> list[dict[str, object]]:
     manual_review: list[dict[str, object]] = []
-    evidence_by_file: dict[str, dict[str, object]] = {}
     for path, relative, text in records:
         prose = visible_prose_records(path, text)
         claims: list[dict[str, object]] = []
@@ -1863,15 +1484,6 @@ def quantitative_claim_candidates(
             int(item["section"])
             for item in claims
             if item["section"] is not None
-        }
-        evidence_by_file[relative] = {
-            "claim_count": len(claims),
-            "section_count": len(section_ids),
-            "claims": claims,
-            "word_count": sum(
-                len(fragment_words(str(node["text"])))
-                for node in prose
-            ),
         }
         if len(claims) < 8 or len(section_ids) < 3:
             continue
@@ -1896,269 +1508,13 @@ def quantitative_claim_candidates(
             ),
             "owner_policy": None,
         })
-    return manual_review, evidence_by_file
-
-
-def copy_uniformity_candidates(
-    records: list[tuple[Path, str, str]],
-    label_instances: list[dict[str, object]],
-    quantitative_evidence: dict[str, dict[str, object]],
-) -> list[dict[str, object]]:
-    labels_by_file: dict[str, list[dict[str, object]]] = {}
-    for instance in label_instances:
-        labels_by_file.setdefault(str(instance["file"]), []).append(instance)
-    manual_review: list[dict[str, object]] = []
-    for path, relative, text in records:
-        quantitative = quantitative_evidence.get(relative, {})
-        if int(quantitative.get("word_count", 0)) < 400:
-            continue
-        sections = static_container_ranges(text, "section")
-        route_labels = labels_by_file.get(relative, [])
-        rhetorical_count = sum(
-            bool(
-                RHETORICAL_LABEL_TEXT.fullmatch(
-                    str(item["matched_signal"]["direct_text"] or "").strip()
-                )
-            )
-            for item in route_labels
-        )
-        contrast: list[dict[str, object]] = []
-        parallel: list[dict[str, object]] = []
-        for node in visible_prose_records(path, text):
-            for pattern, target in (
-                (CONTRAST_COPY_FORMULA, contrast),
-                (PARALLEL_LIST_SENTENCE, parallel),
-            ):
-                for match in pattern.finditer(str(node["text"])):
-                    target.append({
-                        "line": node["line"],
-                        "section": node["section"],
-                        "excerpt": match.group(0)[:160],
-                    })
-        contrast_sections = {
-            item["section"]
-            for item in contrast
-            if item["section"] is not None
-        }
-        parallel_sections = {
-            item["section"]
-            for item in parallel
-            if item["section"] is not None
-        }
-        cadence_count = 0
-        for start, end in sections:
-            section_source = text[start:end]
-            if (
-                any(
-                    start <= int(item["position"]) < end
-                    for item in route_labels
-                )
-                and re.search(r"<h[1-6]\b", section_source, re.I)
-                and re.search(r"<p\b", section_source, re.I)
-            ):
-                cadence_count += 1
-        signals: list[dict[str, object]] = []
-        if rhetorical_count >= 4:
-            signals.append({
-                "signal": "rhetorical-labels",
-                "count": rhetorical_count,
-            })
-        if (
-            int(quantitative.get("claim_count", 0)) >= 8
-            and int(quantitative.get("section_count", 0)) >= 3
-        ):
-            signals.append({
-                "signal": "quantitative-specificity",
-                "count": quantitative["claim_count"],
-            })
-        if len(contrast) >= 4 and len(contrast_sections) >= 3:
-            signals.append({
-                "signal": "contrast-reversal-formulas",
-                "count": len(contrast),
-                "examples": contrast[:5],
-            })
-        if len(parallel) >= 5 and len(parallel_sections) >= 3:
-            signals.append({
-                "signal": "parallel-list-cadence",
-                "count": len(parallel),
-                "examples": parallel[:5],
-            })
-        if cadence_count >= 4:
-            signals.append({
-                "signal": "repeated-label-heading-explanation-cadence",
-                "count": cadence_count,
-            })
-        if len(signals) < 3:
-            continue
-        first_line = min(
-            [int(item["line"]) for item in route_labels] or [1]
-        )
-        manual_review.append({
-            "file": relative,
-            "line": first_line,
-            "check": "copy-uniformity-cluster",
-            "severity": "low",
-            "reason": (
-                "At least three independent copy-form signals repeat across "
-                "this route. Accumulation can make the voice feel generated "
-                "or over-directed even though no individual construction "
-                "establishes authorship."
-            ),
-            "evidence": {
-                "word_count": quantitative.get("word_count", 0),
-                "signals": signals,
-            },
-            "suggestion": (
-                "Vary rhetorical mode by content job, retain concrete approved "
-                "facts, and let section structure follow the reader's decision "
-                "rather than one repeated explanatory cadence."
-            ),
-            "owner_policy": None,
-        })
-    return manual_review
-
-
-def section_primary_role(section_source: str) -> str:
-    if re.search(r"<form\b", section_source, re.I):
-        return "form"
-    if re.search(r"<h1\b", section_source, re.I):
-        return "hero"
-    if (
-        re.search(
-            r"<(?:button|input|select|output|meter)\b",
-            section_source,
-            re.I,
-        )
-        and re.search(r"<(?:figure|svg|dl|table)\b", section_source, re.I)
-    ):
-        return "estimator"
-    if re.search(r"<ol\b", section_source, re.I):
-        return "process"
-    if (
-        re.search(r"<(?:table|dl)\b", section_source, re.I)
-        or len(re.findall(r"<h3\b", section_source, re.I)) >= 3
-    ):
-        return "comparison"
-    if re.search(r"<(?:figure|img|svg|picture|video)\b", section_source, re.I):
-        return "media"
-    return "content"
-
-
-def route_role_signature(text: str) -> tuple[list[str], int]:
-    main_ranges = static_container_ranges(text, "main")
-    if not main_ranges:
-        return [], 0
-    main_start, main_end = main_ranges[0]
-    section_ranges = [
-        (start, end)
-        for start, end in static_container_ranges(text, "section")
-        if main_start <= start and end <= main_end
-    ]
-    roles = [
-        section_primary_role(text[start:end])
-        for start, end in section_ranges
-    ]
-    compressed: list[str] = []
-    for role in roles:
-        if not compressed or compressed[-1] != role:
-            compressed.append(role)
-    return compressed, len(section_ranges)
-
-
-def shared_role_sequence(
-    first: list[str],
-    second: list[str],
-) -> list[str]:
-    table = [
-        [0] * (len(second) + 1)
-        for _ in range(len(first) + 1)
-    ]
-    for left in range(len(first) - 1, -1, -1):
-        for right in range(len(second) - 1, -1, -1):
-            table[left][right] = (
-                1 + table[left + 1][right + 1]
-                if first[left] == second[right]
-                else max(table[left + 1][right], table[left][right + 1])
-            )
-    shared: list[str] = []
-    left = right = 0
-    while left < len(first) and right < len(second):
-        if first[left] == second[right]:
-            shared.append(first[left])
-            left += 1
-            right += 1
-        elif table[left + 1][right] >= table[left][right + 1]:
-            left += 1
-        else:
-            right += 1
-    return shared
-
-
-def parallel_route_skeleton_candidates(
-    records: list[tuple[Path, str, str]],
-) -> list[dict[str, object]]:
-    routes: list[dict[str, object]] = []
-    for path, relative, text in records:
-        if path.suffix.lower() not in STATIC_ROUTE_SUFFIXES:
-            continue
-        signature, section_count = route_role_signature(text)
-        if section_count >= 4 and len(signature) >= 4:
-            routes.append({
-                "file": relative,
-                "signature": signature,
-                "section_count": section_count,
-            })
-    manual_review: list[dict[str, object]] = []
-    for index, first in enumerate(routes):
-        for second in routes[index + 1:]:
-            shared = shared_role_sequence(
-                list(first["signature"]),
-                list(second["signature"]),
-            )
-            denominator = max(
-                len(first["signature"]),
-                len(second["signature"]),
-            )
-            similarity = len(shared) / denominator
-            if len(shared) < 4 or similarity < 0.75:
-                continue
-            manual_review.append({
-                "file": first["file"],
-                "line": 1,
-                "check": "parallel-route-skeleton",
-                "severity": "low",
-                "reason": (
-                    "Two substantial routes share a close sequence of main "
-                    "content roles after shared page chrome is excluded."
-                ),
-                "evidence": {
-                    "routes": [first["file"], second["file"]],
-                    "section_counts": [
-                        first["section_count"],
-                        second["section_count"],
-                    ],
-                    "signatures": [
-                        first["signature"],
-                        second["signature"],
-                    ],
-                    "shared_sequence": shared,
-                    "similarity": round(similarity, 3),
-                },
-                "suggestion": (
-                    "Confirm that both routes genuinely follow the same user "
-                    "decision sequence; otherwise restructure each around its "
-                    "own questions, proof, and action."
-                ),
-                "owner_policy": None,
-            })
     return manual_review
 
 
 def material_media_candidates(
     records: list[tuple[Path, str, str]],
-) -> tuple[list[dict[str, object]], dict[str, int]]:
+) -> list[dict[str, object]]:
     manual_review: list[dict[str, object]] = []
-    count_by_file: dict[str, int] = {}
     tag_pattern = re.compile(
         r"<(?P<tag>img|source|video|image)\b(?P<attrs>[^>]*)>",
         re.I | re.S,
@@ -2216,7 +1572,6 @@ def material_media_candidates(
                     "tag": "css-background",
                     "references": [value],
                 })
-        count_by_file[relative] = len(references)
         if not references:
             continue
         generated = bool(GENERATED_MEDIA_MARKER.search(text))
@@ -2244,74 +1599,403 @@ def material_media_candidates(
                 "references": references[:12],
             },
             "suggestion": (
-                "Inspect the rendered assets at full size for factual role, "
-                "provenance, documentary detail, geometry, text, logos, hands, "
-                "reflections, shadows, repeated artifacts, and over-uniform "
-                "lighting, grading, palette, or framing."
+                "Verify authorization, creator/source, license, consent where "
+                "relevant, crop, caption, alt treatment, and factual context. "
+                "Inspect rendered assets at full size for documentary detail, "
+                "geometry, text, logos, hands, reflections, shadows, repeated "
+                "artifacts, and over-uniform lighting, grading, palette, or framing."
             ),
             "owner_policy": None,
         })
-    return manual_review, count_by_file
+    return manual_review
 
 
-def concept_material_balance_candidates(
+def typography_compression_candidates(
     records: list[tuple[Path, str, str]],
-    media_count_by_file: dict[str, int],
 ) -> list[dict[str, object]]:
+    """Find clustered or severe legibility-reducing typography controls."""
     manual_review: list[dict[str, object]] = []
+    display_selector = re.compile(
+        r"(?:\bh[1-6]\b|(?:^|[-_.#\s])(?:display|headline|hero|poster|"
+        r"title)(?:$|[-_:\s>+~.#]))",
+        re.I,
+    )
+    reading_selector = re.compile(
+        r"(?:\b(?:body|p|li|dd|dt|blockquote|article)\b|"
+        r"(?:^|[-_.#\s])(?:body|copy|prose|paragraph|description|summary|"
+        r"lede|intro)(?:$|[-_:\s>+~.#]))",
+        re.I,
+    )
+    excluded_selector = re.compile(
+        r"(?:sr[-_]?only|visually[-_]?hidden|screen[-_]?reader)",
+        re.I,
+    )
+    letter_spacing = re.compile(
+        r"\b(?:letter-spacing|letterSpacing)\s*:\s*[\"']?\s*"
+        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<unit>em|rem|px)?\b",
+        re.I,
+    )
+    line_height = re.compile(
+        r"\b(?:line-height|lineHeight)\s*:\s*[\"']?\s*"
+        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<unit>em|rem)?\b",
+        re.I,
+    )
+    font_stretch = re.compile(
+        r"\b(?:font-stretch|fontStretch)\s*:\s*[\"']?\s*"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))%",
+        re.I,
+    )
+    width_axis = re.compile(
+        r"\b(?:font-variation-settings|fontVariationSettings)\s*:"
+        r"[^;{}]{0,240}"
+        r"[\"']wdth[\"']\s+"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))",
+        re.I,
+    )
+    horizontal_scale = re.compile(
+        r"\bscaleX\s*\(\s*"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<unit>%?)\s*\)",
+        re.I,
+    )
+    utility_tracking = re.compile(
+        r"\btracking-\[\s*"
+        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<unit>em|rem|px)\s*\]",
+        re.I,
+    )
+    utility_leading = re.compile(
+        r"\bleading-\[\s*"
+        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<unit>em|rem)?\s*\]",
+        re.I,
+    )
+    utility_stretch = re.compile(
+        r"\[\s*font-stretch\s*:\s*"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))%\s*\]",
+        re.I,
+    )
+    utility_width_axis = re.compile(
+        r"\[\s*font-variation-settings\s*:[^\]]{0,180}?"
+        r"[\"']?wdth[\"']?(?:_|[\s:])+"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))[^\]]*\]",
+        re.I,
+    )
+    utility_scale = re.compile(
+        r"\bscale-x-(?:\[\s*)?"
+        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))"
+        r"(?P<closing>\s*\])?",
+        re.I,
+    )
+
+    def signals_for(source: str, role: str) -> list[dict[str, object]]:
+        signals: list[dict[str, object]] = []
+        reading = role == "reading"
+
+        spacing = letter_spacing.search(source) or utility_tracking.search(source)
+        if spacing:
+            value = float(spacing.group("value"))
+            unit = (spacing.group("unit") or "").casefold()
+            threshold = -0.02 if reading else -0.03
+            pixel_threshold = -0.35 if reading else -0.5
+            if (
+                unit in {"em", "rem"} and value <= threshold
+            ) or (
+                unit == "px" and value <= pixel_threshold
+            ):
+                extreme = (
+                    value <= (-0.04 if reading else -0.07)
+                    if unit in {"em", "rem"}
+                    else value <= (-0.75 if reading else -1.0)
+                )
+                signals.append({
+                    "property": "letter-spacing",
+                    "value": f"{value:g}{unit}",
+                    "extreme": extreme,
+                })
+
+        leading = line_height.search(source) or utility_leading.search(source)
+        if leading:
+            value = float(leading.group("value"))
+            unit = (leading.group("unit") or "").casefold()
+            threshold = 1.35 if reading else 0.95
+            if unit in {"", "em"} and value < threshold:
+                signals.append({
+                    "property": "line-height",
+                    "value": f"{value:g}{unit}",
+                    "extreme": value < (1.2 if reading else 0.8),
+                })
+
+        stretch = font_stretch.search(source) or utility_stretch.search(source)
+        if stretch:
+            value = float(stretch.group("value"))
+            if value < 90:
+                signals.append({
+                    "property": "font-stretch",
+                    "value": f"{value:g}%",
+                    "extreme": value <= (80 if reading else 75),
+                })
+
+        width = width_axis.search(source) or utility_width_axis.search(source)
+        if width:
+            value = float(width.group("value"))
+            if value < 90:
+                signals.append({
+                    "property": "wdth-axis",
+                    "value": f"{value:g}",
+                    "extreme": value <= (80 if reading else 75),
+                })
+
+        scale = horizontal_scale.search(source) or utility_scale.search(source)
+        if scale:
+            value = float(scale.group("value"))
+            unit = (
+                (scale.groupdict().get("unit") or "")
+                if "unit" in scale.groupdict()
+                else ""
+            )
+            if utility_scale.fullmatch(scale.group(0)) or "scale-x-" in scale.group(0):
+                normalized = value / 100 if value > 2 else value
+            else:
+                normalized = value / 100 if unit == "%" else value
+            if normalized < 0.9:
+                signals.append({
+                    "property": "horizontal-scale",
+                    "value": f"{normalized:g}",
+                    "extreme": normalized <= (0.8 if reading else 0.75),
+                })
+        return signals
+
+    def append_review(
+        *,
+        relative: str,
+        line: int,
+        subject: str,
+        role: str,
+        signals: list[dict[str, object]],
+    ) -> None:
+        severe = any(bool(item.get("extreme")) for item in signals)
+        compound_display = role == "display" and len(signals) >= 2
+        compound_reading = role == "reading" and len(signals) >= 2
+        if not (severe or compound_display or compound_reading):
+            return
+        check = (
+            "compound-display-compression"
+            if compound_display
+            else "severe-typography-compression"
+        )
+        reason = (
+            "A prominent text treatment stacks at least two compression "
+            "controls. Tight tracking, narrow width, horizontal scaling, and "
+            "short leading can crowd real headings."
+            if compound_display
+            else (
+                "Reading text combines multiple crowding controls or uses an "
+                "extreme single control. Body copy, labels, and controls need "
+                "a larger comfort margin than a limited display treatment."
+                if role == "reading"
+                else (
+                    "A prominent text treatment uses an extreme single "
+                    "compression control. Even without a second trigger, this "
+                    "can make words touch or become difficult to parse."
+                )
+            )
+        )
+        manual_review.append({
+            "file": relative,
+            "line": line,
+            "check": check,
+            "severity": "medium",
+            "reason": reason,
+            "evidence": {
+                "subject": subject[:240],
+                "role": role,
+                "signals": signals,
+                "basis": (
+                    "display review triggers: tracking <= -0.03em or -0.5px, "
+                    "line-height < 0.95, stretch or wdth < 90; severe single "
+                    "triggers: tracking <= -0.07em, line-height < 0.8, "
+                    "stretch or wdth <= 75, or horizontal scale <= 0.75; "
+                    "reading roles use stricter comfort thresholds"
+                ),
+            },
+            "suggestion": (
+                "Proof the actual words at narrow, intermediate, and wide "
+                "sizes. Adjust the combination that causes crowding; compressed "
+                "display typography remains available when the actual words stay "
+                "legible, intentional, and resilient under content and viewport change."
+            ),
+            "owner_policy": None,
+        })
+
+    for path, relative, text in records:
+        suffix = path.suffix.lower()
+        if suffix not in {".css", ".less", ".scss"}:
+            continue
+        for block in CSS_DECLARATION_BLOCK.finditer(text):
+            selector = " ".join(block.group("header").split())
+            body = block.group("body")
+            if (
+                not selector
+                or selector.startswith("@")
+                or excluded_selector.search(selector)
+            ):
+                continue
+            role = (
+                "display"
+                if display_selector.search(selector)
+                else "reading"
+                if reading_selector.search(selector)
+                else ""
+            )
+            if not role:
+                continue
+            append_review(
+                relative=relative,
+                line=line_number(text, block.start()),
+                subject=selector,
+                role=role,
+                signals=signals_for(body, role),
+            )
+
+    element = re.compile(
+        r"<(?P<tag>body|article|blockquote|dd|div|dt|h[1-6]|li|p|section|"
+        r"span)\b(?P<attrs>[^>]*)>",
+        re.I | re.S,
+    )
     for path, relative, text in records:
         if path.suffix.lower() not in PROMINENT_MARKUP_SUFFIXES:
             continue
-        sections = static_container_ranges(text, "section")
-        if len(sections) < 5:
+        for match in element.finditer(text):
+            attrs = match.group("attrs")
+            if excluded_selector.search(attrs):
+                continue
+            tag = match.group("tag").casefold()
+            role = (
+                "display"
+                if tag in {f"h{level}" for level in range(1, 7)}
+                or display_selector.search(attrs)
+                else "reading"
+                if tag in {
+                    "body", "article", "blockquote", "dd", "dt", "li", "p",
+                }
+                or reading_selector.search(attrs)
+                else ""
+            )
+            if not role:
+                continue
+            signals = signals_for(attrs, role)
+            if not signals:
+                continue
+            append_review(
+                relative=relative,
+                line=line_number(text, match.start()),
+                subject=f"<{tag}> inline or utility treatment",
+                role=role,
+                signals=signals,
+            )
+    return manual_review
+
+
+def public_meta_copy_candidates(
+    records: list[tuple[Path, str, str]],
+) -> list[dict[str, object]]:
+    """Surface explicit internal-method language in public prose for review."""
+    manual_review: list[dict[str, object]] = []
+    for path, relative, text in records:
+        prose = visible_prose_records(path, text)
+        if not prose:
             continue
-        visible_text = " ".join(
-            str(item["text"])
-            for item in visible_prose_records(path, text)
-        )
-        if not CONCEPT_MARKER.search(visible_text):
-            continue
-        missing = [
-            name
-            for name, pattern in MISSING_IDENTITY_SIGNALS
-            if pattern.search(visible_text)
-        ]
-        if len(missing) < 3:
-            continue
-        features: list[str] = []
-        if re.search(r"<form\b", text, re.I):
-            features.append("form")
-        if re.search(r"<(?:svg|canvas)\b", text, re.I):
-            features.append("dynamic-or-diagrammatic-visual")
-        if (
-            re.search(r"<(?:input|select|output|meter)\b", text, re.I)
-            and re.search(r"<(?:figure|svg|dl|table)\b", text, re.I)
-        ):
-            features.append("estimator-or-calculator")
-        if media_count_by_file.get(relative, 0) >= 3:
-            features.append("multi-image-art-direction")
-        if len(features) < 2:
+        matches: list[dict[str, object]] = []
+        for node in prose:
+            for match in PUBLIC_META_COPY_MARKER.finditer(str(node["text"])):
+                matches.append({
+                    "line": node["line"],
+                    "section": node["section"],
+                    "value": match.group(0),
+                })
+        sections = {
+            item["section"]
+            for item in matches
+            if item["section"] is not None
+        }
+        if not matches:
             continue
         manual_review.append({
             "file": relative,
-            "line": 1,
-            "check": "concept-material-balance",
-            "severity": "low",
+            "line": matches[0]["line"],
+            "check": "public-meta-copy-contamination",
+            "severity": "medium",
             "reason": (
-                "A clearly labeled concept combines a substantial presentation "
-                "system with several missing identity inputs. The disclosure is "
-                "honest; the remaining question is whether design sophistication "
-                "has outrun approved project material."
+                "Public-facing prose contains language that appears to describe "
+                "an internal design method, unresolved input, or production "
+                "state. Static source scanning cannot decide whether the "
+                "project intentionally exposes that information."
             ),
             "evidence": {
+                "match_count": len(matches),
                 "section_count": len(sections),
-                "showcase_features": features,
-                "missing_identity_signals": missing,
+                "examples": matches[:12],
             },
             "suggestion": (
-                "Ground conspicuous copy, scenes, interactions, and figures in "
-                "real client material where available; keep the concept more "
-                "restrained where that material is still missing."
+                "Review the phrase against the project's public-copy boundary. "
+                "Keep every disclosure or limitation the audience actually "
+                "needs; move internal methodology and unresolved-input logs to "
+                "project records. Do not target a universal disclosure count."
+            ),
+            "owner_policy": None,
+        })
+    return manual_review
+
+
+def nonfunctional_concept_affordance_candidates(
+    records: list[tuple[Path, str, str]],
+) -> list[dict[str, object]]:
+    manual_review: list[dict[str, object]] = []
+    button = re.compile(
+        r"<button\b(?P<attrs>[^>]*)>(?P<body>.*?)</button>",
+        re.I | re.S,
+    )
+    for path, relative, text in records:
+        if path.suffix.lower() not in STATIC_MARKUP_SUFFIXES:
+            continue
+        candidates: list[dict[str, object]] = []
+        for match in button.finditer(text):
+            if not re.search(r"\bdisabled\b", match.group("attrs"), re.I):
+                continue
+            label = " ".join(
+                re.sub(r"<[^>]+>", " ", match.group("body")).split()
+            )
+            if not re.search(
+                r"\b(?:concept|demo|not\s+connected|unavailable|"
+                r"not\s+available|coming\s+soon)\b",
+                label,
+                re.I,
+            ):
+                continue
+            candidates.append({
+                "line": line_number(text, match.start()),
+                "label": label[:160],
+            })
+        if not candidates:
+            continue
+        manual_review.append({
+            "file": relative,
+            "line": candidates[0]["line"],
+            "check": "nonfunctional-concept-affordance",
+            "severity": "medium",
+            "reason": (
+                "The public route presents a disabled concept or unavailable "
+                "control. Honesty prevents a false action, but the affordance "
+                "may still advertise a feature the visitor cannot use."
+            ),
+            "evidence": {"controls": candidates[:12]},
+            "suggestion": (
+                "Remove the control unless its unavailable state is necessary "
+                "to the real task; otherwise replace it with a meaningful "
+                "working route or plain explanatory text."
             ),
             "owner_policy": None,
         })
@@ -2395,8 +2079,8 @@ def prominent_fragment_candidates(
     records: list[tuple[Path, str, str]],
     css_classes: dict[str, list[dict[str, object]]],
     style_objects: dict[Path, dict[str, str]],
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    findings: list[dict[str, object]] = []
+) -> list[dict[str, object]]:
+    """Surface prominent styled fragments without treating them as defects."""
     manual_review: list[dict[str, object]] = []
     block_pattern = re.compile(
         r"<(?P<tag>h[1-6]|div|p|strong)\b(?P<attrs>[^>]*)>"
@@ -2433,22 +2117,30 @@ def prominent_fragment_candidates(
                 absolute_start = block.start("body") + fragment.start()
                 line = line_number(text, absolute_start)
                 if signal:
-                    rule_id = (
-                        "decorative-headline-span"
-                        if tag.startswith("h")
-                        else "decorative-display-fragment"
-                    )
-                    rule = next(item for item in RULES if item.id == rule_id)
-                    findings.append({
-                        "rule": rule_id,
-                        "severity": rule.severity,
-                        "classification": "advisory",
+                    manual_review.append({
                         "file": relative,
                         "line": line,
-                        "excerpt": plain[:160],
-                        "matched_signal": signal,
-                        "rationale": rule.rationale,
-                        "suggestion": rule.suggestion,
+                        "check": "prominent-fragment-context",
+                        "severity": "low",
+                        "fragment": plain[:80],
+                        "evidence": {
+                            "element": tag,
+                            "style_signal": signal,
+                            "basis": (
+                                "static source identifies a foreground-style "
+                                "change inside prominent copy"
+                            ),
+                        },
+                        "reason": (
+                            "A styled prominent fragment is a neutral expressive "
+                            "ingredient. Its presence, repetition, and word count "
+                            "do not establish visual harm or generated authorship."
+                        ),
+                        "suggestion": (
+                            "Review the rendered meaning, hierarchy, legibility, "
+                            "and declared project concerns. Keep it when it serves "
+                            "the composition; do not revise it because of a count."
+                        ),
                         "owner_policy": None,
                     })
                 elif unresolved:
@@ -2456,11 +2148,19 @@ def prominent_fragment_candidates(
                         "file": relative,
                         "line": line,
                         "check": "prominent-fragment-dynamic-style",
+                        "severity": "low",
                         "fragment": plain[:80],
                         "reason": (
-                            "Prominent one- or two-word fragment uses a runtime-computed "
-                            "class/style that static scanning cannot resolve."
+                            "A prominent fragment uses a runtime-computed class or "
+                            "style that static scanning cannot resolve. The source "
+                            "does not establish visual harm."
                         ),
+                        "suggestion": (
+                            "Inspect the rendered fragment only if it intersects a "
+                            "declared project concern; never infer a defect from its "
+                            "presence or frequency alone."
+                        ),
+                        "owner_policy": None,
                     })
 
     selector_rule = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
@@ -2476,267 +2176,24 @@ def prominent_fragment_candidates(
                 or not FOREGROUND_DECLARATION.search(";" + declarations)
             ):
                 continue
-            rule = next(
-                item for item in RULES
-                if item.id == "decorative-display-fragment"
-            )
-            findings.append({
-                "rule": rule.id,
-                "severity": rule.severity,
-                "classification": "advisory",
+            manual_review.append({
                 "file": relative,
                 "line": line_number(text, match.start()),
-                "excerpt": " ".join(selector.split())[:160],
-                "matched_signal": "prominent descendant selector sets a foreground color",
-                "confidence": "selector-only; confirm fragment length and meaning in rendered use",
-                "rationale": rule.rationale,
-                "suggestion": rule.suggestion,
-                "owner_policy": None,
-            })
-    return findings, manual_review
-
-
-def hex_rgb(value: str) -> Optional[tuple[float, float, float]]:
-    raw = value.lstrip("#")
-    if len(raw) in {3, 4}:
-        raw = "".join(character * 2 for character in raw[:3])
-    elif len(raw) in {6, 8}:
-        raw = raw[:6]
-    else:
-        return None
-    try:
-        channels = tuple(int(raw[index:index + 2], 16) / 255 for index in (0, 2, 4))
-    except ValueError:
-        return None
-    return channels
-
-
-def srgb_linear(channel: float) -> float:
-    return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
-
-
-def oklch_from_hex(value: str) -> Optional[tuple[float, float, float]]:
-    rgb = hex_rgb(value)
-    if rgb is None:
-        return None
-    red, green, blue = (srgb_linear(channel) for channel in rgb)
-    x = 0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue
-    y = 0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue
-    z = 0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue
-    x_root, y_root, z_root = (
-        math.copysign(abs(value_) ** (1 / 3), value_)
-        for value_ in (x, y, z)
-    )
-    lightness = 0.2104542553 * x_root + 0.7936177850 * y_root - 0.0040720468 * z_root
-    a_axis = 1.9779984951 * x_root - 2.4285922050 * y_root + 0.4505937099 * z_root
-    b_axis = 0.0259040371 * x_root + 0.7827717662 * y_root - 0.8086757660 * z_root
-    chroma = math.hypot(a_axis, b_axis)
-    hue = math.degrees(math.atan2(b_axis, a_axis)) % 360
-    return lightness, chroma, hue
-
-
-def raw_palette_signals(corpus: str) -> dict[str, list[dict[str, object]]]:
-    signals: dict[str, list[dict[str, object]]] = {"cream": [], "sage": []}
-    seen: set[str] = set()
-    for match in re.finditer(r"(?<![0-9A-Fa-f])#[0-9A-Fa-f]{3,8}\b", corpus):
-        raw = match.group(0)
-        canonical = raw.casefold()
-        if canonical in seen:
-            continue
-        seen.add(canonical)
-        converted = oklch_from_hex(raw)
-        if converted is None:
-            continue
-        lightness, chroma, hue = converted
-        detail = {
-            "value": raw,
-            "oklch": {
-                "l": round(lightness, 4),
-                "c": round(chroma, 4),
-                "h": round(hue, 2),
-            },
-        }
-        if lightness >= 0.88 and 0.012 <= chroma <= 0.09 and 55 <= hue <= 115:
-            signals["cream"].append({"signal": "cream-color", **detail})
-        if 0.25 <= lightness <= 0.78 and 0.025 <= chroma <= 0.16 and 115 <= hue <= 170:
-            signals["sage"].append({"signal": "muted-green-color", **detail})
-    cream_keyword = re.search(
-        r"\b(?:cream|warm[-_ ]?(?:white|neutral)|beige)\b", corpus, re.I
-    )
-    sage_keyword = re.search(r"\b(?:sage|forest[-_ ]?green)\b", corpus, re.I)
-    if cream_keyword:
-        signals["cream"].append({
-            "signal": "cream-keyword",
-            "value": cream_keyword.group(0),
-        })
-    if sage_keyword:
-        signals["sage"].append({
-            "signal": "sage-keyword",
-            "value": sage_keyword.group(0),
-        })
-    return signals
-
-
-def markup_serif_utility_role(path: Path, text: str) -> Optional[str]:
-    """Return a literal heading utility role, excluding source-code strings."""
-    if path.suffix.lower() not in STATIC_MARKUP_SUFFIXES:
-        return None
-    index = 0
-    while index < len(text):
-        start = text.find("<", index)
-        if start < 0:
-            return None
-        parsed = parse_markup_tag(text, start)
-        if not parsed:
-            index = start + 1
-            continue
-        end, kind, name, _ = parsed
-        index = end
-        if (
-            kind != "open"
-            or name not in {"h1", "h2", "h3"}
-            or enclosing_source_literal(text, start, start + 1)
-        ):
-            continue
-        tag = text[start:end]
-        for class_match in re.finditer(
-            r"\b(?:class|className)\s*=\s*(?:"
-            r"(?P<quote>[\"'])(?P<quoted>[^\"']*)(?P=quote)"
-            r"|(?P<unquoted>[^\s>{}]+))",
-            tag,
-            re.I,
-        ):
-            classes = (
-                class_match.group("quoted")
-                if class_match.group("quoted") is not None
-                else class_match.group("unquoted")
-            )
-            if any(
-                token.strip("!").casefold().split(":")[-1] == "font-serif"
-                for token in classes.split()
-            ):
-                return " ".join(tag.split())[:160]
-    return None
-
-
-def compound_candidates(
-    root: Path,
-    groups: dict[Path, list[tuple[Path, str]]],
-) -> list[dict[str, object]]:
-    findings: list[dict[str, object]] = []
-    display_serif_role = re.compile(
-        r"(?:"
-        r"--[A-Za-z0-9_-]*(?:display|heading|headline|hero|editorial)"
-        r"[A-Za-z0-9_-]*\s*:\s*[^;\n]{0,180}\bserif\b"
-        r"|"
-        r"(?:h[1-3]|[.#][A-Za-z0-9_-]*(?:display|heading|headline|hero|editorial)"
-        r"[A-Za-z0-9_-]*)[^{]{0,100}\{[^}]{0,280}"
-        r"(?:font-family|font)\s*:[^;}]{0,180}\bserif\b"
-        r")",
-        re.I,
-    )
-    saas_patterns = (
-        ("features", re.compile(r"\bfeatures?\b", re.I)),
-        ("testimonials", re.compile(r"\btestimonials?\b", re.I)),
-        ("faq", re.compile(r"\bfaq\b|frequently asked", re.I)),
-        ("generic-cta", re.compile(r"\bget started\b|\bstart (?:today|now)\b", re.I)),
-    )
-    for group in sorted(groups, key=lambda item: item.as_posix()):
-        sources = sorted(
-            groups[group],
-            key=lambda item: item[0].relative_to(root).as_posix(),
-        )
-        corpus = "\n".join(text for _, text in sources)
-        relative_group = group.relative_to(root).as_posix() or "."
-        palette = raw_palette_signals(corpus)
-        serif_roles = []
-        for path, text in sources:
-            css_role = display_serif_role.search(text)
-            markup_role = markup_serif_utility_role(path, text)
-            if css_role:
-                serif_roles.append((
-                    path,
-                    " ".join(css_role.group(0).split())[:160],
-                ))
-            if markup_role:
-                serif_roles.append((path, markup_role))
-        serif_role = serif_roles[0] if serif_roles else None
-        matched_signals: list[dict[str, object]] = []
-        if palette["cream"]:
-            matched_signals.append(palette["cream"][0])
-        if serif_role:
-            matched_signals.append({
-                "signal": "display-serif-role",
-                "value": serif_role[1],
-            })
-        if palette["sage"]:
-            matched_signals.append(palette["sage"][0])
-        if len(matched_signals) == 3:
-            locations = sorted({
-                path.relative_to(root).as_posix()
-                for path, text in sources
-                if (
-                    display_serif_role.search(text)
-                    or markup_serif_utility_role(path, text)
-                    or raw_palette_signals(text)["cream"]
-                    or raw_palette_signals(text)["sage"]
-                )
-            })
-            findings.append({
-                "rule": "cream-serif-sage-cluster",
-                "severity": "medium",
-                "classification": "advisory",
-                "file": relative_group,
-                "line": 1,
-                "excerpt": (
-                    "3/3 independently evaluated palette/type signals; files: "
-                    + ", ".join(locations[:6])
-                ),
-                "matched_signals": matched_signals,
-                "rationale": (
-                    "Cream, display serif, and a muted green together are a "
-                    "fashionable combination worth testing for project specificity."
+                "check": "prominent-fragment-selector-context",
+                "severity": "low",
+                "selector": " ".join(selector.split())[:160],
+                "reason": (
+                    "A prominent descendant selector changes foreground color, "
+                    "but source alone cannot establish fragment length, frequency, "
+                    "meaning, or visual harm."
                 ),
                 "suggestion": (
-                    "Retain the combination only when real material and the intended "
-                    "time register support it; do not swap motifs mechanically."
+                    "Review the rendered selector only in project context; do not "
+                    "treat its presence or count as an automatic finding."
                 ),
                 "owner_policy": None,
             })
-
-        saas_signals: list[dict[str, object]] = []
-        for signal_name, pattern in saas_patterns:
-            for match in pattern.finditer(corpus):
-                if context_is_negative_or_example(corpus, match.start(), match.end()):
-                    continue
-                saas_signals.append({
-                    "signal": signal_name,
-                    "value": match.group(0),
-                })
-                break
-        if len(saas_signals) >= 3:
-            findings.append({
-                "rule": "generic-saas-section-cluster",
-                "severity": "medium",
-                "classification": "advisory",
-                "file": relative_group,
-                "line": 1,
-                "excerpt": (
-                    f"{len(saas_signals)}/{len(saas_patterns)} non-negated "
-                    "section signals in one route/component directory"
-                ),
-                "matched_signals": saas_signals,
-                "rationale": (
-                    "A feature/testimonial/FAQ/generic-CTA cluster can indicate an "
-                    "information architecture inherited from a starter."
-                ),
-                "suggestion": (
-                    "Derive section order from actual decisions, objections, proof, "
-                    "and task sequence."
-                ),
-                "owner_policy": None,
-            })
-    return findings
+    return manual_review
 
 
 def main() -> int:
@@ -2750,7 +2207,8 @@ def main() -> int:
             "--fail-on none only when a zero-exit advisory run is intentional. "
             "--fail-on applies only to conservative gate findings, never advisories. "
             "If a relevant source cannot be decoded or exceeds 5 MiB, --fail-on "
-            "fails closed unless an active owner acknowledgement covers that path. "
+            "fails closed; an owner acknowledgement records separate review but "
+            "never turns incomplete source coverage into a pass. "
             "Coverage is bounded to the listed common web-source suffixes; "
             "runtime-generated or dynamically rendered output still needs manual review."
         ),
@@ -2763,7 +2221,7 @@ def main() -> int:
             "JSON allowlist; defaults to .design-dna/scan-allowlist.json when "
             "present. Rule suppressions require an exact rule, path, finding "
             "fingerprint, reason, owner, and expiry. The same file can explicitly "
-            "acknowledge skipped source paths."
+            "acknowledge skipped source paths using the exact SHA-256 digest and size."
         ),
     )
     parser.add_argument(
@@ -2786,6 +2244,15 @@ def main() -> int:
             "docs, documentation, and reference trees. Tests, stories, fixtures, "
             "dependencies, generated output, and vendor trees remain excluded "
             "unless an existing --include override applies where supported."
+        ),
+    )
+    parser.add_argument(
+        "--built-output",
+        action="store_true",
+        help=(
+            "Include recognized build-output trees (.next, .nuxt, .output, "
+            ".svelte-kit, build, and dist) in addition to normal source. "
+            "Dependency, vendor, coverage, metadata, and VCS trees remain excluded."
         ),
     )
     parser.add_argument(
@@ -2824,12 +2291,10 @@ def main() -> int:
     parser.add_argument(
         "--owner-policy",
         type=Path,
-        help="Owner policy; defaults to the policy bundled with this skill.",
-    )
-    parser.add_argument(
-        "--type-watch",
-        type=Path,
-        help="Dated type-convergence policy; defaults to the policy bundled with this skill.",
+        help=(
+            "Owner policy; defaults to PROJECT/.design-dna/owner-policy.yml "
+            "when present, otherwise the publisher policy bundled with this skill."
+        ),
     )
     parser.add_argument("--json", action="store_true")
     parser.add_argument(
@@ -2864,7 +2329,7 @@ def main() -> int:
         template = (
             Path(__file__).resolve().parents[1]
             / "templates"
-            / "scan-allowlist.json"
+            / "scan-allowlist.example.json"
         )
         try:
             payload = strict_json(template.read_text(encoding="utf-8"))
@@ -2921,7 +2386,14 @@ def main() -> int:
     root = Path(os.path.abspath(os.fspath(args.project.expanduser())))
     try:
         if not root.is_dir() or is_reparse(root):
-            print(json.dumps({"ok": False, "error": {"code": "unsafe-project", "path": str(root)}}), file=sys.stderr)
+            print(json.dumps({
+                "schema_version": SCAN_RESULT_SCHEMA_VERSION,
+                "artifact_type": SCAN_RESULT_ARTIFACT_TYPE,
+                "ok": False,
+                "execution_ok": False,
+                "execution": {"status": "failed", "ok": False},
+                "error": {"code": "unsafe-project", "path": str(root)},
+            }), file=sys.stderr)
             return 2
         if args.emit_allowlist_entry:
             if not FINGERPRINT_PATTERN.fullmatch(args.emit_allowlist_entry):
@@ -2958,11 +2430,8 @@ def main() -> int:
         )
         if not allowlist_path.is_absolute():
             allowlist_path = root / allowlist_path
-        bundled_policy = Path(__file__).resolve().parents[1] / "policy"
-        type_watch_path = args.type_watch or (bundled_policy / "type-convergence-watch.yml")
-        type_rule, type_watch = load_type_watch(type_watch_path)
-        rules = (*RULES, type_rule)
-        compound_rule_ids = {"cream-serif-sage-cluster", "generic-saas-section-cluster"}
+        skill_root = Path(__file__).resolve().parents[1]
+        rules = RULES
         (
             entries,
             expired_entries,
@@ -2971,13 +2440,18 @@ def main() -> int:
         ) = load_allowlist(
             allowlist_path if args.allowlist or allowlist_path.is_file() else None,
             project=root,
-            known_rules={rule.id for rule in rules} | compound_rule_ids,
+            known_rules={rule.id for rule in rules},
             non_overridable_rules=NON_OVERRIDABLE_RULES,
         )
+        project_owner_policy = root / ".design-dna" / "owner-policy.yml"
         owner_policy_path = args.owner_policy or (
-            Path(__file__).resolve().parents[1]
-            / "policy"
-            / "owner-defaults.yml"
+            project_owner_policy
+            if project_owner_policy.is_file()
+            else (
+                Path(__file__).resolve().parents[1]
+                / "policy"
+                / "owner-defaults.yml"
+            )
         )
         if not owner_policy_path.is_absolute() and args.owner_policy is not None:
             owner_policy_path = root / owner_policy_path
@@ -2986,37 +2460,27 @@ def main() -> int:
         )
         policy = load_owner_policy(owner_policy_path)
         rule_policy_key = {
-            "generic-gradient-text": "gradient_headline_text_without_semantic_or_brand_reason",
-            "uniform-pill-language": "hierarchy_follows_content_and_task",
-            "stock-fade-up": "motion_has_user_or_experience_purpose",
-            "generic-hover-lift": "motion_has_user_or_experience_purpose",
-            "repeated-decorative-section-label": "hierarchy_follows_content_and_task",
-            "rhetorical-label-cluster": "hierarchy_follows_content_and_task",
-            "decorative-headline-span": "arbitrary_headline_fragment_emphasis",
-            "decorative-display-fragment": "arbitrary_prominent_copy_fragment_emphasis",
-            "emoji-as-interface-icon": "semantic_maintainable_implementation",
+            "deferred-content-visibility": "semantic_implementation",
             "placeholder-proof": "release_residue",
-            "claim-needs-provenance": "fabricated_proof_or_business_facts",
-            "generic-cta-copy": "hierarchy_follows_content_and_task",
-            "repeated-sparkle-icon": "hierarchy_follows_content_and_task",
-            "hardcoded-large-section-gap": "hierarchy_follows_content_and_task",
-            "generic-saas-section-cluster": "hierarchy_follows_content_and_task",
-            "presentation-script-comment-cluster": "release_residue",
-            "quantitative-claim-density": "fabricated_proof_or_business_facts",
-            "copy-uniformity-cluster": "hierarchy_follows_content_and_task",
-            "parallel-route-skeleton": "hierarchy_follows_content_and_task",
-            "material-media-review": "representation_and_cultural_context",
-            "generated-media-authenticity": "representation_and_cultural_context",
-            "media-authenticity-and-provenance": "representation_and_cultural_context",
-            "concept-material-balance": "hierarchy_follows_content_and_task",
-            "unexamined-default-font": "unexamined_generator_default_typography",
+            "claim-needs-provenance": "truth_and_claims",
+            "quantitative-claim-density": "truth_and_claims",
+            "generated-media-authenticity": "generated_concept_media",
+            "media-authenticity-and-provenance": "truth_and_claims",
+            "compound-display-compression": "typography_comfort",
+            "severe-typography-compression": "typography_comfort",
+            "public-meta-copy-contamination": "public_copy_boundary",
+            "nonfunctional-concept-affordance": "working_controls",
+            "prominent-fragment-context": "content_hierarchy",
+            "prominent-fragment-dynamic-style": "content_hierarchy",
+            "prominent-fragment-selector-context": "content_hierarchy",
         }
         findings: list[dict[str, object]] = []
         suppressed_findings: list[dict[str, object]] = []
         pending: dict[str, list[dict[str, object]]] = {rule.id: [] for rule in rules}
-        compound_groups: dict[Path, list[tuple[Path, str]]] = {}
+        placeholder_rule = next(
+            rule for rule in rules if rule.id == "placeholder-proof"
+        )
         records: list[tuple[Path, str, str]] = []
-        raw_records: list[tuple[Path, str, str]] = []
         skipped_files: list[str] = []
         skipped_oversized_files: list[str] = []
         skipped_sources: list[dict[str, object]] = []
@@ -3026,7 +2490,11 @@ def main() -> int:
         scan_suffixes = set(TEXT_SUFFIXES)
         if args.structured_content:
             scan_suffixes.update(STRUCTURED_CONTENT_SUFFIXES)
-        for path in iter_files(root, scan_suffixes):
+        for path in iter_files(
+            root,
+            scan_suffixes,
+            include_built_output=args.built_output,
+        ):
             eligible_file_count += 1
             relative = path.relative_to(root).as_posix()
             if (
@@ -3046,61 +2514,90 @@ def main() -> int:
                 excluded_default_files.append(relative)
                 continue
             try:
-                if path.stat().st_size > MAX_TEXT_FILE_BYTES:
+                measured_size = path.stat().st_size
+                if measured_size > MAX_TEXT_FILE_BYTES:
+                    source_sha256, source_size = file_sha256_and_size(path)
                     skipped_oversized_files.append(relative)
                     acknowledgement = skipped_acknowledgement(
-                        relative, skipped_acknowledgements
+                        relative,
+                        source_sha256,
+                        source_size,
+                        skipped_acknowledgements,
                     )
                     skipped_sources.append({
                         "file": relative,
                         "reason": "source exceeds the 5 MiB scanner limit",
+                        "sha256": source_sha256,
+                        "size_bytes": source_size,
                         "acknowledged": acknowledgement is not None,
                         "acknowledgement": acknowledgement,
                     })
                     continue
-                text = path.read_text(encoding="utf-8")
+                source_bytes = path.read_bytes()
+                if len(source_bytes) > MAX_TEXT_FILE_BYTES:
+                    source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+                    source_size = len(source_bytes)
+                    skipped_oversized_files.append(relative)
+                    acknowledgement = skipped_acknowledgement(
+                        relative,
+                        source_sha256,
+                        source_size,
+                        skipped_acknowledgements,
+                    )
+                    skipped_sources.append({
+                        "file": relative,
+                        "reason": "source exceeds the 5 MiB scanner limit",
+                        "sha256": source_sha256,
+                        "size_bytes": source_size,
+                        "acknowledged": acknowledgement is not None,
+                        "acknowledgement": acknowledgement,
+                    })
+                    continue
+                text = source_bytes.decode("utf-8")
             except UnicodeError:
+                source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+                source_size = len(source_bytes)
                 skipped_files.append(relative)
                 acknowledgement = skipped_acknowledgement(
-                    relative, skipped_acknowledgements
+                    relative,
+                    source_sha256,
+                    source_size,
+                    skipped_acknowledgements,
                 )
                 skipped_sources.append({
                     "file": relative,
                     "reason": "source is not valid UTF-8",
+                    "sha256": source_sha256,
+                    "size_bytes": source_size,
                     "acknowledged": acknowledgement is not None,
                     "acknowledgement": acknowledgement,
                 })
                 continue
             except OSError as exc:
                 raise RuntimeError(f"file-read-failed: {path}: {exc}") from exc
-            raw_records.append((path, relative, text))
             scan_text = without_comments(text)
             records.append((path, relative, scan_text))
-            if path.suffix.lower() != ".md":
-                compound_groups.setdefault(path.parent, []).append((path, scan_text))
+            pending[placeholder_rule.id].extend(
+                placeholder_proof_candidates(
+                    path,
+                    relative,
+                    scan_text,
+                    placeholder_rule,
+                    policy.get(
+                        rule_policy_key.get(placeholder_rule.id, ""),
+                        "",
+                    ) or None,
+                )
+            )
             for rule in rules:
-                if rule.pattern is None:
+                if rule.pattern is None or rule.id == placeholder_rule.id:
                     continue
                 for match in rule.pattern.finditer(scan_text):
-                    proof_classification = None
-                    if rule.id == "placeholder-proof":
-                        proof_classification = classify_placeholder_proof(
-                            path,
-                            scan_text,
-                            match.start(),
-                            match.end(),
-                            match.group(0),
-                        )
-                        if proof_classification is None:
-                            continue
                     line = line_number(scan_text, match.start())
                     policy_value = policy.get(rule_policy_key.get(rule.id, ""), "")
                     excerpt = " ".join(match.group(0).split())[:160]
                     classification = rule.classification
                     matched_signal: object = match.group(0)
-                    if rule.id == "placeholder-proof":
-                        assert proof_classification is not None
-                        classification, matched_signal = proof_classification
                     finding = bind_finding({
                         "rule": rule.id,
                         "severity": rule.severity,
@@ -3116,9 +2613,12 @@ def main() -> int:
                     pending[rule.id].append(finding)
         for rule in rules:
             matches = pending[rule.id]
-            if len(matches) < rule.min_occurrences:
-                continue
-            for finding in matches:
+            eligible_matches = (
+                matches
+                if len(matches) >= rule.min_occurrences
+                else []
+            )
+            for finding in eligible_matches:
                 suppression = allowlist_entry(finding, entries)
                 if suppression:
                     suppressed_findings.append(
@@ -3126,86 +2626,20 @@ def main() -> int:
                     )
                     continue
                 findings.append(finding)
-        section_label_rule = next(
-            rule
-            for rule in rules
-            if rule.id == "repeated-decorative-section-label"
-        )
-        section_label_instances = decorative_section_label_instances(records)
-        section_label_findings = aggregate_label_candidates(
-            section_label_instances,
-            section_label_rule,
-        )
-        rhetorical_findings = rhetorical_label_candidates(
-            section_label_instances
-        )
-        comment_findings = presentation_script_comment_candidates(raw_records)
-        for raw_finding in (
-            section_label_findings
-            + rhetorical_findings
-            + comment_findings
-        ):
-            finding = bind_finding(raw_finding)
-            policy_value = policy.get(
-                rule_policy_key.get(str(finding["rule"]), ""),
-                "",
-            )
-            finding["owner_policy"] = policy_value or None
-            suppression = allowlist_entry(finding, entries)
-            if suppression:
-                suppressed_findings.append(
-                    suppressed_finding(finding, suppression)
-                )
-                continue
-            findings.append(finding)
-        shadcn_rule = next(
-            rule for rule in rules if rule.id == "untouched-shadcn-token"
-        )
-        for raw_finding in current_shadcn_oklch_candidates(records, shadcn_rule):
-            finding = bind_finding(raw_finding)
-            suppression = allowlist_entry(finding, entries)
-            if suppression:
-                suppressed_findings.append(
-                    suppressed_finding(finding, suppression)
-                )
-                continue
-            findings.append(finding)
         css_classes = foreground_css_classes(records)
         style_objects = react_style_objects(records)
-        fragment_findings, manual_review = prominent_fragment_candidates(
+        manual_review = prominent_fragment_candidates(
             records, css_classes, style_objects
         )
-        for raw_finding in fragment_findings:
-            finding = bind_finding(raw_finding)
-            rule_id = str(finding["rule"])
-            suppression = allowlist_entry(finding, entries)
-            if suppression:
-                suppressed_findings.append(
-                    suppressed_finding(finding, suppression)
-                )
-                continue
-            policy_value = policy.get(rule_policy_key.get(rule_id, ""), "")
-            finding["owner_policy"] = policy_value or None
-            findings.append(finding)
-        quantitative_review, quantitative_evidence = (
-            quantitative_claim_candidates(records)
-        )
-        media_review, media_count_by_file = material_media_candidates(records)
+        quantitative_review = quantitative_claim_candidates(records)
+        media_review = material_media_candidates(records)
+        compression_review = typography_compression_candidates(records)
         manual_review.extend(quantitative_review)
-        manual_review.extend(
-            copy_uniformity_candidates(
-                records,
-                section_label_instances,
-                quantitative_evidence,
-            )
-        )
-        manual_review.extend(parallel_route_skeleton_candidates(records))
         manual_review.extend(media_review)
+        manual_review.extend(compression_review)
+        manual_review.extend(public_meta_copy_candidates(records))
         manual_review.extend(
-            concept_material_balance_candidates(
-                records,
-                media_count_by_file,
-            )
+            nonfunctional_concept_affordance_candidates(records)
         )
         for item in manual_review:
             check = str(item.get("check", ""))
@@ -3219,20 +2653,6 @@ def main() -> int:
                 str(item["check"]),
             )
         )
-        for raw_finding in compound_candidates(root, compound_groups):
-            finding = bind_finding(raw_finding)
-            policy_value = policy.get(
-                rule_policy_key.get(str(finding["rule"]), ""),
-                "",
-            )
-            finding["owner_policy"] = policy_value or None
-            suppression = allowlist_entry(finding, entries)
-            if suppression:
-                suppressed_findings.append(
-                    suppressed_finding(finding, suppression)
-                )
-                continue
-            findings.append(finding)
         findings.sort(key=lambda item: (str(item["file"]), int(item["line"]), str(item["rule"])))
         suppressed_findings.sort(
             key=lambda item: (
@@ -3339,35 +2759,51 @@ def main() -> int:
             and ranking[str(item["severity"])] >= threshold
             for item in findings
         )
-        incomplete_failure = bool(unacknowledged_skipped_files)
-        quality_passed = not policy_gate_failure and not incomplete_failure
-        quality_status = (
-            "failed"
-            if policy_gate_failure
-            else "incomplete"
-            if incomplete_failure
-            else "acknowledged-incomplete"
-            if skipped_sources
-            else "passed"
-        )
         scope_excluded_count = (
             len(excluded_default_files)
             + len(excluded_sensitive_structured_files)
         )
-        scope_status = (
-            "incomplete"
+        selected_file_count = eligible_file_count - scope_excluded_count
+        no_eligible_sources = eligible_file_count == 0
+        no_selected_sources = selected_file_count == 0
+        no_scanned_sources = len(records) == 0
+        incomplete_failure = bool(skipped_sources) or no_scanned_sources
+        quality_passed = not policy_gate_failure and not incomplete_failure
+        quality_status = (
+            "failed"
+            if policy_gate_failure
+            else "no-eligible-sources"
+            if no_eligible_sources
+            else "no-selected-sources"
+            if no_selected_sources
+            else "incomplete"
+            if unacknowledged_skipped_files
+            else "acknowledged-incomplete"
             if skipped_sources
+            else "no-scanned-sources"
+            if no_scanned_sources
+            else "passed"
+        )
+        scope_status = (
+            quality_status
+            if no_eligible_sources or no_selected_sources
+            else "incomplete"
+            if skipped_sources
+            else "no-scanned-sources"
+            if no_scanned_sources
             else "scope-limited"
             if scope_excluded_count
             else "complete"
         )
-        scan_scope_complete = not skipped_sources and scope_excluded_count == 0
-        selected_scope_complete = not skipped_sources
+        selected_scope_complete = not skipped_sources and not no_scanned_sources
+        scan_scope_complete = selected_scope_complete and scope_excluded_count == 0
         exit_policy_triggered = gate_enforced and (
             exit_gate_finding_failure or incomplete_failure
         )
         command_exit_code = 1 if exit_policy_triggered else 0
         result = {
+            "schema_version": SCAN_RESULT_SCHEMA_VERSION,
+            "artifact_type": SCAN_RESULT_ARTIFACT_TYPE,
             "ok": quality_passed,
             "execution_ok": True,
             "execution": {
@@ -3380,10 +2816,11 @@ def main() -> int:
                 "source defects. Neither establishes AI authorship or requires "
                 "mechanical removal."
             ),
-            "project": str(root),
+            "project": "project:/",
             "include_patterns": include_patterns,
             "documentation_mode": args.content_site,
             "structured_content_mode": args.structured_content,
+            "built_output_mode": args.built_output,
             "gate_enforced": gate_enforced,
             "gate_threshold": args.fail_on,
             "gate_passed": quality_passed,
@@ -3425,6 +2862,8 @@ def main() -> int:
                 "unacknowledged_skipped_source_count": len(
                     unacknowledged_skipped_files
                 ),
+                "skipped_source_count": len(skipped_sources),
+                "empty_source_failure": no_scanned_sources,
                 "scope_basis": (
                     "complete-eligible-source-scope"
                     if scan_scope_complete
@@ -3444,16 +2883,38 @@ def main() -> int:
                 "suffixes": sorted(scan_suffixes),
                 "documentation_mode": args.content_site,
                 "structured_content_mode": args.structured_content,
-                "dependency_vendor_exclusions": sorted(IGNORED_DIRS),
+                "built_output_mode": args.built_output,
+                "built_output_directories": sorted(BUILT_OUTPUT_DIRS),
+                "always_excluded_directories": sorted(
+                    ALWAYS_IGNORED_DIRS | INITIALIZER_EVIDENCE_DIR_LABELS
+                ),
+                "dependency_vendor_exclusions": sorted(DEPENDENCY_VENDOR_DIRS),
                 "note": (
                     "Only listed text web-source suffixes are scanned. Runtime-generated "
                     "markup, dynamically rendered output, and unsupported languages "
                     "require manual review."
                 ),
             },
-            "allowlist": str(allowlist_path) if allowlist_path.is_file() else None,
-            "owner_policy": str(owner_policy_path) if owner_policy_path.is_file() else None,
-            "type_watch": type_watch,
+            "allowlist": (
+                report_input_label(
+                    allowlist_path,
+                    project=root,
+                    skill_root=skill_root,
+                    role="allowlist",
+                )
+                if allowlist_path.is_file()
+                else None
+            ),
+            "owner_policy": (
+                report_input_label(
+                    owner_policy_path,
+                    project=root,
+                    skill_root=skill_root,
+                    role="owner-policy",
+                )
+                if owner_policy_path.is_file()
+                else None
+            ),
             "active_allowlist_entries": entries,
             "expired_allowlist_entries": expired_entries,
             "allowlist_suppression_counts": allowlist_suppression_counts,
@@ -3483,7 +2944,7 @@ def main() -> int:
                 ),
                 "eligible_file_count": eligible_file_count,
                 "selected_file_count": (
-                    eligible_file_count - scope_excluded_count
+                    selected_file_count
                 ),
                 "scanned_file_count": len(records),
                 "excluded_eligible_file_count": scope_excluded_count,
@@ -3518,7 +2979,7 @@ def main() -> int:
             "findings": findings,
         }
         if args.json:
-            print(json.dumps(result, indent=2, ensure_ascii=False))
+            print(json.dumps(result, indent=2, ensure_ascii=True))
         else:
             print(result["disclaimer"])
             print(
@@ -3561,6 +3022,8 @@ def main() -> int:
             for acknowledgement in skipped_acknowledgements:
                 print(
                     f"SKIP-ACK-ACTIVE path={acknowledgement['path']}; "
+                    f"sha256={acknowledgement['sha256']}; "
+                    f"size_bytes={acknowledgement['size_bytes']}; "
                     f"owner={acknowledgement['owner']}; "
                     f"expires={acknowledgement['expires']}; "
                     f"reason={acknowledgement['reason']}"
@@ -3570,20 +3033,28 @@ def main() -> int:
                 if acknowledgement:
                     print(
                         f"SKIPPED-ACKNOWLEDGED {item['file']} - "
-                        f"{item['reason']}; owner={acknowledgement['owner']}; "
+                        f"{item['reason']}; sha256={item['sha256']}; "
+                        f"size_bytes={item['size_bytes']}; "
+                        f"owner={acknowledgement['owner']}; "
                         f"expires={acknowledgement['expires']}; "
                         f"acknowledgement={acknowledgement['reason']}"
                     )
                 else:
                     print(
                         f"SKIPPED-UNACKNOWLEDGED {item['file']} - "
-                        f"{item['reason']}"
+                        f"{item['reason']}; sha256={item['sha256']}; "
+                        f"size_bytes={item['size_bytes']}"
                     )
             if skipped_sources:
                 print(
                     f"INCOMPLETE scan: {len(skipped_sources)} relevant source "
                     f"file(s) skipped; {len(unacknowledged_skipped_files)} "
                     "unacknowledged."
+                )
+            if no_scanned_sources:
+                print(
+                    "INCOMPLETE scan: no eligible selected source was scanned "
+                    f"(status={quality_status})."
                 )
             if scope_excluded_count:
                 print(
@@ -3628,6 +3099,8 @@ def main() -> int:
         return command_exit_code
     except (OSError, ValueError, json.JSONDecodeError, RuntimeError) as exc:
         print(json.dumps({
+            "schema_version": SCAN_RESULT_SCHEMA_VERSION,
+            "artifact_type": SCAN_RESULT_ARTIFACT_TYPE,
             "ok": False,
             "execution_ok": False,
             "execution": {"status": "failed", "ok": False},

@@ -1,0 +1,3075 @@
+{
+  "schema_version": 3,
+  "tool": {
+    "name": "design-dna-rendered-review",
+    "version": "3.0.0",
+    "report_schema": "render-review.schema.json"
+  },
+  "output_identity": {
+    "id": "e44503a9a76ada833f3ebb8ae61c4afb18cf3dc9370bfbd7ac7e996e720f4f92",
+    "path_sha256": "e8c51d40377080ec20395040b0251beb5c7fe2e90fe4467d942d79c4fa852642"
+  },
+  "execution_ok": true,
+  "review_required": true,
+  "automatic_visual_quality_pass": false,
+  "quality_status": "manual-review-required",
+  "execution": {
+    "started_at": "2026-08-02T11:32:27.862Z",
+    "completed_at": "2026-08-02T11:32:32.764Z",
+    "duration_ms": 4902,
+    "node_version": "v26.3.0",
+    "platform": "win32",
+    "architecture": "x64",
+    "playwright_version": "1.61.1",
+    "playwright_source": "environment-module-directory",
+    "browser": {
+      "engine": "chromium",
+      "product_hint": "chrome.exe",
+      "version": "150.0.7871.187",
+      "executable_source": "explicit",
+      "executable_name": "chrome.exe"
+    }
+  },
+  "privacy": {
+    "classification": "potentially-sensitive-rendered-review-evidence",
+    "operator_action": "explicit-cli-invocation",
+    "consent_notice": "The operator is responsible for authorization to capture the selected site and any people or confidential material it displays.",
+    "retention_notice": "Artifacts persist at the operator-selected output until the operator deliberately removes or replaces that owned output.",
+    "visual_content_not_redacted": true,
+    "diagnostic_sanitization": "best-effort-sensitive-value-and-path-redaction",
+    "url_sanitization": "userinfo-query-and-fragment-stripped-from-persisted-records",
+    "absolute_paths_persisted": false,
+    "limitations": [
+      "Screenshots and videos can visibly contain personal, confidential, or credential-like page content; pixels are not automatically redacted.",
+      "Diagnostic redaction is best effort and cannot guarantee removal of every application-specific secret format.",
+      "Source hashes and output path hashes are pseudonymous identifiers and can still be sensitive when correlated with other records.",
+      "HTTP, HTTPS, and WebSocket traffic is routed by policy and direct WebRTC UDP is restricted, but this is not a general-purpose browser sandbox or network noninterference proof.",
+      "The path-bound ownership marker prevents accidental replacement and detects ordinary copying or tampering; it is not a cryptographic signature against an attacker who can rewrite both marker and report."
+    ]
+  },
+  "build": {
+    "id": "route-report-template",
+    "target_input": "local-directory:[source path omitted]",
+    "target_kind": "local-directory"
+  },
+  "source_snapshot": {
+    "policy": "frozen-deny-by-default-public-root",
+    "root_kind": "explicit-target-public-root",
+    "entry_path": "index.html",
+    "drift_check": "passed-source-and-frozen-snapshot-before-report-and-commit",
+    "manifest": {
+      "algorithm": "sha256",
+      "manifest_sha256": "3807bbf6ba692ba66b36270e4b5dc997a013625d3057b534664c7f63b32919b9",
+      "file_count": 2,
+      "total_bytes": 2591,
+      "files": [
+        {
+          "path": "index.html",
+          "bytes": 1984,
+          "sha256": "565e6497817b8fadecc7c69ec1d22d42b5899a56545101bf519655e52afbcbd5"
+        },
+        {
+          "path": "styles.css",
+          "bytes": 607,
+          "sha256": "b85e0732707cd220e826df36fcd5c5197f077a3c5d31898fa6ddd849988a53f9"
+        }
+      ],
+      "excluded_counts": {
+        "hidden_or_source_only_path": 3,
+        "sensitive_or_source_config": 1,
+        "extension_not_public_allowlist": 0
+      }
+    }
+  },
+  "capture_contract": {
+    "deterministic_profile_version": 1,
+    "contract_mode": "capture-manifest-v1",
+    "capture_manifest": {
+      "supplied": true,
+      "schema_version": 1,
+      "sha256": "37098735796c3bf3f9cbc041a243e260fb821a044ee3f27aa48648bd37e7f338",
+      "bytes": 1335
+    },
+    "wait_until": "domcontentloaded",
+    "timeout_ms": 30000,
+    "settle_ms": 0,
+    "screenshot_animation_handling": "disabled-and-fast-forwarded",
+    "service_workers": "blocked",
+    "downloads": "blocked",
+    "locale": "en-US",
+    "timezone": "UTC",
+    "video_requested": false,
+    "video_duration_ms": 0,
+    "local_network_policy": "same-origin-data-blob-only-outbound-blocked",
+    "remote_network_policy": "fresh-context-cross-origin-subresources-blocked-navigation-credentials-stripped",
+    "spa_fallback": "disabled-no-history-fallback",
+    "lazy_loading_policy": "passive-no-scroll-sweep-assets-waited-and-full-page-screenshot-attempted",
+    "interaction_policy": "single-match-allowlisted-actions-local-state-change-only-no-submit-no-popup-no-cross-origin",
+    "limits": {
+      "source_files": 1000,
+      "source_bytes": 104857600,
+      "source_file_bytes": 20971520,
+      "page_height_css_px": 18000,
+      "screenshot_pixels": 30000000,
+      "screenshot_bytes": 12582912,
+      "total_artifact_bytes": 83886080,
+      "report_bytes": 5242880
+    },
+    "profiles": [
+      {
+        "id": "desktop",
+        "label": "Desktop",
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "device_scale_factor": 1
+        },
+        "is_mobile": false,
+        "has_touch": false,
+        "input_modalities": [
+          "keyboard",
+          "pointer"
+        ],
+        "pointer": "fine",
+        "hover": "hover",
+        "color_scheme": "light",
+        "reduced_motion": "no-preference",
+        "forced_colors": "none",
+        "text_spacing": "none",
+        "zoom": "none"
+      },
+      {
+        "id": "mobile",
+        "label": "Mobile",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "device_scale_factor": 1
+        },
+        "is_mobile": true,
+        "has_touch": true,
+        "input_modalities": [
+          "touch",
+          "keyboard"
+        ],
+        "pointer": "coarse",
+        "hover": "none",
+        "color_scheme": "light",
+        "reduced_motion": "no-preference",
+        "forced_colors": "none",
+        "text_spacing": "none",
+        "zoom": "none"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "default",
+        "label": "Manifest scenario",
+        "route_id": "route-01",
+        "route_label": "Fixture route",
+        "state_label": "Reviewed interaction state",
+        "profile_ids": [
+          "desktop",
+          "mobile"
+        ],
+        "interactions": []
+      }
+    ]
+  },
+  "routes": [
+    {
+      "id": "route-01",
+      "requested": "/",
+      "url": "http://127.0.0.1:53043/"
+    }
+  ],
+  "captures": [
+    {
+      "id": "default-desktop",
+      "route_id": "route-01",
+      "scenario_id": "default",
+      "route_label": "Fixture route",
+      "state_label": "Reviewed interaction state",
+      "profile_id": "desktop",
+      "capture_status": "complete",
+      "failure": null,
+      "requested_url": "http://127.0.0.1:53043/",
+      "final_url": "http://127.0.0.1:53043/",
+      "http_status": 200,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "device_scale_factor": 1
+      },
+      "preferences": {
+        "color_scheme": "light",
+        "reduced_motion": "no-preference",
+        "forced_colors": "none",
+        "is_mobile": false,
+        "has_touch": false,
+        "pointer": "fine",
+        "hover": "hover",
+        "input_modalities": [
+          "keyboard",
+          "pointer"
+        ],
+        "locale": "en-US",
+        "timezone": "UTC"
+      },
+      "review_mode": {
+        "text_spacing": {
+          "requested": "none",
+          "evidence_status": "not-requested"
+        },
+        "zoom": {
+          "requested": "none",
+          "evidence_status": "not-requested"
+        }
+      },
+      "interaction": {
+        "policy": "single-match-allowlisted-actions-local-state-change-only-no-submit-no-popup-no-cross-origin",
+        "requested_steps": 0,
+        "completed_steps": 0,
+        "status": "not-requested",
+        "failed_step": null
+      },
+      "screenshot": {
+        "path": "screenshots/01-01-default-desktop.png",
+        "sha256": "4e123ebcd3c4ab7a482f29bdd6918d569be8a4cfb1d251c54963a7f0f80ed599",
+        "media_type": "image/png",
+        "bytes": 44887,
+        "pixel_width": 1440,
+        "pixel_height": 934
+      },
+      "video": null,
+      "console": {
+        "entries": [
+          {
+            "type": "log",
+            "text": "signed https://example.invalid/collect [absolute-path-omitted] token=[sensitive-value-omitted] [email-omitted]",
+            "location": {
+              "url": "http://127.0.0.1:53043/",
+              "line": 27,
+              "column": 12
+            }
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+            "location": {
+              "url": "https://example.invalid/collect",
+              "line": 0,
+              "column": 0
+            }
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "location": {
+              "url": "http://127.0.0.1:53043/.env",
+              "line": 0,
+              "column": 0
+            }
+          }
+        ],
+        "truncated_count": 0
+      },
+      "page_errors": {
+        "entries": [
+          {
+            "name": "Error",
+            "message": "password=[sensitive-value-omitted] [absolute-path-omitted]"
+          }
+        ],
+        "truncated_count": 0
+      },
+      "network": {
+        "request_failures": [
+          {
+            "method": "GET",
+            "url": "https://example.invalid/collect",
+            "failure": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+            "resource_type": "fetch"
+          }
+        ],
+        "request_failures_truncated_count": 0,
+        "http_failures": [
+          {
+            "status": 404,
+            "status_text": "Not Found",
+            "url": "http://127.0.0.1:53043/.env",
+            "resource_type": "fetch"
+          }
+        ],
+        "http_failures_truncated_count": 0,
+        "blocked_outbound": [
+          {
+            "method": "GET",
+            "url": "https://example.invalid/collect",
+            "resource_type": "fetch",
+            "reason": "local-cross-origin-blocked"
+          },
+          {
+            "method": "WEBSOCKET",
+            "url": "wss://example.invalid/socket",
+            "resource_type": "websocket",
+            "reason": "local-cross-origin-websocket-blocked"
+          }
+        ],
+        "blocked_outbound_truncated_count": 0
+      },
+      "document": {
+        "title": "Rendered review fixture",
+        "lang": "en",
+        "direction": "ltr",
+        "headings": [
+          {
+            "level": 1,
+            "text": "Rendered evidence fixture",
+            "id": "fixture-title",
+            "selector": "#fixture-title"
+          },
+          {
+            "level": 2,
+            "text": "Notes",
+            "id": null,
+            "selector": "body > main > section:nth-of-type(2) > h2"
+          }
+        ],
+        "landmarks": [
+          {
+            "tag": "main",
+            "role": null,
+            "label": "",
+            "selector": "body > main"
+          }
+        ],
+        "route_silhouette": [
+          {
+            "order": 1,
+            "tag": "section",
+            "role": null,
+            "heading": "Rendered evidence fixture",
+            "label": "",
+            "selector": "body > main > section:nth-of-type(1)",
+            "rect": {
+              "x": 288,
+              "y": 112.31,
+              "width": 864,
+              "height": 671.78,
+              "right": 1152,
+              "bottom": 784.09
+            },
+            "normalized_rect": {
+              "x": 0.2,
+              "y": 0.1202,
+              "width": 0.6,
+              "height": 0.7193
+            },
+            "display": "block",
+            "position": "static",
+            "grid_column_count": 0,
+            "flex_direction": null,
+            "visual_column_count": 1,
+            "direct_visible_child_count": 8,
+            "text_length": 172,
+            "media_count": 1,
+            "control_count": 6,
+            "sticky_or_fixed": false,
+            "dominant_media_area_ratio": 0.0423,
+            "heading_rect": {
+              "x": 288,
+              "y": 112.31,
+              "width": 864,
+              "height": 180.47,
+              "right": 1152,
+              "bottom": 292.78
+            },
+            "heading_font_size_px": 96,
+            "heading_font_weight": "700",
+            "heading_text_align": "start"
+          },
+          {
+            "order": 2,
+            "tag": "section",
+            "role": null,
+            "heading": "Notes",
+            "label": "",
+            "selector": "#notes",
+            "rect": {
+              "x": 288,
+              "y": 804,
+              "width": 864,
+              "height": 65.91,
+              "right": 1152,
+              "bottom": 869.91
+            },
+            "normalized_rect": {
+              "x": 0.2,
+              "y": 0.8608,
+              "width": 0.6,
+              "height": 0.0706
+            },
+            "display": "block",
+            "position": "static",
+            "grid_column_count": 0,
+            "flex_direction": null,
+            "visual_column_count": 1,
+            "direct_visible_child_count": 2,
+            "text_length": 35,
+            "media_count": 0,
+            "control_count": 0,
+            "sticky_or_fixed": false,
+            "dominant_media_area_ratio": 0,
+            "heading_rect": {
+              "x": 288,
+              "y": 804,
+              "width": 864,
+              "height": 27,
+              "right": 1152,
+              "bottom": 831
+            },
+            "heading_font_size_px": 24,
+            "heading_font_weight": "700",
+            "heading_text_align": "start"
+          }
+        ],
+        "layout": {
+          "document": {
+            "client_width": 1440,
+            "client_height": 900,
+            "scroll_width": 1440,
+            "scroll_height": 934
+          },
+          "horizontal_overflow": false,
+          "overflow_candidates": []
+        },
+        "images": [
+          {
+            "selector": "body > main > section:nth-of-type(1) > img",
+            "src": "data:[payload omitted]",
+            "current_src": "data:[payload omitted]",
+            "alt_present": true,
+            "alt": "A one-pixel fixture expanded for crop inspection",
+            "role": null,
+            "aria_label": "",
+            "loading": "auto",
+            "decoding": "auto",
+            "complete": true,
+            "failed": false,
+            "natural": {
+              "width": 1,
+              "height": 1
+            },
+            "rendered": {
+              "width": 192,
+              "height": 128
+            },
+            "object_fit": "cover",
+            "object_position": "50% 50%",
+            "crop_candidate": true,
+            "ratio_delta": 0.5
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Arial",
+            "primary_family": "Arial",
+            "weight": "400",
+            "style": "normal",
+            "element_count": 2,
+            "sample_selectors": [
+              "#fixture-state",
+              "#fixture-choice"
+            ],
+            "css_font_check": true
+          },
+          {
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "weight": "400",
+            "style": "normal",
+            "element_count": 15,
+            "sample_selectors": [
+              "body > main",
+              "body > main > section:nth-of-type(1)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(1)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(2)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a"
+            ],
+            "css_font_check": true
+          },
+          {
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "weight": "700",
+            "style": "normal",
+            "element_count": 3,
+            "sample_selectors": [
+              "#fixture-title",
+              "body > main > section:nth-of-type(1) > h1 > span",
+              "body > main > section:nth-of-type(2) > h2"
+            ],
+            "css_font_check": true
+          }
+        ],
+        "typography_sampling": {
+          "strategy": "semantic-role-and-document-position-stratified-v1",
+          "candidate_count": 17,
+          "sampled_count": 17,
+          "truncated": false,
+          "role_counts": {
+            "heading": {
+              "candidate_count": 2,
+              "sampled_count": 2
+            },
+            "navigation": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "control": {
+              "candidate_count": 3,
+              "sampled_count": 3
+            },
+            "label": {
+              "candidate_count": 3,
+              "sampled_count": 3
+            },
+            "caption": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "code": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "list-or-definition": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "body": {
+              "candidate_count": 7,
+              "sampled_count": 7
+            },
+            "other": {
+              "candidate_count": 2,
+              "sampled_count": 2
+            }
+          }
+        },
+        "typography_samples": [
+          {
+            "selector": "#fixture-title",
+            "tag": "h1",
+            "role": "heading",
+            "text_sample": "Rendered evidence fixture",
+            "text_length": 25,
+            "rect": {
+              "x": 288,
+              "y": 112.31,
+              "width": 864,
+              "height": 180.47,
+              "right": 1152,
+              "bottom": 292.78
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 96,
+            "font_weight": "700",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "90.24px",
+            "line_height_px": 90.24,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": 2
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(1)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "A deterministic page for exercising the review harness.",
+            "text_length": 55,
+            "rect": {
+              "x": 288,
+              "y": 357.09,
+              "width": 864,
+              "height": 19,
+              "right": 1152,
+              "bottom": 376.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Read the notesInspect state",
+            "text_length": 27,
+            "rect": {
+              "x": 288,
+              "y": 540.09,
+              "width": 864,
+              "height": 60,
+              "right": 1152,
+              "bottom": 600.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "other",
+            "text_sample": "Read the notes",
+            "text_length": 14,
+            "rect": {
+              "x": 288,
+              "y": 556.09,
+              "width": 136.75,
+              "height": 43,
+              "right": 424.75,
+              "bottom": 599.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "control",
+            "text_sample": "Inspect state",
+            "text_length": 13,
+            "rect": {
+              "x": 440.75,
+              "y": 557.09,
+              "width": 111.59,
+              "height": 43,
+              "right": 552.34,
+              "bottom": 600.09
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "center",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(3)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Fixture name",
+            "text_length": 12,
+            "rect": {
+              "x": 288,
+              "y": 616.09,
+              "width": 864,
+              "height": 21,
+              "right": 1152,
+              "bottom": 637.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(3) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Fixture name",
+            "text_length": 12,
+            "rect": {
+              "x": 288,
+              "y": 616.09,
+              "width": 275.44,
+              "height": 19,
+              "right": 563.44,
+              "bottom": 635.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(4)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Fixture choice AlphaBeta",
+            "text_length": 24,
+            "rect": {
+              "x": 288,
+              "y": 653.09,
+              "width": 864,
+              "height": 20,
+              "right": 1152,
+              "bottom": 673.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(4) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Fixture choice AlphaBeta",
+            "text_length": 24,
+            "rect": {
+              "x": 288,
+              "y": 653.09,
+              "width": 160.98,
+              "height": 19,
+              "right": 448.98,
+              "bottom": 672.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "control",
+            "text_sample": "AlphaBeta",
+            "text_length": 9,
+            "rect": {
+              "x": 391.98,
+              "y": 654.09,
+              "width": 57,
+              "height": 19,
+              "right": 448.98,
+              "bottom": 673.09
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(5)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Confirm fixture",
+            "text_length": 15,
+            "rect": {
+              "x": 288,
+              "y": 689.09,
+              "width": 864,
+              "height": 20,
+              "right": 1152,
+              "bottom": 709.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(5) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Confirm fixture",
+            "text_length": 15,
+            "rect": {
+              "x": 288,
+              "y": 690.09,
+              "width": 133.59,
+              "height": 19,
+              "right": 421.59,
+              "bottom": 709.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "control",
+            "text_sample": "on",
+            "text_length": 2,
+            "rect": {
+              "x": 292,
+              "y": 692.09,
+              "width": 13,
+              "height": 13,
+              "right": 305,
+              "bottom": 705.09
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(6)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "External",
+            "text_length": 8,
+            "rect": {
+              "x": 288,
+              "y": 725.09,
+              "width": 864,
+              "height": 59,
+              "right": 1152,
+              "bottom": 784.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "other",
+            "text_sample": "External",
+            "text_length": 8,
+            "rect": {
+              "x": 288,
+              "y": 741.09,
+              "width": 92.44,
+              "height": 43,
+              "right": 380.44,
+              "bottom": 784.09
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(2) > h2",
+            "tag": "h2",
+            "role": "heading",
+            "text_sample": "Notes",
+            "text_length": 5,
+            "rect": {
+              "x": 288,
+              "y": 804,
+              "width": 864,
+              "height": 27,
+              "right": 1152,
+              "bottom": 831
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 24,
+            "font_weight": "700",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(2) > p",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Human review remains required.",
+            "text_length": 30,
+            "rect": {
+              "x": 288,
+              "y": 850.91,
+              "width": 864,
+              "height": 19,
+              "right": 1152,
+              "bottom": 869.91
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          }
+        ],
+        "controls": [
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "link",
+            "name": "Read the notes",
+            "name_source": "text",
+            "type": null,
+            "href": "#notes",
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 288,
+              "y": 556.09,
+              "width": 136.75,
+              "height": 43,
+              "right": 424.75,
+              "bottom": 599.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            }
+          },
+          {
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "button",
+            "name": "Inspect state",
+            "name_source": "text",
+            "type": "button",
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 440.75,
+              "y": 557.09,
+              "width": 111.59,
+              "height": 43,
+              "right": 552.34,
+              "bottom": 600.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            }
+          },
+          {
+            "selector": "#fixture-name",
+            "tag": "input",
+            "role": "textbox",
+            "name": "Fixture name",
+            "name_source": "label",
+            "type": null,
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 386.44,
+              "y": 616.09,
+              "width": 177,
+              "height": 21,
+              "right": 563.44,
+              "bottom": 637.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            }
+          },
+          {
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "combobox",
+            "name": "Fixture choice AlphaBeta",
+            "name_source": "label",
+            "type": null,
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 391.98,
+              "y": 654.09,
+              "width": 57,
+              "height": 19,
+              "right": 448.98,
+              "bottom": 673.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            }
+          },
+          {
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "checkbox",
+            "name": "Confirm fixture",
+            "name_source": "label",
+            "type": "checkbox",
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 292,
+              "y": 692.09,
+              "width": 13,
+              "height": 13,
+              "right": 305,
+              "bottom": 705.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            }
+          },
+          {
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "link",
+            "name": "External",
+            "name_source": "text",
+            "type": null,
+            "href": "https://example.invalid/outside",
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 288,
+              "y": 741.09,
+              "width": 92.44,
+              "height": 43,
+              "right": 380.44,
+              "bottom": 784.09
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            }
+          }
+        ],
+        "prominent_fragment_candidates": [
+          {
+            "classification": "advisory-candidate",
+            "advisory_only": true,
+            "selector": "body > main > section:nth-of-type(1) > h1 > span",
+            "parent_selector": "#fixture-title",
+            "text": "evidence",
+            "parent_text": "Rendered evidence fixture",
+            "reasons": [
+              "foreground-color-change"
+            ],
+            "parent_style": {
+              "color": "rgb(32, 32, 24)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "700",
+              "font_style": "normal",
+              "font_size": "96px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(32, 32, 24)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(32, 32, 24)"
+            },
+            "fragment_style": {
+              "color": "rgb(155, 50, 31)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "700",
+              "font_style": "normal",
+              "font_size": "96px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(155, 50, 31)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(155, 50, 31)"
+            }
+          }
+        ]
+      },
+      "focus": {
+        "attempted": true,
+        "maximum_steps": 16,
+        "observed_steps": 6,
+        "cycle_detected": false,
+        "truncated": false,
+        "steps": [
+          {
+            "order": 1,
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "link",
+            "name": "Read the notes",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 2,
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "button",
+            "name": "Inspect state",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 3,
+            "selector": "#fixture-name",
+            "tag": "input",
+            "role": "textbox",
+            "name": "Fixture name",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 4,
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "combobox",
+            "name": "Fixture choice AlphaBeta",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 5,
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "checkbox",
+            "name": "Confirm fixture",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 6,
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "link",
+            "name": "External",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          }
+        ],
+        "interpretation": "Computed-style differences are advisory focus-indicator evidence, not a contrast or accessibility pass."
+      }
+    },
+    {
+      "id": "default-mobile",
+      "route_id": "route-01",
+      "scenario_id": "default",
+      "route_label": "Fixture route",
+      "state_label": "Reviewed interaction state",
+      "profile_id": "mobile",
+      "capture_status": "complete",
+      "failure": null,
+      "requested_url": "http://127.0.0.1:53043/",
+      "final_url": "http://127.0.0.1:53043/",
+      "http_status": 200,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "preferences": {
+        "color_scheme": "light",
+        "reduced_motion": "no-preference",
+        "forced_colors": "none",
+        "is_mobile": true,
+        "has_touch": true,
+        "pointer": "coarse",
+        "hover": "none",
+        "input_modalities": [
+          "touch",
+          "keyboard"
+        ],
+        "locale": "en-US",
+        "timezone": "UTC"
+      },
+      "review_mode": {
+        "text_spacing": {
+          "requested": "none",
+          "evidence_status": "not-requested"
+        },
+        "zoom": {
+          "requested": "none",
+          "evidence_status": "not-requested"
+        }
+      },
+      "interaction": {
+        "policy": "single-match-allowlisted-actions-local-state-change-only-no-submit-no-popup-no-cross-origin",
+        "requested_steps": 0,
+        "completed_steps": 0,
+        "status": "not-requested",
+        "failed_step": null
+      },
+      "screenshot": {
+        "path": "screenshots/01-02-default-mobile.png",
+        "sha256": "0226492904e4cc676efb39fc9ff139ea5d1604123117eb480f788f4d0d527ada",
+        "media_type": "image/png",
+        "bytes": 24285,
+        "pixel_width": 390,
+        "pixel_height": 844
+      },
+      "video": null,
+      "console": {
+        "entries": [
+          {
+            "type": "log",
+            "text": "signed https://example.invalid/collect [absolute-path-omitted] token=[sensitive-value-omitted] [email-omitted]",
+            "location": {
+              "url": "http://127.0.0.1:53043/",
+              "line": 27,
+              "column": 12
+            }
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+            "location": {
+              "url": "https://example.invalid/collect",
+              "line": 0,
+              "column": 0
+            }
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "location": {
+              "url": "http://127.0.0.1:53043/.env",
+              "line": 0,
+              "column": 0
+            }
+          }
+        ],
+        "truncated_count": 0
+      },
+      "page_errors": {
+        "entries": [
+          {
+            "name": "Error",
+            "message": "password=[sensitive-value-omitted] [absolute-path-omitted]"
+          }
+        ],
+        "truncated_count": 0
+      },
+      "network": {
+        "request_failures": [
+          {
+            "method": "GET",
+            "url": "https://example.invalid/collect",
+            "failure": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+            "resource_type": "fetch"
+          }
+        ],
+        "request_failures_truncated_count": 0,
+        "http_failures": [
+          {
+            "status": 404,
+            "status_text": "Not Found",
+            "url": "http://127.0.0.1:53043/.env",
+            "resource_type": "fetch"
+          }
+        ],
+        "http_failures_truncated_count": 0,
+        "blocked_outbound": [
+          {
+            "method": "GET",
+            "url": "https://example.invalid/collect",
+            "resource_type": "fetch",
+            "reason": "local-cross-origin-blocked"
+          },
+          {
+            "method": "WEBSOCKET",
+            "url": "wss://example.invalid/socket",
+            "resource_type": "websocket",
+            "reason": "local-cross-origin-websocket-blocked"
+          }
+        ],
+        "blocked_outbound_truncated_count": 0
+      },
+      "document": {
+        "title": "Rendered review fixture",
+        "lang": "en",
+        "direction": "ltr",
+        "headings": [
+          {
+            "level": 1,
+            "text": "Rendered evidence fixture",
+            "id": "fixture-title",
+            "selector": "#fixture-title"
+          },
+          {
+            "level": 2,
+            "text": "Notes",
+            "id": null,
+            "selector": "body > main > section:nth-of-type(2) > h2"
+          }
+        ],
+        "landmarks": [
+          {
+            "tag": "main",
+            "role": null,
+            "label": "",
+            "selector": "body > main"
+          }
+        ],
+        "route_silhouette": [
+          {
+            "order": 1,
+            "tag": "section",
+            "role": null,
+            "heading": "Rendered evidence fixture",
+            "label": "",
+            "selector": "body > main > section:nth-of-type(1)",
+            "rect": {
+              "x": 48,
+              "y": 74.8,
+              "width": 294,
+              "height": 585.58,
+              "right": 342,
+              "bottom": 660.38
+            },
+            "normalized_rect": {
+              "x": 0.1231,
+              "y": 0.0886,
+              "width": 0.7538,
+              "height": 0.6938
+            },
+            "display": "block",
+            "position": "static",
+            "grid_column_count": 0,
+            "flex_direction": null,
+            "visual_column_count": 1,
+            "direct_visible_child_count": 8,
+            "text_length": 172,
+            "media_count": 1,
+            "control_count": 6,
+            "sticky_or_fixed": false,
+            "dominant_media_area_ratio": 0.1428,
+            "heading_rect": {
+              "x": 48,
+              "y": 74.8,
+              "width": 294,
+              "height": 112.78,
+              "right": 342,
+              "bottom": 187.58
+            },
+            "heading_font_size_px": 40,
+            "heading_font_weight": "700",
+            "heading_text_align": "start"
+          },
+          {
+            "order": 2,
+            "tag": "section",
+            "role": null,
+            "heading": "Notes",
+            "label": "",
+            "selector": "#notes",
+            "rect": {
+              "x": 48,
+              "y": 680.28,
+              "width": 294,
+              "height": 65.91,
+              "right": 342,
+              "bottom": 746.19
+            },
+            "normalized_rect": {
+              "x": 0.1231,
+              "y": 0.806,
+              "width": 0.7538,
+              "height": 0.0781
+            },
+            "display": "block",
+            "position": "static",
+            "grid_column_count": 0,
+            "flex_direction": null,
+            "visual_column_count": 1,
+            "direct_visible_child_count": 2,
+            "text_length": 35,
+            "media_count": 0,
+            "control_count": 0,
+            "sticky_or_fixed": false,
+            "dominant_media_area_ratio": 0,
+            "heading_rect": {
+              "x": 48,
+              "y": 680.28,
+              "width": 294,
+              "height": 27,
+              "right": 342,
+              "bottom": 707.28
+            },
+            "heading_font_size_px": 24,
+            "heading_font_weight": "700",
+            "heading_text_align": "start"
+          }
+        ],
+        "layout": {
+          "document": {
+            "client_width": 390,
+            "client_height": 844,
+            "scroll_width": 390,
+            "scroll_height": 844
+          },
+          "horizontal_overflow": false,
+          "overflow_candidates": []
+        },
+        "images": [
+          {
+            "selector": "body > main > section:nth-of-type(1) > img",
+            "src": "data:[payload omitted]",
+            "current_src": "data:[payload omitted]",
+            "alt_present": true,
+            "alt": "A one-pixel fixture expanded for crop inspection",
+            "role": null,
+            "aria_label": "",
+            "loading": "auto",
+            "decoding": "auto",
+            "complete": true,
+            "failed": false,
+            "natural": {
+              "width": 1,
+              "height": 1
+            },
+            "rendered": {
+              "width": 192,
+              "height": 128
+            },
+            "object_fit": "cover",
+            "object_position": "50% 50%",
+            "crop_candidate": true,
+            "ratio_delta": 0.5
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Arial",
+            "primary_family": "Arial",
+            "weight": "400",
+            "style": "normal",
+            "element_count": 2,
+            "sample_selectors": [
+              "#fixture-state",
+              "#fixture-choice"
+            ],
+            "css_font_check": true
+          },
+          {
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "weight": "400",
+            "style": "normal",
+            "element_count": 15,
+            "sample_selectors": [
+              "body > main",
+              "body > main > section:nth-of-type(1)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(1)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(2)",
+              "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a"
+            ],
+            "css_font_check": true
+          },
+          {
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "weight": "700",
+            "style": "normal",
+            "element_count": 3,
+            "sample_selectors": [
+              "#fixture-title",
+              "body > main > section:nth-of-type(1) > h1 > span",
+              "body > main > section:nth-of-type(2) > h2"
+            ],
+            "css_font_check": true
+          }
+        ],
+        "typography_sampling": {
+          "strategy": "semantic-role-and-document-position-stratified-v1",
+          "candidate_count": 17,
+          "sampled_count": 17,
+          "truncated": false,
+          "role_counts": {
+            "heading": {
+              "candidate_count": 2,
+              "sampled_count": 2
+            },
+            "navigation": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "control": {
+              "candidate_count": 3,
+              "sampled_count": 3
+            },
+            "label": {
+              "candidate_count": 3,
+              "sampled_count": 3
+            },
+            "caption": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "code": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "list-or-definition": {
+              "candidate_count": 0,
+              "sampled_count": 0
+            },
+            "body": {
+              "candidate_count": 7,
+              "sampled_count": 7
+            },
+            "other": {
+              "candidate_count": 2,
+              "sampled_count": 2
+            }
+          }
+        },
+        "typography_samples": [
+          {
+            "selector": "#fixture-title",
+            "tag": "h1",
+            "role": "heading",
+            "text_sample": "Rendered evidence fixture",
+            "text_length": 25,
+            "rect": {
+              "x": 48,
+              "y": 74.8,
+              "width": 294,
+              "height": 112.78,
+              "right": 342,
+              "bottom": 187.58
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 40,
+            "font_weight": "700",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "37.6px",
+            "line_height_px": 37.6,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": 3
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(1)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "A deterministic page for exercising the review harness.",
+            "text_length": 55,
+            "rect": {
+              "x": 48,
+              "y": 214.38,
+              "width": 294,
+              "height": 38,
+              "right": 342,
+              "bottom": 252.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Read the notesInspect state",
+            "text_length": 27,
+            "rect": {
+              "x": 48,
+              "y": 416.38,
+              "width": 294,
+              "height": 60,
+              "right": 342,
+              "bottom": 476.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "other",
+            "text_sample": "Read the notes",
+            "text_length": 14,
+            "rect": {
+              "x": 48,
+              "y": 432.38,
+              "width": 136.75,
+              "height": 43,
+              "right": 184.75,
+              "bottom": 475.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "control",
+            "text_sample": "Inspect state",
+            "text_length": 13,
+            "rect": {
+              "x": 200.75,
+              "y": 433.38,
+              "width": 111.59,
+              "height": 43,
+              "right": 312.34,
+              "bottom": 476.38
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "center",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(3)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Fixture name",
+            "text_length": 12,
+            "rect": {
+              "x": 48,
+              "y": 492.38,
+              "width": 294,
+              "height": 21,
+              "right": 342,
+              "bottom": 513.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(3) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Fixture name",
+            "text_length": 12,
+            "rect": {
+              "x": 48,
+              "y": 492.38,
+              "width": 275.44,
+              "height": 19,
+              "right": 323.44,
+              "bottom": 511.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(4)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Fixture choice AlphaBeta",
+            "text_length": 24,
+            "rect": {
+              "x": 48,
+              "y": 529.38,
+              "width": 294,
+              "height": 20,
+              "right": 342,
+              "bottom": 549.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(4) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Fixture choice AlphaBeta",
+            "text_length": 24,
+            "rect": {
+              "x": 48,
+              "y": 529.38,
+              "width": 160.98,
+              "height": 19,
+              "right": 208.98,
+              "bottom": 548.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "control",
+            "text_sample": "AlphaBeta",
+            "text_length": 9,
+            "rect": {
+              "x": 151.98,
+              "y": 530.38,
+              "width": 57,
+              "height": 19,
+              "right": 208.98,
+              "bottom": 549.38
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(5)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Confirm fixture",
+            "text_length": 15,
+            "rect": {
+              "x": 48,
+              "y": 565.38,
+              "width": 294,
+              "height": 20,
+              "right": 342,
+              "bottom": 585.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(5) > label",
+            "tag": "label",
+            "role": "label",
+            "text_sample": "Confirm fixture",
+            "text_length": 15,
+            "rect": {
+              "x": 48,
+              "y": 566.38,
+              "width": 133.59,
+              "height": 19,
+              "right": 181.59,
+              "bottom": 585.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "control",
+            "text_sample": "on",
+            "text_length": 2,
+            "rect": {
+              "x": 52,
+              "y": 568.38,
+              "width": 13,
+              "height": 13,
+              "right": 65,
+              "bottom": 581.38
+            },
+            "family": "Arial",
+            "primary_family": "Arial",
+            "font_size_px": 13.3333,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(6)",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "External",
+            "text_length": 8,
+            "rect": {
+              "x": 48,
+              "y": 601.38,
+              "width": 294,
+              "height": 59,
+              "right": 342,
+              "bottom": 660.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "other",
+            "text_sample": "External",
+            "text_length": 8,
+            "rect": {
+              "x": 48,
+              "y": 617.38,
+              "width": 92.44,
+              "height": 43,
+              "right": 140.44,
+              "bottom": 660.38
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(2) > h2",
+            "tag": "h2",
+            "role": "heading",
+            "text_sample": "Notes",
+            "text_length": 5,
+            "rect": {
+              "x": 48,
+              "y": 680.28,
+              "width": 294,
+              "height": 27,
+              "right": 342,
+              "bottom": 707.28
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 24,
+            "font_weight": "700",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          },
+          {
+            "selector": "body > main > section:nth-of-type(2) > p",
+            "tag": "p",
+            "role": "body",
+            "text_sample": "Human review remains required.",
+            "text_length": 30,
+            "rect": {
+              "x": 48,
+              "y": 727.19,
+              "width": 294,
+              "height": 19,
+              "right": 342,
+              "bottom": 746.19
+            },
+            "family": "Georgia, serif",
+            "primary_family": "Georgia",
+            "font_size_px": 16,
+            "font_weight": "400",
+            "font_style": "normal",
+            "font_stretch": "100%",
+            "line_height": "normal",
+            "line_height_px": null,
+            "letter_spacing": "normal",
+            "letter_spacing_px": null,
+            "word_spacing": "0px",
+            "word_spacing_px": 0,
+            "text_transform": "none",
+            "text_align": "start",
+            "rendered_line_count_estimate": null
+          }
+        ],
+        "controls": [
+          {
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "link",
+            "name": "Read the notes",
+            "name_source": "text",
+            "type": null,
+            "href": "#notes",
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 48,
+              "y": 432.38,
+              "width": 136.75,
+              "height": 43,
+              "right": 184.75,
+              "bottom": 475.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            }
+          },
+          {
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "button",
+            "name": "Inspect state",
+            "name_source": "text",
+            "type": "button",
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 200.75,
+              "y": 433.38,
+              "width": 111.59,
+              "height": 43,
+              "right": 312.34,
+              "bottom": 476.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            }
+          },
+          {
+            "selector": "#fixture-name",
+            "tag": "input",
+            "role": "textbox",
+            "name": "Fixture name",
+            "name_source": "label",
+            "type": null,
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 146.44,
+              "y": 492.38,
+              "width": 177,
+              "height": 21,
+              "right": 323.44,
+              "bottom": 513.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            }
+          },
+          {
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "combobox",
+            "name": "Fixture choice AlphaBeta",
+            "name_source": "label",
+            "type": null,
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 151.98,
+              "y": 530.38,
+              "width": 57,
+              "height": 19,
+              "right": 208.98,
+              "bottom": 549.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            }
+          },
+          {
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "checkbox",
+            "name": "Confirm fixture",
+            "name_source": "label",
+            "type": "checkbox",
+            "href": null,
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 52,
+              "y": 568.38,
+              "width": 13,
+              "height": 13,
+              "right": 65,
+              "bottom": 581.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            }
+          },
+          {
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "link",
+            "name": "External",
+            "name_source": "text",
+            "type": null,
+            "href": "https://example.invalid/outside",
+            "disabled": false,
+            "tab_index": 0,
+            "visible": true,
+            "rect": {
+              "x": 48,
+              "y": 617.38,
+              "width": 92.44,
+              "height": 43,
+              "right": 140.44,
+              "bottom": 660.38
+            },
+            "baseline_focus_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            }
+          }
+        ],
+        "prominent_fragment_candidates": [
+          {
+            "classification": "advisory-candidate",
+            "advisory_only": true,
+            "selector": "body > main > section:nth-of-type(1) > h1 > span",
+            "parent_selector": "#fixture-title",
+            "text": "evidence",
+            "parent_text": "Rendered evidence fixture",
+            "reasons": [
+              "foreground-color-change"
+            ],
+            "parent_style": {
+              "color": "rgb(32, 32, 24)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "700",
+              "font_style": "normal",
+              "font_size": "40px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(32, 32, 24)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(32, 32, 24)"
+            },
+            "fragment_style": {
+              "color": "rgb(155, 50, 31)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "700",
+              "font_style": "normal",
+              "font_size": "40px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(155, 50, 31)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(155, 50, 31)"
+            }
+          }
+        ]
+      },
+      "focus": {
+        "attempted": true,
+        "maximum_steps": 16,
+        "observed_steps": 6,
+        "cycle_detected": false,
+        "truncated": false,
+        "steps": [
+          {
+            "order": 1,
+            "selector": "body > main > section:nth-of-type(1) > p:nth-of-type(2) > a",
+            "tag": "a",
+            "role": "link",
+            "name": "Read the notes",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 2,
+            "selector": "#fixture-state",
+            "tag": "button",
+            "role": "button",
+            "name": "Inspect state",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(240, 240, 240)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 3,
+            "selector": "#fixture-name",
+            "tag": "input",
+            "role": "textbox",
+            "name": "Fixture name",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 4,
+            "selector": "#fixture-choice",
+            "tag": "select",
+            "role": "combobox",
+            "name": "Fixture choice AlphaBeta",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgb(255, 255, 255)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(118, 118, 118)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 5,
+            "selector": "#fixture-check",
+            "tag": "input",
+            "role": "checkbox",
+            "name": "Confirm fixture",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 0)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Arial",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "13.3333px",
+              "text_decoration_line": "none",
+              "outline_color": "rgb(0, 0, 0)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 0)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          },
+          {
+            "order": 6,
+            "selector": "#external-link",
+            "tag": "a",
+            "role": "link",
+            "name": "External",
+            "focus_visible_matches": true,
+            "focused_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(23, 107, 135)",
+              "outline_style": "solid",
+              "outline_width": "4px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "baseline_style": {
+              "color": "rgb(0, 0, 238)",
+              "background_color": "rgba(0, 0, 0, 0)",
+              "background_image": "none",
+              "font_family": "Georgia, serif",
+              "font_weight": "400",
+              "font_style": "normal",
+              "font_size": "16px",
+              "text_decoration_line": "underline",
+              "outline_color": "rgb(0, 0, 238)",
+              "outline_style": "none",
+              "outline_width": "3px",
+              "box_shadow": "none",
+              "border_color": "rgb(0, 0, 238)"
+            },
+            "indicator_evidence": {
+              "candidate_present": true,
+              "reasons": [
+                "visible-outline"
+              ]
+            }
+          }
+        ],
+        "interpretation": "Computed-style differences are advisory focus-indicator evidence, not a contrast or accessibility pass."
+      }
+    }
+  ],
+  "artifacts": {
+    "contact_sheet": {
+      "path": "contact-sheet.html",
+      "sha256": "38f92c2f0a61ef6db768766b8da47c7ad8a6c6279e3dee7c4169527fadea76ec",
+      "media_type": "text/html",
+      "bytes": 3761
+    },
+    "report": {
+      "path": "render-review.json",
+      "bytes": 103250
+    },
+    "marker": {
+      "path": ".design-dna-render-review.json",
+      "bytes": 640
+    },
+    "capture_bytes": 69172,
+    "total_bytes": 176823
+  },
+  "manual_review": {
+    "status": "required",
+    "candidates_are_advisory": true,
+    "advisory_counts": {
+      "console_errors": 4,
+      "page_errors": 2,
+      "request_failures": 2,
+      "http_failures": 2,
+      "blocked_outbound": 4,
+      "failed_captures": 0,
+      "quota_failures": 0,
+      "horizontal_overflow_documents": 0,
+      "overflow_candidates": 0,
+      "failed_images": 0,
+      "missing_alt_attributes": 0,
+      "prominent_fragment_candidates": 2,
+      "focus_steps_without_indicator_candidate": 0
+    },
+    "limitations": [
+      "Screenshots and computed styles do not establish visual quality, project specificity, truth, or authorship.",
+      "DOM-derived names are approximations and are not an accessibility-tree or screen-reader result.",
+      "Focus style differences are candidates; contrast, obstruction, and perception still require human review.",
+      "Computed font-family values do not prove which glyph face rendered or that licensing and language coverage are complete.",
+      "Typography sampling distributes bounded evidence by semantic role and document position; it does not rank font families or infer quality or authorship.",
+      "Image crop heuristics cannot judge subject integrity, consent, provenance, or generated-media artifacts.",
+      "Canvas, WebGL, shadow-DOM internals, cross-origin frame internals, and interaction states not reached by passive loading remain uninspected.",
+      "No active scroll sweep is performed; passive lazy content that does not load during asset waiting or full-page screenshot preparation can remain unobserved.",
+      "The local server has no single-page-app history fallback; every requested route must resolve to a real frozen public file.",
+      "Local captures block outbound cross-origin requests, so third-party-dependent states can differ from production and blocked requests require review.",
+      "Remote captures also block cross-origin subresources by default; only credential-isolated top-level redirects are allowed for redirect evidence.",
+      "Requested browser zoom modes are not simulated; their captures are unzoomed supporting baselines and true zoom review remains manual-required.",
+      "Text-spacing evidence applies a deterministic author-style override; it is useful rendered evidence but does not replace manual reflow, zoom, reading, or assistive-technology review.",
+      "Manifest interaction values are bound by the manifest hash but persisted only as SHA-256 and length; screenshots can still visibly contain entered values.",
+      "A successful execution proves evidence collection completed within limits; it never proves design quality, accessibility conformance, privacy compliance, or human authorship.",
+      "The ownership marker is a fail-closed accidental-deletion guard and integrity binding, not a signed authenticity or hostile-filesystem security boundary."
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-033",
+  "retrieved": "2026-07-29",
+  "url": "https://storybook.js.org/docs/writing-tests",
+  "locator": "Component tests; Types of tests: interaction tests; Types of tests: visual tests",
+  "content_kind": "maintainer_summary",
+  "summary": "Storybook documents stories as rendered component states, play functions that simulate and assert user behavior, browser-based testing and CI automation, and visual comparison of story snapshots against accepted baselines to expose unintended interface changes."
+}

@@ -262,6 +262,13 @@ class EvalInvocationContractTests(unittest.TestCase):
                     "neutral-implicit": "implicit",
                 },
             )
+            self.assertEqual(
+                document["prompt_contract"]["installation_modes"],
+                {
+                    "default-explicit": "direct-skill",
+                    "neutral-implicit": "direct-skill",
+                },
+            )
 
             explicit_skill = runs[("default-explicit", "skill")]
             explicit_baseline = runs[("default-explicit", "baseline")]
@@ -316,6 +323,14 @@ class EvalInvocationContractTests(unittest.TestCase):
                 self.assertEqual(
                     request["invocation_mode"],
                     run["invocation_mode"],
+                )
+                self.assertEqual(
+                    request["installation_mode"],
+                    "direct-skill",
+                )
+                self.assertEqual(
+                    run["installation_mode"],
+                    "direct-skill",
                 )
                 self.assertEqual(
                     hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
@@ -405,6 +420,66 @@ class EvalInvocationContractTests(unittest.TestCase):
                 expected_route = Path(request["home"]).joinpath(*route_parts)
                 self.assertEqual(Path(request["skill_root"]), expected_route)
                 self.assertTrue(expected_route.is_dir())
+                self.assertEqual(
+                    request["installation_mode"],
+                    "direct-skill",
+                )
+                self.assertEqual(
+                    runs["skill"]["installation_mode"],
+                    "direct-skill",
+                )
+
+    def test_claude_packaged_plugin_mode_fails_closed_before_execution(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture = root / "suite.json"
+            work = root / "work"
+            results = root / "results"
+            work.mkdir()
+            results.mkdir()
+            write_suite(
+                fixture,
+                suite="claude-packaged-plugin-contract",
+                cases=[{
+                    "id": "packaged-plugin-route",
+                    "installation_mode": "packaged-plugin",
+                    "task": (
+                        "Create a local interface while testing the packaged "
+                        "Claude plugin route."
+                    ),
+                    "review_requirements": [
+                        "Do not substitute direct-skill evidence for a plugin run."
+                    ],
+                    "expected": {
+                        "exit_codes": [0],
+                        "files_exist": ["index.html", "style.css"],
+                    },
+                }],
+            )
+            result = run_harness(
+                fixture,
+                work,
+                results,
+                host="claude_code",
+            )
+            self.assertEqual(
+                result.returncode,
+                2,
+                result.stdout + result.stderr,
+            )
+            payload = json.loads(result.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertEqual(
+                payload["failures"][0]["code"],
+                "unsupported-eval-installation-mode",
+            )
+            message = payload["failures"][0]["message"]
+            self.assertIn(".claude/plugins/cache", message)
+            self.assertIn("/design-dna:design-dna", message)
+            self.assertEqual([], list(results.glob("*.json")))
+            self.assertEqual([], list(work.iterdir()))
 
     def test_bound_mock_host_event_permits_structural_implicit_pass(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

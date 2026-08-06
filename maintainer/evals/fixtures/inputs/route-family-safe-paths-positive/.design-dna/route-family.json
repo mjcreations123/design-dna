@@ -1,0 +1,174 @@
+{
+  "schema_version": 2,
+  "created_with": "design-dna 4.0.0",
+  "classification": "internal",
+  "study": {
+    "id": "safe-paths-fixture",
+    "title": "Safe route path forms",
+    "requested_route_count": 5
+  },
+  "shared_contract": {
+    "identity": "A plain fixture identity leaves route path semantics visible.",
+    "navigation": "Every document repeats the same five literal destinations in the same order.",
+    "truth": "The fixture makes no public claim beyond its own route structure.",
+    "accessibility": "Semantic navigation and main landmarks remain available without scripts.",
+    "voice": "Labels name path forms directly and do not stand in for cultural review.",
+    "performance": "Static UTF-8 documents use no scripts, remote assets, or runtime data."
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "title": "Root route",
+      "user_job": "Enter the fixture and reach every declared path.",
+      "creative_logic": "A neutral index exposes literal route behavior without prescribing a visual treatment.",
+      "observable_decisions": [
+        {
+          "decision": "Use literal links to every declared route.",
+          "reason": "The link graph can prove direct destinations without runtime inference.",
+          "evidence": "index.html",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The document remains a normal reading flow at both chosen widths.",
+      "reduced_motion_result": "No motion exists.",
+      "no_javascript_result": "All content and links are source-visible.",
+      "closest_sibling": "lakewood-case",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "fixture-wide", "width": 1280},
+          {"id": "fixture-narrow", "width": 412}
+        ]
+      },
+      "review_status": "implemented"
+    },
+    {
+      "id": "lakewood-case",
+      "path": "/Lakewood/",
+      "title": "Case-preserving route",
+      "user_job": "Verify that route case is not folded into a lowercase recipe.",
+      "creative_logic": {
+        "path_property": "Preserve the uppercase L exactly.",
+        "evidence": ["Lakewood/index.html", "Literal navigation targets"]
+      },
+      "observable_decisions": [
+        {
+          "decision": "Keep the source directory and declared path case aligned.",
+          "reason": "Case can be significant on the deployed filesystem.",
+          "evidence": "Lakewood/index.html",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The route uses the fixture's normal reading flow.",
+      "reduced_motion_result": "No motion exists.",
+      "no_javascript_result": "All content and links are source-visible.",
+      "closest_sibling": "torah-unicode",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "fixture-wide", "width": 1280},
+          {"id": "fixture-narrow", "width": 412}
+        ]
+      },
+      "review_status": "implemented"
+    },
+    {
+      "id": "torah-unicode",
+      "path": "/תורה/",
+      "title": "Unicode route",
+      "user_job": "Verify a safe localized UTF-8 path without transliteration.",
+      "creative_logic": "Keep the supplied localized path as route evidence, not as raster decoration.",
+      "observable_decisions": [
+        {
+          "decision": "Use the UTF-8 directory name and literal IRI path.",
+          "reason": "Localized paths are valid route material.",
+          "evidence": "תורה/index.html",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The route uses the fixture's normal reading flow.",
+      "reduced_motion_result": "No motion exists.",
+      "no_javascript_result": "All content and links are source-visible.",
+      "closest_sibling": "made-here",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "fixture-wide", "width": 1280},
+          {"id": "fixture-narrow", "width": 412}
+        ]
+      },
+      "review_status": "implemented"
+    },
+    {
+      "id": "made-here",
+      "path": "/made_here/",
+      "title": "Underscore route",
+      "user_job": "Verify that an underscore is preserved in a safe route segment.",
+      "creative_logic": "Keep the declared underscore instead of converting it to a preferred slug style.",
+      "observable_decisions": [
+        {
+          "decision": "Match the underscore-bearing directory exactly.",
+          "reason": "The audit should inspect the project's route rather than rename it.",
+          "evidence": "made_here/index.html",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The route uses the fixture's normal reading flow.",
+      "reduced_motion_result": "No motion exists.",
+      "no_javascript_result": "All content and links are source-visible.",
+      "closest_sibling": "about-html",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "fixture-wide", "width": 1280},
+          {"id": "fixture-narrow", "width": 412}
+        ]
+      },
+      "review_status": "implemented"
+    },
+    {
+      "id": "about-html",
+      "path": "/about.html",
+      "title": "Extension-bearing route",
+      "user_job": "Verify that a real filename route is not rewritten as a directory route.",
+      "creative_logic": "Preserve the extension-bearing destination exactly as the project serves it.",
+      "observable_decisions": [
+        {
+          "decision": "Resolve about.html as the declared destination.",
+          "reason": "Rewriting it to about/index.html would assert a route that does not exist.",
+          "evidence": "about.html",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The route uses the fixture's normal reading flow.",
+      "reduced_motion_result": "No motion exists.",
+      "no_javascript_result": "All content and links are source-visible.",
+      "closest_sibling": "home",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "fixture-wide", "width": 1280},
+          {"id": "fixture-narrow", "width": 412}
+        ]
+      },
+      "review_status": "implemented"
+    }
+  ],
+  "review": {
+    "direct_entry": "pending",
+    "link_integrity": "pending",
+    "route_count": "pending",
+    "body_comparison": "pending",
+    "atlas_artifact": "pending",
+    "cultural_acceptance": {
+      "required": false,
+      "status": "not-required",
+      "reviewer_id": null,
+      "relationship": "not-reviewed",
+      "independent_of_producer": false,
+      "reviewed_at": null,
+      "notes": "This route-syntax fixture does not publish cultural representation."
+    }
+  }
+}

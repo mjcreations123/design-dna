@@ -1,0 +1,10 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #17201b; background: #f4f1e8; }
+.family-nav { padding: 1rem; border-block-end: 1px solid currentColor; }
+.family-nav ul { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin: 0; padding: 0; list-style: none; }
+main { min-height: 70vh; padding: clamp(1.25rem, 4vw, 4rem); }
+a { color: inherit; }
+.skip { position: absolute; inset-inline-start: -100vw; }
+.skip:focus { inset-inline-start: 1rem; inset-block-start: 1rem; background: white; padding: .5rem; }
+footer { padding: 1rem; border-block-start: 1px solid currentColor; }

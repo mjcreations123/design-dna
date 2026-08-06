@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "fixture_id": "supplied-media-relay",
+  "created_on": "2026-07-29",
+  "origin": {
+    "provider": "OpenAI",
+    "tool": "ImageGen",
+    "method": "text-to-image concept generation",
+    "model_version": "not recorded",
+    "prompt_record": "not included in this fixture",
+    "source_context": "Generated during a local Design DNA Relay Room evaluation repair."
+  },
+  "authorization": {
+    "status": "owner-authorized",
+    "scope": "local Design DNA evaluation and demonstration",
+    "separate_asset_license": "not supplied",
+    "repository_license_note": "Consult the repository LICENSE. This provenance record does not expand or replace it."
+  },
+  "truth_boundary": {
+    "fictional": true,
+    "documentary_evidence": false,
+    "external_photo_credit_claimed": false,
+    "identity_release_claimed": false,
+    "model_release_claimed": false,
+    "property_release_claimed": false,
+    "required_public_disclosure": "Fictional concept for evaluation."
+  },
+  "assets": [
+    {
+      "path": "assets/atmosphere-listening-room.webp",
+      "role": "atmosphere",
+      "width": 1537,
+      "height": 1023,
+      "sha256": "f24ddb0d0dbada1d80647130dd1905787cbacfe4c7c7e9239165ece5de02d228",
+      "editorial_job": "Orient the visitor to the listening-room scale and atmosphere.",
+      "alt_guidance": "Describe the fictional listening room shown; do not identify a real venue."
+    },
+    {
+      "path": "assets/human-use-live-session.webp",
+      "role": "human-use",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "b3fb04201b0789687f3022920feb1ae8313b4deb8c1b8a80b377e17da754f576",
+      "editorial_job": "Show the social scale and audience situation of a small live session.",
+      "alt_guidance": "Describe the fictional performance situation; do not identify people or claim a real event."
+    },
+    {
+      "path": "assets/material-detail-radio-booth.webp",
+      "role": "material-detail",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "e9b0939725ada3a5f0071531d9b4b04b9c6faf9cc0327da2ca47d93e90e5e6b7",
+      "editorial_job": "Support plain-language copy about microphones, the console, and the recording process.",
+      "alt_guidance": "Describe the fictional booth and equipment; do not claim a real broadcast or studio."
+    }
+  ]
+}

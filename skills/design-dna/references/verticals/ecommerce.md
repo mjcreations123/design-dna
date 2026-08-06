@@ -4,7 +4,11 @@ Use this for catalog, product, cart, checkout, account, subscription, or transac
 
 ## Route by job
 
-Treat discovery and merchandising as Persuade, specifications and policy as Read, and cart, checkout, account, returns, or configuration as Operate. Share brand tokens while letting each route use the conventions its job requires.
+Use whichever modes illuminate each route's real jobs. Discovery may persuade,
+specifications may support reading, and checkout may operate at the same time;
+these are common relationships rather than required route forms or exclusive
+labels. Share only the brand,
+behavior, and system decisions that should actually remain common.
 
 ## Design the complete journey
 
@@ -18,7 +22,8 @@ Cover:
 6. failure, retry, duplicate submission, interruption, and recovery;
 7. order status, cancellation, return, refund, and support.
 
-Do not optimize only the product hero.
+Do not optimize only one promotional view while leaving selection,
+transaction, failure, and recovery unfinished.
 
 ## Preserve product truth
 
@@ -47,6 +52,15 @@ Do not optimize only the product hero.
 - Provide guest checkout when the product and policy allow.
 - Support password managers, paste, and accessible authentication.
 - Confirm the outcome and provide a durable order reference.
+
+## Cover recurring commerce
+
+When the offer includes a trial, membership, replenishment, recurring box,
+service plan, or usage-based charge, apply the complete
+[subscription and billing lifecycle](../flows/subscription-billing.md).
+Design trial conversion, renewal, upgrade, downgrade, proration, payment
+failure, grace, pause, entitlement change, cancellation, reactivation, and
+refund—not only the initial subscription selector.
 
 ## Verify
 

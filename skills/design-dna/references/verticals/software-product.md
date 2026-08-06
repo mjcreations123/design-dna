@@ -4,7 +4,11 @@ Use this for SaaS, developer tools, AI products, platforms, APIs, and software m
 
 ## Route by real job
 
-Marketing and comparison usually Persuade; documentation, changelogs, and specifications Read; signup, onboarding, configuration, daily work, billing, and administration Operate. Interactive demonstrations may Experience. Share product truth and identity while letting each route adopt the density and conventions its job needs.
+Choose modes from the real route job. Marketing may persuade, documentation
+may support reading, daily work may operate, and a demonstration may be an
+experience, but these are common relationships rather than required route
+forms. Share product truth and approved identity while allowing each route the
+visual and interaction logic its job needs.
 
 Map the real workflow before designing feature sections:
 
@@ -14,14 +18,26 @@ Map the real workflow before designing feature sections:
 - default, loading, empty, partial, stale, offline, error, success, and recovery;
 - cancellation, export, deletion, support, and exit.
 
+For signup, invitations, verification, sign-in, MFA, recovery, onboarding,
+profiles, membership, role changes, export, and account deletion, apply the
+[identity, account, and onboarding lifecycle](../flows/identity-account-onboarding.md).
+For recurring plans and entitlements, apply
+[subscription and billing](../flows/subscription-billing.md). For product
+inboxes or preferences, apply
+[messaging and notifications](../flows/messaging-notifications.md).
+
 ## Demonstrate the product truthfully
 
-Use approved product captures, realistic labeled fixtures, or an explicitly identified prototype. Show a meaningful task and outcome rather than a collage of tiny dashboard panels.
+Use approved product captures, realistic labeled fixtures, an explicitly
+identified prototype, illustration, diagram, text, or another honest medium.
+When the site claims product behavior, ensure the chosen presentation makes a
+meaningful task and outcome inspectable rather than merely implying capability.
 
 - Keep screenshots current, legible, privacy-safe, and tied to the described capability.
 - Distinguish available, beta, limited, planned, deprecated, and third-party behavior.
 - Do not invent customers, quotes, usage, outcomes, uptime, integrations, certifications, or live activity.
-- Avoid browser frames, terminal text, charts, and cursor animation that imply a working product when none exists.
+- Do not let any visual treatment imply a working product, live state, or
+  capability when none exists.
 
 Write from concrete user work: what the product changes, for whom, under what conditions, and with what limitation. Keep terminology stable between marketing, product, docs, and support. Replace generic transformation claims with demonstrable behavior and evidence.
 
@@ -39,9 +55,16 @@ Treat `Contact sales`, waitlists, calculators, demos, and signup as real journey
 
 ## Connect marketing and product
 
-Carry naming, type, color roles, icon grammar, and component behavior across the boundary, then adapt density and emphasis to the task. Remove marketing theatrics from frequent workflows. Do not leave framework colors, fonts, radii, generic cards, empty states, or demo copy as the product's accidental identity.
+Keep naming, claims, account state, and behavior consistent across the
+boundary. Share or vary typography, color, iconography, components, density,
+motion, ornament, and other aesthetic fields according to the verified brand,
+task, and `creative_logic`; visual sameness is not required for continuity.
 
-Dark mode is contextual, not an automatic signal of technical credibility. Add it when environment, audience, task, or existing product support justifies the maintenance cost; test contrast, syntax, charts, focus, media, elevation, and system preference in both themes.
+Do not leave starter or framework decisions as accidental identity. Any theme,
+including dark, light, multiple, adaptive, or highly local themes, is valid
+when intentional and maintainable. Test the relevant contrast, syntax, data,
+focus, media, and preference conditions for the themes the product actually
+ships.
 
 ## Model agentic behavior
 

@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-038",
+  "retrieved": "2026-07-30",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll-driven_animations",
+  "locator": "Scroll-driven animations in action; Reference; Guides",
+  "content_kind": "maintainer_summary",
+  "summary": "MDN documents CSS scroll- and view-progress timelines that can drive animations from a scroll container or an element's visibility progress. Examples use feature queries for unsupported browsers, so the mechanism should be treated as an optional enhancement rather than a prerequisite for access to content."
+}

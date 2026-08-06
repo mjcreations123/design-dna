@@ -1,0 +1,8 @@
+{
+  "schema_version": 6,
+  "package": "design-dna",
+  "version": "3.3.0",
+  "release_sha256": "4dbe9c2e8b3465e203279882c841101c7896ecf36725cfb528f579e42de9d4b7",
+  "content_sha256": "a29fe7b9eab704849e028a8b76c22127d44c5413011c744fc1eedcc472f2bd91",
+  "generated_at": "2026-07-29T18:29:18.133231+00:00"
+}

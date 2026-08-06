@@ -1,113 +1,227 @@
 # Adversarial specificity review
 
-Use this after the final implementation round when the request explicitly asks
-to avoid an AI-looking, vibe-coded, templated, generic, or repeated house-style
-result. It diagnoses visible causes and unresolved first-pass residue; it does
-not detect authorship or prove that a person made the work.
+Use this after a complete render of a substantial new build or visual
+redesign. Use deeper cross-route and, when authorized, cross-project comparison
+when the request explicitly rejects generic, templated, repeated, vibe-coded,
+or allegedly AI-looking work.
+
+This review identifies visible causes, unresolved first-pass residue, and
+unexplained repetition. It does not detect authorship, assign an “AI score,”
+or prohibit ingredients. Read the candidate before reading motif warnings.
 
 ## Contents
 
 - [Bind the candidate](#bind-the-candidate)
-- [Compare route silhouettes](#compare-route-silhouettes)
-- [Audit copy texture and claims](#audit-copy-texture-and-claims)
-- [Balance evidence and polish](#balance-evidence-and-polish)
+- [Observe before diagnosing](#observe-before-diagnosing)
+- [Compare systems, not isolated ingredients](#compare-systems-not-isolated-ingredients)
+- [Test comprehension and public meaning](#test-comprehension-and-public-meaning)
+- [Test the stated ambition](#test-the-stated-ambition)
+- [Audit copy and claims](#audit-copy-and-claims)
+- [Review typography without font policing](#review-typography-without-font-policing)
+- [Balance evidence, utility, and aesthetic autonomy](#balance-evidence-utility-and-aesthetic-autonomy)
 - [Review media as a set](#review-media-as-a-set)
-- [Inspect implementation residue](#inspect-implementation-residue)
-- [Close adversarially](#close-adversarially)
+- [Inspect care and implementation residue](#inspect-care-and-implementation-residue)
+- [Close with evidence](#close-with-evidence)
 
 ## Bind the candidate
 
-Freeze the build identifier, routes, states, viewport matrix, browser, date,
-and available captures. Review the final candidate rather than an obsolete
-screenshot. Mark the review as self-review, independent perception review,
-expert review, or target-user evidence.
+Record the exact build, routes, states, viewport and preference matrix,
+browser, date, and artifacts actually reviewed. Bind source, content fixture,
+media inventory, and artifact hashes when the project's assurance level
+requires them. Mark missing evidence as unbound or not performed.
 
-Cross-project comparison is optional and requires owner-authorized, minimized
-pattern history. If that evidence is unavailable or unauthorized, record
-`cross-project repetition not assessed`; never inspect unrelated confidential
-work or imply that current-project closure covered it.
+State reviewer relationship and prior exposure: producer self-review,
+independent perception review, expert review, accountable owner, or target
+user. Self-review can guide revision but cannot be relabeled as independent or
+owner acceptance.
 
-## Compare route silhouettes
+Cross-project comparison requires owner-authorized, minimized evidence. If it
+is unavailable, record `cross-project repetition not assessed`. Direct owner
+feedback comparing named artifacts is already authorized for that comparison;
+do not dismiss it because an earlier broad comparison was unavailable.
 
-Write each route as an ordered sequence of user jobs, proof, interaction, and
-action. Keep common navigation, legal, account, and conversion primitives
-separate from the main-content sequence.
+## Observe before diagnosing
 
-- Check whether distinct audiences inherit the same hero, explanation,
-  comparison, interaction, proof, and closing cadence without a task reason.
-- Check whether most sections repeat one eyebrow, heading, deck, media or
-  widget, and action recipe.
-- Keep repeated labels only when they communicate real taxonomy, status,
-  sequence, or orientation.
-- Let content importance create uneven depth and rhythm; do not manufacture
-  irregularity to look handmade.
+When possible, run a first-impression review before showing the reviewer the
+direction rationale, scanner findings, recurring-pattern vocabulary, or prior
+feedback. Ask in plain language:
 
-Shared structure is correct when the user jobs truly match. Record that reason
-rather than varying a route for novelty.
+- What is this and what can someone do here?
+- What did you notice first and next?
+- What does it feel like in this context?
+- What looks intentional, distinctive, confusing, unfinished, or wrong?
+- What do you remember after a short delay?
+- What would you keep or change?
 
-## Audit copy texture and claims
+Use the project's success conditions rather than a universal emotional score.
+Anchor actionable observations to an exact artifact, region, and condition.
+Record disagreement and exposure instead of manufacturing consensus.
 
-Read only navigation, eyebrows, headings, actions, numbers, and section-ending
-lines. Mark repeated question openings, myth-correction formulas, polished
-contrasts, aphorisms, three-part cadence, and interchangeable reassurance.
-Preserve intentional supplied voice, but rewrite an unexamined rhetorical
-machine with concrete source language, constraints, and consequences. Do not
-add typos, slang, fragments, or awkwardness merely to simulate a person.
+## Compare systems, not isolated ingredients
 
-Keep a claim ledger for every exact quantity, price, time, warranty, universal
-or near-universal statement, regulated claim, and calculator assumption:
+Describe each route or flow as an ordered encounter: content, decisions,
+evidence, interactions, actions, and ending. Separate shared navigation,
+legal, account, and operational primitives from main content.
 
-| Claim | Source and owner | Locale/scope | Reviewed/expiry | Public treatment |
-| --- | --- | --- | --- | --- |
-|  |  |  |  | approve, qualify, label scenario, replace, defer, or omit |
+Inspect whether routes with different jobs nevertheless repeat the same:
 
-Concept and illustrative values may remain when their status is unmistakable.
-Specific-sounding copy is not a substitute for evidence.
+- opening and content sequence;
+- hierarchy, proportion, density, and section cadence;
+- typography roles and emphasis grammar;
+- component, container, label, icon, or decorative grammar;
+- media casting, crop, treatment, and sequencing;
+- motion, transition, hover, and interaction behavior;
+- copy cadence, proof pattern, CTA logic, and ending.
 
-## Balance evidence and polish
+No repeated choice is a defect by itself. Shared structure is correct when
+task, brand, platform, content, product-family, or maintenance evidence
+explains it. Conversely, changed words, pictures, fonts, palettes, and effects
+do not prove difference when the underlying encounter remains the same.
 
-For every elaborate diagram, calculator, comparison, proof module, or
-interaction, name:
+For authorized cross-project comparison, mask names, logos, copy, and dominant
+photographs before judging producer fingerprints. Look for repeated clusters,
+not a single fashionable or familiar choice.
 
-- the real decision it improves;
-- the approved content or data it depends on;
-- the owner who can maintain it;
-- its limits, failure state, and fallback.
+## Test comprehension and public meaning
 
-If presentation depth outruns the available identity, product, place, process,
-or proof, simplify or defer the module. Do not fabricate evidence to justify
-the polish.
+Check whether the intended audience can orient, understand prominent terms,
+and use or enter the experience as the brief requires. A creative work may
+deliberately delay full explanation; that is not a defect when the invitation,
+orientation, and continuation are intentionally clear enough.
+
+Remove or rewrite invented mechanics, proof-shaped decoration, false status,
+and labels whose public meaning exists only in the producer's rationale. An
+honestly disabled but purposeless control is still a product/content problem.
+Specialized language is valid when the real subject and audience use it.
+
+## Test the stated ambition
+
+Translate the brief and owner feedback into observable criteria. Bind them to
+the candidate's extensible `creative_logic` and review the candidate on those
+terms:
+
+- Does the rendered work deliver the requested character and level of finish?
+- Which project material and decisions create that result?
+- Do the type, spacing, composition, color relationships, media, interaction,
+  details, and responsive states feel intentionally resolved?
+- Is the work relying on one dominant asset or effect in a way the project
+  considers fragile, or is that dependency part of the approved direction?
+- When sibling routes should differ, do their creative logics produce
+  meaningful differences?
+- Does the result feel like a first generated arrangement, a producer habit,
+  or a finished answer to this brief?
+
+Do not require a signature device, high/quiet sequence, multiple expression
+channels, bounded risk, removal test, or memorability trick. Use any of those
+only when the project declared it. A restrained work can be extraordinary; a
+maximal work can be rigorous; either can also fail visually.
+
+Accountable-owner rejection reopens the affected conclusion. Address the
+organizing cause rather than rotating surface ingredients or adding detached
+effects.
+
+## Audit copy and claims
+
+Review high-salience navigation, headings, labels, actions, numbers, and
+section endings, then representative body, proof, form, empty, error, and
+recovery copy. Look for an unexplained repeated rhetorical machine,
+interchangeable reassurance, generic claims, or public narration of the design
+process. Preserve intentional supplied voice and legitimate recurring
+language. Do not add awkwardness, typos, slang, or random fragments to imitate
+a person.
+
+Keep internal methodology, provenance detail, unresolved-input logs, and skill
+jargon out of customer copy unless the visitor genuinely needs a concise
+disclosure.
+
+Maintain a claim ledger for exact quantities, prices, times, warranties,
+universal statements, regulated claims, scenarios, and calculator assumptions:
+
+| Claim | Source and owner | Scope and date | Public treatment |
+| --- | --- | --- | --- |
+|  |  |  | approve, qualify, label, replace, defer, or omit |
+
+Specific-sounding prose is not evidence. Clearly labeled examples and
+illustrative values may remain when their limits cannot be mistaken.
+
+## Review typography without font policing
+
+Inspect the fonts actually rendered, not only declared CSS. Review relevant
+display, body, navigation, control, data, and long-form roles using real copy
+at actual sizes and widths. Verify rights, files, weights and styles, script
+coverage, glyphs, fallbacks, loading, and layout stability at the level needed
+for the project.
+
+Judge family choice, number of families, pairing or non-pairing, hierarchy,
+measure, tracking, leading, width, weight, optical settings, punctuation, and
+wrap behavior as one rendered system. No font family or numerical typography
+value fails merely because it is common, fashionable, unusual, compressed, or
+listed by another project. Revise when the result is illegible, crowded,
+visually weak, culturally wrong, unsupported, or inconsistent without reason.
+
+Inspect prominent fragment emphasis—color, gradient, font, italic, underline,
+marker, sticker, background, or animation—in context. A single treatment can
+be expressive and appropriate. A repeated arbitrary grammar can fragment
+reading, create a producer fingerprint, or imply meaning that is not there.
+Verify contrast, non-color meaning when meaning is conveyed, reflow,
+forced-colors behavior, and relevant motion preferences.
+
+## Balance evidence, utility, and aesthetic autonomy
+
+For proof-shaped modules, data graphics, calculators, comparisons, or controls,
+verify the real content, decision, state, owner, limits, and fallback. Do not
+fabricate evidence or capability to justify visual complexity.
+
+Decorative and atmospheric work does not need to pretend to be evidence or a
+tool. It may justify itself through beauty, mood, identity, humor, affiliation,
+ceremony, or composition. Judge it at the scale where it operates and revise
+it when it is visually unsuccessful or obstructs truth, access, task,
+performance, or content.
 
 ## Review media as a set
 
-Inspect a contact sheet as well as individual assets. Coherence should preserve
-truthful variance in light, weather, wear, labels, people, local context,
-camera distance, and working conditions when those details belong to the
-subject. Do not add fake grime, damage, noise, film artifacts, asymmetry, or
-other staged roughness to manufacture authenticity. Preserve provenance,
-rights, factual boundaries, generated-media disclosures, and replacement
-status.
+Inspect individual assets and the complete rendered set. Check project fit,
+visual quality, crop, sequence, rights, privacy, representation, attribution,
+factual boundaries, generated-media status, and replacement state. Preserve
+documentary variation when it matters; do not add fake imperfection to signal
+authenticity.
 
-## Inspect implementation residue
+Review media absence only against the actual brief and subject. If material
+recognition, atmosphere, place, product, people, or use is central, verify that
+the chosen visual approach conveys it. A no-photo direction is valid when
+deliberate and successful, not merely an unexplained consequence of missing
+assets.
 
-Review public source, comments, names, metadata, and demo content. Keep comments
-that explain non-obvious constraints, accessibility, algorithms, browser
-behavior, and maintenance. Move aesthetic narration and creative-brief or
-skill-specific jargon into the project direction record; do not let it become
-a repeated production fingerprint.
+For generated media, inspect the final pixels and set-level continuity for
+text, logos, anatomy, geometry, repetition, light, shadows, reflections,
+perspective, material, and cultural details relevant to the subject.
 
-## Close adversarially
+## Inspect care and implementation residue
 
-1. Record each observed cluster, counterevidence, cause, and positive revision.
-2. Fix unresolved high- and medium-severity causes rather than rotating motifs.
-3. Re-render affected routes and rerun relevant task, accessibility,
-   performance, content, and engineering checks.
-4. Repeat the perception pass on the revised candidate. Use an independent
-   reviewer when available; otherwise label the closure as self-review.
-5. Record accepted, deferred, and blocked findings with the accountable owner.
+Review public source, comments, names, routes, states, metadata, favicons,
+links, assets, console, network, and demo content. Keep comments that explain
+non-obvious constraints, accessibility, algorithms, browser behavior, and
+maintenance. Move creative rationale and skill vocabulary into internal
+records.
 
-Do not call the explicit specificity concern closed while a material observed
-cluster remains unexamined. Stop when the task, truth, system, and reviewed
-matrix are coherent and the remaining differences are documented taste
-choices. Never conclude that AI involvement is undetectable or that authorship
-has been proven.
+Care is visible across the whole product: meaningful copy, working actions,
+real states, appropriate proof, media craft, accessibility, responsive
+behavior, performance, failure handling, metadata, and operational detail.
+Polish in one screenshot does not excuse incomplete ordinary conditions.
+
+## Close with evidence
+
+For each finding, record observation, impact, cause, counterevidence,
+confidence, revision, exact rerender, status, and owner. Use the shared
+[review severity rubric](review-severity.md) for impact; keep severity separate
+from aesthetic confidence.
+
+Rerun the relevant perception, task, accessibility, performance, content, and
+engineering checks after revision. For substantial public, owner-sensitive,
+or previously rejected work, obtain independent or accountable-owner review
+when available and label self-review honestly when it is not.
+
+Close when material observed causes are resolved or have accountable
+dispositions and the reviewed matrix is coherent. Do not claim human
+authorship, universal appeal, cultural acceptance, sale value, or immunity
+from suspicion.

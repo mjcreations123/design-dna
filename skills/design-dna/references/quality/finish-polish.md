@@ -1,52 +1,147 @@
 # Finish and polish
 
-Use this after the real path works and representative content is present. Finish is the removal of visible friction and unresolved decisions across the rendered system, not an extra layer of effects.
+Use this after the real path works and representative content is present.
+Finish is the resolution of visible friction, weak craft, and unfinished
+decisions across the rendered system. It is not a final coat of Design DNA
+effects or a reason to neutralize accepted character.
 
-## Review in focused passes
+## Contents
 
-Inspect the implementation at full-route scale and close range:
+- [Bind the candidate and intent](#bind-the-candidate-and-intent)
+- [Inspect the whole and the detail](#inspect-the-whole-and-the-detail)
+- [Tune the chosen creative logic](#tune-the-chosen-creative-logic)
+- [Verify real conditions](#verify-real-conditions)
+- [Respect owner evidence](#respect-owner-evidence)
+- [Stop deliberately](#stop-deliberately)
 
-1. **Silhouette and hierarchy:** route shape, focal order, reading path, density changes, and the relationship between content and action.
-2. **Type and content:** line breaks, measure, leading, hierarchy, labels, truncation, numerals, punctuation, and real content extremes.
-3. **Spatial and optical detail:** visible-edge alignment, baselines, icon weight, image crop, one-pixel seams, borders, radii, shadows, and surface transitions.
-4. **Components and states:** anatomy, focus, selection, disabled, loading, empty, error, success, destructive, and permission behavior in page context.
-5. **Motion and response:** timing, interruption, scroll behavior, feedback, reduced motion, and continuity before, during, and after an action.
-6. **Routes and environments:** navigation, transactional handoffs, browser chrome, theme, locale, zoom, input mode, and device constraints.
+## Bind the candidate and intent
 
-Fix shared causes in content, tokens, layout, assets, or component contracts before adding local exceptions.
+Record the exact build, route/state matrix, selected `creative_logic`,
+observable design decisions, previous accepted baseline, and reviewer
+relationship. Review the final implementation rather than a stale proof or
+idealized screenshot.
 
-## Preserve continuity
+Separate:
 
-Keep identity, terminology, navigation, spacing logic, and interaction expectations coherent across marketing, information, account, transaction, support, and error routes. Let density and convention change with the job without making the product feel unrelated.
+- accepted decisions that should remain recognizable;
+- open or provisional decisions still available for tuning;
+- hard truth, rights, privacy, accessibility, functional, cultural, and
+  production boundaries;
+- owner preferences and rejections in their exact scope;
+- proof-only assumptions that real content or behavior must now replace.
 
-Review transitions as carefully as resting screens: initial load, route change, refresh, authentication boundary, external handoff, save, cancellation, failure, retry, and return. A polished default state does not offset a generic or broken edge state.
+## Inspect the whole and the detail
 
-## Use restraint
+Choose the craft lenses the candidate actually needs. Relevant concerns may
+include:
 
-- Strengthen the primary premise before adding another visual idea.
-- Remove effects, badges, dividers, containers, motion, or copy that do not clarify hierarchy, state, character, or action.
-- Keep repetition where it supports learning; vary rhythm only when the content role changes.
-- Allow quiet areas and ordinary controls to remain quiet and ordinary.
-- Do not manufacture irregularity, texture, animation, or complexity merely to signal custom work.
+- comprehension or invitation, hierarchy, sequence, pacing, density, and
+  relationship between content and action;
+- typography, real-copy line breaks, measure, spacing, hierarchy, scripts,
+  fallback, loading, and content extremes;
+- composition, proportion, alignment, crop, depth, material, ornament, color
+  relationships, and optical detail;
+- image, illustration, icon, audio, video, and generated-media quality at both
+  asset and set level;
+- components, controls, states, focus, feedback, error, recovery, and ordinary
+  product detail;
+- motion, temporal continuity, interruption, resting behavior, and preference
+  handling;
+- route transitions, external handoffs, themes, locales, zoom, inputs, device
+  constraints, and slow or failed resources;
+- copy, labels, claims, metadata, comments, placeholders, console, network,
+  and release residue.
 
-When two treatments work, prefer the one with clearer purpose, fewer dependencies, and less regression risk.
+This is an open review field, not a required aesthetic sequence. Add a
+project-specific lens when it can expose quality; omit an irrelevant one with
+an honest `not applicable` where a durable record expects a disposition.
 
-## Verify the rendered result
+Fix shared causes in content, assets, layout, design decisions, components, or
+behavior before accumulating local patches. Keep optical exceptions and
+route-local work when their reason remains valid.
 
-Inspect supported browsers and representative real devices when available, not only design files or a single screenshot. Include continuous resizing, intermediate widths, short height, touch, keyboard, zoom, text enlargement, reduced motion, forced colors, slow or failed assets, long and missing content, and critical states. Check console and network residue alongside visual evidence.
+## Tune the chosen creative logic
 
-For motion-heavy work, a screenshot is not temporal evidence. Record or trace matched normal-motion and reduced-motion runs while holding route, state, viewport, browser, theme, locale, and direction constant. Inspect timing, interruption, reverse navigation, scroll coupling, state continuity, and the animation-disabled path.
+Polish the candidate on its own terms. A singular, plural, restrained,
+maximal, decorative, conventional, image-led, typographic, interactive,
+quiet, or deliberately dissonant direction can all be finished work.
 
-Capture consequential before-and-after evidence with route, state, viewport, browser/version, build identifier, and date. Re-run affected behavioral, accessibility, performance, and engineering checks after polish changes; small visual edits can create large regressions.
+For each material adjustment, record:
+
+| Decision or finding | Observed cause | Revision | Intended observation | Protected qualities | Rerender evidence |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+
+Do not make every element explain a task. Atmosphere, ornament, beauty, humor,
+affiliation, and compositional pleasure can be legitimate. Do not make every
+element expressive either; familiar and ordinary forms may be exactly right.
+Judge the whole rendered relationship and the owner's brief.
+
+Do not require one premise, focal device, contrast pattern, opening shape,
+type system, pace change, removal test, or amount of visual unity. Do not
+rotate to a fashionable opposite because a current-pattern review names an
+ingredient. Familiar and unusual choices both need convincing execution and a
+project reason at the scale where they operate.
+
+## Verify real conditions
+
+Inspect relevant browsers and real devices when available, not only design
+files or one screenshot. Build a matrix proportionate to the actual surface:
+viewports and containers, content lengths, data states, themes, locales,
+directionality, zoom, text enlargement, input methods, motion preferences,
+contrast modes, network/resource conditions, and failure/recovery behavior.
+
+Not every project needs every condition. Every applicable condition needs an
+intentional and verified outcome at the assurance level promised.
+
+For consequential temporal behavior, use recordings or traces rather than a
+still image. Verify interruption, cancellation, reverse navigation, reduced or
+static behavior, unsupported runtime, loading, cleanup, and the complete
+task. For media, inspect real crops and asset failures. For typography, inspect
+actual font delivery, fallback, scripts, wrapping, and responsive behavior.
+
+Capture important before/after evidence with candidate/build, route, state,
+viewport or container, browser, date, and reviewer. Rerun affected functional,
+accessibility, performance, content, and engineering checks; a small visual
+change can create a large regression.
+
+Use an unbriefed perception check when audience response is material. Ask
+questions appropriate to the experience. Task-led work may need immediate
+offering and action comprehension; narrative or experiential work may instead
+need an intentional invitation and unfolding. Record what the reviewer sees,
+feels, understands, expects, and finds unfinished without forcing the response
+into a universal memorability or energy score.
+
+Run a final care audit across copy, actions, proof, media, states,
+accessibility, responsive behavior, metadata, errors, and production details.
+A polished focal screenshot does not offset neglected ordinary conditions.
+
+## Respect owner evidence
+
+Direct accountable-owner rejection invalidates the affected self-review
+conclusion. Reopen the related decisions, revise the cause, rerender the exact
+candidate, and obtain a new disposition. Do not append the rejection as a taste
+note while preserving the rejected result.
+
+For premium, Showcase, or explicitly owner-sensitive claims, self-review yields
+an agent-reviewed candidate. Do not call the visual result owner accepted or
+complete until that disposition exists, or state plainly that it remains
+pending.
 
 ## Stop deliberately
 
 Finish when:
 
-- the intended hierarchy and task survive the supported matrix;
-- repeated values and exceptions have a clear system reason;
-- critical routes and states have no unresolved high-severity finding;
-- remaining differences are intentional, documented, and proportionate;
-- another change would add taste variation without improving the user outcome.
+- the applicable tasks or invitations, observable design decisions, and
+  accepted creative logic hold across the reviewed matrix;
+- truth, rights, accessibility, function, cultural, performance, and
+  production gates have the required evidence or explicit blockers;
+- high- and medium-impact findings have verified fixes or accountable
+  dispositions;
+- differences from the selected proof or baseline are intentional and
+  reviewed;
+- another change would be taste variation rather than a supported improvement.
 
-Freeze the reviewed build and record limitations. Do not keep tuning to one viewport after the system is coherent, and do not describe self-review as independent validation. Accessibility, performance, security, localization, content, or domain-specific risks still require their relevant baseline or specialist review.
+Freeze the reviewed build and record limitations. Do not keep tuning one
+viewport after the relevant system is coherent, and do not describe producer
+self-review as independent or owner validation.

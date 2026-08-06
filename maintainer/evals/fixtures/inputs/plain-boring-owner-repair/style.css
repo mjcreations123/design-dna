@@ -1,0 +1,30 @@
+:root {
+  color: #222;
+  background: #fafafa;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header,
+nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+main {
+  display: grid;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+
+section,
+article {
+  border: 1px solid #ddd;
+  padding: 1rem;
+}

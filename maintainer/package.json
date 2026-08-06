@@ -1,0 +1,17 @@
+{
+  "name": "@design-dna/maintainer",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Pinned browser-review dependencies for Design DNA maintainer verification.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check:rendered-review": "node --check ../skills/design-dna/scripts/rendered_review.mjs",
+    "check:render-comparison": "node --check ../skills/design-dna/scripts/compare_render_reviews.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

@@ -1,51 +1,72 @@
 # Experience mode
 
-Use when exploration, story, sequence, place, culture, or creative work is central to the task. Typical surfaces include exhibitions, campaigns, cultural projects, narrative portfolios, editorial features, and product explorations.
+Use when exploration, story, sequence, place, culture, or creative encounter is
+central. Typical surfaces include exhibitions, campaigns, cultural projects,
+narrative portfolios, editorial features, and product explorations.
 
-## Quality target
+Mode describes the visitor's job, not a visual style. Experience work can be
+singular or plural, linear or open, quiet or overwhelming, familiar or
+experimental, still or highly temporal when the brief supports it.
 
-Create a legible emotional or intellectual arc. Let expression shape attention and understanding without trapping the user, obscuring content, or misrepresenting the subject.
+## Define the encounter
 
-## Define the premise
+Record:
 
-1. Name the story, viewpoint, or exploratory question.
-2. Identify the real material that can carry it.
-3. Design an arc: orientation, development, focal event, resolution, and continuation.
-4. Choose media and interaction because they clarify that arc.
-5. Preserve direct navigation, readable alternatives, and exit paths.
+- the story, viewpoint, question, sensation, exploration, or invitation;
+- real material and cultural authority that can carry it;
+- how visitors enter, orient, continue, revisit, and leave;
+- what may unfold, remain ambiguous, branch, accumulate, or resolve;
+- what must remain available when media, motion, input, or runtime capability
+  changes.
 
-One coherent idea usually outperforms a stack of independent impressive moments.
+Do not require an orientation-development-climax-resolution arc, one coherent
+idea, or a singular media system. Several independent moments can be the right
+form; one restrained relationship can also be enough. Record the candidate's
+own `creative_logic` and observable decisions.
 
-## Use media deliberately
+## Direct media and interaction
 
-- Direct photography, illustration, audio, video, 3D, and typography as one system.
-- Give each transition a narrative or spatial purpose.
-- Preserve provenance, captions, transcripts, and factual boundaries.
-- Make the core story available when rich media is unavailable.
-- Design art-directed responsive crops and low-performance fallbacks.
-- Avoid reproducing a gallery reference's composition or signature behavior.
+Photography, illustration, text, audio, video, 3D, typography, space, sound,
+motion, and interaction may work together, separately, or not appear at all.
+Choose their relationships from the material and audience rather than this
+mode.
 
-## Preserve agency
+- Preserve provenance, rights, privacy, captions, transcripts, factual status,
+  and cultural boundaries.
+- Provide meaningful alternatives for core content and outcomes.
+- Adapt crops, controls, loading, and performance to relevant devices.
+- Keep interaction honest and prevent unsupported media from impersonating
+  evidence.
+- Learn relationships from references without copying identity, assets,
+  composition, or proprietary behavior.
+
+Atmosphere, beauty, disorientation, surprise, play, and ornament may be valid
+goals. They fail when they conflict with the approved experience, make core
+content inaccessible, misrepresent the subject, or break ordinary use.
+
+## Preserve agency and access
 
 - Do not hijack scrolling or unexpectedly move focus.
-- Make auto-moving media pausable when required.
-- Support touch, keyboard, pointer, no-hover, and reduced motion.
-- Give deep-linked visitors orientation and a path into the sequence.
-- Allow users to skip, revisit, or exit long sequences.
-- Do not require precise gestures or powerful hardware to access core meaning.
+- Provide required pause, stop, or volume controls for moving or audible media.
+- Support applicable touch, keyboard, pointer, no-hover, and preference paths.
+- Give direct-entry visitors enough context for the intended experience.
+- Let people skip, revisit, or exit long or consequential sequences where
+  agency requires it.
+- Do not require precise gestures or powerful hardware for the only path to a
+  meaningful outcome.
 
-## Common risks to review
+The alternative experience does not have to mimic the dominant medium. It
+must preserve the content, agency, and outcome that the project and
+accessibility contract require.
 
-- ambient shaders, glows, particles, or 3D without narrative purpose;
-- scroll-driven effects that conceal thin content;
-- sound that starts unexpectedly;
-- illegible display typography and tiny supporting copy;
-- a sequence that works at one viewport only;
-- cultural material treated as visual costume;
-- novelty that collapses under reduced motion or missing media.
+## Review
 
-Expression is allowed to be maximal. The test is whether its system and behavior arise from the work.
+Judge the rendered work against its declared encounter and owner authority.
+Look for a mismatch among material, sequence, media, interaction, typography,
+content depth, cultural representation, and runtime behavior. Do not flag a
+motif, effect, intensity, or plurality by itself.
 
-## Verify
-
-Review the arc from multiple entry points and devices. Test media failure, loading, reduced motion, keyboard navigation, touch, captions/transcripts, contrast, zoom, performance, deep links, browser history, and a complete no-effect reading path.
+Test relevant entry points, routes, devices, content, media failure, loading,
+preferences, keyboard, touch, captions/transcripts, contrast, zoom,
+performance, deep links, history, exit, and fallback behavior. Record what was
+not performed.

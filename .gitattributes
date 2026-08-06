@@ -1,14 +1,16 @@
-* text=auto
+* text=auto eol=lf
 
-*.css text eol=lf
-*.html text eol=lf
-*.js text eol=lf
-*.json text eol=lf
-*.md text eol=lf
-*.mjs text eol=lf
-*.py text eol=lf
-*.scss text eol=lf
-*.ts text eol=lf
-*.tsx text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
+*.eot -text
+*.gif -text
+*.ico -text
+*.jpeg -text
+*.jpg -text
+*.otf -text
+*.pdf -text
+*.png -text
+*.ttf -text
+*.webm -text
+*.webp -text
+*.woff -text
+*.woff2 -text
+*.zip -text

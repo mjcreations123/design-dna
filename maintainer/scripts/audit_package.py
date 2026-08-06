@@ -20,6 +20,7 @@ del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 import argparse
 import binascii
 import hashlib
+import io
 import json
 import math
 import os
@@ -27,9 +28,10 @@ import platform
 import re
 import struct
 import sys
+import zipfile
 import zlib
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 
 BOOTSTRAP_FAILURES: list[str] = []
@@ -55,6 +57,7 @@ from build_manifest import (
 from check_links import check as check_links
 from common import (
     ToolFailure,
+    LOCAL_TOOL_DIRECTORY_NAMES,
     absolute,
     assert_no_reparse_path,
     compiled_python_residue_paths,
@@ -81,10 +84,68 @@ RELEASE_PROOF_MAX_AGE = timedelta(hours=24)
 RELEASE_PROOF_CLOCK_SKEW = timedelta(minutes=5)
 HOST_EVIDENCE_CLOCK_SKEW = timedelta(seconds=5)
 REVIEW_EVIDENCE_CLOCK_SKEW = timedelta(minutes=5)
+CI_IMPORT_ROOT = "maintainer/compatibility/archive/ci-runs"
+CI_IMPORT_RECORD_NAME = "import.json"
+CI_ARTIFACT_MAX_BYTES = 64 * 1024 * 1024
+CI_EVIDENCE_MAX_BYTES = 16 * 1024 * 1024
+CI_VERIFIABLE_CHECKS = frozenset({"package_audit", "unit_tests"})
+LOCAL_UNIT_TEST_ATTESTATION = (
+    "maintainer/attestations/test-attestation.json"
+)
+LOCAL_UNIT_TEST_SCHEMA = (
+    "maintainer/schemas/test-attestation.schema.json"
+)
+LOCAL_RELEASE_MANIFEST = "maintainer/release-manifest.json"
+HTTP_URL = re.compile(r"https?://[^\s\"'<>]+", re.I)
+WINDOWS_ABSOLUTE_PATH = re.compile(r"(?i)(?:^|[^A-Za-z0-9])(?:[A-Z]:[\\/])")
+UNC_ABSOLUTE_PATH = re.compile(r"(?:^|[\s\"'(=])\\\\[^\\\s]+\\")
+EMBEDDED_POSIX_LOCAL_PATH = re.compile(
+    r"(?:^|[\s\"'(=])/(?:Users|home|tmp|private|var/folders|workspace|workspaces|mnt|opt|usr)(?:/|$)"
+)
 
 
 def issue(code: str, path: str | Path, message: str) -> dict[str, str]:
     return {"code": code, "path": str(path), "message": message}
+
+
+def distributed_record_local_path_failures(
+    payload: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Reject machine-local paths while leaving ordinary HTTP(S) URLs alone."""
+
+    failures: list[dict[str, str]] = []
+
+    def inspect(value: object, pointer: str) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                inspect(item, f"{pointer}/{key}")
+            return
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                inspect(item, f"{pointer}/{index}")
+            return
+        if not isinstance(value, str):
+            return
+        without_urls = HTTP_URL.sub("", value)
+        local = (
+            WINDOWS_ABSOLUTE_PATH.search(without_urls) is not None
+            or UNC_ABSOLUTE_PATH.search(without_urls) is not None
+            or without_urls.startswith("/")
+            or EMBEDDED_POSIX_LOCAL_PATH.search(without_urls) is not None
+        )
+        if local:
+            failures.append(issue(
+                "release-attestation-local-path",
+                label,
+                (
+                    "Distributed evidence contains a machine-local absolute "
+                    f"path at {pointer or '<root>'}."
+                ),
+            ))
+
+    inspect(payload, "")
+    return failures
 
 
 def compiled_python_residue_failures(
@@ -155,12 +216,40 @@ def maintainer_cache_failures(
     return failures
 
 
+def plugin_skill_surface_failures(plugin: Path) -> list[dict[str, str]]:
+    """Require the distributable plugin to expose exactly one skill entry."""
+
+    expected = ["skills/design-dna/SKILL.md"]
+    try:
+        discovered = sorted(
+            path.relative_to(plugin).as_posix()
+            for path in walk_files(plugin / "skills")
+            if path.name.casefold() == "skill.md"
+        )
+    except ToolFailure as exc:
+        return [issue(
+            "plugin-skill-surface-inspection-failed",
+            exc.issue.path or plugin / "skills",
+            exc.issue.message,
+        )]
+    if discovered == expected:
+        return []
+    return [issue(
+        "plugin-skill-surface-invalid",
+        "skills",
+        (
+            "The package must expose exactly one host-discoverable skill entry: "
+            f"{expected}. Found: {discovered}."
+        ),
+    )]
+
+
 def schema_validate(instance: object, schema_path: Path, label: str) -> list[dict[str, str]]:
     if Draft202012Validator is None or FormatChecker is None:
         return [issue(
             "dependency-missing",
             label,
-            "Install maintainer/requirements-dev.txt (jsonschema is required).",
+            "Install maintainer/requirements-dev.lock with --require-hashes (jsonschema is required).",
         )]
     schema = load_json(schema_path)
     errors = Draft202012Validator(
@@ -204,8 +293,11 @@ def test_attestation_failures(
     release_manifest: object,
     *,
     label: str = "maintainer/attestations/test-attestation.json",
+    expected_python: str | None = None,
+    require_zero_skips: bool = False,
 ) -> list[dict[str, str]]:
     failures = schema_validate(payload, schema_path, label)
+    failures.extend(distributed_record_local_path_failures(payload, label))
     if not isinstance(payload, dict):
         return failures
     try:
@@ -218,6 +310,7 @@ def test_attestation_failures(
         ))
         return failures
 
+    current_inputs: dict[str, str] | None = None
     try:
         current_inputs = attestation_tool.attested_input_hashes(plugin)
         if payload.get("inputs") != current_inputs:
@@ -249,21 +342,60 @@ def test_attestation_failures(
         ))
 
     python_record = payload.get("python")
-    if not isinstance(python_record, dict) or (
-        python_record.get("implementation") != platform.python_implementation()
-        or python_record.get("version") != platform.python_version()
-    ):
+    if expected_python is None:
+        python_matches = isinstance(python_record, dict) and (
+            python_record.get("implementation")
+            == platform.python_implementation()
+            and python_record.get("version") == platform.python_version()
+            and python_record.get("executable")
+            == attestation_tool.PYTHON_EXECUTABLE_TOKEN
+            and python_record.get("executable_sha256")
+            == attestation_tool.current_python_executable_sha256()
+        )
+    else:
+        version = (
+            python_record.get("version")
+            if isinstance(python_record, dict)
+            else None
+        )
+        executable_sha256 = (
+            python_record.get("executable_sha256")
+            if isinstance(python_record, dict)
+            else None
+        )
+        python_matches = (
+            re.fullmatch(r"[0-9]+\.[0-9]+", expected_python) is not None
+            and isinstance(python_record, dict)
+            and python_record.get("implementation") == "CPython"
+            and isinstance(version, str)
+            and re.fullmatch(
+                re.escape(expected_python) + r"\.[0-9]+",
+                version,
+            )
+            is not None
+            and python_record.get("executable")
+            == attestation_tool.PYTHON_EXECUTABLE_TOKEN
+            and isinstance(executable_sha256, str)
+            and re.fullmatch(r"[0-9a-f]{64}", executable_sha256) is not None
+        )
+    if not python_matches:
         failures.append(issue(
             "release-test-attestation-python-mismatch",
             label,
-            "The current Python implementation or version differs from the attestation.",
+            (
+                "The expected Python implementation, version, executable "
+                "token, or executable-byte identity differs from the "
+                "attestation."
+            ),
         ))
     command = payload.get("command")
     if (
         not isinstance(command, list)
-        or command[1:] != list(attestation_tool.UNITTEST_ARGUMENTS)
-        or not isinstance(python_record, dict)
-        or command[:1] != [python_record.get("executable")]
+        or command
+        != [
+            attestation_tool.PYTHON_EXECUTABLE_TOKEN,
+            *attestation_tool.UNITTEST_ARGUMENTS,
+        ]
     ):
         failures.append(issue(
             "release-test-attestation-command-mismatch",
@@ -287,6 +419,37 @@ def test_attestation_failures(
             label,
             "The exact maintainer unittest suite is not recorded as passed.",
         ))
+    if (
+        require_zero_skips
+        and isinstance(result, dict)
+        and (
+            result.get("skipped") != 0
+            or result.get("skipped_test_ids") != []
+            or payload.get("skip_waiver") is not None
+        )
+    ):
+        failures.append(issue(
+            "release-test-attestation-remote-skip",
+            label,
+            (
+                "Imported CI matrix evidence must record zero skips; exact "
+                "remote waiver applicability cannot be replayed locally."
+            ),
+        ))
+    elif isinstance(result, dict) and current_inputs is not None:
+        try:
+            attestation_tool.verify_skip_waiver_record(
+                plugin,
+                payload.get("skip_waiver"),
+                current_inputs,
+                result,
+            )
+        except ToolFailure as exc:
+            failures.append(issue(
+                f"release-{exc.issue.code}",
+                label,
+                str(exc),
+            ))
 
     output = payload.get("output")
     if isinstance(output, dict):
@@ -342,9 +505,322 @@ def test_attestation_failures(
     return failures
 
 
+def codex_plugin_attestation_failures(
+    payload: object,
+    plugin: Path,
+    schema_path: Path,
+    release_manifest: object,
+    release: object,
+    *,
+    validator_path: Path | None = None,
+    label: str = "maintainer/attestations/codex-plugin-validation.json",
+) -> list[dict[str, str]]:
+    failures = schema_validate(payload, schema_path, label)
+    failures.extend(distributed_record_local_path_failures(payload, label))
+    if not isinstance(payload, dict):
+        return failures
+    try:
+        tool = import_local_script("attest_codex_plugin")
+        expected_inputs = tool.input_records(plugin)
+        expected_dependencies = tool.dependency_records()
+        expected_python_sha256 = tool.current_python_sha256()
+        trust_policy, trust_policy_sha256 = tool.load_trust_policy(plugin)
+    except Exception as exc:
+        failures.append(issue(
+            "release-codex-plugin-attestation-input-unavailable",
+            label,
+            str(exc),
+        ))
+        return failures
+    if payload.get("inputs") != expected_inputs:
+        failures.append(issue(
+            "release-codex-plugin-attestation-input-drift",
+            label,
+            (
+                "Codex plugin manifest, runtime skills, attestor, or schema "
+                "differ from the static-validation evidence."
+            ),
+        ))
+    if payload.get("dependencies") != expected_dependencies:
+        failures.append(issue(
+            "release-codex-plugin-attestation-dependency-drift",
+            label,
+            (
+                "The validator dependency version or pure-Python source "
+                "identity differs from the attestation."
+            ),
+        ))
+    python_record = payload.get("python")
+    if not isinstance(python_record, dict) or (
+        python_record.get("implementation")
+        != platform.python_implementation()
+        or python_record.get("version") != platform.python_version()
+        or python_record.get("executable") != tool.PYTHON_TOKEN
+        or python_record.get("executable_sha256")
+        != expected_python_sha256
+    ):
+        failures.append(issue(
+            "release-codex-plugin-attestation-python-drift",
+            label,
+            (
+                "Current Python implementation, version, token, or "
+                "executable-byte identity differs from the attestation."
+            ),
+        ))
+    if payload.get("command") != tool.ABSTRACT_COMMAND:
+        failures.append(issue(
+            "release-codex-plugin-attestation-command-drift",
+            label,
+            "The record does not identify the exact portable validator command.",
+        ))
+    validator_record = payload.get("validator")
+    trust_input = (
+        expected_inputs.get("files", {}).get("trust_policy")
+        if isinstance(expected_inputs.get("files"), dict)
+        else None
+    )
+    if (
+        not isinstance(validator_record, dict)
+        or validator_record.get("logical_id")
+        != trust_policy.get("logical_id")
+        or validator_record.get("sha256")
+        != trust_policy.get("sha256")
+        or validator_record.get("bytes") != trust_policy.get("bytes")
+        or validator_record.get("trust_policy_sha256")
+        != trust_policy_sha256
+        or not isinstance(trust_input, dict)
+        or trust_input.get("sha256") != trust_policy_sha256
+    ):
+        failures.append(issue(
+            "release-codex-plugin-attestation-trust-drift",
+            label,
+            (
+                "Validator identity and trust-policy hashes are not "
+                "semantically consistent with the bound current policy."
+            ),
+        ))
+    current_version = (
+        release.get("version")
+        if isinstance(release, dict)
+        else None
+    )
+    if payload.get("release_version") != current_version:
+        failures.append(issue(
+            "release-codex-plugin-attestation-version-mismatch",
+            label,
+            f"{payload.get('release_version')} != {current_version}",
+        ))
+    result = payload.get("result")
+    if (
+        not isinstance(result, dict)
+        or result.get("status") != "passed"
+        or result.get("return_code") != 0
+    ):
+        failures.append(issue(
+            "release-codex-plugin-attestation-not-passed",
+            label,
+            "The external Plugin Creator validator is not recorded as passed.",
+        ))
+    output = payload.get("output")
+    if not isinstance(output, dict) or (
+        output.get("success_marker_observed") is not True
+        or output.get("exact_success_line_observed") is not True
+        or output.get("stderr_empty") is not True
+        or output.get("content_persisted") is not False
+    ):
+        failures.append(issue(
+            "release-codex-plugin-attestation-output-invalid",
+            label,
+            (
+                "Validator output evidence must record one exact success "
+                "line, empty stderr, and no persisted output content."
+            ),
+        ))
+    if validator_path is not None:
+        try:
+            fresh = tool.create_attestation(
+                plugin,
+                validator_path,
+                created_at=payload.get("created_at"),
+                require_current_trust=True,
+            )
+            if tool.comparable(payload) != tool.comparable(fresh):
+                failures.append(issue(
+                    "release-codex-plugin-attestation-live-drift",
+                    label,
+                    (
+                        "Recorded validation differs from a fresh run of the "
+                        "supplied external Plugin Creator validator."
+                    ),
+                ))
+        except Exception as exc:
+            failures.append(issue(
+                "release-codex-plugin-attestation-live-check-failed",
+                label,
+                str(exc),
+            ))
+    try:
+        created = aware_timestamp(payload.get("created_at"))
+        try:
+            tool.ensure_trust_policy_date(
+                trust_policy,
+                created.astimezone(timezone.utc).date(),
+                require_current=True,
+            )
+        except ToolFailure as exc:
+            failures.append(issue(
+                f"release-{exc.issue.code}",
+                label,
+                str(exc),
+            ))
+        if created > datetime.now(timezone.utc) + RELEASE_PROOF_CLOCK_SKEW:
+            raise ValueError("created_at is in the future")
+        manifest_generated = (
+            aware_timestamp(release_manifest.get("generated_at"))
+            if isinstance(release_manifest, dict)
+            else None
+        )
+        if manifest_generated is None:
+            raise ValueError(
+                "current release manifest has no valid generated_at"
+            )
+        if created > manifest_generated + RELEASE_PROOF_CLOCK_SKEW:
+            failures.append(issue(
+                "release-codex-plugin-attestation-after-manifest",
+                label,
+                (
+                    "Plugin validation was created after the manifest that "
+                    "must hash it."
+                ),
+            ))
+        elif manifest_generated - created > RELEASE_PROOF_MAX_AGE:
+            failures.append(issue(
+                "release-codex-plugin-attestation-stale",
+                label,
+                "Plugin validation evidence is more than 24 hours old.",
+            ))
+    except ValueError as exc:
+        failures.append(issue(
+            "release-codex-plugin-attestation-time-invalid",
+            label,
+            str(exc),
+        ))
+    return failures
+
+
+def install_lifecycle_attestation_failures(
+    payload: object,
+    plugin: Path,
+    schema_path: Path,
+    release_manifest: object,
+    release: object,
+    *,
+    label: str = "maintainer/attestations/install-lifecycle.json",
+) -> list[dict[str, str]]:
+    failures = schema_validate(payload, schema_path, label)
+    failures.extend(distributed_record_local_path_failures(payload, label))
+    if not isinstance(payload, dict):
+        return failures
+    try:
+        tool = import_local_script("attest_install_lifecycle")
+        runtime = tool.manage_install.validate_design_dna_tree(
+            plugin / "skills" / "design-dna"
+        )
+        expected_runtime = tool.identity_record(runtime)
+        expected_files = tool.input_records(plugin)
+    except Exception as exc:
+        failures.append(issue(
+            "release-install-lifecycle-input-unavailable",
+            label,
+            str(exc),
+        ))
+        return failures
+
+    inputs = payload.get("inputs")
+    if (
+        not isinstance(inputs, dict)
+        or inputs.get("runtime_source") != "skills/design-dna"
+        or inputs.get("runtime") != expected_runtime
+        or inputs.get("files") != expected_files
+    ):
+        failures.append(issue(
+            "release-install-lifecycle-input-drift",
+            label,
+            (
+                "Runtime, installer, attestor, or schema inputs differ from "
+                "the isolated lifecycle evidence."
+            ),
+        ))
+    current_version = (
+        release.get("version")
+        if isinstance(release, dict)
+        else None
+    )
+    if payload.get("release_version") != current_version:
+        failures.append(issue(
+            "release-install-lifecycle-version-mismatch",
+            label,
+            f"{payload.get('release_version')} != {current_version}",
+        ))
+    outcome = payload.get("outcome")
+    if not isinstance(outcome, dict) or any(
+        outcome.get(field) is not True
+        for field in (
+            "passed",
+            "operations_schema_valid",
+            "backup_records_schema_valid",
+            "runtime_identity_observed",
+            "fresh_lifecycle_replay_required_on_check",
+        )
+    ):
+        failures.append(issue(
+            "release-install-lifecycle-not-passed",
+            label,
+            "The complete dual-host install, update, rollback, and uninstall lifecycle is not recorded as passed.",
+        ))
+    try:
+        created = aware_timestamp(payload.get("created_at"))
+        if created > datetime.now(timezone.utc) + RELEASE_PROOF_CLOCK_SKEW:
+            raise ValueError("created_at is in the future")
+        manifest_generated = (
+            aware_timestamp(release_manifest.get("generated_at"))
+            if isinstance(release_manifest, dict)
+            else None
+        )
+        if manifest_generated is None:
+            raise ValueError("current release manifest has no valid generated_at")
+        if created > manifest_generated + RELEASE_PROOF_CLOCK_SKEW:
+            failures.append(issue(
+                "release-install-lifecycle-after-manifest",
+                label,
+                "Lifecycle evidence was created after the manifest that must hash it.",
+            ))
+        elif manifest_generated - created > RELEASE_PROOF_MAX_AGE:
+            failures.append(issue(
+                "release-install-lifecycle-stale",
+                label,
+                "Lifecycle evidence is more than 24 hours older than the release manifest.",
+            ))
+    except ValueError as exc:
+        failures.append(issue(
+            "release-install-lifecycle-time-invalid",
+            label,
+            str(exc),
+        ))
+    return failures
+
+
 def expected_compatibility_routes(
     compatibility: object,
+    home: Path | None = None,
 ) -> tuple[list[Path], list[Path]]:
+    home = absolute(home or Path.home())
+
+    def configured_path(value: str) -> Path:
+        if value.startswith("~/"):
+            return absolute(home.joinpath(*PurePosixPath(value[2:]).parts))
+        return absolute(Path(value).expanduser())
+
     roots: set[Path] = set()
     expected: set[Path] = set()
     if isinstance(compatibility, dict):
@@ -352,7 +828,7 @@ def expected_compatibility_routes(
         if isinstance(configured_roots, list):
             for root in configured_roots:
                 if isinstance(root, str) and root.strip():
-                    roots.add(absolute(Path(root)))
+                    roots.add(configured_path(root))
         hosts = compatibility.get("hosts")
         if isinstance(hosts, dict):
             for host in hosts.values():
@@ -360,8 +836,16 @@ def expected_compatibility_routes(
                     continue
                 route = host.get("discovery_route")
                 if isinstance(route, str) and route.strip():
-                    expected.add(absolute(Path(route)))
+                    expected.add(configured_path(route))
     return sorted(roots), sorted(expected)
+
+
+def portable_home_identity(path: Path, home: Path) -> str | None:
+    path = absolute(path)
+    home = absolute(home)
+    if not is_within(path, home) or path == home:
+        return None
+    return "~/" + path.relative_to(home).as_posix()
 
 
 def route_verification_failures(
@@ -372,13 +856,17 @@ def route_verification_failures(
     compatibility: object,
     *,
     label: str = "maintainer/attestations/route-verification.json",
+    home: Path | None = None,
 ) -> list[dict[str, str]]:
     failures = schema_validate(payload, schema_path, label)
+    failures.extend(distributed_record_local_path_failures(payload, label))
     if not isinstance(payload, dict):
         return failures
+    home = absolute(home or Path.home())
     canonical = absolute(plugin / "skills" / "design-dna")
     configured_roots, configured_expected = expected_compatibility_routes(
-        compatibility
+        compatibility,
+        home,
     )
     if not configured_roots:
         failures.append(issue(
@@ -396,19 +884,33 @@ def route_verification_failures(
                 expected_route,
                 "An expected route is outside the declared discovery roots.",
             ))
-    if payload.get("canonical") != str(canonical):
+    root_labels = [
+        portable_home_identity(path, home)
+        for path in configured_roots
+    ]
+    expected_labels = [
+        portable_home_identity(path, home)
+        for path in configured_expected
+    ]
+    if any(value is None for value in [*root_labels, *expected_labels]):
+        failures.append(issue(
+            "release-route-contract-not-home-relative",
+            label,
+            "Compatibility discovery and installed routes must be below the selected home.",
+        ))
+    if payload.get("canonical") != "skills/design-dna":
         failures.append(issue(
             "release-route-canonical-mismatch",
             label,
             "Route verification does not identify the current canonical skill.",
         ))
-    if payload.get("roots") != [str(path) for path in configured_roots]:
+    if payload.get("roots") != root_labels:
         failures.append(issue(
             "release-route-roots-mismatch",
             label,
             "Verified discovery roots differ from the compatibility contract.",
         ))
-    if payload.get("expected") != [str(path) for path in configured_expected]:
+    if payload.get("expected") != expected_labels:
         failures.append(issue(
             "release-route-expected-mismatch",
             label,
@@ -443,11 +945,22 @@ def route_verification_failures(
 
     found_all: list[Path] = []
     for root in configured_roots:
+        try:
+            assert_no_reparse_path(root)
+        except ToolFailure as exc:
+            failures.append(issue(
+                "release-route-live-verification-failed",
+                root,
+                str(exc),
+            ))
+            continue
+        if not root.exists():
+            continue
         if not root.is_dir():
             failures.append(issue(
-                "release-route-root-deleted",
+                "release-route-root-invalid",
                 root,
-                "A required discovery root no longer exists.",
+                "A discovery root exists but is not a directory.",
             ))
             continue
         try:
@@ -472,7 +985,10 @@ def route_verification_failures(
         failures.append(issue(
             "release-duplicate-route-state",
             path,
-            "An unexpected discoverable Design DNA route is active.",
+            (
+                "An unexpected Design DNA filesystem discovery candidate "
+                "exists; activation is not inferred."
+            ),
         ))
     if len(found_all) != len(found):
         failures.append(issue(
@@ -493,8 +1009,16 @@ def route_verification_failures(
             ))
             continue
         matches = digest == canonical_hash
+        portable_path = portable_home_identity(path, home)
+        if portable_path is None:
+            failures.append(issue(
+                "release-route-live-path-not-home-relative",
+                path,
+                "A live discoverable route is outside the selected home.",
+            ))
+            continue
         live_routes.append({
-            "path": str(path),
+            "path": portable_path,
             "content_sha256": digest,
             "matches_canonical": matches,
         })
@@ -575,7 +1099,7 @@ def strict_yaml_text(text: str) -> object:
     if yaml is None:
         raise ToolFailure(
             "dependency-missing",
-            "Install maintainer/requirements-dev.txt (PyYAML is required).",
+            "Install maintainer/requirements-dev.lock with --require-hashes (PyYAML is required).",
         )
     return yaml.load(text, Loader=NoDuplicateLoader)
 
@@ -592,10 +1116,100 @@ def frontmatter(path: Path) -> tuple[object, str]:
     return strict_yaml_text(match.group(1)), text[match.end():]
 
 
+def runtime_reference_reachability_failures(
+    skill: Path,
+    *,
+    label_root: Path | None = None,
+) -> list[dict[str, str]]:
+    """Require every runtime reference to be directly reachable from SKILL.md."""
+    label_root = label_root or skill
+    skill_path = skill / "SKILL.md"
+    try:
+        text = skill_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return [issue(
+            "runtime-reference-router-unreadable",
+            skill_path,
+            str(exc),
+        )]
+    linked = {
+        PurePosixPath(match.group(1)).as_posix()
+        for match in re.finditer(
+            r"\]\((references/[^)#?\s]+\.md)(?:#[^)]*)?\)",
+            text,
+        )
+    }
+    failures: list[dict[str, str]] = []
+    references_root = skill / "references"
+    for path in sorted(references_root.rglob("*.md")):
+        relative_to_skill = path.relative_to(skill).as_posix()
+        if relative_to_skill in linked:
+            continue
+        try:
+            label = path.relative_to(label_root).as_posix()
+        except ValueError:
+            label = str(path)
+        failures.append(issue(
+            "runtime-reference-unreachable",
+            label,
+            (
+                "Every runtime reference must be linked directly from "
+                "SKILL.md so progressive disclosure never depends on "
+                "multi-hop reference discovery."
+            ),
+        ))
+    return failures
+
+
+def owner_policy_example_failures(
+    example_path: Path,
+    schema_path: Path,
+    *,
+    label: str = "skills/design-dna/templates/owner-policy.example.yml",
+) -> list[dict[str, str]]:
+    """Validate the draft example after safe in-memory activation."""
+    try:
+        payload = strict_yaml(example_path)
+    except (OSError, UnicodeError, yaml.YAMLError, ToolFailure) as exc:
+        return [issue("owner-policy-example-invalid", label, str(exc))]
+    if not isinstance(payload, dict):
+        return [issue(
+            "owner-policy-example-invalid",
+            label,
+            "The owner-policy example must be a mapping.",
+        )]
+    failures: list[dict[str, str]] = []
+    if payload.get("status") != "draft":
+        failures.append(issue(
+            "owner-policy-example-not-draft",
+            label,
+            "The distributed example must remain draft until an owner approves it.",
+        ))
+    for field in ("owner", "scope"):
+        value = payload.get(field)
+        if not isinstance(value, str) or not value.startswith("REPLACE_"):
+            failures.append(issue(
+                "owner-policy-example-placeholder-missing",
+                label,
+                f"{field} must retain an explicit REPLACE_ placeholder.",
+            ))
+    activated = json.loads(json.dumps(payload))
+    activated["owner"] = "example-validation-owner"
+    activated["scope"] = "example-validation-scope"
+    activated["status"] = "active"
+    failures.extend(schema_validate(activated, schema_path, label))
+    return failures
+
+
 def validate_fixtures(fixtures_dir: Path, schema_path: Path) -> tuple[list[dict[str, str]], int]:
     failures: list[dict[str, str]] = []
     seen: dict[str, str] = {}
     seen_suites: dict[str, str] = {}
+    expressive_case_ids: set[str] = set()
+    quiet_case_ids: set[str] = set()
+    generated_media_case_ids: set[str] = set()
+    route_family_case_ids: set[str] = set()
+    cultural_context_case_ids: set[str] = set()
     count = 0
     if not fixtures_dir.is_dir():
         return failures, count
@@ -625,6 +1239,79 @@ def validate_fixtures(fixtures_dir: Path, schema_path: Path) -> tuple[list[dict[
             if case_id in seen:
                 failures.append({"code": "duplicate-fixture-id", "path": str(path), "message": f"{case_id} also appears in {seen[case_id]}"})
             seen[case_id] = str(path)
+            coverage = case.get("release_coverage")
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("expressive_perception_gate") is True
+            ):
+                expressive_case_ids.add(case_id)
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("quiet_perception_gate") is True
+            ):
+                quiet_case_ids.add(case_id)
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("generated_media_capability_gate") is True
+            ):
+                generated_media_case_ids.add(case_id)
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("route_family_showcase_gate") is True
+            ):
+                route_family_case_ids.add(case_id)
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("cultural_context_gate") is True
+            ):
+                cultural_context_case_ids.add(case_id)
+            capability = case.get("capability_contract")
+            if isinstance(capability, dict):
+                image_policy = capability.get("image_generation")
+                requirements = " ".join(
+                    str(value)
+                    for value in case.get("review_requirements", [])
+                ).casefold()
+                if image_policy == "required-when-host-declared-available":
+                    missing_terms = [
+                        term
+                        for term in (
+                            "actual decodable local",
+                            "provenance",
+                            "contact sheet",
+                            "responsive crop",
+                            "unavailable",
+                        )
+                        if term not in requirements
+                    ]
+                    if missing_terms:
+                        failures.append(issue(
+                            "fixture-image-capability-review-incomplete",
+                            path,
+                            (
+                                f"{case_id} must review both real generated "
+                                "artifacts and the explicit unavailable branch; "
+                                "missing: " + ", ".join(missing_terms)
+                            ),
+                        ))
+            if (
+                isinstance(coverage, dict)
+                and coverage.get("generated_media_capability_gate") is True
+                and not (
+                    isinstance(capability, dict)
+                    and capability.get("image_generation")
+                    == "required-when-host-declared-available"
+                )
+            ):
+                failures.append(issue(
+                    "fixture-generated-media-capability-contract-missing",
+                    path,
+                    (
+                        f"{case_id} is release-counted for generated media but "
+                        "does not require the honest available/unavailable "
+                        "image-generation capability contract."
+                    ),
+                ))
             input_dir = case.get("input_dir")
             if input_dir:
                 candidate = absolute(path.parent / str(input_dir))
@@ -640,6 +1327,62 @@ def validate_fixtures(fixtures_dir: Path, schema_path: Path) -> tuple[list[dict[
                         })
                 except (ValueError, ToolFailure):
                     failures.append({"code": "fixture-input-escape", "path": str(path), "message": str(input_dir)})
+    if len(expressive_case_ids) < MIN_EXPRESSIVE_RELEASE_CASES:
+        failures.append(issue(
+            "fixture-expressive-release-coverage-incomplete",
+            fixtures_dir,
+            (
+                "The behavioral catalog needs at least "
+                f"{MIN_EXPRESSIVE_RELEASE_CASES} distinct cases marked with "
+                "release_coverage.expressive_perception_gate; found: "
+                f"{len(expressive_case_ids)}."
+            ),
+        ))
+    if len(quiet_case_ids) < MIN_QUIET_RELEASE_CASES:
+        failures.append(issue(
+            "fixture-quiet-release-coverage-incomplete",
+            fixtures_dir,
+            (
+                "The behavioral catalog needs at least "
+                f"{MIN_QUIET_RELEASE_CASES} distinct case marked with "
+                "release_coverage.quiet_perception_gate; found: "
+                f"{len(quiet_case_ids)}."
+            ),
+        ))
+    if len(generated_media_case_ids) < MIN_GENERATED_MEDIA_RELEASE_CASES:
+        failures.append(issue(
+            "fixture-generated-media-release-coverage-incomplete",
+            fixtures_dir,
+            (
+                "The behavioral catalog needs at least "
+                f"{MIN_GENERATED_MEDIA_RELEASE_CASES} conditionally "
+                "release-countable case marked with "
+                "release_coverage.generated_media_capability_gate; found: "
+                f"{len(generated_media_case_ids)}."
+            ),
+        ))
+    if len(route_family_case_ids) < MIN_ROUTE_FAMILY_RELEASE_CASES:
+        failures.append(issue(
+            "fixture-route-family-release-coverage-incomplete",
+            fixtures_dir,
+            (
+                "The behavioral catalog needs at least "
+                f"{MIN_ROUTE_FAMILY_RELEASE_CASES} release-countable case "
+                "marked with release_coverage.route_family_showcase_gate; "
+                f"found: {len(route_family_case_ids)}."
+            ),
+        ))
+    if len(cultural_context_case_ids) < MIN_CULTURAL_CONTEXT_RELEASE_CASES:
+        failures.append(issue(
+            "fixture-cultural-context-release-coverage-incomplete",
+            fixtures_dir,
+            (
+                "The behavioral catalog needs at least "
+                f"{MIN_CULTURAL_CONTEXT_RELEASE_CASES} release-countable case "
+                "marked with release_coverage.cultural_context_gate; "
+                f"found: {len(cultural_context_case_ids)}."
+            ),
+        ))
     return failures, count
 
 
@@ -960,6 +1703,898 @@ def validate_evidence_paths(
     return failures, valid
 
 
+def stable_bounded_file_bytes(
+    path: Path,
+    *,
+    maximum_bytes: int,
+) -> bytes:
+    """Read a regular file once and reject size or identity changes."""
+
+    try:
+        before = path.stat()
+        if (
+            not path.is_file()
+            or before.st_size < 1
+            or before.st_size > maximum_bytes
+        ):
+            raise ToolFailure(
+                "ci-import-file-size-invalid",
+                f"File must contain 1 through {maximum_bytes} bytes.",
+                path,
+            )
+        data = path.read_bytes()
+        after = path.stat()
+    except ToolFailure:
+        raise
+    except OSError as exc:
+        raise ToolFailure("ci-import-file-unreadable", str(exc), path) from exc
+    if (
+        before.st_dev,
+        before.st_ino,
+        before.st_size,
+        before.st_mtime_ns,
+    ) != (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+        after.st_mtime_ns,
+    ) or len(data) != before.st_size:
+        raise ToolFailure(
+            "ci-import-file-unstable",
+            "File changed while its retained identity was verified.",
+            path,
+        )
+    return data
+
+
+def expected_ci_test_matrix(
+    workflow: object,
+    *,
+    job_name: str,
+) -> set[tuple[str, str]] | None:
+    if not isinstance(workflow, dict):
+        return None
+    jobs = workflow.get("jobs")
+    job = jobs.get(job_name) if isinstance(jobs, dict) else None
+    strategy = job.get("strategy") if isinstance(job, dict) else None
+    matrix = strategy.get("matrix") if isinstance(strategy, dict) else None
+    operating_systems = matrix.get("os") if isinstance(matrix, dict) else None
+    pythons = matrix.get("python") if isinstance(matrix, dict) else None
+    if (
+        not isinstance(job, dict)
+        or job.get("name")
+        != "${{ matrix.os }} / Python ${{ matrix.python }}"
+        or not isinstance(operating_systems, list)
+        or not operating_systems
+        or not all(isinstance(value, str) for value in operating_systems)
+        or len(set(operating_systems)) != len(operating_systems)
+        or not isinstance(pythons, list)
+        or not pythons
+        or not all(isinstance(value, str) for value in pythons)
+        or len(set(pythons)) != len(pythons)
+        or set(matrix) != {"os", "python"}
+    ):
+        return None
+    return {
+        (operating_system, python)
+        for operating_system in operating_systems
+        for python in pythons
+    }
+
+
+def ci_import_record_failures(
+    payload: object,
+    environment: dict[str, object],
+    plugin: Path,
+    import_schema_path: Path,
+    test_schema_path: Path,
+    release_manifest: object,
+    evidence_keys: set[str],
+    *,
+    label: str,
+    workflow_path: str,
+) -> list[dict[str, str]]:
+    """Verify one retained CI artifact and its extracted proof bytes."""
+
+    failures = schema_validate(payload, import_schema_path, label)
+    failures.extend(distributed_record_local_path_failures(payload, label))
+    if not isinstance(payload, dict):
+        return failures
+
+    identifier = environment.get("id")
+    expected_root = f"{CI_IMPORT_ROOT}/{identifier}"
+    checks = environment.get("checks")
+    passed = {
+        str(name)
+        for name, status in checks.items()
+        if status == "passed"
+    } if isinstance(checks, dict) else set()
+    claimed_raw = payload.get("passed_checks")
+    claimed = (
+        {str(value) for value in claimed_raw}
+        if isinstance(claimed_raw, list)
+        else set()
+    )
+    unsupported = sorted(passed - CI_VERIFIABLE_CHECKS)
+    if unsupported:
+        failures.append(issue(
+            "ci-import-check-not-verifiable",
+            label,
+            (
+                "This import contract cannot promote these checks: "
+                + ", ".join(unsupported)
+            ),
+        ))
+    if claimed != passed:
+        failures.append(issue(
+            "ci-import-check-claim-mismatch",
+            label,
+            (
+                f"Import claims {sorted(claimed)!r}, but the compatibility "
+                f"record marks {sorted(passed)!r} passed."
+            ),
+        ))
+
+    source = payload.get("source")
+    source_matrix = source.get("matrix") if isinstance(source, dict) else None
+    expected_matrix = {
+        "os": environment.get("os"),
+        "python": environment.get("python"),
+        "node": environment.get("node"),
+    }
+    if payload.get("environment_id") != identifier:
+        failures.append(issue(
+            "ci-import-environment-mismatch",
+            label,
+            f"{payload.get('environment_id')!r} != {identifier!r}.",
+        ))
+    if not isinstance(source, dict) or (
+        source.get("workflow_path") != workflow_path
+        or source_matrix != expected_matrix
+        or source.get("job_name")
+        != (
+            f"{environment.get('os')} / Python "
+            f"{environment.get('python')}"
+        )
+    ):
+        failures.append(issue(
+            "ci-import-source-mismatch",
+            label,
+            (
+                "Workflow path, expanded job name, or OS/Python/Node matrix "
+                "identity does not match."
+            ),
+        ))
+
+    workflow_candidate = absolute(
+        plugin.joinpath(*workflow_path.split("/"))
+    )
+    try:
+        assert_no_reparse_path(workflow_candidate, stop=plugin)
+        workflow_digest = file_sha256(workflow_candidate)
+        if (
+            not isinstance(source, dict)
+            or source.get("workflow_sha256") != workflow_digest
+        ):
+            failures.append(issue(
+                "ci-import-workflow-drift",
+                label,
+                "The imported run names different workflow bytes.",
+            ))
+    except ToolFailure as exc:
+        failures.append(exc.issue.as_dict())
+
+    try:
+        imported = aware_timestamp(payload.get("imported_at"))
+        checked = aware_timestamp(environment.get("checked_at"))
+        source_started = aware_timestamp(
+            source.get("started_at") if isinstance(source, dict) else None
+        )
+        source_completed = aware_timestamp(
+            source.get("completed_at") if isinstance(source, dict) else None
+        )
+        if source_started > source_completed:
+            raise ValueError("source.started_at follows source.completed_at")
+        if source_completed > imported:
+            raise ValueError("imported_at precedes the completed CI job")
+        if imported != checked:
+            raise ValueError(
+                "environment.checked_at must equal the import timestamp"
+            )
+        if imported > datetime.now(timezone.utc) + RELEASE_PROOF_CLOCK_SKEW:
+            raise ValueError("imported_at is in the future")
+    except ValueError as exc:
+        failures.append(issue(
+            "ci-import-time-invalid",
+            label,
+            str(exc),
+        ))
+        source_started = None
+        source_completed = None
+
+    artifact = payload.get("artifact")
+    evidence = payload.get("evidence")
+    if not isinstance(artifact, dict) or not isinstance(evidence, dict):
+        return failures
+    artifact_relative = portable_relative(artifact.get("path"))
+    evidence_records = {
+        name: record
+        for name, record in evidence.items()
+        if isinstance(name, str) and isinstance(record, dict)
+    }
+    referenced = {
+        value.casefold()
+        for value in (
+            artifact_relative,
+            *(
+                portable_relative(record.get("path"))
+                for record in evidence_records.values()
+            ),
+        )
+        if isinstance(value, str)
+    }
+    required_bindings = referenced | {workflow_path.casefold()}
+    missing_references = sorted(required_bindings - evidence_keys)
+    if missing_references:
+        failures.append(issue(
+            "ci-import-evidence-unbound",
+            label,
+            (
+                "Compatibility evidence must cite the workflow, retained "
+                "artifact, and every extracted proof: "
+                + ", ".join(missing_references)
+            ),
+        ))
+
+    all_relatives = [
+        artifact_relative,
+        *(
+            portable_relative(record.get("path"))
+            for record in evidence_records.values()
+        ),
+    ]
+    if any(
+        relative is None
+        or not relative.startswith(expected_root + "/")
+        for relative in all_relatives
+    ):
+        failures.append(issue(
+            "ci-import-path-noncanonical",
+            label,
+            f"All retained files must be below {expected_root}/.",
+        ))
+        return failures
+    assert artifact_relative is not None
+    artifact_path = absolute(
+        plugin.joinpath(*artifact_relative.split("/"))
+    )
+    try:
+        assert_no_reparse_path(artifact_path, stop=plugin)
+        artifact_bytes = stable_bounded_file_bytes(
+            artifact_path,
+            maximum_bytes=CI_ARTIFACT_MAX_BYTES,
+        )
+    except ToolFailure as exc:
+        failures.append(exc.issue.as_dict())
+        return failures
+    artifact_digest = hashlib.sha256(artifact_bytes).hexdigest()
+    if (
+        artifact.get("size_bytes") != len(artifact_bytes)
+        or artifact.get("sha256") != artifact_digest
+        or artifact.get("service_digest") != f"sha256:{artifact_digest}"
+    ):
+        failures.append(issue(
+            "ci-import-artifact-digest-mismatch",
+            label,
+            "Retained artifact bytes do not match its size and provider digest.",
+        ))
+
+    expected_artifact_name = (
+        f"test-attestation-{environment.get('os')}-"
+        f"py{environment.get('python')}"
+    )
+    if artifact.get("name") != expected_artifact_name:
+        failures.append(issue(
+            "ci-import-artifact-name-mismatch",
+            label,
+            f"{artifact.get('name')!r} != {expected_artifact_name!r}.",
+        ))
+
+    members = {
+        str(record.get("archive_member")): (name, record)
+        for name, record in evidence_records.items()
+    }
+    if len(members) != len(evidence_records) or any(
+        portable_relative(member) != member
+        for member in members
+    ):
+        failures.append(issue(
+            "ci-import-artifact-member-invalid",
+            label,
+            "Artifact member names must be unique portable relative paths.",
+        ))
+        return failures
+    evidence_bytes: dict[str, bytes] = {}
+    try:
+        with zipfile.ZipFile(io.BytesIO(artifact_bytes), "r") as archive:
+            infos = archive.infolist()
+            names = [info.filename for info in infos]
+            if (
+                len(names) != len(set(names))
+                or set(names) != set(members)
+            ):
+                failures.append(issue(
+                    "ci-import-artifact-members-mismatch",
+                    label,
+                    "Artifact members differ from the exact imported evidence set.",
+                ))
+                return failures
+            for info in infos:
+                check_name, record = members[info.filename]
+                mode = (info.external_attr >> 16) & 0o170000
+                if (
+                    info.is_dir()
+                    or info.flag_bits & 0x1
+                    or mode == 0o120000
+                    or info.file_size < 1
+                    or info.file_size > CI_EVIDENCE_MAX_BYTES
+                    or record.get("size_bytes") != info.file_size
+                ):
+                    failures.append(issue(
+                        "ci-import-artifact-member-invalid",
+                        label,
+                        f"Unsafe or incorrectly sized member: {info.filename}.",
+                    ))
+                    continue
+                member_bytes = archive.read(info)
+                member_digest = hashlib.sha256(member_bytes).hexdigest()
+                if record.get("sha256") != member_digest:
+                    failures.append(issue(
+                        "ci-import-evidence-digest-mismatch",
+                        label,
+                        f"Digest mismatch for {info.filename}.",
+                    ))
+                evidence_relative = portable_relative(record.get("path"))
+                assert evidence_relative is not None
+                evidence_path = absolute(
+                    plugin.joinpath(*evidence_relative.split("/"))
+                )
+                assert_no_reparse_path(evidence_path, stop=plugin)
+                retained_bytes = stable_bounded_file_bytes(
+                    evidence_path,
+                    maximum_bytes=CI_EVIDENCE_MAX_BYTES,
+                )
+                if retained_bytes != member_bytes:
+                    failures.append(issue(
+                        "ci-import-extracted-evidence-mismatch",
+                        label,
+                        (
+                            f"{evidence_relative} is not byte-identical to "
+                            f"artifact member {info.filename}."
+                        ),
+                    ))
+                evidence_bytes[check_name] = retained_bytes
+    except (
+        OSError,
+        RuntimeError,
+        ValueError,
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+    ) as exc:
+        failures.append(issue(
+            "ci-import-artifact-invalid",
+            label,
+            str(exc),
+        ))
+        return failures
+    except ToolFailure as exc:
+        failures.append(exc.issue.as_dict())
+        return failures
+
+    for check_name in claimed:
+        record = evidence_records.get(check_name)
+        if record is None or check_name not in evidence_bytes:
+            failures.append(issue(
+                "ci-import-check-evidence-missing",
+                label,
+                f"No verified retained evidence exists for {check_name}.",
+            ))
+            continue
+        relative = portable_relative(record.get("path"))
+        assert relative is not None
+        evidence_path = absolute(plugin.joinpath(*relative.split("/")))
+        try:
+            evidence_payload = load_json(evidence_path)
+        except ToolFailure as exc:
+            failures.append(exc.issue.as_dict())
+            continue
+        if check_name == "package_audit":
+            failures.extend(distributed_record_local_path_failures(
+                evidence_payload,
+                relative,
+            ))
+            if not isinstance(evidence_payload, dict) or (
+                evidence_payload.get("ok") is not True
+                or evidence_payload.get("failures") != []
+                or not isinstance(evidence_payload.get("warnings"), list)
+                or not isinstance(evidence_payload.get("details"), dict)
+            ):
+                failures.append(issue(
+                    "ci-import-package-audit-not-passed",
+                    relative,
+                    "Retained development package audit is not a clean pass.",
+                ))
+        elif check_name == "unit_tests":
+            failures.extend(test_attestation_failures(
+                evidence_payload,
+                plugin,
+                test_schema_path,
+                release_manifest,
+                label=relative,
+                expected_python=str(environment.get("python")),
+                require_zero_skips=True,
+            ))
+            if isinstance(evidence_payload, dict):
+                try:
+                    attested_started = aware_timestamp(
+                        evidence_payload.get("started_at")
+                    )
+                    attested_completed = aware_timestamp(
+                        evidence_payload.get("completed_at")
+                    )
+                    if (
+                        source_started is None
+                        or source_completed is None
+                        or attested_started < source_started
+                        or attested_completed > source_completed
+                    ):
+                        raise ValueError(
+                            "test attestation falls outside the CI job window"
+                        )
+                except ValueError as exc:
+                    failures.append(issue(
+                        "ci-import-attestation-time-invalid",
+                        relative,
+                        str(exc),
+                    ))
+    return failures
+
+
+def ci_contract_failures(
+    compatibility: object,
+    plugin: Path,
+    import_schema_path: Path,
+    test_schema_path: Path,
+    release_manifest: object,
+    *,
+    release_mode: bool,
+) -> tuple[list[dict[str, str]], dict[str, object]]:
+    """Bind promoted CI checks and enforce the full release matrix."""
+
+    failures: list[dict[str, str]] = []
+    details: dict[str, object] = {
+        "required_entries": 0,
+        "status_passed_entries": 0,
+        "passed_entries": 0,
+        "verified_imports": 0,
+    }
+    verified_identifiers: set[str] = set()
+    if not isinstance(compatibility, dict):
+        return failures, details
+    contract = compatibility.get("ci_release_contract")
+    if not isinstance(contract, dict):
+        return failures, details
+    workflow_path = portable_relative(contract.get("workflow_path"))
+    job_name = contract.get("test_job")
+    required_raw = contract.get("required_checks")
+    required_checks = (
+        tuple(str(value) for value in required_raw)
+        if isinstance(required_raw, list)
+        else ()
+    )
+    if (
+        workflow_path is None
+        or not isinstance(job_name, str)
+        or not required_checks
+    ):
+        return failures, details
+    workflow_candidate = absolute(
+        plugin.joinpath(*workflow_path.split("/"))
+    )
+    try:
+        assert_no_reparse_path(workflow_candidate, stop=plugin)
+        workflow = strict_yaml(workflow_candidate)
+    except (OSError, UnicodeError, ToolFailure, ValueError) as exc:
+        failures.append(issue(
+            "ci-contract-workflow-invalid",
+            workflow_path,
+            str(exc),
+        ))
+        return failures, details
+    expected_pairs = expected_ci_test_matrix(
+        workflow,
+        job_name=job_name,
+    )
+    if expected_pairs is None:
+        failures.append(issue(
+            "ci-contract-workflow-matrix-invalid",
+            workflow_path,
+            "The release test job needs a simple unique OS/Python matrix.",
+        ))
+        return failures, details
+
+    environments = compatibility.get("environments")
+    if not isinstance(environments, list):
+        return failures, details
+    python_records = [
+        record
+        for record in environments
+        if isinstance(record, dict)
+        and record.get("scope") == "ci_contract"
+        and record.get("node") is None
+        and isinstance(record.get("python"), str)
+    ]
+    records_by_pair: defaultdict[
+        tuple[str, str],
+        list[dict[str, object]],
+    ] = defaultdict(list)
+    for record in python_records:
+        records_by_pair[
+            (str(record.get("os")), str(record.get("python")))
+        ].append(record)
+    declared_pairs = set(records_by_pair)
+    if declared_pairs != expected_pairs or any(
+        len(records) != 1 for records in records_by_pair.values()
+    ):
+        failures.append(issue(
+            "ci-contract-matrix-drift",
+            "maintainer/compatibility/matrix.yml:environments",
+            (
+                "Compatibility CI entries must match the workflow OS/Python "
+                "Cartesian matrix exactly once."
+            ),
+        ))
+    details["required_entries"] = len(expected_pairs)
+
+    for record in environments:
+        if not isinstance(record, dict) or record.get("scope") != "ci_contract":
+            continue
+        identifier = str(record.get("id", ""))
+        label = f"maintainer/compatibility/matrix.yml:{identifier}"
+        checks = record.get("checks")
+        passed = {
+            str(name)
+            for name, status in checks.items()
+            if status == "passed"
+        } if isinstance(checks, dict) else set()
+        if not passed:
+            continue
+        evidence_failures, evidence_keys = validate_evidence_paths(
+            record.get("evidence"),
+            plugin,
+            label,
+        )
+        failures.extend(evidence_failures)
+        canonical_import = (
+            f"{CI_IMPORT_ROOT}/{identifier}/{CI_IMPORT_RECORD_NAME}"
+        )
+        import_paths = [
+            value
+            for value in record.get("evidence", [])
+            if isinstance(value, str)
+            and value.casefold() == canonical_import.casefold()
+        ] if isinstance(record.get("evidence"), list) else []
+        if len(import_paths) != 1 or canonical_import.casefold() not in evidence_keys:
+            failures.append(issue(
+                "ci-import-record-missing",
+                label,
+                (
+                    "A promoted CI pass needs exactly one canonical retained "
+                    f"record at {canonical_import}."
+                ),
+            ))
+            continue
+        import_path = absolute(
+            plugin.joinpath(*canonical_import.split("/"))
+        )
+        try:
+            import_payload = load_json(import_path)
+        except ToolFailure as exc:
+            failures.append(exc.issue.as_dict())
+            continue
+        import_failures = ci_import_record_failures(
+            import_payload,
+            record,
+            plugin,
+            import_schema_path,
+            test_schema_path,
+            release_manifest,
+            evidence_keys,
+            label=canonical_import,
+            workflow_path=workflow_path,
+        )
+        failures.extend(import_failures)
+        if not import_failures:
+            verified_identifiers.add(identifier)
+            details["verified_imports"] = (
+                int(details["verified_imports"]) + 1
+            )
+
+    for pair in sorted(expected_pairs):
+        records = records_by_pair.get(pair, [])
+        if len(records) != 1:
+            if release_mode:
+                failures.append(issue(
+                    "release-ci-matrix-entry-missing",
+                    "maintainer/compatibility/matrix.yml:environments",
+                    f"No unique compatibility entry exists for {pair[0]} / Python {pair[1]}.",
+                ))
+            continue
+        record = records[0]
+        checks = record.get("checks")
+        missing = [
+            check
+            for check in required_checks
+            if not isinstance(checks, dict) or checks.get(check) != "passed"
+        ]
+        if not missing:
+            details["status_passed_entries"] = (
+                int(details["status_passed_entries"]) + 1
+            )
+            if str(record.get("id", "")) in verified_identifiers:
+                details["passed_entries"] = (
+                    int(details["passed_entries"]) + 1
+                )
+        elif release_mode:
+            failures.append(issue(
+                "release-ci-matrix-entry-unobserved",
+                f"maintainer/compatibility/matrix.yml:{record.get('id')}",
+                (
+                    "Strict release requires retained, verified passes for "
+                    + ", ".join(missing)
+                    + "."
+                ),
+            ))
+    return failures, details
+
+
+def compatibility_environment_failures(
+    compatibility: object,
+    plugin: Path,
+) -> list[dict[str, str]]:
+    """Validate each environment claim instead of trusting host aggregates."""
+    failures: list[dict[str, str]] = []
+    if not isinstance(compatibility, dict):
+        return failures
+    discovery_roots = compatibility.get("discovery_roots")
+    if isinstance(discovery_roots, list):
+        for index, value in enumerate(discovery_roots):
+            if isinstance(value, str) and not value.startswith("~/"):
+                failures.append(issue(
+                    "compatibility-route-not-portable",
+                    (
+                        "maintainer/compatibility/matrix.yml:"
+                        f"discovery_roots[{index}]"
+                    ),
+                    (
+                        "Distributed compatibility routes must use a ~/ "
+                        "home-relative identity; absolute routes are accepted "
+                        "only in isolated test fixtures."
+                    ),
+                ))
+    hosts = compatibility.get("hosts")
+    if isinstance(hosts, dict):
+        for host_name, record in hosts.items():
+            route = (
+                record.get("discovery_route")
+                if isinstance(record, dict)
+                else None
+            )
+            if isinstance(route, str) and not route.startswith("~/"):
+                failures.append(issue(
+                    "compatibility-route-not-portable",
+                    (
+                        "maintainer/compatibility/matrix.yml:"
+                        f"hosts.{host_name}.discovery_route"
+                    ),
+                    (
+                        "Distributed host routes must use a ~/ home-relative "
+                        "identity; absolute routes are accepted only in "
+                        "isolated test fixtures."
+                    ),
+                ))
+    environments = compatibility.get("environments")
+    if not isinstance(environments, list):
+        return failures
+    identifiers: set[str] = set()
+    for index, record in enumerate(environments):
+        label = f"maintainer/compatibility/matrix.yml:environments[{index}]"
+        if not isinstance(record, dict):
+            continue
+        identifier = str(record.get("id", ""))
+        if identifier in identifiers:
+            failures.append(issue(
+                "duplicate-compatibility-environment",
+                label,
+                identifier,
+            ))
+        identifiers.add(identifier)
+        path_failures, normalized = validate_evidence_paths(
+            record.get("evidence"),
+            plugin,
+            label,
+        )
+        failures.extend(path_failures)
+        checks = record.get("checks")
+        if not isinstance(checks, dict):
+            continue
+        passed = sorted(
+            str(name)
+            for name, status in checks.items()
+            if status == "passed"
+        )
+        if passed and not normalized:
+            failures.append(issue(
+                "compatibility-environment-pass-unbound",
+                label,
+                "Passed checks need attributable package evidence.",
+            ))
+        if record.get("scope") == "ci_contract" and passed:
+            canonical_import = (
+                f"{CI_IMPORT_ROOT}/{identifier}/{CI_IMPORT_RECORD_NAME}"
+            ).casefold()
+            if canonical_import not in normalized:
+                failures.append(issue(
+                    "compatibility-ci-pass-without-run-record",
+                    label,
+                    (
+                        "A workflow declaration is not a successful CI run "
+                        "record; a passed check must cite its canonical "
+                        "retained import."
+                    ),
+                ))
+        if (
+            record.get("scope") == "local_toolchain"
+            and checks.get("unit_tests") == "passed"
+        ):
+            attestation_key = LOCAL_UNIT_TEST_ATTESTATION.casefold()
+            if attestation_key not in normalized:
+                failures.append(issue(
+                    "compatibility-unit-tests-pass-unbound",
+                    label,
+                    (
+                        "A local unit-test pass must cite the canonical "
+                        f"{LOCAL_UNIT_TEST_ATTESTATION} record."
+                    ),
+                ))
+            else:
+                try:
+                    attestation = load_json(
+                        plugin / LOCAL_UNIT_TEST_ATTESTATION
+                    )
+                    release_manifest = load_json(
+                        plugin / LOCAL_RELEASE_MANIFEST
+                    )
+                    attestation_failures = test_attestation_failures(
+                        attestation,
+                        plugin,
+                        plugin / LOCAL_UNIT_TEST_SCHEMA,
+                        release_manifest,
+                    )
+                    attested_python = (
+                        attestation.get("python", {}).get("version")
+                        if isinstance(attestation, dict)
+                        and isinstance(attestation.get("python"), dict)
+                        else None
+                    )
+                    if (
+                        not isinstance(record.get("python"), str)
+                        or record.get("python") != attested_python
+                    ):
+                        attestation_failures.append(issue(
+                            "compatibility-unit-tests-python-mismatch",
+                            LOCAL_UNIT_TEST_ATTESTATION,
+                            (
+                                "The local compatibility Python version does "
+                                "not equal the attested Python version."
+                            ),
+                        ))
+                except (OSError, ToolFailure) as exc:
+                    attestation_failures = [issue(
+                        "compatibility-unit-tests-evidence-unreadable",
+                        LOCAL_UNIT_TEST_ATTESTATION,
+                        str(exc),
+                    )]
+                if attestation_failures:
+                    failure_codes = sorted({
+                        finding["code"]
+                        for finding in attestation_failures
+                        if isinstance(finding, dict)
+                        and isinstance(finding.get("code"), str)
+                    })
+                    failures.append(issue(
+                        "compatibility-unit-tests-pass-invalid",
+                        label,
+                        (
+                            "The cited local unit-test attestation is not a "
+                            "current valid pass: "
+                            + ", ".join(failure_codes)
+                            + "."
+                        ),
+                    ))
+        if (
+            record.get("scope") == "local_toolchain"
+            and checks.get("package_audit") == "passed"
+        ):
+            failures.append(issue(
+                "compatibility-package-audit-pass-unbound",
+                label,
+                (
+                    "No retained schema-valid current local package-audit "
+                    "record contract is distributed. Keep package_audit "
+                    "non-passed until such a record is implemented and cited; "
+                    "a rerunnable command or shared evidence list is not a "
+                    "per-check attestation."
+                ),
+            ))
+        if (
+            checks.get("installer_lifecycle") == "passed"
+            and (
+                "maintainer/attestations/install-lifecycle.json"
+                not in normalized
+            )
+        ):
+            failures.append(issue(
+                "compatibility-installer-pass-unbound",
+                label,
+                (
+                    "Installer lifecycle pass must cite the isolated "
+                    "install-lifecycle attestation."
+                ),
+            ))
+        if (
+            checks.get("behavioral_eval") == "passed"
+            and not any(
+                path.startswith("maintainer/evals/results/")
+                for path in normalized
+            )
+        ):
+            failures.append(issue(
+                "compatibility-behavior-pass-unbound",
+                label,
+                "Behavioral pass must cite an evaluation result.",
+            ))
+        if (
+            checks.get("host_discovery") == "passed"
+            and not any(
+                path.startswith("maintainer/evals/results/")
+                for path in normalized
+            )
+        ):
+            failures.append(issue(
+                "compatibility-host-discovery-pass-unbound",
+                label,
+                (
+                    "Host discovery means the host actually loaded the skill; "
+                    "filesystem route evidence alone is insufficient, so a "
+                    "host-native evaluation result must be cited."
+                ),
+            ))
+        if (
+            checks.get("rendered_review") == "passed"
+            and not any(
+                path.startswith("maintainer/evals/reviews/")
+                for path in normalized
+            )
+        ):
+            failures.append(issue(
+                "compatibility-render-pass-unbound",
+                label,
+                "Rendered-review pass must cite a review record.",
+            ))
+    return failures
+
+
 def fixture_catalog(
     fixtures_dir: Path,
 ) -> tuple[dict[str, dict[str, object]], list[dict[str, str]]]:
@@ -1043,7 +2678,11 @@ def record_tree_failures(
     surrogate = {
         "files": files,
         "content_sha256": expected_hash,
-        "plugin_manifest_sha256": None,
+        "distribution_files": files,
+        "distribution_sha256": expected_hash,
+        "codex_plugin_manifest_sha256": None,
+        "claude_plugin_manifest_sha256": None,
+        "sbom_sha256": None,
         "compatibility_matrix_sha256": None,
         "trusted_adapters_sha256": None,
     }
@@ -1634,6 +3273,12 @@ def eval_semantic_failures(
         and isinstance(prompt_contract.get("invocation_modes"), dict)
         else {}
     )
+    recorded_installation_modes = (
+        prompt_contract.get("installation_modes")
+        if isinstance(prompt_contract, dict)
+        and isinstance(prompt_contract.get("installation_modes"), dict)
+        else {}
+    )
 
     provenance = payload.get("provenance")
     selected_cases: list[str] = []
@@ -1833,6 +3478,9 @@ def eval_semantic_failures(
             ))
         task = str(case.get("task", "")).strip()
         invocation_mode = str(case.get("invocation_mode", "explicit"))
+        installation_mode = str(
+            case.get("installation_mode", "direct-skill")
+        )
         if run.get("invocation_mode") != invocation_mode:
             failures.append(issue(
                 "eval-invocation-mode-drift",
@@ -1847,6 +3495,36 @@ def eval_semantic_failures(
                 "eval-invocation-provenance-drift",
                 run_label,
                 "Prompt provenance does not record the resolved fixture mode.",
+            ))
+        if run.get("installation_mode") != installation_mode:
+            failures.append(issue(
+                "eval-installation-mode-drift",
+                run_label,
+                (
+                    f"{run.get('installation_mode')!r} does not match fixture "
+                    f"mode {installation_mode!r}."
+                ),
+            ))
+        if (
+            recorded_installation_modes.get(str(case_id))
+            != installation_mode
+        ):
+            failures.append(issue(
+                "eval-installation-provenance-drift",
+                run_label,
+                (
+                    "Prompt provenance does not record the resolved "
+                    "installation mode."
+                ),
+            ))
+        if installation_mode != "direct-skill":
+            failures.append(issue(
+                "eval-installation-mode-unsupported",
+                run_label,
+                (
+                    "The current evaluator cannot substantiate packaged-plugin "
+                    "installation or namespaced invocation."
+                ),
             ))
         if run.get("task_sha256") != text_sha256(task):
             failures.append(issue(
@@ -2255,6 +3933,52 @@ def eval_semantic_failures(
 
     drivers = payload.get("drivers")
     if isinstance(drivers, dict):
+        verified_model_contexts: dict[str, dict[str, object]] = {}
+        for variant in ("skill", "baseline"):
+            driver = drivers.get(variant)
+            if driver is None and variant == "baseline":
+                continue
+            if not isinstance(driver, dict):
+                continue
+            context = driver.get("model_context")
+            context_label = f"{label}#drivers/{variant}/model_context"
+            if not isinstance(context, dict):
+                continue
+            core = {
+                key: value
+                for key, value in context.items()
+                if key != "sha256"
+            }
+            expected_context_hash = hashlib.sha256(
+                json.dumps(
+                    core,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                ).encode("utf-8")
+            ).hexdigest()
+            if context.get("sha256") != expected_context_hash:
+                failures.append(issue(
+                    "eval-model-context-hash-mismatch",
+                    context_label,
+                    "model_context.sha256 does not bind the recorded context.",
+                ))
+            else:
+                verified_model_contexts[variant] = context
+            if (
+                release_mode
+                and context.get("declaration_status") != "declared"
+            ):
+                failures.append(issue(
+                    "release-model-context-unreported",
+                    context_label,
+                    (
+                        "Promoted release evidence requires a declared provider, "
+                        "model, concrete model version, reasoning effort, and "
+                        "safe generation configuration."
+                    ),
+                ))
+
         baseline_driver = drivers.get("baseline")
         if ("baseline" in observed_variants) != (baseline_driver is not None):
             failures.append(issue(
@@ -2262,6 +3986,30 @@ def eval_semantic_failures(
                 label,
                 "Baseline driver provenance must match baseline run presence.",
             ))
+        skill_context = verified_model_contexts.get("skill")
+        baseline_context = verified_model_contexts.get("baseline")
+        if skill_context is not None and baseline_context is not None:
+            comparison_fields = (
+                "declaration_status",
+                "provider",
+                "model",
+                "model_version",
+                "reasoning_effort",
+                "generation_config",
+            )
+            if any(
+                skill_context.get(field) != baseline_context.get(field)
+                for field in comparison_fields
+            ):
+                failures.append(issue(
+                    "eval-model-context-comparison-mismatch",
+                    label,
+                    (
+                        "Skill and baseline runs must use the same declared model "
+                        "context; only declaration_source and its derived hash may "
+                        "differ."
+                    ),
+                ))
 
     summary = payload.get("summary")
     if isinstance(summary, dict):
@@ -2380,7 +4128,10 @@ def eval_replay_failures(
 
 
 def score_value(value: object) -> int | None:
-    return value if isinstance(value, int) and not isinstance(value, bool) else None
+    if not isinstance(value, dict):
+        return None
+    score = value.get("value")
+    return score if isinstance(score, int) and not isinstance(score, bool) else None
 
 
 REQUIRED_RUBRIC_BY_LENS = {
@@ -2419,6 +4170,18 @@ GENERIC_REVIEW_IDENTITIES = {
     "unknown",
     "tbd",
 }
+GENERIC_OWNER_IDENTITIES = GENERIC_REVIEW_IDENTITIES | {
+    "accountable-owner",
+    "approver",
+    "client",
+    "client-owner",
+    "decision-owner",
+    "human",
+    "owner",
+    "stakeholder",
+}
+OWNER_DECISION_EVIDENCE_EXTENSIONS = {".json", ".log", ".md", ".txt"}
+OWNER_DECISION_EVIDENCE_MAX_BYTES = 2 * 1024 * 1024
 REQUIRED_IMPLEMENTATION_CHECKS = {
     "keyboard-navigation",
     "focus-visible",
@@ -3056,8 +4819,10 @@ def review_evidence_reference_failures(
     plugin: Path,
     label: str,
     evidence_keys: set[str],
+    *,
+    code_prefix: str = "review-closure-evidence",
 ) -> list[dict[str, str]]:
-    """Verify path-and-hash references used by finding and requirement closure."""
+    """Verify that review evidence references are listed, present, and hash-bound."""
     failures: list[dict[str, str]] = []
     if not isinstance(values, list):
         return failures
@@ -3069,10 +4834,10 @@ def review_evidence_reference_failures(
         relative = portable_relative(record.get("path"))
         if relative is None or relative.casefold() not in evidence_keys:
             failures.append(issue(
-                "review-closure-evidence-unbound",
+                f"{code_prefix}-unbound",
                 record_label,
                 (
-                    "Closure evidence must be safe, present, and listed in "
+                    "Review evidence must be safe, present, and listed in "
                     "the review evidence_paths."
                 ),
             ))
@@ -3080,9 +4845,9 @@ def review_evidence_reference_failures(
         key = relative.casefold()
         if key in seen:
             failures.append(issue(
-                "review-closure-evidence-duplicate",
+                f"{code_prefix}-duplicate",
                 record_label,
-                "A closure record cannot cite the same evidence twice.",
+                "A review record cannot cite the same evidence twice.",
             ))
             continue
         seen.add(key)
@@ -3091,17 +4856,314 @@ def review_evidence_reference_failures(
             digest = file_sha256(candidate)
         except ToolFailure as exc:
             failures.append(issue(
-                "review-closure-evidence-invalid",
+                f"{code_prefix}-invalid",
                 record_label,
                 str(exc),
             ))
             continue
         if digest != record.get("sha256"):
             failures.append(issue(
-                "review-closure-evidence-hash-mismatch",
+                f"{code_prefix}-hash-mismatch",
                 record_label,
                 f"{relative} does not match its declared sha256.",
             ))
+    return failures
+
+
+GENERATED_IMAGE_SUFFIXES = {".avif", ".jpeg", ".jpg", ".png", ".webp"}
+
+
+def review_capability_disposition_failures(
+    payload: dict[str, object],
+    plugin: Path,
+    label: str,
+    evidence_keys: set[str],
+) -> list[dict[str, str]]:
+    """Hash-bind image-generation availability, artifacts, and inspection."""
+    disposition = payload.get("capability_disposition")
+    if not isinstance(disposition, dict):
+        return []
+    image_generation = disposition.get("image_generation")
+    if not isinstance(image_generation, dict):
+        return []
+    failures: list[dict[str, str]] = []
+    for field in (
+        "availability_evidence",
+        "generated_artifacts",
+        "inspection_evidence",
+    ):
+        failures.extend(review_evidence_reference_failures(
+            image_generation.get(field),
+            plugin,
+            f"{label}#capability_disposition/image_generation/{field}",
+            evidence_keys,
+            code_prefix=f"review-image-generation-{field.replace('_', '-')}",
+        ))
+    if image_generation.get("status") == "available":
+        artifacts = image_generation.get("generated_artifacts")
+        if isinstance(artifacts, list):
+            for index, record in enumerate(artifacts):
+                relative = (
+                    portable_relative(record.get("path"))
+                    if isinstance(record, dict)
+                    else None
+                )
+                if (
+                    relative is not None
+                    and PurePosixPath(relative).suffix.casefold()
+                    not in GENERATED_IMAGE_SUFFIXES
+                ):
+                    failures.append(issue(
+                        "review-generated-media-artifact-format-invalid",
+                        (
+                            f"{label}#capability_disposition/image_generation/"
+                            f"generated_artifacts/{index}"
+                        ),
+                        (
+                            "Generated artifact evidence must reference a local "
+                            "PNG, JPEG, WebP, or AVIF image file."
+                        ),
+                    ))
+    return failures
+
+
+def review_owner_disposition_failures(
+    payload: dict[str, object],
+    plugin: Path,
+    label: str,
+    evidence_keys: set[str],
+    *,
+    release_mode: bool,
+) -> list[dict[str, str]]:
+    """Validate the accountable owner's decision against the exact reviewed build."""
+    failures: list[dict[str, str]] = []
+    disposition = payload.get("owner_disposition")
+    if not isinstance(disposition, dict):
+        if release_mode:
+            failures.append(issue(
+                "release-owner-disposition-missing",
+                label,
+                (
+                    "Release reviews require a structured owner_disposition "
+                    "for the exact candidate build."
+                ),
+            ))
+        return failures
+
+    owner_id = disposition.get("decision_owner_id")
+    if (
+        not isinstance(owner_id, str)
+        or owner_id.casefold() in GENERIC_OWNER_IDENTITIES
+    ):
+        failures.append(issue(
+            "review-owner-identity-invalid",
+            f"{label}#owner_disposition/decision_owner_id",
+            "Use the stable identity of the accountable decision owner.",
+        ))
+
+    build = payload.get("build")
+    build_identity = build.get("identity") if isinstance(build, dict) else None
+    if (
+        not isinstance(build_identity, str)
+        or disposition.get("candidate_id") != build_identity
+    ):
+        failures.append(issue(
+            "review-owner-candidate-mismatch",
+            f"{label}#owner_disposition/candidate_id",
+            (
+                "owner_disposition.candidate_id must equal build.identity so "
+                "the decision cannot float to a different build."
+            ),
+        ))
+
+    status = disposition.get("status")
+    claim_scope = disposition.get("claim_scope")
+    evidence = disposition.get("evidence")
+    decision_statuses = {"accepted", "rejected", "not-required"}
+    if status in decision_statuses and (
+        not isinstance(evidence, list) or not evidence
+    ):
+        failures.append(issue(
+            "review-owner-evidence-missing",
+            f"{label}#owner_disposition/evidence",
+            (
+                "Accepted, rejected, and not-required owner decisions require "
+                "hash-bound decision evidence."
+            ),
+        ))
+    failures.extend(review_evidence_reference_failures(
+        evidence,
+        plugin,
+        f"{label}#owner_disposition/evidence",
+        evidence_keys,
+        code_prefix="review-owner-evidence",
+    ))
+    if status in decision_statuses and isinstance(evidence, list):
+        required_evidence_tokens = {
+            "status": status,
+            "decision_owner_id": owner_id,
+            "candidate_id": disposition.get("candidate_id"),
+            "reviewed_at": disposition.get("reviewed_at"),
+        }
+        for index, evidence_record in enumerate(evidence):
+            evidence_label = f"{label}#owner_disposition/evidence/{index}"
+            if not isinstance(evidence_record, dict):
+                continue
+            relative = portable_relative(evidence_record.get("path"))
+            if (
+                relative is None
+                or relative.casefold() not in evidence_keys
+            ):
+                continue
+            candidate = absolute(plugin.joinpath(*relative.split("/")))
+            if (
+                candidate.suffix.casefold()
+                not in OWNER_DECISION_EVIDENCE_EXTENSIONS
+            ):
+                failures.append(issue(
+                    "review-owner-evidence-format-invalid",
+                    evidence_label,
+                    (
+                        "Owner decision evidence must be UTF-8 JSON, Markdown, "
+                        "text, or log content that attributes the decision."
+                    ),
+                ))
+                continue
+            try:
+                before = candidate.stat()
+                if (
+                    not candidate.is_file()
+                    or before.st_size < 1
+                    or before.st_size > OWNER_DECISION_EVIDENCE_MAX_BYTES
+                ):
+                    raise OSError(
+                        "owner decision evidence must contain 1 byte through "
+                        f"{OWNER_DECISION_EVIDENCE_MAX_BYTES} bytes"
+                    )
+                evidence_bytes = candidate.read_bytes()
+                after = candidate.stat()
+                if (
+                    before.st_dev != after.st_dev
+                    or before.st_ino != after.st_ino
+                    or before.st_size != after.st_size
+                    or before.st_mtime_ns != after.st_mtime_ns
+                    or len(evidence_bytes) != before.st_size
+                ):
+                    raise OSError(
+                        "owner decision evidence changed while it was read"
+                    )
+                if (
+                    hashlib.sha256(evidence_bytes).hexdigest()
+                    != evidence_record.get("sha256")
+                ):
+                    raise OSError(
+                        "owner decision evidence no longer matches its "
+                        "declared sha256"
+                    )
+                evidence_text = evidence_bytes.decode("utf-8")
+            except (OSError, UnicodeError) as exc:
+                failures.append(issue(
+                    "review-owner-evidence-content-invalid",
+                    evidence_label,
+                    str(exc),
+                ))
+                continue
+            normalized_evidence = evidence_text.casefold()
+            missing_tokens = sorted(
+                field
+                for field, value in required_evidence_tokens.items()
+                if (
+                    not isinstance(value, str)
+                    or value.casefold() not in normalized_evidence
+                )
+            )
+            if missing_tokens:
+                failures.append(issue(
+                    "review-owner-evidence-unattributed",
+                    evidence_label,
+                    (
+                        "Owner decision evidence must name the exact "
+                        + ", ".join(missing_tokens)
+                        + "."
+                    ),
+                ))
+
+    reviewed_at_value = disposition.get("reviewed_at")
+    if status in decision_statuses:
+        try:
+            reviewed_at = aware_timestamp(reviewed_at_value)
+            captured_at = (
+                aware_timestamp(build.get("captured_at"))
+                if isinstance(build, dict)
+                else None
+            )
+            if captured_at is None:
+                raise ValueError("build.captured_at is missing")
+        except ValueError as exc:
+            failures.append(issue(
+                "review-owner-time-invalid",
+                f"{label}#owner_disposition/reviewed_at",
+                str(exc),
+            ))
+        else:
+            if reviewed_at < captured_at:
+                failures.append(issue(
+                    "review-owner-review-before-build",
+                    f"{label}#owner_disposition/reviewed_at",
+                    (
+                        "The owner decision cannot predate the exact reviewed "
+                        "build's captured_at timestamp."
+                    ),
+                ))
+            if (
+                reviewed_at
+                > datetime.now(timezone.utc) + REVIEW_EVIDENCE_CLOCK_SKEW
+            ):
+                failures.append(issue(
+                    "review-owner-review-in-future",
+                    f"{label}#owner_disposition/reviewed_at",
+                    "The owner decision timestamp is in the future.",
+                ))
+
+    conclusion = payload.get("conclusion")
+    decision = (
+        conclusion.get("decision")
+        if isinstance(conclusion, dict)
+        else None
+    )
+    if status == "rejected" and decision not in {"revise", "block"}:
+        failures.append(issue(
+            "review-owner-rejection-false-pass",
+            label,
+            (
+                "An owner rejection forces revise or block; it can never be "
+                "reported as pass or pass-with-limitations."
+            ),
+        ))
+    if (
+        release_mode
+        and status == "not-required"
+        and claim_scope != "standard"
+    ):
+        failures.append(issue(
+            "release-owner-not-required-ineligible",
+            label,
+            (
+                "not-required is allowed only for a declared standard claim "
+                "scope; premium, showcase, sale-readiness, and owner-sensitive "
+                "visual claims require accountable human acceptance."
+            ),
+        ))
+    if release_mode and status == "pending":
+        failures.append(issue(
+            "release-owner-disposition-pending",
+            label,
+            (
+                "A pending owner decision cannot close a release review; "
+                "record accepted, rejected, or an accountable not-required "
+                "decision."
+            ),
+        ))
     return failures
 
 
@@ -3131,6 +5193,30 @@ def review_semantic_failures(
         label,
     )
     failures.extend(evidence_failures)
+    rubric_records = payload.get("rubric")
+    if isinstance(rubric_records, dict):
+        for dimension, score_record in rubric_records.items():
+            if not isinstance(score_record, dict):
+                continue
+            failures.extend(review_evidence_reference_failures(
+                score_record.get("evidence"),
+                plugin,
+                f"{label}#rubric/{dimension}/evidence",
+                evidence_keys,
+            ))
+    failures.extend(review_owner_disposition_failures(
+        payload,
+        plugin,
+        label,
+        evidence_keys,
+        release_mode=release_mode,
+    ))
+    failures.extend(review_capability_disposition_failures(
+        payload,
+        plugin,
+        label,
+        evidence_keys,
+    ))
     review_relative = portable_relative(label)
     if (
         review_relative is not None
@@ -3447,6 +5533,82 @@ def review_semantic_failures(
             f"{label}#cross_case_analysis/evidence",
             evidence_keys,
         ))
+        masked_comparison = cross_case.get("masked_layout_comparison")
+        if isinstance(masked_comparison, dict):
+            failures.extend(review_evidence_reference_failures(
+                masked_comparison.get("evidence"),
+                plugin,
+                (
+                    f"{label}#cross_case_analysis/"
+                    "masked_layout_comparison/evidence"
+                ),
+                evidence_keys,
+            ))
+            for collection in ("coverage", "observations"):
+                records = masked_comparison.get(collection)
+                if not isinstance(records, list):
+                    continue
+                for index, record in enumerate(records):
+                    if not isinstance(record, dict):
+                        continue
+                    record_label = (
+                        f"{label}#cross_case_analysis/"
+                        "masked_layout_comparison/"
+                        f"{collection}/{index}"
+                    )
+                    failures.extend(review_evidence_reference_failures(
+                        record.get("evidence"),
+                        plugin,
+                        f"{record_label}/evidence",
+                        evidence_keys,
+                    ))
+                    if collection != "coverage":
+                        continue
+                    masked_hashes = record.get("masked_render_sha256s")
+                    masked_hash_set = (
+                        set(masked_hashes)
+                        if isinstance(masked_hashes, list)
+                        else set()
+                    )
+                    references = record.get("evidence")
+                    if not isinstance(references, list):
+                        continue
+                    for evidence_index, evidence_record in enumerate(references):
+                        if (
+                            not isinstance(evidence_record, dict)
+                            or evidence_record.get("sha256") not in masked_hash_set
+                        ):
+                            continue
+                        relative = portable_relative(evidence_record.get("path"))
+                        if (
+                            relative is None
+                            or relative.casefold() not in evidence_keys
+                        ):
+                            continue
+                        evidence_label = (
+                            f"{record_label}/evidence/{evidence_index}"
+                        )
+                        candidate = absolute(
+                            plugin.joinpath(*relative.split("/"))
+                        )
+                        if candidate.suffix.casefold() != ".png":
+                            failures.append(issue(
+                                "release-cross-case-masked-render-format-invalid",
+                                evidence_label,
+                                (
+                                    "A masked responsive render must cite a "
+                                    "decodable PNG."
+                                ),
+                            ))
+                            continue
+                        try:
+                            verify_png(candidate)
+                        except ToolFailure as exc:
+                            failures.append(issue(
+                                "release-cross-case-masked-render-invalid",
+                                evidence_label,
+                                str(exc),
+                            ))
         for collection in ("dimensions", "repeated_clusters"):
             records = cross_case.get(collection)
             if not isinstance(records, list):
@@ -3574,6 +5736,156 @@ def review_semantic_failures(
     return failures
 
 
+def review_evaluation_binding_failures(
+    payload: dict[str, object],
+    plugin: Path,
+    label: str,
+    eval_payloads: dict[Path, dict[str, object]],
+    *,
+    release_mode: bool,
+) -> list[dict[str, str]]:
+    """Bind a promoted review to one exact evaluated run and model context."""
+    failures: list[dict[str, str]] = []
+    binding = payload.get("evaluation_binding")
+    if not isinstance(binding, dict):
+        if release_mode:
+            failures.append(issue(
+                "release-review-evaluation-binding-missing",
+                label,
+                (
+                    "A promoted review must bind the exact evaluation result, "
+                    "run artifact, and declared model context."
+                ),
+            ))
+        return failures
+
+    relative = portable_relative(binding.get("result_path"))
+    relative_path = PurePosixPath(relative) if relative is not None else None
+    if (
+        relative_path is None
+        or relative_path.suffix.casefold() != ".json"
+        or relative_path.parent.as_posix() != "maintainer/evals/results"
+    ):
+        return [issue(
+            "review-evaluation-result-path-invalid",
+            label,
+            "evaluation_binding.result_path must name one retained result JSON.",
+        )]
+    result_path = absolute(plugin.joinpath(*relative_path.parts))
+    if not is_within(result_path, plugin):
+        return [issue(
+            "review-evaluation-result-path-invalid",
+            label,
+            "The bound evaluation result must stay inside the package.",
+        )]
+    try:
+        assert_no_reparse_path(result_path, stop=plugin)
+        if not result_path.is_file():
+            raise ToolFailure(
+                "review-evaluation-result-missing",
+                "The bound evaluation result is missing.",
+                result_path,
+            )
+        result_digest = file_sha256(result_path)
+    except (OSError, ToolFailure) as exc:
+        return [issue(
+            "review-evaluation-result-unavailable",
+            label,
+            str(exc),
+        )]
+    if binding.get("result_sha256") != result_digest:
+        failures.append(issue(
+            "review-evaluation-result-hash-mismatch",
+            label,
+            "evaluation_binding.result_sha256 does not match the result file.",
+        ))
+
+    result = eval_payloads.get(result_path)
+    if not isinstance(result, dict):
+        failures.append(issue(
+            "review-evaluation-result-unregistered",
+            label,
+            "The bound result was not accepted into the current evaluation set.",
+        ))
+        return failures
+    run_id = binding.get("run_id")
+    matches = [
+        run
+        for run in result.get("runs", [])
+        if isinstance(run, dict) and run.get("run_id") == run_id
+    ] if isinstance(result.get("runs"), list) else []
+    if len(matches) != 1:
+        failures.append(issue(
+            "review-evaluation-run-unresolved",
+            label,
+            "evaluation_binding.run_id must identify exactly one retained run.",
+        ))
+        return failures
+    run = matches[0]
+    if payload.get("run_id") != run_id or payload.get("case_id") != run.get("case"):
+        failures.append(issue(
+            "review-evaluation-run-identity-mismatch",
+            label,
+            "Review case_id and run_id must match the bound evaluation run.",
+        ))
+    if run.get("passed") is not True:
+        failures.append(issue(
+            "review-evaluation-run-not-passed",
+            label,
+            "A promoted review cannot bind a failed evaluation run.",
+        ))
+    artifact = run.get("artifact_bundle")
+    if (
+        not isinstance(artifact, dict)
+        or binding.get("artifact_sha256") != artifact.get("sha256")
+    ):
+        failures.append(issue(
+            "review-evaluation-artifact-mismatch",
+            label,
+            "evaluation_binding.artifact_sha256 must match the run bundle.",
+        ))
+    variant = run.get("variant")
+    drivers = result.get("drivers")
+    driver = (
+        drivers.get(variant)
+        if isinstance(drivers, dict) and isinstance(variant, str)
+        else None
+    )
+    context = driver.get("model_context") if isinstance(driver, dict) else None
+    if (
+        not isinstance(context, dict)
+        or binding.get("model_context_sha256") != context.get("sha256")
+    ):
+        failures.append(issue(
+            "review-evaluation-model-context-mismatch",
+            label,
+            "The review must bind the selected run's exact model context.",
+        ))
+    if release_mode and (
+        not isinstance(context, dict)
+        or context.get("declaration_status") != "declared"
+    ):
+        failures.append(issue(
+            "release-review-model-context-unreported",
+            label,
+            "A promoted review must bind declared model identity metadata.",
+        ))
+    build = payload.get("build")
+    package = result.get("package")
+    if isinstance(build, dict) and isinstance(package, dict):
+        if (
+            build.get("host") != result.get("host")
+            or build.get("skill_version") != package.get("version")
+            or build.get("content_sha256") != package.get("content_sha256")
+        ):
+            failures.append(issue(
+                "review-evaluation-build-identity-mismatch",
+                label,
+                "Review build identity differs from the bound evaluation result.",
+            ))
+    return failures
+
+
 def release_host_completion_failures(
     host_name: str,
     host: dict[str, object],
@@ -3604,6 +5916,45 @@ def release_host_completion_failures(
     return failures
 
 
+def release_host_discovery_failures(
+    host_name: str,
+    compatibility: dict[str, object],
+) -> list[dict[str, str]]:
+    """Require a host-native load observation, not merely an installed route."""
+    environments = compatibility.get("environments")
+    records = environments if isinstance(environments, list) else []
+    matching = [
+        record
+        for record in records
+        if (
+            isinstance(record, dict)
+            and record.get("scope") == "host_runtime"
+            and record.get("host") == host_name
+        )
+    ]
+    if any(
+        isinstance(record.get("checks"), dict)
+        and record["checks"].get("host_discovery") == "passed"
+        for record in matching
+    ):
+        return []
+    statuses = sorted({
+        str(record.get("checks", {}).get("host_discovery"))
+        for record in matching
+        if isinstance(record.get("checks"), dict)
+    })
+    return [issue(
+        "release-host-discovery-incomplete",
+        f"maintainer/compatibility/matrix.yml:{host_name}.host_discovery",
+        (
+            "No host-runtime environment records a passed, evidence-bound "
+            "skill load observation"
+            + (f"; recorded statuses: {', '.join(statuses)}" if statuses else "")
+            + "."
+        ),
+    )]
+
+
 INDEPENDENT_REVIEW_METHODS = {
     "separate-person",
     "separate-agent",
@@ -3612,7 +5963,365 @@ INDEPENDENT_REVIEW_METHODS = {
 }
 MIN_RELEASE_REPRESENTATIVE_CASES = 4
 MIN_RELEASE_REPETITIONS_PER_VARIANT = 3
+MIN_EXPRESSIVE_RELEASE_CASES = 2
+MIN_QUIET_RELEASE_CASES = 1
+MIN_GENERATED_MEDIA_RELEASE_CASES = 1
+MIN_ROUTE_FAMILY_RELEASE_CASES = 1
+MIN_CULTURAL_CONTEXT_RELEASE_CASES = 1
 REQUIRED_RELEASE_MODES = {"persuade", "experience", "operate", "read"}
+EXPRESSIVE_PERCEPTION_FLOORS = {
+    "direction": 3,
+    "distinctiveness_without_novelty_tax": 3,
+}
+QUIET_PERCEPTION_FLOORS = {
+    "direction": 3,
+    "project_specificity": 3,
+    "distinctiveness_without_novelty_tax": 3,
+}
+
+
+def expressive_perception_gate_failures(
+    payload: dict[str, object],
+    expected_contract: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Apply the opt-in absolute quality floor to counted perception reviews."""
+    if not isinstance(expected_contract, dict):
+        return []
+    coverage = expected_contract.get("release_coverage")
+    reviewer = payload.get("reviewer")
+    if not (
+        isinstance(coverage, dict)
+        and coverage.get("expressive_perception_gate") is True
+        and isinstance(reviewer, dict)
+        and reviewer.get("lens") == "perception"
+    ):
+        return []
+    rubric = payload.get("rubric")
+    failures: list[dict[str, str]] = []
+    for dimension, minimum in EXPRESSIVE_PERCEPTION_FLOORS.items():
+        observed = (
+            score_value(rubric.get(dimension))
+            if isinstance(rubric, dict)
+            else None
+        )
+        if observed != minimum:
+            failures.append(issue(
+                "release-expressive-perception-floor-unmet",
+                f"{label}:rubric.{dimension}",
+                (
+                    "A release-counted Showcase or expressive case requires "
+                    f"a numeric {minimum} for {dimension}; observed "
+                    f"{observed!r}. This opt-in gate does not apply to "
+                    "unmarked cases."
+                ),
+            ))
+    return failures
+
+
+def quiet_perception_gate_failures(
+    payload: dict[str, object],
+    expected_contract: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Apply a quiet-specific quality floor without requiring visual volume."""
+    if not isinstance(expected_contract, dict):
+        return []
+    coverage = expected_contract.get("release_coverage")
+    reviewer = payload.get("reviewer")
+    if not (
+        isinstance(coverage, dict)
+        and coverage.get("quiet_perception_gate") is True
+        and isinstance(reviewer, dict)
+        and reviewer.get("lens") == "perception"
+    ):
+        return []
+    rubric = payload.get("rubric")
+    failures: list[dict[str, str]] = []
+    for dimension, minimum in QUIET_PERCEPTION_FLOORS.items():
+        observed = (
+            score_value(rubric.get(dimension))
+            if isinstance(rubric, dict)
+            else None
+        )
+        if observed != minimum:
+            failures.append(issue(
+                "release-quiet-perception-floor-unmet",
+                f"{label}:rubric.{dimension}",
+                (
+                    "A release-counted quiet-specific case requires "
+                    f"a numeric {minimum} for {dimension}; observed "
+                    f"{observed!r}. This is a specificity and direction floor, "
+                    "not a requirement for louder styling."
+                ),
+            ))
+    return failures
+
+
+def image_generation_disposition_status(
+    payload: dict[str, object],
+) -> str | None:
+    disposition = payload.get("capability_disposition")
+    image_generation = (
+        disposition.get("image_generation")
+        if isinstance(disposition, dict)
+        else None
+    )
+    status = (
+        image_generation.get("status")
+        if isinstance(image_generation, dict)
+        else None
+    )
+    return status if status in {"available", "unavailable"} else None
+
+
+def generated_media_capability_gate_failures(
+    payload: dict[str, object],
+    expected_contract: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Require an honest capability branch on marked perception reviews."""
+    if not isinstance(expected_contract, dict):
+        return []
+    coverage = expected_contract.get("release_coverage")
+    reviewer = payload.get("reviewer")
+    if not (
+        isinstance(coverage, dict)
+        and coverage.get("generated_media_capability_gate") is True
+        and isinstance(reviewer, dict)
+        and reviewer.get("lens") == "perception"
+    ):
+        return []
+    disposition = payload.get("capability_disposition")
+    image_generation = (
+        disposition.get("image_generation")
+        if isinstance(disposition, dict)
+        else None
+    )
+    status = image_generation_disposition_status(payload)
+    if not isinstance(image_generation, dict) or status is None:
+        return [issue(
+            "release-generated-media-capability-disposition-missing",
+            label,
+            (
+                "A release-counted generated-media case must record image "
+                "generation as available or unavailable with bound host "
+                "evidence; absence cannot select the fallback branch."
+            ),
+        )]
+    availability_evidence = image_generation.get("availability_evidence")
+    generated_artifacts = image_generation.get("generated_artifacts")
+    inspection_evidence = image_generation.get("inspection_evidence")
+    failures: list[dict[str, str]] = []
+    if not isinstance(availability_evidence, list) or not availability_evidence:
+        failures.append(issue(
+            "release-generated-media-capability-evidence-missing",
+            label,
+            "The image-generation availability disposition needs bound evidence.",
+        ))
+    if status == "available" and not (
+        isinstance(generated_artifacts, list)
+        and generated_artifacts
+        and isinstance(inspection_evidence, list)
+        and inspection_evidence
+    ):
+        failures.append(issue(
+            "release-generated-media-artifact-evidence-missing",
+            label,
+            (
+                "An available image-generation capability requires real "
+                "generated artifact references and bound inspection evidence."
+            ),
+        ))
+    if status == "unavailable" and (
+        (isinstance(generated_artifacts, list) and generated_artifacts)
+        or (isinstance(inspection_evidence, list) and inspection_evidence)
+    ):
+        failures.append(issue(
+            "release-generated-media-unavailable-branch-contradiction",
+            label,
+            (
+                "The unavailable branch cannot cite generated artifacts or "
+                "claim generated-media inspection."
+            ),
+        ))
+    return failures
+
+
+def route_family_showcase_gate_failures(
+    payload: dict[str, object],
+    expected_contract: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Require passing direct-route and rendered-family evidence when marked."""
+    if not isinstance(expected_contract, dict):
+        return []
+    coverage = expected_contract.get("release_coverage")
+    reviewer = payload.get("reviewer")
+    if not (
+        isinstance(coverage, dict)
+        and coverage.get("route_family_showcase_gate") is True
+        and isinstance(reviewer, dict)
+        and reviewer.get("lens") == "perception"
+    ):
+        return []
+    analysis = payload.get("route_family_analysis")
+    if not isinstance(analysis, dict):
+        return [issue(
+            "release-route-family-analysis-missing",
+            label,
+            (
+                "A release-counted Range Study requires structured "
+                "route_family_analysis; a screenshot sample or machine "
+                "similarity result alone cannot close this gate."
+            ),
+        )]
+    failures: list[dict[str, str]] = []
+    declared = analysis.get("declared_route_count")
+    verified = analysis.get("verified_route_count")
+    routes = analysis.get("routes")
+    conclusion = analysis.get("conclusion")
+    repeated = analysis.get("repeated_clusters")
+    if not (
+        isinstance(declared, int)
+        and not isinstance(declared, bool)
+        and declared >= 2
+        and verified == declared
+        and isinstance(routes, list)
+        and len(routes) == declared
+    ):
+        failures.append(issue(
+            "release-route-family-route-coverage-incomplete",
+            label,
+            (
+                "Every declared route must be independently verified and "
+                "represented exactly once in route_family_analysis.routes."
+            ),
+        ))
+    elif any(
+        not isinstance(route, dict)
+        or route.get("direct_entry_status") != "passed"
+        or route.get("capture_status") != "matched"
+        for route in routes
+    ):
+        failures.append(issue(
+            "release-route-family-route-evidence-incomplete",
+            label,
+            (
+                "Every counted route must pass direct entry and have matched "
+                "rendered capture coverage."
+            ),
+        ))
+    unresolved_clusters = (
+        [
+            cluster
+            for cluster in repeated
+            if isinstance(cluster, dict)
+            and cluster.get("status") == "unresolved"
+        ]
+        if isinstance(repeated, list)
+        else [None]
+    )
+    if unresolved_clusters:
+        failures.append(issue(
+            "release-route-family-repeated-skeleton-unresolved",
+            label,
+            (
+                "A release-counted Range Study cannot retain an unresolved "
+                "repeated-skeleton cluster."
+            ),
+        ))
+    if not (
+        isinstance(conclusion, dict)
+        and conclusion.get("unique_direct_routes") is True
+        and conclusion.get("matched_capture_coverage") is True
+        and conclusion.get("unresolved_repeated_skeleton") is False
+        and conclusion.get("decision") == "pass"
+    ):
+        failures.append(issue(
+            "release-route-family-conclusion-not-passing",
+            label,
+            (
+                "The route-family conclusion must pass with unique direct "
+                "routes, matched capture coverage, and no unresolved repeated "
+                "skeleton."
+            ),
+        ))
+    return failures
+
+
+def cultural_context_gate_failures(
+    payload: dict[str, object],
+    expected_contract: object,
+    label: str,
+) -> list[dict[str, str]]:
+    """Require accepted representation review by a named non-producer."""
+    if not isinstance(expected_contract, dict):
+        return []
+    coverage = expected_contract.get("release_coverage")
+    reviewer = payload.get("reviewer")
+    if not (
+        isinstance(coverage, dict)
+        and coverage.get("cultural_context_gate") is True
+        and isinstance(reviewer, dict)
+        and reviewer.get("lens") == "perception"
+    ):
+        return []
+    cultural = payload.get("cultural_context_review")
+    if not isinstance(cultural, dict):
+        return [issue(
+            "release-cultural-context-review-missing",
+            label,
+            (
+                "A release-counted culturally central case requires structured "
+                "cultural_context_review from an accountable non-producer."
+            ),
+        )]
+    authority = cultural.get("authority")
+    failures: list[dict[str, str]] = []
+    if cultural.get("status") != "accepted":
+        failures.append(issue(
+            "release-cultural-context-review-not-accepted",
+            label,
+            (
+                "Pending or rejected cultural review blocks release counting; "
+                "technical or producer self-review cannot substitute."
+            ),
+        ))
+    if not (
+        isinstance(authority, dict)
+        and isinstance(authority.get("reviewer_id"), str)
+        and authority["reviewer_id"].strip()
+        and authority.get("relationship")
+        in {
+            "accountable-community-authority",
+            "owner-authorized-cultural-reviewer",
+        }
+        and authority.get("independent_of_producer") is True
+        and isinstance(authority.get("reviewed_at"), str)
+        and authority["reviewed_at"].strip()
+        and isinstance(authority.get("evidence"), list)
+        and authority["evidence"]
+    ):
+        failures.append(issue(
+            "release-cultural-context-authority-ineligible",
+            label,
+            (
+                "Accepted cultural review requires a named, dated, "
+                "evidence-bound authority who is independent of the producer."
+            ),
+        ))
+    open_questions = cultural.get("open_questions")
+    if not isinstance(open_questions, list) or open_questions:
+        failures.append(issue(
+            "release-cultural-context-open-questions",
+            label,
+            (
+                "Accepted release evidence must close cultural-context open "
+                "questions rather than carrying them into the release claim."
+            ),
+        ))
+    return failures
 
 
 def review_contract_closure_failures(
@@ -3630,6 +6339,41 @@ def review_contract_closure_failures(
     is_perception = (
         isinstance(reviewer, dict)
         and reviewer.get("lens") == "perception"
+    )
+    failures.extend(
+        expressive_perception_gate_failures(
+            payload,
+            expected_contract,
+            label,
+        )
+    )
+    failures.extend(
+        quiet_perception_gate_failures(
+            payload,
+            expected_contract,
+            label,
+        )
+    )
+    failures.extend(
+        generated_media_capability_gate_failures(
+            payload,
+            expected_contract,
+            label,
+        )
+    )
+    failures.extend(
+        route_family_showcase_gate_failures(
+            payload,
+            expected_contract,
+            label,
+        )
+    )
+    failures.extend(
+        cultural_context_gate_failures(
+            payload,
+            expected_contract,
+            label,
+        )
     )
     if (
         is_perception
@@ -3812,6 +6556,21 @@ def release_behavioral_coverage_failures(
             "primary_mode": coverage.get("primary_mode"),
             "scope": coverage.get("scope"),
             "project_stratum": coverage.get("project_stratum"),
+            "expressive_perception_gate": (
+                coverage.get("expressive_perception_gate") is True
+            ),
+            "quiet_perception_gate": (
+                coverage.get("quiet_perception_gate") is True
+            ),
+            "generated_media_capability_gate": (
+                coverage.get("generated_media_capability_gate") is True
+            ),
+            "route_family_showcase_gate": (
+                coverage.get("route_family_showcase_gate") is True
+            ),
+            "cultural_context_gate": (
+                coverage.get("cultural_context_gate") is True
+            ),
             "adversarial": bool(contract.get("adversarial_required")),
             "implicit": any(
                 run.get("invocation_mode") == "implicit"
@@ -3852,6 +6611,31 @@ def release_behavioral_coverage_failures(
         case_id
         for case_id in qualified_cases
         if case_matrix[case_id]["implicit"] is True
+    }
+    expressive_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["expressive_perception_gate"] is True
+    }
+    quiet_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["quiet_perception_gate"] is True
+    }
+    generated_media_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["generated_media_capability_gate"] is True
+    }
+    route_family_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["route_family_showcase_gate"] is True
+    }
+    cultural_context_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["cultural_context_gate"] is True
     }
     if len(qualified_cases) < MIN_RELEASE_REPRESENTATIVE_CASES:
         failures.append(issue(
@@ -3907,6 +6691,50 @@ def release_behavioral_coverage_failures(
                 "scope-control constraints."
             ),
         ))
+    if len(expressive_cases) < MIN_EXPRESSIVE_RELEASE_CASES:
+        failures.append(issue(
+            "release-expressive-behavioral-coverage-incomplete",
+            label,
+            (
+                "Representative behavioral coverage needs at least "
+                f"{MIN_EXPRESSIVE_RELEASE_CASES} distinct cases marked with "
+                "release_coverage.expressive_perception_gate; qualified: "
+                f"{len(expressive_cases)}."
+            ),
+        ))
+    if len(quiet_cases) < MIN_QUIET_RELEASE_CASES:
+        failures.append(issue(
+            "release-quiet-behavioral-coverage-incomplete",
+            label,
+            (
+                "Representative behavioral coverage needs at least "
+                f"{MIN_QUIET_RELEASE_CASES} distinct case marked with "
+                "release_coverage.quiet_perception_gate; qualified: "
+                f"{len(quiet_cases)}."
+            ),
+        ))
+    if len(route_family_cases) < MIN_ROUTE_FAMILY_RELEASE_CASES:
+        failures.append(issue(
+            "release-route-family-behavioral-coverage-incomplete",
+            label,
+            (
+                "Representative behavioral coverage needs at least "
+                f"{MIN_ROUTE_FAMILY_RELEASE_CASES} distinct case marked with "
+                "release_coverage.route_family_showcase_gate; qualified: "
+                f"{len(route_family_cases)}."
+            ),
+        ))
+    if len(cultural_context_cases) < MIN_CULTURAL_CONTEXT_RELEASE_CASES:
+        failures.append(issue(
+            "release-cultural-context-behavioral-coverage-incomplete",
+            label,
+            (
+                "Representative behavioral coverage needs at least "
+                f"{MIN_CULTURAL_CONTEXT_RELEASE_CASES} distinct case marked "
+                "with release_coverage.cultural_context_gate; qualified: "
+                f"{len(cultural_context_cases)}."
+            ),
+        ))
     details: dict[str, object] = {
         "minimum_cases": MIN_RELEASE_REPRESENTATIVE_CASES,
         "minimum_runs_per_variant": MIN_RELEASE_REPETITIONS_PER_VARIANT,
@@ -3916,6 +6744,11 @@ def release_behavioral_coverage_failures(
         "project_strata": sorted(project_strata),
         "adversarial_cases": sorted(adversarial_cases),
         "implicit_discovery_cases": sorted(implicit_cases),
+        "expressive_perception_cases": sorted(expressive_cases),
+        "quiet_perception_cases": sorted(quiet_cases),
+        "generated_media_capability_cases": sorted(generated_media_cases),
+        "route_family_showcase_cases": sorted(route_family_cases),
+        "cultural_context_cases": sorted(cultural_context_cases),
         "cases": case_matrix,
     }
     return failures, details
@@ -4200,14 +7033,7 @@ def representative_comparison_failures(
     return failures
 
 
-CROSS_CASE_DIMENSIONS = {
-    "route_silhouette",
-    "type_palette_relationships",
-    "label_cadence",
-    "card_grammar",
-    "motion_grammar",
-    "media_grammar",
-}
+REQUIRED_CROSS_CASE_DIMENSIONS = {"rendered_geometry"}
 
 
 def cross_case_analysis_failures(
@@ -4267,6 +7093,198 @@ def cross_case_analysis_failures(
                 ),
             ))
 
+    masked_comparison = analysis.get("masked_layout_comparison")
+    masked_risk_cluster_ids: set[str] = set()
+    if not isinstance(masked_comparison, dict):
+        failures.append(issue(
+            "release-cross-case-masked-comparison-missing",
+            label,
+            (
+                "Cross-case release review needs a hash-bound comparison "
+                "with copy, logos, and dominant media masked or replaced."
+            ),
+        ))
+    else:
+        method = masked_comparison.get("method")
+        masking = masked_comparison.get("masking")
+        allowed_treatments = {
+            "masked",
+            "replaced-with-neutral-placeholder",
+        }
+        if (
+            not isinstance(method, str)
+            or len(method.strip()) < 24
+            or not isinstance(masking, dict)
+            or set(masking) != {"copy", "logos", "dominant_media"}
+            or any(
+                masking.get(field) not in allowed_treatments
+                for field in ("copy", "logos", "dominant_media")
+            )
+            or masked_comparison.get("layout_geometry_preserved") is not True
+        ):
+            failures.append(issue(
+                "release-cross-case-masking-method-incomplete",
+                f"{label}#cross_case_analysis/masked_layout_comparison",
+                (
+                    "Record the comparison method, preserve layout geometry, "
+                    "and explicitly mask or neutrally replace copy, logos, "
+                    "and dominant media."
+                ),
+            ))
+        if masked_comparison.get("authorship_inference") != "not-performed":
+            failures.append(issue(
+                "release-cross-case-authorship-inference-prohibited",
+                f"{label}#cross_case_analysis/masked_layout_comparison",
+                (
+                    "The masked comparison may assess structural range only; "
+                    "it cannot infer human or AI authorship."
+                ),
+            ))
+        limitations = masked_comparison.get("limitations")
+        if (
+            not isinstance(limitations, list)
+            or not limitations
+            or any(
+                not isinstance(value, str) or len(value.strip()) < 12
+                for value in limitations
+            )
+        ):
+            failures.append(issue(
+                "release-cross-case-masked-limitations-missing",
+                f"{label}#cross_case_analysis/masked_layout_comparison",
+                (
+                    "State at least one substantive limitation of the masked "
+                    "layout comparison."
+                ),
+            ))
+        top_evidence = masked_comparison.get("evidence")
+        if not isinstance(top_evidence, list) or not top_evidence:
+            failures.append(issue(
+                "release-cross-case-masked-evidence-missing",
+                f"{label}#cross_case_analysis/masked_layout_comparison",
+                "The masked comparison needs hash-bound evidence.",
+            ))
+
+        coverage = masked_comparison.get("coverage")
+        coverage_records = [
+            record for record in coverage if isinstance(record, dict)
+        ] if isinstance(coverage, list) else []
+        masked_case_ids = [
+            str(record.get("case_id")) for record in coverage_records
+        ]
+        if (
+            len(masked_case_ids) != len(set(masked_case_ids))
+            or set(masked_case_ids) != expected_case_ids
+        ):
+            failures.append(issue(
+                "release-cross-case-masked-coverage-incomplete",
+                f"{label}#cross_case_analysis/masked_layout_comparison/coverage",
+                (
+                    "Masked comparison coverage must bind the exact full set "
+                    "of counted representative case/build families."
+                ),
+            ))
+        for index, record in enumerate(coverage_records):
+            coverage_label = (
+                f"{label}#cross_case_analysis/masked_layout_comparison/"
+                f"coverage/{index}"
+            )
+            case_id = str(record.get("case_id"))
+            expected = qualified_families.get(case_id)
+            source_hashes = record.get("source_render_sha256s")
+            masked_hashes = record.get("masked_render_sha256s")
+            references = record.get("evidence")
+            reference_hashes = {
+                str(reference.get("sha256"))
+                for reference in references
+                if isinstance(reference, dict)
+                and isinstance(reference.get("sha256"), str)
+            } if isinstance(references, list) else set()
+            if (
+                not isinstance(expected, dict)
+                or record.get("run_id") != expected.get("run_id")
+                or record.get("build_identity") != expected.get("build_identity")
+                or not isinstance(source_hashes, list)
+                or set(source_hashes) != set(expected.get("render_sha256s", []))
+                or len(source_hashes) != len(set(source_hashes))
+            ):
+                failures.append(issue(
+                    "release-cross-case-masked-build-binding-mismatch",
+                    coverage_label,
+                    (
+                        "Each masked comparison entry must bind the exact "
+                        "counted run, build, and source render hashes."
+                    ),
+                ))
+            if (
+                not isinstance(masked_hashes, list)
+                or not masked_hashes
+                or not isinstance(source_hashes, list)
+                or len(masked_hashes) != len(source_hashes)
+                or len(masked_hashes) != len(set(masked_hashes))
+                or bool(set(masked_hashes) & set(source_hashes))
+                or not set(masked_hashes) <= reference_hashes
+            ):
+                failures.append(issue(
+                    "release-cross-case-masked-render-evidence-incomplete",
+                    coverage_label,
+                    (
+                        "Provide one distinct, hash-bound masked render for "
+                        "every counted responsive source render."
+                    ),
+                ))
+
+        observations = masked_comparison.get("observations")
+        observation_records = [
+            record for record in observations if isinstance(record, dict)
+        ] if isinstance(observations, list) else []
+        observed_case_ids: set[str] = set()
+        observation_invalid = not observation_records
+        for record in observation_records:
+            observation_case_ids = record.get("case_ids")
+            selected = {
+                str(case_id) for case_id in observation_case_ids
+            } if isinstance(observation_case_ids, list) else set()
+            outcome = record.get("outcome")
+            assessment = record.get("assessment")
+            references = record.get("evidence")
+            cluster_id = record.get("cluster_id")
+            if (
+                len(selected) < 2
+                or not selected <= expected_case_ids
+                or outcome not in {
+                    "meaningful-structural-difference",
+                    "benign-overlap",
+                    "repeated-reskin-risk",
+                }
+                or not isinstance(assessment, str)
+                or len(assessment.strip()) < 24
+                or not isinstance(references, list)
+                or not references
+                or (
+                    outcome == "repeated-reskin-risk"
+                    and not isinstance(cluster_id, str)
+                )
+                or (
+                    outcome != "repeated-reskin-risk"
+                    and cluster_id is not None
+                )
+            ):
+                observation_invalid = True
+                continue
+            observed_case_ids.update(selected)
+            if outcome == "repeated-reskin-risk":
+                masked_risk_cluster_ids.add(cluster_id)
+        if observation_invalid or observed_case_ids != expected_case_ids:
+            failures.append(issue(
+                "release-cross-case-masked-observations-incomplete",
+                f"{label}#cross_case_analysis/masked_layout_comparison/observations",
+                (
+                    "Hash-bound masked observations must compare every counted "
+                    "case and record a structural outcome without an authorship claim."
+                ),
+            ))
+
     selected_metadata = [
         case_metadata.get(case_id)
         for case_id in set(case_ids)
@@ -4307,16 +7325,29 @@ def cross_case_analysis_failures(
         for record in dimensions
         if isinstance(record, dict)
     ] if isinstance(dimensions, list) else []
+    dimension_records = {
+        str(record.get("dimension")): record
+        for record in dimensions
+        if isinstance(record, dict)
+        and isinstance(record.get("dimension"), str)
+    } if isinstance(dimensions, list) else {}
     if (
         len(dimension_ids) != len(set(dimension_ids))
-        or set(dimension_ids) != CROSS_CASE_DIMENSIONS
+        or not REQUIRED_CROSS_CASE_DIMENSIONS <= set(dimension_ids)
+        or any(
+            dimension_records.get(dimension, {}).get("applicability")
+            != "applicable"
+            for dimension in REQUIRED_CROSS_CASE_DIMENSIONS
+        )
     ):
         failures.append(issue(
             "release-cross-case-dimensions-incomplete",
             label,
             (
-                "Cross-case analysis must assess route silhouette, type/palette "
-                "relationships, label cadence, cards, motion, and media exactly once."
+                "Cross-case analysis needs unique project-relevant lenses and "
+                "must include rendered_geometry. Record an inapplicable lens only "
+                "when its absence matters to the comparison; do not manufacture "
+                "a fixed aesthetic checklist."
             ),
         ))
     risk_dimensions = {
@@ -4334,6 +7365,29 @@ def cross_case_analysis_failures(
         for record in cluster_records
         for dimension in record.get("dimensions", [])
     }
+    cluster_ids = {
+        str(record.get("id"))
+        for record in cluster_records
+        if isinstance(record.get("id"), str)
+    }
+    if not cluster_dimensions <= set(dimension_ids):
+        failures.append(issue(
+            "release-cross-case-cluster-dimension-undeclared",
+            label,
+            (
+                "Every repeated-cluster dimension must be declared among the "
+                "project-relevant comparison lenses."
+            ),
+        ))
+    if not masked_risk_cluster_ids <= cluster_ids:
+        failures.append(issue(
+            "release-cross-case-masked-risk-untracked",
+            label,
+            (
+                "Every repeated reskin risk from the masked comparison needs "
+                "an explicit repeated-cluster record and disposition."
+            ),
+        ))
     if not risk_dimensions <= cluster_dimensions:
         failures.append(issue(
             "release-cross-case-risk-untracked",
@@ -4442,6 +7496,13 @@ def release_representative_review_failures(
     qualified_perception_paths: set[Path] = set()
     skill_benefit_cases: set[str] = set()
     adversarial_closed_cases: set[str] = set()
+    generated_media_review_cases: set[str] = set()
+    route_family_review_cases: set[str] = set()
+    cultural_context_review_cases: set[str] = set()
+    image_generation_available_claimed = any(
+        image_generation_disposition_status(review) == "available"
+        for _path, review in matched
+    )
     unqualified_families: dict[str, list[str]] = {}
     for (case_id, run_id, build_identity), family_reviews in families.items():
         if case_id not in behavioral_cases:
@@ -4502,9 +7563,84 @@ def release_representative_review_failures(
                 metadata,
                 str(perception_path.relative_to(plugin)),
             )
+            expressive_failures = expressive_perception_gate_failures(
+                perception_review,
+                {
+                    "release_coverage": {
+                        "expressive_perception_gate": metadata.get(
+                            "expressive_perception_gate"
+                        )
+                    }
+                },
+                str(perception_path.relative_to(plugin)),
+            )
+            quiet_failures = quiet_perception_gate_failures(
+                perception_review,
+                {
+                    "release_coverage": {
+                        "quiet_perception_gate": metadata.get(
+                            "quiet_perception_gate"
+                        )
+                    }
+                },
+                str(perception_path.relative_to(plugin)),
+            )
+            generated_media_failures = generated_media_capability_gate_failures(
+                perception_review,
+                {
+                    "release_coverage": {
+                        "generated_media_capability_gate": metadata.get(
+                            "generated_media_capability_gate"
+                        )
+                    }
+                },
+                str(perception_path.relative_to(plugin)),
+            )
+            route_family_failures = route_family_showcase_gate_failures(
+                perception_review,
+                {
+                    "release_coverage": {
+                        "route_family_showcase_gate": metadata.get(
+                            "route_family_showcase_gate"
+                        )
+                    }
+                },
+                str(perception_path.relative_to(plugin)),
+            )
+            cultural_context_failures = cultural_context_gate_failures(
+                perception_review,
+                {
+                    "release_coverage": {
+                        "cultural_context_gate": metadata.get(
+                            "cultural_context_gate"
+                        )
+                    }
+                },
+                str(perception_path.relative_to(plugin)),
+            )
             if comparison_failures:
                 family_reasons.update(
                     str(failure["code"]) for failure in comparison_failures
+                )
+            if expressive_failures:
+                family_reasons.update(
+                    str(failure["code"]) for failure in expressive_failures
+                )
+            if quiet_failures:
+                family_reasons.update(
+                    str(failure["code"]) for failure in quiet_failures
+                )
+            if generated_media_failures:
+                family_reasons.update(
+                    str(failure["code"]) for failure in generated_media_failures
+                )
+            if route_family_failures:
+                family_reasons.update(
+                    str(failure["code"]) for failure in route_family_failures
+                )
+            if cultural_context_failures:
+                family_reasons.update(
+                    str(failure["code"]) for failure in cultural_context_failures
                 )
             if not (
                 independent
@@ -4513,6 +7649,11 @@ def release_representative_review_failures(
                 and perception_passed
                 and perception_path in closure_qualified_paths
                 and not comparison_failures
+                and not expressive_failures
+                and not quiet_failures
+                and not generated_media_failures
+                and not route_family_failures
+                and not cultural_context_failures
             ):
                 continue
             for implementation_path, implementation_review in implementation:
@@ -4598,6 +7739,17 @@ def release_representative_review_failures(
             and selected_perception_path in closure_qualified_paths
         ):
             adversarial_closed_cases.add(case_id)
+        if (
+            metadata.get("generated_media_capability_gate") is True
+            and image_generation_disposition_status(
+                selected_perception_review
+            ) == "available"
+        ):
+            generated_media_review_cases.add(case_id)
+        if metadata.get("route_family_showcase_gate") is True:
+            route_family_review_cases.add(case_id)
+        if metadata.get("cultural_context_gate") is True:
+            cultural_context_review_cases.add(case_id)
 
     if len(qualified_families) < MIN_RELEASE_REPRESENTATIVE_CASES:
         failures.append(issue(
@@ -4629,6 +7781,80 @@ def release_representative_review_failures(
                 "At least one representative case must show a supported "
                 "skill-stronger result on project specificity or "
                 "distinctiveness without novelty tax."
+            ),
+        ))
+    expressive_review_cases = {
+        case_id
+        for case_id in qualified_families
+        if isinstance(case_metadata.get(case_id), dict)
+        and case_metadata[case_id].get("expressive_perception_gate") is True
+    }
+    quiet_review_cases = {
+        case_id
+        for case_id in qualified_families
+        if isinstance(case_metadata.get(case_id), dict)
+        and case_metadata[case_id].get("quiet_perception_gate") is True
+    }
+    if len(expressive_review_cases) < MIN_EXPRESSIVE_RELEASE_CASES:
+        failures.append(issue(
+            "release-expressive-rendered-coverage-incomplete",
+            label,
+            (
+                "Rendered release evidence needs at least "
+                f"{MIN_EXPRESSIVE_RELEASE_CASES} distinct marked Showcase or "
+                "expressive cases whose counted perception reviews meet both "
+                "absolute score floors; qualified: "
+                f"{len(expressive_review_cases)}."
+            ),
+        ))
+    if len(quiet_review_cases) < MIN_QUIET_RELEASE_CASES:
+        failures.append(issue(
+            "release-quiet-rendered-coverage-incomplete",
+            label,
+            (
+                "Rendered release evidence needs at least "
+                f"{MIN_QUIET_RELEASE_CASES} marked quiet-specific case whose "
+                "counted perception review meets the direction, project "
+                "specificity, and distinctiveness score floors without a "
+                "visual-volume requirement; qualified: "
+                f"{len(quiet_review_cases)}."
+            ),
+        ))
+    if (
+        image_generation_available_claimed
+        and len(generated_media_review_cases)
+        < MIN_GENERATED_MEDIA_RELEASE_CASES
+    ):
+        failures.append(issue(
+            "release-generated-media-capability-coverage-missing",
+            label,
+            (
+                "Image generation is declared available in this host's bound "
+                "review evidence, so release evidence needs at least "
+                f"{MIN_GENERATED_MEDIA_RELEASE_CASES} behaviorally qualified "
+                "case marked generated_media_capability_gate with real "
+                "generated artifacts and inspection evidence. An honest "
+                "unavailable disposition does not trigger this gate."
+            ),
+        ))
+    if len(route_family_review_cases) < MIN_ROUTE_FAMILY_RELEASE_CASES:
+        failures.append(issue(
+            "release-route-family-review-coverage-missing",
+            label,
+            (
+                "Rendered release evidence needs at least "
+                f"{MIN_ROUTE_FAMILY_RELEASE_CASES} behaviorally qualified "
+                "Range Study with passing route-family analysis."
+            ),
+        ))
+    if len(cultural_context_review_cases) < MIN_CULTURAL_CONTEXT_RELEASE_CASES:
+        failures.append(issue(
+            "release-cultural-context-review-coverage-missing",
+            label,
+            (
+                "Rendered release evidence needs at least "
+                f"{MIN_CULTURAL_CONTEXT_RELEASE_CASES} behaviorally qualified "
+                "culturally central case accepted by a non-producer authority."
             ),
         ))
 
@@ -4671,6 +7897,16 @@ def release_representative_review_failures(
         "unqualified_case_build_families": unqualified_families,
         "adversarial_closed_cases": sorted(adversarial_closed_cases),
         "skill_benefit_cases": sorted(skill_benefit_cases),
+        "expressive_perception_cases": sorted(expressive_review_cases),
+        "quiet_perception_cases": sorted(quiet_review_cases),
+        "image_generation_available_claimed": (
+            image_generation_available_claimed
+        ),
+        "generated_media_capability_cases": sorted(
+            generated_media_review_cases
+        ),
+        "route_family_showcase_cases": sorted(route_family_review_cases),
+        "cultural_context_cases": sorted(cultural_context_review_cases),
         "cross_case_analysis": {
             "qualified": cross_case_qualified,
             "path": cross_case_path,
@@ -4814,6 +8050,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     plugin_default = Path(__file__).resolve().parents[2]
     parser.add_argument("--plugin-root", type=Path, default=plugin_default)
+    parser.add_argument(
+        "--home",
+        type=Path,
+        default=Path.home(),
+        help="Home root used to rehydrate portable ~/ route evidence.",
+    )
+    parser.add_argument(
+        "--codex-validator",
+        type=Path,
+        help=(
+            "Absolute external Plugin Creator validate_plugin.py path used "
+            "to replay the recorded Codex static validation."
+        ),
+    )
     parser.add_argument("--online", action="store_true")
     parser.add_argument("--allow-overdue", action="store_true")
     parser.add_argument(
@@ -4829,7 +8079,7 @@ def main() -> int:
                 "code": "dependency-missing",
                 "path": str(Path(__file__).resolve()),
                 "message": (
-                    "Install maintainer/requirements-dev.txt. Missing: "
+                    "Install maintainer/requirements-dev.lock with --require-hashes. Missing: "
                     + "; ".join(BOOTSTRAP_FAILURES)
                 ),
             }],
@@ -4845,7 +8095,7 @@ def main() -> int:
             "failures": [issue(
                 "dependency-missing",
                 Path(__file__).resolve(),
-                f"Install maintainer/requirements-dev.txt: {exc}",
+                f"Install maintainer/requirements-dev.lock with --require-hashes: {exc}",
             )],
             "warnings": [],
             "details": {},
@@ -4853,12 +8103,22 @@ def main() -> int:
         return 2
     try:
         plugin = absolute(args.plugin_root)
+        if (
+            args.codex_validator is not None
+            and not args.codex_validator.is_absolute()
+        ):
+            raise ToolFailure(
+                "codex-plugin-validator-path-not-absolute",
+                "--codex-validator must be an absolute external path.",
+                args.codex_validator,
+            )
         skill = plugin / "skills" / "design-dna"
         maintainer = plugin / "maintainer"
         schemas = maintainer / "schemas"
         failures: list[dict[str, str]] = []
         warnings: list[dict[str, str]] = []
         details: dict[str, object] = {}
+        failures.extend(plugin_skill_surface_failures(plugin))
         failures.extend(runtime_cache_failures(skill, label_root=plugin))
         failures.extend(maintainer_cache_failures(plugin))
 
@@ -4870,10 +8130,78 @@ def main() -> int:
 
         release = load_json(skill / "release.json")
         manifest = load_json(plugin / ".codex-plugin" / "plugin.json")
+        claude_manifest = load_json(plugin / ".claude-plugin" / "plugin.json")
         failures += schema_validate(release, schemas / "release.schema.json", "skills/design-dna/release.json")
         failures += schema_validate(manifest, schemas / "plugin.schema.json", ".codex-plugin/plugin.json")
+        failures += schema_validate(
+            claude_manifest,
+            schemas / "claude-plugin.schema.json",
+            ".claude-plugin/plugin.json",
+        )
         if isinstance(release, dict) and isinstance(manifest, dict) and release.get("version") != manifest.get("version"):
             failures.append({"code": "version-mismatch", "path": ".codex-plugin/plugin.json", "message": f"{manifest.get('version')} != {release.get('version')}"})
+        if (
+            isinstance(release, dict)
+            and isinstance(claude_manifest, dict)
+            and release.get("version") != claude_manifest.get("version")
+        ):
+            failures.append({
+                "code": "version-mismatch",
+                "path": ".claude-plugin/plugin.json",
+                "message": (
+                    f"{claude_manifest.get('version')} != "
+                    f"{release.get('version')}"
+                ),
+            })
+
+        sbom_path = maintainer / "sbom.spdx.json"
+        try:
+            sbom_payload = load_json(sbom_path)
+            failures += schema_validate(
+                sbom_payload,
+                schemas / "sbom.schema.json",
+                "maintainer/sbom.spdx.json",
+            )
+            sbom_tool = import_local_script("build_sbom")
+            sbom_tool.validate_sbom(sbom_payload, plugin)
+            creation_info = (
+                sbom_payload.get("creationInfo")
+                if isinstance(sbom_payload, dict)
+                else None
+            )
+            created_at = (
+                creation_info.get("created")
+                if isinstance(creation_info, dict)
+                else None
+            )
+            if not isinstance(created_at, str):
+                raise ToolFailure(
+                    "sbom-created-at-invalid",
+                    "SBOM creationInfo.created is missing.",
+                    sbom_path,
+                )
+            if (
+                sbom_tool.generate_sbom(plugin, created_at=created_at)
+                != sbom_payload
+            ):
+                failures.append(issue(
+                    "sbom-drift",
+                    "maintainer/sbom.spdx.json",
+                    (
+                        "SBOM differs from the current runtime, manifests, "
+                        "license, or dependency locks."
+                    ),
+                ))
+            elif isinstance(sbom_payload, dict):
+                details["sbom_packages"] = len(
+                    sbom_payload.get("packages", [])
+                )
+        except (OSError, UnicodeError, ValueError, ToolFailure) as exc:
+            failures.append(issue(
+                "sbom-invalid",
+                "maintainer/sbom.spdx.json",
+                str(exc),
+            ))
 
         compatibility_path = maintainer / "compatibility" / "matrix.yml"
         compatibility: object = {}
@@ -4883,6 +8211,13 @@ def main() -> int:
                 compatibility,
                 schemas / "compatibility.schema.json",
                 "maintainer/compatibility/matrix.yml",
+            )
+            environment_claim_issues = compatibility_environment_failures(
+                compatibility,
+                plugin,
+            )
+            (failures if args.release else warnings).extend(
+                environment_claim_issues
             )
             if (
                 isinstance(compatibility, dict)
@@ -4921,54 +8256,10 @@ def main() -> int:
                 "path": "skills/design-dna/policy/owner-defaults.yml",
                 "message": "Evidence bases and runtime defaults require the owner policy.",
             })
-
-        type_watch_path = skill / "policy" / "type-convergence-watch.yml"
-        try:
-            type_watch = strict_yaml(type_watch_path)
-            failures += schema_validate(
-                type_watch,
-                schemas / "type-convergence-watch.schema.json",
-                "skills/design-dna/policy/type-convergence-watch.yml",
-            )
-            if isinstance(type_watch, dict):
-                reviewed = date.fromisoformat(str(type_watch.get("last_reviewed", "")))
-                due = date.fromisoformat(str(type_watch.get("review_due", "")))
-                if reviewed > date.today():
-                    failures.append({
-                        "code": "type-watch-future-review",
-                        "path": "skills/design-dna/policy/type-convergence-watch.yml",
-                        "message": str(reviewed),
-                    })
-                if reviewed > due:
-                    failures.append({
-                        "code": "type-watch-chronology",
-                        "path": "skills/design-dna/policy/type-convergence-watch.yml",
-                        "message": "last_reviewed follows review_due.",
-                    })
-                if due < date.today():
-                    target = failures if args.release else warnings
-                    target.append({
-                        "code": "type-watch-overdue",
-                        "path": "skills/design-dna/policy/type-convergence-watch.yml",
-                        "message": str(due),
-                    })
-                families = [
-                    str(item.get("family"))
-                    for item in type_watch.get("documented_first_or_default", [])
-                    if isinstance(item, dict)
-                ]
-                if len(families) != len(set(name.casefold() for name in families)):
-                    failures.append({
-                        "code": "duplicate-type-watch-family",
-                        "path": "skills/design-dna/policy/type-convergence-watch.yml",
-                        "message": "Documented default families must be case-insensitively unique.",
-                    })
-        except (OSError, UnicodeError, yaml.YAMLError, ValueError) as exc:
-            failures.append({
-                "code": "invalid-type-watch",
-                "path": "skills/design-dna/policy/type-convergence-watch.yml",
-                "message": str(exc),
-            })
+        failures.extend(owner_policy_example_failures(
+            skill / "templates" / "owner-policy.example.yml",
+            schemas / "owner-policy.schema.json",
+        ))
 
         try:
             skill_meta, _ = frontmatter(skill / "SKILL.md")
@@ -4976,9 +8267,32 @@ def main() -> int:
                 failures.append({"code": "invalid-skill-frontmatter", "path": "skills/design-dna/SKILL.md", "message": "Only name and description are allowed; name must be design-dna."})
         except (OSError, UnicodeError, yaml.YAMLError, ValueError) as exc:
             failures.append({"code": "invalid-skill-frontmatter", "path": "skills/design-dna/SKILL.md", "message": str(exc)})
+        failures.extend(runtime_reference_reachability_failures(
+            skill,
+            label_root=plugin,
+        ))
 
+        legacy_font_policy = skill / "policy" / "type-convergence-watch.yml"
+        if legacy_font_policy.exists():
+            failures.append({
+                "code": "legacy-font-selection-runtime",
+                "path": legacy_font_policy.relative_to(plugin).as_posix(),
+                "message": (
+                    "Named-family convergence policy is maintainer research, "
+                    "not an installed runtime constraint."
+                ),
+            })
+
+        legacy_font_runtime_tokens = (
+            "type-convergence-watch",
+            "--type-watch",
+            "type_watch",
+        )
         text_count = 0
-        for path in walk_files(plugin):
+        for path in walk_files(
+            plugin,
+            ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
+        ):
             if path.suffix.lower() not in {".md", ".json", ".yaml", ".yml", ".py", ".txt"}:
                 continue
             text_count += 1
@@ -4998,12 +8312,29 @@ def main() -> int:
             ):
                 failures.append({"code": "unsupported-authorship-promise", "path": path.relative_to(plugin).as_posix(), "message": "Do not promise undetectability or human authorship."})
             relative = path.relative_to(plugin)
+            if is_within(path, skill):
+                found_legacy_tokens = [
+                    token
+                    for token in legacy_font_runtime_tokens
+                    if token in text
+                ]
+                if found_legacy_tokens:
+                    failures.append({
+                        "code": "legacy-font-selection-runtime",
+                        "path": relative.as_posix(),
+                        "message": (
+                            "Installed runtime still contains removed named-family "
+                            "selection contract(s): "
+                            + ", ".join(found_legacy_tokens)
+                        ),
+                    })
             if "__DESIGN_DNA_VERSION__" in text:
                 if not (
                     path.suffix.lower() == ".py"
                     or (
                         is_within(path, skill / "templates")
-                        and path.suffix.lower() in {".md", ".yml", ".yaml"}
+                        and path.suffix.lower()
+                        in {".json", ".md", ".yml", ".yaml"}
                     )
                 ):
                     failures.append({
@@ -5046,7 +8377,9 @@ def main() -> int:
 
         evidence_failures, evidence_warnings, evidence_details = validate_evidence(
             plugin, schemas / "evidence-frontmatter.schema.json",
-            online=args.online, strict_due=not args.allow_overdue,
+            online=args.online,
+            strict_due=(args.release or not args.allow_overdue),
+            release_mode=args.release,
         )
         failures.extend(evidence_failures)
         warnings.extend(evidence_warnings)
@@ -5119,6 +8452,10 @@ def main() -> int:
             except ToolFailure as exc:
                 failures.append(exc.issue.as_dict())
         failures.extend(eval_replay_failures(eval_payloads))
+        eval_payload_by_path = {
+            absolute(path): payload
+            for path, payload in eval_payloads
+        }
         details["eval_results"] = result_count
 
         review_count = 0
@@ -5144,6 +8481,13 @@ def main() -> int:
                         release_mode=args.release,
                         verified_contexts_out=verified_contexts,
                     )
+                    failures += review_evaluation_binding_failures(
+                        review_payload,
+                        plugin,
+                        review_label,
+                        eval_payload_by_path,
+                        release_mode=args.release,
+                    )
                     review_render_contexts[review_path] = verified_contexts
                     review_payloads.append((review_path, review_payload))
             except ToolFailure as exc:
@@ -5151,7 +8495,12 @@ def main() -> int:
         details["design_reviews"] = review_count
 
         release_manifest = maintainer / "release-manifest.json"
-        current_identity = package_manifest(skill)
+        current_identity: dict[str, object] | None
+        try:
+            current_identity = package_manifest(skill)
+        except ToolFailure as exc:
+            failures.append(exc.issue.as_dict())
+            current_identity = None
         recorded_release_manifest: object = {}
         if release_manifest.is_file():
             assert_no_reparse_path(release_manifest, stop=plugin)
@@ -5167,24 +8516,53 @@ def main() -> int:
                 "maintainer/release-manifest.json",
             )
             if (
-                not isinstance(expected, dict)
-                or comparable(expected) != comparable(current_identity)
+                current_identity is not None
+                and (
+                    not isinstance(expected, dict)
+                    or comparable(expected) != comparable(current_identity)
+                )
             ):
                 failures.append(issue(
                     "release-manifest-drift",
                     "maintainer/release-manifest.json",
                     "Package inputs differ from the recorded checksummed release identity.",
                 ))
+            elif current_identity is None:
+                failures.append(issue(
+                    "release-manifest-identity-unavailable",
+                    "maintainer/release-manifest.json",
+                    (
+                        "The current package identity could not be generated; "
+                        "the recorded release manifest cannot be confirmed."
+                    ),
+                ))
         else:
             target = failures if args.release else warnings
             target.append({"code": "release-manifest-missing", "path": "maintainer/release-manifest.json", "message": "Generate the release manifest before release."})
+
+        ci_failures, ci_details = ci_contract_failures(
+            compatibility,
+            plugin,
+            schemas / "ci-run-import.schema.json",
+            schemas / "test-attestation.schema.json",
+            recorded_release_manifest,
+            release_mode=args.release,
+        )
+        failures.extend(ci_failures)
+        details["ci_release_contract"] = ci_details
 
         proof_target = failures if args.release else warnings
         attestation_root = maintainer / "attestations"
         test_attestation_path = attestation_root / "test-attestation.json"
         route_verification_path = attestation_root / "route-verification.json"
+        install_lifecycle_path = attestation_root / "install-lifecycle.json"
+        codex_plugin_validation_path = (
+            attestation_root / "codex-plugin-validation.json"
+        )
         assert_no_reparse_path(test_attestation_path, stop=plugin)
         assert_no_reparse_path(route_verification_path, stop=plugin)
+        assert_no_reparse_path(install_lifecycle_path, stop=plugin)
+        assert_no_reparse_path(codex_plugin_validation_path, stop=plugin)
         if test_attestation_path.is_file():
             try:
                 assert_no_reparse_path(test_attestation_path, stop=plugin)
@@ -5213,6 +8591,7 @@ def main() -> int:
                     schemas / "route-verification.schema.json",
                     recorded_release_manifest,
                     compatibility,
+                    home=absolute(args.home),
                 ))
             except ToolFailure as exc:
                 proof_target.append(exc.issue.as_dict())
@@ -5220,11 +8599,92 @@ def main() -> int:
             proof_target.append(issue(
                 "release-route-verification-missing",
                 "maintainer/attestations/route-verification.json",
-                "After syncing, run detect_routes.py with --output before generating the final release manifest.",
+                (
+                    "After syncing, run detect_routes.py with explicit --home "
+                    "and --output before generating the final release manifest."
+                ),
+            ))
+        if install_lifecycle_path.is_file():
+            try:
+                install_lifecycle = load_json(install_lifecycle_path)
+                proof_target.extend(install_lifecycle_attestation_failures(
+                    install_lifecycle,
+                    plugin,
+                    schemas
+                    / "install-lifecycle-attestation.schema.json",
+                    recorded_release_manifest,
+                    release,
+                ))
+            except ToolFailure as exc:
+                proof_target.append(exc.issue.as_dict())
+        else:
+            proof_target.append(issue(
+                "release-install-lifecycle-missing",
+                "maintainer/attestations/install-lifecycle.json",
+                (
+                    "After source freeze, run "
+                    "attest_install_lifecycle.py before generating the final "
+                    "release manifest."
+                ),
+            ))
+        if codex_plugin_validation_path.is_file():
+            try:
+                codex_plugin_validation = load_json(
+                    codex_plugin_validation_path
+                )
+                proof_target.extend(codex_plugin_attestation_failures(
+                    codex_plugin_validation,
+                    plugin,
+                    schemas
+                    / "codex-plugin-validation-attestation.schema.json",
+                    recorded_release_manifest,
+                    release,
+                    validator_path=(
+                        absolute(args.codex_validator)
+                        if args.codex_validator is not None
+                        else None
+                    ),
+                ))
+            except ToolFailure as exc:
+                proof_target.append(exc.issue.as_dict())
+        else:
+            proof_target.append(issue(
+                "release-codex-plugin-attestation-missing",
+                "maintainer/attestations/codex-plugin-validation.json",
+                (
+                    "After source freeze, run attest_codex_plugin.py with "
+                    "the external Plugin Creator validator before generating "
+                    "the final release manifest."
+                ),
+            ))
+        codex_host = (
+            compatibility.get("hosts", {}).get("codex", {})
+            if isinstance(compatibility, dict)
+            and isinstance(compatibility.get("hosts"), dict)
+            else {}
+        )
+        if (
+            args.release
+            and isinstance(codex_host, dict)
+            and codex_host.get("static_validation") == "passed"
+            and args.codex_validator is None
+        ):
+            failures.append(issue(
+                "release-codex-validator-live-path-required",
+                "maintainer/compatibility/matrix.yml:hosts.codex",
+                (
+                    "A Codex static-validation pass requires "
+                    "--codex-validator so strict audit can replay the exact "
+                    "external Plugin Creator validator."
+                ),
             ))
         details["release_proofs"] = {
             "test_attestation": test_attestation_path.is_file(),
             "route_verification": route_verification_path.is_file(),
+            "install_lifecycle": install_lifecycle_path.is_file(),
+            "codex_plugin_validation": (
+                codex_plugin_validation_path.is_file()
+            ),
         }
 
         if args.release:
@@ -5240,8 +8700,16 @@ def main() -> int:
                     "path": "maintainer/evals/reviews",
                     "message": "A release needs at least one rubric-backed rendered review.",
                 })
-            current_hash = current_identity["content_sha256"]
-            current_version = current_identity["version"]
+            current_hash = (
+                current_identity.get("content_sha256")
+                if isinstance(current_identity, dict)
+                else None
+            )
+            current_version = (
+                current_identity.get("version")
+                if isinstance(current_identity, dict)
+                else None
+            )
             current_evals: list[tuple[Path, dict[str, object]]] = []
             current_reviews: list[tuple[Path, dict[str, object]]] = []
             for result_path, payload in eval_payloads:
@@ -5376,6 +8844,12 @@ def main() -> int:
                     failures.extend(
                         release_host_completion_failures(host_name, host)
                     )
+                    failures.extend(
+                        release_host_discovery_failures(
+                            host_name,
+                            compatibility,
+                        )
+                    )
                     evidence_paths = host.get("evidence", [])
                     if not evidence_paths:
                         failures.append({
@@ -5389,6 +8863,25 @@ def main() -> int:
                         f"maintainer/compatibility/matrix.yml:{host_name}",
                     )
                     failures.extend(path_failures)
+                    if (
+                        host_name == "codex"
+                        and host.get("static_validation") == "passed"
+                        and (
+                            "maintainer/attestations/"
+                            "codex-plugin-validation.json"
+                        ) not in evidence_keys
+                    ):
+                        failures.append(issue(
+                            "release-codex-static-validation-unbound",
+                            (
+                                "maintainer/compatibility/matrix.yml:"
+                                "hosts.codex"
+                            ),
+                            (
+                                "Codex static validation must cite the "
+                                "current external Plugin Creator attestation."
+                            ),
+                        ))
 
                     host_result_paths = {
                         result_path.relative_to(plugin).as_posix().casefold()

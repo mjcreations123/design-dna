@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-036",
+  "retrieved": "2026-07-30",
+  "url": "https://www.w3.org/WAI/WCAG22/Understanding/consistent-navigation.html",
+  "locator": "In Brief; Success Criterion; Intent; Examples; Key Terms",
+  "content_kind": "maintainer_summary",
+  "summary": "WCAG 2.2 Understanding SC 3.2.3 explains that repeated navigation within a set of pages should keep the same relative order so people can predict where to find it. The guidance permits secondary navigation and page-specific structure; it does not require every page body or visual composition to be identical."
+}

@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-install-lifecycle-attestation",
+  "created_at": "2026-07-30T06:02:49Z",
+  "package": "design-dna",
+  "release_version": "3.5.0",
+  "inputs": {
+    "runtime_source": "skills/design-dna",
+    "runtime": {
+      "sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+      "entry_count": 105,
+      "file_count": 95,
+      "byte_count": 1429411
+    },
+    "files": {
+      "attestor": {
+        "path": "maintainer/scripts/attest_install_lifecycle.py",
+        "sha256": "648b77b522e1af7a50310edc33040c68ffff3d26c698a8a9bf4fbda36b2da531",
+        "bytes": 30036
+      },
+      "manager": {
+        "path": "maintainer/scripts/manage_install.py",
+        "sha256": "36bd72586b7bd85cc2121c2c74681d3ecf166a5ff18d1c39244fc6bc4daa677a",
+        "bytes": 100360
+      },
+      "cache_preflight": {
+        "path": "maintainer/scripts/cache_preflight.py",
+        "sha256": "03b06ff533928185b42e654f2a5830cb95c16683917cb9d3a3232ecb8b7d10e0",
+        "bytes": 8833
+      },
+      "common": {
+        "path": "maintainer/scripts/common.py",
+        "sha256": "5b73c5628c62a29f72f7dfebff0b42b872521663ecfe264f5bdc1fb6c3444d21",
+        "bytes": 14137
+      },
+      "operation_schema": {
+        "path": "maintainer/schemas/install-operation.schema.json",
+        "sha256": "175ae061111a828c86f8a7fe54ee6bdec88c602fb6bca412b49f45d233f28afc",
+        "bytes": 17900
+      },
+      "attestation_schema": {
+        "path": "maintainer/schemas/install-lifecycle-attestation.schema.json",
+        "sha256": "c992392ced6c0d5b17a11c28316c72eb1a531e8fcbcf01f5b761dbce7ad524de",
+        "bytes": 21447
+      },
+      "release_schema": {
+        "path": "maintainer/schemas/release.schema.json",
+        "sha256": "ccb152ea28eca60d018741da87460c170666889d056e03a913351251ad08183f",
+        "bytes": 571
+      }
+    }
+  },
+  "environment": {
+    "isolated_home": true,
+    "manager_invocation": "fresh-subprocess-per-stage",
+    "hosts": [
+      "codex",
+      "claude"
+    ],
+    "python": {
+      "implementation": "CPython",
+      "version": "3.14.5"
+    },
+    "platform": {
+      "system": "Windows",
+      "machine": "AMD64"
+    }
+  },
+  "prior_fixture": {
+    "derivation": "canonical-runtime-plus-test-marker",
+    "marker_file": ".lifecycle-attestation-prior",
+    "marker_sha256": "0bf56ee7835fe1ca0c92ee5be0c9dd0675f2141325558af25e330ca38075f0c8",
+    "identity": {
+      "sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+      "entry_count": 106,
+      "file_count": 96,
+      "byte_count": 1429467
+    },
+    "differs_from_runtime": true
+  },
+  "stages": [
+    {
+      "name": "install-prior",
+      "command": "install",
+      "source_role": "prior-fixture",
+      "source_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+      "operation_record_sha256": "f6415910e644ee76851a5bceb3975e61dc4db774f970cfe87e7552c4b4b6897a",
+      "semantic_record_sha256": "7b57e50ab660c9055ec4f1de6542f7ca72b74e976486c68376deb5b245c6fd81",
+      "operation_schema_valid": true,
+      "operation": {
+        "command": "install",
+        "ok": true,
+        "dry_run": false,
+        "host_count": 2,
+        "errors_count": 0,
+        "changes": [
+          {
+            "host": "codex",
+            "action": "installed",
+            "executed": true,
+            "installed_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "previous_sha256": null,
+            "backup_id_present": false,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          },
+          {
+            "host": "claude",
+            "action": "installed",
+            "executed": true,
+            "installed_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "previous_sha256": null,
+            "backup_id_present": false,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          }
+        ]
+      },
+      "post_state": [
+        {
+          "host": "codex",
+          "exists": true,
+          "sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+          "release_runtime_parity": false
+        },
+        {
+          "host": "claude",
+          "exists": true,
+          "sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+          "release_runtime_parity": false
+        }
+      ]
+    },
+    {
+      "name": "update-current",
+      "command": "update",
+      "source_role": "release-runtime",
+      "source_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+      "operation_record_sha256": "60635eef885597d3e6f740c1d33779d4150ce608ea58cd3c953a76359b0dc4c2",
+      "semantic_record_sha256": "82fd6cf4d57981067921efe80fa8366554e2e9ff4393fa7caca9ea864de354e0",
+      "operation_schema_valid": true,
+      "operation": {
+        "command": "update",
+        "ok": true,
+        "dry_run": false,
+        "host_count": 2,
+        "errors_count": 0,
+        "changes": [
+          {
+            "host": "codex",
+            "action": "updated",
+            "executed": true,
+            "installed_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "previous_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "backup_id_present": true,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          },
+          {
+            "host": "claude",
+            "action": "updated",
+            "executed": true,
+            "installed_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "previous_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "backup_id_present": true,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          }
+        ]
+      },
+      "post_state": [
+        {
+          "host": "codex",
+          "exists": true,
+          "sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+          "release_runtime_parity": true
+        },
+        {
+          "host": "claude",
+          "exists": true,
+          "sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+          "release_runtime_parity": true
+        }
+      ]
+    },
+    {
+      "name": "rollback-prior",
+      "command": "rollback",
+      "source_role": "release-runtime",
+      "source_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+      "operation_record_sha256": "6d2583c6e88eafdad5196844f2697da66006a6c3bd80648074b8890c9edd80c9",
+      "semantic_record_sha256": "eeaea9cefeb501c15f1d0a5b3c670b2df59884f6f8077f8ff41592873b484bd2",
+      "operation_schema_valid": true,
+      "operation": {
+        "command": "rollback",
+        "ok": true,
+        "dry_run": false,
+        "host_count": 2,
+        "errors_count": 0,
+        "changes": [
+          {
+            "host": "codex",
+            "action": "rolled-back",
+            "executed": true,
+            "installed_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "previous_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "backup_id_present": true,
+            "replacement_backup_created": true,
+            "canonical_parity": false
+          },
+          {
+            "host": "claude",
+            "action": "rolled-back",
+            "executed": true,
+            "installed_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "previous_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "backup_id_present": true,
+            "replacement_backup_created": true,
+            "canonical_parity": false
+          }
+        ]
+      },
+      "post_state": [
+        {
+          "host": "codex",
+          "exists": true,
+          "sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+          "release_runtime_parity": false
+        },
+        {
+          "host": "claude",
+          "exists": true,
+          "sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+          "release_runtime_parity": false
+        }
+      ]
+    },
+    {
+      "name": "uninstall-prior",
+      "command": "uninstall",
+      "source_role": "release-runtime",
+      "source_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+      "operation_record_sha256": "caa1056bb0ddc0bcb508dd4934cf3227a59d1279865eedca725a68c89ca293b5",
+      "semantic_record_sha256": "2215b885a86fe5cdef9fba9a761ca13a31ce0d39ac8e4c1d927648c51933113c",
+      "operation_schema_valid": true,
+      "operation": {
+        "command": "uninstall",
+        "ok": true,
+        "dry_run": false,
+        "host_count": 2,
+        "errors_count": 0,
+        "changes": [
+          {
+            "host": "codex",
+            "action": "uninstalled",
+            "executed": true,
+            "installed_sha256": null,
+            "previous_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "backup_id_present": true,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          },
+          {
+            "host": "claude",
+            "action": "uninstalled",
+            "executed": true,
+            "installed_sha256": null,
+            "previous_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "backup_id_present": true,
+            "replacement_backup_created": false,
+            "canonical_parity": null
+          }
+        ]
+      },
+      "post_state": [
+        {
+          "host": "codex",
+          "exists": false,
+          "sha256": null,
+          "release_runtime_parity": null
+        },
+        {
+          "host": "claude",
+          "exists": false,
+          "sha256": null,
+          "release_runtime_parity": null
+        }
+      ]
+    }
+  ],
+  "final_state": {
+    "routes_absent": true,
+    "backup_records_schema_valid": true,
+    "hosts": [
+      {
+        "host": "codex",
+        "route_exists": false,
+        "backup_record_count": 3,
+        "available_count": 2,
+        "restored_count": 1,
+        "failed_count": 0,
+        "transaction_rolled_back_count": 0,
+        "records": [
+          {
+            "reason": "rollback-replaced-current",
+            "status": "available",
+            "skill_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "payload_present": true
+          },
+          {
+            "reason": "uninstall",
+            "status": "available",
+            "skill_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "payload_present": true
+          },
+          {
+            "reason": "update",
+            "status": "restored",
+            "skill_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "payload_present": false
+          }
+        ]
+      },
+      {
+        "host": "claude",
+        "route_exists": false,
+        "backup_record_count": 3,
+        "available_count": 2,
+        "restored_count": 1,
+        "failed_count": 0,
+        "transaction_rolled_back_count": 0,
+        "records": [
+          {
+            "reason": "rollback-replaced-current",
+            "status": "available",
+            "skill_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
+            "payload_present": true
+          },
+          {
+            "reason": "uninstall",
+            "status": "available",
+            "skill_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "payload_present": true
+          },
+          {
+            "reason": "update",
+            "status": "restored",
+            "skill_sha256": "508b2169ec79e9a390206fcfaddfdff8c6fcee3a440e7e90f0ddcde6cd760472",
+            "payload_present": false
+          }
+        ]
+      }
+    ]
+  },
+  "outcome": {
+    "passed": true,
+    "operations_schema_valid": true,
+    "backup_records_schema_valid": true,
+    "runtime_identity_observed": true,
+    "fresh_lifecycle_replay_required_on_check": true
+  }
+}

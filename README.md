@@ -1,152 +1,287 @@
 # Design DNA
 
-Design DNA is a cross-host website-design skill for work that should feel
-specific, current, coherent, truthful, and fully implemented rather than
-templated or vibe-coded. It combines positive art direction, system craft,
-content truth, responsive and accessibility baselines, and rendered review. It
-does not claim to prove human authorship or guarantee that AI involvement is
-undetectable.
+> **Release status:** `4.0.0` is an unreleased candidate. Its workflow and
+> package changes are implemented, but formal host, comparative, independent
+> rendered-review, and strict release qualification remain pending.
 
-## One supported route per host
+Design DNA is a cross-host website-design skill for work that must feel
+specific, time-appropriate, coherent, truthful, and fully implemented. It keeps
+truth, rights, accessibility, working behavior, and explicit project authority
+strict while leaving typography, composition, media, color, ornament,
+interaction, and other aesthetic choices open. The skill helps an agent
+develop project-specific art direction, carry accepted decisions through
+responsive production code, and inspect the rendered result for generic
+defaulting, weak craft, unfinished behavior, accessibility failures, and
+release residue.
 
-This personal distribution uses one direct skill route in each host:
+Version 4.0 adds a Range Study contract for deliberately varied multi-route
+sites, explicit cultural-context boundaries for place and community
+publications, and a breaking creative-freedom reset. It keeps shared truth,
+navigation, access, and identity dependable while leaving route bodies free to
+find materially different answers. It removes the former font-convergence
+policy and fixed visual recipes; rendered comparison now examines normalized
+geometry, topology, media/control density, and computed typography rather than
+using font names, copy, palette, or image identity as aesthetic verdicts.
 
-| Host | Sole supported installed route |
+It is not a style pack. It does not impose a replacement house style, infer
+authorship from aesthetics, or promise that AI involvement is undetectable.
+
+## What it changes
+
+Design DNA adds a repeatable operating system for:
+
+- discovering the project's real content, constraints, audience, and task;
+- researching project, category, cultural, technical, and adjacent creative
+  evidence in the mix needed for the actual decision;
+- exploring enough materially different, directly reviewable answers to expose
+  consequential uncertainty without manufacturing candidates to satisfy a
+  quota;
+- selecting a direction with rationale, recorded constraints, observable
+  design decisions, and a reversible checkpoint when the risk warrants one;
+- translating requested visual and experiential qualities into
+  project-specific observations rather than a preset expression recipe;
+- carrying the chosen `creative_logic` through whatever combination of
+  typography, color, imagery, layout, motion, ornament, density, interaction,
+  convention, or restraint the work needs;
+- proving the riskiest or most consequential decisions before broad
+  propagation, using the route, fragment, flow, or comparison that best
+  answers the uncertainty;
+- authoring a route-family record for a Range Study, proving real direct-entry
+  routes, comparing meaningful route differences, and reviewing a matched
+  route atlas;
+- separating reusable foundations, route-owned compositions, and justified
+  one-offs so creative range does not become random inconsistency;
+- establishing cultural authority, terminology, representation, and human
+  acceptance boundaries for culturally central community work;
+- handling local business, commerce, software, editorial, portfolio, travel,
+  education, nonprofit, and marketplace contexts without collapsing them into
+  the same landing-page formula;
+- implementing real routes, states, forms, account flows, billing surfaces,
+  messaging, location behavior, and content structures when the project needs
+  them;
+- preserving claims, media provenance, rights, privacy, and factual boundaries;
+- reviewing source and rendered behavior at relevant viewports and input modes;
+- recording findings, fixes, evidence, limitations, and unperformed checks.
+
+The runtime remains compact. Detailed craft, workflow, vertical, state, and
+quality guidance is loaded only when the task needs it.
+
+## Choose assurance capabilities
+
+Design DNA scales its evidence and review to the work. Quick and Standard are
+proportional base presets. The project state stores a canonical cumulative
+capability set: Showcase, Range Study, and High-risk can apply together, and an
+asset-led record automatically adds its own gate without weakening another.
+Redundant lower presets are normalized away rather than retained as misleading
+extra assurances.
+
+| Capability preset | Use it for | Minimum assurance |
+| --- | --- | --- |
+| **Quick** | A bounded repair or low-risk change inside an established system. | Inspect context, preserve the system, implement changed states, and run affected checks. |
+| **Standard** | A new route, meaningful feature, or ordinary redesign. | Frame and direct the work, prove consequential decisions proportionately, implement, and complete rendered plus engineering review. |
+| **Showcase** | Expressive, premium, highly visible, owner-sensitive work, or a brief that rejects safe or generic output. | Research the real decision, compare enough directly reviewable answers to challenge the first default, select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
+| **Range Study** | A multi-route brief explicitly asks pages to demonstrate meaningful creative range. | Keep dependable truth, navigation, access, and operations; author the route-family record; prove routes selected by uncertainty; verify real paths; and review a matched route atlas. |
+| **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Prioritize task, state, content, specialist, and real-user evidence; visual ambition cannot waive a safety or production gate. |
+| **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Gate every listed asset on type-specific provenance, rights, privacy, factual status, approval, delivery, accessibility, and generated-media evidence. |
+
+**Showcase is the recommended capability preset for portfolio pieces, sample
+sites, client-facing demos, pitch concepts, and other work intended to
+demonstrate visual capability.** Use every applicable capability: Showcase work
+can also be High-risk.
+
+For substantial open or expressive work, exploration is not decoration around
+a first idea. Develop enough materially different evidence to expose the
+choice that matters; the appropriate number, fidelity, medium, and comparison
+shape depend on uncertainty, stakes, inherited authority, and the owner's
+decision needs. Candidates differ because they propose different answers to
+the brief, not because a fixed list of surface attributes changes. Record the
+selected `creative_logic` and consequential observable decisions, preserve a
+reversible checkpoint when useful, and deepen the proof that can prevent the
+most expensive propagation error.
+
+## Use it
+
+For a direct personal installation, start with a short request:
+
+| Host | Example |
 | --- | --- |
-| Codex | `C:\Users\motty\.agents\skills\design-dna` |
-| Claude Code | `C:\Users\motty\.claude\skills\design-dna` |
+| Codex | `$design-dna Build a time-appropriate website for this coffee shop using the supplied facts and assets.` |
+| Claude Code | `/design-dna Build a time-appropriate website for this coffee shop using the supplied facts and assets.` |
 
-The canonical source is `skills/design-dna` inside this package.
-`.codex-plugin/plugin.json` is package-development metadata; it is not an
-additional installed route. Do not install this package as a Codex plugin while
-the direct Codex route exists, because that can expose a duplicate skill.
+Design DNA selects the proportional assurance capabilities from the task. Say
+`Use Showcase` when the result is a portfolio piece, sample, pitch, demo, or
+another high-visibility expression of design capability. Say `Use Range Study`
+when a real multi-route site must demonstrate materially different page forms
+while retaining one usable family.
 
-After an update, start a new Codex task or Claude conversation so the host
-reloads skill discovery.
+Both host integrations are designed for relevant natural-language discovery,
+but actual automatic loading is host- and version-dependent and must be
+observed in that environment. Use explicit invocation when Design DNA is
+required or when selection itself is part of the test.
 
-## How to use it
+The Claude route and slash command in this package are for **Claude Code**.
+Installing the local skill does not add it to ordinary conversations on
+claude.ai or the Claude Desktop chat application.
 
-Use the host's exact skill invocation when you want to make it explicit:
+Give the agent the best available business facts, copy, images, brand material,
+constraints, stack, required routes, and examples with reasons. Missing proof,
+pricing, reviews, people, availability, policies, or integrations must remain
+omitted or honestly pending.
 
-| Host | Explicit request |
-| --- | --- |
-| Codex | `$design-dna Create a current, project-specific website from the supplied facts and assets. Implement the real interactions, then perform an adversarial rendered specificity review and revise every reproducible flaw.` |
-| Claude Code | `/design-dna Create a current, project-specific website from the supplied facts and assets. Implement the real interactions, then perform an adversarial rendered specificity review and revise every reproducible flaw.` |
+See [Quick start](docs/QUICK_START.md) for capability guidance, a paste-ready
+Showcase prompt, and the material checklist.
 
-Both hosts may also discover it automatically from an ordinary request such as:
+## Install one route per host
 
-- “Build a polished website for this local business from the supplied facts.”
-- “Redesign this dashboard without losing its working information density.”
-- “Review this page for generic pattern clusters, weak hierarchy, unfinished
-  behavior, accessibility problems, and production residue.”
+The canonical runtime is `skills/design-dna`. A personal installation should
+configure exactly one intended Design DNA discovery route in each host:
 
-Automatic discovery depends on the host and request. Use the explicit form when
-you need deterministic selection, and check the compatibility matrix before
-treating implicit discovery as verified.
+First create an isolated Python environment and install the exact locked
+maintainer dependencies. On Windows PowerShell:
 
-The skill is a set of instructions and references, not a button or separate
-website builder. The host still uses its available file, browser, rendering,
-image, and test capabilities to do the work.
-
-## Maintainer workflow
-
-Maintainer tools require Python 3.10 or newer. Development validation also
-requires the complete version-pinned direct and transitive dependency closure
-in `maintainer/requirements-dev.txt`. The package supplies deterministic
-`date`, `date-time`, and `uri` checks instead of silently relying on optional
-schema-library extras.
-
-From this package root:
-
-```powershell
-python -m pip install -r maintainer\requirements-dev.txt
-python -B -m unittest discover -s maintainer\tests -p "test_*.py" -v
-python -B maintainer\scripts\validate_evidence.py --plugin-root .
-python -B maintainer\scripts\check_links.py .
-python -B maintainer\scripts\audit_package.py --plugin-root .
-python -B maintainer\scripts\attest_tests.py `
-  --plugin-root . `
-  --output maintainer\attestations\test-attestation.json
+```text
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install --disable-pip-version-check --require-hashes -r maintainer\requirements-dev.lock
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py sync --host all
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor
 ```
 
-Compiled Python artifacts are intentionally omitted from content identities,
-but they are forbidden in `skills/design-dna`, `maintainer/scripts`, and
-`maintainer/tests`. Every executable maintainer entrypoint source-loads a
-standard-library-only residue preflight before local imports; `common.py` is a
-library-only module reached only after that gate. The preflight also refuses
-package or untrusted `PYTHONPATH` entries that can shadow standard-library or
-pinned release imports. Use `-B` as shown and keep
-`PYTHONDONTWRITEBYTECODE=1` in automated test/release environments. Remove any
-`__pycache__`, `.pyc`, or `.pyo` residue before development audit or release.
+On macOS or Linux:
 
-Synchronize the canonical runtime transactionally. The backup directories must
-already exist and remain outside discovery roots:
-
-```powershell
-python -B maintainer\scripts\sync_skill.py `
-  --source skills\design-dna `
-  --target C:\Users\motty\.agents\skills\design-dna `
-  --discovery-root C:\Users\motty\.agents\skills `
-  --backup-root C:\Users\motty\.agents\skill-backups `
-  --replace
-
-python -B maintainer\scripts\sync_skill.py `
-  --source skills\design-dna `
-  --target C:\Users\motty\.claude\skills\design-dna `
-  --discovery-root C:\Users\motty\.claude\skills `
-  --backup-root C:\Users\motty\.claude\skill-backups `
-  --replace
+```text
+python3 -m venv .venv
+.venv/bin/python -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
+.venv/bin/python -B maintainer/scripts/manage_install.py doctor
+.venv/bin/python -B maintainer/scripts/manage_install.py sync --host all
+.venv/bin/python -B maintainer/scripts/manage_install.py doctor
 ```
 
-Then check the complete intended route set. Include every active host discovery
-root that could contain another copy:
+`sync` installs a missing direct route, updates a stale one with a recoverable
+backup, and leaves a current route unchanged. It handles mixed Codex/Claude
+states transactionally. The doctor reports missing, current, stale, external,
+or colliding filesystem discovery candidates; packaged plugins remain managed
+by their host. A candidate is not proof of plugin activation or current-session
+visibility.
 
-```powershell
-python -B maintainer\scripts\detect_routes.py `
-  --canonical skills\design-dna `
-  --root C:\Users\motty\.agents\skills `
-  --root C:\Users\motty\.codex\skills `
-  --root C:\Users\motty\.codex\plugins\cache `
-  --root C:\Users\motty\.claude\skills `
-  --expected C:\Users\motty\.agents\skills\design-dna `
-  --expected C:\Users\motty\.claude\skills\design-dna `
-  --output maintainer\attestations\route-verification.json
+The default direct routes preserve the short commands shown above:
+
+- Codex: `~/.agents/skills/design-dna`
+- Claude Code: `~/.claude/skills/design-dna`
+
+When `CLAUDE_CONFIG_DIR` is set, the installer resolves Claude Code's direct
+route and plugin-cache scan beneath that directory independently of `--home`.
+Codex routes and recoverable backup storage remain under the selected home.
+
+Do not activate a direct skill and packaged plugin for the same host at the same
+time. The package includes both `.codex-plugin/plugin.json` and
+`.claude-plugin/plugin.json` for portable distribution, but those manifests are
+source artifacts until the corresponding plugin is deliberately installed.
+
+See [Installation and distribution](docs/INSTALLATION.md) for update, rollback,
+removal, and plugin details. Use [Troubleshooting](docs/TROUBLESHOOTING.md) for
+diagnosis and [Project-state migration](docs/MIGRATION.md) when an existing
+project record needs a schema upgrade.
+
+## Package layout
+
+```text
+design-dna/
+  .claude-plugin/plugin.json
+  .codex-plugin/plugin.json
+  skills/design-dna/
+    SKILL.md
+    policy/
+    references/
+    templates/
+    scripts/
+  maintainer/
+    attestations/
+    compatibility/
+    evals/
+    evidence/
+    schemas/
+    scripts/
+    tests/
+  docs/
 ```
 
-Run the development audit during editing. The test attestation binds the exact
-test, tooling, schema, pinned dependency closure, command, and output state. The route record
-binds the complete discovery roots, intended routes, canonical hash, and
-installed hashes. Update the compatibility matrix from those records, then
-generate the release manifest only after the runtime, package metadata,
-maintainer tooling, schemas, tests, fixtures, evidence, evaluation artifacts,
-installed mirrors, compatibility records, and documentation are frozen.
+`SKILL.md` is the runtime router and precedence contract. References provide
+progressive disclosure. Templates carry project-local state. Runtime scripts
+initialize that state and perform bounded source analysis. Maintainer tooling
+validates the package, evidence, evaluations, installations, and release
+identity.
 
-After that source freeze, use this exact order:
+## Validate a development checkout
 
-```powershell
-python -B maintainer\scripts\attest_tests.py `
-  --plugin-root . `
-  --output maintainer\attestations\test-attestation.json
+Maintainer tools require Python 3.10 or newer and the exact pinned dependency
+closure. Reuse the isolated environment created above; in the commands below,
+`<PYTHON>` means `.venv\Scripts\python.exe` on Windows or
+`.venv/bin/python` on macOS and Linux:
 
-# Synchronize both installed mirrors and create route-verification.json using
-# the commands above, then update the compatibility matrix from those records.
-
-python -B maintainer\scripts\build_manifest.py `
-  --skill-root skills\design-dna `
-  --output maintainer\release-manifest.json
-
-python -B maintainer\scripts\build_manifest.py `
-  --skill-root skills\design-dna `
-  --output maintainer\release-manifest.json `
-  --check
-
-python -B maintainer\scripts\audit_package.py --plugin-root .
-python -B maintainer\scripts\audit_package.py --plugin-root . --release
+```text
+npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
+npm --prefix maintainer exec -- playwright install chromium
+<PYTHON> -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
+<PYTHON> -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json
+<PYTHON> -B maintainer/scripts/validate_evidence.py --plugin-root .
+<PYTHON> -B maintainer/scripts/check_links.py .
+<PYTHON> -B maintainer/scripts/audit_package.py --plugin-root . --codex-validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>"
 ```
 
-Do not regenerate an attestation or manifest after another source edit and call
-it current; restart the ordered freeze sequence. `audit_package.py --release`
-rechecks the machine records against current files and live routes. It is
-intentionally stricter: missing controlled host behavior, retained rendered
-evidence, or independent review attribution must remain a release failure
-rather than being converted into a claim.
+The Codex validator must match the deliberately reviewed byte pin in
+`maintainer/trust/codex-plugin-validator.json`. Do not copy a mismatching hash
+into that file without reviewing the new validator source; the pin is publisher
+evidence, not an OpenAI signature. The attestor uses Python isolation and
+private input snapshots and does not retain validator output content.
+
+Rendered browser review additionally needs Node.js 20 or newer, Playwright,
+and a compatible browser. The commands above install the exact JavaScript
+dependency closure and
+Playwright Chromium. On Windows PowerShell, use `npm.cmd` in place of `npm` if
+script execution policy blocks `npm.ps1`. A trusted compatible system browser
+may be selected instead. The runtime reports that check as unavailable when
+those tools are absent; source cleanliness is never promoted into visual proof.
+
+Use `-B` as shown. Compiled Python artifacts are excluded from identity hashes
+and forbidden in executable runtime and maintainer trees.
+The attested suite has a fixed one-hour safety ceiling because it exercises
+real browser and interrupted-filesystem lifecycle cases; a timeout remains an
+unavailable result, never a pass.
+
+## Proof and release boundary
+
+Design DNA separates:
+
+1. static package validity;
+2. host discovery and behavioral execution;
+3. exact artifact and rendered-browser evidence;
+4. independent perception, implementation, accessibility, and target-user
+   review;
+5. repeated skill-versus-baseline comparison.
+
+A diagnostic build is useful feedback, not release proof. The strict release
+audit fails closed when controlled host evidence, responsive rendered evidence,
+review attribution, test integrity, route parity, or current compatibility
+records are missing. It does not turn unavailable evidence into a marketing
+claim.
+
+See [Evaluation guide](docs/EVALUATION.md),
+[cross-build rendered comparison](docs/RENDER_COMPARISON.md),
+[Release procedure](docs/RELEASE.md), and
+[Commercial readiness](docs/COMMERCIAL_READINESS.md).
+
+## Product policies
+
+- [Security](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Data handling and privacy](DATA_HANDLING.md)
+- [Owner-policy onboarding](docs/OWNER_POLICY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+- [Proprietary rights notice](LICENSE)
+- [Changelog](CHANGELOG.md)
+
+Price, legal terms, support commitments, and customer satisfaction are business
+questions. This repository can establish a high-integrity product and evidence
+process; it cannot guarantee a sale price or universal taste.

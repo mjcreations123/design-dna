@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/evaluation-evidence-bundle.schema.json",
+  "title": "Design DNA repeated-evaluation evidence bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "created_at",
+    "owner",
+    "scope_note",
+    "result_files"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {"const": "design-dna-repeated-evaluation-evidence"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "owner": {"type": "string", "minLength": 2, "maxLength": 256},
+    "scope_note": {"type": "string", "minLength": 24, "maxLength": 4000},
+    "result_files": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^maintainer/evals/results/[A-Za-z0-9._/-]+\\.json$",
+            "not": {
+              "pattern": "(?:^[/\\\\]|^[A-Za-z]:|\\\\|//|(?:^|/)\\.{1,2}(?:/|$)|[\\u0000-\\u001f\\u007f])"
+            }
+          },
+          "sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

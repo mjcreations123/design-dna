@@ -9,6 +9,8 @@ Use the shared Design DNA workflow without duplicating rules in plugin metadata.
 - For a no-browser task, perform source and reasoning checks and label rendered QA as not performed.
 - Keep mutable direction, evidence, and review records project-local and owner-approved.
 - Pair Design DNA with specialist skills when deep accessibility, performance, security, SEO, or deployment work is requested.
-- Start a new Codex task after a maintainer updates the installed mirror or plugin so discovery reloads the skill.
+- Codex normally detects edits to an existing installed skill automatically. If
+  the updated behavior does not appear, start a new task or restart Codex
+  before diagnosing the installation as stale.
 
 Installation, packaging, cachebusting, and synchronization are maintainer operations outside the runtime skill.

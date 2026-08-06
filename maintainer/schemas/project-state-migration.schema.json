@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/project-state-migration.schema.json",
+  "title": "Design DNA project-state migration report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "migrated_at",
+    "legacy_files",
+    "record_updates"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {"const": "design-dna-project-state-migration"},
+    "migrated_at": {"type": "string", "format": "date-time"},
+    "legacy_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "bytes", "disposition"],
+        "properties": {
+          "path": {
+            "enum": ["state.yml", "continuity-note.yml", "ledger-entry.yml"]
+          },
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "disposition": {"const": "preserved-unmapped"}
+        }
+      }
+    },
+    "record_updates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["exploration", "direction", "direction-proof", "visual-review", "claims", "user-validation", "handoff"]
+      }
+    },
+    "completion_downgrades": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "record",
+          "source_created_with",
+          "source_body_sha256",
+          "prior_binding_id",
+          "prior_binding_path",
+          "prior_binding_sha256",
+          "prior_completion_owner",
+          "prior_completed_at",
+          "prior_limitations",
+          "reasons"
+        ],
+        "properties": {
+          "path": {
+            "enum": [
+              "exploration.md",
+              "direction.md",
+              "direction-proof.md",
+              "visual-review.md",
+              "claims.md",
+              "user-validation.md",
+              "handoff.md"
+            ]
+          },
+          "record": {
+            "enum": [
+              "exploration",
+              "direction",
+              "direction-proof",
+              "visual-review",
+              "claims",
+              "user-validation",
+              "handoff"
+            ]
+          },
+          "source_created_with": {
+            "anyOf": [
+              {"const": "not-recorded"},
+              {
+                "type": "string",
+                "pattern": "^design-dna (0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+              }
+            ]
+          },
+          "source_body_sha256": {"$ref": "#/$defs/sha256"},
+          "prior_binding_id": {"type": "string", "minLength": 1},
+          "prior_binding_path": {"type": "string", "minLength": 1},
+          "prior_binding_sha256": {
+            "anyOf": [
+              {"const": "not-recorded"},
+              {"$ref": "#/$defs/sha256"}
+            ]
+          },
+          "prior_completion_owner": {"type": "string", "minLength": 1},
+          "prior_completed_at": {"type": "string", "minLength": 1},
+          "prior_limitations": {"type": "string", "minLength": 1},
+          "reasons": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "asset_manifest_migrations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "source_schema_version",
+          "target_schema_version",
+          "source_manifest_sha256",
+          "migrated_manifest_sha256",
+          "unresolved_asset_ids"
+        ],
+        "properties": {
+          "path": {"const": "assets.yml"},
+          "source_schema_version": {"const": 1},
+          "target_schema_version": {"const": 2},
+          "source_manifest_sha256": {"$ref": "#/$defs/sha256"},
+          "migrated_manifest_sha256": {"$ref": "#/$defs/sha256"},
+          "unresolved_asset_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^ASSET-[0-9]{3,}$"}
+          }
+        }
+      }
+    },
+    "assurance_transitions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_schema_version",
+          "target_schema_version",
+          "source_state_sha256",
+          "migrated_state_sha256",
+          "source_profile_field",
+          "source_profile_values",
+          "target_assurance_profiles",
+          "required_records",
+          "reason"
+        ],
+        "properties": {
+          "source_schema_version": {"type": "integer", "minimum": 0},
+          "target_schema_version": {"const": 2},
+          "source_state_sha256": {"$ref": "#/$defs/sha256"},
+          "migrated_state_sha256": {"$ref": "#/$defs/sha256"},
+          "source_profile_field": {
+            "enum": ["assurance_profile", "assurance_profiles", "missing"]
+          },
+          "source_profile_values": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string"}
+          },
+          "target_assurance_profiles": {
+            "description": "Canonical cumulative capability set in runtime order.",
+            "oneOf": [
+              {"const": ["quick"]},
+              {"const": ["standard"]},
+              {"const": ["showcase"]},
+              {"const": ["high-risk"]},
+              {"const": ["asset-led"]},
+              {"const": ["standard", "asset-led"]},
+              {"const": ["showcase", "range-study"]},
+              {"const": ["showcase", "high-risk"]},
+              {"const": ["showcase", "asset-led"]},
+              {"const": ["high-risk", "asset-led"]},
+              {"const": ["showcase", "range-study", "high-risk"]},
+              {"const": ["showcase", "range-study", "asset-led"]},
+              {"const": ["showcase", "high-risk", "asset-led"]},
+              {"const": ["showcase", "range-study", "high-risk", "asset-led"]}
+            ]
+          },
+          "required_records": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["exploration", "direction", "direction-proof", "route-family", "visual-review", "claims", "assets", "user-validation", "handoff"]
+            }
+          },
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "visual_review_migrations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "source_contract",
+          "source_schema_version",
+          "source_created_with",
+          "source_body_sha256",
+          "migrated_body_sha256",
+          "source_table",
+          "source_table_sha256",
+          "migrated_table",
+          "migrated_table_sha256"
+        ],
+        "properties": {
+          "path": {"const": "visual-review.md"},
+          "source_contract": {
+            "enum": [
+              "legacy-schema-1-six-column",
+              "design-dna-2.2-eight-column"
+            ]
+          },
+          "source_schema_version": {"const": 1},
+          "source_created_with": {
+            "type": "string",
+            "pattern": "^design-dna (0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+          },
+          "source_body_sha256": {"$ref": "#/$defs/sha256"},
+          "migrated_body_sha256": {"$ref": "#/$defs/sha256"},
+          "source_table": {"type": "string", "minLength": 1},
+          "source_table_sha256": {"$ref": "#/$defs/sha256"},
+          "migrated_table": {"type": "string", "minLength": 1},
+          "migrated_table_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

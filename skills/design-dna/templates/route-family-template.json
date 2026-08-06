@@ -1,0 +1,97 @@
+{
+  "schema_version": 2,
+  "created_with": "__DESIGN_DNA_VERSION__",
+  "classification": "internal",
+  "study": {
+    "id": "replace-with-route-family-id",
+    "title": "Replace with the range-study title",
+    "requested_route_count": 2
+  },
+  "shared_contract": {
+    "identity": "Record the shared recognition and scope, if any, plus what is intentionally allowed to vary.",
+    "navigation": "Keep destination labels, relative order, current-page state, landmarks, and keyboard behavior consistent.",
+    "truth": "Replace with the claim, source, date, uncertainty, disclosure, and correction contract.",
+    "accessibility": "Replace with the semantic, focus, contrast, reflow, input, and assistive-technology contract.",
+    "voice": "Replace with shared terminology, cultural authority, and route-level language boundaries.",
+    "performance": "Replace with budgets, measurement context, fallbacks, and ownership."
+  },
+  "routes": [
+    {
+      "id": "route-a",
+      "path": "/",
+      "title": "Replace with the route title",
+      "user_job": "Replace with the job this route performs for a visitor.",
+      "creative_logic": "Describe this route in its own terms. A singular, plural, conventional, restrained, maximal, ornamental, or experimental logic may be valid.",
+      "observable_decisions": [
+        {
+          "decision": "Replace with a consequential rendered decision rather than a required design category.",
+          "reason": "Explain why it suits this route, content, audience, and constraints.",
+          "evidence": "Replace with a source, proof artifact, rendered observation, or explicit provisional limit.",
+          "status": "provisional"
+        }
+      ],
+      "responsive_result": "Describe the route result at project-derived widths and inputs; do not assume a generic desktop-to-stack transformation. Replace every unresolved capture width below before implementation or review.",
+      "reduced_motion_result": "Describe the complete reduced or no-motion result when motion exists; otherwise state that no motion dependency exists.",
+      "no_javascript_result": "Describe the complete source-visible result and any honestly unavailable enhancement.",
+      "closest_sibling": "route-b",
+      "deliberate_differences": [],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "replace-with-project-viewport-a", "width": null},
+          {"id": "replace-with-project-viewport-b", "width": null}
+        ]
+      },
+      "review_status": "planned"
+    },
+    {
+      "id": "route-b",
+      "path": "/route-b/",
+      "title": "Replace with the second route title",
+      "user_job": "Replace with the distinct job this route performs.",
+      "creative_logic": {
+        "logic_statement": "Describe the route without filling a standard list of typography, color, media, interaction, or energy fields.",
+        "project_specific_evidence": [
+          "Replace this key and value with whatever structure helps this project explain the decision."
+        ]
+      },
+      "observable_decisions": [
+        {
+          "decision": "Replace with the decision that most distinguishes the rendered body from route-a.",
+          "reason": "Explain why the difference belongs to the route job.",
+          "evidence": "Replace with proof or mark the decision provisional.",
+          "status": "provisional"
+        }
+      ],
+      "responsive_result": "Describe the actual responsive behavior relevant to this route and replace every unresolved capture width below with a project-derived value.",
+      "reduced_motion_result": "Describe the reduced-motion result or the absence of a motion dependency.",
+      "no_javascript_result": "Describe the complete no-JavaScript path.",
+      "closest_sibling": "route-a",
+      "deliberate_differences": [
+        "Record one observable body-level difference from route-a and the project reason for it."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {"id": "replace-with-project-viewport-a", "width": null},
+          {"id": "replace-with-project-viewport-b", "width": null}
+        ]
+      },
+      "review_status": "planned"
+    }
+  ],
+  "review": {
+    "direct_entry": "pending",
+    "link_integrity": "pending",
+    "route_count": "pending",
+    "body_comparison": "pending",
+    "atlas_artifact": "pending",
+    "cultural_acceptance": {
+      "required": false,
+      "status": "not-required",
+      "reviewer_id": null,
+      "relationship": "not-reviewed",
+      "independent_of_producer": false,
+      "reviewed_at": null,
+      "notes": "This neutral template defaults to not-required. Set required to true when actual cultural or community context triggers review; only an eligible independent authority can accept a required review."
+    }
+  }
+}

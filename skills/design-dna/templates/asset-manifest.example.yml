@@ -1,0 +1,92 @@
+# Copy one asset entry at a time, replace every instructional value, and keep
+# pending decisions pending. This example is deliberately blocked from public
+# release until provenance, privacy, rights, factual status, and approval are
+# resolved.
+schema_version: 2
+created_with: "__DESIGN_DNA_VERSION__"
+classification: "internal"
+assets:
+  - id: "ASSET-001"
+    asset_type: "image"
+    usage_locations:
+      - "replace-with-route-or-component"
+    content_job: "Replace with the asset's functional, documentary, editorial, aesthetic, atmospheric, ornamental, or compositional role."
+    publication_status: "planned-public"
+    source_url: ""
+    source_path: ""
+    source_sha256: ""
+    creator: "Replace with the accountable creator or source."
+    origin: "other"
+    obtained_date: "1970-01-01"
+    license_or_terms: ""
+    attribution_required: false
+    attribution_text: ""
+    modification_limits: ""
+    modifications: "None recorded yet."
+    factual_status: "placeholder"
+    depicts_or_claim: "Placeholder only; replace with the exact depiction or claim."
+    privacy_review: "pending"
+    privacy_review_owner: ""
+    privacy_review_date: ""
+    privacy_review_reason: ""
+    owner_approval: "pending"
+    owner_approval_owner: ""
+    owner_approval_date: ""
+    owner_approval_reason: ""
+    concept_disclosure:
+      decision: "pending"
+      reason: ""
+      text: ""
+    migration_review:
+      required: false
+      source_schema_version: "2"
+      reason: ""
+      unresolved_fields: []
+    generated:
+      used: false
+      authorization_basis: ""
+      tool_or_model: ""
+      prompt_or_digest: ""
+      generated_at: ""
+      source_inputs: []
+      rejected_outputs: []
+      contact_sheet_path: ""
+      contact_sheet_sha256: ""
+      artifact_inspection: ""
+      responsive_crop_evidence: []
+    generated_media_provenance:
+      applicability: "pending"
+      jurisdiction: ""
+      roles: []
+      transformation_chain: []
+      credential_detected: "pending"
+      credential_validated: "pending"
+      credential_preserved: "pending"
+      visible_disclosure_basis: ""
+      visible_disclosure_text: ""
+      legal_review_status: "pending"
+      legal_review_owner: ""
+      legal_review_date: ""
+      legal_review_reason: ""
+    # Optional. Omit this mapping when content_job and delivery already carry
+    # the useful decisions. When it is useful, replace both the key and value;
+    # there is no required subject, crop, palette, lighting, perspective, set,
+    # or other aesthetic field.
+    art_direction:
+      replace_with_project_specific_concern: "Replace with the decision, evidence, adaptation, or limit that matters to this exact asset."
+    delivery:
+      source_dimensions: "Replace with verified intrinsic dimensions."
+      output_dimensions:
+        - "Replace with one intended output size."
+      formats:
+        - "Replace with one intended format."
+      responsive_behavior: "Replace with crop, fit, and fallback behavior."
+      intrinsic_dimensions_reserved: false
+    accessibility:
+      treatment: "pending"
+      alt_text: ""
+      caption_or_transcript: ""
+    replacement:
+      status: "pending"
+      owner: ""
+      due_date: ""

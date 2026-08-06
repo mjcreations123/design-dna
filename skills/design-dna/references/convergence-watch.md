@@ -1,43 +1,111 @@
-# Dated convergence watch
+# Post-render convergence review
 
-Last reviewed: 2026-07-28  
-Review by: 2026-10-24
+Use this review only after a real first render exists. Do not read it to choose
+fonts, colors, layouts, components, effects, copy formulas, or a style before
+making that render. Its job is to diagnose an observed result, not to supply an
+inverse template for generation.
 
-Use this only when current generator defaults, “AI-looking” perception, or
-fashionable template clusters materially affect the task. These are expiring
-review candidates, not style bans or authorship evidence. Investigate the
-combination, project fit, and underlying cause; never fail a design for one
-ingredient.
+This portable reference intentionally contains no claim that a named motif,
+font, component, or effect is a current generator trend. It is a durable
+observation method, not an AI detector. It cannot establish authorship,
+prevalence, taste, or quality from a screenshot. The accountable owner's
+response, project evidence, real behavior, and rendered review outrank this
+vocabulary.
 
-| ID | Current candidate cluster | Positive action | Legitimate exception |
-| --- | --- | --- | --- |
-| `RISK-FWK-001` | An untouched starter or component-library preset carries its stock token values, radius scale, primitives, icons, spacing rhythm, and example composition into a public identity. Versioned signatures change; library presence alone is not a concern. | Inspect the actual preset and project configuration, then theme relationships and content structures that need a project voice. | Defaults can be an intentional internal or product standard, and continuity can matter more than expression. |
-| `RISK-VIS-001` | Glow, glass, gradient, grid, grain, dark-neon, scheduled full-ground scene changes, or other “modern” effects accumulate without a content, hierarchy, material, or interaction role. | Choose the smallest expressive vocabulary that makes the premise clearer; let content jobs, not a fixed act schedule, govern contrast and test access and runtime cost. | Any motif or deliberate sequence can be correct when project material and execution support it. |
-| `RISK-VIS-002` | Warm cream, display serif, muted green, generous whitespace, and an editorial media card appear together without a project source, as a fashionable substitute for older template defaults. | Derive palette, type, density, and media decisions independently from real material; keep the combination only when the relationship fits. | Existing identities, natural materials, or editorial content can justify the complete system. |
-| `RISK-SURFACE-001` | Large uniform radii, pills, borders, shadows, and cards place nearly every item inside a soft container, including containers inside containers. | Define surface and radius roles; use spacing, rules, type, or alignment when no real containment exists. | Pills suit compact semantic tokens and segmented controls; nested surfaces can represent real layered state. |
-| `RISK-LABEL-001` | Decorative eyebrow, pill, dot, mono label, “question,” “the part,” or “next step” marker repeats above most sections while adding no taxonomy, status, sequence, or orientation. | Keep labels that help people locate or compare information; compare label saturation across the route and let descriptive headings carry the rest. | Repeated labels are useful for real taxonomies, steps, statuses, and editorial systems. |
-| `RISK-EMPH-001` | A final word or one-to-two-word display fragment changes color, gradient, face, italic, underline, marker, or sticker merely to manufacture a focal point. | Strengthen the wording, whole-phrase hierarchy, grammatical line break, scale, or placement. | Preserve accessible approved brand lockups, links, statuses, warnings, data categories, quotations, editorial conventions, and product syntax. |
-| `RISK-TYPE-001` | A familiar starter face or neutral-sans-plus-display pairing is selected from a category adjective such as “industrial,” “premium,” or “technical”; every role then receives the same smooth hierarchy. | Compare credible candidates in real copy, test usage intensity, and define clear roles, hierarchy, coverage, license, fallback, and loading behavior. | Existing systems, system stacks, popular families, and sector-linked typography are often the best choice when real brand and reading conditions support them. |
-| `RISK-TYPE-002` | Missing weights, synthetic styles, incomplete glyphs, weak fallbacks, late swaps, clipped accents, or one fluid formula make type feel untested. | Verify files, rights, glyphs, metrics, loading, failure behavior, role-specific spacing, and rendered real copy. | Platform-managed and system fonts can reduce risk and cost. |
-| `RISK-ICON-001` | Emoji or the same decorative outline icons, tiles, sparkles, rockets, checks, locks, and status dots fill equal feature cards in place of evidence. | Use icons where recognition or scanning improves; define metaphor, family, optical size, labels, and alternatives. | Emoji belongs in genuine voice; common icons belong in familiar actions. |
-| `RISK-MOCKUP-001` | A CSS browser frame, fake dashboard, phone shell, or invented metric card substitutes for authentic product evidence. | Use a real approved screenshot, honest prototype label, diagram, or content-led explanation. | A clearly labeled concept mockup can communicate a proposed interaction. |
-| `RISK-DENSITY-001` | Centered sections, uniformly large gaps, tiny support text, and low information density repeat across the route regardless of task. | Tune density and alignment to content, device, audience, and reading rhythm; establish a real focal hierarchy. | Spacious centered composition can suit short, ceremonial, or singular content. |
-| `RISK-COPYFORM-001` | Vague superlatives, interchangeable CTAs, repeated question or myth-correction openings, polished “not X, Y” contrasts, aphoristic endings, uniform reassurance, and overexplaining say little about the actual product or next step. | Read headings, actions, labels, numbers, and ending lines as one rhetorical fingerprint; rewrite with concrete source language, constraints, inputs, outputs, and consequences. | Familiar formulas and repeated voice are valuable when supplied brand language or a real editorial system supports them. |
+## Neutral-alone rule
 
-## Cluster review
+Every aesthetic ingredient is neutral when considered alone, whether common,
+uncommon, fashionable, unfashionable, restrained, expressive, familiar, or
+experimental.
 
-1. Name the observed combination and the route or component where it appears.
-2. Identify whether it came from a starter, an established system, supplied
-   material, or an unexamined first pass.
-3. Test the design without its most fashionable effect.
-4. Revise the content, hierarchy, system relationship, or behavior causing the
-   sameness rather than rotating to another motif.
-5. Compare other routes. Compare unrelated recent projects only through
-   owner-authorized minimized pattern history; otherwise record that
-   cross-project repetition was not assessed.
-6. For an explicit AI-looking, vibe-coded, templated, generic, or house-style
+Do not flag, replace, or discourage a choice because it appears in a trend
+discussion, is popular, resembles an example, or can be generated easily.
+Popular choices can be exactly right. Rare choices can be arbitrary. One
+ingredient is not a convergence finding.
+
+## What this review may diagnose
+
+Only diagnose one or more of these observed aggregate failures:
+
+| Failure | Evidence required in the rendered work | Constructive response |
+| --- | --- | --- |
+| **Defaulting** | Several independent decisions carry a starter, generator, library demo, previous route, or the maker's unrelated-project grammar without a project reason. Surface substitution alone is not evidence. | Return to actual content, brand, task, audience, and medium. Re-decide the affected relationships; do not rotate to a fashionable opposite. |
+| **Irrelevance** | Multiple effects, labels, surfaces, motions, images, or copy gestures compete with the message or task, reveal no useful meaning, or remain after their reason disappears. | Keep anything that clarifies, delights, proves, or supports the intended experience. Revise or remove only what cannot explain its role in the rendered context. |
+| **Inconsistency** | Hierarchy, interaction language, visual language, terminology, density, asset quality, or state behavior conflicts across the same experience without a legible reason. | Reconcile the relationships that should agree and document intentional contrast. Do not force unrelated sections into one treatment merely to look systematic. |
+| **Unchecked behavior** | The delivered journey accumulates bugs, dead controls, missing states, misleading affordances, unreadable content, clipped or late content, broken mobile behavior, inaccessible interaction, placeholders, invented evidence, or first-pass residue. | Verify the real path and its states on rendered desktop and mobile work. Fix the underlying functional, truth, access, content, or implementation defect. |
+
+For an aesthetic convergence finding, record a related cluster that forms one
+of these aggregate failures. A single material accessibility, truth, or
+functional defect may still fail its durable release gate, but it is not
+thereby an aesthetic or authorship signal.
+
+## Required counterevidence
+
+Before keeping a finding, record credible project-serving explanations and
+counterexamples:
+
+- Does the choice come from an approved brand, platform, culture, genre,
+  editorial system, product convention, or supplied reference?
+- Does it make the task, evidence, hierarchy, interaction, or voice clearer?
+- Does the same device work elsewhere in the project because its role changes or
+  remains genuinely useful?
+- Is the apparent repetition actually required consistency for a shared product,
+  route family, taxonomy, workflow, or accessible convention?
+- Would removing it make the result less specific, less usable, or less true?
+
+If the counterevidence explains the choice and the execution holds up, close the
+finding. Do not penalize a design for resembling a trend.
+
+Current-source findings remain release-maintainer evidence rather than being
+copied into this portable method as evergreen style folklore. The method
+therefore depends on context, counterevidence, and the rendered whole rather
+than an ingredient list. An installed skill does not depend on, search for, or
+infer the contents of a maintainer checkout that may not exist on that host.
+
+## Post-render procedure
+
+1. Review the first render without consulting this file. Record the page's
+   actual job, strongest content, intended attention path, and any immediate
+   owner response.
+2. Exercise the real journey at relevant desktop and mobile widths. Include
+   keyboard, focus, reduced-motion, loading, empty, error, success, and failure
+   behavior when applicable.
+3. Name concrete observations before assigning a category. Include route,
+   state, viewport, and evidence such as a capture or reproduction step.
+4. Group related observations under defaulting, irrelevance, inconsistency, or
+   unchecked behavior. Do not create a finding from a named motif alone.
+5. Record counterevidence and legitimate explanations. Compare siblings or
+   owner-authorized unrelated projects only when that comparison is actually
+   available; otherwise say that cross-output convergence was not assessed.
+6. Revise the cause, render again, and verify the affected journey. Do not merely
+   exchange one recognizable style bundle for another.
+7. For an explicit AI-looking, vibe-coded, templated, generic, or house-style
    concern, complete the final
    [adversarial specificity review](quality/specificity-review.md).
 
-Recheck the maintainer evidence registry before changing this file. Preserve
-counterexamples and retire signals that no longer hold.
+## Use current observations without making them evergreen
+
+When current generator or community perception materially affects the task,
+first complete the unprimed render observation above.
+
+In an installed runtime, use only current evidence that is actually available
+within the task's authority and host capabilities, such as owner-supplied
+material or newly gathered, retrieval-dated research. Do not try to locate a
+repository-level `maintainer/` tree outside the installed skill and do not
+treat its absence as an error. Record disagreements,
+frame-versus-transcript-versus-shown-image distinctions, counterexamples, and
+transfer limits in the task evidence that is available.
+
+In an actual maintainer checkout, maintainers may additionally consult or
+refresh that checkout's evidence registry under its evidence policy. That is a
+release-research workflow, not a portable runtime dependency.
+
+Apply a supported observation only to an aggregate cluster in the reviewed
+candidate; never promote a named ingredient into initial art direction or a
+portable ban.
+
+If no current evidence is available, record `current convergence not assessed`
+and continue reviewing durable project fit, truth, accessibility,
+functionality, and implementation. Retire any current-facing candidate that
+becomes a proxy for a font, color, component, effect, genre, or authorship
+judgment.

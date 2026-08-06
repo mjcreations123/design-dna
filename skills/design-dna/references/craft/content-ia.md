@@ -2,6 +2,13 @@
 
 Use this when shaping navigation, page sequence, labels, calls to action, or user-facing language.
 
+## Contents
+
+- [Model the information need](#model-the-information-need)
+- [Write useful interface copy](#write-useful-interface-copy)
+- [Design the content system](#design-the-content-system)
+- [Review](#review)
+
 ## Model the information need
 
 1. Name what the user is trying to understand, decide, find, or complete.
@@ -22,27 +29,52 @@ proof-shaped authority.
 
 ## Write useful interface copy
 
-- Lead with concrete value, object, or action.
-- Name actions by their result: `Save address`, not `Continue`, when the result matters.
+- Make the offer, object, action, invitation, or narrative entry concrete at
+  the point where the audience needs it.
+- Name consequential actions by their result when that result matters.
 - Explain requirements before input and errors near the cause.
 - Make confirmation, recovery, cancellation, and destructive consequences explicit.
 - Keep terminology stable across navigation, headings, controls, and help.
 - Use plain language unless specialist vocabulary helps the intended audience.
-- Write headings that summarize the section rather than decorate it.
+- Let headings summarize, invite, orient, quote, provoke, decorate, or perform
+  another editorial role when that role is intentional and accessible.
 - Preserve useful copy texture from supplied voice and subject-matter language.
   Do not make every section open with a question, misconception, polished
   contrast, aphorism, or reassurance.
-- Use eyebrows and kickers for real taxonomy, status, sequence, or orientation;
-  let the heading lead when the label adds no information.
+- Use supporting labels when their informational, editorial, brand, or
+  compositional role works in the rendered context; do not add them by habit.
 
-Avoid interchangeable promises, abstract superlatives, repeated three-part cadence, vague calls to action, and overexplaining obvious controls.
+Review promises, superlatives, rhetorical patterns, actions, and explanations
+as a system. Preserve intentional supplied voice; revise unsupported claims,
+ambiguity, or repeated producer grammar rather than banning a sentence shape.
+
+### Establish voice, tone, and terminology
+
+- Record as much or as little voice guidance as the project needs. Derive it
+  from approved brand language, audience expectations, culture, genre, and the
+  relationship the work should create; express consequential decisions through
+  observable writing evidence rather than a fixed trait count.
+- Keep or vary voice and tone according to the approved identity and moment.
+  Orientation, action, waiting, risk, failure, recovery, and success may need
+  different qualities; do not assign a universal emotional register to them.
+- Record terminology decisions for concepts whose consistency, translation,
+  domain meaning, or audience wording matters. The format and number of terms
+  follow the corpus. Preserve intentional synonyms and register changes when
+  the audience genuinely distinguishes them.
+- Draft representative public, action, error, empty, recovery, and success
+  copy early enough to shape hierarchy and components. Use approved real
+  language where possible; when evidence is missing, use a clear neutral voice
+  and mark the direction provisional.
 
 ## Design the content system
 
 Define:
 
 - content type and required fields;
-- owner and approval source;
+- factual or subject-matter owner and truth-approval source;
+- editorial or voice owner and craft-approval source;
+- accessibility, legal, policy, localization, and accountable-owner reviewers
+  when applicable;
 - created, reviewed, and expiration dates;
 - locale and translation status;
 - allowed length and fallback behavior;
@@ -55,9 +87,13 @@ translation as a late text-replacement pass.
 
 ## Review
 
-Perform these passes:
+Select the passes that answer the work's actual content and release risks.
+Truth, task, and access are non-negotiable where their risks exist; an
+informational fragment, artwork, narrative, or bounded repair need not invent
+navigation levels, calls to action, states, or reviewers that do not apply.
 
-- **Outline:** Read only navigation, H1s, H2s, and calls to action. The journey should still make sense.
+- **Outline:** When those structures exist, read only navigation, headings,
+  and actions. The journey or reading logic should still make sense.
 - **Route silhouette:** Compare the ordered user questions, proof, interactions,
   and actions across routes; shared structure needs a shared task reason.
 - **Truth:** Trace every factual claim and item of proof to a source or explicit placeholder.
@@ -66,5 +102,11 @@ Perform these passes:
   move unchanged to an unrelated site without adding fake roughness or errors.
 - **Stress:** Test long, short, missing, translated, and user-generated content.
 - **Access:** Check descriptive link text, heading order, instructions, errors, and pronunciation-sensitive text.
+- **Production second eye:** When claim risk, release stakes, owner policy, or
+  cultural context warrants independent review, have someone other than the
+  primary writer or generator check visible copy in the rendered build for omissions,
+  contradictions, truncation, stale language, stray methodology text, and
+  broken links. Record who maintains time-sensitive content and its next review
+  trigger.
 
 Do not use SEO keywords to distort comprehension. Metadata and structured data must match visible, approved content.

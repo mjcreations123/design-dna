@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "allow": [
+    {
+      "rule": "REPLACE_WITH_RULE_FROM_SCANNER_OUTPUT",
+      "path": "REPLACE_WITH_EXACT_PROJECT_RELATIVE_PATH",
+      "fingerprint": "REPLACE_WITH_FINGERPRINT_FROM_SCANNER_OUTPUT",
+      "reason": "Replace with the project-specific reason this exact finding is accepted.",
+      "owner": "Replace with the accountable reviewer",
+      "expires": "REPLACE_WITH_DATE_WITHIN_90_DAYS"
+    }
+  ],
+  "acknowledge_skipped": [
+    {
+      "path": "REPLACE_WITH_EXACT_PROJECT_RELATIVE_PATH",
+      "sha256": "REPLACE_WITH_SHA256_FROM_SCANNER_OUTPUT",
+      "size_bytes": 0,
+      "reason": "Replace with the reason this exact skipped file was reviewed another way.",
+      "owner": "Replace with the accountable reviewer",
+      "expires": "REPLACE_WITH_DATE_WITHIN_90_DAYS"
+    }
+  ]
+}

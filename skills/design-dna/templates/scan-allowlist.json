@@ -1,21 +1,5 @@
 {
   "schema_version": 1,
-  "allow": [
-    {
-      "rule": "decorative-headline-span",
-      "path": "src/example.tsx",
-      "fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
-      "reason": "EXAMPLE ONLY - replace this object with scanner-emitted output for an actual reviewed finding.",
-      "owner": "EXAMPLE ONLY - replace via the scanner emitter",
-      "expires": "2026-09-30"
-    }
-  ],
-  "acknowledge_skipped": [
-    {
-      "path": "src/vendor-generated.css",
-      "reason": "EXAMPLE ONLY - replace with a reviewed acknowledgement for an actual skipped source.",
-      "owner": "EXAMPLE ONLY - replace with the reviewing owner",
-      "expires": "2026-09-30"
-    }
-  ]
+  "allow": [],
+  "acknowledge_skipped": []
 }

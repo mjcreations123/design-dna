@@ -1,69 +1,92 @@
 # Color and composition
 
-Use this when defining or materially changing the palette, visual hierarchy, or page composition.
+Use this when color or spatial composition materially affects meaning, identity,
+orientation, atmosphere, or action. It is an outcome guide, not a palette,
+token, contrast-distribution, or layout recipe.
 
-## Derive roles before values
+## Start from the creative logic
 
-Start with project evidence: existing brand color, product material, photography, environment, data semantics, or accessibility needs. Define roles such as:
+Classify the constraints before making aesthetic decisions:
 
-- canvas, surface, raised surface, border, and overlay;
-- primary text, secondary text, muted text, and inverse text;
-- action, focus, selection, link, and visited link;
-- success, warning, danger, information, and neutral status;
-- expressive accent and data-series colors.
+- **non-negotiable:** truthful states, required contrast, non-color cues,
+  legible controls, and any approved safety or accessibility requirement;
+- **inherited:** brand assets, environmental or product materials, established
+  data semantics, and other supplied context that the owner intends to keep;
+- **negotiated:** qualities or conventions that may be interpreted with the
+  owner or accountable reviewer;
+- **open:** palette, material field, compositional language, intensity,
+  asymmetry, ornament, and any other choice not constrained above.
 
-Do not create local colors for every component. Let components consume named roles. Do not use color alone to communicate status or action.
+Describe the relevant `creative_logic` in plain language: what the color and
+composition should communicate or enable, which evidence supports that
+direction, what decisions implement it, and where it must yield. A system may
+be monochrome or multicolor, sparse or layered, regular or irregular, quiet or
+exuberant, unified or intentionally plural. None of those ingredients proves
+quality by itself.
 
-## Build tonal hierarchy
+## Give color accountable meaning
 
-- Separate surfaces only when the distinction carries hierarchy or state.
-- Make primary content legible before adding accent.
-- Reserve the strongest contrast for the most important information or action.
-- Test foregrounds over every surface and image on which they appear.
-- Verify hover, active, disabled, selected, focus, error, and visited states.
-- In dark themes, design elevation and contrast deliberately; do not merely invert values.
+Define stable semantic roles for any color that communicates action, status,
+selection, hierarchy, or data. The exact role structure should fit the product;
+it need not copy a universal token inventory. Keep components from inventing
+conflicting meanings for the same state, and provide a non-color cue whenever
+color carries essential information.
 
-A monochrome, restrained, saturated, or multicolor palette can all be correct. Judge the system, not the ingredient.
+Expressive color may be atmospheric, decorative, symbolic, narrative, or
+ceremonial without pretending to be semantic. It can be abundant or rare. The
+review question is whether its use supports the declared creative logic and
+the rendered whole, not whether it is reserved for a prescribed number of
+accents or placed only on a primary action.
 
-When perceptual color spaces or wide-gamut color materially improve the system,
-define an sRGB fallback first, place the enhanced value behind support and gamut
-conditions, and verify the rendered result on both ordinary and wide-gamut
-displays. OKLCH and Display-P3 are implementation tools, not marks of quality;
-check clipping, interpolation, contrast, screenshots, and forced colors.
+Verify required foreground/background combinations and interactive states in
+the real rendered context, including text over media, overlays, focus, hover,
+active, selected, disabled, visited, loading, error, and forced-color behavior
+when applicable. Dark, light, mixed, adaptive, and wide-gamut systems are all
+valid when their fallbacks and actual states work.
 
-## Compose from the task
+Perceptual color spaces and wide-gamut values are implementation tools, not
+marks of sophistication. When used, supply a sound fallback, guard enhanced
+values by capability and gamut, and inspect clipping, interpolation, contrast,
+screenshots, and ordinary displays as well as capable ones.
 
-1. Establish the primary scan path.
-2. Place the most consequential information where the user encounters the decision.
-3. Group by meaning before styling containers.
-4. Use alignment to show relationships; break alignment only to create a meaningful focal event.
-5. Balance visual mass, not just bounding boxes.
-6. Check the composition with real copy, realistic imagery, and actual controls.
+## Compose relationships rather than a silhouette
 
-Optical alignment may require small corrections for curved letters, icons, image subjects, or asymmetric shapes. Record intentional exceptions as tokens or component rules instead of scattering magic numbers.
+Map the relationships the experience must communicate: sequence, proximity,
+comparison, interruption, hierarchy, simultaneity, uncertainty, action, or
+another project-specific relationship. Choose a composition that makes those
+relationships work. It may use alignment, collision, overlap, repetition,
+centering, fragmentation, dense fields, large voids, conventional flow, or a
+combination when those choices are intentional and usable.
 
-## Avoid mechanical composition
+Do not require a universal scan path, focal point, balance model, container
+width set, section rhythm, or contrast allocation. An experience may invite
+exploration, sustain multiple points of attention, or unfold gradually. For a
+task-led interface, the next consequential state or action still needs to be
+findable. For an editorial or expressive experience, the entry condition and
+reading logic need to be learnable on their own terms.
 
-Review for:
+Optical corrections are legitimate. Encode recurring behavior when that makes
+maintenance safer, and document meaningful one-offs rather than erasing them
+to satisfy a token system.
 
-- identical card grids repeated across unrelated sections;
-- every block centered or every section using the same padding;
-- boxes nested inside boxes without an information relationship;
-- decorative stripes, glows, or surface changes repeated as filler;
-- contrast that creates noise instead of hierarchy;
-- a palette copied from the framework or reference without project rationale.
+## Review the rendered system
 
-These are diagnostic prompts, not bans. A repeated grid or centered layout is valid when content structure and task support it.
+Review without first naming familiar style ingredients. Ask:
 
-## Verify
+- What relationships, mood, identity, and action does the rendered composition
+  actually communicate?
+- Can essential content, state, and controls be perceived under supported
+  contrast, zoom, color-vision, forced-color, theme, and media conditions?
+- Do repeated treatments represent a real system, and do deliberate departures
+  have a defensible project role?
+- Does the work still make sense with realistic copy, data, media, missing
+  assets, and interaction states?
+- Is an observed problem caused by the ingredient itself, or by its placement,
+  frequency, combination, execution, or mismatch with the creative logic?
 
-Test the palette and composition in:
-
-- the most common route and the densest route;
-- narrow, intermediate, and wide widths;
-- light/dark themes when supplied;
-- forced-colors or high-contrast conditions when applicable;
-- grayscale or a color-vision simulation as supporting evidence;
-- focus, error, selection, disabled, and loading states.
-
-Record actual contrast measurements for required text and UI boundaries. Do not substitute a palette screenshot for rendered-state checks.
+A repeated grid, centered passage, glow, gradient, stripe, neutral palette, or
+high-saturation field can all succeed. Record a finding only when the rendered
+relationship fails, the rationale is unsupported, or a hard requirement is
+violated. Verify on the routes, states, widths, themes, and assistive settings
+where the relevant risk can actually occur; do not impose a fixed screenshot
+or route quota.

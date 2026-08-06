@@ -1,0 +1,32 @@
+schema_version: 2
+owner: "REPLACE_WITH_ACCOUNTABLE_OWNER"
+scope: "REPLACE_WITH_APPROVED_SCOPE"
+status: "draft"
+
+defaults:
+  time_register: "require-review"
+  visible_ambition: "require-review"
+  public_orientation: "require-review"
+  sensory_media_strategy: "require-review"
+  generated_concept_media: "ask"
+  typography_comfort: "require-review"
+  public_copy_boundary: "require"
+  owner_rejection_revalidation: "require"
+  content_hierarchy: "require-review"
+  semantic_implementation: "require"
+  motion_and_interaction: "require-review"
+  release_residue: "prohibit"
+  truth_and_claims: "prohibit"
+  working_controls: "prohibit"
+  cross_project_comparison: "opt-in"
+  cultural_context: "require-review"
+
+interpretation:
+  - "Replace the owner and scope, review every concern, add or remove project-specific concerns, then change status to active."
+  - "A disposition applies to the undesirable finding represented by its concern ID. truth_and_claims: prohibit means prohibit unsupported, fabricated, or misleading claim findings, while working_controls: prohibit means prohibit broken or misleading affordance findings."
+  - "These are scoped owner preferences and quality boundaries, not aesthetic doctrine or reliable detectors of AI authorship."
+  - "Do not add font, palette, component, layout, motion, ornament, or other ingredient allowlists or denylists. Record the project outcome or concern instead."
+  - "Higher-priority safety, accessibility, factual, legal, brand, cultural, and explicit project requirements win."
+  - "Aesthetic ingredients remain open unless approved project authority closes them; judge the rendered combination and its project fit."
+  - "Owner defaults annotate scanner findings; they never suppress them."
+  - "Exact owner-reviewed, fingerprint-bound, scoped, expiring allowlist records—not policy taste fields—handle exceptional source findings."

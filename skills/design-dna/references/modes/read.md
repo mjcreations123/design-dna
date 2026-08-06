@@ -1,49 +1,68 @@
 # Read mode
 
-Use when the primary task is to comprehend, reference, compare, cite, or navigate information. Typical surfaces include documentation, reports, policies, knowledge bases, long-form editorial, and text-led product information.
+Use when the primary task is to comprehend, reference, compare, cite, or
+navigate information. Typical surfaces include documentation, reports,
+policies, knowledge bases, long-form editorial, and text-led product material.
 
-## Quality target
-
-Make complex information calm, navigable, readable, and trustworthy. A restrained surface can be complete and distinctive without spectacle.
+Mode describes the reading job, not an aesthetic. A reading surface may be
+restrained, exuberant, dense, spacious, image-led, typographic, decorative,
+experimental, or conventional when it remains appropriate to the corpus and
+audience.
 
 ## Structure comprehension
 
-1. Identify audience knowledge, reading goal, likely entry point, and reading length.
-2. Create a meaningful outline and stable terminology.
-3. Provide navigation, anchors, search, definitions, citations, and related paths appropriate to the corpus.
-4. Separate summary, explanation, evidence, procedure, and reference.
-5. Make provenance, ownership, date, version, and update status visible when they affect trust.
+- Identify audience knowledge, purpose, entry points, reading patterns, and
+  content length.
+- Create a meaningful outline and stable terminology.
+- Provide navigation, search, definitions, citations, related paths, or other
+  orientation only where the corpus warrants them.
+- Distinguish summary, explanation, evidence, procedure, reference, warning,
+  status, and version when those roles exist.
+- Make provenance, ownership, date, update state, and uncertainty visible when
+  they affect trust.
 
-Do not decorate thin or poorly structured content instead of fixing it.
+Do not use visual polish to conceal thin, unstructured, stale, or unauthorized
+content.
 
-## Build a reading system
+## Build the project's reading system
 
-- Use a comfortable measure and line height for sustained reading.
-- Make heading levels visually and semantically distinct.
-- Keep code, formulas, tables, notes, quotes, captions, and metadata recognizable.
-- Let figures and examples appear near the passage they support.
-- Use side navigation, on-page contents, breadcrumbs, and previous/next links only when the information architecture warrants them.
-- Preserve copy, selection, find, deep links, print, and citation behavior.
+- Use actual copy to establish type, measure, leading, hierarchy, rhythm,
+  density, and responsive behavior.
+- Make semantic heading levels and content roles perceivable without requiring
+  one visual treatment.
+- Give code, formulas, tables, notes, quotations, captions, metadata, figures,
+  and examples the relationships their content needs.
+- Preserve selection, find, copy, deep links, print, citation, and assistive
+  technology behavior where applicable.
+- Record the selected `creative_logic` and observable design decisions rather
+  than imposing calmness, minimalism, or a default editorial style.
+
+Reading comfort and accessibility are outcomes to verify with the real corpus;
+they are not a font family, spacing formula, palette, or degree of visual
+restraint.
 
 ## Handle difficult content
 
-- Give wide tables an intentional reading and small-screen strategy.
-- Provide accessible names, summaries, legends, and data alternatives for complex graphics.
-- Define wrapping, scrolling, and copying behavior for code.
-- Distinguish warnings, prerequisites, results, and destructive instructions.
-- Preserve footnote and citation relationships.
-- Mark deprecated, disputed, draft, machine-translated, or stale content honestly.
+- Give wide tables, code, graphics, and long unbroken content an intentional
+  reading, copying, and small-container strategy.
+- Provide accessible names, summaries, legends, and data alternatives where
+  needed.
+- Preserve relationships among warnings, prerequisites, results, footnotes,
+  citations, and source material.
+- Mark deprecated, disputed, draft, machine-translated, generated, or stale
+  content honestly.
+- Test representative content extremes and required scripts rather than ideal
+  samples only.
 
-## Common risks to review
+## Review
 
-- tiny low-contrast type used to signal refinement;
-- excessive whitespace that separates related ideas;
-- repeated decorative eyebrows or monospaced labels;
-- generic imagery used as filler;
-- effects that interrupt selection or reading;
-- hidden overflow or collapsed content that impairs finding;
-- a beautiful article with no provenance, date, or navigation.
+Inspect whether hierarchy, typography, imagery, ornament, interaction, and
+effects support or intentionally shape the declared reading experience. A
+strong aesthetic is not interference by default, and restraint is not quality
+by default. Revise the rendered relationship when readers cannot comprehend,
+navigate, select, cite, or trust the content as intended.
 
-## Verify
-
-Test outline, reading order, deep links, search, keyboard navigation, zoom, text spacing, print, copy/paste, code and table overflow, long and translated content, RTL, figures and captions, link purpose, citations, and stale/deprecated states.
+Test relevant outline and reading order, links, search, keyboard, focus, zoom,
+text spacing, print, copy/paste, overflow, content variation, translation,
+RTL, figures, captions, link purpose, citations, and stale or superseded
+states.

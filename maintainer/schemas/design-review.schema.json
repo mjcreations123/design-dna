@@ -28,18 +28,28 @@
       "maximum": 3
     },
     "score": {
-      "oneOf": [
-        {"$ref": "#/$defs/numeric_score"},
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["value", "rationale"],
-          "properties": {
-            "value": {"const": "not-applicable"},
-            "rationale": {"type": "string", "minLength": 8}
-          }
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "rationale", "evidence"],
+      "properties": {
+        "value": {
+          "oneOf": [
+            {"$ref": "#/$defs/numeric_score"},
+            {"const": "not-applicable"}
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
         }
-      ]
+      }
     },
     "dimension": {
       "enum": [
@@ -70,6 +80,191 @@
         "path": {"$ref": "#/$defs/portable_path"},
         "sha256": {"$ref": "#/$defs/sha256"}
       }
+    },
+    "image_generation_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "rationale",
+        "availability_evidence",
+        "generated_artifacts",
+        "inspection_evidence"
+      ],
+      "properties": {
+        "status": {"enum": ["available", "unavailable"]},
+        "rationale": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2000
+        },
+        "availability_evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        },
+        "generated_artifacts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        },
+        "inspection_evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "available"}}
+          },
+          "then": {
+            "properties": {
+              "generated_artifacts": {"minItems": 1},
+              "inspection_evidence": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "unavailable"}}
+          },
+          "then": {
+            "properties": {
+              "generated_artifacts": {"maxItems": 0},
+              "inspection_evidence": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    },
+    "capability_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image_generation"],
+      "properties": {
+        "image_generation": {
+          "$ref": "#/$defs/image_generation_disposition"
+        }
+      }
+    },
+    "owner_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "claim_scope",
+        "reviewer_relationship",
+        "decision_owner_id",
+        "candidate_id",
+        "reviewed_at",
+        "rationale",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["accepted", "rejected", "pending", "not-required"]
+        },
+        "claim_scope": {
+          "enum": [
+            "standard",
+            "premium-showcase-sale-readiness",
+            "accountable-owner-sensitive"
+          ]
+        },
+        "reviewer_relationship": {
+          "enum": [
+            "accountable-owner",
+            "owner-authorized-human",
+            "not-reviewed"
+          ]
+        },
+        "decision_owner_id": {"$ref": "#/$defs/identity"},
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "reviewed_at": {
+          "oneOf": [
+            {"type": "string", "format": "date-time"},
+            {"type": "null"}
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {
+              "status": {"enum": ["accepted", "rejected"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "reviewer_relationship": {
+                "enum": [
+                  "accountable-owner",
+                  "owner-authorized-human"
+                ]
+              },
+              "reviewed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "evidence": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "pending"}}
+          },
+          "then": {
+            "properties": {
+              "reviewer_relationship": {"const": "not-reviewed"},
+              "reviewed_at": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "not-required"}}
+          },
+          "then": {
+            "properties": {
+              "claim_scope": {"const": "standard"},
+              "reviewer_relationship": {
+                "enum": [
+                  "accountable-owner",
+                  "owner-authorized-human"
+                ]
+              },
+              "reviewed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "evidence": {"minItems": 1}
+            }
+          }
+        }
+      ]
     },
     "finding_id": {
       "type": "string",
@@ -421,6 +616,167 @@
         }
       }
     },
+    "masked_layout_comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "masking",
+        "layout_geometry_preserved",
+        "coverage",
+        "observations",
+        "limitations",
+        "authorship_inference",
+        "evidence"
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 2000
+        },
+        "masking": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["copy", "logos", "dominant_media"],
+          "properties": {
+            "copy": {
+              "enum": ["masked", "replaced-with-neutral-placeholder"]
+            },
+            "logos": {
+              "enum": ["masked", "replaced-with-neutral-placeholder"]
+            },
+            "dominant_media": {
+              "enum": ["masked", "replaced-with-neutral-placeholder"]
+            }
+          }
+        },
+        "layout_geometry_preserved": {"const": true},
+        "coverage": {
+          "type": "array",
+          "minItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "case_id",
+              "run_id",
+              "build_identity",
+              "source_render_sha256s",
+              "masked_render_sha256s",
+              "evidence"
+            ],
+            "properties": {
+              "case_id": {"type": "string", "minLength": 1},
+              "run_id": {"type": "string", "minLength": 1},
+              "build_identity": {"type": "string", "minLength": 1},
+              "source_render_sha256s": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/sha256"}
+              },
+              "masked_render_sha256s": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/sha256"}
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "observations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "case_ids",
+              "outcome",
+              "assessment",
+              "cluster_id",
+              "evidence"
+            ],
+            "properties": {
+              "case_ids": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1}
+              },
+              "outcome": {
+                "enum": [
+                  "meaningful-structural-difference",
+                  "benign-overlap",
+                  "repeated-reskin-risk"
+                ]
+              },
+              "assessment": {
+                "type": "string",
+                "minLength": 24,
+                "maxLength": 2000
+              },
+              "cluster_id": {
+                "oneOf": [
+                  {"$ref": "#/$defs/finding_id"},
+                  {"type": "null"}
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "required": ["outcome"],
+                  "properties": {
+                    "outcome": {"const": "repeated-reskin-risk"}
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "cluster_id": {"$ref": "#/$defs/finding_id"}
+                  }
+                },
+                "else": {
+                  "properties": {"cluster_id": {"type": "null"}}
+                }
+              }
+            ]
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 1000
+          }
+        },
+        "authorship_inference": {"const": "not-performed"},
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        }
+      }
+    },
     "cross_case_analysis": {
       "type": "object",
       "additionalProperties": false,
@@ -428,6 +784,7 @@
         "schema_version",
         "builds",
         "dimensions",
+        "masked_layout_comparison",
         "repeated_clusters",
         "conclusion",
         "evidence"
@@ -462,13 +819,14 @@
         },
         "dimensions": {
           "type": "array",
-          "minItems": 6,
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "object",
             "additionalProperties": false,
             "required": [
               "dimension",
+              "applicability",
               "outcome",
               "assessment",
               "task_derived_differences",
@@ -477,20 +835,18 @@
             ],
             "properties": {
               "dimension": {
-                "enum": [
-                  "route_silhouette",
-                  "type_palette_relationships",
-                  "label_cadence",
-                  "card_grammar",
-                  "motion_grammar",
-                  "media_grammar"
-                ]
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{1,63}$"
+              },
+              "applicability": {
+                "enum": ["applicable", "not-applicable"]
               },
               "outcome": {
                 "enum": [
                   "task-derived-difference",
                   "benign-overlap",
-                  "repeated-cluster-risk"
+                  "repeated-cluster-risk",
+                  "not-applicable"
                 ]
               },
               "assessment": {
@@ -500,13 +856,11 @@
               },
               "task_derived_differences": {
                 "type": "array",
-                "minItems": 1,
                 "uniqueItems": true,
                 "items": {"type": "string", "minLength": 12, "maxLength": 1000}
               },
               "counterevidence": {
                 "type": "array",
-                "minItems": 1,
                 "uniqueItems": true,
                 "items": {"type": "string", "minLength": 12, "maxLength": 1000}
               },
@@ -516,8 +870,52 @@
                 "uniqueItems": true,
                 "items": {"$ref": "#/$defs/evidence_reference"}
               }
-            }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "applicability": {"const": "not-applicable"}
+                  },
+                  "required": ["applicability"]
+                },
+                "then": {
+                  "properties": {
+                    "outcome": {"const": "not-applicable"},
+                    "task_derived_differences": {"maxItems": 0},
+                    "counterevidence": {"maxItems": 0}
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "outcome": {
+                      "enum": [
+                        "task-derived-difference",
+                        "benign-overlap",
+                        "repeated-cluster-risk"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "outcome": {"const": "task-derived-difference"}
+                  },
+                  "required": ["outcome"]
+                },
+                "then": {
+                  "properties": {
+                    "task_derived_differences": {"minItems": 1}
+                  }
+                }
+              }
+            ]
           }
+        },
+        "masked_layout_comparison": {
+          "$ref": "#/$defs/masked_layout_comparison"
         },
         "repeated_clusters": {
           "type": "array",
@@ -543,14 +941,8 @@
                 "minItems": 1,
                 "uniqueItems": true,
                 "items": {
-                  "enum": [
-                    "route_silhouette",
-                    "type_palette_relationships",
-                    "label_cadence",
-                    "card_grammar",
-                    "motion_grammar",
-                    "media_grammar"
-                  ]
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{1,63}$"
                 }
               },
               "severity": {"enum": ["critical", "high", "medium", "low", "note"]},
@@ -664,6 +1056,422 @@
           "items": {"$ref": "#/$defs/evidence_reference"}
         }
       }
+    },
+    "route_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^/(?:[^?#\\u0000-\\u001f]*)$",
+      "allOf": [
+        {"not": {"pattern": "//"}},
+        {"not": {"pattern": "(?:^|/)\\.{1,2}(?:/|$)"}}
+      ]
+    },
+    "route_family_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest_path",
+        "manifest_sha256",
+        "declared_route_count",
+        "verified_route_count",
+        "routes",
+        "pairwise_comparisons",
+        "repeated_clusters",
+        "atlas_evidence",
+        "conclusion",
+        "evidence"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "manifest_path": {"$ref": "#/$defs/portable_path"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "declared_route_count": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 50
+        },
+        "verified_route_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "routes": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "path",
+              "direct_entry_status",
+              "capture_status",
+              "silhouette_summary",
+              "evidence"
+            ],
+            "properties": {
+              "id": {"$ref": "#/$defs/finding_id"},
+              "path": {"$ref": "#/$defs/route_path"},
+              "direct_entry_status": {
+                "enum": ["passed", "failed"]
+              },
+              "capture_status": {
+                "enum": ["matched", "incomplete", "missing"]
+              },
+              "silhouette_summary": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 2000
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "pairwise_comparisons": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1225,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "route_a",
+              "route_b",
+              "outcome",
+              "task_derived_differences",
+              "repeated_signals",
+              "evidence"
+            ],
+            "properties": {
+              "route_a": {"$ref": "#/$defs/finding_id"},
+              "route_b": {"$ref": "#/$defs/finding_id"},
+              "outcome": {
+                "enum": [
+                  "task-derived-difference",
+                  "benign-overlap",
+                  "repeated-skeleton"
+                ]
+              },
+              "task_derived_differences": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 8,
+                  "maxLength": 1000
+                }
+              },
+              "repeated_signals": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 8,
+                  "maxLength": 1000
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "repeated_clusters": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "routes",
+              "dimensions",
+              "severity",
+              "status",
+              "rationale",
+              "evidence"
+            ],
+            "properties": {
+              "id": {"$ref": "#/$defs/finding_id"},
+              "routes": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/finding_id"}
+              },
+              "dimensions": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "rendered_geometry",
+                    "content_order",
+                    "focal_placement",
+                    "density_rhythm",
+                    "media_control_geometry",
+                    "typography_roles",
+                    "fixed_sticky_regions",
+                    "responsive_transformation",
+                    "other_observable_decision"
+                  ]
+                }
+              },
+              "severity": {
+                "enum": ["critical", "high", "medium", "low", "note"]
+              },
+              "status": {"enum": ["resolved", "unresolved"]},
+              "rationale": {
+                "type": "string",
+                "minLength": 24,
+                "maxLength": 2000
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "atlas_evidence": {"$ref": "#/$defs/evidence_reference"},
+        "conclusion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "unique_direct_routes",
+            "matched_capture_coverage",
+            "unresolved_repeated_skeleton",
+            "decision",
+            "rationale"
+          ],
+          "properties": {
+            "unique_direct_routes": {"type": "boolean"},
+            "matched_capture_coverage": {"type": "boolean"},
+            "unresolved_repeated_skeleton": {"type": "boolean"},
+            "decision": {"enum": ["pass", "revise", "block"]},
+            "rationale": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 2000
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": ["decision"],
+                "properties": {"decision": {"const": "pass"}}
+              },
+              "then": {
+                "properties": {
+                  "unique_direct_routes": {"const": true},
+                  "matched_capture_coverage": {"const": true},
+                  "unresolved_repeated_skeleton": {"const": false}
+                }
+              }
+            }
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        }
+      }
+    },
+    "cultural_context_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "status",
+        "centrality",
+        "authority",
+        "terminology_decisions",
+        "representation_decisions",
+        "open_questions",
+        "rationale",
+        "evidence"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "status": {"enum": ["accepted", "pending", "rejected"]},
+        "centrality": {"enum": ["central", "material"]},
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reviewer_id",
+            "relationship",
+            "independent_of_producer",
+            "reviewed_at",
+            "evidence"
+          ],
+          "properties": {
+            "reviewer_id": {"$ref": "#/$defs/identity"},
+            "relationship": {
+              "enum": [
+                "accountable-community-authority",
+                "owner-authorized-cultural-reviewer",
+                "not-reviewed"
+              ]
+            },
+            "independent_of_producer": {"type": "boolean"},
+            "reviewed_at": {
+              "oneOf": [
+                {"type": "string", "format": "date-time"},
+                {"type": "null"}
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"$ref": "#/$defs/evidence_reference"}
+            }
+          }
+        },
+        "terminology_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["term", "decision", "rationale", "evidence"],
+            "properties": {
+              "term": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "decision": {
+                "enum": ["keep", "explain", "replace", "remove"]
+              },
+              "rationale": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 2000
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "representation_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["subject", "decision", "rationale", "evidence"],
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "decision": {"enum": ["approved", "revise", "remove"]},
+              "rationale": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 2000
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"$ref": "#/$defs/evidence_reference"}
+              }
+            }
+          }
+        },
+        "open_questions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 1000
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/evidence_reference"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"enum": ["accepted", "rejected"]}}
+          },
+          "then": {
+            "properties": {
+              "authority": {
+                "properties": {
+                  "relationship": {
+                    "enum": [
+                      "accountable-community-authority",
+                      "owner-authorized-cultural-reviewer"
+                    ]
+                  },
+                  "independent_of_producer": {"const": true},
+                  "reviewed_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "pending"}}
+          },
+          "then": {
+            "properties": {
+              "authority": {
+                "properties": {
+                  "relationship": {"const": "not-reviewed"},
+                  "independent_of_producer": {"const": false},
+                  "reviewed_at": {"type": "null"}
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "type": "object",
@@ -702,6 +1510,29 @@
         "captured_at": {"type": "string", "format": "date-time"},
         "producer_id": {"$ref": "#/$defs/identity"}
       }
+    },
+    "owner_disposition": {"$ref": "#/$defs/owner_disposition"},
+    "capability_disposition": {
+      "$ref": "#/$defs/capability_disposition"
+    },
+    "evaluation_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_path",
+        "result_sha256",
+        "run_id",
+        "artifact_sha256",
+        "model_context_sha256"
+      ],
+      "properties": {
+        "result_path": {"$ref": "#/$defs/portable_path"},
+        "result_sha256": {"$ref": "#/$defs/sha256"},
+        "run_id": {"type": "string", "minLength": 12, "maxLength": 320},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "model_context_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "description": "Opaque hash binding to the exact evaluation result, selected run artifact, and declared model context. It does not reveal the blinded variant to the reviewer."
     },
     "blinded_variant": {"type": "string", "minLength": 1},
     "reviewer": {
@@ -1050,6 +1881,8 @@
     "requirement_closure": {"$ref": "#/$defs/requirement_closure"},
     "comparative_analysis": {"$ref": "#/$defs/comparative_analysis"},
     "cross_case_analysis": {"$ref": "#/$defs/cross_case_analysis"},
+    "route_family_analysis": {"$ref": "#/$defs/route_family_analysis"},
+    "cultural_context_review": {"$ref": "#/$defs/cultural_context_review"},
     "evidence_paths": {
       "type": "array",
       "minItems": 1,
@@ -1128,15 +1961,15 @@
         "properties": {
           "rubric": {
             "properties": {
-              "project_specificity": {"$ref": "#/$defs/numeric_score"},
-              "direction": {"$ref": "#/$defs/numeric_score"},
-              "task_hierarchy": {"$ref": "#/$defs/numeric_score"},
-              "contemporary_fit": {"$ref": "#/$defs/numeric_score"},
-              "typography": {"$ref": "#/$defs/numeric_score"},
-              "composition_density": {"$ref": "#/$defs/numeric_score"},
-              "media_icons": {"$ref": "#/$defs/numeric_score"},
-              "copy_ia": {"$ref": "#/$defs/numeric_score"},
-              "distinctiveness_without_novelty_tax": {"$ref": "#/$defs/numeric_score"}
+              "project_specificity": {"$ref": "#/$defs/score"},
+              "direction": {"$ref": "#/$defs/score"},
+              "task_hierarchy": {"$ref": "#/$defs/score"},
+              "contemporary_fit": {"$ref": "#/$defs/score"},
+              "typography": {"$ref": "#/$defs/score"},
+              "composition_density": {"$ref": "#/$defs/score"},
+              "media_icons": {"$ref": "#/$defs/score"},
+              "copy_ia": {"$ref": "#/$defs/score"},
+              "distinctiveness_without_novelty_tax": {"$ref": "#/$defs/score"}
             }
           }
         }
@@ -1154,13 +1987,13 @@
         "properties": {
           "rubric": {
             "properties": {
-              "functional_completeness": {"$ref": "#/$defs/numeric_score"},
-              "responsive_adaptation": {"$ref": "#/$defs/numeric_score"},
-              "accessibility_baseline": {"$ref": "#/$defs/numeric_score"},
-              "truth_provenance": {"$ref": "#/$defs/numeric_score"},
-              "system_code": {"$ref": "#/$defs/numeric_score"},
-              "performance_resilience": {"$ref": "#/$defs/numeric_score"},
-              "residue": {"$ref": "#/$defs/numeric_score"}
+              "functional_completeness": {"$ref": "#/$defs/score"},
+              "responsive_adaptation": {"$ref": "#/$defs/score"},
+              "accessibility_baseline": {"$ref": "#/$defs/score"},
+              "truth_provenance": {"$ref": "#/$defs/score"},
+              "system_code": {"$ref": "#/$defs/score"},
+              "performance_resilience": {"$ref": "#/$defs/score"},
+              "residue": {"$ref": "#/$defs/score"}
             }
           }
         }
@@ -1172,6 +2005,26 @@
         "properties": {
           "conclusion": {
             "properties": {"decision": {"const": "block"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["owner_disposition"],
+        "properties": {
+          "owner_disposition": {
+            "required": ["status"],
+            "properties": {"status": {"const": "rejected"}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "conclusion": {
+            "properties": {
+              "decision": {"enum": ["revise", "block"]}
+            }
           }
         }
       }

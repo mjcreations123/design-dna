@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/codex-plugin-validation-attestation.schema.json",
+  "title": "Design DNA Codex plugin validation attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "created_at",
+    "package",
+    "release_version",
+    "validator",
+    "python",
+    "dependencies",
+    "command",
+    "inputs",
+    "result",
+    "output"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {
+      "const": "design-dna-codex-plugin-validation-attestation"
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "package": {"const": "design-dna"},
+    "release_version": {"$ref": "#/$defs/semver"},
+    "validator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logical_id",
+        "sha256",
+        "bytes",
+        "trust_policy_path",
+        "trust_policy_sha256"
+      ],
+      "properties": {
+        "logical_id": {"const": "plugin-creator/validate_plugin.py"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1, "maximum": 16777216},
+        "trust_policy_path": {
+          "const": "maintainer/trust/codex-plugin-validator.json"
+        },
+        "trust_policy_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "python": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementation",
+        "version",
+        "executable",
+        "executable_sha256"
+      ],
+      "properties": {
+        "implementation": {"type": "string", "minLength": 1},
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[A-Za-z0-9.+-]*)?$"
+        },
+        "executable": {"const": "python-current-environment"},
+        "executable_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "module",
+          "source_format",
+          "source_sha256",
+          "file_count",
+          "byte_count"
+        ],
+        "properties": {
+          "name": {"const": "PyYAML"},
+          "version": {"type": "string", "minLength": 1, "maxLength": 80},
+          "module": {"const": "yaml"},
+          "source_format": {"const": "pure-python-snapshot"},
+          "source_sha256": {"$ref": "#/$defs/sha256"},
+          "file_count": {"type": "integer", "minimum": 1, "maximum": 512},
+          "byte_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16777216
+          }
+        }
+      }
+    },
+    "command": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "python-current-environment"},
+        {"const": "-I"},
+        {"const": "-B"},
+        {"const": "-X"},
+        {"const": "utf8"},
+        {"const": "attested-validator-wrapper"},
+        {"const": "external-plugin-creator-validator"},
+        {"const": "plugin-root"},
+        {"const": "pinned-pyyaml-snapshot"}
+      ],
+      "items": false,
+      "minItems": 9,
+      "maxItems": 9
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plugin_manifest_tree", "skills_tree", "files"],
+      "properties": {
+        "plugin_manifest_tree": {
+          "$ref": "#/$defs/treeIdentity",
+          "properties": {"path": {"const": ".codex-plugin"}}
+        },
+        "skills_tree": {
+          "$ref": "#/$defs/treeIdentity",
+          "properties": {"path": {"const": "skills"}}
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "attestor",
+            "cache_preflight",
+            "common",
+            "attestation_schema",
+            "trust_schema",
+            "trust_policy"
+          ],
+          "properties": {
+            "attestor": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/scripts/attest_codex_plugin.py"
+                }
+              }
+            },
+            "cache_preflight": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/scripts/cache_preflight.py"
+                }
+              }
+            },
+            "common": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {"const": "maintainer/scripts/common.py"}
+              }
+            },
+            "attestation_schema": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/schemas/codex-plugin-validation-attestation.schema.json"
+                }
+              }
+            },
+            "trust_schema": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/schemas/codex-validator-trust.schema.json"
+                }
+              }
+            },
+            "trust_policy": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/trust/codex-plugin-validator.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "return_code"],
+      "properties": {
+        "status": {"const": "passed"},
+        "return_code": {"const": 0}
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "success_marker_observed",
+        "exact_success_line_observed",
+        "stderr_empty",
+        "content_persisted"
+      ],
+      "properties": {
+        "success_marker_observed": {"const": true},
+        "exact_success_line_observed": {"const": true},
+        "stderr_empty": {"const": true},
+        "content_persisted": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": {"$ref": "#/$defs/relativePath"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        }
+      }
+    },
+    "treeIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "entry_count",
+        "file_count",
+        "byte_count"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/relativePath"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "entry_count": {"type": "integer", "minimum": 1},
+        "file_count": {"type": "integer", "minimum": 1},
+        "byte_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "allOf": [
+        {
+          "not": {
+            "pattern": "(?:^[/\\\\]|^[A-Za-z]:|\\\\|//|(?:^|/)\\.{1,2}(?:/|$)|[\\u0000-\\u001f\\u007f])"
+          }
+        },
+        {"not": {"pattern": "/$"}}
+      ]
+    }
+  }
+}

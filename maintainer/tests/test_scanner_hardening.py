@@ -214,11 +214,15 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                 "page.pug": ".title { font-family: Inter; }",
             }
             for name, content in sources.items():
-                (project / name).write_text(content, encoding="utf-8")
+                (project / name).write_text(
+                    content + "\nTrusted by thousands.\n",
+                    encoding="utf-8",
+                )
             story = project / "stories" / "ignored.liquid"
             story.parent.mkdir()
             story.write_text(
-                "<style>.title { font-family: Inter; }</style>",
+                "<style>.title { font-family: Inter; }</style>\n"
+                "Trusted by thousands.\n",
                 encoding="utf-8",
             )
 
@@ -227,22 +231,17 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                 result.returncode, 0, result.stdout + result.stderr
             )
             result_payload = payload(result)
-            watched_files = {
+            marker_files = {
                 item["file"]
                 for item in result_payload["findings"]
-                if item["rule"] == "unexamined-default-font"
+                if item["rule"] == "claim-needs-provenance"
             }
-            self.assertEqual(watched_files, set(sources))
-            liquid_fragments = [
-                item
-                for item in result_payload["findings"]
-                if item["rule"] == "decorative-headline-span"
-                and item["file"] == "page.liquid"
-            ]
-            self.assertEqual(len(liquid_fragments), 1)
-            self.assertEqual(
-                liquid_fragments[0]["classification"],
-                "advisory",
+            self.assertEqual(marker_files, set(sources))
+            self.assertFalse(
+                any(
+                    item["rule"] == "unexamined-default-font"
+                    for item in result_payload["findings"]
+                )
             )
             self.assertIn(
                 "stories/ignored.liquid",
@@ -282,11 +281,11 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             included_files = {
                 item["file"]
                 for item in payload(included)["findings"]
-                if item["rule"] == "unexamined-default-font"
+                if item["rule"] == "claim-needs-provenance"
             }
             self.assertIn("stories/ignored.liquid", included_files)
 
-    def test_watched_font_detection_covers_css_font_shorthand_conservatively(
+    def test_font_family_names_and_css_shorthand_are_neutral(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -306,14 +305,12 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
 
             found = run_scan(detected, "--json")
             self.assertEqual(found.returncode, 0, found.stderr)
-            watched = [
-                item
-                for item in payload(found)["findings"]
-                if item["rule"] == "unexamined-default-font"
-            ]
-            self.assertEqual(len(watched), 1)
-            self.assertIn("font:", watched[0]["matched_signal"])
-            self.assertIn("Inter", watched[0]["matched_signal"])
+            self.assertFalse(
+                any(
+                    item["rule"] == "unexamined-default-font"
+                    for item in payload(found)["findings"]
+                )
+            )
 
             not_found = run_scan(ignored, "--json")
             self.assertEqual(not_found.returncode, 0, not_found.stderr)
@@ -321,6 +318,81 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                 any(
                     item["rule"] == "unexamined-default-font"
                     for item in payload(not_found)["findings"]
+                )
+            )
+
+    def test_portable_aesthetic_ingredients_are_neutral_without_rendered_harm(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.html").write_text(
+                """\
+<style>
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(.145 0 0);
+  --primary: oklch(.205 0 0);
+  --secondary: oklch(.97 0 0);
+  --muted: oklch(.97 0 0);
+  --accent: oklch(.97 0 0);
+}
+.gradient-one, .gradient-two, .gradient-three {
+  background: linear-gradient(90deg, red, blue);
+  background-clip: text;
+}
+.pill { border-radius: 9999px; }
+.large-gap { padding-block: 12rem; }
+.card:hover { transform: translateY(-.25rem) scale(1.03); }
+.hero span { color: #7c3aed; }
+</style>
+<main>
+  <p class="eyebrow">Field note</p>
+  <h1 class="hero gradient-one">Build <span style="color:#7c3aed">bold</span>,
+    <span style="color:#7c3aed">clear</span>,
+    <span style="color:#7c3aed">useful</span>, and
+    <span style="color:#7c3aed">alive</span>.</h1>
+  <section class="fade-up large-gap">
+    <h2 class="gradient-two">Signal console</h2>
+    <p>Proposed channel relay module route status system transmission vocabulary,
+      with unresolved incidents and unassigned queues.</p>
+    <button class="pill">Get Started ✨</button>
+    <a href="#details">Learn More 🚀</a>
+  </section>
+  <section id="details" class="animate-in gradient-three">
+    <svg role="img" aria-label="A useful process diagram"></svg>
+    <canvas aria-label="Interactive map"></canvas>
+  </section>
+</main>
+<script>const icons = [Sparkles, WandSparkles, Rocket, Zap];</script>
+""",
+                encoding="utf-8",
+            )
+
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            result_payload = payload(result)
+            self.assertEqual(result_payload["findings"], [])
+            fragment_reviews = [
+                item
+                for item in result_payload["manual_review"]
+                if item["check"] == "prominent-fragment-context"
+            ]
+            self.assertEqual(len(fragment_reviews), 4)
+            self.assertTrue(
+                all(
+                    "do not establish visual harm" in item["reason"]
+                    for item in fragment_reviews
+                )
+            )
+            self.assertTrue(
+                {
+                    "sensory-media-strategy",
+                    "copy-uniformity-cluster",
+                    "over-instrumented-concept-deck",
+                    "parallel-route-skeleton",
+                }.isdisjoint(
+                    {item["check"] for item in result_payload["manual_review"]}
                 )
             )
 
@@ -337,9 +409,14 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
 
             default = run_scan(project, "--json", "--fail-on", "high")
             self.assertEqual(
-                default.returncode, 0, default.stdout + default.stderr
+                default.returncode, 1, default.stdout + default.stderr
             )
             default_payload = payload(default)
+            self.assertEqual(
+                default_payload["quality_status"],
+                "no-selected-sources",
+            )
+            self.assertFalse(default_payload["source_gate_passed"])
             self.assertFalse(
                 any(
                     item["rule"] == "placeholder-proof"
@@ -389,11 +466,12 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             for directory in (docs, content, config, vendor):
                 directory.mkdir()
             (project / "README.md").write_text(
-                "Theme sample: font-family: Inter\n",
+                "Theme sample: font-family: Inter\nTrusted by thousands.\n",
                 encoding="utf-8",
             )
             (docs / "guide.mdx").write_text(
-                "Guide typography uses fontFamily: 'Inter'.\n",
+                "Guide typography uses fontFamily: 'Inter'.\n"
+                "Trusted by thousands.\n",
                 encoding="utf-8",
             )
             (content / "home.json").write_text(
@@ -418,9 +496,13 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             )
 
             default = run_scan(project, "--json")
-            self.assertEqual(default.returncode, 0, default.stderr)
+            self.assertEqual(default.returncode, 1, default.stderr)
             default_payload = payload(default)
-            self.assertEqual(default_payload["scan_status"], "scope-limited")
+            self.assertEqual(
+                default_payload["scan_status"],
+                "no-selected-sources",
+            )
+            self.assertFalse(default_payload["source_gate_passed"])
             self.assertFalse(default_payload["documentation_mode"])
             self.assertFalse(default_payload["structured_content_mode"])
             self.assertIn("README.md", default_payload["excluded_default_files"])
@@ -433,12 +515,18 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             self.assertEqual(content_site.returncode, 0, content_site.stderr)
             content_payload = payload(content_site)
             self.assertTrue(content_payload["documentation_mode"])
-            watched = {
+            scanned_markers = {
                 item["file"]
                 for item in content_payload["findings"]
-                if item["rule"] == "unexamined-default-font"
+                if item["rule"] == "claim-needs-provenance"
             }
-            self.assertEqual(watched, {"README.md", "docs/guide.mdx"})
+            self.assertEqual(scanned_markers, {"README.md", "docs/guide.mdx"})
+            self.assertFalse(
+                any(
+                    item["rule"] == "unexamined-default-font"
+                    for item in content_payload["findings"]
+                )
+            )
 
             structured = run_scan(
                 project,
@@ -500,7 +588,7 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("project-relative", result.stderr)
 
-    def test_advisory_fragment_does_not_trip_fail_on(self) -> None:
+    def test_single_fragment_is_context_only_and_does_not_trip_fail_on(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
@@ -513,13 +601,18 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                 result.returncode, 0, result.stdout + result.stderr
             )
             result_payload = payload(result)
-            fragments = [
-                item
-                for item in result_payload["findings"]
-                if item["rule"] == "decorative-headline-span"
-            ]
-            self.assertEqual(len(fragments), 1)
-            self.assertEqual(fragments[0]["classification"], "advisory")
+            self.assertFalse(
+                any(
+                    item["rule"] == "decorative-headline-span"
+                    for item in result_payload["findings"]
+                )
+            )
+            self.assertTrue(
+                any(
+                    item["check"] == "prominent-fragment-context"
+                    for item in result_payload["manual_review"]
+                )
+            )
             self.assertEqual(sum(result_payload["gate_counts"].values()), 0)
 
     def test_negative_examples_and_semantic_status_do_not_fail(self) -> None:
@@ -783,7 +876,7 @@ class ScannerDecorativeSectionLabelTests(unittest.TestCase):
             if item["rule"] == "repeated-decorative-section-label"
         ]
 
-    def test_four_decorative_section_labels_are_advisory_only(self) -> None:
+    def test_decorative_section_labels_are_neutral_at_every_count(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
@@ -802,12 +895,8 @@ class ScannerDecorativeSectionLabelTests(unittest.TestCase):
                 result.stdout + result.stderr,
             )
             findings = self.label_findings(result)
-            self.assertEqual(len(findings), 1)
-            self.assertTrue(
-                all(item["classification"] == "advisory" for item in findings)
-            )
-            self.assertEqual(findings[0]["matched_signal"]["count"], 4)
-            self.assertEqual(len(findings[0]["matched_signal"]["labels"]), 4)
+            self.assertEqual(findings, [])
+            self.assertFalse(payload(result)["review_required"])
             self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
     def test_label_threshold_is_scoped_per_renderable_route(self) -> None:
@@ -868,8 +957,439 @@ class ScannerDecorativeSectionLabelTests(unittest.TestCase):
             self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
 
-class ScannerNorthlinePatternTests(unittest.TestCase):
-    def test_northline_shaped_routes_require_adversarial_review(self) -> None:
+class ScannerEvidenceBoundReviewTests(unittest.TestCase):
+    def test_failed_concept_deck_signals_require_manual_review(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            texture = " ".join(
+                ["Coffee, pastries, music, and a room for neighbors to meet."] * 45
+            )
+            (project / "index.html").write_text(
+                f"""\
+<main>
+<section><p class="eyebrow">Route 001 / proposed</p>
+<h1>A system for the handoff.</h1><p>{texture}</p>
+<button disabled>Stream not connected</button></section>
+<section><p class="eyebrow">Signal status</p>
+<h2>Choose a page route</h2><p>Fictional concept with an unassigned channel.</p>
+<svg aria-hidden="true"></svg></section>
+<section><p class="eyebrow">Relay 002 / illustrative</p>
+<h2>Inspect the proposed room</h2><p>Sample schedule with unresolved details.</p></section>
+<section><p class="eyebrow">Truth before theater</p>
+<h2>Route study</h2><p>Concept build. Visits unavailable.</p></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            (project / "styles.css").write_text(
+                """\
+h1, .hero-title {
+  font-stretch: 75%;
+  letter-spacing: -0.072em;
+  line-height: .84;
+}
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            checks = {
+                item["check"]
+                for item in payload(result)["manual_review"]
+            }
+            self.assertTrue(
+                {
+                    "compound-display-compression",
+                    "public-meta-copy-contamination",
+                    "nonfunctional-concept-affordance",
+                }.issubset(checks)
+            )
+            self.assertTrue(
+                {
+                    "sensory-media-strategy",
+                    "over-instrumented-concept-deck",
+                }.isdisjoint(checks)
+            )
+
+    def test_readable_photo_led_local_site_avoids_new_prompts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            texture = " ".join(
+                ["The cafe serves coffee and breakfast in a bright corner room."] * 30
+            )
+            (project / "index.html").write_text(
+                f"""\
+<main>
+<section><h1>Coffee and breakfast, seven days a week.</h1>
+<p>{texture}</p><img src="interior.webp" alt="Cafe interior"></section>
+<section><h2>See the menu</h2><p>Drinks, toast, and pastries.</p></section>
+<section><h2>Plan a visit</h2><p>Find current hours and directions.</p></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            (project / "styles.css").write_text(
+                """\
+h1 { letter-spacing: -0.02em; line-height: 1.02; }
+body { letter-spacing: normal; line-height: 1.6; }
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            checks = {
+                item["check"]
+                for item in payload(result)["manual_review"]
+            }
+            self.assertTrue(
+                {
+                    "compound-display-compression",
+                    "public-meta-copy-contamination",
+                    "sensory-media-strategy",
+                    "nonfunctional-concept-affordance",
+                    "over-instrumented-concept-deck",
+                }.isdisjoint(checks)
+            )
+
+    def test_public_internal_method_review_has_no_count_prescription(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "index.html").write_text(
+                "<main><p>Project assets are not supplied.</p></main>",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = [
+                item
+                for item in payload(result)["manual_review"]
+                if item["check"] == "public-meta-copy-contamination"
+            ]
+            self.assertEqual(len(reviews), 1)
+            self.assertEqual(reviews[0]["evidence"]["match_count"], 1)
+            self.assertIn(
+                "universal disclosure count",
+                reviews[0]["suggestion"].casefold(),
+            )
+
+    def test_honest_concept_disclosure_is_not_internal_methodology_leakage(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "index.html").write_text(
+                "<main><p>Independent fictional sample website; "
+                "illustrative concept only.</p></main>",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn(
+                "public-meta-copy-contamination",
+                {item["check"] for item in payload(result)["manual_review"]},
+            )
+
+    def test_one_display_compression_control_is_not_a_cluster(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "styles.css").write_text(
+                "h1 { letter-spacing: -0.04em; line-height: 1.05; }",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            self.assertNotIn(
+                "compound-display-compression",
+                {
+                    item["check"]
+                    for item in payload(result)["manual_review"]
+                },
+            )
+
+    def test_framework_routes_do_not_receive_genre_media_prescriptions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            texture = " ".join(
+                ["Coffee, breakfast, pastry, and room details help plan a visit."] * 35
+            )
+            route = f"""\
+<main>
+<section><h1>Neighborhood coffee</h1><p>{texture}</p></section>
+<section><h2>Breakfast</h2><p>Toast and pastries are described here.</p></section>
+<section><h2>Visit</h2><p>Plan a visit to the coffee room.</p></section>
+</main>
+"""
+            extensions = ("astro", "jsx", "svelte", "tsx", "vue")
+            for extension in extensions:
+                (project / f"page.{extension}").write_text(
+                    route,
+                    encoding="utf-8",
+                )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            self.assertNotIn(
+                "sensory-media-strategy",
+                {
+                    item["check"]
+                    for item in payload(result)["manual_review"]
+                },
+            )
+
+    def test_media_review_follows_actual_references_not_genre_words(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            texture = " ".join(
+                ["The menu covers coffee, breakfast, pastry, and lunch."] * 40
+            )
+            (project / "home.html").write_text(
+                """\
+<main><section><h1>Coffee shop</h1>
+<img src="room.webp" alt="Coffee room"></section></main>
+""",
+                encoding="utf-8",
+            )
+            (project / "menu.html").write_text(
+                f"""\
+<main>
+<section><h1>Menu</h1><p>{texture}</p></section>
+<section><h2>Breakfast</h2><p>Toast and pastry.</p></section>
+<section><h2>Lunch</h2><p>Soup and sandwiches.</p></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            media = [
+                item
+                for item in payload(result)["manual_review"]
+                if item["check"] == "media-authenticity-and-provenance"
+            ]
+            self.assertEqual(
+                [item["file"] for item in media],
+                ["home.html"],
+            )
+            self.assertNotIn(
+                "sensory-media-strategy",
+                {item["check"] for item in payload(result)["manual_review"]},
+            )
+
+    def test_severe_single_and_reading_compression_require_review(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "styles.css").write_text(
+                """\
+h1 { letter-spacing: -0.10em; line-height: 1.05; }
+.article-copy { letter-spacing: -0.05em; line-height: 1.10; }
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            severe = [
+                item
+                for item in payload(result)["manual_review"]
+                if item["check"] == "severe-typography-compression"
+            ]
+            self.assertEqual(len(severe), 2)
+            self.assertEqual(
+                {item["evidence"]["role"] for item in severe},
+                {"display", "reading"},
+            )
+            self.assertTrue(
+                all(
+                    any(
+                        signal["extreme"]
+                        for signal in item["evidence"]["signals"]
+                    )
+                    for item in severe
+                )
+            )
+
+    def test_tailwind_and_inline_compression_require_review(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+export function Page() {
+  return <main>
+    <h1 className="tracking-[-0.10em] leading-[0.78] [font-stretch:75%]">
+      Relay Room
+    </h1>
+    <p style={{ letterSpacing: "-0.05em", lineHeight: 1.10 }}>
+      Comfortable reading should not be compressed into a display gesture.
+    </p>
+    <h2 style={{ letterSpacing: "-0.08em" }}>Schedule</h2>
+  </main>;
+}
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            typography = [
+                item
+                for item in payload(result)["manual_review"]
+                if item["check"] in {
+                    "compound-display-compression",
+                    "severe-typography-compression",
+                }
+            ]
+            self.assertEqual(len(typography), 3)
+            self.assertEqual(
+                [item["check"] for item in typography].count(
+                    "compound-display-compression"
+                ),
+                1,
+            )
+            self.assertEqual(
+                [item["check"] for item in typography].count(
+                    "severe-typography-compression"
+                ),
+                2,
+            )
+
+    def test_moderate_inline_typography_avoids_compression_prompt(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+export function Page() {
+  return <main>
+    <h1 className="tracking-[-0.04em] leading-[1.05]">Coffee today</h1>
+    <p style={{ letterSpacing: "-0.01em", lineHeight: 1.5 }}>
+      A comfortable paragraph with a conventional reading rhythm.
+    </p>
+  </main>;
+}
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            self.assertTrue(
+                {
+                    item["check"]
+                    for item in payload(result)["manual_review"]
+                }.isdisjoint({
+                    "compound-display-compression",
+                    "severe-typography-compression",
+                })
+            )
+
+    def test_technical_concept_vocabulary_is_not_a_house_style_detector(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            texture = " ".join(
+                [
+                    "Transmission status signal relay route module system console."
+                ]
+                * 12
+            )
+            (project / "index.html").write_text(
+                f"""\
+<main>
+<section><p class="eyebrow">Route 001 / proposed</p>
+<h1>A system for listening.</h1><p>Concept site. {texture}</p></section>
+<section><p class="eyebrow">Signal status</p>
+<svg aria-hidden="true"></svg><p>Sample route with unresolved details.</p></section>
+<section><p class="eyebrow">Relay 002 / illustrative</p>
+<button disabled>Stream not connected</button></section>
+<section><p class="eyebrow">System handoff</p>
+<p>Inspect the proposed room.</p></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            (project / "styles.css").write_text(
+                "h1 { letter-spacing: -0.10em; line-height: .78; }",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            checks = {
+                item["check"]
+                for item in payload(result)["manual_review"]
+            }
+            self.assertNotIn("over-instrumented-concept-deck", checks)
+            self.assertIn("public-meta-copy-contamination", checks)
+            self.assertIn("nonfunctional-concept-affordance", checks)
+            self.assertIn("compound-display-compression", checks)
+
+    def test_compact_legitimate_status_interface_avoids_concept_deck_prompt(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "index.html").write_text(
+                """\
+<main>
+<section aria-labelledby="service-title"><h1 id="service-title">Service health</h1>
+<p role="status">All systems operational</p></section>
+<section><h2>API</h2><p>Requests are processing normally.</p>
+<svg aria-label="API response-time history"></svg></section>
+<section><h2>Notifications</h2><p>Email delivery is operational.</p></section>
+<section><h2>Recent incidents</h2><p>No incidents reported.</p></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            (project / "styles.css").write_text(
+                "h1 { letter-spacing: -0.03em; line-height: 1; }"
+                " body { letter-spacing: normal; line-height: 1.6; }",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            self.assertNotIn(
+                "over-instrumented-concept-deck",
+                {
+                    item["check"]
+                    for item in payload(result)["manual_review"]
+                },
+            )
+
+    def test_evidence_bound_reviews_survive_aesthetic_detector_removal(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             texture = " ".join(
@@ -939,26 +1459,35 @@ class ScannerNorthlinePatternTests(unittest.TestCase):
             )
             result_payload = payload(result)
             rules = {item["rule"] for item in result_payload["findings"]}
-            self.assertIn("repeated-decorative-section-label", rules)
-            self.assertIn("rhetorical-label-cluster", rules)
-            self.assertIn("presentation-script-comment-cluster", rules)
+            self.assertTrue(
+                {
+                    "repeated-decorative-section-label",
+                    "rhetorical-label-cluster",
+                    "presentation-script-comment-cluster",
+                }.isdisjoint(rules)
+            )
             checks = {
                 item["check"] for item in result_payload["manual_review"]
             }
             self.assertTrue(
                 {
                     "quantitative-claim-density",
+                    "generated-media-authenticity",
+                }.issubset(checks)
+            )
+            self.assertTrue(
+                {
                     "copy-uniformity-cluster",
                     "parallel-route-skeleton",
-                    "generated-media-authenticity",
                     "concept-material-balance",
-                }.issubset(checks)
+                    "over-instrumented-concept-deck",
+                }.isdisjoint(checks)
             )
             self.assertTrue(result_payload["source_gate_passed"])
             self.assertTrue(result_payload["review_required"])
             self.assertEqual(result_payload["design_review_status"], "pending")
             self.assertGreater(result_payload["manual_review_count"], 0)
-            self.assertGreater(result_payload["unresolved_advisory_count"], 0)
+            self.assertEqual(result_payload["unresolved_advisory_count"], 0)
 
     def test_claim_language_is_advisory_not_a_confirmed_truth_gate(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1068,7 +1597,7 @@ class ScannerShadcnTokenTests(unittest.TestCase):
             if item["rule"] == "untouched-shadcn-token"
         ]
 
-    def test_current_exact_and_default_like_oklch_clusters_are_advisory(
+    def test_current_exact_and_default_like_oklch_clusters_are_neutral(
         self,
     ) -> None:
         palettes = {
@@ -1100,16 +1629,7 @@ class ScannerShadcnTokenTests(unittest.TestCase):
                     result.stdout + result.stderr,
                 )
                 findings = self.shadcn_findings(result)
-                self.assertEqual(len(findings), 1)
-                self.assertEqual(findings[0]["classification"], "advisory")
-                self.assertEqual(
-                    findings[0]["matched_signal"]["profile"],
-                    profile,
-                )
-                self.assertGreaterEqual(
-                    findings[0]["matched_signal"]["matched_count"],
-                    15,
-                )
+                self.assertEqual(findings, [], profile)
                 self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
     def test_project_specific_oklch_palette_does_not_trigger(self) -> None:
@@ -1188,7 +1708,7 @@ class ScannerShadcnTokenTests(unittest.TestCase):
             )
             self.assertEqual(self.shadcn_findings(result), [])
 
-    def test_legacy_hsl_cluster_still_triggers_as_advisory(self) -> None:
+    def test_legacy_hsl_cluster_is_also_neutral(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "legacy.css").write_text(
@@ -1211,10 +1731,7 @@ class ScannerShadcnTokenTests(unittest.TestCase):
                 result.stdout + result.stderr,
             )
             findings = self.shadcn_findings(result)
-            self.assertEqual(len(findings), 6)
-            self.assertTrue(
-                all(item["classification"] == "advisory" for item in findings)
-            )
+            self.assertEqual(findings, [])
             self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
 
@@ -1261,8 +1778,8 @@ class ScannerProminentFragmentTests(unittest.TestCase):
             )
             fragments = [
                 item
-                for item in payload(result)["findings"]
-                if item["rule"] == "decorative-headline-span"
+                for item in payload(result)["manual_review"]
+                if item["check"] == "prominent-fragment-context"
             ]
             self.assertEqual(
                 {item["file"] for item in fragments},
@@ -1274,15 +1791,19 @@ class ScannerProminentFragmentTests(unittest.TestCase):
                 },
             )
             signals = {
-                item["file"]: str(item["matched_signal"])
+                item["file"]: str(item["evidence"]["style_signal"])
                 for item in fragments
             }
             self.assertIn("foreground color declaration", signals["src/Hero.tsx"])
             self.assertIn("CSS Module", signals["src/ModuleHero.tsx"])
             self.assertIn("React style", signals["src/ObjectHero.tsx"])
             self.assertIn("Tailwind", signals["src/TailwindHero.tsx"])
-            self.assertTrue(
-                all(item["classification"] == "advisory" for item in fragments)
+            self.assertTrue(all(item["severity"] == "low" for item in fragments))
+            self.assertFalse(
+                any(
+                    item["rule"] == "decorative-headline-span"
+                    for item in payload(result)["findings"]
+                )
             )
 
     def test_dynamic_style_is_manual_review_not_a_gate(self) -> None:
@@ -1331,98 +1852,19 @@ class ScannerProminentFragmentTests(unittest.TestCase):
 
 
 class ScannerColorReasoningTests(unittest.TestCase):
-    def test_cream_serif_sage_uses_oklch_and_rejects_unrelated_colors(
-        self,
-    ) -> None:
+    def test_palette_and_type_recipe_is_neutral_by_itself(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
-            good = project / "good"
-            bad = project / "bad"
-            named_only = project / "named-only"
-            utility = project / "utility"
-            string_only = project / "string-only"
-            good.mkdir()
-            bad.mkdir()
-            named_only.mkdir()
-            utility.mkdir()
-            string_only.mkdir()
-            (good / "style.css").write_text(
+            (project / "style.css").write_text(
                 ":root { --surface: #f3eddf; --accent: #536b55; "
-                "--font-display: 'Editorial House', Georgia, serif; }\n",
-                encoding="utf-8",
-            )
-            (bad / "style.css").write_text(
-                ":root { --surface: #ffffff; --accent: #ff00ff; "
-                "--font-display: 'Editorial House', Georgia, serif; }\n",
-                encoding="utf-8",
-            )
-            (named_only / "style.css").write_text(
-                ":root { --surface: #f3eddf; --accent: #536b55; "
-                "--typeface: 'Fraunces'; }\n",
-                encoding="utf-8",
-            )
-            (utility / "style.css").write_text(
-                ":root { --surface: #f3eddf; --accent: #536b55; }\n",
-                encoding="utf-8",
-            )
-            (utility / "page.html").write_text(
-                "<h1 class=font-serif>Editorial role</h1>",
-                encoding="utf-8",
-            )
-            (string_only / "style.css").write_text(
-                ":root { --surface: #f3eddf; --accent: #536b55; }\n",
-                encoding="utf-8",
-            )
-            (string_only / "page.astro").write_text(
-                'const demo = "<h1 class=font-serif>Editorial role</h1>";',
+                "--font-display: Georgia, serif; }\n",
                 encoding="utf-8",
             )
             result = run_scan(project, "--json")
-            self.assertEqual(
-                result.returncode, 0, result.stdout + result.stderr
-            )
-            clusters = [
-                item
-                for item in payload(result)["findings"]
-                if item["rule"] == "cream-serif-sage-cluster"
-            ]
-            self.assertEqual(
-                {item["file"] for item in clusters},
-                {"good", "utility"},
-            )
-            good_cluster = next(
-                item for item in clusters if item["file"] == "good"
-            )
-            by_signal = {
-                signal["signal"]: signal
-                for signal in good_cluster["matched_signals"]
-            }
-            self.assertIn("cream-color", by_signal)
-            self.assertIn("muted-green-color", by_signal)
-            self.assertIn("display-serif-role", by_signal)
-            for name in ("cream-color", "muted-green-color"):
-                self.assertEqual(
-                    set(by_signal[name]["oklch"]),
-                    {"l", "c", "h"},
-                )
-            utility_cluster = next(
-                item for item in clusters if item["file"] == "utility"
-            )
-            utility_signal = next(
-                signal
-                for signal in utility_cluster["matched_signals"]
-                if signal["signal"] == "display-serif-role"
-            )
-            self.assertIn("font-serif", utility_signal["value"])
-            self.assertNotIn(
-                "named-only",
-                {item["file"] for item in clusters},
-            )
-            self.assertNotIn(
-                "string-only",
-                {item["file"] for item in clusters},
-            )
-
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            rules = {item["rule"] for item in payload(result)["findings"]}
+            self.assertNotIn("cream-serif-sage-cluster", rules)
+            self.assertFalse(any("cream-serif-sage" in rule for rule in rules))
 
 class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
     def test_fingerprints_bind_signal_payloads_deterministically(self) -> None:
@@ -1465,35 +1907,29 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         self.assertNotEqual(first, changed_single)
         self.assertNotEqual(first_compound, changed_compound)
 
-    def test_changed_compound_signal_is_not_suppressed_by_old_fingerprint(
+    def test_changed_evidence_signal_is_not_suppressed_by_old_fingerprint(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
-            theme = project / "theme"
-            theme.mkdir()
-            stylesheet = theme / "style.css"
-            stylesheet.write_text(
-                ":root { --surface: #f3eddf; --accent: #536b55; "
-                "--font-display: Georgia, serif; }\n",
-                encoding="utf-8",
-            )
+            page = project / "page.html"
+            page.write_text("<p>Trusted by thousands.</p>\n", encoding="utf-8")
             initial = run_scan(project, "--json")
             self.assertEqual(initial.returncode, 0, initial.stderr)
-            initial_finding = next(
-                item
-                for item in payload(initial)["findings"]
-                if item["rule"] == "cream-serif-sage-cluster"
-            )
+            initial_findings = [
+                item for item in payload(initial)["findings"]
+                if item["rule"] == "claim-needs-provenance"
+            ]
+            self.assertEqual(len(initial_findings), 1)
+            initial_finding = initial_findings[0]
             repeated = run_scan(project, "--json")
             repeated_finding = next(
-                item
-                for item in payload(repeated)["findings"]
-                if item["rule"] == "cream-serif-sage-cluster"
+                item for item in payload(repeated)["findings"]
+                if item["rule"] == "claim-needs-provenance"
+                and item["line"] == initial_finding["line"]
             )
             self.assertEqual(
-                initial_finding["fingerprint"],
-                repeated_finding["fingerprint"],
+                initial_finding["fingerprint"], repeated_finding["fingerprint"]
             )
 
             allowlist = project / "allow.json"
@@ -1503,49 +1939,40 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                     "allow": [{
                         "rule": initial_finding["rule"],
                         "path": initial_finding["file"],
+                        "line": initial_finding["line"],
                         "fingerprint": initial_finding["fingerprint"],
-                        "reason": "Reviewed initial palette and type signal.",
+                        "reason": "Reviewed initial rendered treatment.",
                         "owner": "Design owner",
                         "expires": ACTIVE_EXPIRY,
                     }],
                 }),
                 encoding="utf-8",
             )
-            stylesheet.write_text(
-                ":root { --surface: #f3eddf; --accent: #536b55; "
-                "--font-heading: Georgia, serif; }\n",
+            page.write_text(
+                "<p>Industry-leading service.</p>\n",
                 encoding="utf-8",
             )
             changed = run_scan(
-                project,
-                "--allowlist",
-                str(allowlist),
-                "--json",
+                project, "--allowlist", str(allowlist), "--json"
             )
-            self.assertEqual(
-                changed.returncode,
-                0,
-                changed.stdout + changed.stderr,
-            )
+            self.assertEqual(changed.returncode, 0, changed.stdout + changed.stderr)
             changed_payload = payload(changed)
             changed_finding = next(
-                item
-                for item in changed_payload["findings"]
-                if item["rule"] == "cream-serif-sage-cluster"
+                item for item in changed_payload["findings"]
+                if item["rule"] == "claim-needs-provenance"
+                and item["line"] == initial_finding["line"]
             )
             self.assertNotEqual(
-                initial_finding["matched_signals"],
-                changed_finding["matched_signals"],
+                initial_finding["matched_signal"], changed_finding["matched_signal"]
             )
             self.assertNotEqual(
-                initial_finding["fingerprint"],
-                changed_finding["fingerprint"],
+                initial_finding["fingerprint"], changed_finding["fingerprint"]
             )
             self.assertEqual(changed_payload["suppressed_count"], 0)
 
     def test_expiry_values_must_be_exact_schema_date_strings(self) -> None:
         allow_entry = {
-            "rule": "generic-gradient-text",
+            "rule": "claim-needs-provenance",
             "path": "page.html",
             "fingerprint": "0" * 64,
             "reason": "Reviewed visual treatment.",
@@ -1554,6 +1981,8 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         }
         acknowledgement = {
             "path": "src/**",
+            "sha256": "0" * 64,
+            "size_bytes": 123,
             "reason": "Reviewed generated sources separately.",
             "owner": "Repository owner",
             "expires": ACTIVE_EXPIRY,
@@ -1666,7 +2095,14 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         )
         self.assertEqual(
             set(template["acknowledge_skipped"][0]),
-            {"path", "reason", "owner", "expires"},
+            {
+                "path",
+                "sha256",
+                "size_bytes",
+                "reason",
+                "owner",
+                "expires",
+            },
         )
         expected_expiry = (
             date.today() + timedelta(days=30)
@@ -1676,6 +2112,20 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             template["acknowledge_skipped"][0]["expires"],
             expected_expiry,
         )
+        packaged_example = json.loads(
+            (
+                PLUGIN
+                / "skills"
+                / "design-dna"
+                / "templates"
+                / "scan-allowlist.example.json"
+            ).read_text(encoding="utf-8")
+        )
+        for collection in ("allow", "acknowledge_skipped"):
+            self.assertEqual(
+                "REPLACE_WITH_DATE_WITHIN_90_DAYS",
+                packaged_example[collection][0]["expires"],
+            )
         schema = json.loads(
             (
                 PLUGIN
@@ -1715,7 +2165,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             format_checker=FormatChecker(),
         )
         allow_entry = {
-            "rule": "generic-gradient-text",
+            "rule": "claim-needs-provenance",
             "path": "src/page.html",
             "fingerprint": "0" * 64,
             "reason": " a   b ",
@@ -1724,6 +2174,8 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         }
         acknowledgement = {
             "path": "generated/**",
+            "sha256": "0" * 64,
+            "size_bytes": 123,
             "reason": " a   b ",
             "owner": " Repository owner ",
             "expires": ACTIVE_EXPIRY,
@@ -1808,7 +2260,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
 
     def test_allowlist_paths_are_portably_project_relative(self) -> None:
         allow_entry = {
-            "rule": "generic-gradient-text",
+            "rule": "claim-needs-provenance",
             "path": "page.html",
             "fingerprint": "0" * 64,
             "reason": "Reviewed project-specific treatment.",
@@ -1817,6 +2269,8 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         }
         acknowledgement = {
             "path": "generated/**",
+            "sha256": "0" * 64,
+            "size_bytes": 123,
             "reason": "Reviewed generated source separately.",
             "owner": "Repository owner",
             "expires": ACTIVE_EXPIRY,
@@ -1873,12 +2327,42 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                     )
                     self.assertIn("project-relative", rejected.stderr)
 
+    def test_retired_aesthetic_rules_cannot_be_allowlisted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.html").write_text(
+                "<main><p>Reviewed content.</p></main>",
+                encoding="utf-8",
+            )
+            allowlist = project / "allow.json"
+            allowlist.write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "allow": [{
+                        "rule": "repeated-gradient-text",
+                        "path": "page.html",
+                        "fingerprint": "0" * 64,
+                        "reason": "Stale aesthetic exception.",
+                        "owner": "Design owner",
+                        "expires": ACTIVE_EXPIRY,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            result = run_scan(
+                project,
+                "--allowlist",
+                str(allowlist),
+                "--json",
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("unknown allowlist rule", result.stderr)
+
     def test_emits_schema_valid_entry_for_an_actual_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
-                '<h1>Better <span className="text-violet-600">'
-                "coffee</span></h1>",
+                "<main><p>Trusted by thousands.</p></main>\n",
                 encoding="utf-8",
             )
             first = run_scan(project, "--json")
@@ -1886,7 +2370,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             finding = next(
                 item
                 for item in payload(first)["findings"]
-                if item["rule"] == "decorative-headline-span"
+                if item["rule"] == "claim-needs-provenance"
             )
             emitted = run_scan(
                 project,
@@ -1942,8 +2426,9 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
-                '<h1>Better <span className="text-violet-600">'
-                "coffee</span></h1>",
+                "<p>Trusted by thousands.</p>\n"
+                "<p>Industry-leading service.</p>\n"
+                "<p>Five-star rated care.</p>\n",
                 encoding="utf-8",
             )
             initial = run_scan(project, "--json")
@@ -1951,11 +2436,11 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             initial_finding = next(
                 item
                 for item in payload(initial)["findings"]
-                if item["rule"] == "decorative-headline-span"
+                if item["rule"] == "claim-needs-provenance"
             )
             allowlist = project / "allow.json"
             entry = {
-                "rule": "decorative-headline-span",
+                "rule": "claim-needs-provenance",
                 "path": "page.tsx",
                 "fingerprint": initial_finding["fingerprint"],
                 "reason": "Approved campaign emphasis with documented meaning.",
@@ -1996,11 +2481,12 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             self.assertEqual(
                 suppression["suppression"]["expires"], entry["expires"]
             )
-            self.assertFalse(
-                any(
+            self.assertEqual(
+                sum(
                     item["rule"] == entry["rule"]
                     for item in result_payload["findings"]
-                )
+                ),
+                2,
             )
 
             text_result = run_scan(
@@ -2036,24 +2522,23 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             self.assertEqual(rejected.returncode, 2)
             self.assertIn("global allowlist rule", rejected.stderr)
 
-    def test_allowlist_cannot_drop_an_aggregate_rule_below_its_threshold(
+    def test_allowlist_suppresses_only_the_exact_evidence_fingerprint(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "buttons.html").write_text(
-                "\n".join(
-                    '<button class="rounded-full">Action</button>'
-                    for _ in range(4)
-                ),
+                "<p>Trusted by thousands.</p>\n"
+                "<p>Industry-leading service.</p>\n"
+                "<p>Five-star rated care.</p>\n",
                 encoding="utf-8",
             )
             initial = run_scan(project, "--json")
             self.assertEqual(initial.returncode, 0, initial.stderr)
-            first_pill = next(
+            first_claim = next(
                 item
                 for item in payload(initial)["findings"]
-                if item["rule"] == "uniform-pill-language"
+                if item["rule"] == "claim-needs-provenance"
                 and item["line"] == 1
             )
             allowlist = project / "allow.json"
@@ -2061,12 +2546,12 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 json.dumps({
                     "schema_version": 1,
                     "allow": [{
-                        "rule": "uniform-pill-language",
+                        "rule": "claim-needs-provenance",
                         "path": "buttons.html",
                         "line": 1,
-                        "fingerprint": first_pill["fingerprint"],
-                        "reason": "Approved pill control in the primary toolbar.",
-                        "owner": "Design system owner",
+                        "fingerprint": first_claim["fingerprint"],
+                        "reason": "Approved claim with documented evidence.",
+                        "owner": "Content owner",
                         "expires": ACTIVE_EXPIRY,
                     }],
                 }),
@@ -2082,21 +2567,21 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 result.returncode, 0, result.stdout + result.stderr
             )
             result_payload = payload(result)
-            pills = [
+            claims = [
                 item
                 for item in result_payload["findings"]
-                if item["rule"] == "uniform-pill-language"
+                if item["rule"] == "claim-needs-provenance"
             ]
-            suppressed_pills = [
+            suppressed_claims = [
                 item
                 for item in result_payload["suppressed_findings"]
-                if item["rule"] == "uniform-pill-language"
+                if item["rule"] == "claim-needs-provenance"
             ]
-            self.assertEqual(len(pills), 3)
-            self.assertEqual(len(suppressed_pills), 1)
-            self.assertEqual(suppressed_pills[0]["line"], 1)
+            self.assertEqual(len(claims), 2)
+            self.assertEqual(len(suppressed_claims), 1)
+            self.assertEqual(suppressed_claims[0]["line"], 1)
 
-    def test_owner_policy_contract_is_strict_and_literal_filler_exceptions_are_narrow(
+    def test_owner_policy_contract_is_extensible_and_literal_filler_exceptions_are_narrow(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -2135,6 +2620,30 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             )
             self.assertEqual(proof["owner_policy"], "allow")
             self.assertEqual(proof["classification"], "gate")
+            project_policy = project / ".design-dna" / "owner-policy.yml"
+            project_policy.parent.mkdir()
+            project_policy.write_text(
+                permissive_policy.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            auto_discovered = run_scan(project, "--json")
+            self.assertEqual(auto_discovered.returncode, 1, auto_discovered.stderr)
+            auto_proof = next(
+                item
+                for item in payload(auto_discovered)["findings"]
+                if item["rule"] == "placeholder-proof"
+            )
+            self.assertEqual(auto_proof["owner_policy"], "allow")
+            self.assertEqual(
+                payload(auto_discovered)["owner_policy"],
+                "project:/.design-dna/owner-policy.yml",
+            )
+            auto_payload = payload(auto_discovered)
+            self.assertEqual(auto_payload["project"], "project:/")
+            self.assertFalse(
+                Path(auto_payload["owner_policy"]).is_absolute()
+            )
+            self.assertNotIn("type_watch", auto_payload)
 
             invalid_policies = {
                 "missing": (
@@ -2145,49 +2654,28 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                     project / "inactive.yml",
                     "owner-policy status must be active",
                 ),
-                "missing-default": (
-                    project / "missing-default.yml",
-                    "owner-policy defaults contract mismatch",
-                ),
                 "unknown-top-level": (
                     project / "unknown-top-level.yml",
                     "owner-policy top-level contract mismatch",
                 ),
                 "wrong-schema": (
                     project / "wrong-schema.yml",
-                    "owner-policy schema_version must be 1",
+                    "owner-policy schema_version must be 2",
                 ),
                 "invalid-enum": (
                     project / "invalid-enum.yml",
                     (
                         "owner-policy default "
-                        "fabricated_proof_or_business_facts must be one of"
+                        "truth_and_claims must be one of"
                     ),
                 ),
-                "duplicate-list-item": (
-                    project / "duplicate-list-item.yml",
-                    (
-                        "owner-policy headline_fragment_exceptions items "
-                        "must be unique"
-                    ),
-                ),
-                "short-list-item": (
-                    project / "short-list-item.yml",
-                    (
-                        "owner-policy headline_fragment_exceptions items "
-                        "must contain at least five characters"
-                    ),
+                "invalid-id": (
+                    project / "invalid-id.yml",
+                    "is not a portable concern ID",
                 ),
             }
             invalid_policies["inactive"][0].write_text(
                 bundled_policy.replace('status: "active"', 'status: "draft"'),
-                encoding="utf-8",
-            )
-            invalid_policies["missing-default"][0].write_text(
-                bundled_policy.replace(
-                    '  release_residue: "prohibit"\n',
-                    "",
-                ),
                 encoding="utf-8",
             )
             invalid_policies["unknown-top-level"][0].write_text(
@@ -2195,31 +2683,20 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 encoding="utf-8",
             )
             invalid_policies["wrong-schema"][0].write_text(
-                bundled_policy.replace("schema_version: 1", "schema_version: 2"),
+                bundled_policy.replace("schema_version: 2", "schema_version: 1"),
                 encoding="utf-8",
             )
             invalid_policies["invalid-enum"][0].write_text(
                 bundled_policy.replace(
-                    'fabricated_proof_or_business_facts: "prohibit"',
-                    'fabricated_proof_or_business_facts: "bananas"',
+                    'truth_and_claims: "prohibit"',
+                    'truth_and_claims: "bananas"',
                 ),
                 encoding="utf-8",
             )
-            invalid_policies["duplicate-list-item"][0].write_text(
+            invalid_policies["invalid-id"][0].write_text(
                 bundled_policy.replace(
-                    '  - "complete semantic phrase"\n',
-                    (
-                        '  - "complete semantic phrase"\n'
-                        '  - "complete semantic phrase"\n'
-                    ),
-                    1,
-                ),
-                encoding="utf-8",
-            )
-            invalid_policies["short-list-item"][0].write_text(
-                bundled_policy.replace(
-                    '  - "complete semantic phrase"',
-                    '  - "tiny"',
+                    '  truth_and_claims: "prohibit"\n',
+                    '  Bad-Key: "prohibit"\n',
                     1,
                 ),
                 encoding="utf-8",
@@ -2290,7 +2767,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 proof["fingerprint"],
             )
 
-    def test_skipped_sources_fail_closed_unless_owner_acknowledged(self) -> None:
+    def test_skipped_sources_fail_closed_even_when_owner_acknowledged(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             source = project / "src"
@@ -2334,18 +2811,26 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 gated.returncode, 1, gated.stdout + gated.stderr
             )
 
-            acknowledgement = {
-                "path": "src/**",
-                "reason": "Repository owner reviewed these generated sources separately.",
-                "owner": "Repository owner",
-                "expires": ACTIVE_EXPIRY,
-            }
+            acknowledgements = [
+                {
+                    "path": item["file"],
+                    "sha256": item["sha256"],
+                    "size_bytes": item["size_bytes"],
+                    "reason": (
+                        "Repository owner reviewed this generated source "
+                        "separately."
+                    ),
+                    "owner": "Repository owner",
+                    "expires": ACTIVE_EXPIRY,
+                }
+                for item in advisory_payload["skipped_sources"]
+            ]
             allowlist = project / "allow.json"
             allowlist.write_text(
                 json.dumps({
                     "schema_version": 1,
                     "allow": [],
-                    "acknowledge_skipped": [acknowledgement],
+                    "acknowledge_skipped": acknowledgements,
                 }),
                 encoding="utf-8",
             )
@@ -2359,7 +2844,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             )
             self.assertEqual(
                 acknowledged.returncode,
-                0,
+                1,
                 acknowledged.stdout + acknowledged.stderr,
             )
             acknowledged_payload = payload(acknowledged)
@@ -2370,8 +2855,9 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 acknowledged_payload["gate_status"],
                 "acknowledged-incomplete",
             )
-            self.assertTrue(acknowledged_payload["ok"])
-            self.assertTrue(acknowledged_payload["gate_passed"])
+            self.assertFalse(acknowledged_payload["ok"])
+            self.assertFalse(acknowledged_payload["gate_passed"])
+            self.assertFalse(acknowledged_payload["source_gate_passed"])
             self.assertEqual(
                 set(acknowledged_payload["acknowledged_skipped_files"]),
                 {"src/not-utf8.tsx", "src/oversized.css"},
@@ -2380,7 +2866,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 acknowledged_payload[
                     "active_skipped_source_acknowledgements"
                 ],
-                [acknowledgement],
+                acknowledgements,
             )
             self.assertTrue(
                 all(
@@ -2397,7 +2883,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             )
             self.assertEqual(
                 acknowledged_text.returncode,
-                0,
+                1,
                 acknowledged_text.stdout + acknowledged_text.stderr,
             )
             self.assertIn("SKIP-ACK-ACTIVE", acknowledged_text.stdout)
@@ -2406,15 +2892,15 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
                 2,
             )
 
-            expired_acknowledgement = {
-                **acknowledgement,
-                "expires": "2000-01-01",
-            }
+            expired_acknowledgements = [
+                {**entry, "expires": "2000-01-01"}
+                for entry in acknowledgements
+            ]
             allowlist.write_text(
                 json.dumps({
                     "schema_version": 1,
                     "allow": [],
-                    "acknowledge_skipped": [expired_acknowledgement],
+                    "acknowledge_skipped": expired_acknowledgements,
                 }),
                 encoding="utf-8",
             )
@@ -2430,7 +2916,7 @@ class ScannerAllowlistAndCompletenessTests(unittest.TestCase):
             expired_payload = payload(expired)
             self.assertEqual(
                 expired_payload["expired_skipped_source_acknowledgements"],
-                [expired_acknowledgement],
+                expired_acknowledgements,
             )
             self.assertEqual(
                 set(expired_payload["unacknowledged_skipped_files"]),

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-codex-validator-trust-pin",
+  "logical_id": "plugin-creator/validate_plugin.py",
+  "path_suffix": "/skills/.system/plugin-creator/scripts/validate_plugin.py",
+  "sha256": "4e84c911479e4d158d723ed8ccc881d3499e580fbf5650e60d379a1a25ac3186",
+  "bytes": 21809,
+  "reviewed_at": "2026-07-28",
+  "review_due": "2026-10-26",
+  "review_basis": "Pinned from the locally installed Codex Plugin Creator system skill used to validate Design DNA 3.0.0.",
+  "trust_boundary": "Publisher-reviewed byte pin, not an OpenAI signature or proof that a future validator revision is equivalent."
+}

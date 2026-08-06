@@ -1,46 +1,70 @@
 # Iconography
 
-Use this when icons communicate actions, navigation, status, categories, or product concepts.
+Use this when symbols, illustrations, marks, or pictorial controls communicate
+actions, navigation, state, categories, concepts, atmosphere, or identity.
 
-## Decide whether an icon helps
+## Decide the role from context
 
-Prefer text when the action or concept is unfamiliar, consequential, or difficult to depict. Use icons when they improve recognition, scanning, compactness, or continuity.
+An icon can aid recognition, support scanning, preserve continuity, teach a
+metaphor, create character, carry ornament, or contribute to a larger visual
+language. Text, icon, image, gesture, or a combination may be the right form.
+Consequential or unfamiliar actions still need a label or explanation that the
+intended audience can understand.
 
-Do not use emoji or familiar library symbols as decoration by default. A sparkle, rocket, shield, lock, wand, or checkmark is not evidence of value.
+Do not maintain an ingredient blacklist. Emoji, familiar library symbols,
+custom marks, detailed illustrations, text glyphs, animated symbols, and
+decorative motifs can all be valid. Judge whether their meaning, cultural
+implication, originality, rights, rendered quality, and frequency support the
+project's creative logic.
 
-## Build one visual grammar
+## Define the system that the work needs
 
-Define:
+Document the relevant `creative_logic`, evidence, decisions, limits, and open
+extensions. Decide which properties should be shared and which may vary. Those
+properties might include construction, optical size, stroke, fill, material,
+color, dimensionality, animation, metaphor, or another project-specific
+quality, but there is no required inventory.
 
-- stroke or fill strategy;
-- stroke weight and cap/join behavior;
-- grid, optical size, and padding;
-- corner character;
-- filled, selected, disabled, and inverse states;
-- color roles;
-- animation behavior, if meaningful.
+One visual grammar is not universally preferable. A product may need a highly
+consistent control set, distinct families for different contexts, or a
+deliberate collision of symbolic languages. Coherence can come from role,
+placement, behavior, provenance, or art direction rather than identical
+geometry. Preserve useful irregularity and commissioned one-offs when their
+difference is meaningful.
 
-Modify or select symbols for the product's concepts rather than shipping an icon set's demo page unchanged. Preserve family coherence without forcing every concept into the same metaphor.
+Select or create symbols for the real concepts. Do not ship a library's demo
+selection unchanged unless it genuinely fits. Custom work is not automatically
+better than an established symbol, and familiarity is not automatically
+generic.
 
-## Label and operate
+## Make meaning and operation robust
 
-- Give icon-only controls an accessible name and visible tooltip where helpful.
-- Keep consequential or unfamiliar actions visibly labeled.
-- Separate decorative icons from assistive technology.
-- Make selected, expanded, pressed, and disabled states programmatically available.
-- Provide comfortable targets independent of the glyph's visual size.
-- Do not rely on icon color alone for meaning.
+- Give icon-only controls an accessible name and a visible explanation where
+  recognition is uncertain or the action is consequential.
+- Keep decorative symbols out of the accessibility tree unless their presence
+  conveys meaning that must be described.
+- Expose selected, expanded, pressed, busy, invalid, and disabled states
+  programmatically when those states exist.
+- Make the operable target appropriate to the input context independently of
+  the glyph's visible bounds.
+- Do not rely on color, shape, position, animation, or sound alone when a state
+  or action must be understood.
+- Provide non-hover and non-gesture paths, and preserve focus behavior.
 
-## Verify
+If symbols vary by locale, culture, platform, or direction, verify the intended
+meaning with appropriate reviewers. Mirroring, replacement, or retaining the
+original orientation should follow meaning rather than a blanket RTL rule.
 
-Test:
+## Review the rendered result
 
-- recognition without surrounding marketing copy;
-- cultural or locale ambiguity;
-- light, dark, high-contrast, and forced-color modes;
-- 200% and 400% zoom;
-- alignment beside every text style;
-- touch, keyboard, pointer, focus, and disabled states;
-- legibility at the actual rendered size.
+Start with an unprimed observation of the actual interface. Then verify the
+symbols in the combinations where risk exists: with and without labels,
+beside actual type, at rendered sizes, under zoom and forced colors, across
+supported themes, inputs, locales, states, and assistive technology.
 
-Use custom icons only when they add meaning or identity that a well-chosen established symbol cannot.
+Ask whether users can recognize and operate the experience, whether decorative
+or expressive symbols feel intentional, and whether repeated or mixed icon
+families support the declared creative logic. Record concrete ambiguity,
+inconsistency, rights, rendering, or accessibility failures. Do not reject a
+symbol merely because it is popular, ornamental, custom, playful, or drawn in
+a different style from another family.

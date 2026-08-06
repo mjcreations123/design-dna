@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-041",
+  "retrieved": "2026-07-30",
+  "url": "https://bradfrost.com/blog/post/design-system-components-recipes-and-snowflakes/",
+  "locator": "Design system components, recipes, and snowflakes; Considerations",
+  "content_kind": "maintainer_summary",
+  "summary": "Brad Frost distinguishes shared context-agnostic design-system components, product-specific reusable compositions called recipes, and justified one-off snowflakes. He advises keeping product-specific work out of the core library until reuse warrants promotion, while acknowledging that the layered vocabulary and governance require practice."
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Detect duplicate active Design DNA discovery routes and stale nested copies."""
+"""Detect Design DNA filesystem discovery candidates and collision risks."""
 
 from __future__ import annotations
 
@@ -25,11 +25,11 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-import yaml
 from jsonschema import Draft202012Validator, FormatChecker
 
 from common import (
     ToolFailure,
+    MAX_DISCOVERY_ENTRIES,
     absolute,
     assert_no_reparse_path,
     content_manifest,
@@ -37,8 +37,29 @@ from common import (
     is_reparse,
     is_within,
     load_json,
+    skill_frontmatter,
     strict_format_checker,
 )
+
+
+def scan_scope() -> dict[str, object]:
+    """Describe the bounded evidence produced by this filesystem scan."""
+    return {
+        "basis": "explicit-filesystem-root-scan",
+        "root_scope": "explicit-roots-only",
+        "activation_state": "not-verified",
+        "project_admin_session_routes": "not-inspected",
+        "limitations": [
+            (
+                "A discovered SKILL.md is a filesystem discovery candidate, "
+                "not proof that a host activated it."
+            ),
+            (
+                "Roots not passed with --root, including project-local, "
+                "administrator-managed, and session-specific routes, were not scanned."
+            ),
+        ],
+    }
 
 
 def atomic_write_json(path: Path, payload: object) -> None:
@@ -95,74 +116,30 @@ def validate_verification_record(payload: object) -> None:
         )
 
 
-class NoDuplicateLoader(yaml.SafeLoader):
-    """Safe YAML loader that rejects duplicate keys at every mapping depth."""
-
-
-def _mapping(loader, node, deep=False):
-    result = {}
-    for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
-        try:
-            duplicate = key in result
-        except TypeError as exc:
-            raise yaml.constructor.ConstructorError(
-                "mapping",
-                node.start_mark,
-                "unhashable mapping key",
-                key_node.start_mark,
-            ) from exc
-        if duplicate:
-            raise yaml.constructor.ConstructorError(
-                "mapping",
-                node.start_mark,
-                f"duplicate key: {key}",
-                key_node.start_mark,
-            )
-        result[key] = loader.construct_object(value_node, deep=deep)
-    return result
-
-
-NoDuplicateLoader.add_constructor(
-    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-    _mapping,
-)
-
-
-def skill_frontmatter(path: Path) -> dict[object, object]:
-    try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as exc:
-        raise ToolFailure("skill-route-read-failed", str(exc), path) from exc
-    match = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)", text, re.S)
-    if not match:
+def portable_home_path(path: Path, home: Path) -> str:
+    path = absolute(path)
+    home = absolute(home)
+    if not is_within(path, home) or path == home:
         raise ToolFailure(
-            "invalid-skill-frontmatter",
-            "SKILL.md must start with complete YAML frontmatter.",
+            "route-verification-path-not-home-relative",
+            "Stored discovery and installed routes must be below the selected home.",
             path,
         )
-    try:
-        metadata = yaml.load(match.group(1), Loader=NoDuplicateLoader)
-    except yaml.YAMLError as exc:
+    return "~/" + path.relative_to(home).as_posix()
+
+
+def portable_canonical_path(path: Path) -> str:
+    path = absolute(path)
+    if (
+        path.name != "design-dna"
+        or path.parent.name != "skills"
+    ):
         raise ToolFailure(
-            "invalid-skill-frontmatter",
-            str(exc),
-            path,
-        ) from exc
-    if not isinstance(metadata, dict):
-        raise ToolFailure(
-            "invalid-skill-frontmatter",
-            "SKILL.md frontmatter must be a mapping.",
-            path,
-        )
-    name = metadata.get("name")
-    if type(name) is not str:
-        raise ToolFailure(
-            "invalid-skill-name",
-            "SKILL.md frontmatter name must be a string scalar.",
+            "route-verification-canonical-not-package-relative",
+            "Stored canonical identity requires the package route skills/design-dna.",
             path,
         )
-    return metadata
+    return "skills/design-dna"
 
 
 def declares_design_dna(path: Path) -> bool:
@@ -210,6 +187,7 @@ def discover(root: Path) -> tuple[list[Path], list[dict[str, str]]]:
     warnings: list[dict[str, str]] = []
     safe_alias_targets: set[Path] = set()
     visited: set[Path] = set()
+    seen = 0
     if not root.exists():
         return results, warnings
 
@@ -229,6 +207,13 @@ def discover(root: Path) -> tuple[list[Path], list[dict[str, str]]]:
         current_path = absolute(Path(current))
         visited.add(current_path)
         for name in list(directories):
+            seen += 1
+            if seen > MAX_DISCOVERY_ENTRIES:
+                raise ToolFailure(
+                    "discovery-limit-exceeded",
+                    "Discovery root exceeds the bounded scan limit.",
+                    root,
+                )
             child = current_path / name
             if not is_reparse(child):
                 continue
@@ -256,6 +241,13 @@ def discover(root: Path) -> tuple[list[Path], list[dict[str, str]]]:
                 }
             )
         for name in files:
+            seen += 1
+            if seen > MAX_DISCOVERY_ENTRIES:
+                raise ToolFailure(
+                    "discovery-limit-exceeded",
+                    "Discovery root exceeds the bounded scan limit.",
+                    root,
+                )
             path = current_path / name
             if is_reparse(path):
                 if name.casefold() == "skill.md":
@@ -302,12 +294,32 @@ def discover(root: Path) -> tuple[list[Path], list[dict[str, str]]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--canonical", type=Path, required=True)
-    parser.add_argument("--root", action="append", type=Path, default=[], help="Discovery root to inspect; repeatable.")
-    parser.add_argument("--expected", action="append", type=Path, default=[], help="Allowed installed route; repeatable.")
+    parser.add_argument(
+        "--root",
+        action="append",
+        type=Path,
+        default=[],
+        help="Filesystem discovery root to inspect; repeatable. Activation is not inferred.",
+    )
+    parser.add_argument(
+        "--expected",
+        action="append",
+        type=Path,
+        default=[],
+        help="Expected managed filesystem candidate; repeatable.",
+    )
     parser.add_argument(
         "--output",
         type=Path,
         help="Atomically write a successful machine-readable verification record.",
+    )
+    parser.add_argument(
+        "--home",
+        type=Path,
+        help=(
+            "Home root used to encode stored discovery and route paths as "
+            "portable ~/ labels; required with --output."
+        ),
     )
     args = parser.parse_args()
     try:
@@ -317,12 +329,18 @@ def main() -> int:
         if not roots:
             raise ToolFailure(
                 "discovery-roots-required",
-                "Pass every host discovery root that must contain exactly one Design DNA route.",
+                (
+                    "Pass every configured filesystem discovery root to include "
+                    "in this bounded candidate scan."
+                ),
             )
         if not expected:
             raise ToolFailure(
                 "expected-routes-required",
-                "Pass the complete intended set of Design DNA routes for the supplied discovery roots.",
+                (
+                    "Pass the complete intended managed candidate set for the "
+                    "supplied filesystem discovery roots."
+                ),
             )
         if not canonical.is_dir():
             raise ToolFailure(
@@ -369,30 +387,50 @@ def main() -> int:
         failures: list[dict[str, str]] = []
         warnings: list[dict[str, str]] = []
         for root in roots:
-            if not root.is_dir():
-                failures.append(
+            assert_no_reparse_path(root)
+            if not root.exists():
+                warnings.append(
                     {
-                        "code": "discovery-root-missing",
+                        "code": "optional-discovery-root-absent",
                         "path": str(root),
-                        "message": "Discovery root does not exist.",
+                        "message": (
+                            "Discovery root is absent and therefore contains "
+                            "no Design DNA filesystem discovery candidate."
+                        ),
                     }
                 )
                 continue
-            assert_no_reparse_path(root)
+            if not root.is_dir():
+                failures.append(
+                    {
+                        "code": "discovery-root-invalid",
+                        "path": str(root),
+                        "message": "Discovery root exists but is not a directory.",
+                    }
+                )
+                continue
             discovered, root_warnings = discover(root)
             found.extend(discovered)
             warnings.extend(root_warnings)
         found = sorted(set(found))
         unexpected = [path for path in found if path not in expected]
         for path in unexpected:
-            failures.append({"code": "duplicate-active-route", "path": str(path), "message": "Unexpected discoverable design-dna skill."})
+            failures.append({
+                "code": "unexpected-discovery-candidate",
+                "path": str(path),
+                "message": (
+                    "Unexpected Design DNA filesystem discovery candidate. "
+                    "Activation is not inferred; treat it as a fail-closed "
+                    "collision risk."
+                ),
+            })
         missing = sorted(expected - set(found))
         for path in missing:
             failures.append(
                 {
                     "code": "expected-route-missing",
                     "path": str(path),
-                    "message": "Expected installed route was not discovered.",
+                    "message": "Expected managed filesystem candidate was not discovered.",
                 }
             )
 
@@ -408,6 +446,28 @@ def main() -> int:
                 failures.append({"code": "installed-route-drift", "path": str(path), "message": f"{digest} != {canonical_hash}"})
         verification_output: str | None = None
         if args.output is not None and not failures:
+            if args.home is None:
+                raise ToolFailure(
+                    "route-verification-home-required",
+                    "--home is required when writing a portable verification record.",
+                )
+            home = absolute(args.home)
+            assert_no_reparse_path(home)
+            if not home.is_dir():
+                raise ToolFailure(
+                    "route-verification-home-invalid",
+                    "The selected home root must be an existing directory.",
+                    home,
+                )
+            canonical_label = portable_canonical_path(canonical)
+            root_labels = [
+                portable_home_path(path, home)
+                for path in roots
+            ]
+            expected_labels = [
+                portable_home_path(path, home)
+                for path in sorted(expected)
+            ]
             output = absolute(args.output)
             if is_within(output, canonical) or any(
                 is_within(output, root)
@@ -435,25 +495,26 @@ def main() -> int:
                 if digest != route["content_sha256"]:
                     raise ToolFailure(
                         "unstable-route-verification-input",
-                        "Installed route changed during route verification.",
+                        "Filesystem discovery candidate changed during verification.",
                         route_path,
                     )
                 stable_routes.append({
-                    "path": str(route_path),
+                    "path": portable_home_path(route_path, home),
                     "content_sha256": digest,
                     "matches_canonical": digest == canonical_hash,
                 })
             record = {
-                "schema_version": 1,
+                "schema_version": 3,
                 "record_type": "design-dna-route-verification",
                 "status": "passed",
                 "verified_at": datetime.now(timezone.utc).isoformat().replace(
                     "+00:00",
                     "Z",
                 ),
-                "canonical": str(canonical),
-                "roots": [str(path) for path in roots],
-                "expected": [str(path) for path in sorted(expected)],
+                "canonical": canonical_label,
+                "scan_scope": scan_scope(),
+                "roots": root_labels,
+                "expected": expected_labels,
                 "canonical_sha256": canonical_hash,
                 "routes": stable_routes,
             }
@@ -464,6 +525,7 @@ def main() -> int:
             "ok": not failures,
             "canonical": str(canonical),
             "canonical_sha256": canonical_hash,
+            "scan_scope": scan_scope(),
             "routes": routes,
             "failures": failures,
             "warnings": warnings,

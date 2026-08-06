@@ -13,7 +13,7 @@ Install the exact maintainer pins before running release-critical test discovery
 harness:
 
 ```text
-python -m pip install -r maintainer/requirements-dev.txt
+python -m pip install --require-hashes -r maintainer/requirements-dev.lock
 ```
 
 `maintainer/tests/test_dependency_preflight.py` is intentionally never skipped. Missing,
@@ -28,6 +28,10 @@ python maintainer/scripts/run_evals.py maintainer/evals/fixtures/behavioral-case
   --skill-root skills/design-dna \
   --driver <executable> \
   --driver-arg <argument> \
+  --skill-provider <provider> \
+  --skill-model <model> \
+  --skill-model-version <concrete-version> \
+  --skill-reasoning-effort <effort> \
   --work-root <empty-temporary-directory> \
   --results-dir maintainer/evals/results
 ```
@@ -40,22 +44,42 @@ Required choices:
 - `--host codex` stages the runtime at
   `<fake-home>/.agents/skills/design-dna`.
 - `--host claude_code` stages it at
-  `<fake-home>/.claude/skills/design-dna`.
+  `<fake-home>/.claude/skills/design-dna` as a direct skill.
 - `--driver` is the trusted executable used for the skill variant. No shell is invoked.
 
 Useful controls:
 
 - `--baseline-driver` and repeated `--baseline-arg` add a baseline with no installed skill.
+- `--skill-provider`, `--skill-model`, `--skill-model-version`, and
+  `--skill-reasoning-effort` record the exact model context supplied to the
+  trusted driver. Repeat `--skill-generation-config KEY=VALUE` for approved
+  non-secret scalar settings such as temperature, seed, or output-token limit.
+  This metadata records the run; it does not configure the driver.
+- The corresponding `--baseline-*` options record a deliberately separate
+  baseline context. When all baseline model options are omitted, a declared
+  skill context is inherited so the comparison remains controlled. A partial
+  declaration is refused. Moving aliases such as `latest`, secret-like values,
+  and arbitrary generation-setting keys are refused.
 - `invocation_mode: explicit` (the fixture default) gives only the skill variant the selected
   host's mapped instruction (`$design-dna` for Codex or `/design-dna` for Claude Code).
   `invocation_mode: implicit` gives both variants the identical natural task prompt and tests host
   discovery rather than prompt compliance.
+- `installation_mode: direct-skill` (the fixture default) identifies the exact route the runner
+  stages. `packaged-plugin` is represented so a fixture cannot blur the two Claude installation
+  contracts, but the current runner refuses it before execution. It does not claim that copying a
+  skill into `.claude/skills` proves installation through `.claude/plugins/cache` or invocation as
+  `/design-dna:design-dna`. Packaged-plugin evidence requires a future host-native installer and
+  invocation adapter.
 - `--runs 2` through `--runs 20` samples repeatability and convergence. The default is one.
 - Repeat `--case <case-id>` to select cases.
 - Repeat `--monitor-root <existing-directory>` to fail the particular run that changes an external
   directory.
-- Repeat `--pass-env <NAME>` only when a trusted driver genuinely needs a caller variable. Passed
-  names are recorded and their values are redacted from bounded captured output.
+- Repeat `--pass-env <NAME>` only when a trusted driver genuinely needs a caller variable. Treat
+  every passed value as sensitive: values shorter than eight characters are refused, names are
+  recorded without values, loaded driver records and bounded output are redacted, and the complete
+  temporary run tree is scanned for exact UTF-8, UTF-16, Base64, and URL-safe Base64 forms. A
+  detected value or incomplete scan fails the run, blocks artifact promotion, and overrides
+  `--keep-workspaces` so the temporary tree is removed.
 - `--require-driver-report` requires the driver to write its self-reported load record. The legacy
   option spelling `--require-host-attestation` is accepted only as a compatibility alias; neither
   spelling turns a driver-authored claim into verified host evidence.
@@ -81,6 +105,13 @@ Strict audit rejects mock, test, fixture, demo, example, and sample source ident
 source must also match the owner-controlled host, source ID, version, method, implementation path,
 and implementation SHA-256 in `maintainer/compatibility/trusted-host-adapters.yml`. That registry is
 itself included in the aggregate release identity, so editing trust policy invalidates the manifest.
+
+Every result records `model_context` for both driver variants and binds its
+canonical JSON with SHA-256. Omitting all model fields produces the honest
+`unreported` state so diagnostic work can proceed without fabricated metadata.
+Unreported identity is release-ineligible. Promoted evidence requires declared,
+concrete model identity and a review binding to the exact result, run artifact,
+and model-context hash.
 
 ### Host-native challenge protocol
 
@@ -123,6 +154,7 @@ Fixtures conform to `maintainer/evals/schema.json`:
     {
       "id": "specific-case-id",
       "invocation_mode": "explicit",
+      "installation_mode": "direct-skill",
       "task": "Neutral task text shared by the skill and baseline variants.",
       "input_dir": "inputs/optional-project",
       "timeout_seconds": 300,
@@ -157,7 +189,10 @@ Fixtures conform to `maintainer/evals/schema.json`:
 records the actual explicit invocation syntax for each supported host; the
 runner selects the entry matching `--host`. Omitted `invocation_mode` resolves
 to `explicit`; use `implicit` only when the host's ordinary skill-discovery
-path is the behavior under test. `input_dir` is resolved relative to the
+path is the behavior under test. Omitted `installation_mode` resolves to
+`direct-skill`. Selecting `packaged-plugin` fails closed because this harness
+does not install a plugin package or exercise Claude's namespaced plugin command.
+`input_dir` is resolved relative to the
 fixture file and cannot leave that directory. Input files are copied without following links and
 hashed before the driver runs. `files_unchanged`, `changed_files_only`, and
 `max_changed_input_files` compare the completed workspace with that exact input snapshot.
@@ -177,6 +212,15 @@ Automatic expectations are deterministic smoke checks. Output containment search
 captured stream even when the JSON stores only a bounded 250,000-character head-and-tail
 representation. File expectations are project-relative and cannot traverse a link, junction, or
 reparse point.
+
+For media-dependent design cases, use authorized immutable local assets, a human-readable brief,
+and machine-readable provenance sufficient for the question. Define the media roles and the
+fictional or documentary boundary from that case rather than assigning a universal shot list,
+asset count, or image-to-text ratio. Include an accessible non-media path to any essential
+information or action without requiring every aesthetic experience to become text-led.
+`inputs/supplied-media-relay` is one reference fixture: its particular assets cover atmosphere,
+human use, and material detail; their SHA-256 values are pinned; image generation and network
+retrieval are forbidden during that run; and its public result must remain clearly fictional.
 
 ## Driver contract
 
@@ -208,9 +252,10 @@ hash, and driver-report path. The driver also receives:
 `HOME`, `USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `TEMP`, `TMP`, `CODEX_HOME`, and
 `CLAUDE_CONFIG_DIR` point inside the run root. The parent environment is reduced to operating-system
 execution essentials such as `PATH` and, on Windows, `SYSTEMROOT` and `COMSPEC`; credentials and
-arbitrary caller variables are not inherited unless explicitly named with `--pass-env`. Drivers
-must still be treated as trusted code because they can access the machine by paths or APIs available
-to their process.
+arbitrary caller variables are not inherited unless explicitly named with `--pass-env`. The leak
+scan is a bounded exact-value control, not a general secret scanner; use a short-lived, least-
+privilege evaluation credential and revoke it after the run. Drivers must still be treated as
+trusted code because they can access the machine by paths or APIs available to their process.
 
 On timeout, the harness terminates the driver process tree and records the run as timed out. It
 captures stdout and stderr to files before producing a bounded head-and-tail JSON representation.
@@ -290,7 +335,13 @@ adversarial requirement. Release reviews use
 - a clean `pass` has no unresolved findings; accepted low-risk limitations belong in
   `pass-with-limitations`;
 - `requirement_closure` binds the exact run contract hash and records every required ID exactly
-  once as `verified`, with rationale and hash-bound evidence.
+  once as `verified`, with rationale and hash-bound evidence;
+- `owner_disposition` names the claim scope, accountable decision owner, exact build candidate,
+  reviewed time, rationale, and hash-bound UTF-8 decision record. Accepted, rejected, and
+  `not-required` decisions require attributable evidence that names those exact values. Pending
+  decisions may retain hash-bound request or partial-feedback evidence but cannot close release.
+  `not-required` is limited to the `standard` claim scope; premium, showcase, sale-readiness, and
+  accountable-owner-sensitive claims require human acceptance.
 
 Strict release audit requires each host marked `passed` to supply all of the following:
 
@@ -311,10 +362,16 @@ Strict release audit requires each host marked `passed` to supply all of the fol
   core specificity dimensions, and at least one supported core skill benefit per host; every run
   observation cites a verified render, while explicitly source-only observations are segregated
   and cannot support visual claims;
-- release-level cross-case analysis bound to counted render hashes, covering route silhouette,
-  type/palette relationships, label cadence, cards, motion, and media grammar, with task-derived
-  differences and counterevidence across the exact same counted set; a repeated cluster must either
-  remain an explicit blocker or carry cause-level resolution and hash-bound verification;
+- release-level cross-case analysis bound to counted render hashes, with
+  masked `rendered_geometry` as the universal core and additional lenses
+  selected from evidence in the actual projects and outputs. Typography,
+  color or material behavior, labels, components, motion, media, CTA endings,
+  and responsive transformation are non-exhaustive examples, not requirements.
+  Record applicability and supporting evidence for every chosen lens; explain
+  a not-applicable result instead of inventing counterevidence or manufacturing
+  a difference. Similarity is not a defect and difference is not a quota. A
+  repeated cluster must either remain an explicit blocker or carry cause-level
+  resolution and hash-bound verification;
 - at least one adversarial perception review on that same build family that closes every
   run-bound review requirement.
 

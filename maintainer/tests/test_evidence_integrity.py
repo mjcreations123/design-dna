@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -129,6 +130,49 @@ class EvidenceSnapshotTests(unittest.TestCase):
                     item["code"] == "source-snapshot-hash-mismatch"
                     for item in payload["failures"]
                 )
+            )
+
+    def test_snapshot_cannot_label_a_summary_as_a_verbatim_excerpt(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            copied = Path(temporary) / "plugin"
+            copy_validation_fixture(copied)
+            snapshot = (
+                copied
+                / "maintainer"
+                / "evidence"
+                / "snapshots"
+                / "EVD-027.json"
+            )
+            payload = json.loads(snapshot.read_text(encoding="utf-8"))
+            payload["content_kind"] = "verbatim_excerpt"
+            snapshot.write_text(
+                json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            digest = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+            card = (
+                copied
+                / "maintainer"
+                / "evidence"
+                / "cards"
+                / "EVD-027.md"
+            )
+            card_text = card.read_text(encoding="utf-8")
+            card_text = re.sub(
+                r'(?m)^source_snapshot_sha256: "[0-9a-f]{64}"$',
+                f'source_snapshot_sha256: "{digest}"',
+                card_text,
+            )
+            card.write_text(card_text, encoding="utf-8")
+            result = run_validation(copied)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            failures = json.loads(result.stdout)["failures"]
+            self.assertTrue(
+                any(
+                    item["code"] == "source-snapshot-shape-invalid"
+                    for item in failures
+                ),
+                failures,
             )
 
     def test_reparse_plugin_and_schema_inputs_are_rejected(self) -> None:

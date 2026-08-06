@@ -1,8 +1,9 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "evidence_id": "EVD-007",
   "retrieved": "2026-07-26",
   "url": "https://pagesmith.ai/docs/features/typography/",
   "locator": "Specifications and curated font list",
+  "content_kind": "verbatim_excerpt",
   "excerpt": "Curated defaults: 30 families that the AI picks from first. Default font: Inter, preloaded on every new site."
 }

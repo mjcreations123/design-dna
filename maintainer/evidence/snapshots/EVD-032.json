@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-032",
+  "retrieved": "2026-07-29",
+  "url": "https://resources.relume.io/resources/docs/concept-creation-using-the-relume-style-guide-builder",
+  "locator": "Generate a concept; Create multiple concepts; Share your concepts",
+  "content_kind": "maintainer_summary",
+  "summary": "Relume documents concept creation only after a project has a sitemap and wireframes, supports multiple visual concepts, provides reusable color, typography, and UI settings, and presents up to three concepts with descriptions for stakeholder review."
+}

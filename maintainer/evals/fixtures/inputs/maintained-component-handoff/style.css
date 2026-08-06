@@ -1,0 +1,46 @@
+:root {
+  color: #20242b;
+  background: #f5f6f8;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  width: min(70rem, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+header,
+nav,
+fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+header {
+  justify-content: space-between;
+  padding-block: 1rem;
+}
+
+main,
+section {
+  display: grid;
+  gap: 1rem;
+}
+
+.service-banner {
+  border: 1px solid currentColor;
+  padding: 1rem;
+}
+
+.service-banner[data-level="warning"] {
+  color: #715000;
+}
+
+.service-banner[data-level="critical"] {
+  color: #9c1c1c;
+}

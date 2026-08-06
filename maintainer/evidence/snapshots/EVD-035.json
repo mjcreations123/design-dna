@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-035",
+  "retrieved": "2026-07-29",
+  "url": "https://designsystem.digital.gov/patterns/complete-a-complex-form/progress-easily/",
+  "locator": "Guidance: What to do; What not to do; Usability guidance",
+  "content_kind": "maintainer_summary",
+  "summary": "USWDS guidance for complex forms calls for transparent expectations, mobile and constrained-bandwidth design, progressive disclosure, meaningful question chunks, context-appropriate progress cues, save-and-resume, access to help, calm actionable validation, and recovery without blame."
+}

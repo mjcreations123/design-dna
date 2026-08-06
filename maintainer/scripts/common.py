@@ -13,15 +13,29 @@ from pathlib import Path
 from typing import Callable, Iterable
 from urllib.parse import urlsplit
 
+import yaml
+
 
 PYTHON_CACHE_NAMES = {"__pycache__"}
 PYTHON_CACHE_NAMES_CASEFOLD = {
     name.casefold() for name in PYTHON_CACHE_NAMES
 }
 COMPILED_PYTHON_SUFFIXES = {".pyc", ".pyo"}
+MAX_DISCOVERY_ENTRIES = 100_000
 EXCLUDED_NAMES = {*PYTHON_CACHE_NAMES, ".DS_Store", "Thumbs.db"}
 EXCLUDED_NAMES_CASEFOLD = {name.casefold() for name in EXCLUDED_NAMES}
 EXCLUDED_SUFFIXES = COMPILED_PYTHON_SUFFIXES
+LOCAL_TOOL_DIRECTORY_NAMES = frozenset({
+    ".git",
+    ".mypy_cache",
+    ".nox",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "node_modules",
+    "venv",
+})
 RFC3339_DATE_TIME = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
     r"(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
@@ -49,6 +63,78 @@ class ToolFailure(RuntimeError):
     def __init__(self, code: str, message: str, path: Path | None = None) -> None:
         super().__init__(message)
         self.issue = ToolIssue(code, message, str(path) if path else None)
+
+
+class NoDuplicateYamlLoader(yaml.SafeLoader):
+    """Safe YAML loader that rejects duplicate keys at every mapping depth."""
+
+
+def _strict_yaml_mapping(loader, node, deep=False):
+    result = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            duplicate = key in result
+        except TypeError as exc:
+            raise yaml.constructor.ConstructorError(
+                "mapping",
+                node.start_mark,
+                "unhashable mapping key",
+                key_node.start_mark,
+            ) from exc
+        if duplicate:
+            raise yaml.constructor.ConstructorError(
+                "mapping",
+                node.start_mark,
+                f"duplicate key: {key}",
+                key_node.start_mark,
+            )
+        result[key] = loader.construct_object(value_node, deep=deep)
+    return result
+
+
+NoDuplicateYamlLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _strict_yaml_mapping,
+)
+
+
+def skill_frontmatter(path: Path) -> dict[object, object]:
+    """Load one skill entry's complete, duplicate-free YAML frontmatter."""
+
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ToolFailure("skill-route-read-failed", str(exc), path) from exc
+    match = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)", text, re.S)
+    if not match:
+        raise ToolFailure(
+            "invalid-skill-frontmatter",
+            "SKILL.md must start with complete YAML frontmatter.",
+            path,
+        )
+    try:
+        metadata = yaml.load(match.group(1), Loader=NoDuplicateYamlLoader)
+    except yaml.YAMLError as exc:
+        raise ToolFailure(
+            "invalid-skill-frontmatter",
+            str(exc),
+            path,
+        ) from exc
+    if not isinstance(metadata, dict):
+        raise ToolFailure(
+            "invalid-skill-frontmatter",
+            "SKILL.md frontmatter must be a mapping.",
+            path,
+        )
+    name = metadata.get("name")
+    if type(name) is not str:
+        raise ToolFailure(
+            "invalid-skill-name",
+            "SKILL.md frontmatter name must be a string scalar.",
+            path,
+        )
+    return metadata
 
 
 def strict_format_checker():
@@ -181,7 +267,11 @@ def include(relative: Path) -> bool:
     )
 
 
-def walk_entries(root: Path) -> Iterable[Path]:
+def walk_entries(
+    root: Path,
+    *,
+    ignored_directory_names: set[str] | frozenset[str] | None = None,
+) -> Iterable[Path]:
     root = absolute(root)
     if not root.is_dir():
         raise ToolFailure("root-not-found", "Directory does not exist.", root)
@@ -193,6 +283,10 @@ def walk_entries(root: Path) -> Iterable[Path]:
             Path(error.filename) if error.filename else root,
         ) from error
 
+    ignored = {
+        name.casefold()
+        for name in (ignored_directory_names or ())
+    }
     for current, directories, files in os.walk(
         root,
         topdown=True,
@@ -202,6 +296,9 @@ def walk_entries(root: Path) -> Iterable[Path]:
         current_path = Path(current)
         for name in list(directories):
             child = current_path / name
+            if name.casefold() in ignored:
+                directories.remove(name)
+                continue
             if is_reparse(child):
                 raise ToolFailure("reparse-point-refused", "Tree contains a link, junction, or reparse point.", child)
             if not include(child.relative_to(root)):
@@ -310,8 +407,15 @@ def reject_compiled_python_residue(
             raise ToolFailure(code, message, residue[0])
 
 
-def walk_files(root: Path) -> Iterable[Path]:
-    for path in walk_entries(root):
+def walk_files(
+    root: Path,
+    *,
+    ignored_directory_names: set[str] | frozenset[str] | None = None,
+) -> Iterable[Path]:
+    for path in walk_entries(
+        root,
+        ignored_directory_names=ignored_directory_names,
+    ):
         if path.is_file():
             yield path
 

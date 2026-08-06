@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-037",
+  "retrieved": "2026-07-30",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API/Using",
+  "locator": "The view transition process; Basic MPA view transition",
+  "content_kind": "maintainer_summary",
+  "summary": "MDN documents same-origin cross-document view transitions for multi-page applications. Both documents opt in with the CSS @view-transition rule; basic MPA transitions require no JavaScript, and ordinary navigation remains the underlying behavior when the enhancement is unavailable."
+}

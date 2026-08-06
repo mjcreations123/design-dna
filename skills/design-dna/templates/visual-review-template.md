@@ -2,92 +2,55 @@
 schema_version: 1
 created_with: "__DESIGN_DNA_VERSION__"
 classification: "internal"
+evidence_contract: "proportional-evidence-v1"
+findings_contract: "visual-review-findings-v2"
 ---
 
-# Visual and product review
+# Visual review
 
-Record only checks actually performed. Use `not applicable` or `not performed`; do not infer evidence.
+<!-- proportional-evidence-v1 -->
 
-## Build identity
+Review the final implementation round as rendered. Add project-specific review
+notes freely; the compact tables below exist only to bind coverage and finding
+lifecycle. Never infer checks that were not performed.
 
-- Build, commit, or artifact ID:
-- Route or preview URL:
-- Environment and date:
-- Final implementation round reviewed: yes / no
-- Reviewers and lens: perception / implementation / target user
+## Rendered review
 
-## Coverage matrix
+- Build or artifact ID:
+- Final implementation reviewed: no
+- Reviewer relationship: producer-self
 
-| Route | State/content | Viewport/container | Browser/input/preferences | Artifact |
-| --- | --- | --- | --- | --- |
-|  | default, loading, empty, error, success, long, translated, etc. | width × height and zoom | browser/version, keyboard/touch, theme, motion, contrast | path |
+| Route/state | Viewport/context | Evidence path and SHA-256 | Observation |
+| --- | --- | --- | --- |
+|  |  |  |  |
 
-## Perception review
-
-- Project specificity and real material:
-- Primary scan path and hierarchy:
-- Time register and currentness:
-- Typography, copy, and textual emphasis:
-- Color, composition, density, and optical alignment:
-- Imagery, illustration, and icon coherence:
-- Motion or interaction purpose:
-- Candidate generic-pattern clusters and contextual judgment:
-- Cross-project repetition evidence and authorization, or `not assessed`:
-- Route silhouettes, shared structure, and task justification:
-- Label saturation, rhetorical fingerprint, and copy texture:
-- Evidence-to-polish balance:
-- Documentary variance without staged roughness:
-- Production comments, meta-language, and repeated house-style residue:
-
-## Implementation review
-
-- Navigation, controls, links, forms, and state transitions:
-- Responsive recomposition and intermediate widths:
-- Long, short, missing, translated, and RTL content:
-- Keyboard, focus, semantics, labels, contrast, zoom, and reflow:
-- Touch, hover/no-hover, reduced motion, and high contrast:
-- Loading, offline/stale, error, permission, success, and recovery:
-- Console, failed requests, metadata, and starter residue:
-- Titles, descriptions, icons, canonical/indexing intent, share previews, status codes, redirects, sitemap, and not-found behavior:
-
-## Motion evidence
-
-- Classification and rationale: none / minor / significant
-- Behaviors that require temporal proof:
-- Normal-motion recording or trace: path, media type, duration, SHA-256
-- Matched reduced-motion recording or trace: path, media type, duration, SHA-256
-- Pair controls held constant: route, state, viewport, browser, theme, locale, and direction
-- Interruption, cancellation, reverse navigation, and animation-disabled result:
-
-## Truth and assets
-
-- Claim-ledger coverage for proof, prices, quantities, times, warranties, policies, regulated statements, and calculator assumptions:
-- Asset manifest checked:
-- Rights, attribution, disclosure, privacy, and approval:
-- Generated-media applicability, transformation, credentials, visible disclosure, and legal-review status:
-- Demo, concept, placeholder, or nonfunctional states labeled:
-- Third parties, integrations, tracking, consent, and embeds:
-- Security, privacy, legal, deployment, and operational specialist checks or explicit `unverified` blocks:
-
-## Performance
-
-- Objective and production-like test context:
-- Core Web Vitals or interaction evidence:
-- JavaScript, CSS, fonts, images, and third-party observations:
-- Layout shift, loading priority, media sizing, and fallbacks:
-- Unmeasured items:
+One row can be enough for a small ordinary project. Add rows only for materially
+different routes, states, content, containers, inputs, languages, preferences,
+or failure conditions that actually apply.
 
 ## Findings
 
-| Severity | Evidence | Cause | Fix | Verification | Status |
-| --- | --- | --- | --- | --- | --- |
-|  |  |  |  |  | fixed, accepted, deferred, or blocked |
+Use `not-applicable` for a reviewed concern that does not apply. Critical, high,
+and medium findings must be `verified` or `not-applicable`; producer self-review
+cannot convert an unresolved issue into owner acceptance.
 
-## Completion
+| Severity | Confidence | Evidence | User/release impact | Cause | Fix or disposition | Rerun verification | Status | Owner |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |  |
 
-- Commands and automated checks:
-- Adversarial specificity closure round and reviewer lens, when applicable:
-- Target-user validation:
-- Remaining limitations and owner decisions:
+## Owner and release state
+
+- Reviewer conclusion: self-reviewed candidate
+- Owner disposition: pending
 - Release blockers:
-- Reviewer conclusion:
+
+Record the exact scope and current state. `owner accepted` requires review by an
+accountable owner or owner-authorized human. A blocked conclusion must name the
+unresolved blocker; any other conclusion must record blockers as resolved,
+none, or not applicable.
+
+## Project-specific review
+
+Optional. Add any perceptual, content, cultural, interaction, craft, maintenance,
+or operational observations that matter to this project. Do not borrow a fixed
+list of aesthetic traits merely because another project used it.

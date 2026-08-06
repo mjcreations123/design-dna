@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/release-signature-attestation.schema.json",
+  "title": "Design DNA detached release-signature attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "created_at",
+    "package",
+    "version",
+    "ref",
+    "commit",
+    "release_identity_sha256",
+    "bundle_name",
+    "release_package",
+    "trust_basis",
+    "verifier",
+    "artifacts",
+    "outcome"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {
+      "const": "design-dna-release-signature-attestation"
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "package": {"const": "design-dna"},
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "ref": {"type": "string", "minLength": 1, "maxLength": 201},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "release_identity_sha256": {"$ref": "#/$defs/sha256"},
+    "bundle_name": {
+      "type": "string",
+      "pattern": "^design-dna-[0-9A-Za-z.+-]+-[0-9a-f]{12}$"
+    },
+    "release_package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256", "bytes"],
+      "properties": {
+        "name": {"const": "release-package.json"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1, "maximum": 2097152}
+      }
+    },
+    "trust_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "primary_fingerprint",
+        "fingerprint_source"
+      ],
+      "properties": {
+        "kind": {
+          "const": "operator-supplied-established-primary-fingerprint"
+        },
+        "primary_fingerprint": {"$ref": "#/$defs/fingerprint"},
+        "fingerprint_source": {
+          "const": "external-to-release-bundle"
+        }
+      }
+    },
+    "verifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementation",
+        "version",
+        "executable",
+        "executable_sha256",
+        "executable_bytes",
+        "path_source",
+        "isolated_status_channel",
+        "automatic_key_retrieval"
+      ],
+      "properties": {
+        "implementation": {"const": "GnuPG"},
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[-+._0-9A-Za-z]*)?$"
+        },
+        "executable": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,240}$"
+        },
+        "executable_sha256": {"$ref": "#/$defs/sha256"},
+        "executable_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "path_source": {
+          "const": "operator-supplied-absolute-path-outside-release"
+        },
+        "isolated_status_channel": {"const": true},
+        "automatic_key_retrieval": {"const": false}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/artifactVerification"},
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": ["role"],
+            "properties": {"role": {"const": "release-package"}}
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": ["role"],
+            "properties": {"role": {"const": "archive"}}
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": ["role"],
+            "properties": {"role": {"const": "checksum"}}
+          },
+          "minContains": 1,
+          "maxContains": 1
+        }
+      ]
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "archive_checksum_match",
+        "detached_signatures_valid"
+      ],
+      "properties": {
+        "verified": {"const": true},
+        "archive_checksum_match": {"const": true},
+        "detached_signatures_valid": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^(?:[0-9A-F]{40}|[0-9A-F]{64})$"
+    },
+    "namedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256", "bytes"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,240}$"
+        },
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "signing_fingerprint",
+        "primary_fingerprint",
+        "key_id",
+        "signature_created_at",
+        "signature_expires_at",
+        "public_key_algorithm",
+        "hash_algorithm",
+        "signature_class",
+        "gpg_status_sha256"
+      ],
+      "properties": {
+        "status": {"const": "valid"},
+        "signing_fingerprint": {"$ref": "#/$defs/fingerprint"},
+        "primary_fingerprint": {"$ref": "#/$defs/fingerprint"},
+        "key_id": {
+          "type": "string",
+          "pattern": "^(?:[0-9A-F]{8}|[0-9A-F]{16})$"
+        },
+        "signature_created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signature_expires_at": {
+          "oneOf": [
+            {"type": "string", "format": "date-time"},
+            {"type": "null"}
+          ]
+        },
+        "public_key_algorithm": {"enum": [1, 3, 19, 22]},
+        "hash_algorithm": {"enum": [8, 9, 10]},
+        "signature_class": {"const": "00"},
+        "gpg_status_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifactVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "artifact", "signature", "verification"],
+      "properties": {
+        "role": {"enum": ["release-package", "archive", "checksum"]},
+        "artifact": {"$ref": "#/$defs/namedFile"},
+        "signature": {
+          "allOf": [
+            {"$ref": "#/$defs/namedFile"},
+            {
+              "type": "object",
+              "properties": {
+                "name": {"pattern": "\\.asc$"},
+                "bytes": {"maximum": 1048576}
+              }
+            }
+          ]
+        },
+        "verification": {"$ref": "#/$defs/verification"}
+      }
+    }
+  }
+}

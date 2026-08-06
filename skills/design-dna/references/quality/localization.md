@@ -4,6 +4,14 @@ Use this when a route supports more than one locale, translated content,
 locale-aware formatting, right-to-left direction, or a language switcher. Do
 not claim localization from a mirrored screenshot or translated paragraph.
 
+## Contents
+
+- [Define the locale contract](#define-the-locale-contract)
+- [Implement language and direction](#implement-language-and-direction)
+- [Verify Hebrew and mixed-direction content](#verify-hebrew-and-mixed-direction-content)
+- [Source review matrix](#source-review-matrix)
+- [Rendered and behavioral matrix](#rendered-and-behavioral-matrix)
+
 ## Define the locale contract
 
 Record the supported locales, source locale, content owner, translation state,
@@ -42,6 +50,34 @@ and understandable without flag-only labels. Define whether it preserves the
 route, query, form state, focus, scroll, and history; do not silently discard an
 in-progress task.
 
+## Verify Hebrew and mixed-direction content
+
+When Hebrew is material, use the current
+[W3C Hebrew Layout Requirements](https://www.w3.org/International/hlreq/) as a
+script-specific reference and complete the
+[Hebrew typography proof](../craft/typography.md#proof-hebrew-and-mixed-direction-type).
+
+- Use `lang="he"` and `dir="rtl"` for Hebrew passages. Do not set the whole
+  document to RTL when the active interface locale remains English.
+- Keep characters in logical reading order. Do not reverse strings, manually
+  reorder words, or use CSS transforms to create RTL.
+- Isolate embedded names, Latin text, URLs, email addresses, phone numbers,
+  dates, and identifiers with appropriate `bdi`, `dir`, or `dir="auto"`
+  behavior. Prefer markup over invisible directional control characters.
+- Use CSS logical properties. Review flex and grid ordering, breadcrumbs,
+  arrows, progress, tables, form affordances, and icon meaning instead of
+  mirroring the entire interface.
+- Proof brackets, quotation marks, punctuation, list markers, numerals,
+  line-breaking, selection, copy/paste, truncation, search, validation, and
+  editable fields with real mixed-language content.
+- Confirm screen-reader pronunciation and reading order with accurate language
+  boundaries. A visually correct screenshot does not establish assistive-
+  technology or linguistic correctness.
+
+When text is sacred, quoted, or culturally consequential, use approved source
+text and human language/cultural review. Do not synthesize plausible Hebrew or
+use it as decorative texture.
+
 ## Source review matrix
 
 Check, as applicable:
@@ -56,6 +92,8 @@ Check, as applicable:
   accessible names follow the same locale contract;
 - fallback content is visible and truthfully labeled where incompleteness
   matters.
+- Hebrew and mixed-direction samples preserve logical order, punctuation,
+  isolation, selection, copy/paste, and expected accessible reading.
 
 ## Rendered and behavioral matrix
 

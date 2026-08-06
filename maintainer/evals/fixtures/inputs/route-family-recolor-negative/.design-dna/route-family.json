@@ -1,0 +1,114 @@
+{
+  "schema_version": 2,
+  "created_with": "design-dna 4.0.0",
+  "classification": "internal",
+  "study": {"id": "palette-parade", "title": "Ten palettes, one repeated skeleton", "requested_route_count": 10},
+  "shared_contract": {
+    "identity": "Palette Parade wordmark and numbered navigation.",
+    "navigation": "Ten route links remain in one order.",
+    "truth": "All copy is fictional evaluation text.",
+    "accessibility": "Semantic landmarks and focus remain present.",
+    "voice": "Short generic promotional sentences.",
+    "performance": "Static local HTML and CSS."
+  },
+  "routes": [
+    {
+      "id": "page-01", "path": "/", "title": "Coral page", "user_job": "Read coral nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes coral language; it records a defect for evaluation, not a recommended page pattern.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with coral substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-02",
+      "deliberate_differences": ["Accent token is coral.", "Visible nouns refer to coral."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-02", "path": "/page-02/", "title": "Blue page", "user_job": "Read blue nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes blue language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with blue substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-02/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-01",
+      "deliberate_differences": ["Accent token is blue.", "Visible nouns refer to blue."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-03", "path": "/page-03/", "title": "Green page", "user_job": "Read green nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes green language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with green substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-03/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-04",
+      "deliberate_differences": ["Accent token is green.", "Visible nouns refer to green."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-04", "path": "/page-04/", "title": "Gold page", "user_job": "Read gold nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes gold language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with gold substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-04/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-03",
+      "deliberate_differences": ["Accent token is gold.", "Visible nouns refer to gold."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-05", "path": "/page-05/", "title": "Violet page", "user_job": "Read violet nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes violet language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with violet substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-05/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-06",
+      "deliberate_differences": ["Accent token is violet.", "Visible nouns refer to violet."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-06", "path": "/page-06/", "title": "Orange page", "user_job": "Read orange nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes orange language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with orange substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-06/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-05",
+      "deliberate_differences": ["Accent token is orange.", "Visible nouns refer to orange."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-07", "path": "/page-07/", "title": "Teal page", "user_job": "Read teal nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes teal language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with teal substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-07/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-08",
+      "deliberate_differences": ["Accent token is teal.", "Visible nouns refer to teal."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-08", "path": "/page-08/", "title": "Rose page", "user_job": "Read rose nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes rose language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with rose substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-08/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-07",
+      "deliberate_differences": ["Accent token is rose.", "Visible nouns refer to rose."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-09", "path": "/page-09/", "title": "Indigo page", "user_job": "Read indigo nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes indigo language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with indigo substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-09/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-10",
+      "deliberate_differences": ["Accent token is indigo.", "Visible nouns refer to indigo."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-10", "path": "/page-10/", "title": "Lime page", "user_job": "Read lime nouns.",
+      "creative_logic": "This negative fixture intentionally repeats one promotional sequence and substitutes lime language; it supplies no route-job reason for the reuse.",
+      "observable_decisions": [{"decision": "Repeat the supplied heading, proof group, steps, and final action with lime substitutions.", "reason": "The fixture isolates surface substitution from body-level difference.", "evidence": "page-10/index.html and shared.css.", "status": "accepted"}],
+      "responsive_result": "The same repeated groups stack in the same source order at the narrow capture width.",
+      "reduced_motion_result": "The hover transition is removed.", "no_javascript_result": "The complete static page remains available.", "closest_sibling": "page-09",
+      "deliberate_differences": ["Accent token is lime.", "Visible nouns refer to lime."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    }
+  ],
+  "review": {
+    "direct_entry": "pending",
+    "link_integrity": "pending",
+    "route_count": "pending",
+    "body_comparison": "pending",
+    "atlas_artifact": "pending",
+    "cultural_acceptance": {"required": false, "status": "not-required", "reviewer_id": null, "relationship": "not-reviewed", "independent_of_producer": false, "reviewed_at": null, "notes": "No culturally central material."}
+  }
+}

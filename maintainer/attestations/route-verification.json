@@ -1,29 +1,40 @@
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "record_type": "design-dna-route-verification",
   "status": "passed",
-  "verified_at": "2026-07-28T16:17:11.254255Z",
-  "canonical": "C:\\Users\\motty\\OneDrive\\Documents\\test\\design-dna\\skills\\design-dna",
+  "verified_at": "2026-07-30T03:12:10.434910Z",
+  "canonical": "skills/design-dna",
+  "scan_scope": {
+    "basis": "explicit-filesystem-root-scan",
+    "root_scope": "explicit-roots-only",
+    "activation_state": "not-verified",
+    "project_admin_session_routes": "not-inspected",
+    "limitations": [
+      "A discovered SKILL.md is a filesystem discovery candidate, not proof that a host activated it.",
+      "Roots not passed with --root, including project-local, administrator-managed, and session-specific routes, were not scanned."
+    ]
+  },
   "roots": [
-    "C:\\Users\\motty\\.agents\\skills",
-    "C:\\Users\\motty\\.claude\\skills",
-    "C:\\Users\\motty\\.codex\\plugins\\cache",
-    "C:\\Users\\motty\\.codex\\skills"
+    "~/.agents/skills",
+    "~/.claude/plugins/cache",
+    "~/.claude/skills",
+    "~/.codex/plugins/cache",
+    "~/.codex/skills"
   ],
   "expected": [
-    "C:\\Users\\motty\\.agents\\skills\\design-dna",
-    "C:\\Users\\motty\\.claude\\skills\\design-dna"
+    "~/.agents/skills/design-dna",
+    "~/.claude/skills/design-dna"
   ],
-  "canonical_sha256": "d1ed79c64777528821dd7851df4d688b4726261cd06065e84a5f399a63ce8be5",
+  "canonical_sha256": "0cacce779bf2c0dd1b56b01daf473912796d50888e4b9e0f4d94dc5330013410",
   "routes": [
     {
-      "path": "C:\\Users\\motty\\.agents\\skills\\design-dna",
-      "content_sha256": "d1ed79c64777528821dd7851df4d688b4726261cd06065e84a5f399a63ce8be5",
+      "path": "~/.agents/skills/design-dna",
+      "content_sha256": "0cacce779bf2c0dd1b56b01daf473912796d50888e4b9e0f4d94dc5330013410",
       "matches_canonical": true
     },
     {
-      "path": "C:\\Users\\motty\\.claude\\skills\\design-dna",
-      "content_sha256": "d1ed79c64777528821dd7851df4d688b4726261cd06065e84a5f399a63ce8be5",
+      "path": "~/.claude/skills/design-dna",
+      "content_sha256": "0cacce779bf2c0dd1b56b01daf473912796d50888e4b9e0f4d94dc5330013410",
       "matches_canonical": true
     }
   ]

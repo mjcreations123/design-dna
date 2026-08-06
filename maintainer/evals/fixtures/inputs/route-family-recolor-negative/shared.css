@@ -1,0 +1,7 @@
+:root { font-family: system-ui, sans-serif; }
+body { margin: 0; border-block-start: 12px solid var(--accent, #555); }
+nav, main, footer { padding: 1rem; }
+nav a { margin-inline-end: .6rem; }
+.hero { min-height: 45vh; display: grid; align-content: center; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.card { border: 1px solid; padding: 1rem; }

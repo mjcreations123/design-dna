@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import importlib.metadata
 import importlib.util
+import json
 import re
 import unittest
 from pathlib import Path
 
+import yaml
+from jsonschema import Draft202012Validator, FormatChecker
+
 
 PLUGIN = Path(__file__).resolve().parents[2]
 REQUIREMENTS = PLUGIN / "maintainer" / "requirements-dev.txt"
+CI_WORKFLOW = PLUGIN / ".github" / "workflows" / "ci.yml"
 IMPORT_NAMES = {
     "attrs": "attrs",
     "jsonschema": "jsonschema",
@@ -83,7 +88,8 @@ class ReleaseDependencyPreflightTests(unittest.TestCase):
             issues,
             "Release-critical tests require every exact dependency pin from "
             "maintainer/requirements-dev.txt. Install them with "
-            "`python -m pip install -r maintainer/requirements-dev.txt`.\n- "
+            "`python -m pip install --require-hashes -r "
+            "maintainer/requirements-dev.lock`.\n- "
             + "\n- ".join(issues),
         )
 
@@ -106,6 +112,109 @@ class ReleaseDependencyPreflightTests(unittest.TestCase):
             checker.conforms("https://example.com/evidence", "uri")
         )
         self.assertFalse(checker.conforms("not a uri", "uri"))
+
+    def test_zero_skip_matrix_provisions_the_browser_before_attestation(self) -> None:
+        workflow = yaml.safe_load(CI_WORKFLOW.read_text(encoding="utf-8"))
+        job = workflow["jobs"]["test"]
+        environment = job["env"]
+        self.assertEqual(
+            "${{ github.workspace }}/maintainer/node_modules",
+            environment["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"],
+        )
+        self.assertEqual(
+            "${{ runner.temp }}/ms-playwright",
+            environment["PLAYWRIGHT_BROWSERS_PATH"],
+        )
+        steps = job["steps"]
+
+        def index_named(name: str) -> int:
+            return next(
+                index
+                for index, step in enumerate(steps)
+                if step.get("name") == name
+            )
+
+        setup_node = next(
+            step for step in steps if str(step.get("uses", "")).startswith("actions/setup-node@")
+        )
+        self.assertRegex(
+            setup_node["uses"],
+            r"^actions/setup-node@[0-9a-f]{40}$",
+        )
+        self.assertEqual("22", setup_node["with"]["node-version"])
+        dependency_step = steps[index_named("Install pinned browser-review dependency")]
+        self.assertEqual("maintainer", dependency_step["working-directory"])
+        self.assertIn("npm ci", dependency_step["run"])
+        linux_browser = index_named("Install Chromium and Linux browser dependencies")
+        other_browser = index_named("Install Chromium")
+        attestation = index_named(
+            "Run and attest unit and adversarial tests with zero unwaived skips"
+        )
+        self.assertLess(index_named("Install pinned browser-review dependency"), linux_browser)
+        self.assertLess(index_named("Install pinned browser-review dependency"), other_browser)
+        self.assertLess(linux_browser, attestation)
+        self.assertLess(other_browser, attestation)
+        package_audit = steps[index_named("Run development audit")]
+        retained = steps[
+            index_named("Retain matrix test and package-audit evidence")
+        ]
+        self.assertEqual("bash", package_audit["shell"])
+        self.assertIn(
+            "design-dna-package-audit.json",
+            package_audit["run"],
+        )
+        self.assertIn(
+            "design-dna-test-attestation.json",
+            retained["with"]["path"],
+        )
+        self.assertIn(
+            "design-dna-package-audit.json",
+            retained["with"]["path"],
+        )
+        self.assertLess(
+            index_named("Run development audit"),
+            index_named(
+                "Retain matrix test and package-audit evidence"
+            ),
+        )
+
+    def test_host_discovery_pass_requires_host_native_result_evidence(self) -> None:
+        matrix = yaml.safe_load(
+            (
+                PLUGIN / "maintainer" / "compatibility" / "matrix.yml"
+            ).read_text(encoding="utf-8")
+        )
+        schema = json.loads(
+            (
+                PLUGIN
+                / "maintainer"
+                / "schemas"
+                / "compatibility.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        host_record = next(
+            record
+            for record in matrix["environments"]
+            if record["scope"] == "host_runtime"
+            and record["host"] == "codex"
+        )
+        host_record["checks"]["host_discovery"] = "passed"
+        host_record["evidence"] = [
+            "maintainer/attestations/route-verification.json"
+        ]
+        errors = list(
+            Draft202012Validator(
+                schema,
+                format_checker=FormatChecker(),
+            ).iter_errors(matrix)
+        )
+        self.assertTrue(
+            any(
+                "does not contain items matching" in error.message
+                for error in errors
+            ),
+            errors,
+        )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,32 @@
+# The condition below is schema-shaped example data, not a recommended device,
+# viewport, locale, theme, input, or motion preset. Replace every value from the
+# project's audience, support contract, content, and observed design risk.
+schema_version: 1
+record_type: design-dna-state-matrix-example
+classification: internal
+build_id: example-only-replace
+source_revision: example-only-replace
+cases:
+  - id: replace-with-real-case
+    route_or_component: replace-with-real-route
+    state: default
+    data_fixture: replace-with-versioned-fixture
+    content_condition: representative
+    viewport:
+      width: 375
+      height: 812
+      container_width: 343
+    theme: light
+    locale: en
+    direction: ltr
+    input: touch
+    motion: reduce
+    expected_behavior:
+      - replace with observable outcome
+    executable_test: replace-with-project-relative-path
+    rendered_evidence: replace-with-project-relative-path-and-sha256
+    result: pending
+    owner: replace-with-stable-owner
+exclusions:
+  - combination: replace-with-irrelevant-combination
+    reason: replace with project-specific reason

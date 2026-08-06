@@ -1,59 +1,82 @@
 # Persuade mode
 
-Use when the primary task is to understand an offer, establish trust, compare options, and decide or convert. Typical surfaces include marketing, hospitality, services, ecommerce discovery, fundraising, and selected portfolio routes.
+Use when the primary job is to understand an offer, establish trust, compare
+options, and decide or convert. Typical surfaces include marketing,
+hospitality, services, ecommerce discovery, fundraising, and selected
+portfolio routes.
 
-## Quality target
+Mode describes the decision journey, not a landing-page formula or visual
+style.
 
-Make the visitor understand what is offered, who it is for, why it is credible, what it costs or requires, and what to do next. Expression should sharpen the decision rather than bury it.
+## Model the decision
 
-## Direct the route
+Record the audience's real question, hesitation, entry context, approved truth,
+decision dependencies, evidence, limits, and useful actions. Make price,
+scope, availability, location, delivery, contact, and conversion behavior as
+truthful and discoverable as the decision requires.
 
-1. Name the audience's real question, hesitation, and entry context.
-2. Lead with the most useful approved truth, not a vague promise.
-3. Order evidence by decision dependency.
-4. Derive the visual premise from real product, service, place, people, or process.
-5. Make price, scope, availability, location, delivery, contact, and conversion behavior truthful.
-6. Resolve objections before repeating calls to action.
+Let the actual offer determine content order, route structure, composition,
+media, typography, and interaction. No hero, action count, feature section,
+testimonial structure, FAQ, proof module, or closing form is required.
 
-Use the actual offer to determine page structure. Do not default to a centered hero, two generic CTAs, three feature cards, testimonials, FAQ, and final CTA.
+Immediate comprehension is often important for transactional and service
+offers. A brand, entertainment, or editorial campaign may unfold differently
+when its invitation and eventual decision remain intentional.
 
-## Establish proof
+## Establish honest proof
 
-Prefer:
+Use the evidence available and authorized: product or service behavior,
+owner-approved work, outcomes and process, pricing or qualification, location,
+availability, policy, contact details, attributable testimonials, customer
+marks, comparisons, and limitations as applicable. Do not manufacture a
+proof-shaped section when evidence does not exist.
 
-- demonstrable product or service behavior;
-- owner-approved work, outcomes, and process;
-- clear pricing or qualification;
-- real location, availability, policy, and contact details;
-- attributed testimonials and customer marks with permission;
-- useful comparisons and limitations.
+Do not invent counters, reviews, awards, badges, logos, live status, product
+screens, urgency, scarcity, or availability. A concept can be visually
+complete without pretending to be an operating business.
 
-Do not invent counters, reviews, awards, badges, customer logos, live status, product screens, urgency, scarcity, or availability. A concept should look intentional without pretending to be an operating business.
+## Support sound decisions
 
-## Shape conversion
+When success means helping someone choose well rather than maximizing
+conversion:
 
-- Use specific action labels and truthful destinations.
-- Distinguish primary, secondary, and informational actions.
-- Explain consequences before consequential actions.
-- Keep qualification, price, timing, and requirements discoverable.
-- Preserve keyboard, touch, back-button, and error recovery.
-- Remove or defer controls that do not work.
+- present viable options, limitations, eligibility, costs, and consequences
+  on comparable terms;
+- distinguish fact, estimate, uncertainty, unavailable evidence, and opinion;
+- disclose material sponsorship, ranking logic, incentives, or conflicts;
+- clarify reversible and irreversible consequences before commitment;
+- preserve correction, comparison, backtracking, and a decide-later path;
+- treat choosing nothing or seeking qualified advice as valid when it is.
 
-Reject coercive urgency, confirm-shaming, hidden costs, disguised advertising, obstructed cancellation, preselected consent, or visually minimized terms.
+Do not manufacture a preferred choice through asymmetric detail, hidden
+exclusions, unsupported certainty, disguised consent, coercion, or visually
+minimized terms. Escalate regulated and high-consequence logic to qualified
+specialists.
 
-## Common risks to review
+## Shape truthful action
 
-- category nostalgia or current trend shorthand without evidence;
-- generic superlatives and interchangeable copy;
-- fake dashboard, browser, phone, or map frames;
-- decorative logo clouds, stats bars, and badges;
-- every proof point placed in the same card;
-- dramatic media obscuring offer, access, or action;
-- repeated fade-up and hover-lift behavior;
-- a fashionable font pairing used as the whole identity.
+- Use action labels and destinations that match what happens.
+- Distinguish actions and information according to consequence, not a fixed
+  count or visual hierarchy.
+- Keep qualification, price, timing, requirements, consent, and policy
+  discoverable.
+- Preserve keyboard, touch, history, cancellation, and error recovery.
+- Remove, explain, or defer controls that do not work.
 
-These are diagnostic prompts, not automatic failures.
+The aesthetic may be familiar, unconventional, minimal, maximal, decorative,
+image-led, typographic, interactive, or another form. Judge whether the
+rendered `creative_logic` supports the real decision and owner brief. No
+single font, component, effect, composition, media treatment, or fashionable
+choice is a failure by itself.
 
-## Verify
+## Review
 
-Test the decision journey from common entry points. Confirm claims, assets, CTA destinations, forms, price, policy, privacy, consent, errors, success, mobile behavior, performance, and metadata. Use Read mode for dense product/menu information and Operate mode for checkout, booking, account, or transactional flows.
+Review aggregate mismatches: generic promises, unsupported proof,
+interchangeable route structure, misleading media, repeated producer grammar,
+unclear actions, or expression that obscures important terms. Diagnose causes
+without turning observed ingredients into a blacklist.
+
+Test relevant entry points, claims, assets, actions, forms, price, policy,
+privacy, consent, errors, success, content variation, mobile behavior,
+performance, metadata, and handoffs. Use Read and Operate guidance where the
+route's job actually changes.

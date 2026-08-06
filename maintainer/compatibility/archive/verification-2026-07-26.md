@@ -14,7 +14,7 @@ or rendered accessibility review.
 
 ## Codex
 
-- Intended route: `C:/Users/motty/.agents/skills/design-dna`
+- Intended route: `~/.agents/skills/design-dna`
 - The official Codex skill quick validator returned `Skill is valid!` for the
   canonical runtime and the installed route.
 - Transactional sync parity returned the canonical SHA-256 above for source and
@@ -29,7 +29,7 @@ or rendered accessibility review.
 
 ## Claude Code
 
-- Intended route: `C:/Users/motty/.claude/skills/design-dna`
+- Intended route: `~/.claude/skills/design-dna`
 - The official Codex skill quick validator returned `Skill is valid!` for the
   installed route; this verifies the portable `SKILL.md` package contract, not
   Claude behavior.

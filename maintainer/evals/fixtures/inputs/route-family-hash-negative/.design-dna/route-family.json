@@ -1,0 +1,104 @@
+{
+  "schema_version": 2,
+  "created_with": "design-dna 4.0.0",
+  "classification": "internal",
+  "study": {"id": "fragment-festival", "title": "Ten fragments falsely declared as routes", "requested_route_count": 10},
+  "shared_contract": {
+    "identity": "One fragment index.",
+    "navigation": "Ten hash links in one document.",
+    "truth": "Fictional evaluation copy.",
+    "accessibility": "Headings and anchors are available.",
+    "voice": "Short neutral labels.",
+    "performance": "One static document."
+  },
+  "routes": [
+    {
+      "id": "page-01", "path": "/#page-01", "title": "Fragment 01", "user_job": "Read fragment 01.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the first claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-01.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-02",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-02", "path": "/#page-02", "title": "Fragment 02", "user_job": "Read fragment 02.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the second claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-02.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-01",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-03", "path": "/#page-03", "title": "Fragment 03", "user_job": "Read fragment 03.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the third claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-03.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-04",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-04", "path": "/#page-04", "title": "Fragment 04", "user_job": "Read fragment 04.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the fourth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-04.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-03",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-05", "path": "/#page-05", "title": "Fragment 05", "user_job": "Read fragment 05.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the fifth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-05.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-06",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-06", "path": "/#page-06", "title": "Fragment 06", "user_job": "Read fragment 06.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the sixth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-06.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-05",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-07", "path": "/#page-07", "title": "Fragment 07", "user_job": "Read fragment 07.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the seventh claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-07.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-08",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-08", "path": "/#page-08", "title": "Fragment 08", "user_job": "Read fragment 08.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the eighth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-08.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-07",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-09", "path": "/#page-09", "title": "Fragment 09", "user_job": "Read fragment 09.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the ninth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-09.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-10",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    },
+    {
+      "id": "page-10", "path": "/#page-10", "title": "Fragment 10", "user_job": "Read fragment 10.",
+      "creative_logic": "This negative fixture intentionally declares an in-document fragment as a separate route so the route contract rejects the disguise.",
+      "observable_decisions": [{"decision": "Point the tenth claimed destination at a hash target in the one supplied document.", "reason": "The fixture distinguishes a working anchor from a separately addressable page.", "evidence": "index.html#page-10.", "status": "accepted"}],
+      "responsive_result": "The one document uses the same reading order at both capture widths.", "reduced_motion_result": "No motion dependency exists.", "no_javascript_result": "The fragment target remains in the one source-visible document.", "closest_sibling": "page-09",
+      "deliberate_differences": ["Only the fragment number changes.", "No document boundary changes."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]}, "review_status": "implemented"
+    }
+  ],
+  "review": {
+    "direct_entry": "pending",
+    "link_integrity": "pending",
+    "route_count": "pending",
+    "body_comparison": "pending",
+    "atlas_artifact": "pending",
+    "cultural_acceptance": {"required": false, "status": "not-required", "reviewer_id": null, "relationship": "not-reviewed", "independent_of_producer": false, "reviewed_at": null, "notes": "No culturally central material."}
+  }
+}

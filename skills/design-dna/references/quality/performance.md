@@ -4,7 +4,20 @@ Use this when planning assets, fonts, scripts, motion, embeds, rendering, or pro
 
 ## Set an objective
 
-Use the project's measured baseline and contractual targets first. If none exist, propose route-specific budgets and obtain owner acceptance. Include:
+Use the project's measured baseline and contractual targets first. If none
+exist, scale the objective to the selected assurance capabilities and delivery
+stage:
+
+- For Quick work or a local concept, record a provisional route-specific
+  objective, representative device and network, and the checks actually run.
+  Label it unapproved and do not use it for release claims.
+- For Standard or Showcase work moving toward release, propose budgets and
+  identify the accountable owner and review point.
+- For production, contractual, or regression-gated work, use owner-approved
+  targets and name monitoring and regression ownership before claiming
+  readiness.
+
+Include:
 
 - critical route and representative device/network;
 - Core Web Vitals objectives;
@@ -13,7 +26,9 @@ Use the project's measured baseline and contractual targets first. If none exist
 - interaction and animation constraints;
 - monitoring owner and regression threshold.
 
-Do not silently leave objectives blank. Label proposed budgets as proposals, not universal guarantees.
+Do not silently leave objectives blank. Label provisional or proposed budgets
+as such, not as universal guarantees. A concept objective may guide learning
+without owner acceptance; it is not production evidence.
 
 ## Protect the critical path
 
@@ -25,6 +40,25 @@ Do not silently leave objectives blank. Label proposed budgets as proposals, not
 - Lazy-load below-the-fold media without delaying likely next actions.
 - Avoid render-blocking decoration, layout thrashing, and unbounded scroll work.
 - Cache immutable assets and respect content freshness.
+
+## Account for environmental and lifecycle cost
+
+Scale the review to the feature. For heavy media, AI inference, 3D, continuous
+updates, analytics, embeds, or other third parties, examine creation or
+generation, storage, delivery, repeat use, device work, external processing,
+maintenance, cache invalidation, and retirement. Record the user value,
+frequency, major resource drivers, owner, and review or removal condition.
+
+Provide a lower-impact path when it preserves the task: user-initiated loading,
+responsive or shorter media, a poster or static summary, cached or precomputed
+results, batched updates, fewer requests, reduced-data behavior, or removal of
+low-value processing. Keep essential content and controls available when the
+heavy feature, provider, or network is unavailable.
+
+Measure bytes, requests, execution, inference or processing frequency, storage,
+and device cost in proportion to the decision. Do not claim a feature or site
+is sustainable, carbon-neutral, or lower-carbon without a credible method,
+defined boundary, current evidence, and accountable review.
 
 ## Design resilient states
 

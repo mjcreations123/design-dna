@@ -27,7 +27,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["path", "reason", "owner", "expires"],
+        "required": [
+          "path",
+          "sha256",
+          "size_bytes",
+          "reason",
+          "owner",
+          "expires"
+        ],
         "properties": {
           "path": {
             "type": "string",
@@ -37,6 +44,14 @@
               {"not": {"pattern": "(?:^[/\\\\]|^[A-Za-z]:|(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))"}},
               {"not": {"pattern": "\\\\"}}
             ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
           },
           "reason": {"type": "string", "minLength": 5, "pattern": "\\S[\\s\\S]{3,}\\S"},
           "owner": {"type": "string", "minLength": 1, "pattern": "\\S"},

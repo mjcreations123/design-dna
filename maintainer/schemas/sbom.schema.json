@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spdxVersion",
+    "dataLicense",
+    "SPDXID",
+    "name",
+    "documentNamespace",
+    "creationInfo",
+    "documentDescribes",
+    "packages",
+    "relationships",
+    "hasExtractedLicensingInfos"
+  ],
+  "properties": {
+    "spdxVersion": {"const": "SPDX-2.3"},
+    "dataLicense": {"const": "CC0-1.0"},
+    "SPDXID": {"const": "SPDXRef-DOCUMENT"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 256},
+    "documentNamespace": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^urn:uuid:[0-9a-f-]{36}$"
+    },
+    "creationInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created", "creators", "licenseListVersion"],
+      "properties": {
+        "created": {"type": "string", "format": "date-time"},
+        "creators": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 3, "maxLength": 256}
+        },
+        "licenseListVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "documentDescribes": {
+      "type": "array",
+      "const": ["SPDXRef-Package-design-dna"]
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/package"}
+    },
+    "relationships": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "spdxElementId",
+          "relationshipType",
+          "relatedSpdxElement"
+        ],
+        "properties": {
+          "spdxElementId": {"const": "SPDXRef-Package-design-dna"},
+          "relationshipType": {"const": "DEPENDS_ON"},
+          "relatedSpdxElement": {"$ref": "#/$defs/spdx_id"}
+        }
+      }
+    },
+    "hasExtractedLicensingInfos": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["licenseId", "extractedText", "name"],
+        "properties": {
+          "licenseId": {"const": "LicenseRef-DesignDNA-Proprietary"},
+          "extractedText": {"type": "string", "minLength": 50},
+          "name": {"const": "Design DNA Proprietary Rights Notice"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "spdx_id": {
+      "type": "string",
+      "pattern": "^SPDXRef-[A-Za-z0-9.-]+$"
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "SPDXID",
+        "name",
+        "versionInfo",
+        "downloadLocation",
+        "filesAnalyzed",
+        "licenseConcluded",
+        "licenseDeclared",
+        "copyrightText",
+        "primaryPackagePurpose",
+        "supplier",
+        "externalRefs"
+      ],
+      "properties": {
+        "SPDXID": {"$ref": "#/$defs/spdx_id"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 256},
+        "versionInfo": {"type": "string", "minLength": 1, "maxLength": 256},
+        "downloadLocation": {"type": "string", "minLength": 1},
+        "filesAnalyzed": {"const": false},
+        "licenseConcluded": {"type": "string", "minLength": 1},
+        "licenseDeclared": {"type": "string", "minLength": 1},
+        "copyrightText": {"type": "string", "minLength": 1},
+        "primaryPackagePurpose": {"const": "LIBRARY"},
+        "supplier": {"type": "string", "minLength": 1},
+        "sourceInfo": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "checksums": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["algorithm", "checksumValue"],
+            "properties": {
+              "algorithm": {"const": "SHA256"},
+              "checksumValue": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            }
+          }
+        },
+        "externalRefs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "referenceCategory",
+              "referenceType",
+              "referenceLocator"
+            ],
+            "properties": {
+              "referenceCategory": {"const": "PACKAGE-MANAGER"},
+              "referenceType": {"const": "purl"},
+              "referenceLocator": {
+                "type": "string",
+                "pattern": "^pkg:[A-Za-z0-9.+-]+/.+@.+$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

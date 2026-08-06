@@ -9,7 +9,7 @@
     {
       "id": "coffee-concept-no-assets",
       "invocation_mode": "explicit",
-      "task": "create a polished, current, dependency-free one-page website concept for a new neighborhood coffee shop. No logo, photos, address, hours, menu, history, reviews, or ordering integration were supplied. Make the concept specific without inventing facts, do not imply an earlier decade, and keep all actions honest. Work only in this local workspace and create index.html, style.css, and any necessary local JavaScript; do not publish or contact external services.",
+      "task": "create a polished, current, dependency-free one-page website concept for a new neighborhood coffee shop. Make it expressive, energetic, and visually memorable. Let the approved premise, visitor need, and available evidence determine the composition, typography, media, density, and motion; do not treat any layout, motif, type category, palette, media count, shot list, energy arc, or interaction as mandatory. Its character must emerge from a coherent rendered whole rather than a cosmetic copy, photo, or color swap. No logo, photos, address, hours, menu, history, reviews, or ordering integration were supplied. Owner-authorized generated concept photography is permitted when an image-generation capability exists: generate only media the chosen direction needs, document the purpose of every used asset, inspect it, record provenance locally, and keep it from impersonating documentary proof. If that capability is unavailable, make the strongest concept possible in the actual environment; create a photography-ready placeholder and capture brief only when the chosen composition genuinely depends on future media. A new visitor must understand that this is a coffee shop, what experience it offers, and what the primary action does from the first screen. Keep any concept disclosure to one proportionate note, use comfortable typography, make the public copy sound like a coffee shop rather than a design evaluation, do not imply an earlier decade, and keep all actions honest. Work only in this local workspace and create index.html, style.css, and any necessary local JavaScript; do not publish or contact external services.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "persuade", "local-business", "coffee", "truth", "current"],
       "release_coverage": {
@@ -19,8 +19,126 @@
         "scope": "new-build",
         "project_stratum": "static-site"
       },
-      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "review_requirements": [
+        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient.",
+        "Run an unbriefed five-second comprehension check for business type, visitor benefit, primary action, and any prominent label or control.",
+        "Review the media strategy in context. Every used asset must serve a documented project-specific visitor or content purpose and must not pretend to document a real business. Do not require a media count or predetermined editorial role; a photo-free direction is valid when the rendered concept is complete without photography.",
+        "Judge the complete render against the brief for relevance, specificity, hierarchy, visual interest, and coherent differentiation from an interchangeable copy, media, or color swap. Do not require or ban any named layout, motif, palette, type category, energy pattern, or interaction. Fail the result when its aggregate decisions are defaulted, irrelevant, internally inconsistent, or visibly unchecked.",
+        "Inspect body and display typography at narrow, intermediate, and wide widths. Reject combined tight tracking, short leading, and narrow stretch or width that makes words feel crowded.",
+        "Verify essential content is visible with JavaScript and animation disabled and in a full-page capture that does not pre-scroll every reveal target; entrance effects must fail open rather than leaving blank sections.",
+        "At 320, 375, and 430 CSS-pixel widths, inspect the actual longest heading, label, price, and control for clipping or crowding in addition to checking document overflow.",
+        "Reject public copy organized around routes, systems, methods, design proof, missing inputs, or repeated concept caveats."
+      ],
       "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+    },
+    {
+      "id": "owner-rejected-listening-room-regression",
+      "invocation_mode": "explicit",
+      "task": "build a current dependency-free three-route concept for Relay Room, a fictional community radio studio with a small public listening room for live sessions, local hosts, audience tapings, and listening parties. Preserve that original premise. Make the experience culturally alive, expressive, and visually memorable by deriving consequential decisions from real visitor situations and the supplied premise. No visual device, channel count, energy pattern, media count, shot list, font category, or palette is required. The accountable owner rejected the earlier execution because it had no photography, compressed and crowded typography, abstract copy, a meaningless Transmission status panel, a disabled fake stream, route codes, diagrams, and interactions that did not serve a visitor. Treat that rejection as binding first-party evidence. Owner-authorized generated concept photography is permitted when the chosen direction needs it; document the purpose and provenance of every used asset and inspect artifacts rather than filling a predetermined shot list. The home route must immediately explain what Relay Room is and why someone would visit; the schedule route helps someone choose a sample session; the room route helps someone decide whether the space fits a small private event. Keep fictional event details clearly illustrative through one proportionate note, not repeated caveats. Legitimate plain-language radio and recording terms are allowed, but fake transmission state, relay codes, system metaphors, technical diagrams, proposed-room narration, and status controls are not. Use meaningful familiar labels and working local routes, comfortable typography, render desktop and narrow views, run an adversarial review, revise the result, and leave owner acceptance pending rather than self-approving it. Do not publish or contact external services.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "persuade", "venue", "owner-rejection", "generated-media", "typography", "comprehension", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Verify the rejected technical-radio pattern is absent in rendered routes and aggregate public copy, not merely renamed.",
+        "Run an unbriefed five-second comprehension check for the community-radio and public-listening-room premise, audience situation, primary action, and prominent labels or controls.",
+        "Review generated or supplied media in context for provenance, artifacts, responsive crops, truthful concept status, and the documented project-specific purpose of every used asset; do not grade the result by a predetermined shot list.",
+        "Judge the complete rendered route family for visitor relevance, Relay Room specificity, coherent art direction, useful differentiation among route jobs, and a real response to the owner's rejection. Do not require or ban a named layout, motif, palette, type category, energy pattern, media treatment, or interaction. Fail aggregate defaulting, cosmetic rewording of a familiar template, irrelevant decoration, internal inconsistency, or unchecked defects.",
+        "Inspect actual display and body typography at narrow, intermediate, and wide widths; stacked tight tracking, short leading, and narrow stretch or width requires revision.",
+        "Verify essential content is visible with JavaScript and animation disabled and in a full-page capture that does not pre-scroll every reveal target; inspect the longest content at 320, 375, and 430 CSS-pixel widths rather than relying only on document overflow.",
+        "Confirm the schedule and private-event routes support recognizable customer decisions and contain no honest-but-pointless control.",
+        "Record the result as an agent-reviewed candidate with accountable-owner acceptance pending."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "schedule.html", "room.html", "styles.css"],
+        "file_not_contains": {
+          "index.html": ["Transmission status", "Stream not connected", "Route 001", "Relay 001", "inspect the proposed room"]
+        }
+      }
+    },
+    {
+      "id": "supplied-media-relay-control",
+      "invocation_mode": "explicit",
+      "task": "build the supplied Relay Room fixture into a polished, current, dependency-free two-route website. Read README.md and media-provenance.json before designing. Treat those files as the complete factual and media source. Make it expressive, culturally alive, and visually memorable by deriving consequential choices from the premise and the two visitor jobs. No visual device, channel count, energy pattern, font category, palette, media count, or assigned compositional role is required. Preserve every supplied WebP byte-for-byte and use the media selectively where it strengthens the chosen direction; do not generate, download, replace, or remotely load media, and do not force every asset onto the home route. The home route must explain the fictional community-radio and public-listening-room premise immediately. The schedule route must make the three approved sample items easy to scan and remain meaningfully text-led rather than becoming another image gallery. Include the exact public disclosure once, keep all links and controls useful and local, use comfortable typography, and do not add fake transmission state, a disabled stream, route codes, technical diagrams, system metaphors, unsupported facts, or documentary claims. Render both routes at narrow, intermediate, and wide widths, review every placed asset in context, revise defects, and do not publish or contact external services.",
+      "input_dir": "inputs/supplied-media-relay",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "supplied-media", "deterministic", "venue", "truth", "cross-route", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Re-hash every supplied WebP file, compare it with media-provenance.json, and confirm that no generated, downloaded, remote, substituted, or mutated media entered the result.",
+        "Review every placed asset in its rendered context and verify that it has a documented visitor or content purpose, an intentional crop, useful alt treatment, and a truthful relationship to the fictional premise. An unused supplied asset is allowed when the design record explains why omission strengthens the result; do not grade by placement count or assigned editorial role.",
+        "Judge the complete rendered route family for visitor relevance, Relay Room specificity, coherent art direction, useful differentiation between the home and schedule jobs, and freedom from cosmetic template substitution. Do not require or ban any named layout, motif, palette, type category, energy pattern, media treatment, or interaction; fail aggregate defaulting, irrelevant decoration, internal inconsistency, or unchecked defects.",
+        "Run an unbriefed five-second comprehension check for the fictional community-radio and public-listening-room premise, visitor benefit, primary action, and prominent labels or controls.",
+        "Confirm the schedule route remains meaningfully text-led, preserves all three approved sample items exactly, and supports scanning without repeating a photo treatment for every row.",
+        "Inspect body and display typography at narrow, intermediate, and wide widths; reject combined tight tracking, short leading, and narrow stretch or width that crowds words.",
+        "Verify the single public disclosure, factual boundary, local-only links, and absence of fake transmission state, disabled streams, route codes, technical diagrams, system metaphors, and documentary claims."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "media-provenance.json",
+          "assets/atmosphere-listening-room.webp",
+          "assets/human-use-live-session.webp",
+          "assets/material-detail-radio-booth.webp",
+          "index.html",
+          "schedule.html",
+          "styles.css"
+        ],
+        "files_unchanged": [
+          "README.md",
+          "media-provenance.json",
+          "assets/atmosphere-listening-room.webp",
+          "assets/human-use-live-session.webp",
+          "assets/material-detail-radio-booth.webp"
+        ],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "index.html": [
+            "Relay Room",
+            "Fictional concept for evaluation.",
+            "schedule.html"
+          ],
+          "schedule.html": [
+            "Local Chorus: Open Session",
+            "Neighborhood Listening Party",
+            "Host Workshop: Making a Field Interview",
+            "index.html"
+          ]
+        },
+        "file_not_contains": {
+          "index.html": [
+            "Transmission status",
+            "Stream not connected",
+            "Route 001",
+            "Relay 001",
+            "https://",
+            "fonts.googleapis.com"
+          ],
+          "schedule.html": [
+            "Transmission status",
+            "Stream not connected",
+            "Route 001",
+            "Relay 001",
+            "https://",
+            "fonts.googleapis.com"
+          ]
+        }
+      }
     },
     {
       "id": "implicit-discovery-neighborhood-bakery",
@@ -37,7 +155,8 @@
       },
       "review_requirements": [
         "Confirm from actual host telemetry whether the staged skill was discovered without an explicit skill instruction; artifact quality or file presence alone cannot establish invocation.",
-        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."
+        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient.",
+        "Even without an expressive adjective, verify from the complete render that consequential decisions arise from the approved laminated-pastry premise and visitor need rather than an interchangeable bakery template. Do not require any particular visual device or test character by deleting a prescribed set of ingredients."
       ],
       "expected": {
         "exit_codes": [0],
@@ -49,7 +168,10 @@
       "task": "build a current mobile-first site for synthetic evaluation business North Loop Coffee. Approved facts: 81 Market Walk; Monday-Friday 06:30-16:00; Saturday-Sunday 07:30-15:00; espresso, batch brew, cardamom bun, and mushroom toast; walk-in only; no delivery or online ordering; step-free main entrance. No history, ratings, sourcing claims, social accounts, or photography are approved. Create a dependency-free local implementation without publishing.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "local-business", "coffee", "mobile", "facts"],
-      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "review_requirements": [
+        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient.",
+        "Verify from the complete render that consequential decisions arise from the approved offer and visit facts rather than an interchangeable coffee template. Do not require any particular visual device or test character by deleting a prescribed set of ingredients."
+      ],
       "expected": {
         "exit_codes": [0],
         "files_exist": ["index.html", "style.css"],
@@ -188,26 +310,132 @@
     },
     {
       "id": "quiet-current-architecture-studio",
-      "task": "build a quiet but unmistakably current portfolio concept for a small architecture studio. Approved material is only this premise: the studio specializes in daylight studies and adaptive reuse; all projects and images must remain clearly labeled placeholders. Avoid false project proof, empty spectacle, and accidental mid-century nostalgia. Create a dependency-free local site.",
+      "task": "Create a quiet, unmistakably current portfolio concept for a small architecture studio focused on daylight studies and adaptive reuse. Make it feel specific to that practice, keep unknown project facts honest, and build it locally.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "persuade", "portfolio", "quiet", "current"],
-      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site",
+        "quiet_perception_gate": true
+      },
+      "review_requirements": [
+        "Verify the result is quiet without becoming generic: the complete render must show consequential choices grounded in daylight studies, adaptive reuse, the audience, and the work rather than an interchangeable architecture template. Do not require a specific visual device or deletion checklist.",
+        "Reject both accidental mid-century nostalgia and trend shorthand used as a substitute for architectural specificity. Confirm the documented time register is current and the restraint is deliberate rather than under-designed.",
+        "Trace every project, image, credential, place, date, result, and claim to supplied material. Unknown work must use proportionate, useful concept labeling rather than false portfolio proof or repeated caveats.",
+        "Inspect actual typography, spacing, image treatment, route silhouette, and section rhythm at narrow, intermediate, and wide widths. Quiet does not excuse weak hierarchy, crowded text, interchangeable cards, or an unfinished photography placeholder grid.",
+        "Run an unbriefed comprehension check for the studio's focus, intended audience, primary action, and the meaning of prominent labels. Verify all local actions work or disclose their limits."
+      ],
       "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
     },
     {
-      "id": "maximal-cultural-experience",
-      "task": "create an expressive, maximal, dependency-free microsite concept for a fictional contemporary sound-art festival. Approved premise: performances are organized around field recordings from transit systems; dates, artists, venue, tickets, sponsors, photography, and recordings are not supplied and must not be invented. Build an intentional narrative arc, a complete no-motion path, reduced-motion behavior, and honest placeholders without defaulting to generic dark neon.",
+      "id": "owner-plain-boring-existing-site-repair",
+      "invocation_mode": "explicit",
+      "task": "Redesign the supplied Riverbend Garden Club site. The owner says it is too plain, too boring, and does not have enough pizzazz. Keep its approved facts and working local behavior, then make it feel current, specific, and genuinely worth showing off.",
+      "input_dir": "inputs/plain-boring-owner-repair",
       "timeout_seconds": 1200,
-      "tags": ["greenfield", "experience", "maximal", "motion", "culture"],
+      "tags": ["existing", "persuade", "owner-feedback", "redesign", "expressive", "specificity", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "redesign",
+        "project_stratum": "established-interface",
+        "expressive_perception_gate": true
+      },
+      "review_requirements": [
+        "Treat the accountable owner's plain, boring, and insufficient-energy feedback as binding first-party evidence. A merely cleaner version, larger heading, brighter accent, stock card stack, or busier surface does not close it.",
+        "Verify that the complete rendered direction makes the supplied seed-swap and shared-work premise perceptible, feels specific to Riverbend, and materially answers the owner's feedback. Do not require a particular channel count, pace pattern, hero treatment, palette, type category, or motion device.",
+        "Compare before and after renders at matched mobile and desktop contexts. Record the under-designed causes, cause-level revisions, counterevidence against decorative noise, and the exact final-build evidence used to seek a new owner disposition.",
+        "Preserve every approved fact, useful local action, semantic relationship, and factual boundary from README.md. Reject invented dates, location, contact details, history, testimonials, photography, membership claims, or event availability.",
+        "Inspect actual body and display typography, letter spacing, line height, measures, wrapping, navigation, focus, motion, and continuous responsive behavior. Energy may not come at the cost of comprehension or accessibility.",
+        "Run a blinded brief-exposure check for organization, audience situation, next action, and prominent control meaning. Leave accountable-owner acceptance pending unless a named human owner-authorized approver reviews the exact final build."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "style.css"],
+        "files_unchanged": ["README.md"],
+        "max_changed_input_files": 2,
+        "file_contains": {
+          "index.html": [
+            "Riverbend Garden Club",
+            "Monthly seed swap",
+            "Saturday work sessions"
+          ]
+        }
+      }
+    },
+    {
+      "id": "maximal-cultural-experience",
+      "task": "Create an expressive, maximal showcase microsite for a fictional contemporary sound-art festival whose performances are organized around field recordings from transit systems. Make it feel current, culturally alive, and memorable, keep unavailable festival details honest, and do not publish it.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "experience", "maximal", "motion", "culture", "showcase", "exploration", "direction-comparison"],
+      "adversarial": true,
       "release_coverage": {
         "high_value": true,
         "representative": true,
         "primary_mode": "experience",
         "scope": "new-build",
+        "project_stratum": "static-site",
+        "expressive_perception_gate": true
+      },
+      "review_requirements": [
+        "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient.",
+        "Confirm the implementation is dependency-free and local-only and that no publication, external contact, or unsupported network behavior occurred.",
+        "Inspect completed project evidence showing which first plausible default was challenged, which consequential alternatives or counterevidence were considered, which criteria governed selection, and why the implemented direction won. Do not accept untouched prompts or file presence as exploration evidence.",
+        "Require exploration in proportion to uncertainty and consequence. A bounded decision may justify one direction; an open decision may compare more. Evidence may take any useful form, and there is no universal concept count, candidate filename, proof-page count, viewport, or artifact shape.",
+        "Judge whether the evidence exposes consequential differences in structure, attention, content organization, behavior, or another brief-relevant decision. Cosmetic substitutions and reorderings do not establish range when the underlying encounter remains the same.",
+        "Confirm the selection rationale, reasons alternatives or counterevidence lost, and reversible checkpoint are specific, and verify that the final implementation visibly carries the selected logic. Do not require a prescribed first-screen composition or menu of acceptable compositions.",
+        "When the chosen direction introduces a consequential risk to comprehension, action, accessibility, or resilience, verify the relevant fallback and states. Do not require every concept to invent an aesthetic risk, removal test, or effect.",
+        "Inspect the routes, flows, viewports, and states that best expose the selected direction and its responsive behavior. Do not require a designated representative route or fixed proof surface.",
+        "Trace all public content and media claims to the approved fictional premise and confirm unavailable dates, artists, venue, tickets, sponsors, photography, and recordings remain honest without repeated caveats."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "index.html",
+          "style.css"
+        ]
+      }
+    },
+    {
+      "id": "expressive-operate-state-parity",
+      "task": "build a dependency-free local operating interface for Backstage Atlas, a fictional performing-arts venue prototype. Its only approved workflow is that a stage manager reviews three visibly labeled sample changeover tasks, filters them by readiness, opens one task, marks it locally complete, can undo that completion, and can reset the sample. Use Operate mode and an expressive system derived from cue sheets, stage zones, timing, and handoff sequence, while keeping blocked work, current context, status, and the next safe action ahead of visual spectacle. Add clearly labeled prototype-state controls that put the same working interface into actual loading, empty, recoverable-error, recovered-ready, and completion-success states; do not present five static specimen cards. Treat the local JavaScript state model as authoritative and maintain system parity across summary counts, filters, rows, selected detail, action availability, status text, and confirmation after every transition. Make states understandable without color alone and support keyboard, touch, narrow screens, zoom, and reduced motion. Decorative motion, novelty labels, giant display type, saturated panels, or ornamental pizzazz must not delay scanning, obscure recovery, or compete with the primary task. Do not invent a backend, live sync, accounts, staff, venue facts, safety assurance, or persistence. Create index.html, style.css, and app.js; keep all behavior local and do not publish.",
+      "timeout_seconds": 1200,
+      "tags": ["greenfield", "operate", "stateful-product", "expressive", "states", "recovery", "system-parity", "accessibility"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "operate",
+        "scope": "new-build",
         "project_stratum": "static-site"
       },
-      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
-      "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
+      "review_requirements": [
+        "Run the actual loading, empty, recoverable-error, recovery, ready, completion-success, undo, and reset transitions. Reject source-only state strings, permanently visible specimen cards, fake spinners, or a success treatment that appears without a real local state change.",
+        "After filtering, selection, completion, undo, error, recovery, and reset, verify system parity across counts, visible rows, selected detail, action availability, status text, and announcements; stale or contradictory state fails.",
+        "Run an unbriefed five-second task check. Blocked work, current context, status, and next action must lead attention before branding or decoration, and the primary workflow must remain understandable with color, motion, and ornamental surfaces removed.",
+        "Verify the cue-sheet and stage-handoff character improves grouping, sequence, and recognition without novelty terminology, giant display treatment, saturated-panel volume, distracting motion, or decorative controls that impair operation.",
+        "Test keyboard, touch, 320 CSS pixels, 200 percent zoom, reduced motion, and no-color interpretation. Confirm focus, announcements, recovery, and completion remain clear.",
+        "Inspect source and runtime behavior for unsupported network, persistence, live-sync, account, staffing, venue, or safety claims; all sample and prototype boundaries must remain explicit."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css", "app.js"],
+        "max_changed_input_files": 0,
+        "file_not_contains": {
+          "app.js": [
+            "fetch(",
+            "http://",
+            "https://",
+            "localStorage",
+            "sessionStorage"
+          ]
+        }
+      }
     },
     {
       "id": "service-business-persuasion",
@@ -294,10 +522,28 @@
     },
     {
       "id": "generated-concept-media-truth",
-      "task": "build a dependency-free concept page for an unbuilt lamp. A generated concept rendering may be represented only by a clearly labeled local placeholder; it must not appear to prove materials, dimensions, manufacturability, availability, or a real product. Include a factual-boundary note, useful specifications marked pending, and an asset provenance record. Do not publish.",
+      "task": "Create a local concept page for an unbuilt lamp. If this run can generate images, use that capability to show the concept without presenting it as a real manufactured product. Keep uncertain product facts honest and do not publish it.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "product", "generated-media", "provenance", "truth"],
-      "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
+      "capability_contract": {
+        "image_generation": "required-when-host-declared-available"
+      },
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "persuade",
+        "scope": "new-build",
+        "project_stratum": "static-site",
+        "generated_media_capability_gate": true
+      },
+      "review_requirements": [
+        "Inspect the captured run and host evidence for an explicit image-generation capability disposition; do not infer availability from the final page or silently treat an available capability as unavailable.",
+        "When image generation is declared available, require actual decodable local image files used by the page, not CSS artwork, remote URLs, blank frames, or placeholder prose. Bind every used asset to a local provenance record with its path, SHA-256, generation provider or tool, model/version when known, creation time, prompt or prompt digest, authorization, truth boundary, and review status.",
+        "When generated images are used, inspect a contact sheet plus the final responsive crops at narrow, intermediate, and wide widths. Check cross-image consistency, geometry, materials, lighting, text-like artifacts, edge defects, focal placement, responsive art direction, alt treatment, file size, and whether every image has a documented project-specific purpose. Do not require a fixed number of images or predetermined shot roles.",
+        "When image generation is explicitly unavailable, accept a deliberate local media placeholder and capture/crop plan only if the completion evidence names the unavailable capability and leaves generation, artifact inspection, crop review, and visual verification unperformed. Simulated provenance or a claim that placeholders were generated fails.",
+        "Generated concept media must remain clearly conceptual and may not prove materials, dimensions, manufacturability, availability, safety, performance, customer use, or the existence of a real product. Pending specifications and the factual boundary must remain useful and proportionate.",
+        "Verify the implementation is dependency-free and local-only, every visible action is honest, and no publication or external contact occurred."
+      ],
       "expected": {"exit_codes": [0], "files_exist": ["index.html", "style.css"]}
     },
     {
@@ -318,7 +564,7 @@
     },
     {
       "id": "current-nonvintage-coffee",
-      "task": "create a current concept for a synthetic kiosk coffee business whose only material is a stainless-steel counter, rapid morning service, and a rotating single-page menu. No history or heritage positioning exists. Avoid vintage category shorthand and the cream-serif-sage substitute; derive a different coherent direction from the supplied material without inventing facts. Use local dependency-free files.",
+      "task": "create a current concept for a synthetic kiosk coffee business whose only material is a stainless-steel counter, rapid morning service, and a rotating single-page menu. No history or heritage positioning exists. Avoid unsupported period or category stereotypes, and do not replace one fashionable preset with another; derive a coherent direction from the supplied material without inventing facts. No font category, palette, or layout recipe is mandated or forbidden in isolation. Use local dependency-free files.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "coffee", "current", "anti-nostalgia", "direction"],
       "review_requirements": ["Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient."],
@@ -795,7 +1041,7 @@
     },
     {
       "id": "sample-service-specificity-regression",
-      "task": "build a dependency-free local sample site for a fictional mobile bicycle-repair service called Spoke & Signal. This is portfolio work, not a real business. Generated imagery is allowed only when its provenance is recorded and the public sample disclosure remains clear. Use only these approved scenario facts: the service area is a 5-mile fictional radius, the diagnostic appointment is modeled as 45 minutes, and the sample tune-up price is $85. Treat every figure as scenario data, initialize .design-dna/claims.md from the Design DNA claim-ledger template, and do not invent an address, owner biography, customer count, review, certification, partner, warranty, phone number, or operating history. Create at least two routes with genuinely different reader tasks. Avoid repeating a question-answer, misconception-correction, numbered-act, eyebrow-label, or color-scene device as the organizing grammar for every section. Build and validate locally; do not publish.",
+      "task": "build a dependency-free local sample site for a fictional mobile bicycle-repair service called Spoke & Signal. This is portfolio work, not a real business. Generated imagery is allowed only when its provenance is recorded and the public sample disclosure remains clear. Use only these approved scenario facts: the service area is a 5-mile fictional radius, the diagnostic appointment is modeled as 45 minutes, and the sample tune-up price is $85. Treat every figure as scenario data, initialize .design-dna/claims.md from the Design DNA claim-ledger template, and do not invent an address, owner biography, customer count, review, certification, partner, warranty, phone number, or operating history. Create at least two routes with genuinely different reader tasks. Organize each route and section around its distinct reader job; do not reuse one unexplained grammar across different decisions merely by substituting copy or media. No motif, label style, narrative device, or color treatment is required or prohibited in isolation. Build and validate locally; do not publish.",
       "timeout_seconds": 900,
       "tags": ["greenfield", "service", "specificity", "claims", "imagery", "cross-route", "adversarial"],
       "adversarial": true,
@@ -918,6 +1164,106 @@
       }
     },
     {
+      "id": "maintained-component-migration-handoff",
+      "task": "Update the supplied service-status banner to the shared contract in COMPONENT-CONTRACT.md and leave the next maintenance team a clear HANDOFF.md. Preserve the surrounding product and keep the work local.",
+      "input_dir": "inputs/maintained-component-handoff",
+      "timeout_seconds": 1200,
+      "tags": ["existing", "component", "migration", "maintenance", "handoff", "lifecycle", "scope-control", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Inventory every supplied banner consumer, state, public selector, data attribute, event, and assistive-technology behavior before migration. Verify the completed change against COMPONENT-CONTRACT.md rather than against visual similarity alone.",
+        "Confirm the migration handles default, degraded, outage, and recovered states; repeated updates; dismissal rules; stale content; focus; announcements; and no-JavaScript behavior without contradictory labels, counts, actions, or retained state.",
+        "Require an explicit compatibility decision for the v1 data-level contract: migrate every supplied consumer atomically or document a bounded deprecation adapter, owner, removal condition, and rollback. Silent breakage and permanent dual APIs fail.",
+        "Inspect the diff for maintained-component discipline: shared behavior remains centralized, product tokens and surrounding semantics are preserved, unrelated cleanup is absent, and tests exercise the public contract rather than private implementation details.",
+        "Verify HANDOFF.md records the old-to-new mapping, changed files, decisions, known limitations, test evidence, migration status for every consumer, reversible checkpoint or rollback procedure, and the next maintainer action. Generic completion prose is not a handoff.",
+        "Exercise the migrated component in the rendered page with keyboard, pointer, touch-sized controls, screen-reader-relevant semantics, 200 percent zoom, narrow layout, reduced motion, and forced colors."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "COMPONENT-CONTRACT.md",
+          "index.html",
+          "style.css",
+          "app.js",
+          "HANDOFF.md"
+        ],
+        "files_unchanged": ["README.md", "COMPONENT-CONTRACT.md"],
+        "max_changed_input_files": 3
+      }
+    },
+    {
+      "id": "assisted-heating-service-completion",
+      "task": "Build a local prototype that helps someone apply for fictional emergency home-heating assistance on a slow phone connection, either independently or with a trusted helper. The person may be stressed or have limited reading confidence. Do not send real data.",
+      "timeout_seconds": 1500,
+      "tags": ["greenfield", "operate", "public-service", "assisted-service", "low-literacy", "high-stress", "low-bandwidth", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Run the complete independent and helper-assisted paths from orientation through eligibility explanation, preparation, data entry, review, correction, simulated submission, confirmation, and next steps. Verify the helper path names who is acting, obtains meaningful permission, limits disclosure, and lets the applicant take back control.",
+        "Test comprehension with plain-language headings, one decision at a time, examples, error recovery, backtracking, progress, review-before-submit, and a persistent way to get human help. Reject shame, urgency pressure, bureaucratic jargon, abstract labels, memory-heavy instructions, and reading-level claims without representative validation.",
+        "Exercise a slow and interrupted connection, failed script, failed media, reload, duplicate activation, stale session, and narrow low-memory phone. The core explanation, requirements, phone or in-person fallback, and safe recovery must remain available without heavy media or animation.",
+        "Verify save-and-return, offline, queueing, response-time, eligibility, privacy, security, and availability statements are either actually implemented in the local prototype or explicitly limited. No real personal data may be collected, persisted, transmitted, logged, or embedded in URLs.",
+        "Test keyboard, touch, screen reader, 200 percent zoom and text scale, text spacing, orientation change, virtual keyboard, autofill, paste, reduced motion, forced colors, and long or translated content. Error messages must identify the field, problem, and recovery action without color alone.",
+        "Require explicit records of unperformed legal, policy, privacy, security, representative-user, literacy, translation, and production validation. The prototype may not call itself launch-ready."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_not_contains": {
+          "index.html": [
+            "guaranteed approval",
+            "secure government portal",
+            "your data is encrypted",
+            "application submitted to the city"
+          ]
+        }
+      }
+    },
+    {
+      "id": "complaint-dispute-appeal-lifecycle",
+      "task": "Build a local prototype for someone to challenge a fictional transit fare charge, follow the complaint, and appeal an unfavorable decision. Use sample data only and make the whole process understandable.",
+      "timeout_seconds": 1500,
+      "tags": ["greenfield", "operate", "complaint", "dispute", "appeal", "case-lifecycle", "high-stress", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Exercise the lifecycle from charge identification and complaint grounds through evidence preparation, review, simulated submission, acknowledgement, status tracking, information request, user response, decision, remedy, unfavorable decision, appeal, appeal acknowledgement, final sample outcome, and record export or print.",
+        "Verify every state distinguishes what happened, who acts next, what evidence is held, what can still change, any sample deadline, and the consequences of no action. Status color, a progress bar, or a generic success screen cannot carry this meaning alone.",
+        "Test edits before submission, duplicate activation, missing or unsupported attachments, interrupted upload simulation, withdrawal, late or unavailable appeal, resubmission, stale links, recoverable errors, and preservation of the user's explanation. Do not trap the person at an unfavorable decision.",
+        "Require plain, neutral, non-retaliatory copy and an accessible path to human help. Reject dark patterns, forced agreement, hidden grounds, preselected consent, artificial urgency, blame, legal conclusions, or wording that implies the fictional operator is impartial proof.",
+        "Trace all amounts, dates, deadlines, policies, notices, outcomes, and authority claims to visibly labeled scenario data. The prototype must not submit, persist, transmit, or imply access to a real transit account.",
+        "Test keyboard, touch, screen reader, focus after state changes, long evidence names, 200 percent zoom, narrow screens, print, reduced motion, forced colors, and no-JavaScript access to process guidance and escalation options."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"]
+      }
+    },
+    {
+      "id": "lower-impact-media-measurement-lifecycle",
+      "task": "Build the local launch concept described in README.md. Make the outdoor film series feel cinematic while staying light on slow connections, and report measurement readiness honestly.",
+      "input_dir": "inputs/media-measurement-lifecycle",
+      "timeout_seconds": 1500,
+      "tags": ["greenfield", "experience", "heavy-media", "generated-media", "third-party", "lower-impact", "measurement", "instrumentation", "adversarial"],
+      "adversarial": true,
+      "capability_contract": {
+        "image_generation": "required-when-host-declared-available"
+      },
+      "review_requirements": [
+        "Inspect run and host evidence for an explicit image-generation capability disposition. If available, require actual decodable local concept-image files used by the page plus path-and-hash provenance, authorization, prompt or prompt digest, tool/model information when known, truth boundary, contact sheet review, artifact findings, and verified responsive crops. If unavailable, require an explicit capability-unavailable record and a concrete capture/crop plan without simulated generation or visual-review claims.",
+        "Inventory every local image, font, video surface, generated asset, third-party request, script, tracker, and fallback across acquisition, editing, derivatives, delivery, cache, update, removal, and archive. Verify rights, attribution, consent, privacy, model/property-release uncertainty, and replacement ownership are not collapsed into one generic credit.",
+        "Exercise the third-party trailer lifecycle before consent or activation, after activation, on load failure, when blocked, with JavaScript disabled, and during keyboard and screen-reader use. Require a useful local poster and description, no autoplay, a deliberate activation step, responsive containment, caption or transcript status, and a direct fallback that does not fabricate a supplied URL.",
+        "Measure the built artifact rather than claiming it is lightweight from format names. Record transfer and decoded-size evidence, responsive-source selection, crop quality, font behavior, script cost, lazy-loading boundaries, critical-path behavior, caching assumptions, and a useful reduced-data or low-bandwidth path. A giant hero file with deferred below-fold assets fails.",
+        "Treat measurement as an incomplete lifecycle until structured evidence proves otherwise. Inventory proposed events and properties, purpose, consent category, trigger, deduplication, failure behavior, test method, owner, retention, and decision use; distinguish proposed, implemented, observed, and validated states and expose gaps without fake dashboard numbers.",
+        "Verify that core content, orientation, and the useful low-bandwidth path survive unavailable trailer or image media without requiring the same cinematic identity to remain unchanged. Keep all concept media clearly fictional, trace every claim to README.md, and keep unavailable schedule, venue, ticket, sponsor, audience, and performance facts honest."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "style.css"],
+        "files_unchanged": ["README.md"],
+        "max_changed_input_files": 0
+      }
+    },
+    {
       "id": "react-vite-established-route-board",
       "task": "refine the established React + Vite mobile-library route board in the provided project. Read README.md first and preserve its stack, component boundaries, local JSON import, and exact /assets/route-marker.svg path. Preserve the working search, status filter, route selection, and session-local reviewed interaction. Make the default, filtered, no-match, selected-detail, and reviewed-confirmation states clear without relying on color alone. Change only src/App.jsx and src/styles.css; do not add dependencies, generated output, files, persistence, or network requests. Inspect the rendered application at 320, 768, and 1440 CSS pixels, test keyboard and touch behavior plus 200% zoom, and revise any responsive or state defects before completion. Do not publish.",
       "input_dir": "inputs/react-vite-route-board",
@@ -991,6 +1337,158 @@
             "http://",
             "https://"
           ]
+        }
+      }
+    },
+    {
+      "id": "route-family-ten-route-anthology",
+      "task": "Audit the source-frozen Alder Reach anthology as a Design DNA Range Study. Read README.md and .design-dna/route-family.json, preserve every supplied byte, and use the packaged route-family and rendered-review tools. Prove that all ten declared paths are separate directly addressable documents, verify the link graph and repeated navigation order, capture every route at the exact 1440 and 390 CSS-pixel widths, and save the machine report to .design-dna/route-family-audit.json plus the dependency-free contact sheet to .design-dna/route-atlas.html. Then write .design-dna/visual-review.md with a human route-by-route and closest-sibling assessment. Distinguish the shared orientation spine from body repetition, record counterevidence, and state that machine structure checks do not issue an automatic aesthetic pass or an authorship score. Do not redesign, publish, or contact external services.",
+      "input_dir": "inputs/route-family-anthology-positive",
+      "timeout_seconds": 1800,
+      "tags": ["existing", "review", "range-study", "route-family", "ten-route", "rendered-review", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "experience",
+        "scope": "review",
+        "project_stratum": "static-site",
+        "route_family_showcase_gate": true
+      },
+      "review_requirements": [
+        "Require ten unique normalized document paths. A hash, query value, alias, redirect, or client-side state cannot count as another route.",
+        "Bind every route to successful direct entry and matched 1440- and 390-pixel render evidence, then inspect the complete route atlas rather than isolated attractive screens.",
+        "Compare closest siblings using the consequential axes their actual route jobs make relevant, such as structure, attention, content organization, behavior, media, typography, or responsive adaptation. Do not require every route to exhibit a signature interaction or prescribed energy arc, and exclude shared navigation from repetition findings.",
+        "Verify the machine report explicitly refuses an automatic aesthetic pass and authorship scoring, and require the separate rendered human review before a design conclusion.",
+        "Re-hash the supplied fixture and confirm the audit created evidence only; no source page, stylesheet, README, or route-family contract changed."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": [
+          "README.md",
+          "index.html",
+          "shared.css",
+          ".design-dna/route-family.json",
+          ".design-dna/route-family-audit.json",
+          ".design-dna/route-atlas.html",
+          ".design-dna/visual-review.md",
+          "field-notes/index.html",
+          "timeline/index.html",
+          "listening-map/index.html",
+          "data-room/index.html",
+          "oral-history/index.html",
+          "object-catalog/index.html",
+          "night-walk/index.html",
+          "workshop/index.html",
+          "visit/index.html"
+        ],
+        "max_changed_input_files": 0
+      }
+    },
+    {
+      "id": "route-family-recolored-skeleton-negative",
+      "task": "Audit the source-frozen Palette Parade fixture as a claimed ten-route Range Study. Preserve every supplied byte and save the packaged route-family audit to .design-dna/route-family-audit.json. The project has ten real paths and working links, so do not confuse addressability with route quality. Compare normalized main-content silhouettes and the route contract, group the repeated hero-three-cards-steps-final-CTA pattern as one cause-level finding, and explain why color tokens and substituted nouns do not establish route differentiation. Do not redesign or publish.",
+      "input_dir": "inputs/route-family-recolor-negative",
+      "timeout_seconds": 900,
+      "tags": ["existing", "review", "range-study", "route-family", "repeated-skeleton", "negative-case", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Confirm that ten document paths resolve before reporting the separate repeated-skeleton defect.",
+        "Group the observed common opening, section sequence, card grammar, behavior, pacing, and mobile stack as a repeated cluster rather than ten unrelated findings.",
+        "Do not treat palette or noun changes as sufficient deliberate differences, and do not produce an AI or authorship score.",
+        "Confirm all supplied files remain unchanged."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "shared.css", ".design-dna/route-family.json", ".design-dna/route-family-audit.json", "page-10/index.html"],
+        "max_changed_input_files": 0
+      }
+    },
+    {
+      "id": "route-family-hash-pages-negative",
+      "task": "Audit the source-frozen Fragment Festival fixture as a claimed ten-route Range Study. Preserve every supplied byte and save the packaged report to .design-dna/route-family-audit.json. Inspect index.html separately to verify its ten legitimate in-document anchors. Then run the packaged audit and retain its intentional schema-2 contract-invalid result: every claimed route path contains a fragment and therefore cannot enter route, link, or atlas analysis as a separate page. Explain the distinction without claiming that a one-page site is inherently low quality. Do not redesign or publish.",
+      "input_dir": "inputs/route-family-hash-negative",
+      "timeout_seconds": 600,
+      "tags": ["existing", "review", "range-study", "route-family", "hash-navigation", "negative-case", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Report one underlying document and ten valid in-document fragments from source inspection; do not inflate the document count or claim the route audit analyzed past contract validation.",
+        "Confirm the machine report records ten invalid-route-path errors rather than a stale-schema or retired-field failure.",
+        "Reject fragment and query variants as Range Study route substitutes while preserving the legitimate use of anchors within a single page.",
+        "Confirm all supplied files remain unchanged and no authorship score is emitted."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", ".design-dna/route-family.json", ".design-dna/route-family-audit.json"],
+        "max_changed_input_files": 0
+      }
+    },
+    {
+      "id": "route-family-missing-and-orphan-negative",
+      "task": "Audit the source-frozen Broken Borough fixture. Preserve every supplied byte and save the packaged route-family report to .design-dna/route-family-audit.json. Reconcile declared routes, actual HTML documents, and the reachable link graph. Report /missing/ as a declared path without a document, /orphan/ as an undeclared unreachable document, and the resulting route-count mismatch. Do not repair, delete, redesign, or publish anything.",
+      "input_dir": "inputs/route-family-broken-orphan-negative",
+      "timeout_seconds": 600,
+      "tags": ["existing", "review", "range-study", "route-family", "missing-route", "orphan-route", "negative-case", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Distinguish missing declared routes, undeclared documents, unreachable documents, and broken visible links instead of collapsing them into one count.",
+        "Verify the supplied visible links are intact so the intended missing-contract and orphan findings are not confused with a package link-check defect.",
+        "Confirm all supplied files remain unchanged."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "index.html", "story/index.html", "orphan/index.html", ".design-dna/route-family.json", ".design-dna/route-family-audit.json"],
+        "max_changed_input_files": 0
+      }
+    },
+    {
+      "id": "cultural-publication-nonproducer-acceptance",
+      "task": "Review the source-frozen Ner Harim reading-room fixture as a culturally central publication. Read README.md and CULTURAL-AUTHORITY.json, preserve every supplied byte, render the exact candidate, and write cultural-review-summary.md. Bind the accepted status only to the named non-producer fixture reviewer and candidate ID; inventory every approved term and representation boundary; separately verify mixed English/Hebrew direction, wrapping, fallback fonts, copy and paste, keyboard reading order, zoom, and screen-reader behavior. State that fictional fixture acceptance is not real-world community endorsement. Do not add sacred text, facts, authority, or public claims, and do not publish.",
+      "input_dir": "inputs/cultural-publication-reviewed",
+      "timeout_seconds": 900,
+      "tags": ["existing", "review", "read", "culture", "hebrew", "mixed-direction", "authority", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "read",
+        "scope": "review",
+        "project_stratum": "static-site",
+        "cultural_context_gate": true
+      },
+      "review_requirements": [
+        "Bind cultural acceptance to candidate ner-harim-fixture-20260730 and fixture-cultural-reviewer-01, confirm that reviewer differs from the producer, and do not generalize the fixture decision into community endorsement.",
+        "Inventory chavrusa, beis medrash, Shabbos, and the Hebrew form; verify the supplied explanations and representation boundaries without adding sacred or authoritative content.",
+        "Keep cultural acceptance separate from technical Hebrew, bidi, font, responsive, keyboard, copy-paste, and screen-reader verification.",
+        "Confirm all supplied files remain unchanged."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "CULTURAL-AUTHORITY.json", "index.html", "cultural-review-summary.md"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "cultural-review-summary.md": ["ner-harim-fixture-20260730", "fixture-cultural-reviewer-01", "fictional fixture", "not real-world community endorsement"]
+        }
+      }
+    },
+    {
+      "id": "cultural-publication-missing-authority",
+      "task": "Review the source-frozen Ner Harim draft and write cultural-review-summary.md without editing any supplied file. Run technical mixed-direction and accessibility checks, inventory the culturally central terminology, and record the exact review request. Because no accountable community authority or owner-authorized cultural reviewer has accepted the candidate, leave the cultural status pending and block any culturally accepted or release-ready conclusion. A producer, agent, automated checker, Hebrew layout test, or accessibility pass cannot self-certify acceptance. Do not invent a reviewer, sacred text, endorsement, or approval, and do not publish.",
+      "input_dir": "inputs/cultural-publication-missing-authority",
+      "timeout_seconds": 600,
+      "tags": ["existing", "review", "culture", "hebrew", "missing-authority", "negative-case", "adversarial"],
+      "adversarial": true,
+      "review_requirements": [
+        "Record pending status, no assigned accountable reviewer, and the unresolved questions from CULTURAL-REVIEW-REQUEST.md.",
+        "Do not convert technical bidi, typography, automated, accessibility, separate-agent, or producer checks into cultural acceptance.",
+        "Verify the summary blocks a culturally accepted or release-ready conclusion and all supplied files remain unchanged."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "CULTURAL-REVIEW-REQUEST.md", "index.html", "cultural-review-summary.md"],
+        "max_changed_input_files": 0,
+        "file_contains": {
+          "cultural-review-summary.md": ["pending", "not assigned", "cannot self-certify"]
         }
       }
     }

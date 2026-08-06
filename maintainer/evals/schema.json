@@ -51,6 +51,12 @@
             "default": "explicit",
             "description": "Explicit prepends the selected host's skill_instructions value only to the staged-skill variant; implicit sends the natural task unchanged and relies on host-native discovery. The baseline always receives the natural task and has no staged skill."
           },
+          "installation_mode": {
+            "type": "string",
+            "enum": ["direct-skill", "packaged-plugin"],
+            "default": "direct-skill",
+            "description": "Direct-skill stages the canonical skill in the host's personal skill route. Packaged-plugin identifies a plugin-managed cache and namespaced invocation, but is intentionally unsupported by the current runner and must fail closed rather than being simulated as a direct skill."
+          },
           "input_dir": {"$ref": "#/$defs/relative_path"},
           "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 3600},
           "tags": {
@@ -66,6 +72,7 @@
           },
           "adversarial": {"type": "boolean"},
           "release_coverage": {"$ref": "#/$defs/release_coverage"},
+          "capability_contract": {"$ref": "#/$defs/capability_contract"},
           "review_requirements": {
             "type": "array",
             "minItems": 1,
@@ -121,7 +128,35 @@
               "file_not_contains": {"$ref": "#/$defs/file_text_checks"}
             }
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": ["release_coverage"],
+              "properties": {
+                "release_coverage": {
+                  "required": ["generated_media_capability_gate"],
+                  "properties": {
+                    "generated_media_capability_gate": {"const": true}
+                  }
+                }
+              }
+            },
+            "then": {
+              "required": ["capability_contract"],
+              "properties": {
+                "capability_contract": {
+                  "required": ["image_generation"],
+                  "properties": {
+                    "image_generation": {
+                      "const": "required-when-host-declared-available"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   },
@@ -165,6 +200,46 @@
             "established-interface",
             "framework-application-data"
           ]
+        },
+        "expressive_perception_gate": {
+          "const": true,
+          "description": "Marks a Showcase or expressive release case whose counted perception reviews must score 3 for both direction and distinctiveness_without_novelty_tax. Omit it for ordinary or deliberately utilitarian cases."
+        },
+        "quiet_perception_gate": {
+          "const": true,
+          "description": "Marks a deliberately quiet release case whose counted perception reviews must score 3 for direction, project_specificity, and distinctiveness_without_novelty_tax. This is a specificity floor, not a visual-volume requirement."
+        },
+        "generated_media_capability_gate": {
+          "const": true,
+          "description": "Marks a release-countable generated-concept-media case. When a host review declares image generation available, at least one marked case must count with real generated artifacts and bound inspection evidence; an unavailable host must record that disposition honestly."
+        },
+        "route_family_showcase_gate": {
+          "const": true,
+          "description": "Marks a release-countable multi-route Range Study. A counted review must bind a passing route_family_analysis that proves unique direct routes, matched route capture coverage, and no unresolved repeated-skeleton cluster; machine analysis cannot certify aesthetic quality."
+        },
+        "cultural_context_gate": {
+          "const": true,
+          "description": "Marks a release-countable case whose culture, language, or community representation is central or material. A counted review must bind an accepted cultural_context_review from a named non-producer authority; producer self-review, automation, pending review, and technical language checks cannot satisfy the gate."
+        }
+      },
+      "not": {
+        "required": [
+          "expressive_perception_gate",
+          "quiet_perception_gate"
+        ]
+      }
+    },
+    "capability_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image_generation"],
+      "properties": {
+        "image_generation": {
+          "enum": [
+            "required-when-host-declared-available",
+            "declared-unavailable"
+          ],
+          "description": "Controls a conditional image-generation evaluation. Available capability requires real generated files and evidence; unavailable capability requires an explicit truthful fallback rather than a simulated generation claim."
         }
       }
     },

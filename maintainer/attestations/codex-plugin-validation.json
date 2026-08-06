@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-codex-plugin-validation-attestation",
+  "created_at": "2026-07-30T06:02:28Z",
+  "package": "design-dna",
+  "release_version": "3.5.0",
+  "validator": {
+    "logical_id": "plugin-creator/validate_plugin.py",
+    "sha256": "4e84c911479e4d158d723ed8ccc881d3499e580fbf5650e60d379a1a25ac3186",
+    "bytes": 21809,
+    "trust_policy_path": "maintainer/trust/codex-plugin-validator.json",
+    "trust_policy_sha256": "6bdcae0ce646e0e83909c76b5ab72abd48029b89ad2e08e6f3c5f146185ba242"
+  },
+  "python": {
+    "implementation": "CPython",
+    "version": "3.14.5",
+    "executable": "python-current-environment",
+    "executable_sha256": "896ccf899b9d45c1c119ba35d6cce6e16cc10dd6a7f502f88fb50429a6e5cf4c"
+  },
+  "dependencies": [
+    {
+      "name": "PyYAML",
+      "version": "6.0.2",
+      "module": "yaml",
+      "source_format": "pure-python-snapshot",
+      "source_sha256": "34c1263c8c56a9bcf46400cfa946e7ab5f37992278c0f9160dc07488d731af5a",
+      "file_count": 17,
+      "byte_count": 217506
+    }
+  ],
+  "command": [
+    "python-current-environment",
+    "-I",
+    "-B",
+    "-X",
+    "utf8",
+    "attested-validator-wrapper",
+    "external-plugin-creator-validator",
+    "plugin-root",
+    "pinned-pyyaml-snapshot"
+  ],
+  "inputs": {
+    "plugin_manifest_tree": {
+      "path": ".codex-plugin",
+      "sha256": "813a8b5979b2ecc9e30086ecaef2233dac5af623959449263d978b6f6b422252",
+      "entry_count": 1,
+      "file_count": 1,
+      "byte_count": 1117
+    },
+    "skills_tree": {
+      "path": "skills",
+      "sha256": "b2f508fed3c27913847ba125b38542b26316b6966344a91e509449f46df63070",
+      "entry_count": 106,
+      "file_count": 95,
+      "byte_count": 1429411
+    },
+    "files": {
+      "attestor": {
+        "path": "maintainer/scripts/attest_codex_plugin.py",
+        "sha256": "a3fc51db236375e830cfbad0b102130611c309ac236d6effb44e3ee3b762dc10",
+        "bytes": 32715
+      },
+      "cache_preflight": {
+        "path": "maintainer/scripts/cache_preflight.py",
+        "sha256": "03b06ff533928185b42e654f2a5830cb95c16683917cb9d3a3232ecb8b7d10e0",
+        "bytes": 8833
+      },
+      "common": {
+        "path": "maintainer/scripts/common.py",
+        "sha256": "5b73c5628c62a29f72f7dfebff0b42b872521663ecfe264f5bdc1fb6c3444d21",
+        "bytes": 14137
+      },
+      "attestation_schema": {
+        "path": "maintainer/schemas/codex-plugin-validation-attestation.schema.json",
+        "sha256": "95a5d81b67d3233409784c9d713747202025506a1513b7da26a4d8e28978c7af",
+        "bytes": 7910
+      },
+      "trust_schema": {
+        "path": "maintainer/schemas/codex-validator-trust.schema.json",
+        "sha256": "e8e33ae5f08b094f4b31fd7efff288a666d51183079ae20ab4bb12c578b28db6",
+        "bytes": 1187
+      },
+      "trust_policy": {
+        "path": "maintainer/trust/codex-plugin-validator.json",
+        "sha256": "6bdcae0ce646e0e83909c76b5ab72abd48029b89ad2e08e6f3c5f146185ba242",
+        "bytes": 630
+      }
+    }
+  },
+  "result": {
+    "status": "passed",
+    "return_code": 0
+  },
+  "output": {
+    "success_marker_observed": true,
+    "exact_success_line_observed": true,
+    "stderr_empty": true,
+    "content_persisted": false
+  }
+}

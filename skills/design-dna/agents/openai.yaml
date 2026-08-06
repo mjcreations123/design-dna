@@ -1,6 +1,6 @@
 interface:
   display_name: "Design DNA"
-  short_description: "Specific, contemporary web design craft"
-  default_prompt: "Use $design-dna to ground this web task in project evidence, implement real states, and perform rendered specificity review."
+  short_description: "Specific web design with coherent creative range"
+  default_prompt: "Use $design-dna; add Range Study for multi-route showcases and cultural review when lived identity is central."
 policy:
   allow_implicit_invocation: true

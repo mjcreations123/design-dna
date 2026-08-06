@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "candidate_id": "ner-harim-fixture-20260730",
+  "status": "accepted",
+  "centrality": "central",
+  "producer_id": "fixture-producer-01",
+  "reviewer_id": "fixture-cultural-reviewer-01",
+  "relationship": "owner-authorized-cultural-reviewer",
+  "independent_of_producer": true,
+  "reviewed_at": "2026-07-30T12:00:00Z",
+  "accepted_terms": ["chavrusa", "beis medrash", "Shabbos", "חברותא"],
+  "representation_boundaries": [
+    "No sacred text or invented quotation.",
+    "No implication that every Jewish community uses the same pronunciation.",
+    "No real institution, person, schedule, endorsement, or demographic claim."
+  ],
+  "note": "Fictional fixture authorization only; not real-world community endorsement."
+}

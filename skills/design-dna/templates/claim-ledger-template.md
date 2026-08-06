@@ -2,9 +2,12 @@
 schema_version: 1
 created_with: "__DESIGN_DNA_VERSION__"
 classification: "internal"
+evidence_contract: "proportional-evidence-v1"
 ---
 
 # Claim ledger
+
+<!-- proportional-evidence-v1 -->
 
 Use this record when public copy, calculations, diagrams, or interactions contain
 prices, quantities, durations, warranties, deadlines, performance figures,

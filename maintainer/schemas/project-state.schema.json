@@ -1,17 +1,111 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/project-state.schema.json",
+  "title": "Design DNA project state manifest",
+  "description": "Schema-2 inventory. assurance_profiles is a cumulative capability set; evidence_contract keeps five universal proof anchors, adds only applicable risk/capability gates, and permits project-specific extension records without prescribing aesthetic vocabulary. Every listed record participates in readiness.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "created_with", "created", "classification", "records"],
+  "required": ["schema_version", "created_with", "created", "classification", "assurance_profiles", "records"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
     "created_with": {"type": "string", "pattern": "^design-dna (0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"},
     "created": {"type": "string", "format": "date"},
     "classification": {"const": "internal"},
+    "assurance_profiles": {
+      "description": "Canonical cumulative capability set in runtime order; redundant weaker labels are omitted.",
+      "oneOf": [
+        {"const": ["quick"]},
+        {"const": ["standard"]},
+        {"const": ["showcase"]},
+        {"const": ["high-risk"]},
+        {"const": ["asset-led"]},
+        {"const": ["standard", "asset-led"]},
+        {"const": ["standard", "range-study"]},
+        {"const": ["showcase", "range-study"]},
+        {"const": ["showcase", "high-risk"]},
+        {"const": ["showcase", "asset-led"]},
+        {"const": ["high-risk", "asset-led"]},
+        {"const": ["range-study", "high-risk"]},
+        {"const": ["standard", "range-study", "asset-led"]},
+        {"const": ["showcase", "range-study", "high-risk"]},
+        {"const": ["showcase", "range-study", "asset-led"]},
+        {"const": ["showcase", "high-risk", "asset-led"]},
+        {"const": ["range-study", "high-risk", "asset-led"]},
+        {"const": ["showcase", "range-study", "high-risk", "asset-led"]}
+      ]
+    },
     "records": {
       "type": "array",
+      "minItems": 1,
       "uniqueItems": true,
-      "items": {"enum": ["direction", "direction-proof", "visual-review", "claims", "assets", "user-validation"]}
+      "items": {"enum": ["exploration", "direction", "direction-proof", "route-family", "visual-review", "claims", "assets", "user-validation", "handoff"]}
+    },
+    "evidence_contract": {
+      "description": "Versioned proportional evidence selection. Optional only for backward compatibility with pre-contract schema-2 state; current initialization emits it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "universal_anchors", "applicable_capabilities", "extension_records"],
+      "properties": {
+        "version": {"const": 1},
+        "universal_anchors": {
+          "const": ["identity-intent", "truth-provenance", "responsive-accessibility-function", "rendered-review", "owner-release-state"]
+        },
+        "applicable_capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"}
+        },
+        "extension_records": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/evidenceExtension"}
+        }
+      }
     }
-  }
+  },
+  "$defs": {
+    "evidenceExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "purpose", "applies_to", "status", "owner", "evidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+        "purpose": {"type": "string", "minLength": 12},
+        "applies_to": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"}
+        },
+        "status": {"enum": ["draft", "complete", "not-applicable"]},
+        "owner": {"type": "string", "minLength": 1},
+        "evidence": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "complete"}}, "required": ["status"]},
+          "then": {"properties": {"evidence": {"minItems": 1}}}
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "records": {"contains": {"const": "route-family"}}
+        },
+        "required": ["records"]
+      },
+      "then": {
+        "properties": {
+          "assurance_profiles": {
+            "contains": {"const": "range-study"}
+          }
+        }
+      }
+    }
+  ]
 }

@@ -2,46 +2,49 @@
 schema_version: 1
 created_with: "__DESIGN_DNA_VERSION__"
 classification: "internal"
+evidence_contract: "proportional-evidence-v1"
 ---
 
 # Direction proof
 
-Use before scaling a consequential greenfield direction. Use real approved copy and representative content where available.
+<!-- proportional-evidence-v1 -->
 
-## Identity
+Prove the uncertainty that matters before scaling a consequential direction.
+Use real approved content and representative conditions when available. The
+sections are evidence anchors, not a required visual composition.
 
-- Direction name:
-- Brief/build ID:
-- Route and primary mode:
-- Intended time register and ambition:
-- Date and reviewer:
+## Proof identity and intent
 
-## Proof slice
+__REPLACE_WITH_CANDIDATE_BUILD_ROUTE_STATE_PURPOSE_AND_EXACT_DECISION_TO_SETTLE__
 
-- Representative task and component:
-- Real content used:
-- Assumptions or labeled placeholders:
-- Type specimen: longest heading, paragraph, labels, numbers, and required scripts
-- Color roles and contrast evidence:
-- Composition, grid, density, and optical decisions:
-- Imagery/illustration/icon treatment:
-- Key interaction and reduced-motion result:
-- Responsive transformation: narrow, intermediate, and wide
+## Truth and provenance
 
-## Decision test
+__REPLACE_WITH_SOURCE_CONTENT_MEDIA_FONT_ASSET_AND_PLACEHOLDER_PROVENANCE__
 
-- Which project material makes this specific?
-- Which familiar convention remains and why?
-- Which conspicuous choice improves task or credibility?
-- Does the direction still work without its trendiest effect?
-- Does it avoid both dated category shorthand and the current fashionable default?
-- Can it extend across routes, states, long content, localization, and devices?
-- Are assets, rights, performance, and engineering feasible?
+Record only sources and constraints that apply. Label assumptions and missing
+authority rather than completing irrelevant fields.
 
-## Outcome
+## Responsive, accessible, and functional behavior
 
-- Decision: proceed, revise, compare again, or reject
-- Evidence:
-- Required revisions:
-- Rejected alternative and lesson retained:
-- Owner or reviewer approval:
+__REPLACE_WITH_THE_TESTED_CONTENT_CONTAINERS_INPUTS_PREFERENCES_STATES_AND_LIMITS__
+
+## Rendered proof
+
+__REPLACE_WITH_DIRECTLY_REVIEWABLE_ARTIFACT_PATH_HASH_CONDITIONS_AND_OBSERVATIONS__
+
+## Owner and release state
+
+- Reviewer relationship: producer-self
+- Decision: revise
+- Owner disposition: pending
+
+__REPLACE_WITH_REVIEW_SCOPE_LIMITATIONS_REQUIRED_CHANGES_AND_REVERSIBLE_CHECKPOINT__
+
+An accepted owner disposition requires an accountable owner or owner-authorized
+human reviewer. Producer self-review may remain a useful provisional proof but
+must not claim owner acceptance.
+
+## Project-specific extensions
+
+Optional. Add evidence in whatever structure best tests this project's creative
+logic, risks, or unusual states.

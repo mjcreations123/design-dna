@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/evidence-snapshot.schema.json",
+  "title": "Design DNA retained source snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "retrieved",
+    "url",
+    "locator",
+    "content_kind"
+  ],
+  "properties": {
+    "schema_version": {"const": 2},
+    "evidence_id": {"type": "string", "pattern": "^EVD-[0-9]{3,}$"},
+    "retrieved": {"type": "string", "format": "date"},
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "locator": {"type": "string", "minLength": 5, "maxLength": 500},
+    "content_kind": {
+      "enum": ["verbatim_excerpt", "maintainer_summary"]
+    },
+    "excerpt": {"type": "string", "minLength": 5, "maxLength": 500},
+    "summary": {"type": "string", "minLength": 5, "maxLength": 1000}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["content_kind"],
+        "properties": {"content_kind": {"const": "verbatim_excerpt"}}
+      },
+      "then": {
+        "required": ["excerpt"],
+        "not": {"required": ["summary"]}
+      }
+    },
+    {
+      "if": {
+        "required": ["content_kind"],
+        "properties": {"content_kind": {"const": "maintainer_summary"}}
+      },
+      "then": {
+        "required": ["summary"],
+        "not": {"required": ["excerpt"]}
+      }
+    }
+  ]
+}

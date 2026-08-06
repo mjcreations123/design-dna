@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/compatibility.schema.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -8,20 +9,23 @@
     "package_version",
     "discovery_roots",
     "hosts",
+    "environments",
+    "ci_release_contract",
     "portable_contract"
   ],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 3},
     "last_updated": {"type": "string", "format": "date"},
-    "package_version": {
-      "type": "string",
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
-    },
+    "package_version": {"$ref": "#/$defs/semver"},
     "discovery_roots": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "pattern": "^(?:~/|/|[A-Za-z]:[\\\\/])"
+      }
     },
     "hosts": {
       "type": "object",
@@ -30,6 +34,36 @@
       "properties": {
         "codex": {"$ref": "#/$defs/host"},
         "claude_code": {"$ref": "#/$defs/host"}
+      }
+    },
+    "environments": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 32,
+      "items": {"$ref": "#/$defs/environment"}
+    },
+    "ci_release_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_path",
+        "test_job",
+        "required_checks",
+        "import_schema",
+        "import_root"
+      ],
+      "properties": {
+        "workflow_path": {"const": ".github/workflows/ci.yml"},
+        "test_job": {"const": "test"},
+        "required_checks": {
+          "const": ["package_audit", "unit_tests"]
+        },
+        "import_schema": {
+          "const": "maintainer/schemas/ci-run-import.schema.json"
+        },
+        "import_root": {
+          "const": "maintainer/compatibility/archive/ci-runs"
+        }
       }
     },
     "portable_contract": {
@@ -46,7 +80,7 @@
           "type": "array",
           "minItems": 2,
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
+          "items": {"$ref": "#/$defs/relative_path"}
         },
         "unsupported_claims": {
           "type": "array",
@@ -63,12 +97,24 @@
     }
   },
   "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.?(/|$))[^\\u0000-\\u001f\\u007f]+$"
+    },
     "status": {
       "enum": [
         "pending",
         "passed",
         "failed",
         "blocked_not_authenticated",
+        "blocked_tool_unavailable",
+        "declared_not_observed",
         "not_applicable"
       ]
     },
@@ -82,10 +128,15 @@
         "isolated_behavioral_eval",
         "rendered_eval",
         "installed_sync",
+        "evidence",
         "notes"
       ],
       "properties": {
-        "discovery_route": {"type": "string", "minLength": 1},
+        "discovery_route": {
+          "type": "string",
+          "minLength": 3,
+          "pattern": "^(?:~/|/|[A-Za-z]:[\\\\/])"
+        },
         "designed": {"const": true},
         "static_validation": {"$ref": "#/$defs/status"},
         "isolated_behavioral_eval": {"$ref": "#/$defs/status"},
@@ -94,7 +145,7 @@
         "evidence": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
+          "items": {"$ref": "#/$defs/relative_path"}
         },
         "notes": {
           "type": "array",
@@ -103,6 +154,188 @@
           "items": {"type": "string", "minLength": 5}
         }
       }
+    },
+    "check_status": {
+      "enum": [
+        "pending",
+        "passed",
+        "failed",
+        "blocked",
+        "declared_not_observed",
+        "not_applicable"
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scope",
+        "os",
+        "architecture",
+        "python",
+        "node",
+        "host",
+        "host_version",
+        "checked_at",
+        "checks",
+        "evidence",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "scope": {
+          "enum": ["local_toolchain", "ci_contract", "host_runtime"]
+        },
+        "os": {"type": "string", "minLength": 2, "maxLength": 120},
+        "architecture": {"type": "string", "minLength": 2, "maxLength": 40},
+        "python": {"type": ["string", "null"], "maxLength": 40},
+        "node": {"type": ["string", "null"], "maxLength": 40},
+        "host": {
+          "oneOf": [
+            {"enum": ["codex", "claude_code"]},
+            {"type": "null"}
+          ]
+        },
+        "host_version": {"type": ["string", "null"], "maxLength": 120},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "checks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "package_audit",
+            "unit_tests",
+            "installer_lifecycle",
+            "host_discovery",
+            "behavioral_eval",
+            "rendered_review"
+          ],
+          "properties": {
+            "package_audit": {"$ref": "#/$defs/check_status"},
+            "unit_tests": {"$ref": "#/$defs/check_status"},
+            "installer_lifecycle": {"$ref": "#/$defs/check_status"},
+            "host_discovery": {"$ref": "#/$defs/check_status"},
+            "behavioral_eval": {"$ref": "#/$defs/check_status"},
+            "rendered_review": {"$ref": "#/$defs/check_status"}
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/relative_path"}
+        },
+        "notes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 5}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["scope", "checks"],
+            "properties": {
+              "scope": {"const": "local_toolchain"},
+              "checks": {
+                "required": ["unit_tests"],
+                "properties": {
+                  "unit_tests": {"const": "passed"}
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "contains": {
+                  "const": "maintainer/attestations/test-attestation.json"
+                },
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["checks"],
+            "properties": {
+              "checks": {
+                "required": ["host_discovery"],
+                "properties": {
+                  "host_discovery": {"const": "passed"}
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "contains": {
+                  "type": "string",
+                  "pattern": "^maintainer/evals/results/"
+                },
+                "minContains": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["scope", "checks"],
+            "properties": {
+              "scope": {"const": "ci_contract"},
+              "checks": {
+                "anyOf": [
+                  {
+                    "required": ["package_audit"],
+                    "properties": {"package_audit": {"const": "passed"}}
+                  },
+                  {
+                    "required": ["unit_tests"],
+                    "properties": {"unit_tests": {"const": "passed"}}
+                  },
+                  {
+                    "required": ["installer_lifecycle"],
+                    "properties": {
+                      "installer_lifecycle": {"const": "passed"}
+                    }
+                  },
+                  {
+                    "required": ["host_discovery"],
+                    "properties": {"host_discovery": {"const": "passed"}}
+                  },
+                  {
+                    "required": ["behavioral_eval"],
+                    "properties": {"behavioral_eval": {"const": "passed"}}
+                  },
+                  {
+                    "required": ["rendered_review"],
+                    "properties": {"rendered_review": {"const": "passed"}}
+                  }
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "contains": {
+                  "type": "string",
+                  "pattern": "^maintainer/compatibility/archive/ci-runs/[a-z0-9]+(?:-[a-z0-9]+)*/import\\.json$"
+                },
+                "minContains": 1
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

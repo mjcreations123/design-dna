@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-043",
+  "retrieved": "2026-08-02",
+  "url": "https://www.youtube.com/watch?v=DNSXlBmukck",
+  "locator": "Official description; auto-generated transcript 01:34-05:40, 13:18-19:55, 25:35-26:37, 30:11-36:47; sampled frames 03:55, 04:49, 14:49",
+  "content_kind": "maintainer_summary",
+  "summary": "YC reviewers say purple gradients and scroll fades are not inherently bad, praise project-specific hover animation, and criticize accumulated attention conflicts, scroll hijacking, delayed reveals, weak assets, inconsistent visual language, and insufficient QA. Sampled frames show accepted and rejected treatments; an observed pink headline word was not criticized."
+}

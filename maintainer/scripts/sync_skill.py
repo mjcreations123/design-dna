@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Transactionally synchronize the canonical runtime skill to one explicit host target."""
+"""Legacy low-level sync for an explicitly supplied route.
+
+New operator workflows must use manage_install.py, which owns cross-host
+locking, route-state semantics, versioned backups, rollback, and operation
+records. This primitive remains only for compatibility tests and specialized
+maintainer recovery where every path is supplied deliberately.
+"""
 
 from __future__ import annotations
 
@@ -116,24 +122,44 @@ def assert_single_discovery_route(
     if unexpected:
         rendered = ", ".join(str(path) for path in unexpected)
         raise ToolFailure(
-            "duplicate-active-route",
-            f"Discovery root contains another Design DNA route: {rendered}",
+            "discovery-candidate-collision",
+            (
+                "Discovery root contains another Design DNA filesystem "
+                f"candidate: {rendered}. Activation is not inferred."
+            ),
             discovery,
         )
     if require_target and routes != [target]:
         raise ToolFailure(
             "expected-route-not-discoverable",
-            "The exact installed target is not the sole discoverable Design DNA route.",
+            (
+                "The exact installed target is not the sole Design DNA "
+                "filesystem discovery candidate."
+            ),
             target,
         )
     return warnings
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog=(
+            "Preferred operator command: manage_install.py sync --host all. "
+            "This legacy primitive does not share that install-state engine."
+        ),
+    )
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[2] / "skills" / "design-dna")
     parser.add_argument("--target", type=Path, required=True)
-    parser.add_argument("--discovery-root", type=Path, required=True, help="Exact host skills directory that must contain the target.")
+    parser.add_argument(
+        "--discovery-root",
+        type=Path,
+        required=True,
+        help=(
+            "Exact configured filesystem discovery root that must contain the "
+            "target. Activation is not inferred."
+        ),
+    )
     parser.add_argument("--backup-root", type=Path, required=True, help="Existing directory outside discovery-root.")
     parser.add_argument("--replace", action="store_true")
     parser.add_argument("--check", action="store_true")

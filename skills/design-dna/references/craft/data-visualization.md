@@ -1,61 +1,96 @@
 # Data visualization
 
-Use this when data is encoded as position, length, area, color, shape, or motion. Start from the question and decision; a chart is useful only when it reveals a relationship more clearly than prose or a table.
+Use this when data is represented visually or interactively. This reference
+protects truthful interpretation, access, and decision support without
+prescribing a chart menu, visual grammar, dimensionality, or aesthetic style.
 
-## Frame the question
+## Frame the evidence and question
 
-Record:
+Record the audience, question or exploration, measure, unit, population, time
+window, source, freshness, owner, relevant denominator, uncertainty, collection
+limits, transformations, and any decision threshold. Distinguish observation,
+estimate, forecast, target, annotation, sample, and live state.
 
-- audience, decision, and comparison they need to make;
-- measure, unit, population, time window, source, freshness, and owner;
-- relevant denominator, target, benchmark, or prior period;
-- uncertainty, collection limits, and transformations;
-- whether exact lookup, pattern recognition, monitoring, or exploration matters most.
+Do not invent data, conceal inconvenient variation, imply precision the source
+does not support, or present a fixture as current. A visual form cannot make
+weak evidence stronger.
 
-Do not invent data, smooth away inconvenient variation, or present sample data as live. Separate observation, estimate, forecast, target, and annotation.
+## Choose an open but honest form
 
-## Choose an honest form
+Start from the relationship people need to perceive or explore: exact values,
+ranking, change, distribution, correlation, composition, geography,
+uncertainty, flow, topology, narrative, or another project-specific question.
+Then choose any form that communicates it faithfully.
 
-Match the form to the relationship:
+Tables, conventional charts, maps, diagrams, illustrations, pictorial
+encodings, spatial interfaces, animation, 3D, sound, physical metaphors, and
+hybrids may all be valid. Familiar forms can aid interpretation; unfamiliar
+forms may fit the subject or invite exploration. Novelty and convention are
+not quality signals. When a form makes magnitude, order, uncertainty, or
+comparison harder to judge, add clarification, an equivalent path, or select a
+different implementation.
 
-- use a table when exact values, many attributes, or row-level comparison matter;
-- use bars or aligned points for categorical comparison;
-- use lines for ordered change, especially time;
-- use histograms, box plots, or density views for distribution;
-- use scatter plots for relationships between quantitative measures;
-- use part-to-whole forms only when the whole and denominator are meaningful;
-- use maps only when geography explains the question.
+An address finder, service area, venue plan, directions handoff, or physical
+route is operational [location and wayfinding](location-wayfinding.md), even
+when its presentation is visually expressive.
 
-Small multiples often preserve comparison better than overloaded legends or dual axes. Avoid decorative 3D, pictorial scaling, and chart novelty that changes perceived magnitude.
+## Make encoding accountable
 
-## Encode and scale
+Record the relevant `creative_logic` and observable mapping from data to
+position, length, area, color, shape, texture, motion, depth, sound, annotation,
+or interaction. The mapping may be singular or mixed. Keep units, precision,
+sorting, aggregation, intervals, normalization, and transformations available
+at the level the decision requires.
 
-- Prefer accurately comparable position and length for important quantitative judgments.
-- Keep units, precision, sorting, time intervals, and aggregation explicit.
-- Give bar-like magnitude encodings a meaningful zero; disclose and visually clarify any necessary truncated range.
-- Label logarithmic, indexed, normalized, cumulative, or reversed scales in plain language.
-- Keep color domains stable across related views, and distinguish sequential, diverging, and categorical meaning.
-- Show baselines and thresholds only when they have a sourced decision role.
+Any encoding that can materially distort perception needs an explicit reason
+and rendered test. For example, bar-like magnitude usually needs a meaningful
+zero; a truncated, logarithmic, indexed, cumulative, reversed, perspective, or
+area-based representation needs enough explanation to prevent a false reading.
+Color domains should not silently change meaning across related views. Baselines
+and thresholds need a sourced role rather than decorative authority.
 
 ## Preserve uncertainty and absence
 
-Show uncertainty with an appropriate interval, range, distribution, scenario, or qualification. State sample size and methodology when they affect interpretation. Distinguish zero, unavailable, not applicable, suppressed, delayed, and not yet collected. Do not connect missing observations as if they existed.
+Represent uncertainty through a form appropriate to the evidence, such as a
+range, interval, distribution, scenario, annotation, interaction, or plain
+qualification. State sample size and method when they affect interpretation.
+Distinguish zero, unavailable, not applicable, suppressed, delayed, and not yet
+collected. Do not connect or interpolate missing observations as fact.
 
 ## Interaction and access
 
-- Make the central finding understandable without interaction.
-- Pair hover details with focus, touch, or persistent alternatives.
-- Keep selection and filter state visible; expose scope, reset, and no-result recovery.
-- Preserve the user's place when data refreshes, and announce consequential updates without stealing focus.
-- Provide a concise text summary and an accessible table or equivalent data path when the graphic carries essential information.
-- Do not rely on color alone; test labels, contrast, focus, target size, zoom, forced colors, and screen-reader output.
+- Keep the essential conclusion or exploration available without hover,
+  precision input, successful animation, or one sensory channel.
+- Provide focus, touch, keyboard, and persistent alternatives for transient
+  details where relevant.
+- Expose selection, filter scope, reset, loading, error, stale, and no-result
+  states, and preserve place during consequential refreshes.
+- Provide a concise text explanation and a table, structured data view, or
+  another equivalent path when the graphic carries essential information.
+- Do not rely on color, motion, position, depth, or sound alone for essential
+  meaning. Verify contrast, labels, focus, target size, zoom, forced colors,
+  reduced motion, and screen-reader output as applicable.
 
-Use motion to explain a meaningful transition, not to make values feel alive. Respect reduced motion and prevent animation from obscuring comparison.
+Motion and interaction may explain, dramatize, invite exploration, establish
+atmosphere, or create play when the data relationship stays honest and users
+retain agency. A decorative or expressive layer does not need to be removed
+merely because it is not the shortest path to a value.
 
 ## Adapt and verify
 
-On smaller containers, preserve the question and important comparison rather than shrinking every mark. Recompose, prioritize, disclose, scroll with context, or offer a task-specific table. Keep titles, legends, annotations, controls, and source notes associated with the data.
+Recompose around the question when space, content, locale, input, or user
+settings change. A smaller surface may prioritize, disclose, scroll with
+context, transform the encoding, or provide a task-specific alternate view;
+it need not shrink or reproduce the same geometry.
 
-Test sparse, dense, extreme, negative, tied, missing, stale, and rapidly changing values; long labels; locale-specific numbers and dates; keyboard and touch; supported themes; and intermediate widths. Validate calculations and interpretation against the source, then review the rendered result with representative data.
+Test the combinations that can change the interpretation: sparse, dense,
+extreme, negative, tied, missing, stale, rapidly changing, long-labeled, and
+locale-specific data; representative and worst-plausible content; supported
+inputs, themes, widths, zoom, and assistive settings. Validate calculations and
+the likely reading against the source, then review the rendered result without
+turning an effect or chart family into a pass/fail proxy.
 
-High-stakes statistical interpretation, regulated reporting, geospatial analysis, complex interactive graphics, or assistive-technology conformance requires the relevant data, domain, accessibility, legal, or compliance specialist. This reference does not certify analytical validity.
+High-stakes statistical interpretation, regulated reporting, geospatial
+analysis, complex interactive graphics, or assistive-technology conformance
+requires the relevant specialist. This reference does not certify analytical
+validity.

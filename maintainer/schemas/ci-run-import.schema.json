@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/ci-run-import.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "environment_id",
+    "imported_at",
+    "imported_by",
+    "source",
+    "artifact",
+    "passed_checks",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {"const": "design-dna-ci-run-import"},
+    "environment_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 96,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "imported_at": {"type": "string", "format": "date-time"},
+    "imported_by": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 160
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "repository",
+        "workflow_path",
+        "workflow_sha256",
+        "run_id",
+        "run_attempt",
+        "commit_sha",
+        "job_name",
+        "matrix",
+        "started_at",
+        "completed_at",
+        "conclusion"
+      ],
+      "properties": {
+        "provider": {"const": "github-actions"},
+        "repository": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "workflow_path": {"const": ".github/workflows/ci.yml"},
+        "workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "run_id": {"$ref": "#/$defs/positive_identifier"},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "job_name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240
+        },
+        "matrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["os", "python", "node"],
+          "properties": {
+            "os": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 120
+            },
+            "python": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+$"
+            },
+            "node": {
+              "oneOf": [
+                {"type": "string", "minLength": 1, "maxLength": 40},
+                {"type": "null"}
+              ]
+            }
+          }
+        },
+        "started_at": {"type": "string", "format": "date-time"},
+        "completed_at": {"type": "string", "format": "date-time"},
+        "conclusion": {"const": "success"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "authenticated_download",
+        "service_digest",
+        "path",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/positive_identifier"},
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 240
+        },
+        "authenticated_download": {"const": true},
+        "service_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "path": {"$ref": "#/$defs/relative_path"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 67108864
+        }
+      }
+    },
+    "passed_checks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["package_audit", "unit_tests"]
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "package_audit": {"$ref": "#/$defs/evidence_record"},
+        "unit_tests": {"$ref": "#/$defs/evidence_record"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "passed_checks": {"contains": {"const": "package_audit"}}
+        },
+        "required": ["passed_checks"]
+      },
+      "then": {
+        "properties": {
+          "evidence": {"required": ["package_audit"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "passed_checks": {"contains": {"const": "unit_tests"}}
+        },
+        "required": ["passed_checks"]
+      },
+      "then": {
+        "properties": {
+          "evidence": {"required": ["unit_tests"]}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "positive_identifier": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.?(/|$))[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "evidence_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "archive_member",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/relative_path"},
+        "archive_member": {"$ref": "#/$defs/relative_path"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,870 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/font-audit.schema.json",
+  "title": "Design DNA font audit",
+  "oneOf": [
+    {"$ref": "#/$defs/success"},
+    {"$ref": "#/$defs/failure"}
+  ],
+  "$defs": {
+    "executionSucceeded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "ok"],
+      "properties": {
+        "status": {"const": "succeeded"},
+        "ok": {"const": true}
+      }
+    },
+    "executionFailed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "ok"],
+      "properties": {
+        "status": {"const": "failed"},
+        "ok": {"const": false}
+      }
+    },
+    "dataSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "media_type",
+        "encoding",
+        "decoded_length",
+        "sha256",
+        "hashed_within_limit"
+      ],
+      "properties": {
+        "media_type": {"type": "string", "minLength": 1},
+        "encoding": {"enum": ["base64", "percent"]},
+        "decoded_length": {"type": ["integer", "null"], "minimum": 0},
+        "sha256": {
+          "oneOf": [
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "hashed_within_limit": {"type": "boolean"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value",
+        "resolved_path",
+        "exists",
+        "locator_sha256",
+        "data_summary"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "local-file",
+            "local-name",
+            "remote-url",
+            "data-url",
+            "package-import",
+            "unsafe-local-path",
+            "unsupported-url-scheme",
+            "missing-href"
+          ]
+        },
+        "value": {"type": "string"},
+        "resolved_path": {"type": ["string", "null"]},
+        "exists": {"type": ["boolean", "null"]},
+        "locator_sha256": {
+          "oneOf": [
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "data_summary": {
+          "oneOf": [
+            {"$ref": "#/$defs/dataSummary"},
+            {"type": "null"}
+          ]
+        },
+        "format": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["kind"],
+            "properties": {"kind": {"const": "remote-url"}}
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "pattern": "^(?:https?:)?//[^/@?#]+(?:/[^?#]*)?$"
+              },
+              "resolved_path": {"type": "null"},
+              "exists": {"type": "null"},
+              "locator_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "data_summary": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["kind"],
+            "properties": {"kind": {"const": "data-url"}}
+          },
+          "then": {
+            "properties": {
+              "value": {"pattern": "^data:[^,;]+(?:;base64)?$"},
+              "resolved_path": {"type": "null"},
+              "exists": {"type": "null"},
+              "locator_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "data_summary": {"$ref": "#/$defs/dataSummary"}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["kind"],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "local-file",
+                  "package-import",
+                  "unsafe-local-path",
+                  "unsupported-url-scheme"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {"not": {"pattern": "[?#]"}},
+              "locator_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "data_summary": {"type": "null"}
+            }
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_paths", "families"],
+      "properties": {
+        "status": {"enum": ["resolved", "unresolved"]},
+        "evidence_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "families": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "faceProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_paths", "font_paths"],
+      "properties": {
+        "status": {"enum": ["resolved", "unresolved"]},
+        "evidence_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "font_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "weightContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw", "minimum", "maximum", "variable", "valid"],
+      "properties": {
+        "raw": {"type": "string"},
+        "minimum": {"type": ["integer", "null"], "minimum": 1, "maximum": 1000},
+        "maximum": {"type": ["integer", "null"], "minimum": 1, "maximum": 1000},
+        "variable": {"type": "boolean"},
+        "valid": {"type": "boolean"}
+      }
+    },
+    "fontBinary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes",
+        "extension",
+        "container_signature",
+        "provenance"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "extension": {"enum": [".eot", ".otf", ".ttf", ".woff", ".woff2"]},
+        "container_signature": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "first_four_bytes_hex",
+            "first_four_bytes_ascii",
+            "detected",
+            "expected_for_extension",
+            "matches_extension"
+          ],
+          "properties": {
+            "first_four_bytes_hex": {"type": "string", "pattern": "^[0-9a-f]{0,8}$"},
+            "first_four_bytes_ascii": {"type": "string", "maxLength": 4},
+            "detected": {
+              "enum": [
+                "woff",
+                "woff2",
+                "opentype-cff",
+                "truetype-sfnt",
+                "opentype-type1",
+                "embedded-opentype",
+                "unknown"
+              ]
+            },
+            "expected_for_extension": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "matches_extension": {"type": "boolean"}
+          }
+        },
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "fontFace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "line",
+        "family",
+        "sources",
+        "weight",
+        "style",
+        "display",
+        "unicode_range",
+        "provenance"
+      ],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "family": {"type": ["string", "null"]},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+        "weight": {"$ref": "#/$defs/weightContract"},
+        "style": {"type": "string", "minLength": 1},
+        "display": {"type": ["string", "null"]},
+        "unicode_range": {"type": ["string", "null"]},
+        "provenance": {"$ref": "#/$defs/faceProvenance"}
+      }
+    },
+    "preload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "line", "href", "source", "type", "crossorigin"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "href": {"type": ["string", "null"]},
+        "source": {"$ref": "#/$defs/source"},
+        "type": {"type": ["string", "null"]},
+        "crossorigin": {"type": "boolean"}
+      }
+    },
+    "deliveryContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "file",
+        "line",
+        "family",
+        "static",
+        "complete",
+        "sources",
+        "details"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "next-font-google",
+            "next-font-local",
+            "fontsource-import",
+            "theme-font-family",
+            "google-fonts-stylesheet",
+            "css-import",
+            "remote-stylesheet",
+            "stylesheet-link"
+          ]
+        },
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "family": {"type": ["string", "null"]},
+        "static": {"type": "boolean"},
+        "complete": {"type": "boolean"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+        "details": {"type": "object"}
+      }
+    },
+    "declaredStack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "line", "context", "source_kind", "raw", "families"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "context": {"type": "string"},
+        "source_kind": {
+          "enum": [
+            "css-declaration",
+            "html-inline-style",
+            "js-theme-font-family"
+          ]
+        },
+        "raw": {"type": ["string", "null"]},
+        "families": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "declaredWeight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "line",
+        "context",
+        "source_kind",
+        "raw",
+        "normalized",
+        "paired_families",
+        "style"
+      ],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "context": {"type": "string"},
+        "source_kind": {
+          "enum": [
+            "css-declaration",
+            "html-inline-style",
+            "js-theme-font-family"
+          ]
+        },
+        "raw": {"type": ["string", "null"]},
+        "normalized": {"type": ["integer", "null"], "minimum": 1, "maximum": 1000},
+        "paired_families": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "style": {"type": ["string", "null"]}
+      }
+    },
+    "licenseEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "kind",
+        "line",
+        "sha256",
+        "applies_to_font_paths",
+        "applies_to_families"
+      ],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "kind": {
+          "enum": [
+            "css-license-comment",
+            "html-license-comment",
+            "font-license-file",
+            "license-file",
+            "asset-provenance-manifest"
+          ]
+        },
+        "line": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "applies_to_font_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "applies_to_families": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "skipped": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "reason", "size_bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "sha256": {
+          "oneOf": [
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "severity",
+        "confidence",
+        "file",
+        "line",
+        "message",
+        "suggestion",
+        "evidence"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["high", "medium", "low"]},
+        "confidence": {
+          "enum": [
+            "exact-bytes",
+            "exact-source",
+            "exact-source-contract",
+            "resolved-path",
+            "paired-static-declaration",
+            "bounded-static-inventory",
+            "bounded-project-inventory"
+          ]
+        },
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "message": {"type": "string", "minLength": 1},
+        "suggestion": {"type": "string", "minLength": 1},
+        "evidence": {"type": "object"}
+      }
+    },
+    "success": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "artifact_type",
+        "ok",
+        "execution_ok",
+        "execution",
+        "project",
+        "disclaimer",
+        "audit_status",
+        "quality_passed",
+        "exit_code",
+        "scan_scope",
+        "completeness",
+        "resource_limits",
+        "resource_usage",
+        "font_binaries",
+        "skipped_sources",
+        "skipped_font_binaries",
+        "font_faces",
+        "preloads",
+        "delivery_contracts",
+        "declared_stacks",
+        "declared_weights",
+        "source_summary",
+        "license_provenance",
+        "findings",
+        "counts",
+        "review_required",
+        "review",
+        "limitations"
+      ],
+      "properties": {
+        "schema_version": {"const": 2},
+        "artifact_type": {"const": "design-dna-font-audit"},
+        "ok": {"type": "boolean"},
+        "execution_ok": {"const": true},
+        "execution": {"$ref": "#/$defs/executionSucceeded"},
+        "project": {"const": "project:/"},
+        "disclaimer": {"type": "string", "minLength": 1},
+        "audit_status": {
+          "enum": [
+            "complete",
+            "review-required",
+            "no-font-evidence",
+            "incomplete"
+          ]
+        },
+        "quality_passed": {"type": "boolean"},
+        "exit_code": {"enum": [0, 1]},
+        "scan_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source_suffixes",
+            "font_suffixes",
+            "ignored_directories",
+            "source_file_count",
+            "scanned_source_file_count",
+            "skipped_source_file_count",
+            "font_binary_count",
+            "skipped_font_binary_count",
+            "eligible_file_count"
+          ],
+          "properties": {
+            "source_suffixes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "pattern": "^\\."}
+            },
+            "font_suffixes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "pattern": "^\\."}
+            },
+            "ignored_directories": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "source_file_count": {"type": "integer", "minimum": 0},
+            "scanned_source_file_count": {"type": "integer", "minimum": 0},
+            "skipped_source_file_count": {"type": "integer", "minimum": 0},
+            "font_binary_count": {"type": "integer", "minimum": 0},
+            "skipped_font_binary_count": {"type": "integer", "minimum": 0},
+            "eligible_file_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "completeness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "complete",
+            "status",
+            "skipped_source_count",
+            "skipped_font_count",
+            "dynamic_contract_count",
+            "budget_exceeded"
+          ],
+          "properties": {
+            "complete": {"type": "boolean"},
+            "status": {"enum": ["complete", "incomplete"]},
+            "skipped_source_count": {"type": "integer", "minimum": 0},
+            "skipped_font_count": {"type": "integer", "minimum": 0},
+            "dynamic_contract_count": {"type": "integer", "minimum": 0},
+            "budget_exceeded": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "resource_limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max_entries",
+            "max_source_file_bytes",
+            "max_total_source_bytes",
+            "max_font_file_bytes",
+            "max_total_font_bytes",
+            "max_report_bytes",
+            "max_data_uri_hash_bytes",
+            "max_audit_seconds"
+          ],
+          "properties": {
+            "max_entries": {"type": "integer", "minimum": 1},
+            "max_source_file_bytes": {"type": "integer", "minimum": 1},
+            "max_total_source_bytes": {"type": "integer", "minimum": 1},
+            "max_font_file_bytes": {"type": "integer", "minimum": 1},
+            "max_total_font_bytes": {"type": "integer", "minimum": 1},
+            "max_report_bytes": {"type": "integer", "minimum": 1},
+            "max_data_uri_hash_bytes": {"type": "integer", "minimum": 1},
+            "max_audit_seconds": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "resource_usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entries",
+            "source_bytes_observed",
+            "source_bytes_read",
+            "font_bytes_observed",
+            "font_bytes_read",
+            "report_bytes",
+            "elapsed_milliseconds",
+            "exceeded"
+          ],
+          "properties": {
+            "entries": {"type": "integer", "minimum": 0},
+            "source_bytes_observed": {"type": "integer", "minimum": 0},
+            "source_bytes_read": {"type": "integer", "minimum": 0},
+            "font_bytes_observed": {"type": "integer", "minimum": 0},
+            "font_bytes_read": {"type": "integer", "minimum": 0},
+            "report_bytes": {"type": "integer", "minimum": 0},
+            "elapsed_milliseconds": {"type": "number", "minimum": 0},
+            "exceeded": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "font_binaries": {"type": "array", "items": {"$ref": "#/$defs/fontBinary"}},
+        "skipped_sources": {"type": "array", "items": {"$ref": "#/$defs/skipped"}},
+        "skipped_font_binaries": {"type": "array", "items": {"$ref": "#/$defs/skipped"}},
+        "font_faces": {"type": "array", "items": {"$ref": "#/$defs/fontFace"}},
+        "preloads": {"type": "array", "items": {"$ref": "#/$defs/preload"}},
+        "delivery_contracts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/deliveryContract"}
+        },
+        "declared_stacks": {"type": "array", "items": {"$ref": "#/$defs/declaredStack"}},
+        "declared_weights": {"type": "array", "items": {"$ref": "#/$defs/declaredWeight"}},
+        "source_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "local_file",
+            "remote_url",
+            "data_url",
+            "local_name",
+            "missing_local_file",
+            "unsafe_reference"
+          ],
+          "properties": {
+            "local_file": {"type": "integer", "minimum": 0},
+            "remote_url": {"type": "integer", "minimum": 0},
+            "data_url": {"type": "integer", "minimum": 0},
+            "local_name": {"type": "integer", "minimum": 0},
+            "missing_local_file": {"type": "integer", "minimum": 0},
+            "unsafe_reference": {"type": "integer", "minimum": 0}
+          }
+        },
+        "license_provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "explicit_evidence_found",
+            "resolved_font_paths",
+            "unresolved_font_paths",
+            "evidence"
+          ],
+          "properties": {
+            "explicit_evidence_found": {"type": "boolean"},
+            "resolved_font_paths": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "unresolved_font_paths": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "evidence": {"type": "array", "items": {"$ref": "#/$defs/licenseEvidence"}}
+          }
+        },
+        "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["high", "medium", "low"],
+          "properties": {
+            "high": {"type": "integer", "minimum": 0},
+            "medium": {"type": "integer", "minimum": 0},
+            "low": {"type": "integer", "minimum": 0}
+          }
+        },
+        "review_required": {"type": "boolean"},
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "status", "finding_count"],
+          "properties": {
+            "required": {"type": "boolean"},
+            "status": {"enum": ["pending", "not-triggered"]},
+            "finding_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["audit_status"],
+            "properties": {"audit_status": {"const": "incomplete"}}
+          },
+          "then": {
+            "properties": {
+              "ok": {"const": false},
+              "quality_passed": {"const": false},
+              "exit_code": {"const": 1},
+              "completeness": {
+                "properties": {
+                  "complete": {"const": false},
+                  "status": {"const": "incomplete"}
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "ok": {"const": true},
+              "quality_passed": {"const": true},
+              "exit_code": {"const": 0},
+              "completeness": {
+                "properties": {
+                  "complete": {"const": true},
+                  "status": {"const": "complete"}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["review_required"],
+            "properties": {"review_required": {"const": true}}
+          },
+          "then": {
+            "properties": {
+              "review": {
+                "properties": {
+                  "required": {"const": true},
+                  "status": {"const": "pending"}
+                }
+              },
+              "findings": {"minItems": 1}
+            }
+          },
+          "else": {
+            "properties": {
+              "review": {
+                "properties": {
+                  "required": {"const": false},
+                  "status": {"const": "not-triggered"},
+                  "finding_count": {"const": 0}
+                }
+              },
+              "findings": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["audit_status"],
+            "properties": {
+              "audit_status": {"const": "no-font-evidence"}
+            }
+          },
+          "then": {
+            "properties": {
+              "font_binaries": {"maxItems": 0},
+              "font_faces": {"maxItems": 0},
+              "preloads": {"maxItems": 0},
+              "delivery_contracts": {"maxItems": 0},
+              "declared_stacks": {"maxItems": 0},
+              "declared_weights": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["audit_status"],
+            "properties": {
+              "audit_status": {
+                "enum": ["review-required", "incomplete"]
+              }
+            }
+          },
+          "then": {
+            "properties": {"review_required": {"const": true}}
+          },
+          "else": {
+            "properties": {"review_required": {"const": false}}
+          }
+        },
+        {
+          "if": {
+            "required": ["audit_status"],
+            "properties": {"audit_status": {"const": "complete"}}
+          },
+          "then": {
+            "anyOf": [
+              {"properties": {"font_binaries": {"minItems": 1}}},
+              {"properties": {"font_faces": {"minItems": 1}}},
+              {"properties": {"preloads": {"minItems": 1}}},
+              {"properties": {"delivery_contracts": {"minItems": 1}}},
+              {"properties": {"declared_stacks": {"minItems": 1}}},
+              {"properties": {"declared_weights": {"minItems": 1}}}
+            ]
+          }
+        }
+      ]
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "artifact_type",
+        "ok",
+        "execution_ok",
+        "execution",
+        "error"
+      ],
+      "properties": {
+        "schema_version": {"const": 2},
+        "artifact_type": {"const": "design-dna-font-audit"},
+        "ok": {"const": false},
+        "execution_ok": {"const": false},
+        "execution": {"$ref": "#/$defs/executionFailed"},
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": {"type": "string", "minLength": 1},
+            "message": {"type": "string", "minLength": 1},
+            "path": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

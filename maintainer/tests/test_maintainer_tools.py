@@ -20,12 +20,14 @@ PLUGIN = Path(__file__).resolve().parents[2]
 SCRIPTS = PLUGIN / "maintainer" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 from common import (  # noqa: E402
+    LOCAL_TOOL_DIRECTORY_NAMES,
     ToolFailure,
     compiled_python_residue_paths,
     content_manifest,
     eval_content_manifest,
     is_reparse,
     load_json,
+    walk_files,
 )
 
 
@@ -150,6 +152,7 @@ def run_eval(
     keep_workspaces: bool = False,
     require_driver_report: bool = False,
     environment_overrides: dict[str, str] | None = None,
+    pass_env: tuple[str, ...] = (),
     work_root: Path | None = None,
     results_dir: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -187,6 +190,8 @@ def run_eval(
         arguments.append("--keep-workspaces")
     if require_driver_report:
         arguments.append("--require-driver-report")
+    for name in pass_env:
+        arguments.extend(["--pass-env", name])
     return run_script(
         "run_evals.py",
         *arguments,
@@ -202,6 +207,86 @@ def load_only_result(results: Path) -> tuple[dict[str, object], Path]:
 
 
 class ManifestTests(unittest.TestCase):
+    def test_published_codex_metadata_and_long_reference_navigation_are_current(
+        self,
+    ) -> None:
+        manifest = json.loads(
+            (PLUGIN / ".codex-plugin" / "plugin.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            manifest["interface"]["capabilities"],
+            ["Read", "Write"],
+        )
+
+        asset_reference = (
+            PLUGIN
+            / "skills"
+            / "design-dna"
+            / "references"
+            / "quality"
+            / "asset-integrity.md"
+        ).read_text(encoding="utf-8")
+        self.assertGreater(len(asset_reference.splitlines()), 100)
+        self.assertIn("## Contents", asset_reference)
+        for anchor in (
+            "#record-provenance",
+            "#generated-and-synthetic-material",
+            "#preserve-truth",
+            "#direct-and-implement",
+            "#release-gate",
+        ):
+            self.assertIn(f"]({anchor})", asset_reference)
+
+    def test_release_route_proof_declares_custom_claude_config_boundary(
+        self,
+    ) -> None:
+        release_guide = (PLUGIN / "docs" / "RELEASE.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("CLAUDE_CONFIG_DIR", release_guide)
+        self.assertIn(
+            "do not let the release command silently verify",
+            release_guide,
+        )
+        self.assertIn(
+            "Do not overwrite the\n"
+            "distributed route attestation with that diagnostic",
+            release_guide,
+        )
+        sync = release_guide.index(
+            "manage_install.py sync --host all"
+        )
+        doctor = release_guide.index(
+            "manage_install.py doctor --host all",
+            sync,
+        )
+        route_proof = release_guide.index(
+            "detect_routes.py --canonical",
+            doctor,
+        )
+        self.assertLess(sync, doctor)
+        self.assertLess(doctor, route_proof)
+
+    def test_worktree_walk_can_prune_local_tool_environments(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            kept = root / "docs" / "guide.md"
+            ignored = root / ".venv" / "Lib" / "package.md"
+            kept.parent.mkdir()
+            ignored.parent.mkdir(parents=True)
+            kept.write_text("kept\n", encoding="utf-8")
+            ignored.write_text("ignored local environment file\n", encoding="utf-8")
+            selected = {
+                path.relative_to(root).as_posix()
+                for path in walk_files(
+                    root,
+                    ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
+                )
+            }
+            self.assertEqual(selected, {"docs/guide.md"})
+
     def test_windows_cloud_tag_is_allowed_but_name_surrogate_is_refused(self) -> None:
         directory_mode = 0o040755
         with patch.object(Path, "lstat", return_value=SimpleNamespace(
@@ -272,15 +357,144 @@ class ManifestTests(unittest.TestCase):
             )
             self.assertTrue(any(item["code"] == "missing-image" for item in failures))
 
+    def test_link_check_skips_intentionally_broken_behavioral_fixture_inputs(
+        self,
+    ) -> None:
+        from check_links import check
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture = (
+                root
+                / "maintainer"
+                / "evals"
+                / "fixtures"
+                / "inputs"
+                / "broken-route-case"
+            )
+            fixture.mkdir(parents=True)
+            (fixture / "index.html").write_text(
+                '<a href="/deliberately-missing/">Missing fixture route</a>',
+                encoding="utf-8",
+            )
+            (root / "ordinary.md").write_text(
+                "[Missing package link](missing.md)\n",
+                encoding="utf-8",
+            )
+
+            failures, _warnings = check(root, online=False, timeout=1)
+            self.assertEqual(
+                [
+                    item
+                    for item in failures
+                    if item["path"] == "ordinary.md"
+                    and item["code"] == "missing-link"
+                ],
+                [{
+                    "code": "missing-link",
+                    "path": "ordinary.md",
+                    "message": "missing.md",
+                }],
+            )
+            self.assertFalse(
+                any(
+                    "broken-route-case" in item["path"]
+                    for item in failures
+                )
+            )
+
+    def test_online_link_probe_is_allowlisted_pinned_and_redacted(self) -> None:
+        import check_links
+
+        public_answer = [
+            (
+                2,
+                1,
+                6,
+                "",
+                ("93.184.216.34", 443),
+            )
+        ]
+        with patch.object(
+            check_links.socket,
+            "getaddrinfo",
+            return_value=public_answer,
+        ) as resolver:
+            safe, reason, host, port, addresses = (
+                check_links.resolve_external_target(
+                    "https://example.test/reference",
+                    set(),
+                    {"example.test"},
+                )
+            )
+        self.assertTrue(safe, reason)
+        self.assertEqual(host, "example.test")
+        self.assertEqual(port, 443)
+        self.assertEqual(addresses, ("93.184.216.34",))
+        resolver.assert_called_once()
+
+        with patch.object(
+            check_links,
+            "resolve_external_target",
+            return_value=(
+                True,
+                "public",
+                "example.test",
+                443,
+                ("93.184.216.34",),
+            ),
+        ), patch.object(
+            check_links,
+            "pinned_head",
+            return_value=(204, None),
+        ) as pinned:
+            healthy, status = check_links.external_status(
+                "https://example.test/reference",
+                1,
+                allowed_online_hosts={"example.test"},
+            )
+        self.assertTrue(healthy)
+        self.assertEqual(status, "204")
+        self.assertEqual(
+            pinned.call_args.kwargs["addresses"],
+            ("93.184.216.34",),
+        )
+
+        unsafe, message = check_links.validate_external_target(
+            "https://user:secret@example.test/path?token=secret",
+            set(),
+            {"example.test"},
+        )
+        self.assertFalse(unsafe)
+        self.assertNotIn("secret", message)
+        label = check_links.safe_url_label(
+            "https://user:secret@example.test/path/token-value?token=secret"
+        )
+        self.assertNotIn("secret", label)
+        self.assertNotIn("token-value", label)
+        self.assertIn("path-redacted", label)
+
+        with patch.object(check_links.socket, "getaddrinfo") as resolver:
+            unsafe, message = check_links.validate_external_target(
+                "https://not-approved.example/reference",
+                set(),
+                {"example.test"},
+            )
+        self.assertFalse(unsafe)
+        self.assertEqual(message, "online host is not allowlisted")
+        resolver.assert_not_called()
+
 
 class CachePreflightTests(unittest.TestCase):
     ENTRYPOINTS = (
         "audit_package.py",
         "attest_tests.py",
         "build_manifest.py",
+        "build_sbom.py",
         "check_links.py",
         "detect_routes.py",
-        "pattern_history.py",
+        "manage_install.py",
+        "package_release.py",
         "run_evals.py",
         "sync_skill.py",
         "validate_evidence.py",
@@ -619,6 +833,127 @@ class SyncTests(unittest.TestCase):
     "maintainer dependencies are not installed",
 )
 class AuditMutationTests(unittest.TestCase):
+    def test_plugin_exposes_exactly_one_design_dna_skill(self) -> None:
+        from audit_package import plugin_skill_surface_failures
+
+        self.assertEqual(plugin_skill_surface_failures(PLUGIN), [])
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_plugin = Path(temporary) / "plugin"
+            shutil.copytree(PLUGIN, copied_plugin)
+            extra = copied_plugin / "skills" / "design-dna-copy"
+            extra.mkdir()
+            (extra / "SKILL.md").write_text(
+                "---\n"
+                "name: design-dna-copy\n"
+                "description: Test-only accidental second skill.\n"
+                "---\n",
+                encoding="utf-8",
+            )
+            failures = plugin_skill_surface_failures(copied_plugin)
+            self.assertEqual(
+                ["plugin-skill-surface-invalid"],
+                [item["code"] for item in failures],
+            )
+            self.assertIn(
+                "skills/design-dna-copy/SKILL.md",
+                failures[0]["message"],
+            )
+
+    def test_runtime_references_are_directly_reachable_from_router(self) -> None:
+        from audit_package import runtime_reference_reachability_failures
+
+        source_skill = PLUGIN / "skills" / "design-dna"
+        self.assertEqual(
+            runtime_reference_reachability_failures(
+                source_skill,
+                label_root=PLUGIN,
+            ),
+            [],
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_skill = Path(temporary) / "design-dna"
+            shutil.copytree(source_skill, copied_skill)
+            orphan = copied_skill / "references" / "orphan.md"
+            orphan.write_text("# Orphan\n", encoding="utf-8")
+            failures = runtime_reference_reachability_failures(copied_skill)
+            self.assertEqual(len(failures), 1)
+            self.assertEqual(
+                failures[0]["code"],
+                "runtime-reference-unreachable",
+            )
+            self.assertTrue(failures[0]["path"].endswith("orphan.md"))
+
+    def test_stale_package_identity_does_not_hide_later_release_diagnostics(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            copied_plugin = root / "plugin"
+            shutil.copytree(PLUGIN, copied_plugin)
+            skill_path = copied_plugin / "skills" / "design-dna" / "SKILL.md"
+            skill_path.write_text(
+                skill_path.read_text(encoding="utf-8")
+                + "\n<!-- test-only package identity drift -->\n",
+                encoding="utf-8",
+            )
+            test_attestation = (
+                copied_plugin
+                / "maintainer"
+                / "attestations"
+                / "test-attestation.json"
+            )
+            if test_attestation.exists():
+                test_attestation.unlink()
+
+            result = run_script(
+                "audit_package.py",
+                "--plugin-root",
+                str(copied_plugin),
+                "--home",
+                str(root),
+                "--release",
+            )
+            self.assertEqual(
+                result.returncode,
+                1,
+                result.stdout + result.stderr,
+            )
+            self.assertTrue(result.stdout, result.stderr)
+            payload = json.loads(result.stdout)
+            codes = {item["code"] for item in payload["failures"]}
+            self.assertTrue(
+                {"sbom-runtime-identity-mismatch", "sbom-drift"} & codes,
+                codes,
+            )
+            self.assertIn("release-manifest-identity-unavailable", codes)
+            self.assertIn("release-test-attestation-missing", codes)
+
+    def test_owner_policy_example_matches_active_policy_schema(self) -> None:
+        from audit_package import owner_policy_example_failures
+
+        example = (
+            PLUGIN
+            / "skills"
+            / "design-dna"
+            / "templates"
+            / "owner-policy.example.yml"
+        )
+        schema = PLUGIN / "maintainer" / "schemas" / "owner-policy.schema.json"
+        self.assertEqual(owner_policy_example_failures(example, schema), [])
+        with tempfile.TemporaryDirectory() as temporary:
+            mutated = Path(temporary) / "owner-policy.example.yml"
+            text = example.read_text(encoding="utf-8").replace(
+                '  visible_ambition: "require-review"\n',
+                '  visible_ambition: "bananas"\n',
+                1,
+            )
+            mutated.write_text(text, encoding="utf-8")
+            failures = owner_policy_example_failures(mutated, schema)
+            self.assertIn(
+                "schema-invalid",
+                {item["code"] for item in failures},
+            )
+
     def test_release_identity_excludes_but_rejects_executable_bytecode(self) -> None:
         from audit_package import (
             maintainer_cache_failures,
@@ -827,6 +1162,39 @@ class AuditMutationTests(unittest.TestCase):
                 baseline["release_sha256"],
             )
 
+    def test_unclassified_top_level_file_is_bound_by_distribution_identity(
+        self,
+    ) -> None:
+        from build_manifest import package_manifest
+
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_plugin = Path(temporary) / "plugin"
+            shutil.copytree(PLUGIN, copied_plugin)
+            skill_root = copied_plugin / "skills" / "design-dna"
+            baseline = package_manifest(skill_root)
+            added = copied_plugin / "UNCLASSIFIED-DELIVERY-NOTE.txt"
+            added.write_text(
+                "This file must not fall outside release identity.\n",
+                encoding="utf-8",
+            )
+            changed = package_manifest(skill_root)
+            self.assertNotEqual(
+                changed["components"]["distribution_tree"],
+                baseline["components"]["distribution_tree"],
+            )
+            self.assertNotEqual(
+                changed["release_sha256"],
+                baseline["release_sha256"],
+            )
+            self.assertIn(
+                "UNCLASSIFIED-DELIVERY-NOTE.txt",
+                {
+                    item["path"]
+                    for item in changed["distribution_files"]
+                    if item["type"] == "file"
+                },
+            )
+
     def test_trusted_adapter_registry_edit_invalidates_release_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             copied_plugin = Path(temporary) / "plugin"
@@ -895,11 +1263,23 @@ class AuditMutationTests(unittest.TestCase):
             },
             "cases": [{
                 "id": "coffee-specificity",
+                "installation_mode": "direct-skill",
                 "task": (
                     "Create a current, specific coffee-shop website from the supplied facts."
                 ),
                 "timeout_seconds": 300,
                 "tags": ["persuade", "hospitality"],
+                "capability_contract": {
+                    "image_generation": "required-when-host-declared-available"
+                },
+                "release_coverage": {
+                    "high_value": True,
+                    "representative": True,
+                    "primary_mode": "persuade",
+                    "scope": "new-build",
+                    "project_stratum": "static-site",
+                    "expressive_perception_gate": True,
+                },
                 "review_requirements": [
                     "Review the rendered result at all declared viewports."
                 ],
@@ -929,6 +1309,45 @@ class AuditMutationTests(unittest.TestCase):
         self.assertTrue(
             list(Draft202012Validator(schema).iter_errors(swapped_syntax)),
             "Claude Code fixtures must use the documented slash invocation",
+        )
+        invalid_installation = json.loads(json.dumps(valid))
+        invalid_installation["cases"][0]["installation_mode"] = "plugin-ish"
+        self.assertTrue(
+            list(
+                Draft202012Validator(schema).iter_errors(
+                    invalid_installation
+                )
+            ),
+            "installation mode must distinguish the two declared route types",
+        )
+        invalid_gate = json.loads(json.dumps(valid))
+        invalid_gate["cases"][0]["release_coverage"][
+            "expressive_perception_gate"
+        ] = False
+        self.assertTrue(
+            list(Draft202012Validator(schema).iter_errors(invalid_gate)),
+            "the opt-in expressive release marker cannot be weakened to false",
+        )
+        conflicting_quiet = json.loads(json.dumps(valid))
+        conflicting_quiet["cases"][0]["release_coverage"][
+            "quiet_perception_gate"
+        ] = True
+        self.assertTrue(
+            list(Draft202012Validator(schema).iter_errors(conflicting_quiet)),
+            "quiet-specific and expressive score gates must not be conflated",
+        )
+        generated_gate = json.loads(json.dumps(valid))
+        generated_gate["cases"][0]["release_coverage"][
+            "generated_media_capability_gate"
+        ] = True
+        self.assertEqual(
+            list(Draft202012Validator(schema).iter_errors(generated_gate)),
+            [],
+        )
+        del generated_gate["cases"][0]["capability_contract"]
+        self.assertTrue(
+            list(Draft202012Validator(schema).iter_errors(generated_gate)),
+            "a generated-media release gate needs a conditional capability contract",
         )
 
     def test_duplicate_fixture_ids_fail(self) -> None:
@@ -1000,69 +1419,6 @@ class AuditMutationTests(unittest.TestCase):
                     for item in failures
                 )
             )
-
-    def test_private_pattern_history_requires_opt_in_and_reports_investigate_only(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            signature = root / "signature.json"
-            signature.write_text(json.dumps({
-                "project_pseudonym": "project-amber",
-                "scope_category": "hospitality-coffee",
-                "date": "2026-07-26",
-                "palette": {"archetype": "warm mineral", "roles": [{"role": "accent", "hex": "#A35D38"}]},
-                "type_roles": [{"role": "display", "family": "Newsreader"}],
-                "composition": ["offset editorial hero"],
-                "icon_concepts": ["custom line service symbols"],
-                "imagery_concepts": ["close-crop material photography"],
-                "motion_concepts": ["state-only reveal"],
-                "rationale": "Derived from the approved material and service rhythm."
-            }), encoding="utf-8")
-            registry = root / "private-history.json"
-            refused = run_script(
-                "pattern_history.py", "--registry", str(registry),
-                "add", "--signature", str(signature),
-            )
-            self.assertEqual(refused.returncode, 2)
-            self.assertFalse(registry.exists())
-            added = run_script(
-                "pattern_history.py", "--registry", str(registry),
-                "--acknowledge",
-                (
-                    "I understand this registry is private, user-certified, "
-                    "and may still contain sensitive data."
-                ),
-                "add", "--signature", str(signature),
-            )
-            self.assertEqual(added.returncode, 0, added.stdout + added.stderr)
-            checked = run_script(
-                "pattern_history.py", "--registry", str(registry),
-                "check", "--signature", str(signature), "--threshold", "0.4",
-            )
-            self.assertEqual(
-                checked.returncode, 0, checked.stdout + checked.stderr
-            )
-            payload = json.loads(checked.stdout)
-            self.assertTrue(payload["investigate_only"])
-            self.assertEqual(len(payload["matches"]), 1)
-
-    def test_private_pattern_history_rejects_junction_parent(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            outside = root / "outside"
-            outside.mkdir()
-            link = root / "linked-private"
-            if not make_directory_link(link, outside):
-                self.skipTest("directory symlink/junction unavailable")
-            try:
-                result = run_script(
-                    "pattern_history.py", "--registry", str(link / "history.json"), "list"
-                )
-                self.assertEqual(result.returncode, 2)
-                self.assertFalse((outside / "history.json").exists())
-            finally:
-                if link.exists():
-                    os.rmdir(link)
-
 
 @unittest.skipUnless(
     __import__("importlib").util.find_spec("jsonschema"),
@@ -1346,6 +1702,74 @@ class EvalRunnerV3Tests(unittest.TestCase):
             self.assertNotIn(
                 canary_value, result_path.read_text(encoding="utf-8")
             )
+
+    def test_passed_environment_leak_blocks_promotion_and_retention(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            work = root / "work"
+            canary_name = "DESIGN_DNA_EVAL_TEST_CREDENTIAL"
+            canary_value = "eval-secret-canary-bf1d7a6219"
+            fixture = write_eval_suite(
+                root,
+                suite="passed-environment-leak",
+                expected={
+                    "exit_codes": [0],
+                    "files_exist": ["leaked.txt"],
+                },
+            )
+            code = "\n".join([
+                "import os",
+                "from pathlib import Path",
+                f"value = os.environ[{canary_name!r}]",
+                "Path('leaked.txt').write_text(value, encoding='utf-8')",
+                "print(value)",
+            ])
+            result = run_eval(
+                root,
+                fixture,
+                code,
+                keep_workspaces=True,
+                pass_env=(canary_name,),
+                environment_overrides={canary_name: canary_value},
+                work_root=work,
+            )
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            payload, result_path = load_only_result(root / "results")
+            run = payload["runs"][0]
+            scan = run["sensitive_artifact_scan"]
+            self.assertTrue(scan["performed"])
+            self.assertTrue(scan["complete"])
+            self.assertTrue(scan["detected"])
+            self.assertGreaterEqual(scan["finding_count"], 1)
+            self.assertIsNone(run["artifact_bundle"])
+            self.assertIsNone(run["workspace"])
+            self.assertNotIn(
+                canary_value,
+                result_path.read_text(encoding="utf-8"),
+            )
+            self.assertFalse(
+                any(path.is_file() for path in work.rglob("*")),
+                "unsafe temporary files must not survive --keep-workspaces",
+            )
+
+    def test_passed_environment_values_too_short_for_reliable_scan_are_refused(
+        self,
+    ) -> None:
+        import run_evals
+
+        with patch.dict(
+            os.environ,
+            {"DESIGN_DNA_SHORT_VALUE": "tiny"},
+            clear=False,
+        ):
+            with self.assertRaises(ToolFailure) as raised:
+                run_evals.explicit_environment(
+                    ["DESIGN_DNA_SHORT_VALUE"]
+                )
+        self.assertEqual(
+            raised.exception.issue.code,
+            "unsafe-short-pass-env",
+        )
 
     def test_input_snapshot_is_exact_and_source_is_untouched(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

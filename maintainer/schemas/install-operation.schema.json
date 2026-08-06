@@ -1,0 +1,771 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/install-operation.schema.json",
+  "title": "Design DNA personal install operation or backup record",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/operation"
+    },
+    {
+      "$ref": "#/$defs/backup"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "nullableSha256": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "backupId": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{6}\\.[0-9]{6}Z-[a-f0-9]{12}$"
+    },
+    "nullableBackupId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/backupId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "entry_count",
+        "file_count",
+        "byte_count"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "entry_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "file_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "byte_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "expected",
+        "candidate_kind",
+        "sha256",
+        "parity",
+        "entry_count",
+        "file_count",
+        "byte_count"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "expected": {
+          "type": "boolean"
+        },
+        "candidate_kind": {
+          "enum": [
+            "managed-direct-target",
+            "unmanaged-filesystem-candidate"
+          ]
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "parity": {
+          "type": "boolean"
+        },
+        "entry_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "availableBackup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backup_id",
+        "path",
+        "created_at",
+        "reason",
+        "sha256"
+      ],
+      "properties": {
+        "backup_id": {
+          "$ref": "#/$defs/backupId"
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "targetStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exists",
+        "sha256",
+        "parity"
+      ],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "parity": {
+          "type": "boolean"
+        }
+      }
+    },
+    "hostStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "expected_route",
+        "discovery_roots",
+        "visibility_scope",
+        "backup_root",
+        "discovery_candidates",
+        "collision_candidates",
+        "target",
+        "available_backups",
+        "status",
+        "recommendation"
+      ],
+      "properties": {
+        "host": {
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "expected_route": {
+          "$ref": "#/$defs/path"
+        },
+        "discovery_roots": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "visibility_scope": {
+          "$ref": "#/$defs/visibilityScope"
+        },
+        "backup_root": {
+          "$ref": "#/$defs/path"
+        },
+        "discovery_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/route"
+          }
+        },
+        "collision_candidates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "target": {
+          "$ref": "#/$defs/targetStatus"
+        },
+        "available_backups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/availableBackup"
+          }
+        },
+        "status": {
+          "enum": [
+            "healthy",
+            "install-needed",
+            "update-needed",
+            "external-candidate-current",
+            "external-candidate-stale",
+            "candidate-collision"
+          ]
+        },
+        "recommendation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "visibilityScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "root_scope",
+        "activation_state",
+        "project_admin_session_routes",
+        "limitations"
+      ],
+      "properties": {
+        "basis": {
+          "const": "configured-filesystem-scan"
+        },
+        "root_scope": {
+          "const": "configured-global-roots-only"
+        },
+        "activation_state": {
+          "const": "not-verified"
+        },
+        "project_admin_session_routes": {
+          "const": "not-inspected"
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "action",
+        "target",
+        "backup_id",
+        "executed"
+      ],
+      "properties": {
+        "host": {
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "action": {
+          "enum": [
+            "install",
+            "update",
+            "uninstall",
+            "rollback",
+            "installed",
+            "updated",
+            "uninstalled",
+            "rolled-back",
+            "already-current",
+            "no-op",
+            "recover",
+            "recovered"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/path"
+        },
+        "backup_id": {
+          "$ref": "#/$defs/nullableBackupId"
+        },
+        "replacement_backup_id": {
+          "$ref": "#/$defs/nullableBackupId"
+        },
+        "installed_sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "previous_sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "canonical_parity": {
+          "type": "boolean"
+        },
+        "recovery_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "restored-pending-target",
+              "finalized-pending-backup",
+              "removed-consumed-pending",
+              "installed-staged-target",
+              "removed-stage",
+              "removed-empty-stage",
+              "repaired-consumed-backup"
+            ]
+          }
+        },
+        "resolved_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "recovered_backup_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/backupId"
+          }
+        },
+        "executed": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": ["install", "update", "uninstall", "rollback", "already-current", "no-op", "recover"]
+              }
+            },
+            "required": ["action"]
+          },
+          "then": {
+            "properties": {
+              "executed": {"const": false}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": ["installed", "updated", "uninstalled", "rolled-back", "recovered"]
+              }
+            },
+            "required": ["action"]
+          },
+          "then": {
+            "properties": {
+              "executed": {"const": true}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"action": {"const": "installed"}},
+            "required": ["action"]
+          },
+          "then": {
+            "required": ["installed_sha256", "previous_sha256"],
+            "properties": {
+              "backup_id": {"type": "null"},
+              "installed_sha256": {"$ref": "#/$defs/sha256"},
+              "previous_sha256": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"action": {"const": "updated"}},
+            "required": ["action"]
+          },
+          "then": {
+            "required": ["installed_sha256", "previous_sha256"],
+            "properties": {
+              "backup_id": {"$ref": "#/$defs/backupId"},
+              "installed_sha256": {"$ref": "#/$defs/sha256"},
+              "previous_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"action": {"const": "uninstalled"}},
+            "required": ["action"]
+          },
+          "then": {
+            "required": ["installed_sha256", "previous_sha256"],
+            "properties": {
+              "backup_id": {"$ref": "#/$defs/backupId"},
+              "installed_sha256": {"type": "null"},
+              "previous_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"action": {"const": "rolled-back"}},
+            "required": ["action"]
+          },
+          "then": {
+            "required": [
+              "replacement_backup_id",
+              "installed_sha256",
+              "previous_sha256",
+              "canonical_parity"
+            ],
+            "properties": {
+              "backup_id": {"$ref": "#/$defs/backupId"},
+              "installed_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": ["recover", "recovered"]
+              }
+            },
+            "required": ["action"]
+          },
+          "then": {
+            "required": [
+              "installed_sha256",
+              "recovery_actions",
+              "resolved_paths",
+              "recovered_backup_ids"
+            ],
+            "properties": {
+              "backup_id": {"type": "null"},
+              "installed_sha256": {"$ref": "#/$defs/nullableSha256"}
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "record_type",
+        "operation",
+        "ok",
+        "dry_run",
+        "home",
+        "source",
+        "hosts",
+        "changes",
+        "errors"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 2
+        },
+        "record_type": {
+          "const": "design-dna-install-operation"
+        },
+        "operation": {
+          "enum": [
+            "doctor",
+            "sync",
+            "install",
+            "update",
+            "uninstall",
+            "rollback",
+            "recover",
+            "invalid"
+          ]
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "dry_run": {
+          "type": "boolean"
+        },
+        "home": {
+          "$ref": "#/$defs/path"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "hosts": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/hostStatus"
+          }
+        },
+        "changes": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/change"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"ok": {"const": true}},
+            "required": ["ok"]
+          },
+          "then": {
+            "properties": {"errors": {"maxItems": 0}}
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "errors": {"minItems": 1}
+            },
+            "required": ["errors"]
+          },
+          "then": {
+            "properties": {
+              "ok": {"const": false},
+              "changes": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"dry_run": {"const": true}},
+            "required": ["dry_run"]
+          },
+          "then": {
+            "properties": {
+              "changes": {
+                "items": {
+                  "allOf": [
+                    {"$ref": "#/$defs/change"},
+                    {"properties": {"executed": {"const": false}}}
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"operation": {"const": "doctor"}},
+            "required": ["operation"]
+          },
+          "then": {
+            "properties": {"changes": {"maxItems": 0}}
+          }
+        },
+        {
+          "if": {
+            "properties": {"operation": {"const": "invalid"}},
+            "required": ["operation"]
+          },
+          "then": {
+            "properties": {
+              "ok": {"const": false},
+              "changes": {"maxItems": 0},
+              "errors": {"minItems": 1}
+            }
+          }
+        }
+      ]
+    },
+    "backup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "record_type",
+        "backup_id",
+        "host",
+        "created_at",
+        "reason",
+        "status",
+        "target",
+        "canonical_sha256",
+        "skill_sha256",
+        "entry_count",
+        "file_count",
+        "byte_count"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "record_type": {
+          "const": "design-dna-install-backup"
+        },
+        "backup_id": {
+          "$ref": "#/$defs/backupId"
+        },
+        "host": {
+          "enum": [
+            "codex",
+            "claude"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "enum": [
+            "update",
+            "uninstall",
+            "rollback-replaced-current",
+            "failed-install",
+            "failed-update",
+            "multi-host-transaction-rollback"
+          ]
+        },
+        "status": {
+          "enum": [
+            "available",
+            "restored",
+            "failed",
+            "transaction-rolled-back"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/path"
+        },
+        "canonical_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "skill_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "entry_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "restored_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "rolled_back_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "restored"}},
+            "required": ["status"]
+          },
+          "then": {
+            "required": ["restored_at"],
+            "properties": {
+              "restored_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "not": {"required": ["rolled_back_at"]}
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "transaction-rolled-back"}},
+            "required": ["status"]
+          },
+          "then": {
+            "required": ["rolled_back_at"],
+            "not": {"required": ["restored_at"]}
+          }
+        }
+      ]
+    }
+  }
+}

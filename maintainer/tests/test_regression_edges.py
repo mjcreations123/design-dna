@@ -29,7 +29,7 @@ def run_path(script: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
 
 
 class ScannerRegressionTests(unittest.TestCase):
-    def test_prominent_fragment_and_watched_font_are_detected_without_comments(self) -> None:
+    def test_single_fragment_and_font_family_name_are_neutral(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "style.css").write_text(
@@ -48,22 +48,22 @@ class ScannerRegressionTests(unittest.TestCase):
                 "--json",
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            findings = json.loads(result.stdout)["findings"]
-            display = [
-                item for item in findings
-                if item["rule"] == "decorative-display-fragment"
-            ]
-            self.assertEqual(len(display), 1)
-            self.assertEqual(display[0]["file"], "style.css")
+            payload = json.loads(result.stdout)
+            rules = {item["rule"] for item in payload["findings"]}
+            self.assertNotIn("decorative-display-fragment", rules)
+            self.assertNotIn("unexamined-default-font", rules)
             self.assertTrue(
-                any(item["rule"] == "unexamined-default-font" for item in findings)
+                any(
+                    item["check"] == "prominent-fragment-selector-context"
+                    for item in payload["manual_review"]
+                )
             )
 
     def test_expired_allowlist_is_reported_and_does_not_suppress(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.html").write_text(
-                '<h1>Build with <span style="color: purple">clarity</span></h1>',
+                "<p>Trusted by thousands.</p>",
                 encoding="utf-8",
             )
             initial = run_path(
@@ -76,21 +76,21 @@ class ScannerRegressionTests(unittest.TestCase):
                 0,
                 initial.stdout + initial.stderr,
             )
-            headline_finding = next(
+            claim_finding = next(
                 item
                 for item in json.loads(initial.stdout)["findings"]
-                if item["rule"] == "decorative-headline-span"
+                if item["rule"] == "claim-needs-provenance"
             )
             allowlist = project / "allow.json"
             allowlist.write_text(
                 json.dumps({
                     "schema_version": 1,
                     "allow": [{
-                        "rule": "decorative-headline-span",
+                        "rule": "claim-needs-provenance",
                         "path": "page.html",
-                        "fingerprint": headline_finding["fingerprint"],
-                        "reason": "Previously approved campaign treatment.",
-                        "owner": "Design owner",
+                        "fingerprint": claim_finding["fingerprint"],
+                        "reason": "Previously approved sourced claim.",
+                        "owner": "Content owner",
                         "expires": "2000-01-01",
                     }],
                 }),
@@ -108,7 +108,7 @@ class ScannerRegressionTests(unittest.TestCase):
             self.assertEqual(len(payload["expired_allowlist_entries"]), 1)
             self.assertTrue(
                 any(
-                    item["rule"] == "decorative-headline-span"
+                    item["rule"] == "claim-needs-provenance"
                     for item in payload["findings"]
                 )
             )
@@ -198,7 +198,7 @@ class MaintainerBoundaryTests(unittest.TestCase):
         records = [
             (
                 schemas / "compatibility.schema.json",
-                lambda value: value["properties"]["package_version"]["pattern"],
+                lambda value: value["$defs"]["semver"]["pattern"],
                 "",
             ),
             (
@@ -295,7 +295,7 @@ class MaintainerBoundaryTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertTrue(
                 any(
-                    item["code"] == "duplicate-active-route"
+                    item["code"] == "unexpected-discovery-candidate"
                     and Path(item["path"]) == renamed
                     for item in payload["failures"]
                 )

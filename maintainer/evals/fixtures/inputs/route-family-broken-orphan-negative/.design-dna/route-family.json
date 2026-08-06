@@ -1,0 +1,90 @@
+{
+  "schema_version": 2,
+  "created_with": "design-dna 4.0.0",
+  "classification": "internal",
+  "study": {"id": "broken-borough", "title": "Missing declaration target and orphan document", "requested_route_count": 3},
+  "shared_contract": {
+    "identity": "Plain Broken Borough title.",
+    "navigation": "Declared destinations should be linked consistently.",
+    "truth": "All copy is fictional.",
+    "accessibility": "Semantic landmarks and headings.",
+    "voice": "Plain evaluation labels.",
+    "performance": "Static local HTML."
+  },
+  "routes": [
+    {
+      "id": "home",
+      "path": "/",
+      "title": "Broken Borough",
+      "user_job": "Choose a declared route.",
+      "creative_logic": "This negative fixture gives its entry document only the supplied orientation and route links so missing, valid, and undeclared documents remain easy to reconcile.",
+      "observable_decisions": [
+        {
+          "decision": "Link the one supplied declared destination and leave the promised missing destination represented in the family contract.",
+          "reason": "The audit must compare declaration, document presence, and reachability instead of inferring completeness from the home page.",
+          "evidence": "index.html and .design-dna/route-family.json.",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The short orientation remains in ordinary document flow at both fixture widths.",
+      "reduced_motion_result": "No motion dependency exists.",
+      "no_javascript_result": "The supplied heading, explanation, and link remain complete.",
+      "closest_sibling": "story",
+      "deliberate_differences": ["Home orients the route family.", "Story contains the supplied article."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
+      "review_status": "implemented"
+    },
+    {
+      "id": "story",
+      "path": "/story/",
+      "title": "The valid story",
+      "user_job": "Read the supplied story.",
+      "creative_logic": "The valid child document contains the supplied article and return link; it exists to contrast a real declared destination with the missing and orphan cases.",
+      "observable_decisions": [
+        {
+          "decision": "Keep the article in its own directly addressable document with an ordinary return link.",
+          "reason": "The fixture needs one valid child route against which missing and orphan findings can be checked.",
+          "evidence": "story/index.html.",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "The article remains in ordinary document flow at both fixture widths.",
+      "reduced_motion_result": "No motion dependency exists.",
+      "no_javascript_result": "The complete article and return link remain available.",
+      "closest_sibling": "home",
+      "deliberate_differences": ["Story contains article prose.", "Home contains route orientation."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
+      "review_status": "implemented"
+    },
+    {
+      "id": "missing",
+      "path": "/missing/",
+      "title": "Missing document",
+      "user_job": "Reach a route that was promised.",
+      "creative_logic": "This planned declaration intentionally has no supplied document so the audit must report the broken promise instead of manufacturing a fallback page.",
+      "observable_decisions": [
+        {
+          "decision": "Declare the promised path while leaving its document absent in the source-frozen negative fixture.",
+          "reason": "The fixture tests whether route-count and missing-document failures remain explicit.",
+          "evidence": ".design-dna/route-family.json; missing/index.html is intentionally absent.",
+          "status": "accepted"
+        }
+      ],
+      "responsive_result": "No rendered result exists because the declared document is intentionally missing.",
+      "reduced_motion_result": "No rendered result exists because the declared document is intentionally missing.",
+      "no_javascript_result": "The declared destination remains unavailable and must be reported as missing.",
+      "closest_sibling": "home",
+      "deliberate_differences": ["Missing has no document to render.", "Home is a complete orientation document."],
+      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
+      "review_status": "planned"
+    }
+  ],
+  "review": {
+    "direct_entry": "pending",
+    "link_integrity": "pending",
+    "route_count": "pending",
+    "body_comparison": "pending",
+    "atlas_artifact": "pending",
+    "cultural_acceptance": {"required": false, "status": "not-required", "reviewer_id": null, "relationship": "not-reviewed", "independent_of_producer": false, "reviewed_at": null, "notes": "No culturally central material."}
+  }
+}

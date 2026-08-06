@@ -19,12 +19,28 @@ del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 
 import argparse
 import hashlib
+import json
 import re
 from datetime import date
 from pathlib import Path
 
-import yaml
-from jsonschema import Draft202012Validator, FormatChecker
+try:
+    import yaml
+    from jsonschema import Draft202012Validator, FormatChecker
+except ImportError as exc:
+    print(json.dumps({
+        "ok": False,
+        "failures": [{
+            "code": "dependency-missing",
+            "message": (
+                "Install the hash-locked dependencies from "
+                "maintainer/requirements-dev.lock."
+            ),
+            "severity": "error",
+        }],
+        "warnings": [],
+    }, indent=2))
+    raise SystemExit(2) from None
 
 from check_links import external_status
 from common import (
@@ -48,14 +64,19 @@ EVIDENCE_ID = re.compile(r"\bEVD-\d+\b")
 STATUSES = {"candidate", "active", "retired", "rejected"}
 ALLOWED_BASES = {"owner_policy"}
 OWNER_POLICY_BINDINGS = {
-    "RISK-HIER-001": "hierarchy_follows_content_and_task",
-    "RISK-CODE-001": "semantic_maintainable_implementation",
-    "RISK-MOTION-001": "motion_has_user_or_experience_purpose",
+    "RISK-AMBITION-001": "visible_ambition",
+    "RISK-COMP-001": "public_orientation",
+    "RISK-MEDIA-001": "sensory_media_strategy",
+    "RISK-TYPE-003": "typography_comfort",
+    "RISK-REVIEW-001": "owner_rejection_revalidation",
+    "RISK-HIER-001": "content_hierarchy",
+    "RISK-CODE-001": "semantic_implementation",
+    "RISK-MOTION-001": "motion_and_interaction",
     "RISK-RESIDUE-001": "release_residue",
-    "RISK-TRUTH-001": "fabricated_proof_or_business_facts",
-    "RISK-CONTEXT-001": "infer_vintage_from_category",
-    "RISK-CULTURE-001": "representation_and_cultural_context",
-    "RISK-REPEAT-001": "cross_project_pattern_history",
+    "RISK-TRUTH-001": "truth_and_claims",
+    "RISK-CONTEXT-001": "time_register",
+    "RISK-CULTURE-001": "cultural_context",
+    "RISK-REPEAT-001": "cross_project_comparison",
 }
 
 
@@ -106,12 +127,239 @@ def section_map(body: str) -> dict[str, str]:
     return result
 
 
+def derive_repeated_evaluation_claims(
+    plugin_root: Path,
+    bundle_path: Path,
+) -> tuple[set[str], set[str], list[dict[str, str]]]:
+    label = bundle_path.relative_to(plugin_root).as_posix()
+    failures: list[dict[str, str]] = []
+    bundle_schema_path = (
+        plugin_root
+        / "maintainer"
+        / "schemas"
+        / "evaluation-evidence-bundle.schema.json"
+    )
+    result_schema_path = (
+        plugin_root
+        / "maintainer"
+        / "schemas"
+        / "eval-result.schema.json"
+    )
+    for schema_path in (bundle_schema_path, result_schema_path):
+        assert_no_reparse_path(schema_path, stop=plugin_root)
+        if not schema_path.is_file():
+            return set(), set(), [
+                issue(
+                    "evaluation-schema-missing",
+                    label,
+                    schema_path.relative_to(plugin_root).as_posix(),
+                )
+            ]
+    try:
+        bundle = load_json(bundle_path)
+        bundle_schema = load_json(bundle_schema_path)
+        result_schema = load_json(result_schema_path)
+    except ToolFailure as exc:
+        return set(), set(), [
+            issue("evaluation-bundle-invalid", label, str(exc))
+        ]
+    bundle_validator = Draft202012Validator(
+        bundle_schema,
+        format_checker=strict_format_checker(),
+    )
+    for error in sorted(
+        bundle_validator.iter_errors(bundle),
+        key=lambda item: list(item.path),
+    ):
+        failures.append(
+            issue("evaluation-bundle-schema-invalid", label, error.message)
+        )
+    if failures or not isinstance(bundle, dict):
+        return set(), set(), failures
+    result_validator = Draft202012Validator(
+        result_schema,
+        format_checker=strict_format_checker(),
+    )
+    result_root = absolute(
+        plugin_root / "maintainer" / "evals" / "results"
+    )
+    hosts: set[str] = set()
+    projects: set[str] = set()
+    seen_paths: set[str] = set()
+    for index, record in enumerate(bundle["result_files"]):
+        assert isinstance(record, dict)
+        relative = str(record["path"])
+        item_label = f"{label}:result_files[{index}]"
+        if relative.casefold() in seen_paths:
+            failures.append(
+                issue(
+                    "evaluation-result-path-reused",
+                    item_label,
+                    relative,
+                )
+            )
+            continue
+        seen_paths.add(relative.casefold())
+        result_path = absolute(plugin_root / relative)
+        if not is_within(result_path, result_root):
+            failures.append(
+                issue(
+                    "evaluation-result-path-invalid",
+                    item_label,
+                    relative,
+                )
+            )
+            continue
+        assert_no_reparse_path(result_root, stop=plugin_root)
+        assert_no_reparse_path(result_path, stop=result_root)
+        if not result_path.is_file():
+            failures.append(
+                issue(
+                    "evaluation-result-missing",
+                    item_label,
+                    relative,
+                )
+            )
+            continue
+        try:
+            result_bytes = result_path.read_bytes()
+            result = load_json(result_path)
+        except (OSError, ToolFailure) as exc:
+            failures.append(
+                issue("evaluation-result-invalid", item_label, str(exc))
+            )
+            continue
+        actual_hash = hashlib.sha256(result_bytes).hexdigest()
+        if actual_hash != record["sha256"]:
+            failures.append(
+                issue(
+                    "evaluation-result-hash-mismatch",
+                    item_label,
+                    actual_hash,
+                )
+            )
+            continue
+        schema_errors = sorted(
+            result_validator.iter_errors(result),
+            key=lambda item: list(item.path),
+        )
+        if schema_errors:
+            failures.extend(
+                issue(
+                    "evaluation-result-schema-invalid",
+                    item_label,
+                    error.message,
+                )
+                for error in schema_errors
+            )
+            continue
+        assert isinstance(result, dict)
+        skill_driver = result.get("drivers", {}).get("skill")
+        model = (
+            skill_driver.get("model_context")
+            if isinstance(skill_driver, dict)
+            else None
+        )
+        if (
+            not isinstance(model, dict)
+            or model.get("declaration_status") != "declared"
+        ):
+            failures.append(
+                issue(
+                    "evaluation-model-unreported",
+                    item_label,
+                    (
+                        "Repeated-evaluation evidence needs a declared provider, "
+                        "model, version, reasoning effort, and generation context."
+                    ),
+                )
+            )
+            continue
+        model_core = {
+            key: value
+            for key, value in model.items()
+            if key != "sha256"
+        }
+        model_digest = hashlib.sha256(
+            json.dumps(
+                model_core,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        if model.get("sha256") != model_digest:
+            failures.append(
+                issue(
+                    "evaluation-model-context-hash-mismatch",
+                    item_label,
+                    model_digest,
+                )
+            )
+            continue
+        suite = str(result.get("suite", ""))
+        result_host = str(result.get("host", ""))
+        qualified_runs = 0
+        for run in result.get("runs", []):
+            if (
+                not isinstance(run, dict)
+                or run.get("variant") != "skill"
+                or run.get("passed") is not True
+                or not isinstance(run.get("artifact_bundle"), dict)
+            ):
+                continue
+            if run.get("host") != result_host:
+                failures.append(
+                    issue(
+                        "evaluation-host-mismatch",
+                        item_label,
+                        str(run.get("run_id", "")),
+                    )
+                )
+                continue
+            if (
+                run.get("invocation_mode") == "implicit"
+                and run.get("host_native_evidence_status") != "bound"
+            ):
+                failures.append(
+                    issue(
+                        "implicit-evaluation-unproven",
+                        item_label,
+                        str(run.get("run_id", "")),
+                    )
+                )
+                continue
+            case_id = str(run.get("case", ""))
+            if not suite or not case_id or not result_host:
+                failures.append(
+                    issue(
+                        "evaluation-project-identity-missing",
+                        item_label,
+                        str(run.get("run_id", "")),
+                    )
+                )
+                continue
+            qualified_runs += 1
+            hosts.add(result_host)
+            projects.add(f"{suite}/{case_id}")
+        if qualified_runs == 0:
+            failures.append(
+                issue(
+                    "evaluation-result-has-no-qualified-runs",
+                    item_label,
+                    relative,
+                )
+            )
+    return hosts, projects, failures
+
+
 def validate(
     plugin_root: Path,
     schema_path: Path,
     *,
     online: bool,
     strict_due: bool,
+    release_mode: bool = False,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], dict[str, object]]:
     assert_no_reparse_path(plugin_root)
     if not plugin_root.is_dir():
@@ -130,6 +378,20 @@ def validate(
     schema = load_json(schema_path)
     validator = Draft202012Validator(
         schema,
+        format_checker=strict_format_checker(),
+    )
+    snapshot_schema_path = schema_path.with_name(
+        "evidence-snapshot.schema.json"
+    )
+    assert_no_reparse_path(snapshot_schema_path)
+    if not snapshot_schema_path.is_file():
+        raise ToolFailure(
+            "evidence-snapshot-schema-missing",
+            "Evidence snapshot schema does not exist.",
+            snapshot_schema_path,
+        )
+    snapshot_validator = Draft202012Validator(
+        load_json(snapshot_schema_path),
         format_checker=strict_format_checker(),
     )
     failures: list[dict[str, str]] = []
@@ -270,6 +532,20 @@ def validate(
                 failures.append(issue("future-evidence-date", relative, "created, retrieved, and last_reviewed may not be in the future."))
             if not (created <= last_reviewed <= card_next_review and retrieved <= last_reviewed):
                 failures.append(issue("invalid-evidence-chronology", relative, "created and retrieved must be <= last_reviewed <= next_review."))
+            if (
+                release_mode
+                and metadata.get("status") == "active"
+                and retrieved != last_reviewed
+            ):
+                failures.append(issue(
+                    "release-evidence-not-retrieved-at-review",
+                    relative,
+                    (
+                        "Release evidence must be retrieved again on its "
+                        "recorded review date; a metadata-only review is not "
+                        "freshness evidence."
+                    ),
+                ))
             interval = (card_next_review - last_reviewed).days
             maximum_interval = (
                 90
@@ -312,20 +588,73 @@ def validate(
                     actual_hash = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
                     if actual_hash != metadata.get("artifact_sha256"):
                         failures.append(issue("evaluation-artifact-hash-mismatch", relative, actual_hash))
-        if (
+                    else:
+                        (
+                            derived_hosts,
+                            derived_projects,
+                            derivation_failures,
+                        ) = derive_repeated_evaluation_claims(
+                            plugin_root,
+                            artifact_path,
+                        )
+                        failures.extend(derivation_failures)
+                        claimed_hosts = set(
+                            map(str, metadata.get("evaluation_hosts", []))
+                        )
+                        claimed_projects = set(
+                            map(str, metadata.get("evaluation_projects", []))
+                        )
+                        if claimed_hosts != derived_hosts:
+                            failures.append(issue(
+                                "evaluation-host-claim-mismatch",
+                                relative,
+                                (
+                                    f"claimed={sorted(claimed_hosts)!r}; "
+                                    f"derived={sorted(derived_hosts)!r}"
+                                ),
+                            ))
+                        if claimed_projects != derived_projects:
+                            failures.append(issue(
+                                "evaluation-project-claim-mismatch",
+                                relative,
+                                (
+                                    f"claimed={sorted(claimed_projects)!r}; "
+                                    f"derived={sorted(derived_projects)!r}"
+                                ),
+                            ))
+                        if (
+                            not derivation_failures
+                            and claimed_hosts == derived_hosts
+                            and claimed_projects == derived_projects
+                        ):
+                            metadata["_derived_evaluation_hosts"] = sorted(
+                                derived_hosts
+                            )
+                            metadata["_derived_evaluation_projects"] = sorted(
+                                derived_projects
+                            )
+        snapshot_required = (
             metadata.get("status") == "active"
             and metadata.get("source_type")
             in {"platform_documentation", "platform_guidance"}
-        ):
-            snapshot_relative = metadata.get("source_snapshot_path")
-            snapshot_digest = metadata.get("source_snapshot_sha256")
+        )
+        snapshot_relative = metadata.get("source_snapshot_path")
+        snapshot_digest = metadata.get("source_snapshot_sha256")
+        snapshot_declared = (
+            snapshot_relative is not None or snapshot_digest is not None
+        )
+        if snapshot_required or snapshot_declared:
             if not isinstance(snapshot_relative, str) or not isinstance(
                 snapshot_digest, str
             ):
                 failures.append(issue(
                     "source-snapshot-missing",
                     relative,
-                    "Active fast-moving platform evidence needs a hash-bound short source snapshot.",
+                    (
+                        "Active fast-moving platform evidence and any declared "
+                        "retained source snapshot need both a safe path and an "
+                        "exact SHA-256."
+                    ),
                 ))
             else:
                 snapshot_path = absolute(plugin_root / snapshot_relative)
@@ -358,23 +687,18 @@ def validate(
                                     relative,
                                     actual_digest,
                                 ))
-                            required_snapshot = {
-                                "schema_version",
-                                "evidence_id",
-                                "retrieved",
-                                "url",
-                                "locator",
-                                "excerpt",
-                            }
-                            if (
-                                not isinstance(snapshot, dict)
-                                or set(snapshot) != required_snapshot
-                                or snapshot.get("schema_version") != 1
-                            ):
+                            snapshot_errors = sorted(
+                                snapshot_validator.iter_errors(snapshot),
+                                key=lambda item: list(item.path),
+                            )
+                            if snapshot_errors:
                                 failures.append(issue(
                                     "source-snapshot-shape-invalid",
                                     relative,
-                                    snapshot_relative,
+                                    "; ".join(
+                                        error.message
+                                        for error in snapshot_errors[:5]
+                                    ),
                                 ))
                             else:
                                 bindings = {
@@ -390,17 +714,32 @@ def validate(
                                             relative,
                                             field,
                                         ))
-                                excerpt = snapshot.get("excerpt")
+                                content_field = (
+                                    "excerpt"
+                                    if snapshot.get("content_kind")
+                                    == "verbatim_excerpt"
+                                    else "summary"
+                                )
+                                excerpt = snapshot.get(content_field)
                                 words = (
                                     re.findall(r"\b[\w\u2019'-]+\b", excerpt)
                                     if isinstance(excerpt, str)
                                     else []
                                 )
-                                if not 5 <= len(words) <= 25:
+                                maximum_words = (
+                                    25
+                                    if content_field == "excerpt"
+                                    else 60
+                                )
+                                if not 5 <= len(words) <= maximum_words:
                                     failures.append(issue(
-                                        "source-snapshot-excerpt-invalid",
+                                        "source-snapshot-content-invalid",
                                         relative,
-                                        f"Expected 5-25 words; found {len(words)}.",
+                                        (
+                                            f"{content_field} expected 5-"
+                                            f"{maximum_words} words; found "
+                                            f"{len(words)}."
+                                        ),
                                     ))
                         except (OSError, UnicodeError, ValueError, ToolFailure) as exc:
                             failures.append(issue(
@@ -412,7 +751,16 @@ def validate(
         if online and isinstance(url, str) and url.startswith(("http://", "https://")):
             healthy, status_text = external_status(url, 10)
             if not healthy:
-                warnings.append(issue("evidence-link-unhealthy", relative, status_text))
+                target = failures if release_mode else warnings
+                target.append(issue(
+                    (
+                        "release-evidence-retrieval-failed"
+                        if release_mode
+                        else "evidence-link-unhealthy"
+                    ),
+                    relative,
+                    status_text,
+                ))
 
     referenced_cards: set[str] = set()
     indexed_pairs: set[tuple[str, str]] = set()
@@ -481,8 +829,14 @@ def validate(
                     has_authoritative_source = True
                 if (
                     card.get("source_type") == "internal_evaluation"
-                    and len(set(map(str, card.get("evaluation_hosts", [])))) >= 2
-                    and len(set(map(str, card.get("evaluation_projects", [])))) >= 2
+                    and len(set(map(
+                        str,
+                        card.get("_derived_evaluation_hosts", []),
+                    ))) >= 2
+                    and len(set(map(
+                        str,
+                        card.get("_derived_evaluation_projects", []),
+                    ))) >= 2
                 ):
                     has_repeated_evaluation = True
             if evidence_id in supports and str(risk_id) not in supports[evidence_id]:
@@ -542,11 +896,21 @@ def main() -> int:
     parser.add_argument("--schema", type=Path, default=Path(__file__).resolve().parents[1] / "schemas" / "evidence-frontmatter.schema.json")
     parser.add_argument("--online", action="store_true")
     parser.add_argument("--allow-overdue", action="store_true")
+    parser.add_argument(
+        "--release",
+        action="store_true",
+        help=(
+            "Fail closed on overdue review, retrieval/review mismatch, and "
+            "unsuccessful requested online retrieval."
+        ),
+    )
     args = parser.parse_args()
     try:
         failures, warnings, details = validate(
             absolute(args.plugin_root), absolute(args.schema),
-            online=args.online, strict_due=not args.allow_overdue,
+            online=args.online,
+            strict_due=(args.release or not args.allow_overdue),
+            release_mode=args.release,
         )
         emit({"ok": not failures, "failures": failures, "warnings": warnings, "details": details})
         return 1 if failures else 0

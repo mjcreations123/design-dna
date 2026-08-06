@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-039",
+  "retrieved": "2026-07-30",
+  "url": "https://www.w3.org/International/hlreq/",
+  "locator": "About this document; Hebrew Script Overview; Glyph shaping and positioning; Lines and paragraph layout",
+  "content_kind": "maintainer_summary",
+  "summary": "The W3C Hebrew Layout Requirements editor's draft describes Hebrew as right-to-left, records script-specific typography considerations, and notes that fonts used for vocalized text need clear placement of niqqud. It is a technology-agnostic work in progress, not a substitute for testing the chosen language, font, browser, assistive technology, or cultural wording."
+}

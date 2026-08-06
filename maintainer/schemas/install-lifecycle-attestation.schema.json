@@ -1,0 +1,680 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/install-lifecycle-attestation.schema.json",
+  "title": "Design DNA isolated dual-host installer lifecycle attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "created_at",
+    "package",
+    "release_version",
+    "inputs",
+    "environment",
+    "prior_fixture",
+    "stages",
+    "final_state",
+    "outcome"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {
+      "const": "design-dna-install-lifecycle-attestation"
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "package": {"const": "design-dna"},
+    "release_version": {"$ref": "#/$defs/semver"},
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_source", "runtime", "files"],
+      "properties": {
+        "runtime_source": {"const": "skills/design-dna"},
+        "runtime": {"$ref": "#/$defs/treeIdentity"},
+        "files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "attestor",
+            "manager",
+            "cache_preflight",
+            "common",
+            "operation_schema",
+            "attestation_schema",
+            "release_schema"
+          ],
+          "properties": {
+            "attestor": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/scripts/attest_install_lifecycle.py"
+                }
+              }
+            },
+            "manager": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/scripts/manage_install.py"
+                }
+              }
+            },
+            "cache_preflight": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/scripts/cache_preflight.py"
+                }
+              }
+            },
+            "common": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {"const": "maintainer/scripts/common.py"}
+              }
+            },
+            "operation_schema": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/schemas/install-operation.schema.json"
+                }
+              }
+            },
+            "attestation_schema": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/schemas/install-lifecycle-attestation.schema.json"
+                }
+              }
+            },
+            "release_schema": {
+              "$ref": "#/$defs/fileBinding",
+              "properties": {
+                "path": {
+                  "const": "maintainer/schemas/release.schema.json"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isolated_home",
+        "manager_invocation",
+        "hosts",
+        "python",
+        "platform"
+      ],
+      "properties": {
+        "isolated_home": {"const": true},
+        "manager_invocation": {"const": "fresh-subprocess-per-stage"},
+        "hosts": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "codex"},
+            {"const": "claude"}
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "python": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["implementation", "version"],
+          "properties": {
+            "implementation": {"type": "string", "minLength": 1},
+            "version": {
+              "type": "string",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+"
+            }
+          }
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["system", "machine"],
+          "properties": {
+            "system": {"type": "string", "minLength": 1},
+            "machine": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "prior_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "derivation",
+        "marker_file",
+        "marker_sha256",
+        "identity",
+        "differs_from_runtime"
+      ],
+      "properties": {
+        "derivation": {"const": "canonical-runtime-plus-test-marker"},
+        "marker_file": {"const": ".lifecycle-attestation-prior"},
+        "marker_sha256": {"$ref": "#/$defs/sha256"},
+        "identity": {"$ref": "#/$defs/treeIdentity"},
+        "differs_from_runtime": {"const": true}
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        {
+          "allOf": [
+            {"$ref": "#/$defs/stage"},
+            {
+              "properties": {
+                "name": {"const": "install-prior"},
+                "command": {"const": "install"},
+                "source_role": {"const": "prior-fixture"},
+                "operation": {
+                  "properties": {
+                    "command": {"const": "install"},
+                    "changes": {
+                      "prefixItems": [
+                        {
+                          "properties": {
+                            "host": {"const": "codex"},
+                            "action": {"const": "installed"},
+                            "backup_id_present": {"const": false}
+                          }
+                        },
+                        {
+                          "properties": {
+                            "host": {"const": "claude"},
+                            "action": {"const": "installed"},
+                            "backup_id_present": {"const": false}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "post_state": {
+                  "prefixItems": [
+                    {
+                      "properties": {
+                        "host": {"const": "codex"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": false}
+                      }
+                    },
+                    {
+                      "properties": {
+                        "host": {"const": "claude"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": false}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {"$ref": "#/$defs/stage"},
+            {
+              "properties": {
+                "name": {"const": "update-current"},
+                "command": {"const": "update"},
+                "source_role": {"const": "release-runtime"},
+                "operation": {
+                  "properties": {
+                    "command": {"const": "update"},
+                    "changes": {
+                      "prefixItems": [
+                        {
+                          "properties": {
+                            "host": {"const": "codex"},
+                            "action": {"const": "updated"},
+                            "backup_id_present": {"const": true}
+                          }
+                        },
+                        {
+                          "properties": {
+                            "host": {"const": "claude"},
+                            "action": {"const": "updated"},
+                            "backup_id_present": {"const": true}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "post_state": {
+                  "prefixItems": [
+                    {
+                      "properties": {
+                        "host": {"const": "codex"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": true}
+                      }
+                    },
+                    {
+                      "properties": {
+                        "host": {"const": "claude"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": true}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {"$ref": "#/$defs/stage"},
+            {
+              "properties": {
+                "name": {"const": "rollback-prior"},
+                "command": {"const": "rollback"},
+                "source_role": {"const": "release-runtime"},
+                "operation": {
+                  "properties": {
+                    "command": {"const": "rollback"},
+                    "changes": {
+                      "prefixItems": [
+                        {
+                          "properties": {
+                            "host": {"const": "codex"},
+                            "action": {"const": "rolled-back"},
+                            "backup_id_present": {"const": true},
+                            "replacement_backup_created": {"const": true},
+                            "canonical_parity": {"const": false}
+                          }
+                        },
+                        {
+                          "properties": {
+                            "host": {"const": "claude"},
+                            "action": {"const": "rolled-back"},
+                            "backup_id_present": {"const": true},
+                            "replacement_backup_created": {"const": true},
+                            "canonical_parity": {"const": false}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "post_state": {
+                  "prefixItems": [
+                    {
+                      "properties": {
+                        "host": {"const": "codex"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": false}
+                      }
+                    },
+                    {
+                      "properties": {
+                        "host": {"const": "claude"},
+                        "exists": {"const": true},
+                        "release_runtime_parity": {"const": false}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {"$ref": "#/$defs/stage"},
+            {
+              "properties": {
+                "name": {"const": "uninstall-prior"},
+                "command": {"const": "uninstall"},
+                "source_role": {"const": "release-runtime"},
+                "operation": {
+                  "properties": {
+                    "command": {"const": "uninstall"},
+                    "changes": {
+                      "prefixItems": [
+                        {
+                          "properties": {
+                            "host": {"const": "codex"},
+                            "action": {"const": "uninstalled"},
+                            "backup_id_present": {"const": true}
+                          }
+                        },
+                        {
+                          "properties": {
+                            "host": {"const": "claude"},
+                            "action": {"const": "uninstalled"},
+                            "backup_id_present": {"const": true}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "post_state": {
+                  "prefixItems": [
+                    {
+                      "properties": {
+                        "host": {"const": "codex"},
+                        "exists": {"const": false},
+                        "sha256": {"const": null},
+                        "release_runtime_parity": {"const": null}
+                      }
+                    },
+                    {
+                      "properties": {
+                        "host": {"const": "claude"},
+                        "exists": {"const": false},
+                        "sha256": {"const": null},
+                        "release_runtime_parity": {"const": null}
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "items": false
+    },
+    "final_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routes_absent", "backup_records_schema_valid", "hosts"],
+      "properties": {
+        "routes_absent": {"const": true},
+        "backup_records_schema_valid": {"const": true},
+        "hosts": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/finalHost",
+              "properties": {"host": {"const": "codex"}}
+            },
+            {
+              "$ref": "#/$defs/finalHost",
+              "properties": {"host": {"const": "claude"}}
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "operations_schema_valid",
+        "backup_records_schema_valid",
+        "runtime_identity_observed",
+        "fresh_lifecycle_replay_required_on_check"
+      ],
+      "properties": {
+        "passed": {"const": true},
+        "operations_schema_valid": {"const": true},
+        "backup_records_schema_valid": {"const": true},
+        "runtime_identity_observed": {"const": true},
+        "fresh_lifecycle_replay_required_on_check": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "nullableSha256": {
+      "oneOf": [
+        {"$ref": "#/$defs/sha256"},
+        {"type": "null"}
+      ]
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "treeIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "entry_count", "file_count", "byte_count"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "entry_count": {"type": "integer", "minimum": 1},
+        "file_count": {"type": "integer", "minimum": 1},
+        "byte_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1, "maximum": 16777216}
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "action",
+        "executed",
+        "installed_sha256",
+        "previous_sha256",
+        "backup_id_present",
+        "replacement_backup_created",
+        "canonical_parity"
+      ],
+      "properties": {
+        "host": {"enum": ["codex", "claude"]},
+        "action": {
+          "enum": ["installed", "updated", "rolled-back", "uninstalled"]
+        },
+        "executed": {"const": true},
+        "installed_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "previous_sha256": {"$ref": "#/$defs/nullableSha256"},
+        "backup_id_present": {"type": "boolean"},
+        "replacement_backup_created": {"type": "boolean"},
+        "canonical_parity": {
+          "oneOf": [{"type": "boolean"}, {"type": "null"}]
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "ok",
+        "dry_run",
+        "host_count",
+        "errors_count",
+        "changes"
+      ],
+      "properties": {
+        "command": {
+          "enum": ["install", "update", "rollback", "uninstall"]
+        },
+        "ok": {"const": true},
+        "dry_run": {"const": false},
+        "host_count": {"const": 2},
+        "errors_count": {"const": 0},
+        "changes": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/change",
+              "properties": {"host": {"const": "codex"}}
+            },
+            {
+              "$ref": "#/$defs/change",
+              "properties": {"host": {"const": "claude"}}
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "postHost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host", "exists", "sha256", "release_runtime_parity"],
+      "properties": {
+        "host": {"enum": ["codex", "claude"]},
+        "exists": {"type": "boolean"},
+        "sha256": {"$ref": "#/$defs/nullableSha256"},
+        "release_runtime_parity": {
+          "oneOf": [{"type": "boolean"}, {"type": "null"}]
+        }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "command",
+        "source_role",
+        "source_sha256",
+        "operation_record_sha256",
+        "semantic_record_sha256",
+        "operation_schema_valid",
+        "operation",
+        "post_state"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "install-prior",
+            "update-current",
+            "rollback-prior",
+            "uninstall-prior"
+          ]
+        },
+        "command": {
+          "enum": ["install", "update", "rollback", "uninstall"]
+        },
+        "source_role": {
+          "enum": ["prior-fixture", "release-runtime"]
+        },
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "operation_record_sha256": {"$ref": "#/$defs/sha256"},
+        "semantic_record_sha256": {"$ref": "#/$defs/sha256"},
+        "operation_schema_valid": {"const": true},
+        "operation": {"$ref": "#/$defs/operation"},
+        "post_state": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/postHost",
+              "properties": {"host": {"const": "codex"}}
+            },
+            {
+              "$ref": "#/$defs/postHost",
+              "properties": {"host": {"const": "claude"}}
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "backupRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason",
+        "status",
+        "skill_sha256",
+        "payload_present"
+      ],
+      "properties": {
+        "reason": {
+          "enum": ["update", "rollback-replaced-current", "uninstall"]
+        },
+        "status": {"enum": ["available", "restored"]},
+        "skill_sha256": {"$ref": "#/$defs/sha256"},
+        "payload_present": {"type": "boolean"}
+      }
+    },
+    "finalHost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "route_exists",
+        "backup_record_count",
+        "available_count",
+        "restored_count",
+        "failed_count",
+        "transaction_rolled_back_count",
+        "records"
+      ],
+      "properties": {
+        "host": {"enum": ["codex", "claude"]},
+        "route_exists": {"const": false},
+        "backup_record_count": {"const": 3},
+        "available_count": {"const": 2},
+        "restored_count": {"const": 1},
+        "failed_count": {"const": 0},
+        "transaction_rolled_back_count": {"const": 0},
+        "records": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/backupRecord",
+              "properties": {
+                "reason": {"const": "rollback-replaced-current"},
+                "status": {"const": "available"},
+                "payload_present": {"const": true}
+              }
+            },
+            {
+              "$ref": "#/$defs/backupRecord",
+              "properties": {
+                "reason": {"const": "uninstall"},
+                "status": {"const": "available"},
+                "payload_present": {"const": true}
+              }
+            },
+            {
+              "$ref": "#/$defs/backupRecord",
+              "properties": {
+                "reason": {"const": "update"},
+                "status": {"const": "restored"},
+                "payload_present": {"const": false}
+              }
+            }
+          ],
+          "items": false
+        }
+      }
+    }
+  }
+}

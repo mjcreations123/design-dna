@@ -14,20 +14,98 @@ Runtime guarantees:
 from __future__ import annotations
 
 import argparse
+import errno
+import hashlib
+import importlib.util
 import json
 import os
 import re
+import secrets
 import shutil
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import NoReturn
+from urllib.parse import urlsplit
 
 
-STATE_SCHEMA_VERSION = 1
+STATE_SCHEMA_VERSION = 2
+RECORD_SCHEMA_VERSION = 1
+ASSET_SCHEMA_VERSION = 2
+EVIDENCE_CONTRACT_VERSION = 1
+PROPORTIONAL_EVIDENCE_CONTRACT = "proportional-evidence-v1"
+UNIVERSAL_EVIDENCE_ANCHORS = (
+    "identity-intent",
+    "truth-provenance",
+    "responsive-accessibility-function",
+    "rendered-review",
+    "owner-release-state",
+)
+CORE_EVIDENCE_CAPABILITIES = {
+    "asset-led",
+    "cultural-context",
+    "high-risk",
+    "range-study",
+}
+EVIDENCE_CAPABILITY_PATTERN = re.compile(
+    r"[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?"
+)
+EVIDENCE_EXTENSION_ID_PATTERN = re.compile(
+    r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
+)
+EVIDENCE_EXTENSION_STATUSES = {"draft", "complete", "not-applicable"}
+VISUAL_FINDINGS_CONTRACT = "visual-review-findings-v2"
+VISUAL_FINDINGS_HEADERS = (
+    "Severity",
+    "Confidence",
+    "Evidence",
+    "User/release impact",
+    "Cause",
+    "Fix or disposition",
+    "Rerun verification",
+    "Status",
+    "Owner",
+)
+LEGACY_VISUAL_FINDINGS_HEADERS = (
+    "Severity",
+    "Evidence",
+    "Cause",
+    "Fix",
+    "Verification",
+    "Status",
+)
+DESIGN_DNA_22_VISUAL_FINDINGS_HEADERS = (
+    "Severity",
+    "Confidence",
+    "Evidence",
+    "User/release impact",
+    "Cause",
+    "Fix",
+    "Rerun verification",
+    "Status/owner",
+)
+VISUAL_SEVERITIES = {"critical", "high", "medium", "low", "note"}
+VISUAL_CONFIDENCES = {"high", "medium", "low"}
+VISUAL_FINDING_STATUSES = {
+    "open",
+    "fixed-unverified",
+    "verified",
+    "accepted-risk",
+    "deferred",
+    "blocked",
+    "not-applicable",
+}
+UNRESOLVED_VISUAL_STATUSES = {"open", "fixed-unverified", "blocked"}
+LOCK_FILE_NAME = ".design-dna.lock"
+LOCK_RECORD_LIMIT = 32_768
+DEFAULT_LOCK_TIMEOUT_SECONDS = 3.0
+MAX_LOCK_TIMEOUT_SECONDS = 30.0
+STAGE_OWNER_RECORD = ".design-dna-stage-owner.json"
+MAX_STATE_IDENTITY_ENTRIES = 100_000
 SEMVER = re.compile(
     r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
     r"(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)"
@@ -35,24 +113,806 @@ SEMVER = re.compile(
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
 )
 RECORD_TEMPLATES = {
+    "exploration": ("exploration.md", "exploration-template.md"),
     "direction": ("direction.md", "direction-template.md"),
     "direction-proof": ("direction-proof.md", "direction-proof-template.md"),
+    "route-family": ("route-family.json", "route-family-template.json"),
     "visual-review": ("visual-review.md", "visual-review-template.md"),
     "claims": ("claims.md", "claim-ledger-template.md"),
     "assets": ("assets.yml", "asset-manifest.yml"),
     "user-validation": ("user-validation.md", "user-validation-template.md"),
+    "handoff": ("handoff.md", "handoff-template.md"),
 }
 PROFILES = {
+    "quick": ("direction", "visual-review"),
     "substantial": ("direction", "visual-review"),
-    "greenfield": ("direction", "direction-proof", "visual-review"),
+    "greenfield": ("direction", "visual-review"),
+    "standard": ("direction", "visual-review"),
+    "showcase": (
+        "exploration", "direction", "direction-proof", "visual-review",
+    ),
+    "range-study": (
+        "exploration",
+        "direction",
+        "direction-proof",
+        "route-family",
+        "visual-review",
+    ),
+    "high-risk": (
+        "direction", "visual-review", "claims", "user-validation",
+    ),
     "validation": ("user-validation",),
     "asset-led": ("assets",),
     "full": tuple(RECORD_TEMPLATES),
 }
-FRONTMATTER_FILES = {
-    "claims.md", "direction.md", "direction-proof.md", "visual-review.md",
-    "user-validation.md",
+PERSISTED_PROFILES = {*PROFILES, "custom"}
+CANONICAL_ASSURANCE_PROFILES = {
+    "quick",
+    "standard",
+    "showcase",
+    "range-study",
+    "high-risk",
+    "asset-led",
 }
+ASSURANCE_PROFILE_ORDER = (
+    "quick",
+    "standard",
+    "showcase",
+    "range-study",
+    "high-risk",
+    "asset-led",
+)
+REQUEST_PROFILE_ASSURANCE = {
+    "quick": ("quick",),
+    "substantial": ("standard",),
+    "standard": ("standard",),
+    "greenfield": ("standard",),
+    "showcase": ("showcase",),
+    "range-study": ("standard", "range-study"),
+    "high-risk": ("high-risk",),
+    "validation": ("high-risk",),
+    "asset-led": ("asset-led",),
+    "full": ("showcase", "high-risk", "asset-led"),
+}
+
+
+def normalize_assurance_profiles(
+    profiles: list[str] | tuple[str, ...] | set[str],
+) -> tuple[str, ...]:
+    if not all(isinstance(profile, str) for profile in profiles):
+        raise StateError(
+            "invalid-assurance-profiles",
+            "Assurance profiles must be strings.",
+        )
+    observed = set(profiles)
+    unknown = observed - CANONICAL_ASSURANCE_PROFILES
+    if unknown:
+        raise StateError(
+            "invalid-assurance-profiles",
+            "Unsupported assurance profiles: "
+            + ", ".join(sorted(unknown))
+            + ".",
+        )
+    if observed - {"quick"}:
+        observed.discard("quick")
+    if observed & {"showcase", "high-risk"}:
+        observed.discard("standard")
+    if not observed:
+        observed.add("standard")
+    return tuple(
+        profile
+        for profile in ASSURANCE_PROFILE_ORDER
+        if profile in observed
+    )
+
+
+def infer_assurance_profiles(
+    records: list[str] | tuple[str, ...],
+) -> tuple[str, ...]:
+    observed = set(records)
+    profiles: set[str] = set()
+    if observed & {"exploration", "direction-proof"}:
+        profiles.add("standard")
+    if "route-family" in observed:
+        profiles.update({"standard", "range-study"})
+    if observed & {"claims", "user-validation"}:
+        profiles.add("high-risk")
+    if "assets" in observed:
+        profiles.add("asset-led")
+    if observed & {"direction", "visual-review", "handoff"}:
+        profiles.add("standard")
+    if not profiles:
+        profiles.add("standard")
+    return normalize_assurance_profiles(profiles)
+
+
+def assurance_profiles_for_request(
+    requested: str,
+    records: tuple[str, ...],
+) -> tuple[str, ...]:
+    if requested == "custom":
+        return infer_assurance_profiles(records)
+    if requested not in REQUEST_PROFILE_ASSURANCE:
+        raise StateError(
+            "invalid-assurance-profile",
+            f"Unsupported assurance profile: {requested}.",
+        )
+    return normalize_assurance_profiles(
+        list(REQUEST_PROFILE_ASSURANCE[requested])
+    )
+
+
+def merged_assurance_profiles(
+    existing: list[str] | tuple[str, ...],
+    requested: list[str] | tuple[str, ...],
+    records: list[str] | tuple[str, ...],
+) -> tuple[str, ...]:
+    return normalize_assurance_profiles(
+        [
+            *existing,
+            *requested,
+            *infer_assurance_profiles(records),
+        ]
+    )
+
+
+def inferred_evidence_capabilities(
+    assurance_profiles: tuple[str, ...] | list[str] | set[str],
+) -> tuple[str, ...]:
+    """Map assurance profiles to evidence gates without prescribing design."""
+
+    observed = set(assurance_profiles)
+    return tuple(
+        capability
+        for capability in ("range-study", "high-risk", "asset-led")
+        if capability in observed
+    )
+
+
+def normalize_evidence_capabilities(
+    capabilities: tuple[str, ...] | list[str] | set[str],
+) -> tuple[str, ...]:
+    if not all(isinstance(item, str) for item in capabilities):
+        raise StateError(
+            "invalid-evidence-capabilities",
+            "Evidence capabilities must be lowercase slug strings.",
+        )
+    normalized = tuple(dict.fromkeys(capabilities))
+    invalid = [
+        item
+        for item in normalized
+        if not EVIDENCE_CAPABILITY_PATTERN.fullmatch(item)
+    ]
+    if invalid:
+        raise StateError(
+            "invalid-evidence-capabilities",
+            "Invalid evidence capabilities: " + ", ".join(sorted(invalid)) + ".",
+        )
+    return normalized
+
+
+def evidence_contract_payload(
+    assurance_profiles: tuple[str, ...],
+    requested_capabilities: tuple[str, ...] | list[str] = (),
+    extension_records: tuple[dict[str, object], ...] | list[dict[str, object]] = (),
+) -> dict[str, object]:
+    capabilities = normalize_evidence_capabilities(
+        [
+            *inferred_evidence_capabilities(assurance_profiles),
+            *requested_capabilities,
+        ]
+    )
+    return {
+        "version": EVIDENCE_CONTRACT_VERSION,
+        "universal_anchors": list(UNIVERSAL_EVIDENCE_ANCHORS),
+        "applicable_capabilities": list(capabilities),
+        "extension_records": list(extension_records),
+    }
+
+
+def validate_evidence_contract(
+    payload: object,
+    assurance_profiles: tuple[str, ...],
+) -> tuple[tuple[str, ...], list[dict[str, object]]]:
+    """Validate the proportional contract and return capabilities/extensions."""
+
+    if not isinstance(payload, dict) or set(payload) != {
+        "version",
+        "universal_anchors",
+        "applicable_capabilities",
+        "extension_records",
+    }:
+        raise StateError(
+            "invalid-evidence-contract",
+            "evidence_contract must use the versioned proportional shape.",
+        )
+    if payload.get("version") != EVIDENCE_CONTRACT_VERSION:
+        raise StateError(
+            "invalid-evidence-contract",
+            "evidence_contract has an unsupported version.",
+        )
+    anchors = payload.get("universal_anchors")
+    if anchors != list(UNIVERSAL_EVIDENCE_ANCHORS):
+        raise StateError(
+            "invalid-evidence-contract",
+            "evidence_contract must retain the five universal evidence anchors.",
+        )
+    raw_capabilities = payload.get("applicable_capabilities")
+    if (
+        not isinstance(raw_capabilities, list)
+        or len(raw_capabilities) != len(set(raw_capabilities))
+    ):
+        raise StateError(
+            "invalid-evidence-contract",
+            "applicable_capabilities must be a unique list.",
+        )
+    capabilities = normalize_evidence_capabilities(raw_capabilities)
+    implied = set(inferred_evidence_capabilities(assurance_profiles))
+    if not implied.issubset(capabilities):
+        raise StateError(
+            "invalid-evidence-contract",
+            "evidence_contract omits capabilities implied by assurance_profiles.",
+        )
+    raw_extensions = payload.get("extension_records")
+    if not isinstance(raw_extensions, list):
+        raise StateError(
+            "invalid-evidence-contract",
+            "extension_records must be a list.",
+        )
+    extensions: list[dict[str, object]] = []
+    observed_ids: set[str] = set()
+    for index, extension in enumerate(raw_extensions):
+        label = f"extension_records[{index}]"
+        if not isinstance(extension, dict) or set(extension) != {
+            "id",
+            "purpose",
+            "applies_to",
+            "status",
+            "owner",
+            "evidence",
+        }:
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label} has an unsupported shape.",
+            )
+        extension_id = extension.get("id")
+        if (
+            not isinstance(extension_id, str)
+            or not EVIDENCE_EXTENSION_ID_PATTERN.fullmatch(extension_id)
+            or extension_id in observed_ids
+        ):
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.id must be a unique stable ID.",
+            )
+        observed_ids.add(extension_id)
+        purpose = extension.get("purpose")
+        owner = extension.get("owner")
+        status = extension.get("status")
+        applies_to = extension.get("applies_to")
+        evidence = extension.get("evidence")
+        if not isinstance(purpose, str) or len(purpose.strip()) < 12:
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.purpose must explain the project-specific need.",
+            )
+        if not isinstance(owner, str) or not non_placeholder(owner):
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.owner must identify an accountable owner.",
+            )
+        if status not in EVIDENCE_EXTENSION_STATUSES:
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.status is unsupported.",
+            )
+        if (
+            not isinstance(applies_to, list)
+            or not applies_to
+            or not all(
+                isinstance(item, str)
+                and EVIDENCE_CAPABILITY_PATTERN.fullmatch(item)
+                for item in applies_to
+            )
+            or len(applies_to) != len(set(applies_to))
+        ):
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.applies_to must be a unique nonempty slug list.",
+            )
+        if (
+            not isinstance(evidence, list)
+            or not all(isinstance(item, str) and item.strip() for item in evidence)
+        ):
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label}.evidence must be a list of nonempty references.",
+            )
+        if status == "complete" and not evidence:
+            raise StateError(
+                "invalid-evidence-extension",
+                f"{label} cannot be complete without evidence.",
+            )
+        extensions.append(extension)
+    return capabilities, extensions
+FRONTMATTER_FILES = {
+    "claims.md", "direction.md", "direction-proof.md", "exploration.md",
+    "visual-review.md", "user-validation.md", "handoff.md",
+}
+SUBSTANTIVE_RECORDS = {
+    "exploration.md": "exploration",
+    "claims.md": "claims",
+    "direction.md": "direction",
+    "direction-proof.md": "direction-proof",
+    "visual-review.md": "visual-review",
+    "user-validation.md": "user-validation",
+    "handoff.md": "handoff",
+}
+SUBSTANTIVE_TEMPLATE_FILES = {
+    "exploration-template.md",
+    "claim-ledger-template.md",
+    "direction-template.md",
+    "direction-proof-template.md",
+    "visual-review-template.md",
+    "user-validation-template.md",
+    "handoff-template.md",
+}
+RECORD_STATUSES = {"draft", "complete"}
+COMPLETE_RECORD_FIELDS = {
+    "record_body_sha256",
+    "binding_kind",
+    "binding_id",
+    "binding_path",
+    "binding_sha256",
+    "completion_owner",
+    "completed_at",
+    "unresolved_high",
+    "unresolved_medium",
+    "limitations",
+}
+GENERIC_METADATA_VALUES = {
+    "",
+    "pending",
+    "placeholder",
+    "tbd",
+    "todo",
+    "unknown",
+    "owner",
+    "reviewer",
+    "maintainer",
+    "n/a",
+}
+LEGACY_REQUIRED_RECORD_SECTIONS = {
+    "exploration": {
+        "Decision bounds",
+        "Subject and reference evidence",
+        "Candidate field",
+        "Proof comparison",
+        "Selection",
+    },
+    "direction": {
+        "Identity and outcome",
+        "Constraint ledger",
+        "Routes, flows, and states",
+        "Evidence, content, and authority",
+        "Research and exploration",
+        "Creative logic",
+        "System and implementation",
+        "Quality and specialist contracts",
+        "Acceptance",
+    },
+    "direction-proof": {
+        "Identity",
+        "Constraints and assumptions",
+        "Creative logic under test",
+        "Proof evidence",
+        "Perception and decision test",
+        "Outcome",
+    },
+    "visual-review": {
+        "Build identity",
+        "Coverage matrix",
+        "Perception review",
+        "Implementation review",
+        "Temporal evidence",
+        "Truth, assets, and cultural context",
+        "Performance",
+        "Findings",
+        "Completion",
+    },
+    "claims": {
+        "Claims",
+        "Calculators and derived outputs",
+        "Closure",
+    },
+    "user-validation": {
+        "Study",
+        "Measures and method",
+        "Participants",
+        "Tasks and observations",
+        "Findings and decisions",
+        "Limits",
+        "Completion",
+    },
+    "handoff": {
+        "Identity and scope",
+        "Sources of truth and authority",
+        "Creative logic and design decisions",
+        "System lifecycle",
+        "Operations",
+        "Verification",
+        "Open decisions",
+    },
+}
+LEGACY_REQUIRED_RECORD_LABELS = {
+    "exploration": (
+        "Project, source-packet version, and date",
+        "Audience, situation, and primary task or invitation",
+        "Consequential question this exploration must expose",
+        "Project-specific success and failure conditions",
+        "Owner preferences, rejections, and exact scope",
+        "Representative content, route/flow/state, and evidence",
+        "Exploration depth and why it is proportionate",
+        (
+            "Real content, language, objects, people, behavior, place, data, "
+            "rituals, materials, or other project evidence"
+        ),
+        (
+            "Cultural, rights, access, technical, production, and maintenance "
+            "boundaries"
+        ),
+        "Research or evidence not available",
+        "Why the field is sufficient to challenge the first default",
+        (
+            "Which candidates are materially different answers rather than "
+            "surface substitutions"
+        ),
+        "Comparison performed, partially performed, or not performed",
+        "Conditions held constant and conditions intentionally different",
+        (
+            "Project-specific perception, task, visual, cultural, accessibility, "
+            "performance, or maintenance observations"
+        ),
+        "Unproven behavior or missing evidence",
+        "Decision",
+        "Selected candidate ID and `creative_logic`",
+        "Why it best fits the actual brief and constraints",
+        "Why alternatives lost without creating global bans",
+        "Accountable-owner disposition",
+        "Reversible checkpoint",
+        "Selected proof identity and artifact",
+        "Fatal assumption, unresolved owner decision, or release block",
+    ),
+    "direction": (
+        "Project, candidate/build, and date",
+        "Accountable owner and decision scope",
+        "Audience and situation",
+        "Primary task, invitation, or editorial outcome",
+        "Project-specific success conditions",
+        "Requested visual or experiential qualities in the owner's language",
+        "Known owner preferences, rejections, and their exact scope",
+        "Critical unknowns or risks",
+        "Release intent",
+        "Assurance profile and why it fits",
+        "Approved identity and recognition assets",
+        "Existing system and repository decisions to preserve",
+        (
+            "Subject material: language, behavior, objects, people, place, data, "
+            "rituals, textures, constraints, or other project evidence"
+        ),
+        (
+            "Media approach, rights, provenance, generated status, and "
+            "unresolved needs"
+        ),
+        "Claim-ledger scope",
+        "Open assumptions and reversible treatment",
+        "Content and maintenance owners",
+        "Consequential design question",
+        "Exploration depth and why it was sufficient for uncertainty and stakes",
+        "Candidate identities and directly reviewable proof",
+        "What the comparison changed",
+        "Research or proof not performed and why",
+        "`logic_id`",
+        "`statement`",
+        "`evidence`",
+        "`limits`",
+        "`status`",
+        "`extensions`",
+        (
+            "Sources of truth for facts, identity, design, components, behavior, "
+            "and release state"
+        ),
+        "Reusable foundations and decisions",
+        "Route-, component-, campaign-, or content-local decisions",
+        "Intentional one-offs and optical exceptions",
+        (
+            "Type files, rights, script coverage, fallbacks, loading, and "
+            "rendered specimen evidence relevant to this project"
+        ),
+        "Protected facts, files, components, assets, tokens, and integrations",
+        "Public disclosure and internal-record boundary",
+        "Maintenance, migration, and regression expectations",
+        (
+            "Accessibility target, applicable conditions, evidence, and "
+            "specialist owner"
+        ),
+        (
+            "Performance objectives, production-like context, evidence, and "
+            "lifecycle owner"
+        ),
+        "Browser, device, input, locale, directionality, and content constraints",
+        "Privacy, security, legal, data, analytics, embeds, and deployment authority",
+        "Required specialist gates and dimensions still unverified",
+        "Conflict arbitration among design and specialist requirements",
+        "Versioned checkpoint and rollback boundary",
+        "Exact candidate/build under review",
+        (
+            "Required route, state, content, viewport, input, language, "
+            "preference, and failure coverage"
+        ),
+        (
+            "Functional, visual, content, accessibility, performance, "
+            "engineering, cultural, and operational checks that actually apply"
+        ),
+        "Observable-decision results and unresolved deviations",
+        "Accountable-owner visual disposition, date, scope, and evidence",
+        "Open high/medium findings, owners, and release blockers",
+        "Honest final readiness statement",
+    ),
+    "direction-proof": (
+        "Candidate and `creative_logic.logic_id`",
+        "Direction/exploration record and source-packet identity",
+        "Candidate/build ID and reversible checkpoint",
+        "Route, flow, state, and purpose of this proof",
+        "Exact decision this artifact must settle",
+        "Accountable owner and decision scope",
+        "Reviewer, relationship, prior exposure, and date",
+        "`statement`",
+        "`evidence`",
+        "`limits`",
+        "`extensions`",
+        "Real content and representative data/media used",
+        "Labeled placeholders and unresolved dependencies",
+        "Rendered artifacts, route/state, viewport, preference, path, and SHA-256",
+        (
+            "Source/content/media/font identity needed to reproduce the artifact"
+        ),
+        (
+            "Relevant accessibility, performance, responsive, input, "
+            "localization, reduced, unsupported, loading, and failure evidence"
+        ),
+        "Previous accepted baseline or compared candidate and exact difference",
+        "Intended project-specific success conditions",
+        "What the reviewer understood or expected",
+        "Which observable decisions succeeded or failed",
+        "Project or owner preference evidence",
+        "Truth, rights, access, feasibility, and maintenance result",
+        "Conditions not tested and why",
+        "Decision",
+        "Evidence and rationale",
+        "Comparable candidates reviewed, or why one direction was sufficient",
+        "Required revisions and exact rerender",
+        "Decisions protected for implementation",
+        "Proof-to-build delta ledger required",
+        "Perceptual status",
+        "Accountable-owner rendered acceptance",
+        "Owner decision claim scope",
+        "Owner ID, exact candidate/build ID, review date, and evidence path/hash",
+    ),
+    "visual-review": (
+        "Build, commit, or artifact ID",
+        "Assurance profile and rationale",
+        "Source/workspace identity and SHA-256",
+        "Route or preview URL",
+        "Date and final implementation round reviewed",
+        "Reviewers, relationship, and lens",
+        "Rendered-review report path, hash, contract, and execution result",
+        (
+            "Cross-build comparison identity, compatibility, changed captures, "
+            "reviewer, and result, or `not performed`"
+        ),
+        "Coverage contact sheet or artifact index",
+        "Bound direction, exploration, `creative_logic`, and proof-to-build records",
+        "Review order and any unavoidable exposure to the brief, rationale, scanner",
+        "Project-specific success conditions and owner anti-traits",
+        "What an unbriefed reviewer understands or expects",
+        "What feels specific, convincing, beautiful, useful, or worth protecting",
+        "What feels generic, confusing, excessive, unfinished, wrong, or too restrained",
+        "Project material and owner-preference evidence",
+        "Comparison with selected candidate/proof or previous accepted baseline",
+        "Source-of-truth and design/code mapping confidence",
+        "Claim-ledger coverage",
+        (
+            "Asset manifest, source, rights, attribution, edits, generated "
+            "status, disclosure, privacy, approval, and expiry"
+        ),
+        "Documentary versus illustrative status and visible artifacts",
+        "Demo, concept, placeholder, scenario, or unavailable capability treatment",
+        "Third parties, integrations, tracking, consent, and embeds",
+        (
+            "Security, privacy, legal, data, deployment, and operational "
+            "specialist checks or explicit unverified blocks"
+        ),
+        "Objectives and production-like context",
+        "Unmeasured items",
+        "Commands and automated checks",
+        (
+            "Visual/interaction baseline, changed captures, reviewed differences, "
+            "and persistent checks"
+        ),
+        "Cross-build decision",
+        "Adversarial specificity closure and reviewer relationship",
+        "Accountable-owner disposition, scope, ID, date, candidate/build, and evidence",
+        "Cultural disposition and producer-independence result",
+        "Remaining limitations, open high/medium findings, owners, and release blockers",
+        "Reviewer conclusion",
+    ),
+    "claims": (
+        "Claims still pending or prohibited",
+        "Scenario values visibly labeled",
+        "Categorical words reviewed (`all`, `every`, `always`, `never`, `best`, `only`)",
+        "Public copy checked against this ledger",
+        "Owner approval and date",
+    ),
+    "user-validation": (
+        "Decision this study can change",
+        "Audience and critical task",
+        "Hypothesis and highest-risk unknown",
+        "Prototype/build ID",
+        "Environment and date",
+        "Validation not performed and why",
+        "Chosen method and why it can answer the riskiest unknown",
+        "Method limits",
+        "Production measurement integrity, when applicable",
+        "Experiment or causal-claim specialist boundary and unverified items",
+        "Audience or conditions not represented",
+        "Accessibility or assistive technology not covered",
+        "Sample-size and generalization limits",
+        "Research, legal, privacy, or specialist follow-up",
+        "Changes implemented",
+        "Re-test result",
+        "Post-launch learning owner, first review date, and evidence source",
+        "Escalation, rollback, or further-research trigger",
+        "Remaining risk",
+        "Owner/research approval",
+        "Retention/de-identification action completed",
+        "Deletion verified by/date",
+    ),
+    "handoff": (
+        "Product, release, and exact build identity",
+        "Handoff owner and receiving owner",
+        "Routes, flows, components, content, and environments in scope",
+        "Explicitly excluded, provisional, or unverified scope",
+        "Facts, content, policy, claims, and localization source",
+        "Identity, design, component, behavior, and asset source",
+        "Repository, release, deployment, and environment source",
+        "Rights, provenance, privacy, generated-media, and cultural authority",
+        "Mapping confidence, known drift, and reconciliation owner",
+        "Selected `creative_logic`",
+        "Protected recognition and comprehension decisions",
+        "Open creative fields for future work",
+        "Decisions intentionally local and not to be generalized",
+        "Proof-to-build deviations and owner dispositions",
+        "Component, token, content, asset, and dependency lifecycle states",
+        "Deprecated paths, migration plan, affected consumers, and deadline",
+        "Compatibility, versioning, rollback, failure, and recovery contract",
+        "Visual and interaction regression evidence and update trigger",
+        "Content, asset, data, integration, access, and cultural-review owners",
+        "Monitoring, support, privacy, retention, security, and incident path",
+        "Performance, accessibility, browser, rights, and lower-impact review cadence",
+        "Documentation location, update trigger, and expiry schedule",
+        "Accepted baseline and candidate/build comparison",
+        (
+            "Functional, content, state, accessibility, performance, visual, "
+            "cultural, and operational evidence actually completed"
+        ),
+        "Known defects, accepted risks, pending decisions, and accountable owners",
+        "Staging, deployment, live, and post-launch verification status",
+        "Remaining decision, owner, due date, and safe interim behavior",
+        "Escalation, rollback, revision, or removal trigger",
+        "Final receiving-owner acknowledgement and date",
+    ),
+}
+
+# The current contract names only evidence anchors, never aesthetic recipes.
+# Existing schema-2 records without the proportional marker continue through
+# the legacy validator so already-complete evidence is not reinterpreted.
+REQUIRED_RECORD_SECTIONS = {
+    "exploration": {
+        "Exploration intent",
+        "Evidence and candidate reasoning",
+        "Decision and limits",
+    },
+    "direction": {
+        "Identity and intent",
+        "Truth and provenance",
+        "Responsive, accessible, and functional behavior",
+        "Owner and release state",
+    },
+    "direction-proof": {
+        "Proof identity and intent",
+        "Truth and provenance",
+        "Responsive, accessible, and functional behavior",
+        "Rendered proof",
+        "Owner and release state",
+    },
+    "visual-review": {
+        "Rendered review",
+        "Findings",
+        "Owner and release state",
+    },
+    "claims": {"Claims", "Closure"},
+    "user-validation": {
+        "Study",
+        "Findings and decisions",
+        "Limits",
+        "Completion",
+    },
+    "handoff": {
+        "Identity and scope",
+        "Sources of truth and authority",
+        "Verification",
+        "Open decisions",
+    },
+}
+REQUIRED_RECORD_LABELS = {
+    "exploration": (),
+    "direction": (),
+    "direction-proof": (
+        "Reviewer relationship",
+        "Decision",
+    ),
+    "visual-review": (
+        "Build or artifact ID",
+        "Final implementation reviewed",
+        "Reviewer relationship",
+        "Reviewer conclusion",
+        "Release blockers",
+    ),
+    "claims": (
+        "Claims still pending or prohibited",
+        "Owner approval and date",
+    ),
+    "user-validation": (
+        "Decision this study can change",
+        "Owner/research approval",
+        "Remaining risk",
+    ),
+    "handoff": (
+        "Product, release, and exact build identity",
+        "Handoff owner and receiving owner",
+        "Known defects, accepted risks, pending decisions, and accountable owners",
+        "Final receiving-owner acknowledgement and date",
+    ),
+}
+CAPABILITY_REQUIRED_SECTIONS = {
+    "range-study": {
+        "direction": {"Range-study contract"},
+        "visual-review": {"Range-study review"},
+    },
+    "cultural-context": {
+        "direction": {"Cultural context and authority"},
+        "visual-review": {"Cultural review"},
+    },
+    "high-risk": {
+        "direction": {"Risk and specialist authority"},
+        "visual-review": {"Risk closure"},
+    },
+    "asset-led": {
+        "direction": {"Asset provenance plan"},
+        "visual-review": {"Asset review"},
+    },
+}
+CAPABILITY_REQUIRED_RECORDS = {
+    "range-study": {"route-family"},
+    "cultural-context": {"direction", "visual-review"},
+    "high-risk": {"claims", "user-validation"},
+    "asset-led": {"assets"},
+}
+
+PROFILE_REQUIRED_LABELS: dict[str, dict[str, tuple[str, ...]]] = {}
+LEGACY_RECORD_FILES = ("state.yml", "continuity-note.yml", "ledger-entry.yml")
+MIGRATION_REPORT = "migration-report.json"
 CLASSIFICATIONS = {"internal", "public", "confidential", "restricted-research"}
 USER_VALIDATION_FRONTMATTER_FIELDS = {
     "research_data_owner",
@@ -114,6 +974,372 @@ def emit_error(error: StateError) -> NoReturn:
     payload = {"ok": False, "error": error_record(error)}
     print(json.dumps(payload, ensure_ascii=False), file=sys.stderr)
     raise SystemExit(2)
+
+
+def lock_timeout_seconds() -> float:
+    raw = os.environ.get(
+        "DESIGN_DNA_LOCK_TIMEOUT_SECONDS",
+        str(DEFAULT_LOCK_TIMEOUT_SECONDS),
+    )
+    try:
+        value = float(raw)
+    except ValueError as exc:
+        raise StateError(
+            "invalid-lock-timeout",
+            "DESIGN_DNA_LOCK_TIMEOUT_SECONDS must be numeric.",
+        ) from exc
+    if not 0.05 <= value <= MAX_LOCK_TIMEOUT_SECONDS:
+        raise StateError(
+            "invalid-lock-timeout",
+            (
+                "DESIGN_DNA_LOCK_TIMEOUT_SECONDS must be between 0.05 and "
+                f"{MAX_LOCK_TIMEOUT_SECONDS:g} seconds."
+            ),
+        )
+    return value
+
+
+def secure_open_lock(path: Path) -> object:
+    """Open one ordinary peer lock file without following a redirected path."""
+
+    flags = os.O_RDWR
+    flags |= getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_CLOEXEC", 0)
+    created = False
+    try:
+        descriptor = os.open(path, flags | os.O_CREAT | os.O_EXCL, 0o600)
+        created = True
+    except FileExistsError:
+        if is_reparse(path):
+            raise StateError(
+                "reparse-point-refused",
+                "The project-state lock must not be a link or reparse point.",
+                path=path,
+            )
+        try:
+            info = path.lstat()
+        except OSError as exc:
+            raise StateError(
+                "project-lock-inspection-failed",
+                str(exc),
+                path=path,
+            ) from exc
+        if not stat.S_ISREG(info.st_mode):
+            raise StateError(
+                "invalid-project-lock",
+                "The project-state lock path must be an ordinary file.",
+                path=path,
+            )
+        try:
+            descriptor = os.open(
+                path,
+                flags | getattr(os, "O_NOFOLLOW", 0),
+            )
+        except OSError as exc:
+            raise StateError(
+                "project-lock-open-failed",
+                str(exc),
+                path=path,
+            ) from exc
+    except OSError as exc:
+        raise StateError(
+            "project-lock-open-failed",
+            str(exc),
+            path=path,
+        ) from exc
+
+    try:
+        opened = os.fstat(descriptor)
+        observed = path.lstat()
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or opened.st_dev != observed.st_dev
+            or opened.st_ino != observed.st_ino
+            or is_reparse(path)
+        ):
+            raise StateError(
+                "project-lock-race-refused",
+                "The project-state lock changed while it was being opened.",
+                path=path,
+            )
+        if created or opened.st_size == 0:
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            os.write(descriptor, b"\0")
+            os.fsync(descriptor)
+        return os.fdopen(descriptor, "r+b", buffering=0)
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def try_platform_lock(stream: object) -> bool:
+    descriptor = stream.fileno()
+    stream.seek(0)
+    if os.name == "nt":
+        import msvcrt
+
+        try:
+            msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+            return True
+        except OSError as exc:
+            if exc.errno in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+                return False
+            raise
+    import fcntl
+
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except BlockingIOError:
+        return False
+
+
+def release_platform_lock(stream: object) -> None:
+    descriptor = stream.fileno()
+    stream.seek(0)
+    if os.name == "nt":
+        import msvcrt
+
+        msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+        return
+    import fcntl
+
+    fcntl.flock(descriptor, fcntl.LOCK_UN)
+
+
+class ProjectMutationLock:
+    """Bounded cross-process lock with persistent owner-token evidence."""
+
+    def __init__(
+        self,
+        project: Path,
+        operation: str,
+        *,
+        timeout: float | None = None,
+    ) -> None:
+        self.project = lexical_absolute(project)
+        self.path = self.project / LOCK_FILE_NAME
+        self.operation = operation
+        self.timeout = lock_timeout_seconds() if timeout is None else timeout
+        self.owner_token = secrets.token_hex(24)
+        self.stream: object | None = None
+        self.record: dict[str, object] | None = None
+        self.stale_predecessor: dict[str, object] | None = None
+
+    def _read_record(self) -> dict[str, object] | None:
+        if self.stream is None:
+            raise StateError(
+                "project-lock-not-held",
+                "The project-state lock is not open.",
+                path=self.path,
+            )
+        self.stream.seek(1)
+        raw = self.stream.read(LOCK_RECORD_LIMIT + 1)
+        if len(raw) > LOCK_RECORD_LIMIT:
+            raise StateError(
+                "invalid-project-lock",
+                "The project-state lock record exceeds its bounded size.",
+                path=self.path,
+            )
+        if not raw:
+            return None
+        try:
+            text = raw.decode("utf-8")
+            payload = strict_json(text, path=self.path)
+        except (UnicodeError, StateError) as exc:
+            raise StateError(
+                "invalid-project-lock",
+                "The unlocked project-state lock contains invalid metadata.",
+                path=self.path,
+                details={"cause": str(exc)},
+            ) from exc
+        if (
+            not isinstance(payload, dict)
+            or payload.get("schema_version") != 1
+            or payload.get("record_type") != "design-dna-project-state-lock"
+            or payload.get("status") not in {"active", "released"}
+            or not isinstance(payload.get("owner_token"), str)
+        ):
+            raise StateError(
+                "invalid-project-lock",
+                "The unlocked project-state lock has an unsupported contract.",
+                path=self.path,
+            )
+        return payload
+
+    def _write_record(self, payload: dict[str, object]) -> None:
+        if self.stream is None:
+            raise StateError(
+                "project-lock-not-held",
+                "The project-state lock is not open.",
+                path=self.path,
+            )
+        encoded = (
+            json.dumps(
+                payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            + "\n"
+        ).encode("utf-8")
+        if len(encoded) > LOCK_RECORD_LIMIT:
+            raise StateError(
+                "project-lock-record-too-large",
+                "The project-state lock record exceeds its bounded size.",
+                path=self.path,
+            )
+        try:
+            self.stream.seek(1)
+            self.stream.write(encoded)
+            self.stream.truncate(1 + len(encoded))
+            self.stream.flush()
+            os.fsync(self.stream.fileno())
+        except OSError as exc:
+            raise StateError(
+                "project-lock-write-failed",
+                str(exc),
+                path=self.path,
+            ) from exc
+
+    def acquire(self) -> "ProjectMutationLock":
+        assert_contained(self.path, self.project)
+        assert_no_reparse_ancestors(self.path, stop=self.project)
+        self.stream = secure_open_lock(self.path)
+        deadline = time.monotonic() + self.timeout
+        try:
+            while True:
+                try:
+                    if try_platform_lock(self.stream):
+                        break
+                except OSError as exc:
+                    raise StateError(
+                        "project-lock-acquire-failed",
+                        str(exc),
+                        path=self.path,
+                    ) from exc
+                if time.monotonic() >= deadline:
+                    raise StateError(
+                        "project-state-locked",
+                        "Another process owns the project-state mutation lock.",
+                        path=self.path,
+                        details={"waited_seconds": self.timeout},
+                    )
+                time.sleep(min(0.05, max(0.0, deadline - time.monotonic())))
+
+            predecessor = self._read_record()
+            if predecessor and predecessor.get("status") == "active":
+                predecessor_bytes = json.dumps(
+                    predecessor,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+                self.stale_predecessor = {
+                    "owner_token": predecessor.get("owner_token"),
+                    "pid": predecessor.get("pid"),
+                    "operation": predecessor.get("operation"),
+                    "acquired_at": predecessor.get("acquired_at"),
+                    "record_sha256": hashlib.sha256(
+                        predecessor_bytes
+                    ).hexdigest(),
+                }
+            self.record = {
+                "schema_version": 1,
+                "record_type": "design-dna-project-state-lock",
+                "status": "active",
+                "owner_token": self.owner_token,
+                "pid": os.getpid(),
+                "project": str(self.project),
+                "operation": self.operation,
+                "acquired_at": datetime.now(timezone.utc).isoformat(),
+                "released_at": None,
+                "stale_predecessor": self.stale_predecessor,
+            }
+            self._write_record(self.record)
+            self.assert_owned()
+            return self
+        except Exception:
+            if self.stream is not None:
+                try:
+                    release_platform_lock(self.stream)
+                except OSError:
+                    pass
+                self.stream.close()
+                self.stream = None
+            raise
+
+    def assert_owned(self) -> None:
+        payload = self._read_record()
+        if (
+            payload is None
+            or payload.get("status") != "active"
+            or payload.get("owner_token") != self.owner_token
+        ):
+            raise StateError(
+                "project-lock-ownership-lost",
+                "The mutation lock owner token changed during the operation.",
+                path=self.path,
+            )
+
+    def recovery_actions(self) -> list[dict[str, str]]:
+        if self.stale_predecessor is None:
+            return []
+        return [
+            {
+                "action": "stale-lock-recovered",
+                "path": str(self.path),
+                "reason": (
+                    "The operating-system lock was free, so stale owner "
+                    "metadata was preserved in the new owner record."
+                ),
+            }
+        ]
+
+    def release(self) -> StateError | None:
+        if self.stream is None:
+            return None
+        failure: StateError | None = None
+        try:
+            self.assert_owned()
+            if self.record is None:
+                raise StateError(
+                    "project-lock-record-missing",
+                    "The active project-state lock has no owner record.",
+                    path=self.path,
+                )
+            released = dict(self.record)
+            released["status"] = "released"
+            released["released_at"] = datetime.now(timezone.utc).isoformat()
+            self._write_record(released)
+        except Exception as exc:
+            failure = as_state_error(
+                exc,
+                code="project-lock-release-failed",
+                path=self.path,
+            )
+        finally:
+            try:
+                release_platform_lock(self.stream)
+            except OSError as exc:
+                if failure is None:
+                    failure = StateError(
+                        "project-lock-release-failed",
+                        str(exc),
+                        path=self.path,
+                    )
+            self.stream.close()
+            self.stream = None
+        return failure
+
+    def __enter__(self) -> "ProjectMutationLock":
+        return self.acquire()
+
+    def __exit__(self, exc_type, exc, traceback) -> bool:
+        failure = self.release()
+        if failure is not None and exc is None:
+            raise failure
+        return False
 
 
 def entry_exists(path: Path) -> bool:
@@ -181,10 +1407,16 @@ def assert_safe_tree(root: Path) -> None:
     if is_reparse(root):
         raise StateError("reparse-point-refused", "Unsafe state directory.", path=root)
     def fail_walk(error: OSError) -> None:
+        error_path = Path(error.filename) if error.filename else root
+        if isinstance(error, PermissionError) or error.errno in {
+            errno.EACCES,
+            errno.EPERM,
+        }:
+            raise access_denied_state_error(error, error_path) from error
         raise StateError(
             "tree-enumeration-failed",
             str(error),
-            path=Path(error.filename) if error.filename else root,
+            path=error_path,
         ) from error
 
     for current, directories, files in os.walk(
@@ -202,6 +1434,157 @@ def assert_safe_tree(root: Path) -> None:
                     "State contains a symlink, junction, or reparse point.",
                     path=child,
                 )
+
+
+def file_sha256(path: Path) -> tuple[int, str]:
+    digest = hashlib.sha256()
+    size = 0
+    try:
+        with path.open("rb") as stream:
+            while True:
+                chunk = stream.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                digest.update(chunk)
+    except OSError as exc:
+        raise StateError(
+            "state-identity-read-failed",
+            str(exc),
+            path=path,
+        ) from exc
+    return size, digest.hexdigest()
+
+
+def state_tree_records(root: Path) -> tuple[tuple[str, str, int, str], ...]:
+    if not root.is_dir():
+        raise StateError(
+            "state-identity-root-missing",
+            "State identity requires an ordinary directory.",
+            path=root,
+        )
+    assert_safe_tree(root)
+    records: list[tuple[str, str, int, str]] = []
+    count = 0
+
+    def fail_walk(error: OSError) -> None:
+        raise StateError(
+            "state-identity-enumeration-failed",
+            str(error),
+            path=Path(error.filename) if error.filename else root,
+        ) from error
+
+    for current, directories, files in os.walk(
+        root,
+        topdown=True,
+        followlinks=False,
+        onerror=fail_walk,
+    ):
+        current_path = Path(current)
+        directories.sort(key=str.casefold)
+        files.sort(key=str.casefold)
+        for name in directories:
+            child = current_path / name
+            count += 1
+            if count > MAX_STATE_IDENTITY_ENTRIES:
+                raise StateError(
+                    "state-identity-limit-exceeded",
+                    "State tree exceeds the bounded identity entry limit.",
+                    path=root,
+                )
+            if is_reparse(child):
+                raise StateError(
+                    "reparse-point-refused",
+                    "State identity refuses redirected directories.",
+                    path=child,
+                )
+            records.append(
+                (child.relative_to(root).as_posix(), "directory", 0, "")
+            )
+        for name in files:
+            child = current_path / name
+            count += 1
+            if count > MAX_STATE_IDENTITY_ENTRIES:
+                raise StateError(
+                    "state-identity-limit-exceeded",
+                    "State tree exceeds the bounded identity entry limit.",
+                    path=root,
+                )
+            if is_reparse(child):
+                raise StateError(
+                    "reparse-point-refused",
+                    "State identity refuses redirected files.",
+                    path=child,
+                )
+            try:
+                mode = child.stat().st_mode
+            except OSError as exc:
+                raise StateError(
+                    "state-identity-inspection-failed",
+                    str(exc),
+                    path=child,
+                ) from exc
+            if not stat.S_ISREG(mode):
+                raise StateError(
+                    "unsupported-state-entry",
+                    "State trees may contain only directories and regular files.",
+                    path=child,
+                )
+            size, digest = file_sha256(child)
+            records.append(
+                (child.relative_to(root).as_posix(), "file", size, digest)
+            )
+    records.sort(key=lambda item: item[0])
+    return tuple(records)
+
+
+def state_tree_identity(root: Path) -> str:
+    first = state_tree_records(root)
+    second = state_tree_records(root)
+    if first != second:
+        raise StateError(
+            "unstable-state-tree",
+            "State content changed while its exact identity was calculated.",
+            path=root,
+        )
+    digest = hashlib.sha256()
+    for relative, kind, size, content_hash in first:
+        for value in (relative, kind, str(size), content_hash):
+            digest.update(value.encode("utf-8"))
+            digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def captured_state_identity(path: Path) -> str | None:
+    if not entry_exists(path):
+        return None
+    if not path.is_dir():
+        raise StateError(
+            "invalid-state-entry",
+            ".design-dna exists but is not an ordinary directory.",
+            path=path,
+        )
+    return state_tree_identity(path)
+
+
+def require_state_identity(
+    path: Path,
+    expected: str | None,
+    *,
+    code: str,
+    message: str,
+) -> None:
+    observed = captured_state_identity(path)
+    if observed != expected:
+        raise StateError(
+            code,
+            message,
+            path=path,
+            details={
+                "expected_sha256": expected,
+                "observed_sha256": observed,
+            },
+        )
 
 
 def assert_contained(path: Path, root: Path) -> None:
@@ -232,6 +1615,57 @@ def unique_peer(path: Path, label: str) -> Path:
     raise StateError("name-exhausted", "Unable to reserve a unique peer path.", path=path.parent)
 
 
+def create_transaction_stage_parent(
+    project: Path,
+    prefix: str,
+    *,
+    platform_name: str | None = None,
+) -> Path:
+    """Create a private stage without promoting a foreign Windows-only ACL."""
+
+    platform_name = os.name if platform_name is None else platform_name
+    if platform_name != "nt":
+        return Path(tempfile.mkdtemp(prefix=prefix, dir=project))
+    # Python's Windows 0o700 handling can grant access only to the process
+    # identity. A renamed stage keeps that DACL, which is unsafe when an agent
+    # process and the interactive project owner use different SIDs. mkdir's
+    # ordinary mode inherits the project directory's access rules instead.
+    for _attempt in range(128):
+        candidate = project / f"{prefix}{secrets.token_hex(12)}"
+        try:
+            candidate.mkdir()
+            return candidate
+        except FileExistsError:
+            continue
+        except OSError as exc:
+            raise StateError(
+                "stage-create-failed",
+                str(exc),
+                path=candidate,
+            ) from exc
+    raise StateError(
+        "name-exhausted",
+        "Unable to reserve a unique transaction staging directory.",
+        path=project,
+    )
+
+
+def access_denied_state_error(error: OSError, path: Path) -> StateError:
+    return StateError(
+        "state-access-denied",
+        (
+            "The Design DNA state is not readable by the current process. On "
+            "Windows, a state promoted by an older private temporary-directory "
+            "transaction may retain another process identity's ACL. Do not "
+            "delete or overwrite it; have the project owner restore inherited "
+            "permissions or recover the latest readable backup, then rerun the "
+            "operation under the owner's Windows account."
+        ),
+        path=path,
+        details={"cause": str(error)},
+    )
+
+
 def strict_json(text: str, *, path: Path) -> object:
     def reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
         result: dict[str, object] = {}
@@ -260,6 +1694,116 @@ def read_json(path: Path) -> object:
         raise
     except (OSError, UnicodeError) as exc:
         raise StateError("state-read-failed", str(exc), path=path) from exc
+
+
+def validate_route_family_record(
+    path: Path,
+) -> tuple[object, list[dict[str, str]]]:
+    """Use the bundled dependency-free validator for the optional JSON record."""
+
+    payload = read_json(path)
+    validator_path = Path(__file__).with_name("route_family_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "route-family-validator-missing",
+            "The bundled route-family validator is missing or redirected.",
+            path=validator_path,
+        )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_route_family_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "route-family-validator-load-failed",
+            "The bundled route-family validator could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        validator = getattr(module, "validate_contract_payload")
+        errors, _routes = validator(payload)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise StateError(
+            "route-family-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if not isinstance(errors, list) or not all(
+        isinstance(item, dict)
+        and set(item) == {"path", "code", "message"}
+        and all(isinstance(item[key], str) for key in item)
+        for item in errors
+    ):
+        raise StateError(
+            "route-family-validator-invalid-output",
+            "The bundled route-family validator returned an unsupported result.",
+            path=validator_path,
+        )
+    return payload, errors
+
+
+def write_stage_owner(stage_parent: Path, lock: ProjectMutationLock) -> None:
+    lock.assert_owned()
+    marker = stage_parent / STAGE_OWNER_RECORD
+    payload = {
+        "schema_version": 1,
+        "record_type": "design-dna-state-stage-owner",
+        "owner_token": lock.owner_token,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        with marker.open("x", encoding="utf-8", newline="\n") as stream:
+            json.dump(
+                payload,
+                stream,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    except OSError as exc:
+        try:
+            stage_parent.rmdir()
+        except OSError:
+            pass
+        raise StateError(
+            "stage-owner-write-failed",
+            str(exc),
+            path=marker,
+        ) from exc
+
+
+def verify_stage_owner(stage_parent: Path, owner_token: str) -> None:
+    marker = stage_parent / STAGE_OWNER_RECORD
+    if not marker.is_file() or is_reparse(marker):
+        raise StateError(
+            "stage-owner-missing",
+            "Refusing to remove a staging directory without its ordinary owner record.",
+            path=marker,
+        )
+    payload = read_json(marker)
+    if (
+        not isinstance(payload, dict)
+        or set(payload)
+        != {
+            "schema_version",
+            "record_type",
+            "owner_token",
+            "created_at",
+        }
+        or payload.get("schema_version") != 1
+        or payload.get("record_type") != "design-dna-state-stage-owner"
+        or payload.get("owner_token") != owner_token
+    ):
+        raise StateError(
+            "stage-owner-mismatch",
+            "Refusing to remove a staging directory owned by another token.",
+            path=marker,
+        )
 
 
 def release_version(skill_root: Path) -> str:
@@ -316,14 +1860,26 @@ def release_version(skill_root: Path) -> str:
         ) from exc
 
 
-def state_manifest(version: str, records: tuple[str, ...]) -> str:
+def state_manifest(
+    version: str,
+    records: tuple[str, ...],
+    assurance_profiles: tuple[str, ...],
+    evidence_capabilities: tuple[str, ...] | list[str] = (),
+    extension_records: tuple[dict[str, object], ...] | list[dict[str, object]] = (),
+) -> str:
     return json.dumps(
         {
             "schema_version": STATE_SCHEMA_VERSION,
             "created_with": f"design-dna {version}",
             "created": date.today().isoformat(),
             "classification": "internal",
+            "assurance_profiles": list(assurance_profiles),
             "records": list(records),
+            "evidence_contract": evidence_contract_payload(
+                assurance_profiles,
+                evidence_capabilities,
+                extension_records,
+            ),
         },
         indent=2,
     ) + "\n"
@@ -339,7 +1895,80 @@ def template_text(template_root: Path, filename: str, version: str) -> str:
     rendered = text.replace("__DESIGN_DNA_VERSION__", f"design-dna {version}")
     if "__DESIGN_DNA_VERSION__" in rendered:
         raise StateError("unresolved-template-token", "Template token was not resolved.", path=path)
+    if filename in SUBSTANTIVE_TEMPLATE_FILES:
+        rendered = update_frontmatter_text(
+            rendered,
+            path=path,
+            updates={"record_status": "draft"},
+        )
     return rendered
+
+
+CAPABILITY_SECTION_PROMPTS = {
+    ("range-study", "direction"): (
+        "Range-study contract",
+        "Name the shared identity, navigation, truth, accessibility, and "
+        "release rules; reference the route-family record; then describe only "
+        "the deliberate differences that matter for this project.",
+    ),
+    ("range-study", "visual-review"): (
+        "Range-study review",
+        "Reference the route atlas and direct-entry, link, and silhouette "
+        "results. Record repeated structures that need revision without "
+        "inventing an authorship score.",
+    ),
+    ("cultural-context", "direction"): (
+        "Cultural context and authority",
+        "Record terminology, representation boundaries, source authority, "
+        "unresolved questions, and the accountable or independent review that "
+        "is required. Producer self-review cannot certify acceptance.",
+    ),
+    ("cultural-context", "visual-review"): (
+        "Cultural review",
+        "Record the reviewer relationship, exact scope, evidence, disposition, "
+        "and remaining representational limits. Leave release blocked while "
+        "required authority is missing.",
+    ),
+    ("high-risk", "direction"): (
+        "Risk and specialist authority",
+        "Identify only the consequential legal, privacy, security, data, claim, "
+        "research, or operational risks that apply, with authority and owner.",
+    ),
+    ("high-risk", "visual-review"): (
+        "Risk closure",
+        "Bind each applicable specialist result or explicit unverified block to "
+        "the reviewed build. Do not convert missing specialist evidence into a "
+        "design approval.",
+    ),
+    ("asset-led", "direction"): (
+        "Asset provenance plan",
+        "Reference the asset manifest and record only the rights, source, crop, "
+        "generation, disclosure, privacy, and expiry decisions that apply.",
+    ),
+    ("asset-led", "visual-review"): (
+        "Asset review",
+        "Reference rendered asset evidence and unresolved rights, provenance, "
+        "artifact, crop, loading, disclosure, or approval issues.",
+    ),
+}
+
+
+def capability_sections_text(
+    record: str,
+    capabilities: tuple[str, ...],
+) -> str:
+    sections = [
+        (
+            f"## {heading}\n\n{prompt}\n\n"
+            "__REPLACE_WITH_APPLICABLE_EVIDENCE_OR_EXPLICIT_BLOCK__\n"
+        )
+        for capability in capabilities
+        for (heading, prompt) in [
+            CAPABILITY_SECTION_PROMPTS.get((capability, record), ("", ""))
+        ]
+        if heading
+    ]
+    return ("\n" + "\n".join(sections)) if sections else ""
 
 
 def strict_scalar(value: str, *, field: str, path: Path) -> str:
@@ -349,7 +1978,23 @@ def strict_scalar(value: str, *, field: str, path: Path) -> str:
     if value[0] in {'"', "'"}:
         if len(value) < 2 or value[-1] != value[0]:
             raise StateError("invalid-yaml", f"{field} has an unterminated quote.", path=path)
-        unquoted = value[1:-1]
+        if value[0] == '"':
+            try:
+                unquoted = json.loads(value)
+            except json.JSONDecodeError as exc:
+                raise StateError(
+                    "invalid-yaml",
+                    f"{field} has an invalid quoted scalar.",
+                    path=path,
+                ) from exc
+            if not isinstance(unquoted, str):
+                raise StateError(
+                    "invalid-yaml",
+                    f"{field} must be a string scalar.",
+                    path=path,
+                )
+        else:
+            unquoted = value[1:-1].replace("''", "'")
         if not unquoted.strip():
             raise StateError("invalid-yaml", f"{field} has an empty value.", path=path)
         return unquoted
@@ -614,12 +2259,69 @@ def parse_strict_yaml_subset(text: str, *, path: Path) -> object:
     return parsed
 
 
+def dump_strict_yaml_subset(value: object, indentation: int = 0) -> str:
+    """Serialize the exact safe subset accepted by parse_strict_yaml_subset."""
+
+    prefix = " " * indentation
+    lines: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(item, dict):
+                lines.append(f"{prefix}{key}:")
+                lines.append(
+                    dump_strict_yaml_subset(item, indentation + 2)
+                )
+            elif isinstance(item, list):
+                if not item:
+                    lines.append(f"{prefix}{key}: []")
+                else:
+                    lines.append(f"{prefix}{key}:")
+                    lines.append(
+                        dump_strict_yaml_subset(item, indentation + 2)
+                    )
+            else:
+                lines.append(
+                    f"{prefix}{key}: {yaml_subset_scalar(item)}"
+                )
+    elif isinstance(value, list):
+        for item in value:
+            if isinstance(item, (dict, list)):
+                lines.append(f"{prefix}-")
+                lines.append(
+                    dump_strict_yaml_subset(item, indentation + 2)
+                )
+            else:
+                lines.append(f"{prefix}- {yaml_subset_scalar(item)}")
+    else:
+        raise StateError(
+            "invalid-yaml-serialization",
+            "The YAML root must be a mapping or list.",
+        )
+    return "\n".join(lines)
+
+
+def yaml_subset_scalar(value: object) -> str:
+    if type(value) is bool:
+        return "true" if value else "false"
+    if type(value) is int:
+        return str(value)
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    raise StateError(
+        "invalid-yaml-serialization",
+        f"Unsupported YAML scalar type: {type(value).__name__}.",
+    )
+
+
 ASSET_FIELDS = {
     "id",
+    "asset_type",
     "usage_locations",
     "content_job",
+    "publication_status",
     "source_url",
     "source_path",
+    "source_sha256",
     "creator",
     "origin",
     "obtained_date",
@@ -632,8 +2334,9 @@ ASSET_FIELDS = {
     "depicts_or_claim",
     "privacy_review",
     "owner_approval",
+    "concept_disclosure",
+    "migration_review",
     "generated",
-    "art_direction",
     "delivery",
     "accessibility",
     "replacement",
@@ -646,14 +2349,32 @@ ASSET_OPTIONAL_FIELDS = {
     "owner_approval_date",
     "owner_approval_reason",
     "generated_media_provenance",
+    "art_direction",
 }
 ASSET_NESTED_FIELDS = {
     "generated": {
         "used",
+        "authorization_basis",
         "tool_or_model",
+        "prompt_or_digest",
+        "generated_at",
         "source_inputs",
-        "disclosure_required",
-        "disclosure_text",
+        "rejected_outputs",
+        "contact_sheet_path",
+        "contact_sheet_sha256",
+        "artifact_inspection",
+        "responsive_crop_evidence",
+    },
+    "concept_disclosure": {
+        "decision",
+        "reason",
+        "text",
+    },
+    "migration_review": {
+        "required",
+        "source_schema_version",
+        "reason",
+        "unresolved_fields",
     },
     "generated_media_provenance": {
         "applicability",
@@ -669,12 +2390,6 @@ ASSET_NESTED_FIELDS = {
         "legal_review_owner",
         "legal_review_date",
         "legal_review_reason",
-    },
-    "art_direction": {
-        "subject",
-        "crop_or_safe_zone",
-        "lighting_palette_perspective",
-        "set_consistency_notes",
     },
     "delivery": {
         "source_dimensions",
@@ -697,6 +2412,9 @@ ASSET_NESTED_FIELDS = {
 ASSET_LIST_FIELDS = {
     "usage_locations",
     "generated.source_inputs",
+    "generated.rejected_outputs",
+    "generated.responsive_crop_evidence",
+    "migration_review.unresolved_fields",
     "generated_media_provenance.roles",
     "generated_media_provenance.transformation_chain",
     "delivery.output_dimensions",
@@ -705,8 +2423,24 @@ ASSET_LIST_FIELDS = {
 ASSET_BOOLEAN_FIELDS = {
     "attribution_required",
     "generated.used",
-    "generated.disclosure_required",
+    "migration_review.required",
     "delivery.intrinsic_dimensions_reserved",
+}
+ASSET_EXTENSIBLE_MAPPING_FIELDS = {"art_direction"}
+ASSET_TYPES = {
+    "image",
+    "video",
+    "audio",
+    "font",
+    "document",
+    "map",
+    "embed",
+    "other",
+}
+ASSET_DISCLOSURE_DECISIONS = {
+    "pending",
+    "required",
+    "not-required",
 }
 ASSET_ORIGINS = {
     "owner-supplied",
@@ -714,6 +2448,12 @@ ASSET_ORIGINS = {
     "licensed",
     "generated",
     "other",
+}
+ASSET_PUBLICATION_STATUSES = {
+    "internal-only",
+    "planned-public",
+    "public",
+    "prohibited",
 }
 ASSET_FACTUAL_STATUSES = {
     "pending",
@@ -851,6 +2591,7 @@ def require_required_and_optional_keys(
 def validate_asset_manifest(
     path: Path,
     current_version: str,
+    project_root: Path,
 ) -> list[str]:
     try:
         text = path.read_text(encoding="utf-8")
@@ -868,10 +2609,16 @@ def validate_asset_manifest(
         label="assets.yml",
         path=path,
     )
-    if type(payload["schema_version"]) is not int or payload["schema_version"] != STATE_SCHEMA_VERSION:
+    if (
+        type(payload["schema_version"]) is not int
+        or payload["schema_version"] != ASSET_SCHEMA_VERSION
+    ):
         raise StateError(
             "invalid-asset-manifest",
-            "assets.yml schema_version must be integer 1.",
+            (
+                "assets.yml schema_version must be integer "
+                f"{ASSET_SCHEMA_VERSION}; run --migrate for schema 1."
+            ),
             path=path,
         )
     created_with = payload["created_with"]
@@ -899,10 +2646,15 @@ def validate_asset_manifest(
             path=path,
         )
     seen_ids: set[str] = set()
-    string_fields = (ASSET_FIELDS | ASSET_OPTIONAL_FIELDS) - set(ASSET_NESTED_FIELDS) - {
-        "usage_locations",
-        "attribution_required",
-    }
+    string_fields = (
+        (ASSET_FIELDS | ASSET_OPTIONAL_FIELDS)
+        - set(ASSET_NESTED_FIELDS)
+        - ASSET_EXTENSIBLE_MAPPING_FIELDS
+        - {
+            "usage_locations",
+            "attribution_required",
+        }
+    )
     for asset_index, raw_asset in enumerate(assets):
         label = f"assets[{asset_index}]"
         asset = require_required_and_optional_keys(
@@ -933,10 +2685,42 @@ def validate_asset_manifest(
                 path=path,
             )
         seen_ids.add(asset_id)
+        missing_core_evidence = [
+            field
+            for field in (
+                "content_job",
+                "creator",
+                "obtained_date",
+                "depicts_or_claim",
+            )
+            if not non_placeholder(asset[field])
+        ]
+        if missing_core_evidence:
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label} is a real asset row and requires evidence in "
+                    + ", ".join(missing_core_evidence)
+                    + ". Use assets: [] when no assets are recorded."
+                ),
+                path=path,
+            )
         if asset["origin"] not in ASSET_ORIGINS:
             raise StateError(
                 "invalid-asset-manifest",
                 f"{label}.origin has an unsupported value.",
+                path=path,
+            )
+        if asset["asset_type"] not in ASSET_TYPES:
+            raise StateError(
+                "invalid-asset-manifest",
+                f"{label}.asset_type has an unsupported value.",
+                path=path,
+            )
+        if asset["publication_status"] not in ASSET_PUBLICATION_STATUSES:
+            raise StateError(
+                "invalid-asset-manifest",
+                f"{label}.publication_status has an unsupported value.",
                 path=path,
             )
         if asset["factual_status"] not in ASSET_FACTUAL_STATUSES:
@@ -960,7 +2744,7 @@ def validate_asset_manifest(
                     "privacy_review_date",
                     "privacy_review_reason",
                 )
-                if not str(asset.get(field, "")).strip()
+                if not non_placeholder(str(asset.get(field, "")))
             ]
             if missing_review_context:
                 raise StateError(
@@ -987,7 +2771,7 @@ def validate_asset_manifest(
                     "owner_approval_date",
                     "owner_approval_reason",
                 )
-                if not str(asset.get(field, "")).strip()
+                if not non_placeholder(str(asset.get(field, "")))
             ]
             if missing_approval_context:
                 raise StateError(
@@ -1064,14 +2848,148 @@ def validate_asset_manifest(
                         f"{label}.{dotted} must be a string.",
                         path=path,
                     )
+        art_direction = asset.get("art_direction")
+        if art_direction is not None:
+            if isinstance(art_direction, str):
+                if not art_direction.strip():
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        (
+                            f"{label}.art_direction must be omitted or contain "
+                            "a nonempty project-specific note."
+                        ),
+                        path=path,
+                    )
+            elif isinstance(art_direction, dict):
+                if not 1 <= len(art_direction) <= 24:
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        (
+                            f"{label}.art_direction must contain 1 through 24 "
+                            "project-specific notes when present."
+                        ),
+                        path=path,
+                    )
+                for concern, note in art_direction.items():
+                    if (
+                        not isinstance(concern, str)
+                        or not concern.strip()
+                        or len(concern) > 80
+                        or any(
+                            ord(character) < 32 or ord(character) == 127
+                            for character in concern
+                        )
+                    ):
+                        raise StateError(
+                            "invalid-asset-manifest",
+                            (
+                                f"{label}.art_direction keys must be nonempty "
+                                "project-specific labels of at most 80 "
+                                "characters."
+                            ),
+                            path=path,
+                        )
+                    if not isinstance(note, str) or not note.strip():
+                        raise StateError(
+                            "invalid-asset-manifest",
+                            (
+                                f"{label}.art_direction.{concern} must be a "
+                                "nonempty string."
+                            ),
+                            path=path,
+                        )
+            else:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.art_direction must be a nonempty string or "
+                        "a project-defined mapping of string notes."
+                    ),
+                    path=path,
+                )
+        migration_review = asset["migration_review"]
+        migration_required = migration_review["required"]
+        if migration_review["source_schema_version"] not in {"1", "2"}:
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.migration_review.source_schema_version must "
+                    "be '1' or '2'."
+                ),
+                path=path,
+            )
+        if migration_required:
+            if (
+                migration_review["source_schema_version"] != "1"
+                or not non_placeholder(migration_review["reason"])
+                or not migration_review["unresolved_fields"]
+                or asset["publication_status"] != "internal-only"
+                or asset["factual_status"] not in {"pending", "placeholder"}
+                or asset["owner_approval"] != "pending"
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.migration_review required must identify "
+                        "schema 1, substantive unresolved fields, "
+                        "internal-only publication, pending/placeholder facts, "
+                        "and pending owner approval."
+                    ),
+                    path=path,
+                )
+        elif (
+            migration_review["source_schema_version"] != "2"
+            or migration_review["reason"].strip()
+            or migration_review["unresolved_fields"]
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.migration_review false requires source schema "
+                    "2 with empty reason and unresolved_fields."
+                ),
+                path=path,
+            )
+
         generated = asset["generated"]
+        public_generated_evidence_required = (
+            generated["used"]
+            and asset["publication_status"] in {"planned-public", "public"}
+        )
         if generated["used"]:
-            missing_generated_context = []
-            if not generated["tool_or_model"].strip():
-                missing_generated_context.append("tool_or_model")
-            if not generated["source_inputs"]:
-                missing_generated_context.append("source_inputs")
-            if missing_generated_context:
+            missing_generated_context = [
+                field
+                for field in (
+                    "authorization_basis",
+                    "tool_or_model",
+                    "prompt_or_digest",
+                    "generated_at",
+                    "artifact_inspection",
+                )
+                if not non_placeholder(generated[field])
+            ]
+            if public_generated_evidence_required:
+                for field in (
+                    "contact_sheet_path",
+                    "contact_sheet_sha256",
+                ):
+                    if not non_placeholder(generated[field]):
+                        missing_generated_context.append(field)
+            if (
+                public_generated_evidence_required
+                and asset["asset_type"] in {"image", "video"}
+                and (
+                    not generated["responsive_crop_evidence"]
+                    or any(
+                        not non_placeholder(item)
+                        for item in generated["responsive_crop_evidence"]
+                    )
+                )
+            ):
+                missing_generated_context.append(
+                    "responsive_crop_evidence"
+                )
+            if missing_generated_context and not migration_required:
                 raise StateError(
                     "invalid-asset-manifest",
                     (
@@ -1082,10 +3000,16 @@ def validate_asset_manifest(
                     path=path,
                 )
         elif (
-            generated["tool_or_model"].strip()
+            generated["authorization_basis"].strip()
+            or generated["tool_or_model"].strip()
+            or generated["prompt_or_digest"].strip()
+            or generated["generated_at"].strip()
             or generated["source_inputs"]
-            or generated["disclosure_required"]
-            or generated["disclosure_text"].strip()
+            or generated["rejected_outputs"]
+            or generated["contact_sheet_path"].strip()
+            or generated["contact_sheet_sha256"].strip()
+            or generated["artifact_inspection"].strip()
+            or generated["responsive_crop_evidence"]
         ):
             raise StateError(
                 "invalid-asset-manifest",
@@ -1095,15 +3019,33 @@ def validate_asset_manifest(
                 ),
                 path=path,
             )
+        prompt_or_digest = generated["prompt_or_digest"].strip()
+        prompt_digest_valid = bool(
+            re.fullmatch(r"sha256:[0-9a-f]{64}", prompt_or_digest)
+        )
         if (
-            generated["disclosure_required"]
-            and not generated["disclosure_text"].strip()
+            prompt_or_digest.casefold().startswith("sha256:")
+            and not prompt_digest_valid
         ):
             raise StateError(
                 "invalid-asset-manifest",
                 (
-                    f"{label}.generated.disclosure_required requires "
-                    "generated.disclosure_text."
+                    f"{label}.generated.prompt_or_digest uses sha256: but "
+                    "does not contain 64 lowercase hexadecimal characters."
+                ),
+                path=path,
+            )
+        if (
+            generated["used"]
+            and not migration_required
+            and not prompt_digest_valid
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.generated.prompt_or_digest must be a "
+                    "sha256: digest with 64 lowercase hexadecimal "
+                    "characters; raw prompts do not satisfy the binding."
                 ),
                 path=path,
             )
@@ -1115,16 +3057,277 @@ def validate_asset_manifest(
                 ),
                 path=path,
             )
-        generated_media = asset.get("generated_media_provenance")
         if (
-            payload["classification"] == "public"
+            non_placeholder(asset["source_path"])
+            and asset["source_sha256"].strip()
+        ):
+            source_binding = (
+                asset["source_path"].strip()
+                + " plus sha256:"
+                + asset["source_sha256"].strip()
+            )
+            _source, source_failures = bound_artifact(
+                source_binding,
+                project=project_root,
+                record_path=path,
+                label=f"{label}.source_path/source_sha256",
+            )
+            if source_failures:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    source_failures[0],
+                    path=path,
+                )
+        elif asset["source_sha256"].strip():
+            raise StateError(
+                "invalid-asset-manifest",
+                f"{label}.source_sha256 requires source_path.",
+                path=path,
+            )
+        elif non_placeholder(asset["source_path"]) and not migration_required:
+            raise StateError(
+                "invalid-asset-manifest",
+                f"{label}.source_path requires source_sha256.",
+                path=path,
+            )
+        if (
+            generated["used"]
+            and not non_placeholder(asset["source_path"])
+            and not migration_required
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.generated.used requires the selected final "
+                    "output in source_path with source_sha256."
+                ),
+                path=path,
+            )
+        raw_source_url = asset["source_url"]
+        source_url = raw_source_url.strip()
+        if source_url:
+            try:
+                parsed_source_url = urlsplit(source_url)
+                hostname = parsed_source_url.hostname
+                # Accessing port performs validation that urlsplit otherwise
+                # defers (for example, ``:not-a-port``).
+                _port = parsed_source_url.port
+            except ValueError:
+                parsed_source_url = None
+                hostname = None
+            if (
+                parsed_source_url is None
+                or raw_source_url != source_url
+                or any(character.isspace() for character in source_url)
+                or "\\" in source_url
+                or parsed_source_url.scheme not in {"https", "http"}
+                or not hostname
+                or parsed_source_url.username is not None
+                or parsed_source_url.password is not None
+                or parsed_source_url.fragment
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.source_url must be an absolute HTTP(S) URL "
+                        "without credentials, whitespace, a backslash, an "
+                        "invalid port, or a fragment."
+                    ),
+                    path=path,
+                )
+        if generated["used"] and not migration_required:
+            try:
+                generated_at = datetime.fromisoformat(
+                    generated["generated_at"].replace("Z", "+00:00")
+                )
+                if generated_at.tzinfo is None:
+                    raise ValueError("timezone missing")
+                if generated_at.astimezone(timezone.utc) > datetime.now(
+                    timezone.utc
+                ):
+                    raise ValueError("future time")
+            except ValueError as exc:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.generated.generated_at must be a non-future "
+                        "ISO date-time with timezone."
+                    ),
+                    path=path,
+                ) from exc
+            contact_path = generated["contact_sheet_path"].strip()
+            contact_sha256 = generated["contact_sheet_sha256"].strip()
+            if bool(contact_path) != bool(contact_sha256):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.generated contact sheet requires both "
+                        "contact_sheet_path and contact_sheet_sha256."
+                    ),
+                    path=path,
+                )
+            if contact_path and contact_sha256:
+                contact_binding = (
+                    contact_path + " plus sha256:" + contact_sha256
+                )
+                _contact, contact_failures = bound_artifact(
+                    contact_binding,
+                    project=project_root,
+                    record_path=path,
+                    label=f"{label}.generated contact sheet",
+                )
+                if contact_failures:
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        contact_failures[0],
+                        path=path,
+                    )
+            for crop_index, crop_binding in enumerate(
+                generated["responsive_crop_evidence"]
+            ):
+                _crop, crop_failures = bound_artifact(
+                    crop_binding,
+                    project=project_root,
+                    record_path=path,
+                    label=(
+                        f"{label}.generated.responsive_crop_evidence"
+                        f"[{crop_index}]"
+                    ),
+                )
+                if crop_failures:
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        crop_failures[0],
+                        path=path,
+                    )
+            for rejected_index, rejected_output in enumerate(
+                generated["rejected_outputs"]
+            ):
+                if not non_placeholder(rejected_output):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        (
+                            f"{label}.generated.rejected_outputs"
+                            f"[{rejected_index}] is empty or instructional."
+                        ),
+                        path=path,
+                    )
+            for input_index, source_input in enumerate(
+                generated["source_inputs"]
+            ):
+                if source_input.casefold().startswith("text:"):
+                    if not non_placeholder(source_input.split(":", 1)[1]):
+                        raise StateError(
+                            "invalid-asset-manifest",
+                            (
+                                f"{label}.generated.source_inputs"
+                                f"[{input_index}] has empty text evidence."
+                            ),
+                            path=path,
+                        )
+                    continue
+                _source_input, input_failures = bound_artifact(
+                    source_input,
+                    project=project_root,
+                    record_path=path,
+                    label=(
+                        f"{label}.generated.source_inputs[{input_index}]"
+                    ),
+                )
+                if input_failures:
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        input_failures[0],
+                        path=path,
+                    )
+        if (
+            not non_placeholder(asset["source_url"])
+            and not non_placeholder(asset["source_path"])
+            and not (
+                generated["used"]
+                and generated["source_inputs"]
+                and all(
+                    non_placeholder(item)
+                    for item in generated["source_inputs"]
+                )
+            )
+            and asset["factual_status"] != "placeholder"
+            and not migration_required
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label} requires source_url, source_path, or recorded "
+                    "generated.source_inputs as provenance evidence."
+                ),
+                path=path,
+            )
+        generated_media = asset.get("generated_media_provenance")
+        disclosure = asset["concept_disclosure"]
+        disclosure_decision = disclosure["decision"]
+        if disclosure_decision not in ASSET_DISCLOSURE_DECISIONS:
+            raise StateError(
+                "invalid-asset-manifest",
+                f"{label}.concept_disclosure.decision is unsupported.",
+                path=path,
+            )
+        disclosure_reason = disclosure["reason"].strip()
+        concept_disclosure_text = disclosure["text"].strip()
+        if disclosure_decision == "pending" and (
+            disclosure_reason or concept_disclosure_text
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.concept_disclosure pending must not contain "
+                    "a reason or public text."
+                ),
+                path=path,
+            )
+        if (
+            disclosure_decision in {"required", "not-required"}
+            and not non_placeholder(disclosure_reason)
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.concept_disclosure {disclosure_decision!r} "
+                    "requires a reason."
+                ),
+                path=path,
+            )
+        if (
+            disclosure_decision == "required"
+            and not non_placeholder(concept_disclosure_text)
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.concept_disclosure 'required' requires text."
+                ),
+                path=path,
+            )
+        if (
+            disclosure_decision == "not-required"
+            and concept_disclosure_text
+        ):
+            raise StateError(
+                "invalid-asset-manifest",
+                (
+                    f"{label}.concept_disclosure 'not-required' requires "
+                    "empty public text."
+                ),
+                path=path,
+            )
+        if (
+            asset["publication_status"] in {"planned-public", "public"}
             and generated["used"]
             and not isinstance(generated_media, dict)
         ):
             raise StateError(
                 "invalid-asset-manifest",
                 (
-                    f"{label} is public generated media and requires "
+                    f"{label} is planned/public generated media and requires "
                     "generated_media_provenance."
                 ),
                 path=path,
@@ -1215,10 +3418,13 @@ def validate_asset_manifest(
             disclosure_basis = generated_media[
                 "visible_disclosure_basis"
             ].strip()
-            disclosure_text = generated_media[
+            provenance_disclosure_text = generated_media[
                 "visible_disclosure_text"
             ].strip()
-            if disclosure_text and not disclosure_basis:
+            if (
+                provenance_disclosure_text
+                and not non_placeholder(disclosure_basis)
+            ):
                 raise StateError(
                     "invalid-asset-manifest",
                     (
@@ -1228,28 +3434,29 @@ def validate_asset_manifest(
                     ),
                     path=path,
                 )
-            if asset["generated"]["disclosure_required"] and (
-                not disclosure_basis or not disclosure_text
+            if disclosure_decision == "required" and (
+                not non_placeholder(disclosure_basis)
+                or not non_placeholder(provenance_disclosure_text)
             ):
                 raise StateError(
                     "invalid-asset-manifest",
                     (
-                        f"{label}.generated.disclosure_required requires "
+                        f"{label}.concept_disclosure 'required' requires "
                         "generated_media_provenance visible disclosure "
                         "basis and text when that optional record is present."
                     ),
                     path=path,
                 )
-            base_disclosure_text = generated["disclosure_text"].strip()
             if (
-                base_disclosure_text
-                and disclosure_text
-                and base_disclosure_text != disclosure_text
+                concept_disclosure_text
+                and provenance_disclosure_text
+                and concept_disclosure_text
+                != provenance_disclosure_text
             ):
                 raise StateError(
                     "invalid-asset-manifest",
                     (
-                        f"{label}.generated.disclosure_text and "
+                        f"{label}.concept_disclosure.text and "
                         "generated_media_provenance.visible_disclosure_text "
                         "must match when both are recorded."
                     ),
@@ -1273,7 +3480,7 @@ def validate_asset_manifest(
                         "legal_review_date",
                         "legal_review_reason",
                     )
-                    if not generated_media[field].strip()
+                    if not non_placeholder(generated_media[field])
                 ]
                 if missing_legal_context:
                     raise StateError(
@@ -1302,7 +3509,13 @@ def validate_asset_manifest(
                         ),
                         path=path,
                     ) from exc
-            if payload["classification"] == "public" and generated["used"]:
+            if (
+                asset["publication_status"] in {
+                    "planned-public",
+                    "public",
+                }
+                and generated["used"]
+            ):
                 incomplete_public_review = []
                 if applicability not in {"applicable", "not-applicable"}:
                     incomplete_public_review.append(
@@ -1315,13 +3528,13 @@ def validate_asset_manifest(
                 for credential_field, _ in credential_states:
                     if generated_media[credential_field] == "pending":
                         incomplete_public_review.append(credential_field)
-                if legal_status == "pending":
+                if legal_status not in {"approved", "not-required"}:
                     incomplete_public_review.append("legal_review_status")
                 if incomplete_public_review:
                     raise StateError(
                         "invalid-asset-manifest",
                         (
-                            f"{label} public generated media requires "
+                            f"{label} planned/public generated media requires "
                             "completed provenance decisions for "
                             + ", ".join(incomplete_public_review)
                             + "."
@@ -1338,6 +3551,29 @@ def validate_asset_manifest(
                         f"{label}.generated_media_provenance "
                         "credential_validated 'validated' requires "
                         "credential_detected 'detected'."
+                    ),
+                    path=path,
+                )
+            if validated in {"invalid", "unverifiable"} and detected != "detected":
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.generated_media_provenance "
+                        f"credential_validated {validated!r} requires "
+                        "credential_detected 'detected'."
+                    ),
+                    path=path,
+                )
+            if (
+                detected == "detected"
+                and validated == "not-applicable"
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    (
+                        f"{label}.generated_media_provenance detected "
+                        "credentials require a validation outcome rather "
+                        "than 'not-applicable'."
                     ),
                     path=path,
                 )
@@ -1399,14 +3635,18 @@ def validate_asset_manifest(
                 path=path,
             )
         if (
-            any(not item.strip() for item in usage_locations)
+            not usage_locations
+            or any(
+                not non_placeholder(item)
+                for item in usage_locations
+            )
             or len(usage_locations) != len(set(usage_locations))
         ):
             raise StateError(
                 "invalid-asset-manifest",
                 (
-                    f"{label}.usage_locations must contain unique, "
-                    "nonempty strings."
+                    f"{label}.usage_locations must contain at least one "
+                    "unique, nonempty project location."
                 ),
                 path=path,
             )
@@ -1494,17 +3734,2878 @@ def validate_asset_manifest(
     return warnings
 
 
-def parse_frontmatter(path: Path) -> dict[str, str]:
+def asset_readiness_failures(path: Path) -> list[str]:
+    """Return release-readiness gaps after structural validation has passed."""
+
+    payload = parse_strict_yaml_subset(
+        path.read_text(encoding="utf-8"),
+        path=path,
+    )
+    assets = payload["assets"]
+    if not assets:
+        return [
+            "Listed asset record contains no assets; add each material "
+            "asset or remove the asset-led readiness claim."
+        ]
+    failures: list[str] = []
+    for index, asset in enumerate(assets):
+        asset_id = asset["id"]
+        label = f"{asset_id} (assets[{index}])"
+        if asset["publication_status"] == "prohibited":
+            failures.append(
+                f"{label} is prohibited and cannot support readiness."
+            )
+        if asset["migration_review"]["required"]:
+            failures.append(
+                f"{label} still requires schema-1 migration review: "
+                + ", ".join(asset["migration_review"]["unresolved_fields"])
+                + "."
+            )
+        if asset["factual_status"] not in {"approved", "concept"}:
+            failures.append(
+                f"{label} factual_status must be approved or concept."
+            )
+        if asset["privacy_review"] not in {"approved", "not-required"}:
+            failures.append(
+                f"{label} privacy_review must be approved or not-required."
+            )
+        if asset["owner_approval"] != "approved":
+            failures.append(
+                f"{label} owner_approval must be approved."
+            )
+        if asset["accessibility"]["treatment"] == "pending":
+            failures.append(
+                f"{label} accessibility treatment remains pending."
+            )
+        asset_type = asset["asset_type"]
+        delivery = asset["delivery"]
+        missing_delivery: list[str] = []
+        if asset_type in {"image", "video"}:
+            if not non_placeholder(delivery["source_dimensions"]):
+                missing_delivery.append("source dimensions")
+            if not delivery["output_dimensions"]:
+                missing_delivery.append("output dimensions")
+            if not delivery["formats"]:
+                missing_delivery.append("formats")
+            if not non_placeholder(delivery["responsive_behavior"]):
+                missing_delivery.append("responsive/fallback behavior")
+            if not delivery["intrinsic_dimensions_reserved"]:
+                missing_delivery.append("reserved intrinsic dimensions")
+        elif asset_type in {"audio", "document", "other"}:
+            if not non_placeholder(delivery["source_dimensions"]):
+                missing_delivery.append("type-relevant source characteristics")
+            if not delivery["formats"]:
+                missing_delivery.append("formats")
+            if not non_placeholder(delivery["responsive_behavior"]):
+                missing_delivery.append("loading/fallback behavior")
+        elif asset_type in {"map", "embed"}:
+            if not non_placeholder(delivery["responsive_behavior"]):
+                missing_delivery.append(
+                    "responsive, privacy, and failure fallback behavior"
+                )
+        elif asset_type == "font":
+            if not non_placeholder(asset["license_or_terms"]):
+                missing_delivery.append("license terms")
+            if not non_placeholder(asset["source_path"]):
+                missing_delivery.append("bound local font binary")
+            if not non_placeholder(delivery["source_dimensions"]):
+                missing_delivery.append("axes/subset characteristics")
+            if not delivery["formats"]:
+                missing_delivery.append("formats")
+            if not non_placeholder(delivery["responsive_behavior"]):
+                missing_delivery.append("loading/fallback behavior")
+        if missing_delivery:
+            failures.append(
+                f"{label} {asset_type} readiness requires "
+                + ", ".join(missing_delivery)
+                + "."
+            )
+        if asset["replacement"]["status"] not in {
+            "not-needed",
+            "replaced",
+        }:
+            failures.append(
+                f"{label} replacement status must be not-needed or replaced."
+            )
+        if (
+            asset["publication_status"] in {"planned-public", "public"}
+            and not non_placeholder(asset["license_or_terms"])
+        ):
+            failures.append(
+                f"{label} planned/public use requires recorded rights or "
+                "license_or_terms."
+            )
+        if (
+            asset["publication_status"] in {"planned-public", "public"}
+            and asset["factual_status"] == "concept"
+            and asset["concept_disclosure"]["decision"] == "pending"
+        ):
+            failures.append(
+                f"{label} public concept media requires an attributable "
+                "required/not-required disclosure decision."
+            )
+        if (
+            asset["publication_status"] in {"planned-public", "public"}
+            and asset["generated"]["used"]
+            and asset["factual_status"] != "concept"
+        ):
+            failures.append(
+                f"{label} public generated media must use factual_status "
+                "concept rather than documentary approval."
+            )
+    return failures
+
+
+def split_frontmatter_text(
+    text: str,
+    *,
+    path: Path,
+) -> tuple[dict[str, str], str, str]:
+    normalized = text.replace("\r\n", "\n")
+    if not normalized.startswith("---\n"):
+        raise StateError(
+            "invalid-frontmatter",
+            "Markdown must begin with frontmatter.",
+            path=path,
+        )
+    end = normalized.find("\n---\n", 4)
+    if end < 0:
+        raise StateError(
+            "invalid-frontmatter",
+            "Frontmatter is not closed.",
+            path=path,
+        )
+    frontmatter = normalized[4:end]
+    body = normalized[end + len("\n---\n"):]
+    return parse_flat_yaml(frontmatter, path=path), frontmatter, body
+
+
+def read_frontmatter_document(path: Path) -> tuple[dict[str, str], str]:
     try:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         raise StateError("state-read-failed", str(exc), path=path) from exc
-    if not text.startswith("---\n"):
-        raise StateError("invalid-frontmatter", "Markdown must begin with frontmatter.", path=path)
-    end = text.find("\n---\n", 4)
-    if end < 0:
-        raise StateError("invalid-frontmatter", "Frontmatter is not closed.", path=path)
-    return parse_flat_yaml(text[4:end], path=path)
+    metadata, _, body = split_frontmatter_text(text, path=path)
+    return metadata, body
+
+
+def parse_frontmatter(path: Path) -> dict[str, str]:
+    metadata, _ = read_frontmatter_document(path)
+    return metadata
+
+
+def yaml_quoted(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def update_frontmatter_text(
+    text: str,
+    *,
+    path: Path,
+    updates: dict[str, str],
+    removals: set[str] | None = None,
+) -> str:
+    _, frontmatter, body = split_frontmatter_text(text, path=path)
+    removals = removals or set()
+    emitted: set[str] = set()
+    lines: list[str] = []
+    for number, line in enumerate(frontmatter.splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            lines.append(line)
+            continue
+        if line[:1].isspace() or ":" not in line:
+            raise StateError(
+                "invalid-frontmatter",
+                f"Unsupported frontmatter at line {number}.",
+                path=path,
+            )
+        key = line.split(":", 1)[0]
+        if key in removals:
+            continue
+        if key in updates:
+            lines.append(f"{key}: {yaml_quoted(updates[key])}")
+            emitted.add(key)
+        else:
+            lines.append(line)
+    for key, value in updates.items():
+        if key not in emitted:
+            lines.append(f"{key}: {yaml_quoted(value)}")
+    return "---\n" + "\n".join(lines) + "\n---\n" + body
+
+
+def write_frontmatter_update(
+    path: Path,
+    *,
+    updates: dict[str, str],
+    removals: set[str] | None = None,
+) -> None:
+    try:
+        text = path.read_text(encoding="utf-8")
+        rendered = update_frontmatter_text(
+            text,
+            path=path,
+            updates=updates,
+            removals=removals,
+        )
+        path.write_text(rendered, encoding="utf-8", newline="\n")
+    except StateError:
+        raise
+    except (OSError, UnicodeError) as exc:
+        raise StateError(
+            "record-metadata-update-failed",
+            str(exc),
+            path=path,
+        ) from exc
+
+
+def body_sha256(body: str) -> str:
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+def markdown_sections(body: str) -> dict[str, str]:
+    headings = list(re.finditer(r"(?m)^##\s+(.+?)\s*$", body))
+    result: dict[str, str] = {}
+    for index, match in enumerate(headings):
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(body)
+        result[match.group(1).strip()] = body[match.end():end].strip()
+    return result
+
+
+def markdown_label_value(body: str, label: str) -> str | None:
+    lines = body.splitlines()
+    expected = label.casefold()
+    for index, line in enumerate(lines):
+        match = re.match(r"^\s*-\s+(.+)$", line)
+        if not match:
+            continue
+        content = match.group(1).strip()
+        if not content.casefold().startswith(expected):
+            continue
+        boundary = content[len(label):len(label) + 1]
+        if boundary and boundary not in {":", ",", " ", "("}:
+            continue
+        cursor = index + 1
+        while ":" not in content and cursor < len(lines):
+            continuation = lines[cursor]
+            if re.match(r"^\s*(?:-\s+|#{1,6}\s+|\|)", continuation):
+                break
+            if not continuation.strip():
+                break
+            content += " " + continuation.strip()
+            cursor += 1
+        if ":" not in content:
+            return None
+        _prompt, value = content.split(":", 1)
+        return value.strip()
+    return None
+
+
+def markdown_table_rows(section: str) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for raw_line in section.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("|") or not line.endswith("|"):
+            continue
+        cells = [cell.strip() for cell in line[1:-1].split("|")]
+        if cells and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+            continue
+        rows.append(cells)
+    if rows:
+        rows = rows[1:]
+    return [row for row in rows if any(cell for cell in row)]
+
+
+def markdown_first_table(
+    section: str,
+) -> tuple[tuple[str, ...], list[list[str]]]:
+    lines = section.splitlines()
+    for index in range(len(lines) - 1):
+        header_line = lines[index].strip()
+        separator_line = lines[index + 1].strip()
+        if not (
+            header_line.startswith("|")
+            and header_line.endswith("|")
+            and separator_line.startswith("|")
+            and separator_line.endswith("|")
+        ):
+            continue
+        headers = tuple(
+            cell.strip() for cell in header_line[1:-1].split("|")
+        )
+        separators = [
+            cell.strip() for cell in separator_line[1:-1].split("|")
+        ]
+        if (
+            len(headers) != len(separators)
+            or not all(
+                re.fullmatch(r":?-{3,}:?", cell)
+                for cell in separators
+            )
+        ):
+            continue
+        rows: list[list[str]] = []
+        for raw_line in lines[index + 2:]:
+            line = raw_line.strip()
+            if not line.startswith("|") or not line.endswith("|"):
+                break
+            rows.append(
+                [cell.strip() for cell in line[1:-1].split("|")]
+            )
+        return headers, rows
+    return (), []
+
+
+def non_placeholder(value: str | None) -> bool:
+    if value is None:
+        return False
+    normalized = value.strip().casefold()
+    if normalized in GENERIC_METADATA_VALUES:
+        return False
+    if normalized == "not-recorded" or normalized.startswith(
+        ("not-recorded (", "not recorded (")
+    ):
+        return False
+    if normalized in {
+        "yes / no",
+        "proceed, revise, compare again, or reject",
+        "concept, demo, staging, or production",
+    }:
+        return False
+    return bool(normalized)
+
+
+ASSURANCE_PROFILE_ALIASES = {
+    "quick": "quick",
+    "standard": "standard",
+    "substantial": "standard",
+    "showcase": "showcase",
+    "greenfield": "standard",
+    "range-study": "range-study",
+    "high-risk": "high-risk",
+}
+PROFILE_REQUIREMENT_INHERITANCE = {
+    "quick": ("quick",),
+    "standard": ("standard",),
+    "showcase": ("standard", "showcase"),
+    "high-risk": ("standard", "high-risk"),
+}
+
+REQUIRED_LABEL_ALIASES: dict[tuple[str, str], tuple[str, ...]] = {}
+
+
+def assurance_profiles(body: str) -> set[str]:
+    value = (
+        markdown_label_value(body, "Assurance profile and rationale")
+        or markdown_label_value(body, "Assurance profile and why it fits")
+        or markdown_label_value(body, "Assurance profile")
+        or ""
+    ).casefold()
+    observed = {
+        canonical
+        for name, canonical in ASSURANCE_PROFILE_ALIASES.items()
+        if re.search(rf"\b{re.escape(name)}\b", value)
+    }
+    return observed
+
+
+def required_labels_for_record(
+    record: str,
+    body: str,
+    required_assurance_profiles: tuple[str, ...] | set[str] | None = None,
+    *,
+    evidence_contract: str | None = None,
+) -> tuple[str, ...]:
+    contract_labels = (
+        REQUIRED_RECORD_LABELS
+        if (
+            evidence_contract == PROPORTIONAL_EVIDENCE_CONTRACT
+            or PROPORTIONAL_EVIDENCE_CONTRACT in body
+        )
+        else LEGACY_REQUIRED_RECORD_LABELS
+    )
+    labels = list(contract_labels[record])
+    by_profile = PROFILE_REQUIRED_LABELS.get(record, {})
+    selected_profiles = (
+        set(required_assurance_profiles)
+        & {"quick", "standard", "showcase", "high-risk"}
+        if required_assurance_profiles is not None
+        else assurance_profiles(body)
+    )
+    applied_profiles: list[str] = []
+    for profile in sorted(selected_profiles):
+        applied_profiles.extend(
+            PROFILE_REQUIREMENT_INHERITANCE.get(profile, (profile,))
+        )
+    for profile in dict.fromkeys(applied_profiles):
+        labels.extend(by_profile.get(profile, ()))
+    return tuple(dict.fromkeys(labels))
+
+
+def required_label_value(
+    record: str,
+    body: str,
+    label: str,
+) -> str | None:
+    for candidate in (
+        label,
+        *REQUIRED_LABEL_ALIASES.get((record, label), ()),
+    ):
+        value = markdown_label_value(body, candidate)
+        if non_placeholder(value):
+            return value
+    return None
+
+
+OWNER_DECISION_STATUSES = {
+    "accepted",
+    "rejected",
+    "pending",
+    "not-required",
+}
+OWNER_DECISION_CLAIM_SCOPES = {
+    "standard",
+    "premium-showcase-sale-readiness",
+    "accountable-owner-sensitive",
+}
+GENERIC_OWNER_DECISION_IDS = {
+    "accountable-owner",
+    "approver",
+    "client",
+    "client-owner",
+    "decision-owner",
+    "human",
+    "owner",
+    "stakeholder",
+    "unknown",
+    "tbd",
+}
+OWNER_DECISION_EVIDENCE_PATTERN = re.compile(
+    r"^([^|]+?)\s*\|\s*sha256:([0-9a-f]{64})$"
+)
+ARTIFACT_BINDING_PATTERN = re.compile(
+    r"^(.+?)\s+(?:plus\s+)?sha256:([0-9a-f]{64})$",
+    re.I,
+)
+OWNER_DECISION_EVIDENCE_EXTENSIONS = {".json", ".log", ".md", ".txt"}
+OWNER_DECISION_EVIDENCE_MAX_BYTES = 2 * 1024 * 1024
+COMPARISON_REPORT_MAX_BYTES = 8 * 1024 * 1024
+COMPARISON_DECISION_STATUSES = (
+    "accept candidate",
+    "revise candidate",
+    "reject candidate",
+    "insufficient evidence",
+    "not performed",
+)
+
+
+def semicolon_fields(value: str) -> dict[str, str]:
+    """Parse a compact human-readable key=value record without fixing its order."""
+
+    fields: dict[str, str] = {}
+    for segment in value.split(";"):
+        if "=" not in segment:
+            continue
+        key, field_value = segment.split("=", 1)
+        normalized_key = re.sub(r"[^a-z0-9]+", "_", key.casefold()).strip("_")
+        if normalized_key and normalized_key not in fields:
+            fields[normalized_key] = field_value.strip()
+    return fields
+
+
+def proportional_owner_disposition_failures(
+    body: str,
+    *,
+    project: Path | None,
+    record_path: Path | None,
+) -> list[str]:
+    """Bind consequential owner decisions without burdening pending drafts."""
+
+    failures: list[str] = []
+    value = markdown_label_value(body, "Owner disposition") or ""
+    status_match = re.match(
+        r"(?i)^(accepted|rejected|pending|not[ -]required)\b",
+        value,
+    )
+    status = (
+        status_match.group(1).casefold().replace(" ", "-")
+        if status_match
+        else ""
+    )
+    if status not in OWNER_DECISION_STATUSES:
+        return [
+            "Owner disposition must begin with accepted, rejected, pending, "
+            "or not-required"
+        ]
+    if status == "pending":
+        return []
+    fields = semicolon_fields(value)
+    owner_id = fields.get("owner_id", "")
+    reviewed_date = fields.get("reviewed_date", "")
+    candidate_id = fields.get("candidate", "")
+    evidence_value = fields.get("evidence", "")
+    if (
+        not non_placeholder(owner_id)
+        or owner_id.casefold() in GENERIC_OWNER_DECISION_IDS
+    ):
+        failures.append(
+            "Owner disposition owner_id must be a stable person/account identity"
+        )
+    try:
+        reviewed = date.fromisoformat(reviewed_date)
+        if reviewed > datetime.now(timezone.utc).date():
+            failures.append("Owner disposition reviewed_date may not be in the future")
+    except ValueError:
+        failures.append(
+            "Owner disposition reviewed_date must be an ISO date (YYYY-MM-DD)"
+        )
+    if not non_placeholder(candidate_id):
+        failures.append("Owner disposition must name the exact candidate")
+    build_value = markdown_label_value(body, "Build or artifact ID")
+    if build_value and candidate_id != build_value.strip():
+        failures.append(
+            "Owner disposition candidate must match Build or artifact ID"
+        )
+    evidence_match = OWNER_DECISION_EVIDENCE_PATTERN.fullmatch(evidence_value)
+    if evidence_match is None:
+        failures.append(
+            "Owner disposition evidence must use "
+            "'project/relative/path.ext | sha256:<64 lowercase hex>'"
+        )
+        return failures
+    if project is None or record_path is None:
+        return failures
+    relative, expected_digest = evidence_match.groups()
+    try:
+        evidence_path = safe_binding_path(
+            project,
+            relative,
+            record_path=record_path,
+        )
+        size, actual_digest = file_sha256(evidence_path)
+        if size < 1 or size > OWNER_DECISION_EVIDENCE_MAX_BYTES:
+            failures.append(
+                "Owner disposition evidence has an unsupported size"
+            )
+        if actual_digest != expected_digest:
+            failures.append(
+                "Owner disposition evidence sha256 does not match the exact file"
+            )
+        evidence_text = evidence_path.read_text(encoding="utf-8").casefold()
+        for label, token in {
+            "status": status,
+            "owner ID": owner_id,
+            "candidate": candidate_id,
+            "reviewed date": reviewed_date,
+        }.items():
+            if token.casefold() not in evidence_text:
+                failures.append(
+                    f"Owner disposition evidence must name the exact {label}"
+                )
+    except (OSError, UnicodeError, StateError) as exc:
+        failures.append(f"Owner disposition evidence is invalid: {exc}")
+    return failures
+
+
+def owner_disposition_body_failures(
+    record: str,
+    body: str,
+    *,
+    project: Path | None,
+    record_path: Path | None,
+) -> list[str]:
+    if record not in {"direction-proof", "visual-review"}:
+        return []
+    if PROPORTIONAL_EVIDENCE_CONTRACT in body:
+        return proportional_owner_disposition_failures(
+            body,
+            project=project,
+            record_path=record_path,
+        )
+    failures: list[str] = []
+    if record == "direction-proof":
+        raw_status = markdown_label_value(
+            body,
+            "Accountable-owner rendered acceptance",
+        ) or ""
+        claim_scope = (
+            markdown_label_value(body, "Owner decision claim scope") or ""
+        ).casefold()
+        combined_owner_record = markdown_label_value(
+            body,
+            "Owner ID, exact candidate/build ID, review date, and evidence path/hash",
+        ) or ""
+        build_value = markdown_label_value(
+            body,
+            "Candidate/build ID and reversible checkpoint",
+        ) or ""
+    else:
+        combined_owner_record = markdown_label_value(
+            body,
+            (
+                "Accountable-owner disposition, scope, ID, date, "
+                "candidate/build, and evidence"
+            ),
+        ) or ""
+        disposition_fields = semicolon_fields(combined_owner_record)
+        raw_status = disposition_fields.get("status", "")
+        claim_scope = disposition_fields.get("scope", "").casefold()
+        build_value = markdown_label_value(
+            body,
+            "Build, commit, or artifact ID",
+        ) or ""
+    owner_fields = semicolon_fields(combined_owner_record)
+    status_match = re.match(
+        r"(?i)^(accepted|rejected|pending|not[ -]required)\b",
+        raw_status,
+    )
+    status = (
+        status_match.group(1).casefold().replace(" ", "-")
+        if status_match
+        else ""
+    )
+    if status not in OWNER_DECISION_STATUSES:
+        failures.append(
+            "Accountable-owner rendered acceptance must begin with accepted, "
+            "rejected, pending, or not-required"
+        )
+
+    if claim_scope not in OWNER_DECISION_CLAIM_SCOPES:
+        failures.append(
+            "Owner decision claim scope must be standard, "
+            "premium-showcase-sale-readiness, or accountable-owner-sensitive"
+        )
+    if status == "not-required" and claim_scope != "standard":
+        failures.append(
+            "not-required owner disposition is allowed only for standard "
+            "claim scope"
+        )
+
+    owner_id = owner_fields.get("owner_id", "")
+    candidate_id = owner_fields.get("candidate", "")
+    reviewed_date = owner_fields.get("reviewed_date", "")
+    evidence_value = owner_fields.get("evidence", "")
+    build_label = (
+        "Candidate/build ID and reversible checkpoint"
+        if record == "direction-proof"
+        else "Build, commit, or artifact ID"
+    )
+    build_id = build_value.split(";", 1)[0].strip()
+    if candidate_id != build_id:
+        failures.append(
+            "Owner decision candidate/build ID must exactly match "
+            f"{build_label}"
+        )
+
+    pending_evidence_marker = evidence_value.casefold() in {
+        "none",
+        "pending",
+        "not-reviewed",
+    } or evidence_value.casefold().startswith(
+        ("none ", "pending ", "not-reviewed ")
+    )
+    if status == "pending":
+        if (
+            owner_id != "not-reviewed"
+            and owner_id.casefold() in GENERIC_OWNER_DECISION_IDS
+        ):
+            failures.append(
+                "Pending owner decision owner ID must be not-reviewed or a "
+                "stable person/account identity"
+            )
+        if reviewed_date != "not-reviewed":
+            failures.append(
+                "Pending owner decision reviewed date must be not-reviewed"
+            )
+    else:
+        if (
+            not non_placeholder(owner_id)
+            or owner_id.casefold() in GENERIC_OWNER_DECISION_IDS
+        ):
+            failures.append(
+                "Owner decision owner ID must be a stable person/account "
+                "identity, not a role"
+            )
+        try:
+            parsed_date = date.fromisoformat(reviewed_date)
+            if parsed_date > datetime.now(timezone.utc).date():
+                failures.append(
+                    "Owner decision reviewed date may not be in the future"
+                )
+        except ValueError:
+            failures.append(
+                "Owner decision reviewed date must be an ISO date (YYYY-MM-DD)"
+            )
+        if pending_evidence_marker:
+            failures.append(
+                "Accepted, rejected, and not-required owner dispositions "
+                "require hash-bound decision evidence"
+            )
+
+    if pending_evidence_marker and status == "pending":
+        return failures
+    evidence_match = OWNER_DECISION_EVIDENCE_PATTERN.fullmatch(evidence_value)
+    if not evidence_match:
+        failures.append(
+            "Owner decision evidence must use "
+            "'project/relative/path.ext | sha256:<64 lowercase hex>'"
+        )
+        return failures
+    relative, expected_digest = evidence_match.groups()
+    if project is None or record_path is None:
+        return failures
+    try:
+        evidence_path = safe_binding_path(
+            project,
+            relative,
+            record_path=record_path,
+        )
+    except StateError as exc:
+        failures.append(f"Owner decision evidence is invalid: {exc}")
+        return failures
+    if evidence_path.suffix.casefold() not in OWNER_DECISION_EVIDENCE_EXTENSIONS:
+        failures.append(
+            "Owner decision evidence must be UTF-8 JSON, Markdown, text, or log"
+        )
+        return failures
+    size, actual_digest = file_sha256(evidence_path)
+    if size < 1 or size > OWNER_DECISION_EVIDENCE_MAX_BYTES:
+        failures.append(
+            "Owner decision evidence must contain 1 byte through "
+            f"{OWNER_DECISION_EVIDENCE_MAX_BYTES} bytes"
+        )
+        return failures
+    if actual_digest != expected_digest:
+        failures.append(
+            "Owner decision evidence sha256 does not match the exact file"
+        )
+        return failures
+    try:
+        evidence_text = evidence_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        failures.append("Owner decision evidence must be valid UTF-8 text")
+        return failures
+    normalized_evidence = evidence_text.casefold()
+    required_tokens = {
+        "status": status,
+        "owner ID": owner_id,
+        "candidate/build ID": candidate_id,
+    }
+    if status != "pending":
+        required_tokens["reviewed date"] = reviewed_date
+    missing = sorted(
+        label
+        for label, value in required_tokens.items()
+        if value.casefold() not in normalized_evidence
+    )
+    if missing:
+        failures.append(
+            "Owner decision evidence must name the exact "
+            + ", ".join(missing)
+        )
+    return failures
+
+
+def bound_artifact(
+    value: str,
+    *,
+    project: Path,
+    record_path: Path,
+    label: str,
+) -> tuple[Path | None, list[str]]:
+    match = ARTIFACT_BINDING_PATTERN.fullmatch(value.strip())
+    if match is None:
+        return None, [
+            f"{label} must use project/relative/path plus "
+            "sha256:<64 lowercase hex>"
+        ]
+    relative_path, recorded_hash = match.groups()
+    try:
+        artifact = safe_binding_path(
+            project,
+            relative_path.strip(),
+            record_path=record_path,
+        )
+        _size, actual_hash = file_sha256(artifact)
+    except (OSError, StateError) as exc:
+        return None, [f"{label} is invalid: {exc}"]
+    if recorded_hash != actual_hash:
+        return artifact, [f"{label} SHA-256 does not match its artifact"]
+    return artifact, []
+
+
+def rendered_review_body_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> list[str]:
+    failures: list[str] = []
+    report_record = (
+        markdown_label_value(
+            body,
+            "Rendered-review report path, hash, contract, and execution result",
+        )
+        or ""
+    )
+    report_value = report_record.split(";", 1)[0].strip()
+    report_path, report_failures = bound_artifact(
+        report_value,
+        project=project,
+        record_path=record_path,
+        label="Rendered-review report binding",
+    )
+    failures.extend(report_failures)
+    contact_value = (
+        markdown_label_value(
+            body,
+            "Coverage contact sheet or artifact index",
+        )
+        or ""
+    )
+    contact_path, contact_failures = bound_artifact(
+        contact_value,
+        project=project,
+        record_path=record_path,
+        label="Coverage contact sheet or artifact index",
+    )
+    failures.extend(contact_failures)
+    if report_path is None or report_failures:
+        return failures
+    if report_path.name != "render-review.json":
+        failures.append(
+            "Rendered-review report must bind render-review.json"
+        )
+        return failures
+    try:
+        report = read_json(report_path)
+    except StateError as exc:
+        failures.append(f"Rendered-review report is invalid JSON: {exc}")
+        return failures
+    if not isinstance(report, dict):
+        failures.append("Rendered-review report must contain an object")
+        return failures
+    tool = report.get("tool")
+    build = report.get("build")
+    snapshot = report.get("source_snapshot")
+    contract = report.get("capture_contract")
+    routes = report.get("routes")
+    captures = report.get("captures")
+    artifacts = report.get("artifacts")
+    if (
+        report.get("schema_version") != 3
+        or tool != {
+            "name": "design-dna-rendered-review",
+            "version": "3.0.0",
+            "report_schema": "render-review.schema.json",
+        }
+    ):
+        failures.append(
+            "Rendered-review report must use the packaged schema-3, tool-3.0.0 "
+            "identity"
+        )
+    if (
+        report.get("execution_ok") is not True
+        or report.get("review_required") is not True
+        or report.get("automatic_visual_quality_pass") is not False
+    ):
+        failures.append(
+            "Rendered-review report must record successful execution while "
+            "retaining manual review"
+        )
+    build_id = (
+        build.get("id")
+        if isinstance(build, dict)
+        else None
+    )
+    record_build_id = markdown_label_value(
+        body,
+        "Build, commit, or artifact ID",
+    )
+    if not build_id or build_id != record_build_id:
+        failures.append(
+            "Rendered-review build ID must match the visual-review build ID"
+        )
+    source_sha = None
+    if isinstance(snapshot, dict):
+        manifest = snapshot.get("manifest")
+        if isinstance(manifest, dict):
+            source_sha = manifest.get("manifest_sha256")
+    if not isinstance(source_sha, str) or not re.fullmatch(
+        r"[0-9a-f]{64}",
+        source_sha,
+    ):
+        failures.append(
+            "Rendered-review report must bind a local source-snapshot "
+            "manifest SHA-256"
+        )
+    if (
+        not isinstance(contract, dict)
+        or contract.get("contract_mode")
+        not in {"deterministic-default-v1", "capture-manifest-v1"}
+        or not isinstance(contract.get("profiles"), list)
+        or not contract.get("profiles")
+        or not isinstance(contract.get("scenarios"), list)
+        or not contract.get("scenarios")
+    ):
+        failures.append(
+            "Rendered-review report must identify non-empty profiles and "
+            "scenarios"
+        )
+    if not isinstance(routes, list) or not routes:
+        failures.append("Rendered-review report must contain reviewed routes")
+    if not isinstance(captures, list) or not captures:
+        failures.append(
+            "Rendered-review report must contain reviewed captures"
+        )
+    report_contact = (
+        artifacts.get("contact_sheet")
+        if isinstance(artifacts, dict)
+        else None
+    )
+    if isinstance(report_contact, dict) and contact_path is not None:
+        report_contact_path = report_path.parent / str(
+            report_contact.get("path", "")
+        )
+        try:
+            report_contact_path = lexical_absolute(report_contact_path)
+        except StateError:
+            report_contact_path = Path("")
+        if report_contact_path != contact_path:
+            failures.append(
+                "Coverage contact-sheet binding must match the rendered "
+                "review report"
+            )
+        if report_contact.get("sha256") != hashlib.sha256(
+            contact_path.read_bytes()
+        ).hexdigest():
+            failures.append(
+                "Rendered-review contact-sheet SHA-256 is inconsistent"
+            )
+    else:
+        failures.append(
+            "Rendered-review report must bind its contact-sheet artifact"
+        )
+
+    contract_value = report_record.casefold()
+    contract_tokens = [
+        str(build_id or "").casefold(),
+        str(source_sha or "").casefold(),
+        str(
+            contract.get("contract_mode", "")
+            if isinstance(contract, dict)
+            else ""
+        ).casefold(),
+        "execution_ok=true",
+    ]
+    if any(token not in contract_value for token in contract_tokens):
+        failures.append(
+            "Rendered-review binding must name the exact build ID, "
+            "source-snapshot SHA-256, capture mode, and execution_ok=true"
+        )
+    return failures
+
+
+def comparison_decision(value: str) -> tuple[str, str] | None:
+    normalized = value.strip().replace("`", "")
+    folded = normalized.casefold().replace("not-performed", "not performed")
+    for status in COMPARISON_DECISION_STATUSES:
+        if not folded.startswith(status):
+            continue
+        boundary = folded[len(status):len(status) + 1]
+        if boundary and boundary not in {" ", ":", ";", ",", ".", "-", "—"}:
+            continue
+        rationale = normalized[len(status):].lstrip(" \t:;,.—-")
+        return status, rationale
+    return None
+
+
+def render_comparison_body_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> list[str]:
+    """Validate an optional, reviewer-decided cross-build comparison.
+
+    This enforces the project-state-relevant subset of
+    maintainer/schemas/render-comparison.schema.json with the standard
+    library so the installed skill retains its dependency-free runtime.
+    The immutable machine report remains evidence, never visual acceptance.
+    """
+
+    failures: list[str] = []
+    comparison_record = markdown_label_value(
+        body,
+        (
+            "Cross-build comparison identity, compatibility, changed captures, "
+            "reviewer, and result, or `not performed`"
+        ),
+    )
+    decision_value = markdown_label_value(
+        body,
+        "Cross-build decision",
+    )
+    if comparison_record is None and decision_value is None:
+        return failures
+
+    report_declaration = (comparison_record or "").strip().replace("`", "")
+    report_not_performed = (
+        report_declaration.casefold().replace("-", " ").startswith(
+            "not performed"
+        )
+    )
+    parsed_decision = comparison_decision(decision_value or "")
+    if parsed_decision is None:
+        failures.append(
+            "Cross-build comparison decision must begin with accept "
+            "candidate, revise candidate, reject candidate, insufficient "
+            "evidence, or not performed"
+        )
+        return failures
+    decision_status, decision_rationale = parsed_decision
+    if not non_placeholder(decision_rationale) or len(decision_rationale) < 12:
+        failures.append(
+            "Cross-build comparison decision must include a substantive "
+            "reviewer rationale after its status"
+        )
+
+    if report_not_performed:
+        if decision_status != "not performed":
+            failures.append(
+                "A not-performed cross-build comparison report declaration "
+                "requires a not performed comparison decision"
+            )
+        return failures
+    if decision_status == "not performed":
+        failures.append(
+            "A declared cross-build comparison report requires an accept, "
+            "revise, reject, or insufficient-evidence reviewer decision"
+        )
+
+    comparison_fields = semicolon_fields(report_declaration)
+    report_value = comparison_fields.get("report", "")
+    if not report_value and ";" in report_declaration:
+        first_segment = report_declaration.split(";", 1)[0].strip()
+        if "sha256:" in first_segment.casefold():
+            report_value = first_segment
+
+    report_path, report_failures = bound_artifact(
+        report_value,
+        project=project,
+        record_path=record_path,
+        label="Cross-build comparison report binding",
+    )
+    failures.extend(report_failures)
+    if report_path is None or report_failures:
+        return failures
+    if report_path.name != "render-comparison.json":
+        failures.append(
+            "Cross-build comparison report must bind render-comparison.json"
+        )
+        return failures
+    try:
+        report_size = report_path.stat().st_size
+    except OSError as exc:
+        failures.append(f"Cross-build comparison report is unreadable: {exc}")
+        return failures
+    if report_size < 1 or report_size > COMPARISON_REPORT_MAX_BYTES:
+        failures.append(
+            "Cross-build comparison report must contain 1 byte through "
+            f"{COMPARISON_REPORT_MAX_BYTES} bytes"
+        )
+        return failures
+    try:
+        report = read_json(report_path)
+    except StateError as exc:
+        failures.append(
+            f"Cross-build comparison report is invalid JSON: {exc}"
+        )
+        return failures
+    if not isinstance(report, dict):
+        failures.append("Cross-build comparison report must contain an object")
+        return failures
+
+    required_top_level = {
+        "schema_version",
+        "tool",
+        "comparison_id",
+        "created_at",
+        "output_identity",
+        "execution_ok",
+        "review_required",
+        "automatic_visual_approval",
+        "decision_status",
+        "execution",
+        "privacy",
+        "mask_policy",
+        "inputs",
+        "compatibility",
+        "baseline_freshness",
+        "comparisons",
+        "summary",
+        "artifacts",
+        "manual_review",
+    }
+    if set(report) != required_top_level:
+        failures.append(
+            "Cross-build comparison report must use the exact packaged "
+            "schema-1 top-level shape"
+        )
+
+    tool = report.get("tool")
+    if (
+        report.get("schema_version") != 1
+        or not isinstance(tool, dict)
+        or tool != {
+            "name": "design-dna-render-comparison",
+            "version": "1.0.0",
+            "report_schema": "render-comparison.schema.json",
+        }
+    ):
+        failures.append(
+            "Cross-build comparison report must use the packaged schema-1 "
+            "tool identity"
+        )
+    if (
+        report.get("execution_ok") is not True
+        or report.get("review_required") is not True
+        or report.get("automatic_visual_approval") is not False
+        or report.get("decision_status")
+        != "human-accept-reject-required"
+    ):
+        failures.append(
+            "Cross-build comparison report must record successful execution, "
+            "automatic_visual_approval=false, and a required human accept or "
+            "reject decision"
+        )
+
+    inputs = report.get("inputs")
+    baseline = (
+        inputs.get("baseline")
+        if isinstance(inputs, dict)
+        else None
+    )
+    candidate = (
+        inputs.get("candidate")
+        if isinstance(inputs, dict)
+        else None
+    )
+    if not isinstance(baseline, dict) or baseline.get("role") != "baseline":
+        failures.append(
+            "Cross-build comparison report must identify its baseline input"
+        )
+    if not isinstance(candidate, dict) or candidate.get("role") != "candidate":
+        failures.append(
+            "Cross-build comparison report must identify its candidate input"
+        )
+    baseline_build = (
+        baseline.get("build")
+        if isinstance(baseline, dict)
+        else None
+    )
+    candidate_build = (
+        candidate.get("build")
+        if isinstance(candidate, dict)
+        else None
+    )
+    baseline_id = (
+        baseline_build.get("id")
+        if isinstance(baseline_build, dict)
+        else None
+    )
+    candidate_id = (
+        candidate_build.get("id")
+        if isinstance(candidate_build, dict)
+        else None
+    )
+    if not isinstance(baseline_id, str) or not baseline_id:
+        failures.append(
+            "Cross-build comparison baseline must have a build ID"
+        )
+    if not isinstance(candidate_id, str) or not candidate_id:
+        failures.append(
+            "Cross-build comparison candidate must have a build ID"
+        )
+    record_build_id = markdown_label_value(
+        body,
+        "Build, commit, or artifact ID",
+    )
+    if candidate_id and candidate_id != record_build_id:
+        failures.append(
+            "Cross-build comparison candidate build ID must match the "
+            "visual-review build ID"
+        )
+
+    compatibility = report.get("compatibility")
+    summary = report.get("summary")
+    comparisons = report.get("comparisons")
+    compatibility_status = (
+        compatibility.get("status")
+        if isinstance(compatibility, dict)
+        else None
+    )
+    compatibility_count = (
+        compatibility.get("capture_count")
+        if isinstance(compatibility, dict)
+        else None
+    )
+    capture_count = (
+        summary.get("capture_count")
+        if isinstance(summary, dict)
+        else None
+    )
+    changed_count = (
+        summary.get("changed_capture_count")
+        if isinstance(summary, dict)
+        else None
+    )
+    if compatibility_status != "compatible":
+        failures.append(
+            "Cross-build comparison report must record compatible capture "
+            "contracts"
+        )
+    if (
+        type(capture_count) is not int
+        or capture_count < 1
+        or type(changed_count) is not int
+        or changed_count < 0
+        or changed_count > capture_count
+        or compatibility_count != capture_count
+        or not isinstance(comparisons, list)
+        or len(comparisons) != capture_count
+    ):
+        failures.append(
+            "Cross-build comparison report has inconsistent capture and "
+            "changed-capture counts"
+        )
+    elif any(
+        not isinstance(item, dict)
+        or item.get("review_status")
+        != "human-accept-reject-required"
+        for item in comparisons
+    ):
+        failures.append(
+            "Every cross-build capture comparison must retain required human "
+            "accept-or-reject review status"
+        )
+
+    manual_review = report.get("manual_review")
+    required_actions = (
+        manual_review.get("required_actions")
+        if isinstance(manual_review, dict)
+        else None
+    )
+    limitations = (
+        manual_review.get("limitations")
+        if isinstance(manual_review, dict)
+        else None
+    )
+    if (
+        not isinstance(manual_review, dict)
+        or set(manual_review)
+        != {"status", "required_actions", "limitations"}
+        or manual_review.get("status") != "required"
+        or not isinstance(required_actions, list)
+        or len(required_actions) < 3
+        or any(
+            not isinstance(item, str) or len(item.strip()) < 30
+            for item in required_actions
+        )
+        or not isinstance(limitations, list)
+        or len(limitations) < 4
+        or any(
+            not isinstance(item, str) or len(item.strip()) < 40
+            for item in limitations
+        )
+    ):
+        failures.append(
+            "Cross-build comparison report must preserve the packaged "
+            "manual-review actions and limitations contract"
+        )
+
+    comparison_context = report_declaration.casefold()
+    reviewer_relationship = comparison_fields.get(
+        "reviewer_relationship",
+        "",
+    ).casefold()
+    expected_context = {
+        f"baseline={baseline_id}",
+        f"candidate={candidate_id}",
+        f"capture_count={capture_count}",
+        f"compatibility={compatibility_status}",
+        f"changed_capture_count={changed_count}",
+        f"reviewer_relationship={reviewer_relationship}",
+    }
+    missing_context = sorted(
+        item for item in expected_context if item not in comparison_context
+    )
+    if missing_context:
+        failures.append(
+            "Compared-build context must name the report's exact baseline, "
+            "candidate, capture count, compatibility, changed-capture count, "
+            "and visual-review reviewer relationship"
+        )
+    return failures
+
+
+def substantive_body_failures(
+    record: str,
+    body: str,
+    *,
+    project: Path | None = None,
+    record_path: Path | None = None,
+    required_assurance_profiles: tuple[str, ...] | set[str] | None = None,
+    required_evidence_capabilities: tuple[str, ...] | set[str] | None = None,
+    evidence_contract: str | None = None,
+) -> list[str]:
+    failures: list[str] = []
+    sections = markdown_sections(body)
+    proportional = (
+        evidence_contract == PROPORTIONAL_EVIDENCE_CONTRACT
+        or PROPORTIONAL_EVIDENCE_CONTRACT in body
+    )
+    required_sections = (
+        REQUIRED_RECORD_SECTIONS[record]
+        if proportional
+        else LEGACY_REQUIRED_RECORD_SECTIONS[record]
+    )
+    capabilities = set(required_evidence_capabilities or ())
+    if proportional:
+        for capability in capabilities:
+            required_sections = {
+                *required_sections,
+                *CAPABILITY_REQUIRED_SECTIONS.get(capability, {}).get(
+                    record,
+                    set(),
+                ),
+            }
+    missing_sections = sorted(required_sections - set(sections))
+    if missing_sections:
+        failures.append(
+            "missing required sections: " + ", ".join(missing_sections)
+        )
+    for heading in sorted(required_sections & set(sections)):
+        minimum_length = 24 if proportional else 8
+        if len(sections[heading].strip()) < minimum_length:
+            failures.append(f"{heading!r} is empty or non-substantive")
+    if re.search(r"__[A-Z0-9_]+__", body):
+        failures.append("contains an unresolved template token")
+    if re.search(r"(?m)^\|\s*(?:\|\s*)+\|?\s*$", body):
+        failures.append("contains an unfilled table row")
+    for label in required_labels_for_record(
+        record,
+        body,
+        required_assurance_profiles,
+        evidence_contract=(
+            PROPORTIONAL_EVIDENCE_CONTRACT
+            if proportional
+            else evidence_contract
+        ),
+    ):
+        if required_label_value(record, body, label) is None:
+            failures.append(f"{label!r} is missing or still scaffold text")
+
+    if record == "exploration" and not proportional:
+        table_contracts = (
+            ("Decision bounds", 4, 1),
+            ("Subject and reference evidence", 4, 1),
+            ("Candidate field", 7, 1),
+            ("Proof comparison", 6, 1),
+        )
+        exploration_tables: dict[str, list[list[str]]] = {}
+        for heading, width, minimum_rows in table_contracts:
+            rows = markdown_table_rows(sections.get(heading, ""))
+            exploration_tables[heading] = rows
+            if len(rows) < minimum_rows:
+                failures.append(
+                    f"{heading!r} needs at least {minimum_rows} substantive "
+                    "rows"
+                )
+            elif any(
+                len(row) != width or any(not non_placeholder(cell) for cell in row)
+                for row in rows
+            ):
+                failures.append(
+                    f"{heading!r} contains an incomplete or malformed row"
+                )
+        constraint_rows = exploration_tables.get("Decision bounds", [])
+        allowed_constraint_classes = {
+            "non-negotiable",
+            "inherited",
+            "negotiated",
+            "open",
+        }
+        for row_number, row in enumerate(constraint_rows, start=1):
+            if len(row) == 4 and row[1].strip().casefold() not in (
+                allowed_constraint_classes
+            ):
+                failures.append(
+                    "Decision bounds row "
+                    f"{row_number} must classify its field as non-negotiable, "
+                    "inherited, negotiated, or open"
+                )
+
+        candidate_rows = exploration_tables.get("Candidate field", [])
+        candidate_ids = [
+            row[0].strip()
+            for row in candidate_rows
+            if len(row) == 7
+        ]
+        if len(candidate_ids) != len(set(candidate_ids)):
+            failures.append("Candidate field IDs must be unique")
+        invalid_candidate_ids = sorted({
+            candidate_id
+            for candidate_id in candidate_ids
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", candidate_id)
+        })
+        if invalid_candidate_ids:
+            failures.append(
+                "Candidate field IDs are invalid: "
+                + ", ".join(invalid_candidate_ids)
+            )
+        allowed_candidate_statuses = {
+            "provisional",
+            "revised",
+            "rejected",
+            "accepted",
+            "blocked",
+        }
+        for row_number, row in enumerate(candidate_rows, start=1):
+            if len(row) == 7 and row[6].strip().casefold() not in (
+                allowed_candidate_statuses
+            ):
+                failures.append(
+                    f"Candidate field row {row_number} has an unsupported status"
+                )
+
+        comparison_status = (
+            markdown_label_value(
+                body,
+                "Comparison performed, partially performed, or not performed",
+            )
+            or ""
+        ).strip().casefold()
+        if not comparison_status.startswith(
+            ("performed", "partially performed", "not performed")
+        ):
+            failures.append(
+                "Proof comparison status must begin with performed, partially "
+                "performed, or not performed"
+            )
+        proof_rows = exploration_tables.get("Proof comparison", [])
+        proof_ids = [
+            row[0].strip()
+            for row in proof_rows
+            if len(row) == 6
+        ]
+        if len(proof_ids) != len(set(proof_ids)):
+            failures.append("Proof comparison candidate IDs must be unique")
+        unknown_proof_ids = sorted(set(proof_ids) - set(candidate_ids))
+        if unknown_proof_ids:
+            failures.append(
+                "Proof comparison candidate IDs must belong to Candidate "
+                "field entries: "
+                + ", ".join(unknown_proof_ids)
+            )
+
+        selected_value = (
+            markdown_label_value(
+                body,
+                "Selected candidate ID and `creative_logic`",
+            )
+            or ""
+        ).strip()
+        selected_id = selected_value.split(";", 1)[0].strip()
+        if selected_id and selected_id not in candidate_ids:
+            failures.append(
+                "Selected candidate ID must exist in Candidate field"
+            )
+        if selected_id and selected_id not in proof_ids:
+            failures.append(
+                "Selected candidate ID must have a Proof comparison row"
+            )
+        selected_proof_value = (
+            markdown_label_value(body, "Selected proof identity and artifact")
+            or ""
+        ).strip()
+        selected_proof_parts = [
+            part.strip()
+            for part in selected_proof_value.split(";", 1)
+        ]
+        selected_proof_id = selected_proof_parts[0] if selected_proof_parts else ""
+        selected_proof_binding = (
+            selected_proof_parts[1]
+            if len(selected_proof_parts) == 2
+            else ""
+        )
+        if selected_id and selected_proof_id != selected_id:
+            failures.append(
+                "Selected proof identity must match the selected candidate ID"
+            )
+
+        proof_binding_by_id = {
+            row[0].strip(): row[2].strip()
+            for row in proof_rows
+            if len(row) == 6
+        }
+        if (
+            selected_proof_id
+            and proof_binding_by_id.get(selected_proof_id)
+            != selected_proof_binding
+        ):
+            failures.append(
+                "Selected proof artifact binding must exactly match its "
+                "Proof comparison row"
+            )
+
+        for row_number, row in enumerate(proof_rows, start=1):
+            if len(row) != 6:
+                continue
+            artifact_match = ARTIFACT_BINDING_PATTERN.fullmatch(
+                row[2].strip()
+            )
+            if artifact_match is None:
+                failures.append(
+                    "Proof comparison row "
+                    f"{row_number} must bind a project-relative artifact path "
+                    "and lowercase SHA-256"
+                )
+                continue
+            relative_path, recorded_hash = artifact_match.groups()
+            try:
+                artifact = safe_binding_path(
+                    project if project is not None else Path.cwd(),
+                    relative_path.strip(),
+                    record_path=record_path or Path("exploration.md"),
+                )
+                actual_hash = hashlib.sha256(artifact.read_bytes()).hexdigest()
+                if recorded_hash != actual_hash:
+                    failures.append(
+                        "Proof comparison row "
+                        f"{row_number} SHA-256 does not match its artifact"
+                    )
+            except (OSError, StateError) as exc:
+                failures.append(
+                    f"Proof comparison row {row_number} is invalid: {exc}"
+                )
+
+    if record == "direction" and not proportional:
+        named_profiles = assurance_profiles(body)
+        if not named_profiles:
+            failures.append(
+                "Assurance profile must name quick, standard, showcase, "
+                "high-risk, or an explicit combination"
+            )
+        elif named_profiles == {
+            "quick", "standard", "showcase", "high-risk",
+        }:
+            failures.append(
+                "Assurance profile must select a profile rather than repeat "
+                "the template choices"
+            )
+        expected_profiles = (
+            set(required_assurance_profiles)
+            & {"quick", "standard", "showcase", "high-risk"}
+            if required_assurance_profiles is not None
+            else None
+        )
+        if (
+            expected_profiles is not None
+            and named_profiles != expected_profiles
+        ):
+            failures.append(
+                "Assurance profile must match the profiles persisted in "
+                "state.json"
+            )
+        for heading, minimum_cells in (
+            ("Constraint ledger", 6),
+            ("Routes, flows, and states", 5),
+            ("Evidence, content, and authority", 5),
+            ("Research and exploration", 4),
+            ("Creative logic", 7),
+        ):
+            _headers, rows = markdown_first_table(
+                sections.get(heading, "")
+            )
+            if not rows:
+                failures.append(f"{heading!r} needs at least one evidence row")
+            elif any(
+                len(row) != minimum_cells or any(not cell for cell in row)
+                for row in rows
+            ):
+                failures.append(
+                    f"{heading!r} contains an incomplete evidence row"
+                )
+        constraint_headers, constraint_rows = markdown_first_table(
+            sections.get("Constraint ledger", "")
+        )
+        class_index = (
+            constraint_headers.index("Class")
+            if "Class" in constraint_headers
+            else -1
+        )
+        allowed_constraint_classes = {
+            "non-negotiable",
+            "inherited",
+            "negotiated",
+            "open",
+        }
+        if class_index >= 0:
+            for row_number, row in enumerate(constraint_rows, start=1):
+                if (
+                    len(row) <= class_index
+                    or row[class_index].strip().casefold()
+                    not in allowed_constraint_classes
+                ):
+                    failures.append(
+                        "Constraint ledger row "
+                        f"{row_number} must use non-negotiable, inherited, "
+                        "negotiated, or open"
+                    )
+
+        logic_status = (
+            markdown_label_value(body, "`status`") or ""
+        ).strip().casefold()
+        if logic_status not in {
+            "provisional",
+            "accepted",
+            "revised",
+            "rejected",
+            "blocked",
+        }:
+            failures.append(
+                "creative_logic status must be provisional, accepted, revised, "
+                "rejected, or blocked"
+            )
+        _decision_headers, decision_rows = markdown_first_table(
+            sections.get("Creative logic", "")
+        )
+        decision_ids = [
+            row[0].strip()
+            for row in decision_rows
+            if len(row) == 7
+        ]
+        if len(decision_ids) != len(set(decision_ids)):
+            failures.append("Observable design decision IDs must be unique")
+        if any(
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", decision_id)
+            for decision_id in decision_ids
+        ):
+            failures.append("Observable design decision IDs must be stable IDs")
+
+    if record == "direction-proof" and proportional:
+        decision = (
+            markdown_label_value(body, "Decision") or ""
+        ).strip().casefold()
+        if decision not in {
+            "proceed",
+            "revise",
+            "compare again",
+            "reject",
+            "blocked",
+        }:
+            failures.append(
+                "Decision must be proceed, revise, compare again, reject, or blocked"
+            )
+        reviewer_relationship = (
+            markdown_label_value(body, "Reviewer relationship") or ""
+        ).strip().casefold()
+        allowed_relationships = {
+            "producer-self",
+            "independent-agent",
+            "independent-human",
+            "accountable-owner",
+            "owner-authorized-human",
+        }
+        if reviewer_relationship not in allowed_relationships:
+            failures.append(
+                "Reviewer relationship must identify producer-self, "
+                "independent-agent, independent-human, accountable-owner, or "
+                "owner-authorized-human"
+            )
+        owner_disposition = (
+            markdown_label_value(body, "Owner disposition") or ""
+        ).strip().casefold()
+        owner_match = re.match(
+            r"^(accepted|rejected|pending|not[ -]required)\b",
+            owner_disposition,
+        )
+        owner_status = (
+            owner_match.group(1).replace(" ", "-") if owner_match else ""
+        )
+        if not owner_status:
+            failures.append(
+                "Owner disposition must begin with accepted, rejected, pending, "
+                "or not-required"
+            )
+        if owner_status == "accepted" and reviewer_relationship not in {
+            "accountable-owner",
+            "owner-authorized-human",
+        }:
+            failures.append(
+                "Accepted owner disposition requires an accountable-owner or "
+                "owner-authorized-human reviewer relationship"
+            )
+        if owner_status == "rejected" and decision not in {"revise", "reject"}:
+            failures.append(
+                "Rejected owner disposition requires Decision revise or reject"
+            )
+
+    if record == "direction-proof" and not proportional:
+        decision = markdown_label_value(body, "Decision")
+        if decision and decision.casefold() not in {
+            "proceed",
+            "revise",
+            "compare again",
+            "reject",
+            "blocked",
+        }:
+            failures.append(
+                "Decision must be proceed, revise, compare again, reject, or blocked"
+            )
+        reviewer_record = markdown_label_value(
+            body,
+            "Reviewer, relationship, prior exposure, and date",
+        ) or ""
+        reviewer_relationship_match = re.search(
+            r"(?i)(?:^|;)\s*relationship\s*=\s*([^;]+)",
+            reviewer_record,
+        )
+        reviewer_relationship = (
+            reviewer_relationship_match.group(1).strip()
+            if reviewer_relationship_match
+            else ""
+        )
+        allowed_relationships = {
+            "producer-self",
+            "independent-agent",
+            "independent-human",
+            "accountable-owner",
+            "owner-authorized-human",
+        }
+        if (
+            reviewer_relationship
+            and reviewer_relationship.casefold() not in allowed_relationships
+        ):
+            failures.append(
+                "Reviewer relationship must be producer-self, "
+                "independent-agent, independent-human, accountable-owner, or "
+                "owner-authorized-human"
+            )
+        perceptual_status = markdown_label_value(body, "Perceptual status")
+        allowed_statuses = {
+            "self-reviewed candidate",
+            "independently reviewed",
+            "owner accepted",
+            "rejected",
+            "pending",
+        }
+        if (
+            perceptual_status
+            and perceptual_status.casefold() not in allowed_statuses
+        ):
+            failures.append(
+                "Perceptual status must be self-reviewed candidate, "
+                "independently reviewed, owner accepted, rejected, or pending"
+            )
+        if (
+            perceptual_status
+            and perceptual_status.casefold() == "owner accepted"
+            and reviewer_relationship
+            and reviewer_relationship.casefold()
+            not in {"accountable-owner", "owner-authorized-human"}
+        ):
+            failures.append(
+                "Owner accepted requires an accountable-owner or "
+                "owner-authorized-human reviewer relationship"
+            )
+        owner_acceptance = markdown_label_value(
+            body,
+            "Accountable-owner rendered acceptance",
+        )
+        owner_acceptance_match = re.match(
+            r"(?i)^(accepted|rejected|pending|not[ -]required)\b",
+            owner_acceptance or "",
+        )
+        owner_acceptance_status = (
+            owner_acceptance_match.group(1).casefold().replace(" ", "-")
+            if owner_acceptance_match
+            else ""
+        )
+        perceptual = (
+            perceptual_status.casefold() if perceptual_status else ""
+        )
+        if perceptual == "owner accepted" and owner_acceptance_status != "accepted":
+            failures.append(
+                "Perceptual status owner accepted requires accountable-owner "
+                "rendered acceptance to begin with accepted"
+            )
+        if owner_acceptance_status == "accepted" and perceptual != "owner accepted":
+            failures.append(
+                "Accepted accountable-owner rendered acceptance requires "
+                "Perceptual status owner accepted"
+            )
+        if owner_acceptance_status == "rejected":
+            if perceptual != "rejected":
+                failures.append(
+                    "Rejected accountable-owner rendered acceptance requires "
+                    "Perceptual status rejected"
+                )
+            if decision and decision.casefold() not in {"revise", "reject"}:
+                failures.append(
+                    "Rejected accountable-owner rendered acceptance requires "
+                    "Decision revise or reject"
+                )
+
+    if record == "visual-review" and proportional:
+        if markdown_label_value(
+            body,
+            "Rendered-review report path, hash, contract, and execution result",
+        ):
+            if project is not None and record_path is not None:
+                failures.extend(
+                    rendered_review_body_failures(
+                        body,
+                        project=project,
+                        record_path=record_path,
+                    )
+                )
+        if markdown_label_value(
+            body,
+            (
+                "Cross-build comparison identity, compatibility, changed "
+                "captures, reviewer, and result, or `not performed`"
+            ),
+        ):
+            if project is not None and record_path is not None:
+                failures.extend(
+                    render_comparison_body_failures(
+                        body,
+                        project=project,
+                        record_path=record_path,
+                    )
+                )
+        review_headers, review_rows = markdown_first_table(
+            sections.get("Rendered review", "")
+        )
+        expected_review_headers = (
+            "Route/state",
+            "Viewport/context",
+            "Evidence path and SHA-256",
+            "Observation",
+        )
+        if review_headers != expected_review_headers or not review_rows:
+            failures.append(
+                "Rendered review needs at least one row using the compact "
+                "route/state, viewport/context, evidence, and observation contract"
+            )
+        else:
+            artifact_index = review_headers.index(
+                "Evidence path and SHA-256"
+            )
+            for row_number, row in enumerate(review_rows, start=1):
+                if len(row) != len(expected_review_headers) or any(
+                    not non_placeholder(cell) for cell in row
+                ):
+                    failures.append(
+                        f"Rendered review row {row_number} is incomplete"
+                    )
+                    continue
+                if project is not None and record_path is not None:
+                    _artifact, artifact_failures = bound_artifact(
+                        row[artifact_index],
+                        project=project,
+                        record_path=record_path,
+                        label=f"Rendered review row {row_number} artifact",
+                    )
+                    failures.extend(artifact_failures)
+        final_reviewed = (
+            markdown_label_value(body, "Final implementation reviewed") or ""
+        ).strip().casefold()
+        if final_reviewed not in {"yes", "true"}:
+            failures.append(
+                "Final implementation reviewed must be yes before completion"
+            )
+        relationship = (
+            markdown_label_value(body, "Reviewer relationship") or ""
+        ).strip().casefold()
+        allowed_relationships = {
+            "producer-self",
+            "independent-agent",
+            "independent-human",
+            "accountable-owner",
+            "owner-authorized-human",
+            "target-user",
+        }
+        if relationship not in allowed_relationships:
+            failures.append("Reviewer relationship is unsupported")
+        conclusion = (
+            markdown_label_value(body, "Reviewer conclusion") or ""
+        ).strip().casefold()
+        allowed_conclusions = {
+            "self-reviewed candidate",
+            "independently reviewed",
+            "target-user reviewed",
+            "owner accepted",
+            "blocked",
+        }
+        if conclusion not in allowed_conclusions:
+            failures.append("Reviewer conclusion is unsupported")
+        owner_disposition = (
+            markdown_label_value(body, "Owner disposition") or ""
+        ).strip().casefold()
+        owner_match = re.match(
+            r"^(accepted|rejected|pending|not[ -]required)\b",
+            owner_disposition,
+        )
+        owner_status = (
+            owner_match.group(1).replace(" ", "-") if owner_match else ""
+        )
+        if not owner_status:
+            failures.append(
+                "Owner disposition must begin with accepted, rejected, pending, "
+                "or not-required"
+            )
+        if relationship == "producer-self" and conclusion in {
+            "independently reviewed",
+            "target-user reviewed",
+            "owner accepted",
+        }:
+            failures.append(
+                "A producer-self visual review cannot claim independent, target-"
+                "user, or owner acceptance"
+            )
+        if conclusion == "owner accepted" and (
+            owner_status != "accepted"
+            or relationship
+            not in {"accountable-owner", "owner-authorized-human"}
+        ):
+            failures.append(
+                "Reviewer conclusion owner accepted requires accepted owner "
+                "disposition and accountable-owner or owner-authorized-human review"
+            )
+        if owner_status == "accepted" and conclusion != "owner accepted":
+            failures.append(
+                "Accepted owner disposition requires Reviewer conclusion owner accepted"
+            )
+        if owner_status == "rejected" and conclusion != "blocked":
+            failures.append(
+                "Rejected owner disposition requires Reviewer conclusion blocked"
+            )
+        findings_headers, finding_rows = markdown_first_table(
+            sections.get("Findings", "")
+        )
+        if findings_headers != VISUAL_FINDINGS_HEADERS:
+            failures.append(
+                "Findings must use the exact "
+                f"{VISUAL_FINDINGS_CONTRACT} nine-column contract"
+            )
+        if not finding_rows:
+            failures.append(
+                "Findings needs at least one reviewed finding or explicit "
+                "not-applicable row"
+            )
+        for row in finding_rows:
+            if len(row) != len(VISUAL_FINDINGS_HEADERS) or any(
+                not cell for cell in row
+            ):
+                failures.append("Findings contains an incomplete row")
+                continue
+            severity = row[0].casefold()
+            confidence = row[1].casefold()
+            verification = row[6]
+            status = row[7].casefold()
+            owner = row[8]
+            if severity not in VISUAL_SEVERITIES:
+                failures.append(f"Findings uses unknown severity {row[0]!r}")
+            if confidence not in VISUAL_CONFIDENCES:
+                failures.append(
+                    f"Findings uses unknown confidence {row[1]!r}"
+                )
+            if status not in VISUAL_FINDING_STATUSES:
+                failures.append(f"Findings uses unknown status {row[7]!r}")
+            if not non_placeholder(owner):
+                failures.append("Findings requires an explicit owner cell")
+            if status == "verified" and not non_placeholder(verification):
+                failures.append(
+                    "Findings status verified requires exact rerun evidence"
+                )
+            if status in UNRESOLVED_VISUAL_STATUSES:
+                failures.append(
+                    f"{row[0]} finding remains {row[7]}; complete records "
+                    "require a resolved lifecycle status"
+                )
+            if severity in {"critical", "high", "medium"} and status not in {
+                "verified",
+                "not-applicable",
+            }:
+                failures.append(
+                    f"{row[0]} finding remains {row[7]}; complete records "
+                    "require verified or not-applicable closure"
+                )
+        release_blockers = (
+            markdown_label_value(body, "Release blockers") or ""
+        ).strip()
+        resolved = bool(
+            re.match(
+                r"(?i)^(?:none|no\b|resolved\b|not applicable\b)",
+                release_blockers,
+            )
+        )
+        if conclusion != "blocked" and not resolved:
+            failures.append(
+                "Release blockers must be resolved or explicitly recorded as none"
+            )
+        if conclusion == "blocked" and resolved:
+            failures.append(
+                "Reviewer conclusion blocked requires an explicit unresolved "
+                "release blocker"
+            )
+
+    if record == "visual-review" and not proportional:
+        named_profiles = assurance_profiles(body)
+        if not named_profiles:
+            failures.append(
+                "Assurance profile must name quick, standard, showcase, "
+                "high-risk, or an explicit combination"
+            )
+        elif named_profiles == {
+            "quick", "standard", "showcase", "high-risk",
+        }:
+            failures.append(
+                "Assurance profile must select a profile rather than repeat "
+                "the template choices"
+            )
+        expected_profiles = (
+            set(required_assurance_profiles)
+            & {"quick", "standard", "showcase", "high-risk"}
+            if required_assurance_profiles is not None
+            else None
+        )
+        if (
+            expected_profiles is not None
+            and named_profiles != expected_profiles
+        ):
+            failures.append(
+                "Assurance profile must match the profiles persisted in "
+                "state.json"
+            )
+        effective_profiles = (
+            expected_profiles
+            if expected_profiles is not None
+            else named_profiles
+        )
+        if (
+            effective_profiles
+            & {"standard", "showcase", "high-risk"}
+            and project is not None
+            and record_path is not None
+        ):
+            failures.extend(
+                rendered_review_body_failures(
+                    body,
+                    project=project,
+                    record_path=record_path,
+                )
+            )
+            coverage_headers, coverage_rows = markdown_first_table(
+                sections.get("Coverage matrix", "")
+            )
+            artifact_header = "Artifact path and SHA-256"
+            if artifact_header not in coverage_headers:
+                failures.append(
+                    "Coverage matrix must use Artifact path and SHA-256"
+                )
+            else:
+                artifact_index = coverage_headers.index(artifact_header)
+                for row_number, row in enumerate(
+                    coverage_rows,
+                    start=1,
+                ):
+                    if len(row) <= artifact_index:
+                        continue
+                    _artifact, artifact_failures = bound_artifact(
+                        row[artifact_index],
+                        project=project,
+                        record_path=record_path,
+                        label=(
+                            "Coverage matrix row "
+                            f"{row_number} artifact"
+                        ),
+                    )
+                    failures.extend(artifact_failures)
+        if project is not None and record_path is not None:
+            failures.extend(
+                render_comparison_body_failures(
+                    body,
+                    project=project,
+                    record_path=record_path,
+                )
+            )
+        reviewer_record = markdown_label_value(
+            body,
+            "Reviewers, relationship, and lens",
+        ) or ""
+        reviewer_relationship = semicolon_fields(reviewer_record).get(
+            "relationship",
+            "",
+        )
+        allowed_reviewer_relationships = {
+            "producer-self",
+            "independent-agent",
+            "independent-human",
+            "accountable-owner",
+            "owner-authorized-human",
+            "target-user",
+        }
+        if (
+            reviewer_relationship
+            and reviewer_relationship.casefold()
+            not in allowed_reviewer_relationships
+        ):
+            failures.append(
+                "Reviewer relationship must be producer-self, "
+                "independent-agent, independent-human, accountable-owner, "
+                "owner-authorized-human, or target-user"
+            )
+        owner_record = markdown_label_value(
+            body,
+            (
+                "Accountable-owner disposition, scope, ID, date, "
+                "candidate/build, and evidence"
+            ),
+        ) or ""
+        owner_acceptance = semicolon_fields(owner_record).get("status", "")
+        owner_acceptance_match = re.match(
+            r"(?i)^(accepted|rejected|pending|not[ -]required)\b",
+            owner_acceptance or "",
+        )
+        owner_acceptance_status = (
+            owner_acceptance_match.group(1).casefold().replace(" ", "-")
+            if owner_acceptance_match
+            else ""
+        )
+        if owner_acceptance and not owner_acceptance_status:
+            failures.append(
+                "Accountable-owner rendered acceptance must begin with "
+                "accepted, rejected, pending, or not-required"
+            )
+        reviewer_conclusion = markdown_label_value(
+            body,
+            "Reviewer conclusion",
+        )
+        allowed_reviewer_conclusions = {
+            "self-reviewed candidate",
+            "independently reviewed",
+            "target-user reviewed",
+            "owner accepted",
+            "blocked",
+        }
+        if (
+            reviewer_conclusion
+            and reviewer_conclusion.casefold()
+            not in allowed_reviewer_conclusions
+        ):
+            failures.append(
+                "Reviewer conclusion must be self-reviewed candidate, "
+                "independently reviewed, target-user reviewed, owner accepted, "
+                "or blocked"
+            )
+        conclusion = reviewer_conclusion.casefold() if reviewer_conclusion else ""
+        relationship = (
+            reviewer_relationship.casefold() if reviewer_relationship else ""
+        )
+        if relationship == "producer-self" and conclusion in {
+            "independently reviewed",
+            "target-user reviewed",
+            "owner accepted",
+        }:
+            failures.append(
+                "A producer-self visual review can only conclude "
+                "self-reviewed candidate or blocked"
+            )
+        if conclusion == "owner accepted":
+            if owner_acceptance_status != "accepted":
+                failures.append(
+                    "Reviewer conclusion owner accepted requires accountable-"
+                    "owner rendered acceptance to begin with accepted"
+                )
+            if relationship not in {
+                "accountable-owner",
+                "owner-authorized-human",
+            }:
+                failures.append(
+                    "Reviewer conclusion owner accepted requires an "
+                    "accountable-owner or owner-authorized-human reviewer "
+                    "relationship"
+                )
+        if owner_acceptance_status == "rejected" and conclusion != "blocked":
+            failures.append(
+                "Accountable-owner rejection requires Reviewer conclusion "
+                "blocked"
+            )
+        if owner_acceptance_status == "accepted" and conclusion != "owner accepted":
+            failures.append(
+                "Accepted accountable-owner rendered acceptance requires "
+                "Reviewer conclusion owner accepted"
+            )
+        final_round_record = markdown_label_value(
+            body,
+            "Date and final implementation round reviewed",
+        ) or ""
+        final_round_fields = semicolon_fields(final_round_record)
+        final_round = final_round_fields.get("final_round", "")
+        if not final_round:
+            trailing_match = re.search(r"(?i)(?:^|[;,:])\s*(yes|no)\s*$", final_round_record)
+            final_round = trailing_match.group(1) if trailing_match else ""
+        if final_round.casefold() != "yes":
+            failures.append(
+                "a complete visual review must cover the final implementation round"
+            )
+        coverage = markdown_table_rows(sections.get("Coverage matrix", ""))
+        if not coverage:
+            failures.append(
+                "Coverage matrix needs at least one tested route/state/context row"
+            )
+        elif any(len(row) != 5 or any(not cell for cell in row) for row in coverage):
+            failures.append("Coverage matrix contains an incomplete row")
+        findings_headers, finding_rows = markdown_first_table(
+            sections.get("Findings", "")
+        )
+        if findings_headers != VISUAL_FINDINGS_HEADERS:
+            failures.append(
+                "Findings must use the exact "
+                f"{VISUAL_FINDINGS_CONTRACT} nine-column contract"
+            )
+        if not finding_rows:
+            failures.append(
+                "Findings needs at least one reviewed finding or explicit "
+                "not-applicable row"
+            )
+        for row in finding_rows:
+            if len(row) != len(VISUAL_FINDINGS_HEADERS) or any(
+                not cell for cell in row
+            ):
+                failures.append("Findings contains an incomplete row")
+                continue
+            severity = row[0].casefold()
+            confidence = row[1].casefold()
+            verification = row[6]
+            status = row[7].casefold()
+            owner = row[8]
+            if severity not in VISUAL_SEVERITIES:
+                failures.append(f"Findings uses unknown severity {row[0]!r}")
+            if confidence not in VISUAL_CONFIDENCES:
+                failures.append(
+                    f"Findings uses unknown confidence {row[1]!r}"
+                )
+            if status not in VISUAL_FINDING_STATUSES:
+                failures.append(f"Findings uses unknown status {row[7]!r}")
+            if not non_placeholder(owner):
+                failures.append("Findings requires an explicit owner cell")
+            if status == "verified" and not non_placeholder(verification):
+                failures.append(
+                    "Findings status verified requires exact rerun evidence"
+                )
+            if status in UNRESOLVED_VISUAL_STATUSES:
+                failures.append(
+                    f"{row[0]} finding remains {row[7]}; complete records "
+                    "require a resolved lifecycle status"
+                )
+            if severity in {"critical", "high", "medium"} and status not in {
+                "verified",
+                "not-applicable",
+            }:
+                failures.append(
+                    f"{row[0]} finding remains {row[7]}; complete records "
+                    "require verified or not-applicable closure"
+                )
+        release_blockers = markdown_label_value(
+            body,
+            (
+                "Remaining limitations, open high/medium findings, owners, "
+                "and release blockers"
+            ),
+        )
+        if (
+            release_blockers
+            and conclusion != "blocked"
+            and not re.match(
+                r"(?i)^(?:none|no\b|resolved\b|not applicable\b)",
+                release_blockers,
+            )
+        ):
+            failures.append(
+                "Release blockers must be resolved or explicitly recorded as none"
+            )
+        if conclusion == "blocked" and release_blockers and re.match(
+            r"(?i)^(?:none|no\b|resolved\b|not applicable\b)",
+            release_blockers,
+        ):
+            failures.append(
+                "Reviewer conclusion blocked requires an explicit unresolved "
+                "release blocker"
+            )
+
+    if record == "claims":
+        claim_rows = markdown_table_rows(sections.get("Claims", ""))
+        if not claim_rows:
+            failures.append("Claims needs at least one reviewed claim row")
+        for row in claim_rows:
+            if len(row) != 9 or any(not cell for cell in row):
+                failures.append("Claims contains an incomplete row")
+                continue
+            status = row[4].casefold()
+            treatment = row[8].casefold()
+            if status not in {"approved", "scenario", "pending", "prohibited"}:
+                failures.append(f"Claims uses unknown status {row[4]!r}")
+            if treatment not in {
+                "show",
+                "qualify",
+                "label",
+                "replace",
+                "defer",
+                "omit",
+            }:
+                failures.append(
+                    f"Claims uses unknown public treatment {row[8]!r}"
+                )
+            if status in {"pending", "prohibited"} and treatment not in {
+                "defer",
+                "omit",
+            }:
+                failures.append(
+                    f"{row[0]} is {row[4]} but is not deferred or omitted"
+                )
+            if status == "scenario" and treatment not in {"qualify", "label"}:
+                failures.append(
+                    f"{row[0]} is a scenario but is not qualified or labeled"
+                )
+    failures.extend(owner_disposition_body_failures(
+        record,
+        body,
+        project=project,
+        record_path=record_path,
+    ))
+    return failures
+
+
+def safe_binding_path(project: Path, relative: str, *, record_path: Path) -> Path:
+    if (
+        not relative
+        or "\\" in relative
+        or relative.startswith("/")
+        or re.match(r"^[A-Za-z]:", relative)
+    ):
+        raise StateError(
+            "invalid-record-binding",
+            "binding_path must be a safe project-relative POSIX file path.",
+            path=record_path,
+        )
+    pure = PurePosixPath(relative)
+    if any(part in {"", ".", ".."} for part in pure.parts):
+        raise StateError(
+            "invalid-record-binding",
+            "binding_path must not contain empty, dot, or parent segments.",
+            path=record_path,
+        )
+    candidate = lexical_absolute(project.joinpath(*pure.parts))
+    if not is_within(candidate, project):
+        raise StateError(
+            "invalid-record-binding",
+            "binding_path escapes the selected project.",
+            path=record_path,
+        )
+    assert_no_reparse_ancestors(candidate, stop=project)
+    if not candidate.is_file():
+        raise StateError(
+            "record-binding-missing",
+            "The bound build or artifact file does not exist.",
+            path=candidate,
+        )
+    if candidate == record_path:
+        raise StateError(
+            "invalid-record-binding",
+            "A record cannot use itself as its independent build/artifact binding.",
+            path=record_path,
+        )
+    return candidate
+
+
+def completed_record_failures(
+    project: Path,
+    path: Path,
+    record: str,
+    metadata: dict[str, str],
+    body: str,
+    *,
+    required_assurance_profiles: tuple[str, ...] | set[str] | None = None,
+    required_evidence_capabilities: tuple[str, ...] | set[str] | None = None,
+) -> list[str]:
+    failures = substantive_body_failures(
+        record,
+        body,
+        project=project,
+        record_path=path,
+        required_assurance_profiles=required_assurance_profiles,
+        required_evidence_capabilities=required_evidence_capabilities,
+        evidence_contract=metadata.get("evidence_contract"),
+    )
+    missing = sorted(COMPLETE_RECORD_FIELDS - set(metadata))
+    if missing:
+        failures.append(
+            "complete metadata is missing: " + ", ".join(missing)
+        )
+        return failures
+    actual_body_hash = body_sha256(body)
+    if metadata.get("record_body_sha256") != actual_body_hash:
+        failures.append(
+            "record_body_sha256 does not match the exact current Markdown body"
+        )
+    if metadata.get("binding_kind") not in {"build", "artifact"}:
+        failures.append("binding_kind must be build or artifact")
+    for field in ("binding_id", "completion_owner", "limitations"):
+        if not non_placeholder(metadata.get(field)):
+            failures.append(f"{field} must be an explicit non-placeholder value")
+    if metadata.get("unresolved_high") != "0":
+        failures.append("unresolved_high must be 0 before status can be complete")
+    if metadata.get("unresolved_medium") != "0":
+        failures.append("unresolved_medium must be 0 before status can be complete")
+    try:
+        completed = datetime.fromisoformat(
+            metadata.get("completed_at", "").replace("Z", "+00:00")
+        )
+        if completed.tzinfo is None:
+            raise ValueError("timezone missing")
+        if completed.astimezone(timezone.utc) > datetime.now(timezone.utc):
+            failures.append("completed_at may not be in the future")
+    except ValueError:
+        failures.append("completed_at must be an ISO date-time with timezone")
+    try:
+        binding = safe_binding_path(
+            project,
+            metadata.get("binding_path", ""),
+            record_path=path,
+        )
+        actual_binding_hash = hashlib.sha256(binding.read_bytes()).hexdigest()
+        if metadata.get("binding_sha256") != actual_binding_hash:
+            failures.append(
+                "binding_sha256 does not match the exact current build/artifact file"
+            )
+    except (OSError, StateError) as exc:
+        failures.append(str(exc))
+    return failures
+
+
+def migration_report_failures(
+    project: Path,
+    state_root: Path,
+) -> list[str]:
+    path = state_root / MIGRATION_REPORT
+    invalid_legacy_entries = [
+        filename
+        for filename in LEGACY_RECORD_FILES
+        if (state_root / filename).exists()
+        and not (state_root / filename).is_file()
+    ]
+    if invalid_legacy_entries:
+        return [
+            "Legacy record names must be regular files: "
+            + ", ".join(invalid_legacy_entries)
+            + "."
+        ]
+    legacy_paths = [
+        state_root / filename
+        for filename in LEGACY_RECORD_FILES
+        if (state_root / filename).is_file()
+    ]
+    if not legacy_paths and not path.exists():
+        return []
+    if legacy_paths and not path.is_file():
+        return [
+            "Legacy records require a hash-bound migration report; run --migrate."
+        ]
+    if not path.is_file():
+        return [f"{MIGRATION_REPORT} exists but is not a regular file."]
+    try:
+        payload = read_json(path)
+    except StateError as exc:
+        return [f"Invalid {MIGRATION_REPORT}: {exc}"]
+    required = {
+        "schema_version",
+        "record_type",
+        "migrated_at",
+        "legacy_files",
+        "record_updates",
+    }
+    optional = {
+        "visual_review_migrations",
+        "completion_downgrades",
+        "asset_manifest_migrations",
+        "assurance_transitions",
+    }
+    if (
+        not isinstance(payload, dict)
+        or not required.issubset(payload)
+        or set(payload) - required - optional
+    ):
+        return [f"{MIGRATION_REPORT} has an unsupported shape."]
+    failures: list[str] = []
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("record_type") != "design-dna-project-state-migration"
+    ):
+        failures.append(f"{MIGRATION_REPORT} has an invalid contract identity.")
+    try:
+        migrated = datetime.fromisoformat(
+            str(payload.get("migrated_at", "")).replace("Z", "+00:00")
+        )
+        if migrated.tzinfo is None or migrated.astimezone(timezone.utc) > datetime.now(timezone.utc):
+            raise ValueError("invalid migration time")
+    except ValueError:
+        failures.append(f"{MIGRATION_REPORT} migrated_at is invalid.")
+    legacy_entries = payload.get("legacy_files")
+    if not isinstance(legacy_entries, list):
+        failures.append(f"{MIGRATION_REPORT} legacy_files must be a list.")
+        legacy_entries = []
+    observed: set[str] = set()
+    for entry in legacy_entries:
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"path", "sha256", "bytes", "disposition"}
+            or entry.get("disposition") != "preserved-unmapped"
+            or not isinstance(entry.get("bytes"), int)
+        ):
+            failures.append(f"{MIGRATION_REPORT} contains an invalid legacy file entry.")
+            continue
+        relative = str(entry.get("path", ""))
+        if relative not in LEGACY_RECORD_FILES or relative in observed:
+            failures.append(f"{MIGRATION_REPORT} contains an invalid or duplicate legacy path.")
+            continue
+        observed.add(relative)
+        legacy = state_root / relative
+        if not legacy.is_file():
+            failures.append(f"{MIGRATION_REPORT} references missing legacy file {relative}.")
+            continue
+        try:
+            data = legacy.read_bytes()
+        except OSError as exc:
+            failures.append(f"Unable to verify legacy file {relative}: {exc}")
+            continue
+        if entry.get("bytes") != len(data):
+            failures.append(f"{MIGRATION_REPORT} byte count changed for {relative}.")
+        if entry.get("sha256") != hashlib.sha256(data).hexdigest():
+            failures.append(f"{MIGRATION_REPORT} hash changed for {relative}.")
+    expected = {path.name for path in legacy_paths}
+    if observed != expected:
+        failures.append(
+            f"{MIGRATION_REPORT} does not exactly inventory current legacy records."
+        )
+    updates = payload.get("record_updates")
+    if (
+        not isinstance(updates, list)
+        or len(updates) != len(set(map(str, updates)))
+        or any(str(item) not in SUBSTANTIVE_RECORDS.values() for item in updates)
+    ):
+        failures.append(f"{MIGRATION_REPORT} record_updates is invalid.")
+    completion_downgrades = payload.get("completion_downgrades", [])
+    if not isinstance(completion_downgrades, list):
+        failures.append(
+            f"{MIGRATION_REPORT} completion_downgrades must be a list."
+        )
+        completion_downgrades = []
+    downgrade_keys = {
+        "path",
+        "record",
+        "source_created_with",
+        "source_body_sha256",
+        "prior_binding_id",
+        "prior_binding_path",
+        "prior_binding_sha256",
+        "prior_completion_owner",
+        "prior_completed_at",
+        "prior_limitations",
+        "reasons",
+    }
+    observed_downgrades: set[tuple[str, str]] = set()
+    for index, entry in enumerate(completion_downgrades):
+        label = f"{MIGRATION_REPORT} completion_downgrades[{index}]"
+        if not isinstance(entry, dict) or set(entry) != downgrade_keys:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        record = str(entry.get("record", ""))
+        record_path = str(entry.get("path", ""))
+        if SUBSTANTIVE_RECORDS.get(record_path) != record:
+            failures.append(f"{label} has an invalid record/path pair.")
+        source_hash = str(entry.get("source_body_sha256", ""))
+        identity = (record_path, source_hash)
+        if identity in observed_downgrades:
+            failures.append(f"{label} duplicates a prior downgrade.")
+        observed_downgrades.add(identity)
+        if not re.fullmatch(r"[0-9a-f]{64}", source_hash):
+            failures.append(f"{label} has an invalid source_body_sha256.")
+        source_created_with = entry.get("source_created_with")
+        if (
+            not isinstance(source_created_with, str)
+            or (
+                source_created_with != "not-recorded"
+                and (
+                    not source_created_with.startswith("design-dna ")
+                    or not SEMVER.fullmatch(
+                        source_created_with.removeprefix("design-dna ")
+                    )
+                )
+            )
+        ):
+            failures.append(f"{label} has an invalid source_created_with.")
+        if (
+            not isinstance(entry.get("prior_binding_id"), str)
+            or not str(entry.get("prior_binding_id", "")).strip()
+        ):
+            failures.append(f"{label} has an invalid prior_binding_id.")
+        for field in (
+            "prior_binding_path",
+            "prior_completion_owner",
+            "prior_completed_at",
+            "prior_limitations",
+        ):
+            if (
+                not isinstance(entry.get(field), str)
+                or not str(entry.get(field, "")).strip()
+            ):
+                failures.append(f"{label} has an invalid {field}.")
+        prior_binding_hash = str(entry.get("prior_binding_sha256", ""))
+        if (
+            prior_binding_hash != "not-recorded"
+            and not re.fullmatch(r"[0-9a-f]{64}", prior_binding_hash)
+        ):
+            failures.append(
+                f"{label} has an invalid prior_binding_sha256."
+            )
+        reasons = entry.get("reasons")
+        if (
+            not isinstance(reasons, list)
+            or not reasons
+            or not all(
+                isinstance(reason, str) and non_placeholder(reason)
+                for reason in reasons
+            )
+            or len(reasons) != len(set(reasons))
+        ):
+            failures.append(f"{label} reasons must be unique and substantive.")
+    asset_migrations = payload.get("asset_manifest_migrations", [])
+    if not isinstance(asset_migrations, list):
+        failures.append(
+            f"{MIGRATION_REPORT} asset_manifest_migrations must be a list."
+        )
+        asset_migrations = []
+    asset_migration_keys = {
+        "path",
+        "source_schema_version",
+        "target_schema_version",
+        "source_manifest_sha256",
+        "migrated_manifest_sha256",
+        "unresolved_asset_ids",
+    }
+    observed_asset_migrations: set[str] = set()
+    for index, entry in enumerate(asset_migrations):
+        label = f"{MIGRATION_REPORT} asset_manifest_migrations[{index}]"
+        if not isinstance(entry, dict) or set(entry) != asset_migration_keys:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        source_hash = str(entry.get("source_manifest_sha256", ""))
+        if source_hash in observed_asset_migrations:
+            failures.append(f"{label} duplicates a prior asset migration.")
+        observed_asset_migrations.add(source_hash)
+        if (
+            entry.get("path") != "assets.yml"
+            or entry.get("source_schema_version") != 1
+            or entry.get("target_schema_version") != ASSET_SCHEMA_VERSION
+        ):
+            failures.append(f"{label} has an invalid schema transition.")
+        for hash_field in (
+            "source_manifest_sha256",
+            "migrated_manifest_sha256",
+        ):
+            if not re.fullmatch(
+                r"[0-9a-f]{64}",
+                str(entry.get(hash_field, "")),
+            ):
+                failures.append(f"{label} has an invalid {hash_field}.")
+        unresolved_ids = entry.get("unresolved_asset_ids")
+        if (
+            not isinstance(unresolved_ids, list)
+            or not all(
+                isinstance(asset_id, str)
+                and re.fullmatch(r"ASSET-[0-9]{3,}", asset_id)
+                for asset_id in unresolved_ids
+            )
+            or len(unresolved_ids) != len(set(unresolved_ids))
+        ):
+            failures.append(
+                f"{label} unresolved_asset_ids must be unique asset IDs."
+            )
+    assurance_transitions = payload.get("assurance_transitions", [])
+    if not isinstance(assurance_transitions, list):
+        failures.append(
+            f"{MIGRATION_REPORT} assurance_transitions must be a list."
+        )
+        assurance_transitions = []
+    transition_keys = {
+        "source_schema_version",
+        "target_schema_version",
+        "source_state_sha256",
+        "migrated_state_sha256",
+        "source_profile_field",
+        "source_profile_values",
+        "target_assurance_profiles",
+        "required_records",
+        "reason",
+    }
+    observed_transitions: set[str] = set()
+    for index, entry in enumerate(assurance_transitions):
+        label = f"{MIGRATION_REPORT} assurance_transitions[{index}]"
+        if not isinstance(entry, dict) or set(entry) != transition_keys:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        source_hash = str(entry.get("source_state_sha256", ""))
+        if source_hash in observed_transitions:
+            failures.append(f"{label} duplicates a prior transition.")
+        observed_transitions.add(source_hash)
+        if (
+            not isinstance(entry.get("source_schema_version"), int)
+            or entry.get("source_schema_version") < 0
+            or entry.get("target_schema_version") != STATE_SCHEMA_VERSION
+            or entry.get("source_profile_field")
+            not in {
+                "assurance_profile",
+                "assurance_profiles",
+                "missing",
+            }
+        ):
+            failures.append(f"{label} has an invalid schema/profile source.")
+        for hash_field in (
+            "source_state_sha256",
+            "migrated_state_sha256",
+        ):
+            if not re.fullmatch(
+                r"[0-9a-f]{64}",
+                str(entry.get(hash_field, "")),
+            ):
+                failures.append(f"{label} has an invalid {hash_field}.")
+        source_values = entry.get("source_profile_values")
+        if (
+            not isinstance(source_values, list)
+            or not all(isinstance(item, str) for item in source_values)
+            or len(source_values) != len(set(source_values))
+        ):
+            failures.append(f"{label} source_profile_values is invalid.")
+        target_profiles = entry.get("target_assurance_profiles")
+        try:
+            normalized_targets = normalize_assurance_profiles(
+                target_profiles
+                if isinstance(target_profiles, list)
+                else []
+            )
+            if list(normalized_targets) != target_profiles:
+                failures.append(
+                    f"{label} target_assurance_profiles is not canonical."
+                )
+        except StateError:
+            failures.append(
+                f"{label} target_assurance_profiles is invalid."
+            )
+        transition_records = entry.get("required_records")
+        if (
+            not isinstance(transition_records, list)
+            or not transition_records
+            or not all(
+                isinstance(record, str) and record in RECORD_TEMPLATES
+                for record in transition_records
+            )
+            or len(transition_records) != len(set(transition_records))
+        ):
+            failures.append(f"{label} required_records is invalid.")
+        if not non_placeholder(str(entry.get("reason", ""))):
+            failures.append(f"{label} reason is not substantive.")
+    visual_migrations = payload.get("visual_review_migrations", [])
+    if not isinstance(visual_migrations, list):
+        failures.append(
+            f"{MIGRATION_REPORT} visual_review_migrations must be a list."
+        )
+        visual_migrations = []
+    migration_keys = {
+        "path",
+        "source_contract",
+        "source_schema_version",
+        "source_created_with",
+        "source_body_sha256",
+        "migrated_body_sha256",
+        "source_table",
+        "source_table_sha256",
+        "migrated_table",
+        "migrated_table_sha256",
+    }
+    observed_visual_migrations: set[tuple[str, str]] = set()
+    for index, entry in enumerate(visual_migrations):
+        label = (
+            f"{MIGRATION_REPORT} visual_review_migrations[{index}]"
+        )
+        if not isinstance(entry, dict) or set(entry) != migration_keys:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        identity = (
+            str(entry.get("source_body_sha256", "")),
+            str(entry.get("migrated_body_sha256", "")),
+        )
+        if identity in observed_visual_migrations:
+            failures.append(f"{label} duplicates a prior migration.")
+        observed_visual_migrations.add(identity)
+        if (
+            entry.get("path") != "visual-review.md"
+            or entry.get("source_contract")
+            not in {
+                "legacy-schema-1-six-column",
+                "design-dna-2.2-eight-column",
+            }
+            or entry.get("source_schema_version") != 1
+        ):
+            failures.append(f"{label} has an invalid source contract.")
+        source_created_with = entry.get("source_created_with")
+        if (
+            not isinstance(source_created_with, str)
+            or not source_created_with.startswith("design-dna ")
+            or not SEMVER.fullmatch(
+                source_created_with.removeprefix("design-dna ")
+            )
+        ):
+            failures.append(f"{label} has an invalid source_created_with.")
+        for hash_field in (
+            "source_body_sha256",
+            "migrated_body_sha256",
+            "source_table_sha256",
+            "migrated_table_sha256",
+        ):
+            if not re.fullmatch(
+                r"[0-9a-f]{64}",
+                str(entry.get(hash_field, "")),
+            ):
+                failures.append(f"{label} has an invalid {hash_field}.")
+        for table_field, hash_field in (
+            ("source_table", "source_table_sha256"),
+            ("migrated_table", "migrated_table_sha256"),
+        ):
+            table = entry.get(table_field)
+            if not isinstance(table, str) or not table.strip():
+                failures.append(f"{label} has an empty {table_field}.")
+                continue
+            if hashlib.sha256(table.encode("utf-8")).hexdigest() != entry.get(
+                hash_field
+            ):
+                failures.append(
+                    f"{label} {hash_field} does not bind {table_field}."
+                )
+    return failures
 
 
 def restricted_git_tracking(
@@ -1621,8 +6722,11 @@ def restricted_git_tracking(
     return sorted(set(tracked)), None
 
 
-def validate_state(project: Path, current_version: str) -> tuple[list[str], list[str]]:
-    state_root = project / ".design-dna"
+def validate_state_root(
+    state_root: Path,
+    project: Path,
+    current_version: str,
+) -> tuple[list[str], list[str]]:
     assert_no_reparse_ancestors(state_root, stop=project)
     assert_safe_tree(state_root)
     failures: list[str] = []
@@ -1634,17 +6738,55 @@ def validate_state(project: Path, current_version: str) -> tuple[list[str], list
         failures.append(f"Missing state file: {manifest_path}")
         return failures, warnings
     records: list[str] = []
+    state_profiles: tuple[str, ...] = ()
+    evidence_capabilities: tuple[str, ...] = ()
+    extension_records: list[dict[str, object]] = []
     try:
         state = read_json(manifest_path)
-        if not isinstance(state, dict) or set(state) != {
-            "schema_version", "created_with", "created", "classification", "records"
-        }:
+        required_state_fields = {
+            "schema_version",
+            "created_with",
+            "created",
+            "classification",
+            "assurance_profiles",
+            "records",
+        }
+        allowed_state_fields = {
+            *required_state_fields,
+            "evidence_contract",
+        }
+        if (
+            not isinstance(state, dict)
+            or not required_state_fields.issubset(state)
+            or not set(state).issubset(allowed_state_fields)
+        ):
             failures.append("state.json has an unsupported shape.")
             state = {}
         if state.get("schema_version") != STATE_SCHEMA_VERSION:
             failures.append("state.json has an unsupported schema_version.")
         if state.get("classification") != "internal":
             failures.append("state.json classification must be internal.")
+        raw_profiles = state.get("assurance_profiles")
+        if (
+            not isinstance(raw_profiles, list)
+            or not raw_profiles
+            or not all(isinstance(item, str) for item in raw_profiles)
+            or len(raw_profiles) != len(set(raw_profiles))
+        ):
+            failures.append(
+                "state.json assurance_profiles is missing or unsupported; "
+                "run --migrate for an older state."
+            )
+        else:
+            try:
+                state_profiles = normalize_assurance_profiles(raw_profiles)
+                if list(state_profiles) != raw_profiles:
+                    failures.append(
+                        "state.json assurance_profiles must use the canonical "
+                        "ordered cumulative form; run --migrate."
+                    )
+            except StateError as exc:
+                failures.append(str(exc))
         created_with = state.get("created_with")
         if (
             not isinstance(created_with, str)
@@ -1658,15 +6800,49 @@ def validate_state(project: Path, current_version: str) -> tuple[list[str], list
         raw_records = state.get("records")
         if (
             not isinstance(raw_records, list)
+            or not raw_records
             or not all(isinstance(item, str) for item in raw_records)
             or len(raw_records) != len(set(raw_records))
         ):
-            failures.append("state.json records must be a unique list of strings.")
+            failures.append(
+                "state.json records must be a nonempty, unique list of "
+                "strings."
+            )
         else:
             records = raw_records
         unknown = set(records) - set(RECORD_TEMPLATES)
         if unknown:
             failures.append(f"state.json lists unknown records: {', '.join(sorted(unknown))}.")
+        if records and state_profiles:
+            if (
+                state_profiles == ("quick",)
+                and set(records).issubset(PROFILES["quick"])
+            ):
+                inferred_profiles = state_profiles
+            else:
+                inferred_profiles = merged_assurance_profiles(
+                    list(state_profiles),
+                    [],
+                    records,
+                )
+            if inferred_profiles != state_profiles:
+                failures.append(
+                    "state.json assurance_profiles omit capabilities implied "
+                    "by the listed records; run --migrate."
+                )
+        contract = state.get("evidence_contract")
+        if contract is None:
+            evidence_capabilities = inferred_evidence_capabilities(
+                state_profiles
+            )
+        elif state_profiles:
+            try:
+                (
+                    evidence_capabilities,
+                    extension_records,
+                ) = validate_evidence_contract(contract, state_profiles)
+            except StateError as exc:
+                failures.append(str(exc))
         for record in records:
             if record not in RECORD_TEMPLATES:
                 continue
@@ -1695,12 +6871,12 @@ def validate_state(project: Path, current_version: str) -> tuple[list[str], list
         if not path.is_file():
             continue
         try:
-            meta = parse_frontmatter(path)
+            meta, body = read_frontmatter_document(path)
             required = {"schema_version", "created_with", "classification"}
             missing = sorted(required - set(meta))
             if missing:
                 failures.append(f"{filename} is missing frontmatter fields: {', '.join(missing)}.")
-            if meta.get("schema_version") != str(STATE_SCHEMA_VERSION):
+            if meta.get("schema_version") != str(RECORD_SCHEMA_VERSION):
                 failures.append(f"{filename} has an unsupported schema_version.")
             if meta.get("classification") not in CLASSIFICATIONS:
                 failures.append(f"{filename} has an invalid classification.")
@@ -1712,6 +6888,51 @@ def validate_state(project: Path, current_version: str) -> tuple[list[str], list
                 failures.append(f"{filename} has an invalid created_with value.")
             if "__DESIGN_DNA_VERSION__" in path.read_text(encoding="utf-8"):
                 failures.append(f"{filename} contains an unresolved template token.")
+            if (
+                filename == "visual-review.md"
+                and meta.get("findings_contract")
+                != VISUAL_FINDINGS_CONTRACT
+            ):
+                failures.append(
+                    "visual-review.md must declare findings_contract "
+                    f"{VISUAL_FINDINGS_CONTRACT}; run --migrate for a "
+                    "schema-1/Design DNA 2.2 review."
+                )
+            if filename in SUBSTANTIVE_RECORDS:
+                status = meta.get("record_status")
+                if status not in RECORD_STATUSES:
+                    failures.append(
+                        f"{filename} must declare record_status as draft or complete; "
+                        "run --migrate for an older record."
+                    )
+                elif status == "draft":
+                    stale_completion = sorted(
+                        COMPLETE_RECORD_FIELDS & set(meta)
+                    )
+                    if stale_completion:
+                        failures.append(
+                            f"{filename} is draft but retains completion metadata: "
+                            + ", ".join(stale_completion)
+                            + "."
+                        )
+                    warnings.append(
+                        f"{filename} remains draft and cannot support a completion "
+                        "or release-readiness claim."
+                    )
+                else:
+                    record_failures = completed_record_failures(
+                        project,
+                        path,
+                        SUBSTANTIVE_RECORDS[filename],
+                        meta,
+                        body,
+                        required_assurance_profiles=state_profiles,
+                        required_evidence_capabilities=evidence_capabilities,
+                    )
+                    failures.extend(
+                        f"Invalid complete {filename}: {item}."
+                        for item in record_failures
+                    )
             if filename == "user-validation.md":
                 missing_research_fields = sorted(
                     USER_VALIDATION_FRONTMATTER_FIELDS - set(meta)
@@ -1805,13 +7026,236 @@ def validate_state(project: Path, current_version: str) -> tuple[list[str], list
     assets_path = state_root / "assets.yml"
     if assets_path.is_file():
         try:
-            warnings.extend(validate_asset_manifest(assets_path, current_version))
+            warnings.extend(
+                validate_asset_manifest(
+                    assets_path,
+                    current_version,
+                    project,
+                )
+            )
         except StateError as exc:
             failures.append(f"Invalid assets.yml: {exc}")
-    for legacy in ("state.yml", "continuity-note.yml", "ledger-entry.yml"):
-        if (state_root / legacy).exists():
-            warnings.append(f"Legacy record preserved at {state_root / legacy}; migrate it manually if its history is still useful.")
+    route_family_path = state_root / "route-family.json"
+    if route_family_path.is_file():
+        try:
+            route_family, route_family_errors = validate_route_family_record(
+                route_family_path,
+            )
+            failures.extend(
+                "Invalid route-family.json: "
+                f"{item['path']} {item['code']}: {item['message']}"
+                for item in route_family_errors
+            )
+            expected = f"design-dna {current_version}"
+            if (
+                isinstance(route_family, dict)
+                and route_family.get("created_with") != expected
+            ):
+                warnings.append(
+                    "route-family.json was created with "
+                    f"{route_family.get('created_with', 'unknown')}; "
+                    f"current package is {expected}."
+                )
+        except StateError as exc:
+            failures.append(f"Invalid route-family.json: {exc}")
+    failures.extend(migration_report_failures(project, state_root))
+    for legacy in LEGACY_RECORD_FILES:
+        if (state_root / legacy).is_file() and not failures:
+            warnings.append(
+                f"Legacy record preserved without semantic reinterpretation at "
+                f"{state_root / legacy}; its exact bytes are bound by "
+                f"{MIGRATION_REPORT}."
+            )
     return failures, warnings
+
+
+def validate_state(
+    project: Path,
+    current_version: str,
+) -> tuple[list[str], list[str]]:
+    return validate_state_root(
+        project / ".design-dna",
+        project,
+        current_version,
+    )
+
+
+def readiness_failures(project: Path) -> list[str]:
+    state_root = project / ".design-dna"
+    state = read_json(state_root / "state.json")
+    if not isinstance(state, dict):
+        return ["state.json must contain an object."]
+    profiles = state.get("assurance_profiles")
+    records = state.get("records")
+    if (
+        not isinstance(profiles, list)
+        or not profiles
+        or not all(isinstance(item, str) for item in profiles)
+        or not isinstance(records, list)
+        or not all(isinstance(item, str) for item in records)
+    ):
+        return [
+            "state.json must persist valid assurance_profiles and records "
+            "before readiness can be checked."
+        ]
+    try:
+        canonical_profiles = normalize_assurance_profiles(profiles)
+    except StateError as exc:
+        return [str(exc)]
+    contract = state.get("evidence_contract")
+    extension_records: list[dict[str, object]] = []
+    try:
+        if contract is None:
+            evidence_capabilities = inferred_evidence_capabilities(
+                canonical_profiles
+            )
+        else:
+            (
+                evidence_capabilities,
+                extension_records,
+            ) = validate_evidence_contract(contract, canonical_profiles)
+    except StateError as exc:
+        return [str(exc)]
+    required_records = tuple(records)
+    profile_label = "+".join(canonical_profiles)
+    failures: list[str] = []
+    for capability in evidence_capabilities:
+        missing_records = sorted(
+            CAPABILITY_REQUIRED_RECORDS.get(capability, set())
+            - set(required_records)
+        )
+        if missing_records:
+            failures.append(
+                f"Applicable evidence capability {capability} requires records: "
+                + ", ".join(missing_records)
+                + "."
+            )
+    extension_coverage = {
+        target
+        for extension in extension_records
+        if extension.get("status") in {"complete", "not-applicable"}
+        for target in extension.get("applies_to", [])
+        if isinstance(target, str)
+    }
+    for capability in sorted(
+        set(evidence_capabilities) - CORE_EVIDENCE_CAPABILITIES
+    ):
+        if capability not in extension_coverage:
+            failures.append(
+                f"Project-specific capability {capability} needs a complete or "
+                "not-applicable extension record before readiness."
+            )
+    for record in required_records:
+        filename = RECORD_TEMPLATES[record][0]
+        path = state_root / filename
+        if not path.is_file():
+            failures.append(
+                f"Listed {profile_label} record is missing: {filename}."
+            )
+            continue
+        if filename in SUBSTANTIVE_RECORDS:
+            metadata = parse_frontmatter(path)
+            if metadata.get("record_status") != "complete":
+                failures.append(
+                    f"Listed {profile_label} record remains draft: {filename}."
+                )
+    if "assets" in required_records:
+        assets_path = state_root / "assets.yml"
+        if assets_path.is_file():
+            failures.extend(asset_readiness_failures(assets_path))
+    if "route-family" in required_records:
+        route_family_path = state_root / "route-family.json"
+        if route_family_path.is_file():
+            route_family, route_family_errors = validate_route_family_record(
+                route_family_path,
+            )
+            if route_family_errors:
+                failures.append(
+                    "Listed route-family record is structurally invalid."
+                )
+            elif isinstance(route_family, dict):
+                review = route_family.get("review")
+                routes = route_family.get("routes")
+                if not isinstance(review, dict):
+                    failures.append(
+                        "Listed route-family record has no valid review state."
+                    )
+                else:
+                    for key in ("direct_entry", "link_integrity", "route_count"):
+                        if review.get(key) != "passed":
+                            failures.append(
+                                f"Listed route-family review remains incomplete: {key}."
+                            )
+                    if review.get("body_comparison") != "reviewed":
+                        failures.append(
+                            "Listed route-family body comparison remains "
+                            "unreviewed."
+                        )
+                    if review.get("atlas_artifact") != "reviewed":
+                        failures.append(
+                            "Listed route-family atlas artifact remains unreviewed."
+                        )
+                    cultural = review.get("cultural_acceptance")
+                    if isinstance(cultural, dict):
+                        expected_status = (
+                            "accepted"
+                            if cultural.get("required") is True
+                            else "not-required"
+                        )
+                        if cultural.get("status") != expected_status:
+                            failures.append(
+                                "Listed route-family cultural acceptance remains "
+                                "incomplete."
+                            )
+                if isinstance(routes, list) and any(
+                    not isinstance(route, dict)
+                    or route.get("review_status") != "accepted"
+                    for route in routes
+                ):
+                    failures.append(
+                        "Every listed route-family route must be accepted before "
+                        "readiness can be claimed."
+                    )
+                if isinstance(routes, list) and any(
+                    isinstance(route, dict)
+                    and isinstance(route.get("capture_requirements"), dict)
+                    and isinstance(
+                        route["capture_requirements"].get("viewports"),
+                        list,
+                    )
+                    and any(
+                        isinstance(viewport, dict)
+                        and viewport.get("width") is None
+                        for viewport in route["capture_requirements"]["viewports"]
+                    )
+                    for route in routes
+                ):
+                    failures.append(
+                        "Every unresolved route-family capture width must be "
+                        "replaced with a project-derived integer before "
+                        "readiness can be claimed."
+                    )
+    if "cultural-context" in evidence_capabilities:
+        review_path = state_root / "visual-review.md"
+        if review_path.is_file():
+            _metadata, review_body = read_frontmatter_document(review_path)
+            conclusion = (
+                markdown_label_value(review_body, "Reviewer conclusion") or ""
+            ).strip().casefold()
+            relationship = (
+                markdown_label_value(review_body, "Reviewer relationship") or ""
+            ).strip().casefold()
+            if conclusion != "owner accepted" or relationship not in {
+                "accountable-owner",
+                "owner-authorized-human",
+                "independent-human",
+            }:
+                failures.append(
+                    "Cultural-context readiness requires accepted review by an "
+                    "accountable owner, owner-authorized human, or independent "
+                    "human reviewer; producer self-review is provisional."
+                )
+    return failures
 
 
 def append_required_ignore_lines(
@@ -1847,68 +7291,116 @@ def append_required_ignore_lines(
         ) from exc
 
 
+def atomic_replace_bytes(path: Path, content: bytes, *, code: str) -> None:
+    """Replace one ordinary file from a same-directory, fsynced private temp."""
+
+    descriptor: int | None = None
+    temporary: Path | None = None
+    try:
+        descriptor, raw_temporary = tempfile.mkstemp(
+            prefix=f".{path.name}.design-dna-",
+            dir=path.parent,
+        )
+        temporary = Path(raw_temporary)
+        with os.fdopen(descriptor, "wb") as stream:
+            descriptor = None
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if entry_exists(path) and is_reparse(path):
+            raise StateError(
+                "reparse-point-refused",
+                "Refusing to replace a redirected privacy-guard file.",
+                path=path,
+            )
+        os.replace(temporary, path)
+        temporary = None
+    except Exception as exc:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+        if temporary is not None and entry_exists(temporary):
+            try:
+                if not is_reparse(temporary):
+                    temporary.unlink()
+            except OSError:
+                pass
+        if isinstance(exc, StateError):
+            raise
+        raise StateError(code, str(exc), path=path) from exc
+
+
 def install_backup_privacy_guard(root: Path) -> bool:
-    """Ignore recovery contents without losing the prior ignore file on rollback."""
+    """Ignore recovery contents while retaining byte-exact rollback data."""
+
     ignore_path = root / ".gitignore"
     existed = ignore_path.is_file()
-    existing = ""
+    existing = b""
     if existed:
         try:
-            existing = ignore_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
+            existing = ignore_path.read_bytes()
+        except OSError as exc:
             raise StateError(
                 "privacy-ignore-read-failed",
                 str(exc),
                 path=ignore_path,
             ) from exc
-    if BACKUP_PRIVACY_IGNORE_BLOCK in existing:
+    block = BACKUP_PRIVACY_IGNORE_BLOCK.encode("utf-8")
+    if block in existing:
         raise StateError(
             "privacy-ignore-conflict",
             "The recovery privacy-guard marker already exists.",
             path=ignore_path,
         )
-    prefix = "" if not existing or existing.endswith("\n") else "\n"
-    try:
-        ignore_path.write_text(
-            existing + prefix + BACKUP_PRIVACY_IGNORE_BLOCK,
-            encoding="utf-8",
-            newline="\n",
-        )
-    except OSError as exc:
-        raise StateError(
-            "privacy-ignore-write-failed",
-            str(exc),
-            path=ignore_path,
-        ) from exc
+    # Always include the leading newline in the removable suffix. This keeps
+    # the marker on its own Git-ignore line and lets rollback strip one exact
+    # byte sequence without normalizing the owner's original line endings.
+    guarded_suffix = b"\n" + block
+    atomic_replace_bytes(
+        ignore_path,
+        existing + guarded_suffix,
+        code="privacy-ignore-write-failed",
+    )
     return existed
 
 
 def remove_backup_privacy_guard(root: Path, original_existed: bool) -> None:
     ignore_path = root / ".gitignore"
     try:
-        guarded = ignore_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as exc:
+        guarded = ignore_path.read_bytes()
+    except OSError as exc:
         raise StateError(
             "privacy-ignore-read-failed",
             str(exc),
             path=ignore_path,
         ) from exc
-    if BACKUP_PRIVACY_IGNORE_BLOCK not in guarded:
+    guarded_suffix = b"\n" + BACKUP_PRIVACY_IGNORE_BLOCK.encode("utf-8")
+    if not guarded.endswith(guarded_suffix):
         raise StateError(
             "privacy-ignore-guard-missing",
-            "The recovery privacy guard is missing.",
+            "The exact recovery privacy-guard suffix is missing.",
             path=ignore_path,
         )
-    restored = guarded.replace(BACKUP_PRIVACY_IGNORE_BLOCK, "", 1)
+    restored = guarded[: -len(guarded_suffix)]
     try:
         if original_existed:
-            ignore_path.write_text(
+            atomic_replace_bytes(
+                ignore_path,
                 restored,
-                encoding="utf-8",
-                newline="\n",
+                code="privacy-ignore-restore-failed",
             )
         else:
+            if restored:
+                raise StateError(
+                    "privacy-ignore-restore-failed",
+                    "A newly created recovery guard contains unexpected owner data.",
+                    path=ignore_path,
+                )
             ignore_path.unlink()
+    except StateError:
+        raise
     except OSError as exc:
         raise StateError(
             "privacy-ignore-restore-failed",
@@ -1917,13 +7409,38 @@ def remove_backup_privacy_guard(root: Path, original_existed: bool) -> None:
         ) from exc
 
 
-def render_new_state(skill_root: Path, destination: Path, version: str, records: tuple[str, ...]) -> None:
+def render_new_state(
+    skill_root: Path,
+    destination: Path,
+    version: str,
+    records: tuple[str, ...],
+    assurance_profiles: tuple[str, ...],
+    evidence_capabilities: tuple[str, ...] = (),
+) -> None:
     template_root = skill_root / "templates"
+    effective_capabilities = normalize_evidence_capabilities(
+        [
+            *inferred_evidence_capabilities(assurance_profiles),
+            *evidence_capabilities,
+        ]
+    )
     contents = {
-        RECORD_TEMPLATES[record][0]: template_text(template_root, RECORD_TEMPLATES[record][1], version)
+        RECORD_TEMPLATES[record][0]: (
+            template_text(
+                template_root,
+                RECORD_TEMPLATES[record][1],
+                version,
+            )
+            + capability_sections_text(record, effective_capabilities)
+        )
         for record in records
     }
-    contents["state.json"] = state_manifest(version, records)
+    contents["state.json"] = state_manifest(
+        version,
+        records,
+        assurance_profiles,
+        effective_capabilities,
+    )
     destination.mkdir()
     for filename, content in contents.items():
         target = destination / filename
@@ -1943,6 +7460,8 @@ def merge_existing(
     force: bool,
     selected: tuple[str, ...],
     version: str,
+    assurance_profiles: tuple[str, ...],
+    evidence_capabilities: tuple[str, ...],
 ) -> None:
     if not entry_exists(existing):
         return
@@ -1951,6 +7470,9 @@ def merge_existing(
         raise StateError("invalid-state-entry", ".design-dna exists but is not a directory.", path=existing)
     existing_manifest = existing / "state.json"
     previous_records: list[str] = []
+    previous_profiles: tuple[str, ...] = ()
+    previous_capabilities: tuple[str, ...] = ()
+    previous_extensions: list[dict[str, object]] = []
     if existing_manifest.is_file():
         try:
             payload = read_json(existing_manifest)
@@ -1967,6 +7489,48 @@ def merge_existing(
                     path=existing_manifest,
                 )
             previous_records = raw_records
+            raw_profiles = (
+                payload.get("assurance_profiles")
+                if isinstance(payload, dict)
+                else None
+            )
+            if (
+                isinstance(raw_profiles, list)
+                and raw_profiles
+                and all(isinstance(item, str) for item in raw_profiles)
+            ):
+                previous_profiles = normalize_assurance_profiles(
+                    raw_profiles
+                )
+            else:
+                legacy_profile = (
+                    payload.get("assurance_profile")
+                    if isinstance(payload, dict)
+                    else None
+                )
+                legacy_profiles = (
+                    REQUEST_PROFILE_ASSURANCE.get(legacy_profile, ())
+                    if isinstance(legacy_profile, str)
+                    else ()
+                )
+                previous_profiles = merged_assurance_profiles(
+                    list(legacy_profiles),
+                    [],
+                    previous_records,
+                )
+            existing_contract = (
+                payload.get("evidence_contract")
+                if isinstance(payload, dict)
+                else None
+            )
+            if existing_contract is not None:
+                (
+                    previous_capabilities,
+                    previous_extensions,
+                ) = validate_evidence_contract(
+                    existing_contract,
+                    previous_profiles,
+                )
         except StateError:
             if not force:
                 raise
@@ -2017,12 +7581,1360 @@ def merge_existing(
         dict.fromkeys([*previous_records, *selected, *inferred_records])
     )
     manifest_path = staged / "state.json"
+    effective_profiles = merged_assurance_profiles(
+        list(previous_profiles),
+        list(assurance_profiles),
+        merged_records,
+    )
+    effective_capabilities = normalize_evidence_capabilities(
+        [
+            *inferred_evidence_capabilities(effective_profiles),
+            *previous_capabilities,
+            *evidence_capabilities,
+        ]
+    )
     manifest_path.write_text(
-        state_manifest(version, merged_records),
+        state_manifest(
+            version,
+            merged_records,
+            effective_profiles,
+            effective_capabilities,
+            previous_extensions,
+        ),
         encoding="utf-8",
         newline="\n",
     )
     append_required_ignore_lines(staged, STATE_PRIVACY_IGNORE_LINES)
+
+
+def visual_table_cells(line: str) -> tuple[str, ...]:
+    stripped = line.strip()
+    if not stripped.startswith("|") or not stripped.endswith("|"):
+        return ()
+    return tuple(cell.strip() for cell in stripped[1:-1].split("|"))
+
+
+def migrated_visual_status(
+    value: str,
+    verification: str,
+) -> tuple[str, str]:
+    normalized = value.strip().casefold()
+    owner = "not-recorded (legacy schema-1)"
+    recognized = sorted(
+        VISUAL_FINDING_STATUSES
+        | {"fixed", "accepted"},
+        key=len,
+        reverse=True,
+    )
+    status = ""
+    for candidate in recognized:
+        if normalized == candidate:
+            status = candidate
+            break
+        if normalized.startswith(candidate):
+            remainder = value[len(candidate):].strip()
+            if remainder[:1] in {"/", ";", ",", "-", "—", ":"}:
+                status = candidate
+                extracted = remainder[1:].strip()
+                if extracted:
+                    owner = extracted
+                break
+    if not status:
+        # Old draft templates used an option list (and some hand-edited drafts
+        # left this cell blank). Do not block a lossless migration or guess that
+        # the finding was resolved: preserve the exact source table in the
+        # migration report/backup, carry the raw value into the owner note, and
+        # conservatively reopen the migrated row for review.
+        legacy_value = value.strip() or "blank"
+        status = "open"
+        owner = f"not-recorded (legacy status: {legacy_value})"
+    if status == "fixed":
+        status = (
+            "verified"
+            if non_placeholder(verification)
+            else "fixed-unverified"
+        )
+    elif status == "accepted":
+        status = "accepted-risk"
+    return status, owner
+
+
+def migrate_visual_review_contract(
+    path: Path,
+) -> dict[str, object] | None:
+    try:
+        original_text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise StateError(
+            "state-read-failed",
+            str(exc),
+            path=path,
+        ) from exc
+    metadata, frontmatter, body = split_frontmatter_text(
+        original_text,
+        path=path,
+    )
+    findings = re.search(r"(?m)^## Findings\s*$", body)
+    if findings is None:
+        raise StateError(
+            "legacy-visual-review-invalid",
+            "visual-review.md has no Findings section to migrate.",
+            path=path,
+        )
+    next_heading = re.search(
+        r"(?m)^##\s+.+$",
+        body[findings.end():],
+    )
+    section_end = (
+        findings.end() + next_heading.start()
+        if next_heading is not None
+        else len(body)
+    )
+    section_start = findings.end()
+    section = body[section_start:section_end]
+    lines = section.splitlines(keepends=True)
+    table_index: int | None = None
+    headers: tuple[str, ...] = ()
+    recognized_headers = {
+        VISUAL_FINDINGS_HEADERS,
+        LEGACY_VISUAL_FINDINGS_HEADERS,
+        DESIGN_DNA_22_VISUAL_FINDINGS_HEADERS,
+    }
+    for index, line in enumerate(lines):
+        candidate = visual_table_cells(line)
+        if candidate in recognized_headers:
+            table_index = index
+            headers = candidate
+            break
+    if table_index is None:
+        raise StateError(
+            "legacy-visual-review-invalid",
+            "visual-review.md does not contain a recognized findings table.",
+            path=path,
+        )
+    if table_index + 1 >= len(lines):
+        raise StateError(
+            "legacy-visual-review-invalid",
+            "visual-review.md findings table has no separator row.",
+            path=path,
+        )
+    separator = visual_table_cells(lines[table_index + 1])
+    if (
+        len(separator) != len(headers)
+        or not all(re.fullmatch(r":?-{3,}:?", cell) for cell in separator)
+    ):
+        raise StateError(
+            "legacy-visual-review-invalid",
+            "visual-review.md findings table separator is invalid.",
+            path=path,
+        )
+    row_end = table_index + 2
+    source_rows: list[tuple[str, ...]] = []
+    while row_end < len(lines):
+        cells = visual_table_cells(lines[row_end])
+        if not cells:
+            break
+        if len(cells) != len(headers):
+            raise StateError(
+                "legacy-visual-review-invalid",
+                "visual-review.md has a findings row with the wrong width.",
+                path=path,
+            )
+        source_rows.append(cells)
+        row_end += 1
+
+    already_current = (
+        headers == VISUAL_FINDINGS_HEADERS
+        and metadata.get("findings_contract")
+        == VISUAL_FINDINGS_CONTRACT
+    )
+    if already_current:
+        return None
+
+    migration: dict[str, object] | None = None
+    migrated_body = body
+    if headers != VISUAL_FINDINGS_HEADERS:
+        migrated_rows: list[tuple[str, ...]] = []
+        if headers == LEGACY_VISUAL_FINDINGS_HEADERS:
+            source_contract = "legacy-schema-1-six-column"
+            for (
+                severity,
+                evidence,
+                cause,
+                fix,
+                verification,
+                status_owner,
+            ) in source_rows:
+                status, owner = migrated_visual_status(
+                    status_owner,
+                    verification,
+                )
+                migrated_rows.append(
+                    (
+                        severity.casefold(),
+                        "not-recorded",
+                        evidence,
+                        "not-recorded",
+                        cause,
+                        fix,
+                        verification or "not-recorded",
+                        status,
+                        owner,
+                    )
+                )
+        else:
+            source_contract = "design-dna-2.2-eight-column"
+            for (
+                severity,
+                confidence,
+                evidence,
+                impact,
+                cause,
+                fix,
+                verification,
+                status_owner,
+            ) in source_rows:
+                status, owner = migrated_visual_status(
+                    status_owner,
+                    verification,
+                )
+                migrated_rows.append(
+                    (
+                        severity.casefold(),
+                        confidence.casefold(),
+                        evidence,
+                        impact,
+                        cause,
+                        fix,
+                        verification or "not-recorded",
+                        status,
+                        owner,
+                    )
+                )
+        source_table = "".join(
+            lines[table_index:row_end]
+        ).rstrip("\r\n")
+        rendered_lines = [
+            "| " + " | ".join(VISUAL_FINDINGS_HEADERS) + " |\n",
+            "| "
+            + " | ".join("---" for _ in VISUAL_FINDINGS_HEADERS)
+            + " |\n",
+            *[
+                "| " + " | ".join(row) + " |\n"
+                for row in migrated_rows
+            ],
+        ]
+        if row_end == len(lines) and rendered_lines:
+            rendered_lines[-1] = rendered_lines[-1].rstrip("\n")
+        migrated_table = "".join(rendered_lines).rstrip("\r\n")
+        prefix = "".join(lines[:table_index])
+        suffix = "".join(lines[row_end:])
+        migrated_section = prefix + "".join(rendered_lines) + suffix
+        migrated_body = (
+            body[:section_start]
+            + migrated_section
+            + body[section_end:]
+        )
+        migration = {
+            "path": "visual-review.md",
+            "source_contract": source_contract,
+            "source_schema_version": 1,
+            "source_created_with": metadata.get(
+                "created_with",
+                "unknown",
+            ),
+            "source_body_sha256": body_sha256(body),
+            "migrated_body_sha256": body_sha256(migrated_body),
+            "source_table": source_table,
+            "source_table_sha256": hashlib.sha256(
+                source_table.encode("utf-8")
+            ).hexdigest(),
+            "migrated_table": migrated_table,
+            "migrated_table_sha256": hashlib.sha256(
+                migrated_table.encode("utf-8")
+            ).hexdigest(),
+        }
+
+    base_text = (
+        "---\n"
+        + frontmatter
+        + "\n---\n"
+        + migrated_body
+    )
+    rendered = update_frontmatter_text(
+        base_text,
+        path=path,
+        updates={
+            "record_status": "draft",
+            "findings_contract": VISUAL_FINDINGS_CONTRACT,
+        },
+        removals=COMPLETE_RECORD_FIELDS,
+    )
+    try:
+        path.write_text(
+            rendered,
+            encoding="utf-8",
+            newline="\n",
+        )
+    except OSError as exc:
+        raise StateError(
+            "visual-review-migration-write-failed",
+            str(exc),
+            path=path,
+        ) from exc
+    return migration
+
+
+ASSET_TYPE_BY_SUFFIX = {
+    ".apng": "image",
+    ".avif": "image",
+    ".gif": "image",
+    ".jpeg": "image",
+    ".jpg": "image",
+    ".png": "image",
+    ".svg": "image",
+    ".webp": "image",
+    ".mp4": "video",
+    ".mov": "video",
+    ".m4v": "video",
+    ".webm": "video",
+    ".mp3": "audio",
+    ".m4a": "audio",
+    ".ogg": "audio",
+    ".wav": "audio",
+    ".flac": "audio",
+    ".woff": "font",
+    ".woff2": "font",
+    ".otf": "font",
+    ".ttf": "font",
+    ".pdf": "document",
+    ".doc": "document",
+    ".docx": "document",
+}
+
+
+def migrate_asset_manifest_contract(
+    path: Path,
+    project: Path,
+) -> dict[str, object] | None:
+    try:
+        source_bytes = path.read_bytes()
+        payload = parse_strict_yaml_subset(
+            source_bytes.decode("utf-8"),
+            path=path,
+        )
+    except (OSError, UnicodeError) as exc:
+        raise StateError(
+            "asset-migration-read-failed",
+            str(exc),
+            path=path,
+        ) from exc
+    if not isinstance(payload, dict):
+        raise StateError(
+            "asset-migration-invalid",
+            "assets.yml must contain a mapping before migration.",
+            path=path,
+        )
+    source_schema = payload.get("schema_version")
+    if source_schema == ASSET_SCHEMA_VERSION:
+        return None
+    if source_schema != 1:
+        raise StateError(
+            "asset-migration-unsupported",
+            "Only schema-1 assets.yml can migrate to schema 2.",
+            path=path,
+        )
+    assets = payload.get("assets")
+    if not isinstance(assets, list) or not all(
+        isinstance(item, dict) for item in assets
+    ):
+        raise StateError(
+            "asset-migration-invalid",
+            "Schema-1 assets.yml assets must be a list of mappings.",
+            path=path,
+        )
+    unresolved_ids: list[str] = []
+    for index, asset in enumerate(assets):
+        asset_id = str(asset.get("id", f"assets[{index}]"))
+        generated = asset.get("generated")
+        if not isinstance(generated, dict):
+            raise StateError(
+                "asset-migration-invalid",
+                f"{asset_id} generated must be a mapping.",
+                path=path,
+            )
+        unresolved: list[str] = [
+            "asset_type confirmation",
+            "publication_status decision",
+            "concept_disclosure decision",
+        ]
+        source_path = str(asset.get("source_path", "")).strip()
+        inferred_type = ASSET_TYPE_BY_SUFFIX.get(
+            Path(source_path).suffix.casefold(),
+            "image" if generated.get("used") else "other",
+        )
+        asset["asset_type"] = inferred_type
+        asset["publication_status"] = "internal-only"
+        asset["source_sha256"] = ""
+        if source_path:
+            try:
+                source = safe_binding_path(
+                    project,
+                    source_path,
+                    record_path=path,
+                )
+                asset["source_sha256"] = hashlib.sha256(
+                    source.read_bytes()
+                ).hexdigest()
+            except (OSError, StateError):
+                unresolved.append("source_path/source_sha256")
+        legacy_disclosure_required = generated.pop(
+            "disclosure_required",
+            False,
+        )
+        legacy_disclosure_text_value = generated.pop(
+            "disclosure_text",
+            "",
+        )
+        if type(legacy_disclosure_required) is not bool or not isinstance(
+            legacy_disclosure_text_value,
+            str,
+        ):
+            raise StateError(
+                "asset-migration-invalid",
+                (
+                    f"{asset_id} legacy disclosure_required must be a "
+                    "boolean and disclosure_text must be a string."
+                ),
+                path=path,
+            )
+        legacy_disclosure_text = legacy_disclosure_text_value.strip()
+        asset["concept_disclosure"] = {
+            "decision": (
+                "required"
+                if legacy_disclosure_required and legacy_disclosure_text
+                else "pending"
+            ),
+            "reason": (
+                "Migrated schema-1 disclosure; owner revalidation required."
+                if legacy_disclosure_required and legacy_disclosure_text
+                else ""
+            ),
+            "text": (
+                legacy_disclosure_text
+                if legacy_disclosure_required
+                else ""
+            ),
+        }
+        generated_defaults: dict[str, object] = {
+            "authorization_basis": "",
+            "prompt_or_digest": "",
+            "generated_at": "",
+            "rejected_outputs": [],
+            "contact_sheet_path": "",
+            "contact_sheet_sha256": "",
+            "artifact_inspection": "",
+            "responsive_crop_evidence": [],
+        }
+        for key, value in generated_defaults.items():
+            generated.setdefault(key, value)
+        if generated.get("used") is True:
+            unresolved.extend(
+                [
+                    "generated.authorization_basis",
+                    "generated.prompt_or_digest",
+                    "generated.generated_at",
+                    "generated.rejected_outputs",
+                    "generated.contact_sheet_path/contact_sheet_sha256",
+                    "generated.artifact_inspection",
+                ]
+            )
+            if inferred_type in {"image", "video"}:
+                unresolved.append(
+                    "generated.responsive_crop_evidence"
+                )
+        asset["factual_status"] = (
+            "placeholder"
+            if asset.get("factual_status") == "placeholder"
+            else "pending"
+        )
+        asset["owner_approval"] = "pending"
+        asset["migration_review"] = {
+            "required": True,
+            "source_schema_version": "1",
+            "reason": (
+                "Schema-1 asset evidence cannot establish the new type, "
+                "exposure, disclosure, source-binding, and generated-media "
+                "contract without accountable review."
+            ),
+            "unresolved_fields": list(dict.fromkeys(unresolved)),
+        }
+        unresolved_ids.append(asset_id)
+    payload["schema_version"] = ASSET_SCHEMA_VERSION
+    rendered = dump_strict_yaml_subset(payload) + "\n"
+    try:
+        path.write_text(rendered, encoding="utf-8", newline="\n")
+    except OSError as exc:
+        raise StateError(
+            "asset-migration-write-failed",
+            str(exc),
+            path=path,
+        ) from exc
+    return {
+        "path": "assets.yml",
+        "source_schema_version": 1,
+        "target_schema_version": ASSET_SCHEMA_VERSION,
+        "source_manifest_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "migrated_manifest_sha256": hashlib.sha256(
+            rendered.encode("utf-8")
+        ).hexdigest(),
+        "unresolved_asset_ids": unresolved_ids,
+    }
+
+
+def migration_payload(
+    state_root: Path,
+    updated_records: list[str],
+    visual_review_migrations: list[dict[str, object]],
+    completion_downgrades: list[dict[str, object]],
+    asset_manifest_migrations: list[dict[str, object]],
+    assurance_transitions: list[dict[str, object]],
+) -> dict[str, object]:
+    legacy_files: list[dict[str, object]] = []
+    for filename in LEGACY_RECORD_FILES:
+        path = state_root / filename
+        if not path.is_file():
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError as exc:
+            raise StateError(
+                "legacy-record-read-failed",
+                str(exc),
+                path=path,
+            ) from exc
+        legacy_files.append(
+            {
+                "path": filename,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "bytes": len(data),
+                "disposition": "preserved-unmapped",
+            }
+        )
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "record_type": "design-dna-project-state-migration",
+        "migrated_at": datetime.now(timezone.utc).isoformat(),
+        "legacy_files": legacy_files,
+        "record_updates": sorted(updated_records),
+    }
+    if visual_review_migrations:
+        payload["visual_review_migrations"] = visual_review_migrations
+    if completion_downgrades:
+        payload["completion_downgrades"] = completion_downgrades
+    if asset_manifest_migrations:
+        payload["asset_manifest_migrations"] = asset_manifest_migrations
+    if assurance_transitions:
+        payload["assurance_transitions"] = assurance_transitions
+    return payload
+
+
+def migrate_staged_state(state_root: Path) -> list[str]:
+    updated: list[str] = []
+    state_path = state_root / "state.json"
+    try:
+        source_state_bytes = state_path.read_bytes()
+    except OSError as exc:
+        raise StateError(
+            "invalid-existing-state",
+            str(exc),
+            path=state_path,
+        ) from exc
+    state_payload = read_json(state_path)
+    if not isinstance(state_payload, dict):
+        raise StateError(
+            "invalid-existing-state",
+            "state.json must contain an object before migration.",
+            path=state_path,
+        )
+    raw_records = state_payload.get("records")
+    if (
+        not isinstance(raw_records, list)
+        or not raw_records
+        or not all(isinstance(item, str) for item in raw_records)
+    ):
+        raise StateError(
+            "invalid-existing-state",
+            (
+                "state.json records must be a nonempty list of strings "
+                "before migration."
+            ),
+            path=state_path,
+        )
+    source_schema_version = state_payload.get("schema_version")
+    raw_profiles = state_payload.get("assurance_profiles")
+    source_profile_field = "assurance_profiles"
+    source_profile_values: list[str] = []
+    if (
+        isinstance(raw_profiles, list)
+        and raw_profiles
+        and all(isinstance(item, str) for item in raw_profiles)
+    ):
+        source_profile_values = list(raw_profiles)
+        existing_profiles = normalize_assurance_profiles(raw_profiles)
+    else:
+        legacy_profile = state_payload.get("assurance_profile")
+        source_profile_field = (
+            "assurance_profile"
+            if isinstance(legacy_profile, str)
+            else "missing"
+        )
+        source_profile_values = (
+            [legacy_profile] if isinstance(legacy_profile, str) else []
+        )
+        legacy_profiles = (
+            REQUEST_PROFILE_ASSURANCE.get(legacy_profile, ())
+            if isinstance(legacy_profile, str)
+            else ()
+        )
+        existing_profiles = normalize_assurance_profiles(
+            list(legacy_profiles) or list(infer_assurance_profiles(raw_records))
+        )
+    cumulative_profiles = merged_assurance_profiles(
+        list(existing_profiles),
+        [],
+        raw_records,
+    )
+    source_contract = state_payload.get("evidence_contract")
+    if source_contract is None:
+        migrated_capabilities = inferred_evidence_capabilities(
+            cumulative_profiles
+        )
+        migrated_extensions: list[dict[str, object]] = []
+    else:
+        (
+            migrated_capabilities,
+            migrated_extensions,
+        ) = validate_evidence_contract(
+            source_contract,
+            cumulative_profiles,
+        )
+    migrated_contract = evidence_contract_payload(
+        cumulative_profiles,
+        migrated_capabilities,
+        migrated_extensions,
+    )
+    state_changed = (
+        state_payload.get("schema_version") != STATE_SCHEMA_VERSION
+        or state_payload.get("assurance_profiles")
+        != list(cumulative_profiles)
+        or "assurance_profile" in state_payload
+        or source_contract != migrated_contract
+    )
+    assurance_transition: dict[str, object] | None = None
+    if state_changed:
+        state_payload["schema_version"] = STATE_SCHEMA_VERSION
+        state_payload["assurance_profiles"] = list(cumulative_profiles)
+        state_payload["evidence_contract"] = migrated_contract
+        state_payload.pop("assurance_profile", None)
+        state_path.write_text(
+            json.dumps(state_payload, indent=2) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        assurance_transition = {
+            "source_schema_version": (
+                source_schema_version
+                if isinstance(source_schema_version, int)
+                else 0
+            ),
+            "target_schema_version": STATE_SCHEMA_VERSION,
+            "source_state_sha256": hashlib.sha256(
+                source_state_bytes
+            ).hexdigest(),
+            "migrated_state_sha256": hashlib.sha256(
+                state_path.read_bytes()
+            ).hexdigest(),
+            "source_profile_field": source_profile_field,
+            "source_profile_values": source_profile_values,
+            "target_assurance_profiles": list(cumulative_profiles),
+            "required_records": list(raw_records),
+            "reason": (
+                "Converted scalar or incomplete assurance state to the "
+                "canonical cumulative capability set and retained every "
+                "listed record as a readiness requirement."
+            ),
+        }
+    report_path = state_root / MIGRATION_REPORT
+    existing_visual_migrations: list[dict[str, object]] = []
+    existing_completion_downgrades: list[dict[str, object]] = []
+    existing_asset_migrations: list[dict[str, object]] = []
+    existing_assurance_transitions: list[dict[str, object]] = []
+    existing_record_updates: list[str] = []
+    if report_path.is_file():
+        existing_report = read_json(report_path)
+        if not isinstance(existing_report, dict):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing migration report must be a JSON object.",
+                path=report_path,
+            )
+        existing_value = existing_report.get(
+            "visual_review_migrations",
+            [],
+        )
+        if not isinstance(existing_value, list) or not all(
+            isinstance(item, dict) for item in existing_value
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing visual_review_migrations must be a list of objects.",
+                path=report_path,
+            )
+        existing_visual_migrations = [
+            dict(item) for item in existing_value
+        ]
+        existing_downgrades = existing_report.get(
+            "completion_downgrades",
+            [],
+        )
+        if not isinstance(existing_downgrades, list) or not all(
+            isinstance(item, dict) for item in existing_downgrades
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing completion_downgrades must be a list of objects.",
+                path=report_path,
+            )
+        existing_completion_downgrades = []
+        for item in existing_downgrades:
+            normalized = dict(item)
+            for field in (
+                "prior_binding_path",
+                "prior_binding_sha256",
+                "prior_completion_owner",
+                "prior_completed_at",
+                "prior_limitations",
+            ):
+                normalized.setdefault(field, "not-recorded")
+            existing_completion_downgrades.append(normalized)
+        existing_assets = existing_report.get(
+            "asset_manifest_migrations",
+            [],
+        )
+        if not isinstance(existing_assets, list) or not all(
+            isinstance(item, dict) for item in existing_assets
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing asset_manifest_migrations must be a list of objects.",
+                path=report_path,
+            )
+        existing_asset_migrations = [
+            dict(item) for item in existing_assets
+        ]
+        existing_transitions = existing_report.get(
+            "assurance_transitions",
+            [],
+        )
+        if not isinstance(existing_transitions, list) or not all(
+            isinstance(item, dict) for item in existing_transitions
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing assurance_transitions must be a list of objects.",
+                path=report_path,
+            )
+        existing_assurance_transitions = [
+            dict(item) for item in existing_transitions
+        ]
+        prior_updates = existing_report.get("record_updates", [])
+        if not isinstance(prior_updates, list) or not all(
+            isinstance(item, str) for item in prior_updates
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing record_updates must be a list of strings.",
+                path=report_path,
+            )
+        existing_record_updates = list(prior_updates)
+    if assurance_transition is not None:
+        identity = assurance_transition["source_state_sha256"]
+        if not any(
+            transition.get("source_state_sha256") == identity
+            for transition in existing_assurance_transitions
+        ):
+            existing_assurance_transitions.append(assurance_transition)
+    project_root = state_root.parent.parent
+    persisted_profiles = cumulative_profiles
+    asset_path = state_root / "assets.yml"
+    if asset_path.is_file():
+        asset_migration = migrate_asset_manifest_contract(
+            asset_path,
+            project_root,
+        )
+        if asset_migration is not None:
+            identity = asset_migration["source_manifest_sha256"]
+            if not any(
+                existing.get("source_manifest_sha256") == identity
+                for existing in existing_asset_migrations
+            ):
+                existing_asset_migrations.append(asset_migration)
+    for filename, record in SUBSTANTIVE_RECORDS.items():
+        path = state_root / filename
+        if not path.is_file():
+            continue
+        metadata = parse_frontmatter(path)
+        source_metadata, source_body = read_frontmatter_document(path)
+        was_complete = source_metadata.get("record_status") == "complete"
+        source_hash = body_sha256(source_body)
+        record_updated = False
+        if filename == "visual-review.md":
+            visual_migration = migrate_visual_review_contract(path)
+            if visual_migration is not None:
+                identity = (
+                    visual_migration["source_body_sha256"],
+                    visual_migration["migrated_body_sha256"],
+                )
+                if not any(
+                    (
+                        existing.get("source_body_sha256"),
+                        existing.get("migrated_body_sha256"),
+                    )
+                    == identity
+                    for existing in existing_visual_migrations
+                ):
+                    existing_visual_migrations.append(
+                        visual_migration
+                    )
+            if (
+                visual_migration is not None
+                or metadata.get("findings_contract")
+                != VISUAL_FINDINGS_CONTRACT
+            ):
+                record_updated = True
+                metadata = parse_frontmatter(path)
+        metadata, current_body = read_frontmatter_document(path)
+        if was_complete:
+            downgrade_reasons: list[str] = []
+            if metadata.get("record_status") != "complete":
+                downgrade_reasons.append(
+                    "The record contract was migrated and requires completion "
+                    "against the current assurance profile."
+                )
+            else:
+                downgrade_reasons.extend(
+                    completed_record_failures(
+                        project_root,
+                        path,
+                        record,
+                        metadata,
+                        current_body,
+                        required_assurance_profiles=persisted_profiles,
+                        required_evidence_capabilities=migrated_capabilities,
+                    )
+                )
+            if downgrade_reasons:
+                if metadata.get("record_status") == "complete":
+                    write_frontmatter_update(
+                        path,
+                        updates={"record_status": "draft"},
+                        removals=COMPLETE_RECORD_FIELDS,
+                    )
+                downgrade = {
+                    "path": filename,
+                    "record": record,
+                    "source_created_with": source_metadata.get(
+                        "created_with",
+                        "not-recorded",
+                    ),
+                    "source_body_sha256": source_hash,
+                    "prior_binding_id": source_metadata.get(
+                        "binding_id",
+                        "not-recorded",
+                    ),
+                    "prior_binding_path": source_metadata.get(
+                        "binding_path",
+                        "not-recorded",
+                    ),
+                    "prior_binding_sha256": source_metadata.get(
+                        "binding_sha256",
+                        "not-recorded",
+                    ),
+                    "prior_completion_owner": source_metadata.get(
+                        "completion_owner",
+                        "not-recorded",
+                    ),
+                    "prior_completed_at": source_metadata.get(
+                        "completed_at",
+                        "not-recorded",
+                    ),
+                    "prior_limitations": source_metadata.get(
+                        "limitations",
+                        "not-recorded",
+                    ),
+                    "reasons": list(dict.fromkeys(downgrade_reasons)),
+                }
+                identity = (
+                    downgrade["path"],
+                    downgrade["source_body_sha256"],
+                )
+                if not any(
+                    (
+                        existing.get("path"),
+                        existing.get("source_body_sha256"),
+                    )
+                    == identity
+                    for existing in existing_completion_downgrades
+                ):
+                    existing_completion_downgrades.append(downgrade)
+                record_updated = True
+                metadata = parse_frontmatter(path)
+        if metadata.get("record_status") not in RECORD_STATUSES:
+            write_frontmatter_update(
+                path,
+                updates={"record_status": "draft"},
+                removals=COMPLETE_RECORD_FIELDS,
+            )
+            record_updated = True
+        if record_updated:
+            updated.append(record)
+    payload = migration_payload(
+        state_root,
+        list(dict.fromkeys([*existing_record_updates, *updated])),
+        existing_visual_migrations,
+        existing_completion_downgrades,
+        existing_asset_migrations,
+        existing_assurance_transitions,
+    )
+    try:
+        report_path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+    except OSError as exc:
+        raise StateError(
+            "migration-report-write-failed",
+            str(exc),
+            path=report_path,
+        ) from exc
+    return updated
+
+
+def mark_record_complete(
+    state_root: Path,
+    project: Path,
+    record: str,
+    *,
+    binding_kind: str,
+    binding_id: str,
+    binding_path: str,
+    owner: str,
+    limitations: str,
+    completed_at: str,
+) -> None:
+    filename = RECORD_TEMPLATES[record][0]
+    path = state_root / filename
+    if filename not in SUBSTANTIVE_RECORDS:
+        raise StateError(
+            "record-status-unsupported",
+            f"{record} does not use the draft/complete evidence contract.",
+            path=path,
+        )
+    if not path.is_file():
+        raise StateError(
+            "record-missing",
+            f"Selected record does not exist: {record}.",
+            path=path,
+        )
+    metadata, body = read_frontmatter_document(path)
+    if (
+        record == "visual-review"
+        and metadata.get("findings_contract")
+        != VISUAL_FINDINGS_CONTRACT
+    ):
+        raise StateError(
+            "visual-review-migration-required",
+            (
+                "visual-review must use findings_contract "
+                f"{VISUAL_FINDINGS_CONTRACT}; run --migrate first."
+            ),
+            path=path,
+        )
+    state_payload = read_json(state_root / "state.json")
+    persisted_profiles = (
+        state_payload.get("assurance_profiles")
+        if isinstance(state_payload, dict)
+        else None
+    )
+    if (
+        not isinstance(persisted_profiles, list)
+        or not persisted_profiles
+        or not all(
+            isinstance(item, str) for item in persisted_profiles
+        )
+    ):
+        raise StateError(
+            "assurance-profiles-migration-required",
+            "state.json must persist valid assurance_profiles; run --migrate.",
+            path=state_root / "state.json",
+        )
+    canonical_profiles = normalize_assurance_profiles(
+        persisted_profiles
+    )
+    if list(canonical_profiles) != persisted_profiles:
+        raise StateError(
+            "assurance-profiles-migration-required",
+            "state.json assurance_profiles are not canonical; run --migrate.",
+            path=state_root / "state.json",
+        )
+    persisted_contract = (
+        state_payload.get("evidence_contract")
+        if isinstance(state_payload, dict)
+        else None
+    )
+    if persisted_contract is None:
+        evidence_capabilities = inferred_evidence_capabilities(
+            canonical_profiles
+        )
+    else:
+        evidence_capabilities, _extensions = validate_evidence_contract(
+            persisted_contract,
+            canonical_profiles,
+        )
+    body_failures = substantive_body_failures(
+        record,
+        body,
+        project=project,
+        record_path=path,
+        required_assurance_profiles=canonical_profiles,
+        required_evidence_capabilities=evidence_capabilities,
+        evidence_contract=metadata.get("evidence_contract"),
+    )
+    if body_failures:
+        raise StateError(
+            "record-not-substantive",
+            "The record is not complete enough to mark complete.",
+            path=path,
+            details={"failures": body_failures},
+        )
+    binding = safe_binding_path(
+        project,
+        binding_path,
+        record_path=project / ".design-dna" / filename,
+    )
+    if not non_placeholder(binding_id):
+        raise StateError(
+            "invalid-record-binding",
+            "binding_id must be an explicit build, commit, or artifact identity.",
+            path=path,
+        )
+    if not non_placeholder(owner):
+        raise StateError(
+            "invalid-completion-owner",
+            "completion_owner must identify an accountable reviewer.",
+            path=path,
+        )
+    if not non_placeholder(limitations):
+        raise StateError(
+            "invalid-completion-limitations",
+            "limitations must explicitly state known limits or that none are known in scope.",
+            path=path,
+        )
+    try:
+        completed = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
+        if completed.tzinfo is None:
+            raise ValueError("timezone missing")
+        if completed.astimezone(timezone.utc) > datetime.now(timezone.utc):
+            raise ValueError("future time")
+    except ValueError as exc:
+        raise StateError(
+            "invalid-completed-at",
+            "completed_at must be a non-future ISO date-time with timezone.",
+            path=path,
+        ) from exc
+    try:
+        binding_hash = hashlib.sha256(binding.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise StateError(
+            "record-binding-read-failed",
+            str(exc),
+            path=binding,
+        ) from exc
+    updates = {
+        "record_status": "complete",
+        "record_body_sha256": body_sha256(body),
+        "binding_kind": binding_kind,
+        "binding_id": binding_id,
+        "binding_path": binding_path,
+        "binding_sha256": binding_hash,
+        "completion_owner": owner,
+        "completed_at": completed.astimezone(timezone.utc).isoformat(),
+        "unresolved_high": "0",
+        "unresolved_medium": "0",
+        "limitations": limitations,
+    }
+    write_frontmatter_update(path, updates=updates)
+
+
+def mark_record_draft(state_root: Path, record: str) -> None:
+    filename = RECORD_TEMPLATES[record][0]
+    path = state_root / filename
+    if filename not in SUBSTANTIVE_RECORDS:
+        raise StateError(
+            "record-status-unsupported",
+            f"{record} does not use the draft/complete evidence contract.",
+            path=path,
+        )
+    if not path.is_file():
+        raise StateError(
+            "record-missing",
+            f"Selected record does not exist: {record}.",
+            path=path,
+        )
+    write_frontmatter_update(
+        path,
+        updates={"record_status": "draft"},
+        removals=COMPLETE_RECORD_FIELDS,
+    )
+
+
+def mutate_state_transaction(
+    project: Path,
+    current_version: str,
+    *,
+    action: str,
+    dry_run: bool,
+    mutator,
+) -> list[dict[str, str]]:
+    with ProjectMutationLock(project, action) as lock:
+        actions = _mutate_state_transaction_locked(
+            project,
+            current_version,
+            action=action,
+            dry_run=dry_run,
+            mutator=mutator,
+            lock=lock,
+        )
+        return [*lock.recovery_actions(), *actions]
+
+
+def _mutate_state_transaction_locked(
+    project: Path,
+    current_version: str,
+    *,
+    action: str,
+    dry_run: bool,
+    mutator,
+    lock: ProjectMutationLock,
+) -> list[dict[str, str]]:
+    state_root = project / ".design-dna"
+    assert_no_reparse_ancestors(state_root, stop=project)
+    assert_safe_tree(state_root)
+    if not state_root.is_dir():
+        raise StateError(
+            "state-missing",
+            "Initialize .design-dna before migrating or changing record status.",
+            path=state_root,
+        )
+    lock.assert_owned()
+    source_identity = state_tree_identity(state_root)
+    stage_parent: Path | None = None
+    staged = project / ".design-dna.unallocated-stage"
+    backup: Path | None = None
+    backup_ignore_existed = False
+    backup_guard_installed = False
+    transition_started = False
+    candidate_installed = False
+    primary_error: StateError | None = None
+    rollback_errors: list[StateError] = []
+    failed_candidate: Path | None = None
+    actions: list[dict[str, str]] = []
+    try:
+        stage_parent = create_transaction_stage_parent(
+            project,
+            ".design-dna-migrate-",
+        )
+        write_stage_owner(stage_parent, lock)
+        staged = stage_parent / ".design-dna"
+        assert_no_reparse_ancestors(stage_parent, stop=project)
+        assert_contained(stage_parent, project)
+        shutil.copytree(state_root, staged, symlinks=False)
+        assert_safe_tree(staged)
+        require_state_identity(
+            staged,
+            source_identity,
+            code="staged-source-parity-mismatch",
+            message="The staged source copy differs from the locked live state.",
+        )
+        mutator(staged)
+        assert_safe_tree(staged)
+        failures, warnings = validate_state_root(
+            staged,
+            project,
+            current_version,
+        )
+        if failures:
+            raise StateError(
+                "staged-state-invalid",
+                "The proposed state mutation did not validate.",
+                path=staged,
+                details={
+                    "validation_failures": failures,
+                    "validation_warnings": warnings,
+                },
+            )
+        candidate_identity = state_tree_identity(staged)
+        lock.assert_owned()
+        require_state_identity(
+            state_root,
+            source_identity,
+            code="source-state-changed",
+            message=(
+                "The live state changed after staging; refusing to promote "
+                "a candidate based on stale source."
+            ),
+        )
+        require_state_identity(
+            staged,
+            candidate_identity,
+            code="candidate-state-changed",
+            message="The staged mutation changed before promotion.",
+        )
+        if dry_run:
+            actions.append(
+                {
+                    "action": f"would-{action}",
+                    "path": str(state_root),
+                    "validation": "passed",
+                }
+            )
+        else:
+            backup = unique_peer(state_root, "backup")
+            assert_contained(backup, project)
+            transition_started = True
+            state_root.rename(backup)
+            require_state_identity(
+                backup,
+                source_identity,
+                code="backup-source-parity-mismatch",
+                message="The renamed backup differs from the locked source state.",
+            )
+            backup_ignore_existed = install_backup_privacy_guard(backup)
+            backup_guard_installed = True
+            lock.assert_owned()
+            require_state_identity(
+                staged,
+                candidate_identity,
+                code="candidate-state-changed",
+                message="The staged mutation changed during promotion.",
+            )
+            staged.rename(state_root)
+            candidate_installed = True
+            require_state_identity(
+                state_root,
+                candidate_identity,
+                code="installed-candidate-parity-mismatch",
+                message="The promoted state differs from the validated candidate.",
+            )
+            installed_failures, installed_warnings = validate_state(
+                project,
+                current_version,
+            )
+            if installed_failures:
+                raise StateError(
+                    "installed-state-invalid",
+                    "Post-mutation validation failed.",
+                    path=state_root,
+                    details={
+                        "validation_failures": installed_failures,
+                        "validation_warnings": installed_warnings,
+                    },
+                )
+            lock.assert_owned()
+            require_state_identity(
+                state_root,
+                candidate_identity,
+                code="installed-candidate-changed",
+                message="The installed state changed during final validation.",
+            )
+            actions.extend(
+                [
+                    {"action": action, "path": str(state_root)},
+                    {
+                        "action": "backup-preserved",
+                        "path": str(backup),
+                        "reason": (
+                            "The exact pre-migration state remains recoverable; "
+                            "its privacy guard prevents accidental commits."
+                        ),
+                    },
+                ]
+            )
+    except Exception as exc:
+        primary_error = as_state_error(
+            exc,
+            code="state-mutation-failed",
+            path=state_root,
+        )
+        if transition_started:
+            failed_candidate, rollback_errors = rollback_transaction(
+                state_root,
+                staged,
+                backup,
+                project,
+                candidate_installed=candidate_installed,
+                backup_ignore_existed=backup_ignore_existed,
+                backup_guard_installed=backup_guard_installed,
+            )
+
+    cleanup_error = cleanup_stage_parent(
+        stage_parent,
+        project,
+        lock.owner_token,
+    )
+    if primary_error is not None:
+        details = dict(primary_error.details)
+        details["rollback"] = {
+            "status": (
+                "not-needed"
+                if not transition_started
+                else ("incomplete" if rollback_errors else "completed")
+            ),
+            "backup": str(backup) if backup is not None else None,
+            "failed_candidate": (
+                str(failed_candidate) if failed_candidate is not None else None
+            ),
+            "errors": [error_record(error) for error in rollback_errors],
+        }
+        if cleanup_error is not None:
+            details["cleanup"] = error_record(cleanup_error)
+        if rollback_errors:
+            raise StateError(
+                "rollback-failed",
+                "State mutation failed and automatic rollback was incomplete.",
+                path=state_root,
+                details={"primary": error_record(primary_error), **details},
+            ) from primary_error
+        raise StateError(
+            primary_error.code,
+            str(primary_error),
+            path=primary_error.path,
+            details=details,
+        ) from primary_error
+    if cleanup_error is not None:
+        actions.append(
+            {
+                "action": "staging-cleanup-preserved",
+                "path": str(stage_parent),
+                "reason": json.dumps(
+                    error_record(cleanup_error),
+                    ensure_ascii=False,
+                ),
+            }
+        )
+    return actions
 
 
 def as_state_error(
@@ -2033,6 +8945,8 @@ def as_state_error(
 ) -> StateError:
     if isinstance(error, StateError):
         return error
+    if isinstance(error, PermissionError):
+        return access_denied_state_error(error, path)
     return StateError(code, str(error), path=path)
 
 
@@ -2101,6 +9015,7 @@ def rollback_transaction(
 def cleanup_stage_parent(
     stage_parent: Path | None,
     project: Path,
+    owner_token: str,
 ) -> StateError | None:
     if stage_parent is None:
         return None
@@ -2108,6 +9023,18 @@ def cleanup_stage_parent(
         if entry_exists(stage_parent):
             assert_no_reparse_ancestors(stage_parent, stop=project)
             assert_contained(stage_parent, project)
+            if (
+                stage_parent.parent != project
+                or not stage_parent.name.startswith(
+                    (".design-dna-stage-", ".design-dna-migrate-")
+                )
+            ):
+                raise StateError(
+                    "broad-stage-cleanup-refused",
+                    "Only an exact direct transaction staging directory may be removed.",
+                    path=stage_parent,
+                )
+            verify_stage_owner(stage_parent, owner_token)
             assert_safe_tree(stage_parent)
             shutil.rmtree(stage_parent)
     except Exception as exc:
@@ -2126,15 +9053,58 @@ def install_transaction(
     *,
     force: bool,
     dry_run: bool,
+    assurance_profiles: tuple[str, ...] = ("standard",),
+    evidence_capabilities: tuple[str, ...] = (),
     version: str | None = None,
+) -> list[dict[str, str]]:
+    with ProjectMutationLock(project, "initialize") as lock:
+        actions = _install_transaction_locked(
+            project,
+            skill_root,
+            records,
+            force=force,
+            dry_run=dry_run,
+            assurance_profiles=assurance_profiles,
+            evidence_capabilities=evidence_capabilities,
+            version=version,
+            lock=lock,
+        )
+        return [*lock.recovery_actions(), *actions]
+
+
+def _install_transaction_locked(
+    project: Path,
+    skill_root: Path,
+    records: tuple[str, ...],
+    *,
+    force: bool,
+    dry_run: bool,
+    assurance_profiles: tuple[str, ...],
+    evidence_capabilities: tuple[str, ...],
+    version: str | None = None,
+    lock: ProjectMutationLock,
 ) -> list[dict[str, str]]:
     state_root = project / ".design-dna"
     assert_no_reparse_ancestors(state_root, stop=project)
     assert_safe_tree(state_root)
     version = release_version(skill_root) if version is None else version
+    lock.assert_owned()
+    source_identity = captured_state_identity(state_root)
     if dry_run:
         action = "replace" if entry_exists(state_root) and force else "merge"
-        return [{"action": f"would-{action}", "path": str(state_root), "records": ",".join(records)}]
+        require_state_identity(
+            state_root,
+            source_identity,
+            code="source-state-changed",
+            message="The live state changed during initialization planning.",
+        )
+        return [{
+            "action": f"would-{action}",
+            "path": str(state_root),
+            "records": ",".join(records),
+            "assurance_profiles": ",".join(assurance_profiles),
+            "evidence_capabilities": ",".join(evidence_capabilities),
+        }]
 
     stage_parent: Path | None = None
     staged = project / ".design-dna.unallocated-stage"
@@ -2149,39 +9119,88 @@ def install_transaction(
     failed_candidate: Path | None = None
     actions: list[dict[str, str]] = []
     try:
-        stage_parent = Path(tempfile.mkdtemp(prefix=".design-dna-stage-", dir=project))
+        stage_parent = create_transaction_stage_parent(
+            project,
+            ".design-dna-stage-",
+        )
+        write_stage_owner(stage_parent, lock)
         staged = stage_parent / ".design-dna"
         assert_no_reparse_ancestors(stage_parent, stop=project)
         assert_contained(stage_parent, project)
-        render_new_state(skill_root, staged, version, records)
+        render_new_state(
+            skill_root,
+            staged,
+            version,
+            records,
+            assurance_profiles,
+            evidence_capabilities,
+        )
         merge_existing(
             state_root,
             staged,
             force=force,
             selected=records,
             version=version,
+            assurance_profiles=assurance_profiles,
+            evidence_capabilities=evidence_capabilities,
         )
         assert_safe_tree(staged)
 
-        failures, _ = validate_state_in_place(staged, version)
+        failures, _ = validate_state_in_place(staged, project, version)
         if failures:
             raise StateError("staged-state-invalid", "; ".join(failures), path=staged)
+        candidate_identity = state_tree_identity(staged)
 
         # Race-resistant recheck immediately before rename transitions.
+        lock.assert_owned()
         assert_no_reparse_ancestors(state_root, stop=project)
         assert_contained(state_root, project)
+        require_state_identity(
+            state_root,
+            source_identity,
+            code="source-state-changed",
+            message=(
+                "The live state changed after staging; refusing to promote "
+                "a candidate based on stale source."
+            ),
+        )
+        require_state_identity(
+            staged,
+            candidate_identity,
+            code="candidate-state-changed",
+            message="The staged initialization changed before promotion.",
+        )
         if entry_exists(state_root):
             backup = unique_peer(state_root, "backup")
             assert_contained(backup, project)
             transition_started = True
             state_root.rename(backup)
+            require_state_identity(
+                backup,
+                source_identity,
+                code="backup-source-parity-mismatch",
+                message="The renamed backup differs from the locked source state.",
+            )
             backup_ignore_existed = install_backup_privacy_guard(backup)
             backup_guard_installed = True
             moved_existing = True
         else:
             transition_started = True
+        lock.assert_owned()
+        require_state_identity(
+            staged,
+            candidate_identity,
+            code="candidate-state-changed",
+            message="The staged initialization changed during promotion.",
+        )
         staged.rename(state_root)
         candidate_installed = True
+        require_state_identity(
+            state_root,
+            candidate_identity,
+            code="installed-candidate-parity-mismatch",
+            message="The promoted state differs from the validated candidate.",
+        )
         installed_failures, _ = validate_state(project, version)
         if installed_failures:
             raise StateError(
@@ -2190,35 +9209,24 @@ def install_transaction(
                 path=state_root,
                 details={"validation_failures": installed_failures},
             )
+        lock.assert_owned()
+        require_state_identity(
+            state_root,
+            candidate_identity,
+            code="installed-candidate-changed",
+            message="The installed state changed during final validation.",
+        )
         actions.append({"action": "installed", "path": str(state_root)})
         if moved_existing and backup is not None:
-            if force:
-                actions.append({
-                    "action": "backup-preserved",
-                    "path": str(backup),
-                    "reason": "Forced refresh keeps the prior state recoverable.",
-                })
-                moved_existing = False
-            else:
-                try:
-                    assert_contained(backup, project)
-                    assert_safe_tree(backup)
-                    shutil.rmtree(backup)
-                except Exception as cleanup_error:
-                    structured_cleanup = as_state_error(
-                        cleanup_error,
-                        code="backup-cleanup-failed",
-                        path=backup,
-                    )
-                    actions.append({
-                        "action": "backup-preserved",
-                        "path": str(backup),
-                        "reason": json.dumps(
-                            error_record(structured_cleanup),
-                            ensure_ascii=False,
-                        ),
-                    })
-                moved_existing = False
+            actions.append({
+                "action": "backup-preserved",
+                "path": str(backup),
+                "reason": (
+                    "The exact pre-initialization state remains recoverable; "
+                    "the owner-token transaction never deletes prior work."
+                ),
+            })
+            moved_existing = False
     except Exception as exc:
         primary_error = as_state_error(
             exc,
@@ -2238,7 +9246,11 @@ def install_transaction(
             if not rollback_errors:
                 moved_existing = False
 
-    cleanup_error = cleanup_stage_parent(stage_parent, project)
+    cleanup_error = cleanup_stage_parent(
+        stage_parent,
+        project,
+        lock.owner_token,
+    )
     if primary_error is not None:
         recovery: dict[str, object] = {
             "status": (
@@ -2284,9 +9296,14 @@ def install_transaction(
     return actions
 
 
-def validate_state_in_place(state_root: Path, current_version: str) -> tuple[list[str], list[str]]:
-    """Validate a staged state by presenting its parent as the project."""
-    return validate_state(state_root.parent, current_version)
+def validate_state_in_place(
+    state_root: Path,
+    project: Path,
+    current_version: str,
+) -> tuple[list[str], list[str]]:
+    """Validate staged records while resolving bindings in the real project."""
+
+    return validate_state_root(state_root, project, current_version)
 
 
 def main() -> int:
@@ -2294,23 +9311,143 @@ def main() -> int:
     parser.add_argument("--project", type=Path, default=Path.cwd())
     parser.add_argument("--force", action="store_true", help="Replace packaged template files; preserve other project records.")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--check-state", action="store_true")
+    operation = parser.add_mutually_exclusive_group()
+    operation.add_argument("--check-state", action="store_true")
+    operation.add_argument(
+        "--check-ready",
+        action="store_true",
+        help=(
+            "Require structural validity plus every record listed in "
+            "state.json to be complete under the persisted cumulative "
+            "assurance capabilities."
+        ),
+    )
+    operation.add_argument(
+        "--print-asset-example",
+        action="store_true",
+        help=(
+            "Print a complete schema-valid but release-blocked asset manifest "
+            "example without reading or changing a project."
+        ),
+    )
+    operation.add_argument(
+        "--migrate",
+        action="store_true",
+        help=(
+            "Safely add current record-status metadata and hash-bind preserved "
+            "legacy records. The exact prior state is retained as a guarded backup."
+        ),
+    )
+    operation.add_argument(
+        "--mark-complete",
+        choices=tuple(SUBSTANTIVE_RECORDS.values()),
+        metavar="RECORD",
+        help=(
+            "Mark one substantive record complete after validating its content "
+            "and binding it to an exact build/artifact file."
+        ),
+    )
+    operation.add_argument(
+        "--mark-draft",
+        choices=tuple(SUBSTANTIVE_RECORDS.values()),
+        metavar="RECORD",
+        help="Return one substantive record to draft and remove stale completion metadata.",
+    )
     parser.add_argument(
-        "--profile", choices=tuple(PROFILES), default="substantial",
-        help="Record set to initialize when --record is not supplied (default: substantial).",
+        "--profile", choices=tuple(PROFILES), default="standard",
+        help="Record set to initialize when --record is not supplied (default: standard).",
     )
     parser.add_argument(
         "--record", action="append", choices=tuple(RECORD_TEMPLATES),
         help="Create only this useful record; repeat to select more. Overrides --profile.",
     )
+    parser.add_argument(
+        "--evidence-capability",
+        action="append",
+        default=[],
+        metavar="SLUG",
+        help=(
+            "Add an applicable evidence capability without selecting an "
+            "aesthetic recipe; repeat for cultural or project-specific risks."
+        ),
+    )
+    parser.add_argument("--binding-kind", choices=("build", "artifact"))
+    parser.add_argument(
+        "--binding-id",
+        help="Exact build, commit, or artifact identity for --mark-complete.",
+    )
+    parser.add_argument(
+        "--binding-path",
+        help=(
+            "Safe POSIX path, relative to the project, for the immutable build "
+            "or artifact file used by --mark-complete."
+        ),
+    )
+    parser.add_argument(
+        "--completion-owner",
+        help="Accountable reviewer identity for --mark-complete.",
+    )
+    parser.add_argument(
+        "--limitations",
+        help=(
+            "Known limitations, or an explicit statement that none are known "
+            "within the reviewed scope."
+        ),
+    )
+    parser.add_argument(
+        "--completed-at",
+        help=(
+            "ISO date-time with timezone; defaults to the current UTC time for "
+            "--mark-complete."
+        ),
+    )
     parser.add_argument("--json", action="store_true", help="Emit a JSON success result as well as structured errors.")
     args = parser.parse_args()
     try:
+        skill_root = Path(__file__).resolve().parents[1]
+        version = release_version(skill_root)
+        completion_values = {
+            "--binding-kind": args.binding_kind,
+            "--binding-id": args.binding_id,
+            "--binding-path": args.binding_path,
+            "--completion-owner": args.completion_owner,
+            "--limitations": args.limitations,
+            "--completed-at": args.completed_at,
+        }
+        if args.print_asset_example:
+            if (
+                 args.force
+                 or args.dry_run
+                 or args.record
+                 or args.evidence_capability
+                 or args.json
+                or any(value is not None for value in completion_values.values())
+            ):
+                raise StateError(
+                    "incompatible-arguments",
+                    (
+                        "--print-asset-example is a read-only raw-YAML output "
+                        "mode and cannot be combined with mutation, record, "
+                        "completion, or JSON-output arguments."
+                    ),
+                )
+            example = (
+                skill_root
+                / "templates"
+                / "asset-manifest.example.yml"
+            ).read_text(encoding="utf-8")
+            print(
+                example.replace(
+                    "__DESIGN_DNA_VERSION__",
+                    f"design-dna {version}",
+                ),
+                end="",
+            )
+            return 0
         project = lexical_absolute(args.project)
         if not project.is_dir():
             raise StateError("project-not-found", "Project directory does not exist.", path=project)
         assert_no_reparse_ancestors(project)
-        skill_root = Path(__file__).resolve().parents[1]
         plugin_root = skill_root.parents[1]
         protected = plugin_root if (plugin_root / ".codex-plugin" / "plugin.json").is_file() else skill_root
         if project == protected or is_within(project, protected) or is_within(protected, project):
@@ -2319,25 +9456,190 @@ def main() -> int:
                 "Refusing to create state in or around the packaged skill/plugin.",
                 path=project,
             )
-        version = release_version(skill_root)
-        if args.check_state:
+        mutation_selected = bool(
+            args.migrate or args.mark_complete or args.mark_draft
+        )
+        if args.mark_complete:
+            missing_completion = [
+                name
+                for name, value in completion_values.items()
+                if name != "--completed-at" and not value
+            ]
+            if missing_completion:
+                raise StateError(
+                    "completion-arguments-missing",
+                    "--mark-complete requires "
+                    + ", ".join(missing_completion)
+                    + ".",
+                    path=project / ".design-dna",
+                )
+        elif any(value is not None for value in completion_values.values()):
+            raise StateError(
+                "completion-arguments-unused",
+                "Completion metadata arguments are valid only with --mark-complete.",
+                path=project / ".design-dna",
+            )
+        if (args.check_state or args.check_ready or mutation_selected) and (
+            args.force or args.record or args.evidence_capability
+        ):
+            raise StateError(
+                "incompatible-arguments",
+                "--force, --record, and --evidence-capability apply only to "
+                "initialization.",
+                path=project,
+            )
+        if (args.check_state or args.check_ready) and args.dry_run:
+            raise StateError(
+                "incompatible-arguments",
+                "--dry-run is not used with state or readiness checks.",
+                path=project,
+            )
+        if args.check_state or args.check_ready:
             failures, warnings = validate_state(project, version)
+            if not failures and args.check_ready:
+                failures.extend(readiness_failures(project))
             result = {"ok": not failures, "project": str(project), "version": version, "failures": failures, "warnings": warnings}
             print(json.dumps(result, indent=2) if args.json else "\n".join(
                 [*(f"FAIL: {item}" for item in failures), *(f"WARN: {item}" for item in warnings)]
-                or [f"OK: Design DNA state schema {STATE_SCHEMA_VERSION} is current."]
+                or [
+                    (
+                        "OK: Every listed Design DNA evidence record is ready "
+                        "under the selected assurance capabilities."
+                        if args.check_ready
+                        else (
+                            "OK: Design DNA state schema "
+                            f"{STATE_SCHEMA_VERSION} is current."
+                        )
+                    )
+                ]
             ))
             return 1 if failures else 0
+        if args.migrate:
+            actions = mutate_state_transaction(
+                project,
+                version,
+                action="migrated",
+                dry_run=args.dry_run,
+                mutator=migrate_staged_state,
+            )
+            result = {
+                "ok": True,
+                "project": str(project),
+                "version": version,
+                "actions": actions,
+            }
+            print(
+                json.dumps(result, indent=2)
+                if args.json
+                else "\n".join(
+                    f"{item['action']}: {item['path']}"
+                    for item in actions
+                )
+            )
+            return 0
+        if args.mark_complete:
+            completed_at = (
+                args.completed_at
+                or datetime.now(timezone.utc).isoformat()
+            )
+            actions = mutate_state_transaction(
+                project,
+                version,
+                action=f"marked-complete:{args.mark_complete}",
+                dry_run=args.dry_run,
+                mutator=lambda staged: mark_record_complete(
+                    staged,
+                    project,
+                    args.mark_complete,
+                    binding_kind=str(args.binding_kind),
+                    binding_id=str(args.binding_id),
+                    binding_path=str(args.binding_path),
+                    owner=str(args.completion_owner),
+                    limitations=str(args.limitations),
+                    completed_at=completed_at,
+                ),
+            )
+            result = {
+                "ok": True,
+                "project": str(project),
+                "version": version,
+                "record": args.mark_complete,
+                "actions": actions,
+            }
+            print(
+                json.dumps(result, indent=2)
+                if args.json
+                else "\n".join(
+                    f"{item['action']}: {item['path']}"
+                    for item in actions
+                )
+            )
+            return 0
+        if args.mark_draft:
+            actions = mutate_state_transaction(
+                project,
+                version,
+                action=f"marked-draft:{args.mark_draft}",
+                dry_run=args.dry_run,
+                mutator=lambda staged: mark_record_draft(
+                    staged,
+                    args.mark_draft,
+                ),
+            )
+            result = {
+                "ok": True,
+                "project": str(project),
+                "version": version,
+                "record": args.mark_draft,
+                "actions": actions,
+            }
+            print(
+                json.dumps(result, indent=2)
+                if args.json
+                else "\n".join(
+                    f"{item['action']}: {item['path']}"
+                    for item in actions
+                )
+            )
+            return 0
         selected = tuple(dict.fromkeys(args.record or PROFILES[args.profile]))
+        selected_profile = "custom" if args.record else args.profile
+        selected_assurance_profiles = assurance_profiles_for_request(
+            selected_profile,
+            selected,
+        )
+        selected_evidence_capabilities = normalize_evidence_capabilities(
+            args.evidence_capability
+        )
         actions = install_transaction(
             project,
             skill_root,
             selected,
             force=args.force,
             dry_run=args.dry_run,
+            assurance_profiles=selected_assurance_profiles,
+            evidence_capabilities=selected_evidence_capabilities,
             version=version,
         )
-        result = {"ok": True, "project": str(project), "version": version, "records": selected, "actions": actions}
+        result = {
+            "ok": True,
+            "project": str(project),
+            "version": version,
+            "assurance_profile": selected_profile,
+            "assurance_profiles": list(selected_assurance_profiles),
+            "evidence_capabilities": list(
+                normalize_evidence_capabilities(
+                    [
+                        *inferred_evidence_capabilities(
+                            selected_assurance_profiles
+                        ),
+                        *selected_evidence_capabilities,
+                    ]
+                )
+            ),
+            "records": selected,
+            "actions": actions,
+        }
         print(json.dumps(result, indent=2) if args.json else "\n".join(
             f"{item['action']}: {item['path']}" for item in actions
         ))

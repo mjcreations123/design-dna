@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "package",
+    "version",
+    "ref",
+    "commit",
+    "commit_time",
+    "release_identity_sha256",
+    "release_manifest_sha256",
+    "sbom_sha256",
+    "archive",
+    "checksum_file",
+    "signature_policy",
+    "required_signatures",
+    "signature_limitation"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_type": {"const": "design-dna-release-package"},
+    "package": {"const": "design-dna"},
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*))(?:\\.(?:(?:0|[1-9][0-9]*)|(?:[0-9]*[A-Za-z-][0-9A-Za-z-]*)))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "ref": {"type": "string", "minLength": 1, "maxLength": 201},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "commit_time": {"type": "string", "format": "date-time"},
+    "release_identity_sha256": {"$ref": "#/$defs/sha256"},
+    "release_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "sbom_sha256": {"$ref": "#/$defs/sha256"},
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sha256", "bytes", "format", "prefix"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^design-dna-[0-9A-Za-z.+-]+-[0-9a-f]{12}\\.zip$"
+        },
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "bytes": {"type": "integer", "minimum": 1},
+        "format": {"const": "zip"},
+        "prefix": {
+          "type": "string",
+          "pattern": "^design-dna-[0-9A-Za-z.+-]+/$"
+        }
+      }
+    },
+    "checksum_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "format"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^design-dna-[0-9A-Za-z.+-]+-[0-9a-f]{12}\\.zip\\.sha256$"
+        },
+        "format": {"const": "sha256sum"}
+      }
+    },
+    "signature_policy": {"const": "external-detached-required"},
+    "required_signatures": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "name"],
+          "properties": {
+            "role": {"const": "release-package"},
+            "name": {"const": "release-package.json.asc"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "name"],
+          "properties": {
+            "role": {"const": "archive"},
+            "name": {
+              "type": "string",
+              "pattern": "^design-dna-[0-9A-Za-z.+-]+-[0-9a-f]{12}\\.zip\\.asc$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "name"],
+          "properties": {
+            "role": {"const": "checksum"},
+            "name": {
+              "type": "string",
+              "pattern": "^design-dna-[0-9A-Za-z.+-]+-[0-9a-f]{12}\\.zip\\.sha256\\.asc$"
+            }
+          }
+        }
+      ],
+      "items": false
+    },
+    "signature_limitation": {
+      "type": "string",
+      "minLength": 40,
+      "maxLength": 1000
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

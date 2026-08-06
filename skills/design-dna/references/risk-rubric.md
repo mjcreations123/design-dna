@@ -1,64 +1,89 @@
 # Durable risk rubric
 
-Use this during direction and after the first complete render. It covers durable
-causes rather than expiring visual fashions. It is a diagnosis aid, not an AI
-detector or a list of forbidden styles. Evaluate clusters, project fit, system
-coherence, truth, and execution. Load the dated
-[convergence watch](convergence-watch.md) separately when current
-generator/default-pattern perception is material to the task.
+Use this after a candidate has been rendered. It covers durable causes rather
+than expiring fashions. It is a diagnosis aid, not an AI detector, style
+blacklist, taste score, or source of pre-render art direction.
 
-For each concern, identify:
+Read the [creative freedom boundary](creative-freedom.md). If current
+generator/default-pattern perception is material, load the
+[post-render convergence review](convergence-watch.md) only after the first unprimed
+perception pass.
 
-1. the visible or code-level signal;
-2. the underlying cause;
-3. the project evidence and counterexample;
+For a concern, record:
+
+1. the exact rendered or code evidence;
+2. the underlying cause and plausible counterevidence;
+3. the project authority or decision it conflicts with;
 4. the positive revision;
-5. the checks that will show whether the revision worked.
+5. the rerun that can verify the revision.
+
+Classify human impact with the shared
+[severity rubric](quality/review-severity.md). Keep impact separate from
+diagnostic confidence and personal taste. No ingredient, font, palette,
+component, effect, or numerical style value fails by itself.
 
 ## Durable risks
 
-These risks remain relevant even when visual fashions change.
-
-| ID | Risk and common evidence | Positive action | Legitimate exception |
+| ID | Risk and evidence | Positive action | Legitimate exception |
 | --- | --- | --- | --- |
-| `RISK-IA-001` | A category-default sequence or repeated route silhouette—such as hero, explanation, calculator, comparison, proof, and closing form—does not follow each visitor's real entry question and decision path. | Derive route and section order from actual decisions, tasks, objections, proof, inventory, or workflow; compare distinct route silhouettes separately from shared chrome. | Use a familiar or shared sequence when it accurately maps to the same user job and improves orientation. |
-| `RISK-SYS-001` | Local values accumulate: unrelated gaps, radii, borders, shadows, colors, and component treatments create no explainable system. | Establish the smallest useful token and component system; make exceptions communicate a real relationship or state. | A one-off editorial composition can diverge when its logic is documented and coherent. |
-| `RISK-HIER-001` | Every section has equal weight or repeats the same act, eyebrow, heading, deck, media or widget, and action recipe regardless of meaning. | Make hierarchy and section depth follow information importance, scanning, sequence, and user decisions. Remove garnish that carries no structure. | Keep kickers, step labels, taxonomy, status badges, or repeated learning structures when they communicate real organization. |
-| `RISK-COPY-001` | Abstract promises, stacked superlatives, repetitive cadence, myth-correction openings, polished contrasts, aphoristic endings, vague CTAs, and uniform reassurance create one rhetorical machine. | Use approved facts, concrete nouns and verbs, audience or expert language, constraints, consequences, and task-specific actions; audit headings, labels, and ending lines together. | Preserve supplied quotations, terminology, legal text, or an intentional documented brand voice. |
-| `RISK-TRUTH-001` | Fake proof or synthetic authority—testimonials, logos, people, metrics, ratings, screenshots, availability, maps, “live” labels, or exact claims without source, owner, locale, or status—impersonates evidence. | Use authentic evidence, keep a claim ledger, visibly label examples and scenarios, qualify uncertainty, or omit the proof-shaped section. | Show a clearly labeled concept, sample state, or illustrative data set whose limits cannot be mistaken for operating evidence. |
-| `RISK-UX-001` | Visible controls, links, filters, menus, carousels, or forms do nothing, fail at ordinary sizes, or hide recovery. | Implement the relevant path and states; otherwise remove, disable with explanation, or clearly defer the affordance. | A static artifact is acceptable when its status and noninteractive elements are explicit. |
-| `RISK-RESP-001` | Clipping, overflow, broken navigation, fixed widths, weak content priority, or hidden defects appear between showcase viewports. | Resize continuously; test content extremes, input modes, localization, zoom, and component containers; revise the layout cause. | Intentional overflow is acceptable when usable, perceivable, and controlled. |
-| `RISK-CODE-001` | Monolithic components, arbitrary values, unused dependencies, inaccessible controls, or production comments that leak a creative brief or repeated skill jargon expose an unrefined first pass. | Follow repository architecture, extract meaningful reuse, use semantic controls, keep comments focused on non-obvious constraints, remove residue, and run supported checks. | Small prototypes may be compact, and design rationale may live in an internal direction record, when scope and handling are explicit. |
-| `RISK-ASSET-001` | Generic, inconsistent, or implausibly uniform stock/generated assets lack a truthful shared role or erase documentary variance through pristine palette-matched lighting, perspective, crop, and grade. | Art-direct the set, preserve truthful variation, use authentic material when factual recognition matters, and record provenance and approvals; never add fake roughness. | Deliberately controlled campaigns or heterogeneous archival and user-generated collections can remain consistent or varied when context explains them. |
-| `RISK-MOTION-001` | Repeated fade-ups, hover lifts, pulses, marquees, typewriters, countups, glow, or parallax substitute for hierarchy or imply false activity. | Use motion for feedback, state, continuity, spatial explanation, or one evidence-backed expressive purpose; provide reduced behavior. | Expressive motion can lead an Experience surface when it supports the narrative and remains usable. |
-| `RISK-CONTEXT-001` | A category is translated into nostalgic or futuristic shorthand without evidence: rustic café, marble law firm, neon software, clinical wellness. | Name the intended time register and derive expression from current project, audience, place, and product material. | Historical or genre language is valid when authentic, consented, and relevant. |
-| `RISK-CULTURE-001` | Global minimalism or dominant Western conventions overwrite regional density, language, navigation, symbolism, or audience expectations. | Ask about local context, inspect representative references, test language and directionality, and let the audience's norms shape the system. | A global house system can remain consistent when localization and local task evidence support it. |
-| `RISK-DARK-001` | Conversion hierarchy uses fake urgency, confirm-shaming, hidden cost, disguised consent, or obstructed cancellation. | Make choices, costs, consequences, consent, and exit paths equally legible and truthful. | Genuine deadlines, limits, and risk warnings may be prominent when accurate and proportionate. |
-| `RISK-NOV-001` | The design avoids familiar patterns merely to look unlike templates, harming navigation, comprehension, or accessibility. | Choose the clearest usable form, then create specificity through content, art direction, system craft, and behavior. | Break convention when the user benefit is explicit and verified. |
-| `RISK-REPEAT-001` | Distinct routes or unrelated projects repeat the same palette archetype, type pairing, hero and section silhouette, labels, interaction signature, icon treatment, or motion concept without a task or project reason. | Compare routes directly and, only with owner-authorized minimized history, compare projects; revisit raw material and premise rather than rotating styles randomly. | Reuse is correct for the same task, brand, product family, platform, or deliberate house system. |
-| `RISK-RESIDUE-001` | Starter favicon, generic metadata, fake domain, lorem ipsum, empty route, debug output, console error, dead link, or unlicensed asset remains. | Run metadata, content, route, console, asset, and placeholder residue passes before delivery. | Keep explicit framework attribution only when the project wants it. |
-| `RISK-SEC-001` | Visual polish or a passing front-end build is treated as evidence that authentication, authorization, input handling, secrets, dependencies, uploads, data, or production operations are secure. | Bound the readiness claim and require the applicable security, privacy, data, legal, and operational review against the real system and environment. | A purely static, non-data concept can mark these dimensions not applicable when its scope and lack of live behavior are explicit. |
+| `RISK-COMP-001` | The intended audience cannot orient, identify the offering or invitation, understand prominent language, or continue as the brief requires. The result needs its producer's explanation to become usable. | Establish the needed public meaning in content and form, then retest with an unbriefed reviewer in the audience's context. | Art, entertainment, editorial, and narrative work may delay full explanation when the invitation and continuation are deliberately legible enough. |
+| `RISK-MEDIA-001` | The visual-media strategy does not fulfill the brief: a subject that depends on recognition, atmosphere, material, place, product, people, or use has no convincing way to convey it, or supplied/generated media misrepresents the subject. | Choose and art-direct an authorized media path or deliberately revise the direction; bind documentary claims, rights, crops, disclosure, performance, alternatives, and fallback. | A media-light, typographic, abstract, diagrammatic, illustrative, or generated-media direction is valid when authorized, honest, visually successful, and appropriate to the subject. |
+| `RISK-TYPE-003` | Actual rendered type is crowded, weak, unsupported, visually wrong for the project, or unstable across relevant copy, scripts, widths, loading, zoom, and localization. | Review the complete type system with real copy; adjust family, roles, hierarchy, measure, spacing, optical settings, loading, or fallbacks according to the observed cause. | Unusual, common, compressed, expansive, single-family, or multi-family typography is valid when it works in its intended context and satisfies rights and access. |
+| `RISK-REVIEW-001` | A clean scanner, passing tests, self-review, or earlier approval is used to dismiss direct accountable-owner rejection or reproduced user confusion. | Treat the new observation as first-party evidence, reopen the affected decisions, revise and rerender the cause, then record the owner's disposition. | A factual misunderstanding may be resolved with evidence, but valid perception and usability feedback still remains in the review record. |
+| `RISK-IA-001` | Content order, route shape, navigation, or disclosure does not follow the real visitor questions and decisions, or unlike jobs are forced through one unexplained sequence. | Rebuild order and relationships from actual content, tasks, evidence, and decision dependencies; preserve shared structure only where it helps. | Familiar or repeated structures are correct when the jobs, brand, platform, or product family genuinely match. |
+| `RISK-SYS-001` | Values, components, and exceptions accumulate without an explainable relationship, or system reuse erases meaningful route and content differences. | Establish only the reuse that improves coherence, recognition, behavior, or maintenance; keep intentional local decisions local. | Editorial one-offs, optical exceptions, and plural visual systems are valid when their logic and ownership are clear. |
+| `RISK-HIER-001` | Hierarchy and pacing do not reflect content importance or task; every region feels mechanically equal, or variation is added randomly to appear handmade. | Let content and the chosen creative logic determine emphasis, rhythm, and depth; edit repeated treatment whose reason has disappeared. | Repetition is valid for taxonomy, status, sequence, learning, comparison, or another real organizational need. |
+| `RISK-AMBITION-001` | The rendered work misses the requested character or owner preference, whether through timid defaulting, unconvincing spectacle, weak craft, or a repeated producer style. | Translate the brief and owner language into observable project criteria, reopen the `creative_logic`, and revise the relationships that create the whole experience. | Any degree of restraint, abundance, familiarity, ornament, motion, stillness, unity, or plurality can be right when the brief and rendered quality support it. |
+| `RISK-EXPLORE-001` | A consequential open brief hardens around the first plausible answer without enough evidence to expose the real choice; alleged alternatives are the same system with surface substitutions. | Explore in proportion to uncertainty and stakes; compare enough materially different, directly reviewable evidence to disconfirm the first default and support an accountable decision. | Established-system changes, bounded repairs, approved references, or tightly constrained work may need only one inherited direction; record why. |
+| `RISK-COPY-001` | Public copy forms an unexplained generic rhetorical machine, makes vague or unsupported promises, uses ambiguous actions, or narrates internal design/prototype methodology instead of serving the visitor. | Use approved facts, concrete subject language, real consequences, meaningful labels and actions, and a claim ledger; keep internal process internal. | Supplied voice, quotations, legal language, specialized terminology, and repeated safety/status text should remain when authoritative and useful. |
+| `RISK-TRUTH-001` | Testimonials, logos, people, metrics, ratings, screenshots, maps, availability, “live” states, or exact claims impersonate evidence without source, scope, status, or authority. | Bind authentic evidence, qualify uncertainty, label examples, disclose concept status, or omit the proof-shaped claim. | Clearly labeled concepts, sample states, and illustrative data may remain when their limits cannot be mistaken. |
+| `RISK-UX-001` | Visible controls, links, filters, menus, media, or forms do not work, fail in ordinary conditions, mislead, or hide recovery. | Implement and verify the relevant path and states; otherwise remove, explain, or clearly defer the affordance. | Static artifacts and intentionally unavailable actions are acceptable when their status and meaning are explicit. |
+| `RISK-RESP-001` | Content, navigation, controls, media, or relationships break across relevant sizes, containers, content lengths, inputs, languages, zoom, or preferences. | Test continuously around observed failures and recompose the underlying layout or behavior while preserving the intended outcome. | Intentional overflow, cropping, or transformation is valid when perceivable, usable, controlled, and part of the direction. |
+| `RISK-CODE-001` | Source structure, dependencies, semantics, comments, or arbitrary local values expose an unrefined implementation, impede maintenance, or leak internal creative language. | Follow the repository's architecture, extract useful reuse, preserve local decisions where appropriate, use semantic behavior, remove residue, and run supported checks. | Compact prototypes and internal rationale are valid within their explicit scope and handling boundary. |
+| `RISK-ASSET-001` | Assets are unlicensed, untraceable, factually misleading, poorly cropped, visually incoherent without reason, implausibly uniform, or inadequate for the approved media direction. | Art-direct and review the rendered set, preserve truth and useful variance, record provenance and approvals, and resolve missing dependencies honestly. | Controlled campaigns, heterogeneous archives, generated illustration, and media-light systems may be consistent or varied according to their own logic. |
+| `RISK-MOTION-001` | Motion or temporal behavior obscures hierarchy, implies false activity, interrupts tasks, repeats without reason, or lacks accessible and failure behavior. | Give each consequential behavior an approved aesthetic, narrative, feedback, continuity, or explanatory role; verify operation, interruption, reduced behavior, and fallback. | Expressive motion, ambient motion, or no motion can lead when it fits the work and the complete experience remains usable. |
+| `RISK-CONTEXT-001` | Category shorthand, fashionable convention, historical costume, or a producer habit replaces evidence from the actual audience, product, place, culture, or owner. | Reopen the project material and creative logic; retain familiar or referential language only where context explains it. | Historical, genre, trend-aware, and conventional aesthetics are valid when authentic, authorized, and well executed. |
+| `RISK-CULTURE-001` | Dominant design conventions overwrite local density, language, directionality, symbolism, representation, or audience expectations, or a culture is used as costume. | Obtain appropriate context and review authority; let verified language, practices, variation, and audience needs influence the system. | A global system may remain recognizable when localization and local evidence support its decisions. |
+| `RISK-DARK-001` | Conversion hierarchy uses false urgency, confirm-shaming, hidden cost, disguised consent, or obstructed cancellation. | Make choices, costs, consequences, consent, and exit paths truthful and comparably legible. | Genuine deadlines, limits, and risk warnings may be prominent when accurate and proportionate. |
+| `RISK-NOV-001` | The design rejects familiar behavior merely to appear original, harming comprehension, navigation, access, or recovery. | Use the form that best serves the project; create specificity through any fitting combination of content, craft, aesthetic logic, and behavior. | Break convention when its experiential or user benefit is intentional, supported, and verified. |
+| `RISK-REPEAT-001` | Distinct routes or authorized unrelated projects repeat the same structural and aesthetic system without a task, brand, platform, content, or product-family reason. | Compare masked outputs at the whole-system level; revisit source material and decision logic rather than rotating ingredients randomly. | Reuse is correct for shared tasks, brands, products, platforms, editorial systems, or deliberate houses. |
+| `RISK-RESIDUE-001` | Starter identity, generic metadata, placeholder content, empty routes, debug output, errors, dead links, stale state, or unauthorized assets remain. | Run metadata, content, route, console, network, state, asset, and placeholder passes before delivery. | Explicit framework attribution or demo content may remain when the project wants it and its status is clear. |
+| `RISK-SEC-001` | Visual polish or a passing front-end build is treated as proof that authentication, authorization, inputs, secrets, dependencies, uploads, data, privacy, or production operations are secure. | Bound the readiness claim and require relevant specialist review against the real system and environment. | A static non-data concept may mark these dimensions not applicable when its scope is explicit. |
 
-## Purpose test
+## Contextual purpose review
 
-Before retaining a section, card, badge, statistic, icon, effect, font pairing, interaction, or animation, answer:
+Before retaining or removing a visible choice, ask:
 
-1. What user understanding, decision, recognition, or behavior does it improve?
-2. Why does it belong to this product, brand, place, content, or audience?
-3. Is its content true and its interaction honest?
-4. Does it work across relevant sizes, states, inputs, languages, and preferences?
-5. Is it coherent with the rest of the system?
-6. Would removing it make the experience less clear, meaningful, credible, or memorable?
-7. Is its polish supported by real content, evidence, ownership, and maintenance?
+- What role does it play individually or as part of the whole—functional,
+  informational, editorial, aesthetic, atmospheric, cultural, expressive, or
+  social?
+- Why does that role belong to this project or candidate?
+- Is its content true, its interaction honest, and its use of people or media
+  authorized?
+- Does it remain appropriate in the relevant states, sizes, inputs, languages,
+  preferences, loading conditions, and fallbacks?
+- Is repetition or exception explained by the system and content?
+- Does the actual render show the intended quality?
+- Is its implementation and maintenance cost accepted?
 
-If the answers are weak, revise or remove it. Do not merely swap it for the next fashionable alternative.
+An ornamental choice can pass because it contributes beauty or composition;
+it need not pretend to improve a task. A familiar component can pass because
+it is clear and well made; it need not be visually rare. If the reason and
+render are weak, revise or remove the cause rather than swap in the next
+fashion.
 
 ## Review language
 
-Describe evidence and causes:
+Describe evidence, relationships, and impact:
 
-- “The three equal cards impose a generic taxonomy and hide the ordering path.”
-- “The stock radius, neutral ramp, spacing, and Card classes remain visually indistinguishable from the component-library example.”
-- “The cream/serif/green combination has no source in the supplied brand or product material.”
+- “These routes repeat the same content sequence despite different visitor
+  decisions.”
+- “The selected font falls back for the required script and changes the
+  hierarchy at narrow widths.”
+- “Fragment emphasis recurs across unrelated headings without a semantic or
+  expressive relationship and interrupts reading.”
+- “This conventional layout is appropriate because the task and existing
+  system match.”
 
-Do not write “cards are AI slop,” “purple proves AI,” or other authorship claims the evidence cannot support.
+Do not write that one aesthetic ingredient proves AI authorship. Do not
+disguise personal preference as a functional defect.

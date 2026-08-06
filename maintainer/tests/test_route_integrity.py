@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 PLUGIN = Path(__file__).resolve().parents[2]
@@ -38,7 +39,60 @@ def write_skill(path: Path, marker: str = "current") -> None:
     )
 
 
+def create_directory_alias(target: Path, alias: Path) -> None:
+    """Create a directory alias without silently skipping the reparse test."""
+    try:
+        os.symlink(target, alias, target_is_directory=True)
+        return
+    except (OSError, NotImplementedError) as symlink_error:
+        if os.name != "nt":
+            raise AssertionError(
+                f"directory symlink creation failed: {symlink_error}"
+            ) from symlink_error
+
+    junction = subprocess.run(
+        [
+            "cmd.exe",
+            "/d",
+            "/c",
+            "mklink",
+            "/J",
+            str(alias),
+            str(target),
+        ],
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        timeout=30,
+    )
+    if junction.returncode != 0 or not alias.is_dir():
+        raise AssertionError(
+            "directory alias creation failed via both symlink and junction: "
+            f"{junction.stdout}{junction.stderr}"
+        )
+
+
 class RouteIntegrityTests(unittest.TestCase):
+    def test_detector_discovery_scan_has_a_fail_closed_entry_bound(self) -> None:
+        sys.path.insert(0, str(SCRIPTS))
+        try:
+            import detect_routes
+        finally:
+            sys.path.pop(0)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "skills"
+            root.mkdir()
+            for name in ("one.txt", "two.txt", "three.txt"):
+                (root / name).write_text(name, encoding="utf-8")
+            with mock.patch.object(detect_routes, "MAX_DISCOVERY_ENTRIES", 2):
+                with self.assertRaises(detect_routes.ToolFailure) as caught:
+                    detect_routes.discover(root)
+            self.assertEqual(
+                "discovery-limit-exceeded",
+                caught.exception.issue.code,
+            )
+
     def test_detector_requires_explicit_roots_and_expected_routes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             canonical = Path(temporary) / "canonical"
@@ -92,10 +146,50 @@ class RouteIntegrityTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertTrue(
                 any(
-                    item["code"] == "duplicate-active-route"
+                    item["code"] == "unexpected-discovery-candidate"
                     and Path(item["path"]) == renamed
                     for item in payload["failures"]
                 )
+            )
+
+    def test_absent_optional_discovery_root_is_recorded_not_failed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            canonical = root / "canonical"
+            discovery = root / "skills"
+            absent_cache = root / "plugins" / "cache"
+            expected = discovery / "design-dna"
+            write_skill(canonical)
+            write_skill(expected)
+            result = run_script(
+                "detect_routes.py",
+                "--canonical",
+                str(canonical),
+                "--root",
+                str(discovery),
+                "--root",
+                str(absent_cache),
+                "--expected",
+                str(expected),
+            )
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["failures"], [])
+            self.assertEqual(
+                "not-verified",
+                payload["scan_scope"]["activation_state"],
+            )
+            self.assertEqual(
+                "not-inspected",
+                payload["scan_scope"]["project_admin_session_routes"],
+            )
+            self.assertIn(
+                "optional-discovery-root-absent",
+                {item["code"] for item in payload["warnings"]},
             )
 
     def test_detector_fails_closed_on_malformed_or_duplicate_frontmatter(self) -> None:
@@ -290,7 +384,7 @@ class RouteIntegrityTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertTrue(
                 any(
-                    item["code"] == "duplicate-active-route"
+                    item["code"] == "unexpected-discovery-candidate"
                     and Path(item["path"]) == canonical
                     for item in json.loads(result.stdout)["failures"]
                 )
@@ -338,7 +432,7 @@ class RouteIntegrityTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
             self.assertEqual(
                 json.loads(result.stdout)["failures"][0]["code"],
-                "duplicate-active-route",
+                "discovery-candidate-collision",
             )
             self.assertIn(
                 "old",
@@ -362,10 +456,7 @@ class RouteIntegrityTests(unittest.TestCase):
                 "description: An unrelated cached plugin skill.\n---\n",
                 encoding="utf-8",
             )
-            try:
-                os.symlink(version, alias, target_is_directory=True)
-            except (OSError, NotImplementedError):
-                self.skipTest("directory symlink creation is unavailable")
+            create_directory_alias(version, alias)
 
             result = run_script(
                 "detect_routes.py",

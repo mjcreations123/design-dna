@@ -1,0 +1,33 @@
+name: Design DNA evidence review
+
+on:
+  schedule:
+    - cron: "17 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-current-sources:
+    name: Online evidence and review-date verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: maintainer/requirements-dev.lock
+      - name: Install pinned maintainer dependencies
+        run: python -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
+      - name: Verify dependency consistency
+        run: python -m pip check
+      - name: Revalidate current evidence online
+        run: python -B maintainer/scripts/validate_evidence.py --plugin-root . --online --release
+      - name: Revalidate package and policy freshness
+        run: python -B maintainer/scripts/audit_package.py --plugin-root .
