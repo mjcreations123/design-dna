@@ -95,6 +95,24 @@ for one project and entirely appropriate illustration for another.
 - Do not imitate a living artist or proprietary campaign; derive broader
   transferable principles from authorized references.
 
+**The archetype trap, learned on a real build.** A generator draws the
+statistical archetype of a subject's NAME, not the subject described. Asked
+for a burnt Basque cheesecake, it delivered a glazed New York cheesecake;
+the adversarial reviewer failed the whole page on the contradiction between
+the photographs and the copy's product claims, and that contradiction is
+precisely where a design-literate visitor's "AI made this" instinct fires.
+Two mandatory checks for every generated set:
+
+- **Subject-accuracy check:** the thing shown is the thing NAMED, verified
+  against the copy's specific claims (scorched means scorched, crustless
+  means crustless, the named dish is the depicted dish). An image can be
+  beautiful, artifact-free, on-recipe, and still wrong.
+- **Prior-fighting rule:** when the model repeatedly inserts an element the
+  prompt excludes, either fight it with stronger negative phrasing for at
+  most one retry, or OWN the element in the copy so page and pictures tell
+  one story. Internal consistency across the set beats purity on any single
+  image; never ship half the set with the element and half without.
+
 No generated-media prompt recipe or required shot trio applies globally.
 Create the images and variety this candidate needs.
 

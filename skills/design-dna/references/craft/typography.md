@@ -308,7 +308,31 @@ the requested stack, never the face that painted.
    font as a missing weight. For style: a computed `italic` is covered by
    any face whose style descriptor contains `italic` or `oblique` (check
    oblique angle ranges when given). CSS 700 with no covering face means
-   faux bold is on screen.
+   faux bold is on screen. Reference implementation:
+
+   ```js
+   const kw = { normal: 400, bold: 700 };
+   const cover = (desc, w) => {
+     const p = String(desc).split(/\s+/).map(t => kw[t] ?? parseFloat(t));
+     return p.length > 1 ? w >= p[0] && w <= p[1] : w === p[0];
+   };
+   const need = new Set(), GEN = ['serif','sans-serif','monospace','system-ui'];
+   document.querySelectorAll('*').forEach(el => {
+     if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+     const cs = getComputedStyle(el);
+     const fam = cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
+     if (!GEN.includes(fam) && !fam.startsWith('ui-'))
+       need.add(fam + '|' + cs.fontWeight + '|' + cs.fontStyle);
+   });
+   const faces = [...document.fonts];
+   const missing = [...need].filter(k => {
+     const [f, w, st] = k.split('|');
+     return !faces.some(fc => fc.family.replace(/["']/g, '') === f &&
+       cover(fc.weight, +w) &&
+       (st === 'normal' ? true : /italic|oblique/.test(fc.style)));
+   });
+   // missing.length must be 0; anything listed is synthesized on screen
+   ```
 4. **Network proof.** Build the expected-URL list from the CSSOM: iterate
    `document.styleSheets`, collect `CSSFontFaceRule` src URLs (a
    cross-origin stylesheet throws on `.cssRules`; fetch it directly or

@@ -275,6 +275,7 @@ decision, then return to the router.
 | Private previews, screenshots, evaluation data | [Review data handling](references/quality/data-handling.md). |
 | Classifying a review finding | [Review severity](references/quality/review-severity.md). |
 | Baseline-versus-candidate screenshot evidence | [Rendered comparison](references/quality/render-comparison.md). |
+| Capturing, probing, or pixel-measuring a page for the gate | [Render harness](references/quality/render-harness.md): CDP capture without reflow, probe sequencing, element-anchored sampling, the two-capture contrast method, fallback blocking. |
 | Scoped completion | [Engineering verification](references/quality/engineering-verification.md) and [evaluation](references/quality/evaluation.md). |
 | Production, launch, deployment claims | [Production readiness](references/quality/production-readiness.md) and every applicable specialist gate. |
 

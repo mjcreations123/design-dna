@@ -5,6 +5,39 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.0.2 - First-build hardening
+
+Learned from the skill's first live test (a one-page demo shop built,
+adversarially reviewed, and revised in one session).
+
+### Added
+
+- `references/quality/render-harness.md`: capture and measurement methods
+  that survived real failures: full-page capture via layout-metrics clip
+  (never viewport resize, which re-flows vh layout and truncates), probe
+  sequencing (probes run at the LAST navigation's viewport), element-
+  anchored sampling, the two-capture hidden-text contrast method (defeats
+  glyph and antialiasing contamination), and fallback rehearsal via
+  Network.setBlockedURLs. Router row added.
+- Imagery: the archetype trap (a generator draws the statistical archetype
+  of a subject's NAME, not the subject described) with the mandatory
+  subject-accuracy check, and the prior-fighting rule (one retry, then own
+  the element in copy; set consistency beats single-image purity).
+  RISK-IMGSET-001 updated to match.
+- Typography synthesis proof: a reference implementation snippet for
+  descriptor-range coverage, so the check gets run instead of approximated.
+
+## 5.0.1 - Working-artifact hygiene
+
+The owner saw in-progress direction proofs in a watched preview pane and
+judged them as the site. New invariant and workflow rules: internal renders
+live under .design-dna/proofs/ with visible INTERNAL banners, specimen
+strips never share a page with a composition, placeholder media areas are
+flat labeled frames (never gradient fills), and watched previews are
+pointed at the most finished state before any turn ends. Parseable-text
+gains the studio's own process language as an internal-residue class;
+preship gate gains the no-reachable-working-artifact line.
+
 ## 5.0.0 - The merge
 
 Merges three generations into one skill: the 4.0.0 candidate's architecture
