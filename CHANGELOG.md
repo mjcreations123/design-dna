@@ -5,6 +5,83 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.0.0 - The merge
+
+Merges three generations into one skill: the 4.0.0 candidate's architecture
+(authority order, capability presets, decision router, flows, verticals,
+cultural review, scripts), the 3.4.0 dated risk vocabulary (restored and
+refreshed as expiring post-render tables, including the dated-signal watch
+for the opposite "looks like 2004" failure), and the original owner doctrine
+that 2.x removed. Grounded in a 9-agent research sweep (typography craft,
+font-slop discourse, font-loading engineering, stray-text tells, YouTube
+transcript mining, instruction-following research) and a failure-corpus
+audit of this studio's real builds and rejections.
+
+### Added
+
+- `policy/absolutes.md`: the restored two-tier owner policy. ABSOLUTE (never
+  lifted): em dashes, count-ups, fabricated proof, the indigo-violet
+  gradient kit, fake product UI, the default skeleton, contrast floors, the
+  silent-font-fallback ban, the parseable-string ban, the screenshot ship
+  gate, demo-by-default. HARD (client-liftable, logged): watch-cluster
+  faces on greenfield identity, single-word emphasis swaps, eyebrow
+  repetition, third families, emoji-as-interface, mono-as-dressing,
+  ordinals on parallel items. Includes the two-lane rule: absolutes act
+  pre-render; everything else stays post-render diagnostic.
+- `references/quality/parseable-text.md`: the four-question gate (meaning,
+  truth, audience, deletion cost) for every visible string, the five string
+  classes, named bans from the studio's own rejections, and mechanical
+  residue greps (placeholder vocabulary, binding leaks, mojibake, em dash).
+- `references/quality/ledger.md` + `templates/ledger-template.md`: the
+  studio ledger at `~/.claude/design-dna/LEDGER.md`, consulted before
+  directing, appended on ship, with the two-part rotation test; standing
+  owner authorization for cross-project comparison.
+- `templates/preship-gate.md`: the one-page runnable P0/P1/P2 gate that
+  operationalizes every absolute plus the font, text, screenshot, ledger,
+  and demo-state checks.
+- `templates/placeholder-register-template.md`: tracked stand-ins with the
+  must-be-empty-before-live rule.
+- Typography: the mandatory 8-step rendered-font verification (registration,
+  paint, synthesis, network, console, computed-size, fallback rehearsal,
+  look), built on the documented failure modes of document.fonts.check and
+  computed styles; the numeric floors table; the pairing procedure; the
+  dated bench with burned-list; the inks-versus-graphics token split with
+  pixel-sampled scrims; self-hosting law; motion and masking laws from the
+  studio's own defect record.
+- Risk rubric: RISK-PLAIN-001 (human-crafted but plain still fails),
+  RISK-PARSE-001 (unparseable strings), RISK-FONTPAINT-001 (declared face
+  is not the painted face).
+- Convergence watch: dated 2026-08 cluster tables restored (treatment kit,
+  glow, emphasis swaps, stats bands, HUD pseudo-data, the two font clusters
+  with decay clocks), the dated-signal RISK-PERIOD table, the
+  self-fingerprint section, and the "avoidance converges too" guard.
+
+### Changed
+
+- SKILL.md restructured for instruction-following: absolutes on the first
+  screen, the gate restated at the end, unhedged imperatives, every ban
+  paired with its replacement.
+- Creative freedom keeps its no-global-blacklist stance with one carve-out:
+  the owner absolutes are active Inherited constraints at tier 2, plus the
+  two-axis (AI-looking/human-crafted and plain/rich) review model.
+- Creative exploration gains the fixed first-instinct floor: greenfield,
+  Showcase, and open-direction work never ships the first-ranked concept
+  without one materially different rendered alternative.
+- Workflow: demo-by-default and the placeholder register at preflight,
+  ledger consult at direction, three mandatory verification passes (see it,
+  prove the fonts painted, parse every string), the preship gate and ledger
+  append at delivery.
+- Specificity review: the ledger replaces "cross-project repetition not
+  assessed" as the comparison baseline; the parseable-text gate joins the
+  copy audit as P0.
+- owner-defaults.yml: new require dispositions for absolutes, screenshot
+  gate, font verification, parseable text, demo-by-default, ledger, and the
+  preship gate.
+
+### Removed
+
+- `scripts/__pycache__/` build residue.
+
 ## 4.0.0 - Unreleased candidate
 
 This candidate adds a bounded Range Study capability and cultural-context

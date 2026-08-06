@@ -28,6 +28,12 @@ section order, energy pattern, concept count, or degree of visual unity.
 Examples and recurring-pattern warnings are review vocabulary, not a menu,
 blacklist, reverse style guide, or prompt for an opposite-looking fashion.
 
+One carve-out: the standing [owner absolutes](../policy/absolutes.md) are
+active Inherited constraints at authority tier 2. They are small,
+owner-authored, dated, and never grow by producer habit. An active absolute
+is a constraint like a brand guideline, not a style prison, and nothing in
+this file softens it.
+
 ## Classify constraints before directing
 
 Record consequential constraints in one of these classes:
@@ -164,6 +170,13 @@ A design may pass with one idea, several local logics, deliberate ornament,
 familiar structure, no motion, several type voices, or extreme restraint. It
 may fail while following every named method in this skill if the rendered
 result is ugly, generic, incoherent, careless, or wrong for the owner.
+
+Review on two axes at once. One axis runs AI-looking to human-crafted; the
+other runs plain to rich. Clearing the first axis while staying plain still
+fails: a page with zero individual defects and zero memorable elements is
+`RISK-PLAIN-001`, not a pass. Richness comes from a committed concept
+executed with craft, never from scattering effects; restraint is valid only
+as a committed, rendered-successful choice the brief supports.
 
 ## Anti-convergence check
 

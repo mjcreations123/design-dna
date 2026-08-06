@@ -33,7 +33,14 @@ Before changing code:
    presets, and later additions may strengthen but never silently downgrade the
    persisted set.
 7. Identify whether the output is concept, demo, staging, or production.
-8. Identify applicable specialist skills and gates. Design DNA owns art
+   Every build IS a demo until the owner says live in his own words; record
+   that state, create the
+   [placeholder register](../templates/placeholder-register-template.md) at
+   `.design-dna/placeholders.md`, and give dead CTAs an explicit demo-notice
+   behavior.
+8. Read the [owner absolutes](../policy/absolutes.md); they are active for
+   the whole build.
+9. Identify applicable specialist skills and gates. Design DNA owns art
    direction and rendered coherence; the specialist owns its narrow domain
    contract, and repository plus user instructions outrank both.
 
@@ -142,6 +149,11 @@ when lived identity is materially central.
 
 ## 4. Calibrate and direct
 
+Consult the [studio ledger](quality/ledger.md) before the first candidate:
+read the last five rows and apply the rotation test. The display family must
+not repeat from the previous build, and the macrostructure must differ from
+the previous two rows.
+
 Describe the intended relationship to time in project-specific language and
 evidence. A broad adjective by itself is not a direction.
 
@@ -236,6 +248,19 @@ perception is material, the
 high-ambition work, then evaluate the final implementation with
 [evaluation](quality/evaluation.md).
 
+Three passes are mandatory on every round, not proportional:
+
+1. **See it.** Screenshots at ~1440 and ~375 for every page in scope, saved
+   to disk, opened, and looked at, with paths cited in the review record.
+   Judging craft from code alone is prohibited. If the environment cannot
+   render, the deliverable is blocked and says so; disclosure never
+   substitutes for the render at ship time.
+2. **Prove the fonts painted.** The full rendered-font verification in
+   [typography](craft/typography.md): registration, paint, synthesis,
+   network, console, computed-size, and fallback proofs.
+3. **Parse every string.** The [parseable-text](quality/parseable-text.md)
+   review pass with its residue greps, in every state.
+
 After the final implementation round of every substantial new build or visual
 redesign, run the
 [adversarial specificity review](quality/specificity-review.md). Revise
@@ -314,11 +339,16 @@ Do not call a critical flow fully production-validated when representative users
 
 Before delivery:
 
+- run the full [preship gate](../templates/preship-gate.md) on the rendered
+  output; one P0 hit blocks the ship until fixed;
 - review the final diff or changed-file set;
 - run the supported build and test gates;
 - inspect final rendered routes and states;
 - complete metadata, asset, claim, placeholder, comment/meta-language, and
-  console residue checks;
+  console residue checks; the placeholder register must be empty or every
+  open row owner-deferred before any live state;
+- append or update this build's row in the
+  [studio ledger](quality/ledger.md);
 - confirm externally acting integrations and public claims with the owner;
 - confirm culturally central terminology, representation, and media against the
   exact candidate with an owner-authorized cultural reviewer, or keep public

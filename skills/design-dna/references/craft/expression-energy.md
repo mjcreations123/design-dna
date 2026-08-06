@@ -9,6 +9,15 @@ This reference does not prescribe an intensity, medium, sequence, or fixed
 aesthetic recipe. Read the
 [creative freedom boundary](../creative-freedom.md) first.
 
+Two axes frame every energy question. One runs AI-looking to human-crafted;
+the other runs plain to rich. Avoiding tells only moves the first axis, and
+a human-crafted but plain page still fails the owner's bar. The default
+target is rich: a committed concept executed with craft, real imagery,
+depth, dramatic scale, one signature done fully. When an owner asks for
+variety in a bold effect, vary the MECHANISM at equal intensity; a calmer
+variant of the same effect reads as boring, not as range. When unsure, aim
+more ambitious, not safer.
+
 ## Contents
 
 - [Turn request language into project evidence](#turn-request-language-into-project-evidence)

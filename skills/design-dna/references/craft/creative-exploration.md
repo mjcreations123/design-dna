@@ -36,6 +36,15 @@ schedule, available evidence, and what an accountable owner needs to decide.
 There is no universal concept count, proof count, candidate format, or required
 creative device. Record why the explored field was sufficient.
 
+One floor is not proportional, it is fixed: for greenfield, Showcase, or
+open-direction work, the first-ranked concept MUST NOT ship without at least
+one materially different rendered alternative compared against it. Your
+first instinct is the statistical mean; the top-ranked idea in your head is
+what every model run would produce for a similar prompt. Distinctiveness is
+reached deliberately, past the first answer. A materially different
+alternative answers the brief differently in structure, not the same system
+with a swapped palette, family, or photograph.
+
 Do not treat prose labels as visual proof. When the decision is materially
 visual, make the important difference visible at a fidelity appropriate to
 the decision before scaling the full build.

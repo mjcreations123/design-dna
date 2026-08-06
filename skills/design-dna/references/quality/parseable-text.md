@@ -1,0 +1,128 @@
+# Parseable text
+
+Every visible string must earn its place. This file exists because the
+owner's single most repeated rejection, across four separate projects, is
+text on the page that a visitor cannot parse: decorative readouts, mono
+micro-labels, internal vocabulary, numbers pretending to be data. His words:
+"random text in the middle of nowhere that doesn't make sense and is just an
+eyesore." Tufte named the mechanism in 1983: ink whose purpose is to make
+the surface LOOK precise without carrying information.
+
+This is an owner ABSOLUTE (see [absolutes](../../policy/absolutes.md)). The
+gate below runs on the RENDERED page, in every state, at every breakpoint,
+on every build and revision round.
+
+## Contents
+
+- [The four-question gate](#the-four-question-gate)
+- [The five string classes](#the-five-string-classes)
+- [Named bans from this studio's record](#named-bans-from-this-studios-record)
+- [Copy carries information the visuals cannot](#copy-carries-information-the-visuals-cannot)
+- [Residue vocabulary sweep](#residue-vocabulary-sweep)
+- [The review pass](#the-review-pass)
+
+## The four-question gate
+
+For EVERY visible text node, in order:
+
+1. **MEANING.** Can a first-time visitor say what this string tells them or
+   lets them do? If the honest answer is "nothing, it is decoration
+   pretending to be information," it fails.
+2. **TRUTH.** If it looks like data (number, coordinate, timestamp, version,
+   status, price), is it real, and does it stay correct without manual
+   upkeep? A pulsing dot on static content, a fake terminal caret, a
+   coordinate that matches nothing: fail.
+3. **AUDIENCE.** Is every word one this business's customer would use about
+   the business? Codebase vocabulary (component names, state names like
+   idle/active, mode labels, internal codenames, skill jargon) fails.
+4. **COST OF DELETION.** Delete it mentally. Did the visitor lose anything?
+   If nothing is lost, the string goes, or is folded into the adjacent
+   heading, or is replaced by one true specific fact that survives the same
+   test.
+
+A string must pass all four or be removed, made real, or rewritten.
+
+## The five string classes
+
+Legitimate: **action copy** (navigation, buttons, controls), **content
+copy** (headings, body, captions that carry subject information), and
+**authored marginalia** (a footnote or annotation that rewards reading with
+a specific checkable fact).
+
+Illegitimate: **decorative props** (fake telemetry, coordinates, serials,
+"SYS.01", degree readouts, barcode strings, crosshair labels, blueprint
+annotations on non-technical subjects) and **internal residue** (debug
+counters, placeholder copy, unresolved tokens, developer vocabulary).
+
+Decorative technical marks are permissible only when the subject genuinely
+is technical, every mark is TRUE, and at most one or two appear per
+viewport. Beyond that the aesthetic crosses into parody regardless of truth.
+
+## Named bans from this studio's record
+
+Each of these was rejected by the owner on a real build. They are P0 on the
+[preship gate](../../templates/preship-gate.md):
+
+- **Mono micro-label chrome.** HUD readings, tick-marked ledes, stamps,
+  registry tiers, telemetry text in margins or letterbox bars. "What are
+  they even doing there."
+- **Ordinal decoration on parallel items.** 01/02/03 kickers, index
+  glyphs, dots, and slashes on cards or categories that are not a genuine
+  sequence. Numbers belong to real steps only.
+- **The eyebrow template.** The same kicker construction above three or
+  more sections with no taxonomy, sequence, or navigation job. If the
+  eyebrow contains no word absent from the heading below it, delete it or
+  merge the one useful word into the heading.
+- **Fake liveness.** Pulsing status dots, "ONLINE" badges, ticking
+  counters, streaming logs on static content. Animate only what real data
+  changes.
+- **Strings below 12px.** List every rendered string under 12px and justify
+  each one's information value; unjustified strings are deleted, not
+  shrunk further. Nothing below 11px except legally required fine print.
+- **Claim repetition.** A claim stated more than twice on one page is
+  noise. A "too busy" complaint triggers a repetition count before any
+  motion change.
+
+## Copy carries information the visuals cannot
+
+No sentence may describe what the visitor is already looking at. Every text
+block adds subject information the visuals cannot carry: what it is, what
+it does, what it costs, what happens next. Scenery narration is filler even
+when beautifully written.
+
+Strip self-descriptors: premium, luxury, world-class, high-end. Demonstrate,
+never claim. If a headline could sit unchanged on ten other products, the
+typography cannot save it; rewrite the words first.
+
+## Residue vocabulary sweep
+
+Grep the RENDERED text of every page and state, including empty, loading,
+error, and hidden accordion panels, plus alt text and meta descriptions:
+
+- Placeholder: `lorem`, `ipsum`, `dolor`, `coming soon`, `under
+  construction`, `TODO`, `TBD`, `FIXME`, `asdf`, `placeholder`, `sample
+  text`, `your text here`
+- Binding leaks: `undefined`, `NaN`, `null`, `[object Object]`, `{{`, `}}`,
+  `${`, `%s`, `Infinity`, raw JSON braces
+- Encoding: the mojibake signature `[ÂÃâ]` followed by a high byte, and
+  the replacement character
+- Owner copy bans: the em dash character in any user-facing file
+
+Any hit is a ship blocker. These are mechanical greps the workflow actually
+runs; a rule that exists only as prose gets violated.
+
+## The review pass
+
+1. Extract every visible string per page per state (a DOM walk, not the
+   source).
+2. Run the residue greps.
+3. Apply the four-question gate to every string; log verdicts for anything
+   borderline.
+4. Count repeated constructions: identical eyebrow templates, identical
+   claims, identical strings inside one component.
+5. Salience check on the screenshots: name the first three things noticed
+   at each breakpoint. If any is a decorative string rather than the
+   headline, the imagery, or the action, the decoration outranks the
+   content and is reduced or cut.
+6. Fix, re-render, re-check. The pass is complete when every surviving
+   string has a job a visitor could name.

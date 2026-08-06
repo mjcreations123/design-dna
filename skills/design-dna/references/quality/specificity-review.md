@@ -35,10 +35,14 @@ independent perception review, expert review, accountable owner, or target
 user. Self-review can guide revision but cannot be relabeled as independent or
 owner acceptance.
 
-Cross-project comparison requires owner-authorized, minimized evidence. If it
-is unavailable, record `cross-project repetition not assessed`. Direct owner
-feedback comparing named artifacts is already authorized for that comparison;
-do not dismiss it because an earlier broad comparison was unavailable.
+Cross-project comparison requires owner-authorized, minimized evidence. The
+[studio ledger](ledger.md) IS that evidence and that authorization: when it
+exists, consulting it here is mandatory, and its last five rows are the
+comparison baseline for typography, palette poles, skeleton, signature, and
+motion language. Record `cross-project repetition not assessed` only when no
+ledger exists. Direct owner feedback comparing named artifacts is already
+authorized for that comparison; do not dismiss it because an earlier broad
+comparison was unavailable.
 
 ## Observe before diagnosing
 
@@ -133,6 +137,13 @@ a person.
 Keep internal methodology, provenance detail, unresolved-input logs, and skill
 jargon out of customer copy unless the visitor genuinely needs a concise
 disclosure.
+
+Run the [parseable-text](parseable-text.md) four-question gate over every
+visible string as part of this audit: meaning, truth, audience, and cost of
+deletion. Decorative pseudo-data, internal vocabulary, fake liveness, and
+sub-12px unjustified micro-labels are P0 findings, not style notes. Include
+the residue greps (placeholder vocabulary, binding leaks, mojibake, the em
+dash character) on the rendered DOM of every state.
 
 Maintain a claim ledger for exact quantities, prices, times, warranties,
 universal statements, regulated claims, scenarios, and calculator assumptions:
