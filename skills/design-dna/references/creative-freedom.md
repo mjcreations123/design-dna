@@ -138,6 +138,12 @@ unchanged system. One inherited direction may be sufficient for a bounded
 repair. A highly open identity may need a wider field. Record why the evidence
 was sufficient rather than manufacturing unusable options to satisfy a count.
 
+One named exception to the no-fixed-count rule: for greenfield, Showcase, or
+open-direction work, the first-ranked concept MUST NOT ship without at least
+one materially different rendered alternative. That floor exists because the
+first instinct is the statistical mean; see
+[creative exploration](craft/creative-exploration.md).
+
 ## Permit aesthetic autonomy
 
 An element or composition may create atmosphere, beauty, humor, affiliation,

@@ -1,6 +1,6 @@
 {
   "name": "design-dna",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Cross-host web-design direction and verification for truthful, time-appropriate, project-specific interfaces and coherent multi-route range studies.",
   "author": {
     "name": "Motty"
@@ -21,7 +21,10 @@
     "longDescription": "Build, redesign, or review websites through project evidence, proportional assurance, project-derived art direction, coherent multi-route range studies, cultural-context boundaries, responsive implementation, and adversarial verification.",
     "developerName": "Motty",
     "category": "Productivity",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "defaultPrompt": [
       "Use Design DNA; add Range Study for multi-route showcases and cultural review when lived identity is central."
     ],

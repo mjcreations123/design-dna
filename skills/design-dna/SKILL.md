@@ -1,9 +1,19 @@
 ---
 name: design-dna
-description: Build, redesign, polish, or visually review websites and web UIs that must feel specific, time-appropriate, non-generic, and production-quality. Use for landing pages, multi-page range studies, place and community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, components, requests to avoid AI-looking, vibe-coded, templated, cookie-cutter, accidentally dated, or time-incongruent design, feedback that a result feels plain, boring, under-designed, too safe, or lacks visual energy, and complaints that fonts look bad, ugly, or unstyled, or that pages carry random decorative text, labels, or symbols that make no sense. Apply when art direction, design-system reasoning, content hierarchy, culturally central representation, responsive behavior, rendered visual quality, or typography materially matters; pair with specialist skills for deep security, SEO, legal, backend, deployment, or compliance work.
+description: Builds, redesigns, polishes, and visually reviews websites and web UIs that must feel specific, time-appropriate, non-generic, and production-quality. Use for landing pages, multi-page range studies, place and community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, components, requests to avoid AI-looking, vibe-coded, templated, cookie-cutter, accidentally dated, or time-incongruent design, feedback that a result feels plain, boring, under-designed, too safe, or lacks visual energy, and complaints that fonts look bad, ugly, or unstyled, or that pages carry random decorative text, labels, or symbols that make no sense. Apply when art direction, design-system reasoning, content hierarchy, culturally central representation, responsive behavior, rendered visual quality, or typography materially matters; pair with specialist skills for deep security, SEO, legal, backend, deployment, or compliance work.
 ---
 
 # Design DNA
+
+Contents: [absolutes](#the-absolutes-come-first) ·
+[two axes](#two-axes-and-the-default-is-awesome) ·
+[authority](#resolve-authority) · [classify](#classify-the-work) ·
+[creative freedom](#preserve-creative-freedom) ·
+[invariants](#keep-these-invariants) ·
+[process spine](#follow-the-process-spine) ·
+[router](#load-guidance-only-for-the-decision-now) ·
+[specialists](#coordinate-specialists) ·
+[evidence](#bound-readiness-and-evidence) · [the gate](#the-gate-restated)
 
 Create web work whose content, hierarchy, system, and behavior are visibly
 chosen for this project and audience. The bar has two halves, both
@@ -54,7 +64,10 @@ open-direction work, never deliver the first-ranked concept without at
 least one materially different rendered alternative to compare against.
 Unspecific quality feedback ("more premium," "boring," "make it better")
 means ambition was too low: respond by raising the concept, imagery,
-depth, scale, and signature, never by staying plain and safe.
+depth, scale, and signature, never by staying plain and safe. If the
+approved direction is a committed quiet one, raise craft, specificity, and
+finish WITHIN it first, and reopen the direction only if the owner
+confirms the quiet itself is the complaint.
 
 ## Resolve authority
 
@@ -92,6 +105,10 @@ Capability presets are cumulative; adding one cannot remove another:
 | High-risk | Consequential transactions, identity, money, regulated claims. | Task, state, and specialist evidence first; visual ambition cannot waive a safety gate. |
 | Asset-led | Material imagery, fonts, media needing a durable record. | Per-asset provenance, rights, privacy, factual status, delivery, accessibility. |
 
+A prior result rejected as AI-looking, generic, or ugly selects at least
+Standard plus the convergence and specificity reviews; add Showcase when the
+owner also asks for impressive, premium, or really good.
+
 Identify every surface mode that describes the user's job: Persuade
 ([modes/persuade](references/modes/persuade.md)), Experience
 ([modes/experience](references/modes/experience.md)), Operate
@@ -126,11 +143,13 @@ aesthetic rule that did not come from the project or the absolutes.
 - Every Persuade or Experience surface declares a deliberate display voice;
   the [typography](references/craft/typography.md) selection protocol with
   named rejects is mandatory for greenfield type.
-- A deliberate media strategy for work whose value is physical or sensory:
-  for Persuade and Experience builds, large real photography (or disclosed
-  generated concept media) is a launch requirement, not an optimization.
-  Missing supplied photography is an input gap, never an instruction to
-  design around absence.
+- A deliberate media strategy for every build. For Persuade and Experience
+  work whose value is physical or sensory, large real photography (or
+  disclosed generated concept media) is a launch requirement, not an
+  optimization; a text-led treatment there requires a logged owner
+  authorization naming the alternative offered. Missing supplied
+  photography is an input gap, never an instruction to design around
+  absence.
 - Every visible string passes the
   [parseable-text](references/quality/parseable-text.md) gate. Keep
   customer-facing copy about the customer's subject; never narrate design
@@ -140,9 +159,10 @@ aesthetic rule that did not come from the project or the absolutes.
 - Verify by seeing: judging craft from code alone is prohibited. Nothing
   ships without the rendered screenshot pair, saved and looked at. If
   rendering is impossible, the deliverable is blocked and says so.
-- Consult the [ledger](references/quality/ledger.md) before directing;
-  append its row on ship. The display family and the macrostructure must
-  not repeat from recent rows.
+- Consult the [ledger](references/quality/ledger.md) before directing and
+  run its rotation test (family: absent from the last three rows;
+  macrostructure: differs from the previous two; class saturation applies);
+  append its row on ship.
 - Preserve semantic structure, keyboard and touch access, visible focus,
   contrast, responsive reflow, reduced motion, and resilient fallbacks.
 - Implement visible controls and relevant states, or remove, disable with
@@ -177,7 +197,10 @@ For a substantial build or redesign, read
    bodies.
 6. Implement the real path and states within the existing technical
    contract.
-7. Render, inspect, revise causes, rerun affected checks. Run the full
+7. Render, inspect, revise causes, rerun affected checks. For every
+   substantial new build or visual redesign, run the
+   [adversarial specificity review](references/quality/specificity-review.md)
+   against the final implementation. Run the full
    [preship gate](templates/preship-gate.md). Append the ledger row.
    Obtain owner acceptance where required; disclose remaining limits.
 
@@ -199,7 +222,7 @@ decision, then return to the router.
 | New direction, redesign, "generic," "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
 | Open brief, greenfield direction, materially different options | [Creative exploration](references/craft/creative-exploration.md), then [art direction](references/craft/art-direction.md). |
 | "Make it impressive," premium, showcase, "too plain," "boring" | [Creative freedom](references/creative-freedom.md), [creative exploration](references/craft/creative-exploration.md), [expression and energy](references/craft/expression-energy.md); revision verbs via [design tuning passes](references/craft/design-tuning-passes.md); [finish and polish](references/quality/finish-polish.md) after direction works. |
-| First complete render or durable defect | Unprimed observation, then the [risk rubric](references/risk-rubric.md). |
+| First complete render or durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
 | Explicit AI-looking, vibe-coded, templated, house-style concern | Direction from project evidence first; after a render, the [convergence review](references/convergence-watch.md); close with the [specificity review](references/quality/specificity-review.md). |
 | Palette, depth, composition | [Color and composition](references/craft/color-composition.md). |
 | Grid, grouping, rhythm, density | [Layout and density](references/craft/layout-density.md). |

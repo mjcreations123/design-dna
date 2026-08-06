@@ -12,14 +12,23 @@ who asks. **HARD** rules are lifted only by explicit client direction, logged
 in the project's `.design-dna/` with one line naming the date and the
 alternative offered.
 
+## Contents
+
+- [The two-lane rule](#the-two-lane-rule)
+- [ABSOLUTE](#absolute)
+- [HARD](#hard)
+- [Enforcement](#enforcement)
+
 ## The two-lane rule
 
 The ABSOLUTE list works pre-render, exactly the way a brand guideline does:
-never reach for these at all. Everything else in this skill, including every
-convergence cluster and every watch-list, stays a post-render diagnostic and
-must never be read as an inverse prompt. Avoidance converges too: the
-complement of a long banned list is as guessable as the list. That is why this
-list is short and everything subtler lives in review vocabulary.
+never reach for these at all. Everything else in this skill stays a
+post-render diagnostic and must never be read as an inverse prompt, with one
+named exception: the dated font watch in
+[convergence-watch](../references/convergence-watch.md) is consumed at
+selection time by HARD 1's comparison protocol. Avoidance converges too: the
+complement of a long banned list is as guessable as the list. That is why
+this list is short and everything subtler lives in review vocabulary.
 
 ## ABSOLUTE
 
@@ -35,16 +44,22 @@ list is short and everything subtler lives in review vocabulary.
    faked. An honest number-shaped hole beats a fabricated number.
 4. **NEVER ship the indigo-violet gradient kit or gradient text.** The
    purple-to-blue gradient palette is the statistical center of the training
-   data. Derive the palette from the client's world instead. A brand that
-   genuinely owns purple may use its own solid brand purple; the gradient
-   treatment stays banned.
+   data, and gradient-filled text is banned in every form, including on a
+   single word. Derive the palette from the client's world instead. A brand
+   that genuinely owns purple may use its own solid brand purple; the
+   gradient treatment stays banned.
 5. **NEVER build fake product UI.** No div-built dashboards, invented metric
    tiles, hand-drawn browser or phone chrome. Use a real screenshot of the
    real product, a labeled concept mock, a diagram, or nothing.
-6. **NEVER use the default page skeleton.** Hero, three feature cards,
-   testimonials, CTA, footer is the mean. Derive the section structure from
-   what this business actually needs to say, in the order its visitor needs
-   to hear it.
+6. **NEVER ship the unthinking default skeleton.** The test is the swap
+   test, not the silhouette: the page fails when hero, three feature cards,
+   testimonials, CTA, footer appear in order AND the section order with its
+   content types could ship unchanged for a different business in a
+   different vertical. A resembling structure passes when a recorded
+   derivation (content inventory or visitor-question sequence) drove the
+   order and every proof section is real. Renaming or re-gridding the three
+   cards is not a derivation, and neither is swapping the skeleton for the
+   second-most-likely one.
 7. **NEVER trade away access floors.** Contrast 4.5:1 for body text, 3:1 for
    large text and UI, working keyboard access, visible focus. These are not
    restyled, disabled, or "fixed later."
@@ -72,14 +87,15 @@ list is short and everything subtler lives in review vocabulary.
 Lifted only by explicit client direction, logged with the alternative offered.
 
 1. **Watch-cluster typefaces on greenfield identity work.** A face on the
-   current dated font watch in
-   [convergence-watch](../references/convergence-watch.md) may carry a new
-   public identity only after the comparison protocol in
+   dated font watch in
+   [convergence-watch](../references/convergence-watch.md), which is the
+   single canonical watch list, may carry a new public identity only after
+   the selection protocol in
    [typography](../references/craft/typography.md) names two rejected
    alternatives and the reason this face still wins.
 2. **The single-word emphasis swap.** One word of a headline in a different
-   color, italic serif, or gradient requires a recorded semantic or brand
-   reason. Interchangeable-fragment emphasis is the current top styling tell.
+   color or italic serif requires a recorded semantic or brand reason.
+   (A gradient on the word is not liftable; that is ABSOLUTE 4.)
 3. **Repeated eyebrow labels.** The same kicker construction above three or
    more sections requires a real taxonomy, sequence, or navigation job.
 4. **More than two type families.** A third family requires a distinct,
@@ -93,6 +109,16 @@ Lifted only by explicit client direction, logged with the alternative offered.
 7. **Ordinal decoration on parallel items.** Numbers, index glyphs, dots, and
    slashes annotate genuinely sequential content only. On parallel cards or
    categories they are decoration wearing a sequence costume.
+8. **Stat bands on Persuade surfaces.** A strip of big numbers with labels
+   requires a logged client direction even when every number is real and
+   sourced; the default is real numbers set in content type, not a metric
+   strip. (Fabricated numbers are never liftable; that is ABSOLUTE 3.)
+
+These bans remove decoration wearing an information costume, not small text
+itself: authored marginalia with a checkable fact, true captions, real
+taxonomy labels, functional data, and footnotes remain fully available. See
+the five string classes in
+[parseable text](../references/quality/parseable-text.md).
 
 ## Enforcement
 

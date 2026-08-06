@@ -117,8 +117,11 @@ terms:
 
 Do not require a signature device, high/quiet sequence, multiple expression
 channels, bounded risk, removal test, or memorability trick. Use any of those
-only when the project declared it. A restrained work can be extraordinary; a
-maximal work can be rigorous; either can also fail visually.
+only when the project declared it. The plain-axis floor still applies: the
+preship gate's one-nameable-memorable-element check and RISK-PLAIN-001 always
+run; what must not be required is any PARTICULAR device for achieving them.
+A restrained work can be extraordinary; a maximal work can be rigorous;
+either can also fail visually.
 
 Accountable-owner rejection reopens the affected conclusion. Address the
 organizing cause rather than rotating surface ingredients or adding detached
@@ -167,8 +170,12 @@ Judge family choice, number of families, pairing or non-pairing, hierarchy,
 measure, tracking, leading, width, weight, optical settings, punctuation, and
 wrap behavior as one rendered system. No font family or numerical typography
 value fails merely because it is common, fashionable, unusual, compressed, or
-listed by another project. Revise when the result is illegible, crowded,
-visually weak, culturally wrong, unsupported, or inconsistent without reason.
+listed by another project. Exception: the
+[owner absolutes and HARD tier](../../policy/absolutes.md), including the
+watch-cluster comparison requirement, and the typography floors marked NEVER
+still apply; this section governs everything outside them. Revise when the
+result is illegible, crowded, visually weak, culturally wrong, unsupported,
+or inconsistent without reason.
 
 Inspect prominent fragment emphasis—color, gradient, font, italic, underline,
 marker, sticker, background, or animation—in context. A single treatment can

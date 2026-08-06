@@ -1,6 +1,6 @@
 # Design DNA
 
-> **Release status:** `4.0.0` is an unreleased candidate. Its workflow and
+> **Release status:** `5.0.0` is an unreleased candidate. Its workflow and
 > package changes are implemented, but formal host, comparative, independent
 > rendered-review, and strict release qualification remain pending.
 

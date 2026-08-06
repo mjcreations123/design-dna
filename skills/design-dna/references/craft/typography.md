@@ -40,7 +40,8 @@ Every section below exists to kill one of those three.
 Every Persuade or Experience surface MUST declare a deliberate display voice
 distinct from its body face. A system stack as the rendered display face is
 an automatic fail on those surfaces; a system stack is permissible only for
-dense Operate UI, by written decision.
+dense Operate UI, product continuity, or regulated delivery, by written
+decision (the same exception list as RISK-PERIOD-001).
 
 Selection is a decision with named rejects, never a reach:
 
@@ -52,18 +53,25 @@ Selection is a decision with named rejects, never a reach:
    client. If the justification would fit any client in the vertical, it is
    not a choice yet.
 4. Diff against the [ledger](../quality/ledger.md): the display family MUST
-   NOT repeat from the previous build, and no two builds in one batch may
-   share a family.
+   NOT appear in the last three ledger rows, no two builds in one batch may
+   share a family, and the construction-class saturation rule applies.
 
-The owner's recorded taste, learned from three rejection rounds: the reliable
-target is a **characterful grotesk at confident weight, mixed case**. The
-three recorded failure directions: bookish old-style serifs read
-old-fashioned; neutral defaults (Geist, Inter, Archivo as display) read
-unstyled; quirky display faces (Unbounded, Syne class) read vibe-coded.
-Verticals may override with their own character (a wedding shop earned an
-elegant serif); the audience must always be able to read it. Character never
-at the cost of legibility: no script faces or high-contrast Didones for
-body-adjacent or navigational text, and every display choice names the
+The owner's recorded PRIOR, from three rejection rounds: a characterful
+grotesk at confident weight, mixed case. A prior is a starting bet, not a
+class verdict; any construction model may beat it through the selection
+protocol. The three recorded failures are dated, execution-bound readings,
+not class bans: an old-style serif pairing read old-fashioned on that build;
+neutral defaults (Geist, Inter, Archivo as display) read unstyled on those
+builds; quirky display faces (Unbounded, Syne) read vibe-coded there. A
+serif, slab, humanist, or display face that survives the named-rejects
+comparison wins on its own evidence, and any brief, audience, or owner
+evidence may override the prior (a wedding shop earned an elegant serif).
+Watch class saturation in the [ledger](../quality/ledger.md): when three of
+the last five rows share a construction class, the class itself is a forming
+fingerprint and the next shortlist MUST carry a credible candidate from
+outside it. Character never at the cost of legibility: script faces and
+high-contrast Didones stay out of body-adjacent and navigational text (HARD
+territory, recorded reason to deviate), and every display choice names the
 audience and why they can read it.
 
 A familiar face is not automatically generic and an unusual face is not
@@ -78,8 +86,10 @@ differences look like design.
 1. Choose the display face for voice (previous section).
 2. Choose the body face from a DIFFERENT construction model with similar
    proportions: high-contrast serif display over neutral grotesk body,
-   characterful grotesk display over quiet humanist body. Never two similar
-   sans or two similar serifs.
+   characterful grotesk display over quiet humanist body. Reject a pairing
+   whose two faces share classification, similar contrast, and similar
+   terminals unless a recorded reason names why the near-pair serves this
+   project; near-identical pairs read as accidents.
 3. The body face must be a proven workhorse: multiple real weights, true
    italics, open apertures, x-height around 60 to 75 percent of cap height,
    no clotting in a squint test at 16px.
@@ -92,20 +102,23 @@ differences look like design.
 ## The dated bench
 
 Compiled 2026-08. A starting bench, not a whitelist: leaving it costs one
-recorded sentence. Named lists decay (Instrument Serif went from
-recommendation to tell in about a year), so re-verify this list against
-current discourse after mid-2027 and date any replacement.
+recorded sentence, and for greenfield or Showcase work the SHORTLIST must
+include at least one credible off-bench candidate so the exit stays
+exercised. Named lists decay (Instrument Serif went from recommendation to
+tell in about a year), so re-verify this list against current discourse
+after mid-2027 and date any replacement.
 
-**Burned in this studio** (ledger-repeated or discourse-saturated; require a
-HARD-tier justification): Inter as display, Space Grotesk, Geist, Archivo,
-Schibsted Grotesk, the Clash Display + Switzer pairing, Instrument Serif
-italic heroes, Playfair Display heroes, Poppins, Montserrat.
+The single canonical watch list of saturated and studio-burned faces lives
+in [convergence-watch](../convergence-watch.md); HARD 1 in the
+[owner absolutes](../../policy/absolutes.md) gates every face on it. A bench
+face is promoted to that watch when it appears in three of the last ten
+ledger rows; Bricolage Grotesque is the nearest to that trigger.
 
 **Characterful grotesks (display):** Bricolage Grotesque (passed owner
-review), Cabinet Grotesk, General Sans at heavy weights, Familjen Grotesk,
-Hanken Grotesk at black, Anybody, Archivo Expanded variants only with a
-recorded reason. **Serifs with drawing (display or editorial):** Fraunces
-(passed for wedding vertical), Gambetta, Erode, Sentient, Boska, Zodiak.
+review; nearing the promotion trigger), Cabinet Grotesk, General Sans at
+heavy weights, Familjen Grotesk, Hanken Grotesk at black, Anybody.
+**Serifs with drawing (display or editorial):** Fraunces (passed for the
+wedding vertical), Gambetta, Erode, Sentient, Boska, Zodiak.
 **Quiet bodies:** Switzer (body only), General Sans, Supreme, Ranade, Jost
 (passed), Be Vietnam Pro, Source Sans 3. **Mono, code and data only:**
 JetBrains Mono, Martian Mono, Spline Sans Mono.
@@ -122,14 +135,14 @@ proof, not intent.
 
 | Property | Rule |
 | --- | --- |
-| Body size | 16 to 21px; nothing anywhere below 14px except legally required fine print, and never below 11px |
+| Body size | 16 to 21px; nothing anywhere below 12px without a justified information value (list and justify each); never below 11px except legally required fine print |
 | Body line-height | 1.4 to 1.6, unitless, rising with measure (60-75ch wants 1.5-1.7) |
 | Measure | 45 to 75ch target on desktop, 30 to 40ch on phones; max-width roughly 30x body px size |
-| Heading line-height | 0.95 to 1.25, falling as size rises; a multi-line H1 at body leading is a named amateur tell |
+| Heading line-height | 0.95 to 1.25, falling as size rises; display-scale stacked headlines may go to 0.85 with descender-clip verification; a multi-line H1 at body leading is a named amateur tell |
 | Display tracking | 0 to -0.03em at 48px+, to -0.04em at 80px+ for tight grotesks; NEVER below -0.05em; NEVER negative below 32px |
-| Uppercase tracking | +0.05em to +0.12em, always positive; uppercase limited to labels of a few words, never sentences |
+| Uppercase tracking | micro-labels +0.05em to +0.12em, always positive; display-scale uppercase 0 to +0.03em, negative only with rendered proof; uppercase limited to labels of a few words, never sentences |
 | Lowercase body tracking | 0; positive tracking on lowercase body only below ~12px |
-| Scale | 3 to 5 sizes from one ratio (dense UI 1.2, general 1.25, landing 1.333 to 1.5); hero-to-body ratio 2.0+ on landing pages |
+| Scale | body and UI sizes come from one ratio, 3 to 5 steps (dense UI 1.2, general 1.25, landing 1.333 to 1.5); hero and display sizes are chosen compositionally OUTSIDE the ratio chain, with hero-to-body 2.0+ as the floor on landing pages |
 | Hierarchy | adjacent levels differ on at least TWO axes (size + weight, size + case); same size in two weights within one role is a broken system |
 | Weights | one weight per role; load every weight and style the CSS uses; `font-synthesis: none` as a tripwire |
 | Alignment | left for reading text; centered only up to 3 lines; justify only with `hyphens: auto`; no pure #000 on #FFF for long-form |
@@ -179,7 +192,11 @@ If the photo can change, the scrim alone must guarantee the floor.
   apostrophe paints in the fallback.
 - Maximum 4 font files or 1 to 2 variable files; woff2 only.
 - On Windows, write files as explicit UTF-8 and grep shippable files for the
-  mojibake signature `[ÂÃâ]` after any edit touching typographic punctuation.
+  mojibake signature after any edit touching typographic punctuation: use
+  the encoding-proof spelling `[\xC2\xC3\xE2]` in ripgrep (the literal
+  `[ÂÃâ]` works only when the pattern itself survives console encoding).
+  Expect rare false positives on legitimate French or Portuguese text; clear
+  those by eye.
 
 ## Motion and masking laws
 
@@ -242,7 +259,8 @@ When Python 3.10+ is available, run the bounded source inventory:
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/font_audit.py" "PROJECT"
 ```
 
-The report is source evidence only. It is not a browser proof, license
+`<DESIGN_DNA_SKILL_ROOT>` is the absolute directory containing the installed
+`SKILL.md`. The report is source evidence only. It is not a browser proof, license
 ruling, glyph test, or authorship detector. Rendered proof comes from the
 protocol below.
 
@@ -256,31 +274,56 @@ screenshot needs a visible pane. Two traps make the obvious checks lie:
 is only ever a negative signal; and `getComputedStyle().fontFamily` reports
 the requested stack, never the face that painted.
 
-1. **Registration proof.** For every (family, weight, style) the CSS uses:
-   `const faces = await document.fonts.load('<style> <weight> 16px "<Family>"')`.
-   An empty array is the deterministic detector for a family-name or weight
-   mismatch. Require `faces.length > 0` and every status `loaded`.
+1. **Registration proof (family names).** For every family the CSS uses:
+   `const faces = await document.fonts.load('16px "<Family>"')` (try/catch;
+   the promise rejects when a matched face fails to load). An empty array is
+   the deterministic detector for a FAMILY-NAME mismatch: a typo'd or
+   unregistered family returns no faces. It CANNOT detect a missing weight
+   or style; font matching is nearest-match, so requesting 700 against a
+   400-only family happily returns the 400 face. Require `faces.length > 0`
+   and every status `loaded`; weights and styles are step 3's job.
 2. **Paint proof.** Canvas width comparison with a width-diverse probe AND
    the site's real headline string:
    `ctx.font='72px monospace'` vs `'72px "Family", monospace'`; widths must
    differ. Repeat against serif as a second baseline. Equal widths mean the
    fallback painted, whatever the CSS says.
-3. **Synthesis proof.** Enumerate every (family, weight, style) combination
-   in computed styles; each must map to a loaded face covering that weight
-   and style. CSS 700 over a loaded 400 means faux bold is on screen.
+3. **Synthesis proof (weights and styles).** Enumerate every (family,
+   weight, style) combination in computed styles; each must be covered by a
+   registered face's DESCRIPTORS, read from `[...document.fonts]`. Parse
+   `FontFace.weight` as the raw descriptor string it is: a range like
+   `100 900` for variable fonts, a keyword (`normal` = 400, `bold` = 700),
+   or a single value treated as a degenerate range. Assert the CSS-used
+   weight falls INSIDE the range; never compare the string for equality,
+   which misreports every variable font as a missing weight. CSS 700 with
+   no covering face means faux bold is on screen.
 4. **Network proof.** `performance.getEntriesByType('resource')` contains
-   every expected font URL with transferSize > 0 or a cache hit. Zero font
-   entries on a page declaring webfonts means the fonts never applied.
+   every expected font URL, each with `transferSize > 0` (network fetch) or
+   `transferSize === 0 && decodedBodySize > 0` (cache hit); an entry with
+   all sizes 0 is a blocked or cross-origin-opaque load, investigate. Fonts
+   inlined as `data:` URIs never appear in resource timing; for those skip
+   this step and rely on steps 1 to 3. Zero font entries on a page that
+   loads fonts by URL means the fonts were never requested. Zero font
+   resources of ANY kind on a Persuade or Experience page is an automatic
+   fail whether or not the CSS declares webfonts; that is the
+   system-stack-as-identity failure.
 5. **Console proof.** Zero messages matching "Refused to load the font",
    CORS, or 404 on font URLs.
 6. **Computed-size proof.** For each type role (hero, section head, body,
-   caption) assert `getComputedStyle().fontSize` at 360, 768, and 1440
-   against the intended values. A hero whose computed size equals the
-   generic heading size means a specificity bug ate the rule; this exact bug
-   shipped on this studio's own showpiece.
-7. **Fallback rehearsal.** Block the font origin or toggle the faces off,
-   reload: layout must not collapse, the deliberate fallback must be
-   readable, and heights must match within CLS tolerance.
+   caption) assert `getComputedStyle().fontSize` at 375, 768, and 1440
+   against the intended values. Reaching those widths requires actually
+   resizing the viewport before each read (CDP
+   `Emulation.setDeviceMetricsOverride` works in a hidden tab, or the
+   harness resize API); `clamp()` and vw values resolve against the CURRENT
+   viewport, so three reads at one width test one width. A hero whose
+   computed size equals the generic heading size means a specificity bug
+   ate the rule; this exact bug shipped on this studio's own showpiece.
+7. **Fallback rehearsal.** Block the font FILES, not the origin: DevTools
+   request blocking or CDP `Network.setBlockedURLs` on `*.woff2`, or
+   temporarily rename the files, or disable the `<style>`/stylesheet
+   containing the @font-face rules. (`document.fonts.clear()` does NOT
+   detach CSS-declared faces; do not use it.) Hard-reload, then verify
+   layout does not collapse, the deliberate fallback is readable, and
+   element heights match the loaded run within CLS tolerance.
 8. **Look.** The ~1440 and ~375 screenshots from the
    [preship gate](../../templates/preship-gate.md), opened and examined:
    does the display voice read as chosen, are descenders intact, is any

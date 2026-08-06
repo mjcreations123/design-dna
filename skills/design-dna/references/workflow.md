@@ -69,7 +69,8 @@ Record what materially changes the result:
 - the deliberate media path, especially for physical, sensory, spatial,
   product, hospitality, retail, food, and event subjects: approved first-party,
   licensed, owner-authorized generated concept media, capture brief,
-  illustration, or justified text-led treatment;
+  illustration, or owner-authorized text-led treatment (logged, naming the
+  alternative offered; never self-granted);
 - accessibility, localization, performance, privacy, budget, schedule, and maintenance constraints;
 - production facts or integrations that still require owner confirmation.
 
@@ -396,9 +397,15 @@ Possible records:
   assets.yml
   user-validation.md
   handoff.md
+  placeholders.md             # mandatory placeholder register, created at preflight
   owner-policy.yml            # optional, owner-approved governance
   state.json
 ```
+
+The do-not-copy-templates-by-hand rule covers unresolved EVIDENCE templates
+(direction, exploration, visual-review). The placeholder register and the
+preship gate are plain checklists and ARE copied by hand; the initializer
+does not create them.
 
 Use one classification vocabulary:
 

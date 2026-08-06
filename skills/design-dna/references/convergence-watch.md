@@ -5,17 +5,11 @@ choose fonts, colors, layouts, components, effects, copy formulas, or a style
 before making that render. Its job is to diagnose an observed result, not to
 supply an inverse template for generation.
 
-Two lanes govern everything here. The short owner
-[absolutes](../policy/absolutes.md) act pre-render, the way a brand guideline
-does. Everything in THIS file is post-render review vocabulary: dated,
-expiring, cluster-based, and never a one-ingredient verdict.
-
-**Avoidance converges too.** The complement of a banned list is as guessable
-as the list: ban Inter and every model reaches for Space Grotesk; ban
-cream-and-serif and everything lands on near-black and acid green. That is
-why the absolute tier stays tiny and why nothing below may be used as an
-inverse prompt. Distinctiveness comes from project evidence, never from
-inversion.
+This file is post-render review vocabulary: dated, expiring, cluster-based,
+never a one-ingredient verdict, and never an inverse prompt; the canonical
+two-lane rule lives in the [owner absolutes](../policy/absolutes.md). One
+exception: the font-cluster tables below are also consumed at selection time
+when HARD 1's comparison protocol requires it.
 
 ## Contents
 
@@ -90,7 +84,7 @@ discourse before using any row in a current-facing recommendation.
 | --- | --- | --- | --- |
 | `RISK-KIT-001` | Two or more of: gradient text on a headline, eyebrow badge above a centered H1, uppercase letterspaced label above every section, indigo-violet accent, glow shadows, three-card icon row, left-border accent cards. The reflexive co-occurrence is the mean, whatever the fonts. | Count eyebrow labels per page and keep only the ones doing navigation or taxonomy work; derive accent from the client's world; give cards a project reason or remove the container. | Each element alone can be right; an eyebrow is fine as a real taxonomy, a glow is fine when light is the concept. |
 | `RISK-GLOW-001` | Radial glow "lights" scattered across a dark SaaS layout; ambient gradients with no light source or content job. | Maximum one motivated ambient light per page; darkness needs a concept, not decoration. | A genuine lighting concept executed with discipline. |
-| `RISK-EMPH-001` | One word of a headline swapped to a different color, italic serif, or gradient to manufacture a focal point; repeated across sections. | Strengthen the wording, whole-phrase hierarchy, scale, or placement. | A documented brand or semantic phrase treatment that survives contrast and forced-colors checks. |
+| `RISK-EMPH-001` | One word of a headline swapped to a different color or italic serif to manufacture a focal point; repeated across sections. (A gradient on the word is not reviewable here; gradient text is ABSOLUTE-banned.) | Strengthen the wording, whole-phrase hierarchy, scale, or placement. | A documented brand or semantic phrase treatment in color or italic that survives contrast and forced-colors checks, logged per HARD 2. |
 | `RISK-STATS-001` | A stat band of round numbers with plus signs and emoji; metric tiles no system produced; "10,000+ happy customers." | Real numbers with sources, or an honest number-shaped hole. Fabricated stats are an owner ABSOLUTE, not just a watch item. | Real, sourced, current figures presented statically. |
 | `RISK-MOCK-001` | CSS-built fake dashboards, browser chrome, phone shells standing in for product evidence. | Real screenshots of the real product, a labeled concept mock, a diagram, or nothing. Fake product UI is an owner ABSOLUTE. | A clearly labeled concept mock communicating a proposed interaction. |
 | `RISK-SURFACE-001` | Nearly every item inside a soft rounded container, containers nested in containers, uniform radii and shadows everywhere. | Define surface and radius roles; use spacing, rules, and alignment where no real containment exists. | Pills for compact semantic tokens; nested surfaces representing real layered state. |
@@ -108,8 +102,12 @@ Full selection doctrine lives in [typography](craft/typography.md).
 | --- | --- | --- | --- |
 | `RISK-TYPE-LLM` | Inter as the whole page, Space Grotesk as the "distinctive" pick, Geist, Instrument Serif italic heroes, the sans-headline-with-one-italic-serif-word pattern, DM Sans, Manrope, Sora, Plus Jakarta Sans as near-neighbors. | Vibe-coded: the statistical center of the training data. Not bad faces, unchosen faces. | Replace, do not re-treat. Run the selection protocol with named rejects. Inter may survive as a supporting body face under a chosen display voice. |
 | `RISK-TYPE-TEMPLATE` | Poppins, Montserrat, Playfair Display heroes, Lato, Raleigh-class geometric sans on everything. | Cheap theme: Canva and Fiverr, not AI. | A template-cluster face can be rehabilitated only with a treatment the templates never use, recorded. |
+| `RISK-TYPE-STUDIO` | Studio-burned by ledger repetition, owner-dated 2026-08: Archivo (four projects), Schibsted Grotesk (two builds in one batch), the Clash Display + Switzer pairing. A bench face joins this row when it appears in three of the last ten ledger rows. | Self-similarity, not trend: the studio's own forming fingerprint. Replace via the selection protocol. | A returning client whose established identity already uses the face. |
 
-Any face on a current "use this instead" list is on a 12 to 18 month decay
+This table is the single canonical watch list; HARD 1 in the
+[owner absolutes](../policy/absolutes.md) gates every face on it, and the
+[typography bench](craft/typography.md#the-dated-bench) defers to it. Any
+face on a current "use this instead" list is on a 12 to 18 month decay
 clock; Instrument Serif flipped from recommendation to tell in about a year.
 Date every recommendation.
 
@@ -123,10 +121,10 @@ generated." Review these when a result reads old, tired, or amateur.
 
 | ID | Dated candidate cluster | Positive action | Legitimate exception |
 | --- | --- | --- | --- |
-| `RISK-PERIOD-001` | An OS-default face (Segoe, Aptos, Arial, Verdana, Georgia, Times, Courier) carries the display voice or wordmark, usually because a webfont was never chosen or never loaded. | Choose and self-host a real display voice; run the rendered-font verification. The fallback must never become the identity. | System stacks for product continuity, dense Operate UI, or regulated delivery, by written decision. |
+| `RISK-PERIOD-001` | An OS-default face (Segoe, Aptos, Arial, Verdana, Georgia, Times, Courier) carries the display voice or wordmark, usually because a webfont was never chosen or never loaded. | Choose and self-host a real display voice; run the rendered-font verification. The fallback must never become the identity. | Dense Operate UI, product continuity, or regulated delivery, by written decision, per [typography](craft/typography.md). |
 | `RISK-PERIOD-002` | Hairline rules, 1px-bordered tables, and boxed panels supply most of the structure; hierarchy comes from lines rather than space, scale, weight, colour, or depth. | Rebuild hierarchy with spacing, scale, and grouping; keep rules that encode real rows and boundaries. | Genuine tabular data, financial documents, schedules, spec sheets. |
 | `RISK-PERIOD-003` | Body text below ~15px with tight leading and long measures: a CRT-era desktop application. | Contemporary reading sizes and leading per the typography numbers. | Data-dense professional tools where the operator wants density. |
-| `RISK-PERIOD-004` | Flat neutral ground, no imagery, no depth, no colour field, no motion, presented as restraint. Removing the one accent leaves an undifferentiated page. | Absence must be an authored decision that survives the quiet-direction test, not an unfilled gap. For Persuade and Experience work, real photography is a launch requirement, not an optimization. | Text-first reference, documentation, archival surfaces where typography and structure genuinely carry the work. |
+| `RISK-PERIOD-004` | Flat neutral ground, no imagery, no depth, no colour field, no motion, presented as restraint. Removing the one accent leaves an undifferentiated page. | Absence must be an authored decision, not an unfilled gap. Quiet passes when the brief or owner language supports it, the rendered result reads authored with one nameable memorable element, and it was compared against a richer rendered alternative or inherits an approved direction. For Persuade and Experience work whose value is physical or sensory, real photography is a launch requirement; a committed type-led direction is valid only per RISK-MEDIA-001's recorded-authorization terms. | Text-first reference, documentation, archival surfaces where typography and structure genuinely carry the work. |
 | `RISK-PERIOD-005` | A centred fixed-width column on an undifferentiated ground, symmetrical margins, no bleed, overlap, or asymmetry anywhere. | Use the full canvas where the content supports it: asymmetry, bleed, layering, varied section silhouettes. | Long-form reading, ceremonial pages, print-faithful documents. |
 | `RISK-PERIOD-006` | Dense mono or uppercase micro-label type tables with hairline rules: reads "made in 2002." Owner-rejected verbatim. | Consumer-facing pages get contemporary hierarchy; mono stays with code and data. | An archival or terminal concept the brief explicitly asked for. |
 

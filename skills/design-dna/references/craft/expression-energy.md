@@ -97,8 +97,11 @@ minimal style.
 Use [creative exploration](creative-exploration.md) when different expressive
 answers could materially change the result. Develop enough distinct evidence
 to challenge the first default; no fixed number of concepts or renders is
-required. A candidate is different because it proposes a different answer to
-the brief, not merely because its surface ingredients change.
+required, with one exception: greenfield, Showcase, and open-direction work
+carries the fixed floor of at least one materially different rendered
+alternative before the first-ranked concept may ship. A candidate is
+different because it proposes a different answer to the brief, not merely
+because its surface ingredients change.
 
 Do not show reviewers a trend-warning list before their first perception pass.
 Negative vocabulary can make both maker and reviewer search for the listed

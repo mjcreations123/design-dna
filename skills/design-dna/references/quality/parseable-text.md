@@ -60,28 +60,39 @@ viewport. Beyond that the aesthetic crosses into parody regardless of truth.
 
 ## Named bans from this studio's record
 
-Each of these was rejected by the owner on a real build. They are P0 on the
-[preship gate](../../templates/preship-gate.md):
+Each of these was rejected by the owner on a real build. Severity follows
+[policy/absolutes.md](../../policy/absolutes.md): items backed by an
+ABSOLUTE run inside the P0 parseable-text pass of the
+[preship gate](../../templates/preship-gate.md); items in the HARD tier are
+enforced at P1 and lift only by logged client direction.
 
-- **Mono micro-label chrome.** HUD readings, tick-marked ledes, stamps,
-  registry tiers, telemetry text in margins or letterbox bars. "What are
-  they even doing there."
-- **Ordinal decoration on parallel items.** 01/02/03 kickers, index
-  glyphs, dots, and slashes on cards or categories that are not a genuine
-  sequence. Numbers belong to real steps only.
-- **The eyebrow template.** The same kicker construction above three or
-  more sections with no taxonomy, sequence, or navigation job. If the
-  eyebrow contains no word absent from the heading below it, delete it or
-  merge the one useful word into the heading.
+P0 (ABSOLUTE-backed, never lifted):
+
+- **Decorative pseudo-data.** HUD readings, coordinates, serials,
+  telemetry, tick-marked ledes, stamps, registry micro-chrome in margins or
+  letterbox bars. "What are they even doing there."
 - **Fake liveness.** Pulsing status dots, "ONLINE" badges, ticking
   counters, streaming logs on static content. Animate only what real data
   changes.
-- **Strings below 12px.** List every rendered string under 12px and justify
-  each one's information value; unjustified strings are deleted, not
-  shrunk further. Nothing below 11px except legally required fine print.
+- **Strings below the size floor.** The canonical floor lives in the
+  [typography numbers](../craft/typography.md#the-numbers): list every
+  rendered string under 12px and justify each one's information value;
+  unjustified strings are deleted, not shrunk. Nothing below 11px except
+  legally required fine print.
 - **Claim repetition.** A claim stated more than twice on one page is
   noise. A "too busy" complaint triggers a repetition count before any
   motion change.
+
+P1 (HARD-tier, liftable only by logged client direction):
+
+- **Mono micro-label chrome** outside code and data (HARD 6).
+- **Ordinal decoration on parallel items.** 01/02/03 kickers, index glyphs,
+  dots, and slashes on cards or categories that are not a genuine sequence
+  (HARD 7).
+- **The eyebrow template.** The same kicker construction above three or
+  more sections with no taxonomy, sequence, or navigation job (HARD 3). If
+  the eyebrow contains no word absent from the heading below it, delete it
+  or merge the one useful word into the heading.
 
 ## Copy carries information the visuals cannot
 
@@ -104,8 +115,10 @@ error, and hidden accordion panels, plus alt text and meta descriptions:
   text`, `your text here`
 - Binding leaks: `undefined`, `NaN`, `null`, `[object Object]`, `{{`, `}}`,
   `${`, `%s`, `Infinity`, raw JSON braces
-- Encoding: the mojibake signature `[ÂÃâ]` followed by a high byte, and
-  the replacement character
+- Encoding: the mojibake signature, grepped with the encoding-proof
+  spelling `[\xC2\xC3\xE2]` (ripgrep) so the pattern itself survives any
+  console encoding, plus the replacement character; expect rare false
+  positives on legitimate French or Portuguese text and clear them by eye
 - Owner copy bans: the em dash character in any user-facing file
 
 Any hit is a ship blocker. These are mechanical greps the workflow actually
