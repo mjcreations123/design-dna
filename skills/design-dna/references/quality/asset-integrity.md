@@ -1,6 +1,7 @@
 # Asset integrity and art direction
 
-Use this for logos, photography, illustration, video, audio, fonts, product imagery, maps, screenshots, generated media, and third-party embeds.
+Use this for logos, photography, illustration, video, audio, fonts, product
+imagery, maps, screenshots, generated media, and third-party embeds.
 
 ## Contents
 
@@ -129,13 +130,15 @@ not a shortcut around an applicable law, platform rule, contract, or owner gate.
 - Review the actual crop at the narrowest intended public width and at any
   breakpoint where the composition changes. The crop must preserve the
   asset's content job, not merely keep pixels on screen.
-- Do not use generated people, places, products, documents, or screenshots as factual proof.
+- Do not use generated people, places, products, documents, or screenshots as
+  factual proof.
 - Record a concept-disclosure decision as `required`, `not-required`, or
   `pending`, with a recorded rationale for every resolved decision. The
   separate owner-approval fields bind the accountable owner and date. When
   disclosure is required, bind one exact public wording across the base asset
   and any jurisdiction-specific provenance record.
-- Check text, logos, objects, anatomy, reflections, continuity, and representational harm.
+- Check text, logos, objects, anatomy, reflections, continuity, and
+  representational harm.
 - For public use, determine whether jurisdiction-specific generated-media
   provenance duties apply and whether the project acts as a provider, deployer,
   publisher, or another regulated role. Do not guess a jurisdiction or legal
@@ -176,11 +179,14 @@ proportionate and do not repeat it through ordinary marketing copy.
 
 ## Preserve truth
 
-- Do not fabricate logos, customer marks, awards, reviews, people, products, places, interfaces, or events.
+- Do not fabricate logos, customer marks, awards, reviews, people, products,
+  places, interfaces, or events.
 - Do not present a concept render as a real feature or existing place.
 - Verify screenshot data and remove private or stale information.
-- Label demo data and generated imagery when viewers could mistake them for evidence.
-- Keep branded, legal, safety, dietary, allergen, and accessibility claims owner-approved.
+- Label demo data and generated imagery when viewers could mistake them for
+  evidence.
+- Keep branded, legal, safety, dietary, allergen, and accessibility claims
+  owner-approved.
 
 ## Direct and implement
 
@@ -198,7 +204,8 @@ proportionate and do not repeat it through ordinary marketing copy.
   cosmetically regularize the set into implausible uniformity.
 - Preserve logo clear space, proportions, contrast, and approved variants.
 - Use responsive sources and reserve intrinsic dimensions.
-- Avoid embedding third parties when a static or privacy-preserving alternative serves the task.
+- Avoid embedding third parties when a static or privacy-preserving alternative
+  serves the task.
 - Define the missing, blocked, slow, and replacement state.
 
 ## Release gate

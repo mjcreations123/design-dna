@@ -16,7 +16,8 @@ deletion_status: "pending"
 
 <!-- proportional-evidence-v1 -->
 
-Store only necessary, consented information. Do not include sensitive personal data when a participant code is enough.
+Store only necessary, consented information. Do not include sensitive personal
+data when a participant code is enough.
 
 Before collecting observations, replace every `pending` privacy-control value in
 the frontmatter. Record who owns the data, the consent or other approved
@@ -80,7 +81,8 @@ tracking cannot be verified, resolve that warning before collection.
 | --- | --- | --- | --- | --- |
 |  |  |  |  |  |
 
-Keep observations separate from interpretations. Add quotes only when consent and retention rules permit.
+Keep observations separate from interpretations. Add quotes only when consent
+and retention rules permit.
 
 For public concepts or unfamiliar directions, include an unbriefed entry task
 only when it can answer the declared question. For task-, service-, or

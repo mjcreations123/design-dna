@@ -7,11 +7,13 @@ technical, and professional work collections.
 
 Inventory:
 
-- project type, audience, context, constraint, contribution, process, and outcome;
+- project type, audience, context, constraint, contribution, process, and
+  outcome;
 - exact people, partners, clients, roles, dates, locations, tools, and credits;
 - approved artifacts, working material, final media, and confidentiality limits;
 - what can be shown publicly, described anonymously, summarized, or not used;
-- the visitor's decision: assess craft, fit, specialty, process, or availability.
+- the visitor's decision: assess craft, fit, specialty, process, or
+  availability.
 
 Let different bodies of work create the case-study depth, route structure,
 media rhythm, and visual logic they need. Reuse structure when the viewer's
@@ -28,7 +30,8 @@ recipe.
   confidential work.
 - Do not fabricate client praise, process artifacts, metrics, awards, press,
   or recognizable private interfaces.
-- Redact or recreate confidential material only with permission and unmistakable labeling.
+- Redact or recreate confidential material only with permission and unmistakable
+  labeling.
 
 ## Tell the useful case
 

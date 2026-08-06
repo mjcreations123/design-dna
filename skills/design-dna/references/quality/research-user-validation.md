@@ -1,6 +1,7 @@
 # Research and user validation
 
-Use this for substantial greenfield work, redesigns, unfamiliar domains, or consequential user journeys.
+Use this for substantial greenfield work, redesigns, unfamiliar domains, or
+consequential user journeys.
 
 ## Contents
 
@@ -24,9 +25,12 @@ record the retrieval date:
 - real project, local, or cultural material;
 - task-specific usability standards or research.
 
-Record the source, retrieval date, transferable lesson, limitation, and what must not be copied. Use galleries and social platforms for discovery, not as proof of usability or truth.
+Record the source, retrieval date, transferable lesson, limitation, and what
+must not be copied. Use galleries and social platforms for discovery, not as
+proof of usability or truth.
 
-Do not make research a blocker when tools or access are unavailable. Disclose the limitation and use reversible decisions.
+Do not make research a blocker when tools or access are unavailable. Disclose
+the limitation and use reversible decisions.
 
 ## Establish hypotheses
 
@@ -118,7 +122,9 @@ findings through real behavior, domain evidence, or qualified review.
 
 ## Validate with appropriate people
 
-Choose participants who plausibly represent the audience, including relevant access needs. Use realistic content and tasks. Observe behavior before asking for opinions.
+Choose participants who plausibly represent the audience, including relevant
+access needs. Use realistic content and tasks. Observe behavior before asking
+for opinions.
 
 Capture:
 
@@ -129,7 +135,8 @@ Capture:
 - severity, confidence, and affected decision;
 - change made or reason for deferral.
 
-Keep perception review, usability observation, accessibility testing, and stakeholder approval distinct.
+Keep perception review, usability observation, accessibility testing, and
+stakeholder approval distinct.
 
 ## Protect restricted research
 
@@ -167,4 +174,5 @@ the [design-partner cadence](design-partner-cadence.md). Do not impose it on a
 one-off surface or treat co-created possibilities, preferences, or feature
 requests as validated requirements.
 
-Use the user-validation template for a durable record. Escalate high-stakes, regulated, or research-heavy work to qualified specialists.
+Use the user-validation template for a durable record. Escalate high-stakes,
+regulated, or research-heavy work to qualified specialists.

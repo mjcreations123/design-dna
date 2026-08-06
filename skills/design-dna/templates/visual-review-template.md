@@ -51,6 +51,6 @@ none, or not applicable.
 
 ## Project-specific review
 
-Optional. Add any perceptual, content, cultural, interaction, craft, maintenance,
-or operational observations that matter to this project. Do not borrow a fixed
-list of aesthetic traits merely because another project used it.
+Optional. Add any perceptual, content, cultural, interaction, craft,
+maintenance, or operational observations that matter to this project. Do not
+borrow a fixed list of aesthetic traits merely because another project used it.

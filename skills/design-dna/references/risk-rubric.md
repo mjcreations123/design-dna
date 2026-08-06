@@ -6,8 +6,8 @@ blacklist, taste score, or source of pre-render art direction.
 
 Read the [creative freedom boundary](creative-freedom.md). If current
 generator/default-pattern perception is material, load the
-[post-render convergence review](convergence-watch.md) only after the first unprimed
-perception pass.
+[post-render convergence review](convergence-watch.md) only after the first
+unprimed perception pass.
 
 For a concern, record:
 

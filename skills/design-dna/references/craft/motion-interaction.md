@@ -98,8 +98,8 @@ For true multi-page work, same-origin
 may connect complete documents. Source and destination must remain correct on
 direct entry, hard reload, unsupported browsers, history navigation, and
 cancelled transition. Preserve focus and expected scroll behavior. Shared
-transition names should identify actual counterparts, not force unrelated
-pages into one visual grammar.
+transition names should identify actual counterparts, not force unrelated pages
+into one visual grammar.
 
 Under `prefers-reduced-motion: reduce`, remove or transform movement that may
 trigger discomfort or impair use. Preserve information, state, sequence,

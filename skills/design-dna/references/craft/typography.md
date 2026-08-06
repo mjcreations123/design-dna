@@ -264,9 +264,9 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/font_audit.py" "PROJECT"
 ```
 
 `<DESIGN_DNA_SKILL_ROOT>` is the absolute directory containing the installed
-`SKILL.md`. The report is source evidence only. It is not a browser proof, license
-ruling, glyph test, or authorship detector. Rendered proof comes from the
-protocol below.
+`SKILL.md`. The report is source evidence only. It is not a browser proof,
+license ruling, glyph test, or authorship detector. Rendered proof comes from
+the protocol below.
 
 ## MANDATORY: verify the rendered font
 

@@ -1,6 +1,7 @@
 # Performance
 
-Use this when planning assets, fonts, scripts, motion, embeds, rendering, or production readiness.
+Use this when planning assets, fonts, scripts, motion, embeds, rendering, or
+production readiness.
 
 ## Set an objective
 
@@ -74,7 +75,8 @@ For WebGL, 3D, or sustained media effects, define load, memory, GPU, thermal,
 battery, input, context-loss, and tab-background behavior with a useful static
 or low-power fallback. Escalate complex spatial work to the relevant specialist.
 
-Do not hide delay behind an endless shimmer or animate placeholders that do not resemble final content.
+Do not hide delay behind an endless shimmer or animate placeholders that do not
+resemble final content.
 
 ## Measure
 
@@ -86,4 +88,5 @@ Use lab checks during development and field data when available. Record:
 - before/after comparison for meaningful changes;
 - limitations when no field data exists.
 
-Test production-like builds. A development-server score is not release evidence. Treat a single synthetic score as a clue, not a promise of user experience.
+Test production-like builds. A development-server score is not release evidence.
+Treat a single synthetic score as a clue, not a promise of user experience.

@@ -55,7 +55,8 @@ privacy and consent decisions.
 
 ## Design the journey
 
-- Make the origin, destination, direction, next decision, and route status clear.
+- Make the origin, destination, direction, next decision, and route status
+  clear.
 - Distinguish north-up map orientation from turn-by-turn or venue-relative
   orientation.
 - Pair color, line style, labels, landmarks, and written steps.

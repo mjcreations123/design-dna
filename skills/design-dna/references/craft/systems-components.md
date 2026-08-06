@@ -1,6 +1,7 @@
 # Systems, components, and theming
 
-Use this when creating or extending tokens, components, variants, or a third-party UI library.
+Use this when creating or extending tokens, components, variants, or a
+third-party UI library.
 
 ## Contents
 
@@ -36,8 +37,10 @@ verification.
 
 For an existing product:
 
-1. Inventory tokens, component variants, behaviors, accessibility patterns, and known exceptions.
-2. Identify which choices are intentional brand language and which are accidental residue.
+1. Inventory tokens, component variants, behaviors, accessibility patterns, and
+   known exceptions.
+2. Identify which choices are intentional brand language and which are
+   accidental residue.
 3. Reuse working conventions.
 4. Change foundations only when the benefit and migration path are clear.
 

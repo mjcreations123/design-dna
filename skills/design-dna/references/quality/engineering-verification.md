@@ -1,6 +1,7 @@
 # Engineering verification
 
-Use this before declaring substantial web work complete. Scale the gate to the change, but do not claim checks that were not run.
+Use this before declaring substantial web work complete. Scale the gate to the
+change, but do not claim checks that were not run.
 
 ## Contents
 
@@ -28,14 +29,16 @@ skill.
 Before implementation:
 
 - read repository instructions and relevant documentation;
-- inspect the framework, package manager, scripts, browser support, and deployment target;
+- inspect the framework, package manager, scripts, browser support, and
+  deployment target;
 - identify the existing design system and testing conventions;
 - map the authoritative sources for product facts, content, assets, tokens,
   components, interaction behavior, and release state;
 - identify generated files, protected files and facts, integration contracts,
   and areas owned outside the requested change;
 - preserve unrelated user changes;
-- confirm whether data, integrations, tracking, and external services are live, mocked, or prohibited.
+- confirm whether data, integrations, tracking, and external services are live,
+  mocked, or prohibited.
 
 When design, documentation, code, and the deployed result disagree, do not
 silently choose one. Determine whether the difference is approved, stale,
@@ -200,7 +203,8 @@ Run the project-supported equivalents of:
 - accessibility baseline;
 - performance checks proportional to changed assets or behavior.
 
-Do not introduce a new tool only to satisfy this list when the project has an established equivalent. Record unavailable checks and why.
+Do not introduce a new tool only to satisfy this list when the project has an
+established equivalent. Record unavailable checks and why.
 
 Use the narrowest meaningful command first, then the established broader suite
 when a shared contract or release boundary warrants it. A component test does
@@ -298,10 +302,10 @@ choices from the rendered result and an explicit project concern, not from
 portable source heuristics.
 
 Use `--content-site` only when documentation and content sources are part of the
-reviewed surface. Add `--structured-content` to opt in JSON, YAML, and YML; those
-formats are never content-scanned by default. Sensitive configuration and
-credential paths remain excluded unless a reviewed `--include` selects them,
-and dependency/vendor trees remain excluded.
+reviewed surface. Add `--structured-content` to opt in JSON, YAML, and YML;
+those formats are never content-scanned by default. Sensitive configuration and
+credential paths remain excluded unless a reviewed `--include` selects them, and
+dependency/vendor trees remain excluded.
 
 Read execution, source gate, selected scan scope, design-review trigger, and
 exit policy as separate results. Inspect `execution_ok`,
@@ -435,7 +439,9 @@ Review:
 
 ## Protect external state
 
-Do not deploy, submit forms, create accounts, enable analytics, publish tracking, charge payments, or mutate production data without explicit authority. Use clearly labeled fixtures or local mocks.
+Do not deploy, submit forms, create accounts, enable analytics, publish
+tracking, charge payments, or mutate production data without explicit authority.
+Use clearly labeled fixtures or local mocks.
 
 ## Prepare production handoff
 

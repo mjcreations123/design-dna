@@ -2,7 +2,18 @@
 
 Use this when a person asks for help, opens a case, challenges an outcome or
 charge, makes a complaint, requests review, or appeals a decision. This is a
-service-experience lifecycle, not legal, policy, adjudication, or emergency approval.
+service-experience lifecycle, not legal, policy, adjudication, or emergency
+approval.
+
+## Contents
+
+- [Define the case and authority](#define-the-case-and-authority)
+- [Make intake proportionate](#make-intake-proportionate)
+- [Model the lifecycle](#model-the-lifecycle)
+- [Preserve evidence and communication](#preserve-evidence-and-communication)
+- [Explain decisions and recourse](#explain-decisions-and-recourse)
+- [Recover safely](#recover-safely)
+- [Verify and escalate](#verify-and-escalate)
 
 ## Define the case and authority
 
@@ -10,14 +21,16 @@ Before designing the flow, establish:
 
 - the real request types, people allowed to act, subject, and desired outcome;
 - urgency, severity, safeguarding, fraud, abuse, and emergency boundaries;
-- the receiving owner, decision authority, escalation route, and independent reviewer;
+- the receiving owner, decision authority, escalation route, and independent
+  reviewer;
 - applicable policy, jurisdiction, eligibility, deadlines, service levels,
   channels, costs, evidence, privacy, retention, and notification rules;
 - what staff and systems can actually receive, share, decide, reverse, reopen,
   or compensate.
 
-Do not invent staffed support, response times, appeal rights, independence, remedies,
-or authority. Escalate uncertain rights and consequential policies before presenting them.
+Do not invent staffed support, response times, appeal rights, independence,
+remedies, or authority. Escalate uncertain rights and consequential policies
+before presenting them.
 
 ## Make intake proportionate
 
@@ -60,27 +73,29 @@ reopening when lawful and technically supported.
 - Keep notifications consistent with the authoritative case state and provide
   an equivalent status and recovery route for supported offline channels.
 
-Apply [privacy, consent, and permission guidance](privacy-consent-permissions.md)
-to collection, sharing, delegation, and case-history access.
+Apply
+[privacy, consent, and permission guidance](privacy-consent-permissions.md) to
+collection, sharing, delegation, and case-history access.
 
 ## Explain decisions and recourse
 
-A consequential decision should state the outcome, understandable reason, material
-evidence considered, scope, consequence, effective date, and supported recourse.
-Explain the authority, deadline, required evidence, possible outcomes, and reviewer
-independence when those facts are confirmed.
+A consequential decision should state the outcome, understandable reason,
+material evidence considered, scope, consequence, effective date, and supported
+recourse. Explain the authority, deadline, required evidence, possible outcomes,
+and reviewer independence when those facts are confirmed.
 
 Do not hide recourse, repeatedly restart a case, require irrelevant repetition,
-or make a challenge harder than the policy requires. Allow withdrawal, pause,
-or a choice not to continue when permitted. Acknowledge uncertainty and conflicts
+or make a challenge harder than the policy requires. Allow withdrawal, pause, or
+a choice not to continue when permitted. Acknowledge uncertainty and conflicts
 rather than manufacturing a definitive or neutral appearance.
 
 ## Recover safely
 
 Design for lost references, duplicates, delays, unavailable channels, failed
 uploads, staff changes, partial transfers, stale or conflicting status, missed
-deadlines, third-party outages, and unapplied outcomes. Preserve safe data, prevent
-duplicate consequences, expose authoritative state, and support retry or escalation.
+deadlines, third-party outages, and unapplied outcomes. Preserve safe data,
+prevent duplicate consequences, expose authoritative state, and support retry or
+escalation.
 
 Do not show success until the receiving system confirms the represented event.
 Separate service recovery from emergency, safeguarding, legal, or crisis
@@ -90,9 +105,11 @@ response, and direct urgent cases only to verified routes.
 
 Test intake through resolution, withdrawal, escalation, appeal, reopening, and
 closure across representative roles and channels. Verify receipt, continuity,
-permissions, evidence, status, notifications, deadlines, reasons, recovery, data,
-language, accessibility, mobile, slow-network, offline, and assistive technology.
+permissions, evidence, status, notifications, deadlines, reasons, recovery,
+data, language, accessibility, mobile, slow-network, offline, and assistive
+technology.
 
-Require operations, policy, legal, privacy, security, trust and safety, accessibility,
-payments, regulatory, and domain specialists to approve their parts. A polished
-interface does not prove that support, adjudication, remedy, or appeal works.
+Require operations, policy, legal, privacy, security, trust and safety,
+accessibility, payments, regulatory, and domain specialists to approve their
+parts. A polished interface does not prove that support, adjudication, remedy,
+or appeal works.

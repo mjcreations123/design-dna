@@ -8,7 +8,8 @@ appointments, and inventory-bound reservations.
 Model the actual sequence:
 
 1. destination, venue, service, route, or experience discovery;
-2. date, time, timezone, duration, party, traveler, room, seat, or resource selection;
+2. date, time, timezone, duration, party, traveler, room, seat, or resource
+   selection;
 3. availability, eligibility, accessibility, and required information;
 4. base price, taxes, mandatory fees, deposits, add-ons, and currency;
 5. review, policy acceptance, payment or hold, and confirmation;
@@ -19,11 +20,13 @@ Do not represent sample inventory, rates, countdowns, or availability as live.
 
 ## Keep options comparable
 
-- Preserve dates, party, travelers, filters, and selected option through the journey.
+- Preserve dates, party, travelers, filters, and selected option through the
+  journey.
 - Identify exactly what varies: room, fare, seat, duration, inclusions,
   restrictions, refundability, baggage, accessibility, or cancellation.
 - Show total price and material conditions before commitment.
-- Distinguish request, hold, waitlist, quote, reservation, ticket, and confirmed purchase.
+- Distinguish request, hold, waitlist, quote, reservation, ticket, and confirmed
+  purchase.
 - Make local time, date boundaries, duration, and overnight changes explicit.
 - Explain inventory freshness and what happens if availability changes.
 

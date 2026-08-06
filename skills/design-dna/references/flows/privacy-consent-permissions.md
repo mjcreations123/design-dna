@@ -1,9 +1,10 @@
 # Privacy, consent, and permissions
 
 Use this for product-facing collection, disclosure, sharing, consent, tracking,
-device access, visibility, retention, withdrawal, and user control. This complements
-review-artifact [data handling](../quality/data-handling.md); it does not determine
-legal basis, policy, security architecture, or regulatory compliance.
+device access, visibility, retention, withdrawal, and user control. This
+complements review-artifact [data handling](../quality/data-handling.md); it
+does not determine legal basis, policy, security architecture, or regulatory
+compliance.
 
 ## Contents
 
@@ -107,4 +108,5 @@ access is declined.
 
 Require privacy, legal, security, data-governance, accessibility, platform, and
 domain specialists for lawful basis, notice and consent requirements, retention,
-deletion, auditability, threat review, regulated processing, and compliance claims.
+deletion, auditability, threat review, regulated processing, and compliance
+claims.

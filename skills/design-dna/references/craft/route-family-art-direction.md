@@ -56,9 +56,10 @@ Distinguish:
 
 This uses the practical insight behind
 [Spotify Encore](https://spotify.design/article/reimagining-design-systems-at-spotify)
-and [Brad Frost's components, recipes, and snowflakes model](https://bradfrost.com/blog/post/design-system-components-recipes-and-snowflakes/):
-reuse reliable foundations without forcing unlike content through one recipe.
-It does not require either source's organizational structure.
+and
+[Brad Frost's components, recipes, and snowflakes model](https://bradfrost.com/blog/post/design-system-components-recipes-and-snowflakes/):
+reuse reliable foundations without forcing unlike content through one recipe. It
+does not require either source's organizational structure.
 
 Do not abstract visual similarity merely because it exists. Do not duplicate
 functional, accessibility, truth, or state behavior merely to make pages feel

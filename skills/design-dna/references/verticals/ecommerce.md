@@ -1,6 +1,7 @@
 # Ecommerce
 
-Use this for catalog, product, cart, checkout, account, subscription, or transactional retail experiences.
+Use this for catalog, product, cart, checkout, account, subscription, or
+transactional retail experiences.
 
 ## Route by job
 
@@ -27,9 +28,11 @@ transaction, failure, and recovery unfinished.
 
 ## Preserve product truth
 
-- Use approved names, images, specifications, prices, currencies, stock, delivery estimates, reviews, and sustainability claims.
+- Use approved names, images, specifications, prices, currencies, stock,
+  delivery estimates, reviews, and sustainability claims.
 - Distinguish product variants visually and programmatically.
-- Do not select add-ons, insurance, tips, subscriptions, or marketing consent by stealth.
+- Do not select add-ons, insurance, tips, subscriptions, or marketing consent by
+  stealth.
 - Expose material conditions before purchase.
 - Make limited stock or urgency claims only from real data.
 - Clearly label concept stores and sandbox transactions.
@@ -41,7 +44,8 @@ transaction, failure, and recovery unfinished.
 - Keep product identity visible through cart and checkout.
 - Prevent invalid variant combinations.
 - Recalculate totals transparently.
-- Handle long names, missing media, extreme prices, sale states, multiple currencies, and localized units.
+- Handle long names, missing media, extreme prices, sale states, multiple
+  currencies, and localized units.
 
 ## Protect checkout
 
@@ -68,9 +72,11 @@ Test representative products and the worst plausible combinations across:
 
 - mobile, keyboard, screen reader, zoom, and slow network;
 - in-stock, low-stock, out-of-stock, preorder, and discontinued;
-- invalid promotion, payment failure, address failure, and partial service failure;
+- invalid promotion, payment failure, address failure, and partial service
+  failure;
 - refresh, back navigation, timeout, session expiry, and duplicate submission;
 - localization, RTL, tax, currency, shipping, and translated copy;
 - return, refund, cancellation, and support paths.
 
-Use payment sandboxes and test data. Do not charge a real payment, publish a real product, or mutate production inventory without explicit authority.
+Use payment sandboxes and test data. Do not charge a real payment, publish a
+real product, or mutate production inventory without explicit authority.

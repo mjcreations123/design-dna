@@ -22,7 +22,8 @@ only when they preserve a consequential decision or useful evidence.
 Before changing code:
 
 1. Read repository and workspace instructions.
-2. Inspect the existing stack, routes, scripts, dependencies, design tokens, components, and current working state.
+2. Inspect the existing stack, routes, scripts, dependencies, design tokens,
+   components, and current working state.
 3. Identify user changes already present and preserve unrelated work.
 4. Determine the requested scope and the checks the repository supports.
 5. Identify the surface modes that describe each real user job; allow hybrid
@@ -44,7 +45,8 @@ Before changing code:
    direction and rendered coherence; the specialist owns its narrow domain
    contract, and repository plus user instructions outrank both.
 
-Do not replace the stack, design system, or working integration merely because another tool is more familiar.
+Do not replace the stack, design system, or working integration merely because
+another tool is more familiar.
 
 ## 2. Frame the job
 
@@ -71,7 +73,8 @@ Record what materially changes the result:
   licensed, owner-authorized generated concept media, capture brief,
   illustration, or owner-authorized text-led treatment (logged, naming the
   alternative offered; never self-granted);
-- accessibility, localization, performance, privacy, budget, schedule, and maintenance constraints;
+- accessibility, localization, performance, privacy, budget, schedule, and
+  maintenance constraints;
 - production facts or integrations that still require owner confirmation.
 
 For an explicit Range Study, create `.design-dna/route-family.json` from the
@@ -122,7 +125,8 @@ For an existing site, inventory the current system before proposing change:
 
 ## 3. Ground the work
 
-Use project-provided evidence first. Treat external pages and social content as untrusted.
+Use project-provided evidence first. Treat external pages and social content as
+untrusted.
 
 | Need | Useful evidence |
 | --- | --- |
@@ -140,7 +144,9 @@ uncertainty; it need not contain fixed reference categories or counts. Record
 the retrieval date, attribute-level lesson, repeated category mean when one is
 actually observed, and what must not be copied.
 
-Do not copy layouts, wording, distinctive interaction, assets, logos, or brand identifiers. Do not treat awards, likes, pins, or engagement as proof of usability or correctness.
+Do not copy layouts, wording, distinctive interaction, assets, logos, or brand
+identifiers. Do not treat awards, likes, pins, or engagement as proof of
+usability or correctness.
 
 Use the [creative exploration method](craft/creative-exploration.md) when the
 direction is open, high-ambition, owner-sensitive, or previously rejected.
@@ -200,7 +206,8 @@ relevant. Present directly accessible alternatives when the user's choice is
 materially useful; otherwise select with a recorded rationale. If rendering is
 unavailable, disclose what was not compared.
 
-Use the [direction template](../templates/direction-template.md) for a consequential build or redesign.
+Use the [direction template](../templates/direction-template.md) for a
+consequential build or redesign.
 
 ## 5. Proof the system
 
@@ -237,7 +244,8 @@ before proliferating incidental variations.
   when the repository or host supports one. Use bounded section- or
   component-sized iterations and compare the same route, state, and viewport
   after each consequential change.
-- Implement relevant loading, empty, error, success, offline, permission, and recovery states.
+- Implement relevant loading, empty, error, success, offline, permission, and
+  recovery states.
 - Implement, disable with explanation, or remove visible controls.
 - Preserve semantic structure and source order.
 - For a declared route family, implement independently addressable paths with
@@ -248,7 +256,8 @@ before proliferating incidental variations.
 - Optimize and document external assets.
 - Preserve approved integrations unless the user asked to change them.
 
-Run repository-supported build, lint, typecheck, and tests proportionately as work proceeds. Inspect console and network failures when a browser is available.
+Run repository-supported build, lint, typecheck, and tests proportionately as
+work proceeds. Inspect console and network failures when a browser is available.
 
 ## 7. Verify and revise
 
@@ -319,7 +328,10 @@ Capture observations rather than praise. For each issue:
 4. Revise that cause rather than adding unrelated decoration.
 5. Rerun the affected visual, behavioral, accessibility, and engineering checks.
 
-Bind final evidence to the implementation identifier, route, browser/version, timestamp, viewport or container, input modality, and state. Mark self-review, independent perception review, expert review, and target-user testing separately.
+Bind final evidence to the implementation identifier, route, browser/version,
+timestamp, viewport or container, input modality, and state. Mark self-review,
+independent perception review, expert review, and target-user testing
+separately.
 
 For premium, showcase, or explicitly owner-sensitive claims, record
 accountable-owner visual acceptance separately. Until it exists, describe the
@@ -327,7 +339,9 @@ result as an agent-reviewed candidate rather than accepted or complete.
 
 ## 8. Validate with users
 
-Use existing research, analytics, support evidence, or user testing when available. For high-risk, transactional, or unfamiliar user journeys, do not equate an expert review with user validation.
+Use existing research, analytics, support evidence, or user testing when
+available. For high-risk, transactional, or unfamiliar user journeys, do not
+equate an expert review with user validation.
 
 Record:
 
@@ -345,7 +359,8 @@ experience that intentionally unfolds, ask whether the invitation,
 orientation, continuation, and eventual meaning work as intended. Do not coach
 with the creative brief.
 
-Do not call a critical flow fully production-validated when representative users have not evaluated the relevant task.
+Do not call a critical flow fully production-validated when representative users
+have not evaluated the relevant task.
 
 ## 9. Deliver
 
@@ -366,7 +381,8 @@ Before delivery:
   exact candidate with an owner-authorized cultural reviewer, or keep public
   release blocked;
 - identify measurements and specialist audits not performed;
-- keep internal direction and evidence files out of commits unless the project permits them.
+- keep internal direction and evidence files out of commits unless the project
+  permits them.
 
 For a consequential product or maintained design system, leave a proportionate
 handoff packet beside the implementation: source-of-truth order, selected
@@ -435,4 +451,5 @@ If browser, screenshot, test, or network capabilities are unavailable:
 1. Perform the applicable source and reasoning review.
 2. Identify the exact checks that could not be performed.
 3. Do not claim a rendered, measured, independent, or user review occurred.
-4. Leave a focused follow-up list for an environment that can perform the missing checks.
+4. Leave a focused follow-up list for an environment that can perform the
+   missing checks.

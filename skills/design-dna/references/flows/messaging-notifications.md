@@ -21,9 +21,11 @@ or a human response when the system cannot prove it.
 
 ## Design the inbox and thread
 
-- Preserve sender, timestamp, sequence, grouping, unread boundary, and reply context.
+- Preserve sender, timestamp, sequence, grouping, unread boundary, and reply
+  context.
 - Keep selection and scroll position stable through updates.
-- Provide useful empty, loading, offline, stale, removed, blocked, and failed states.
+- Provide useful empty, loading, offline, stale, removed, blocked, and failed
+  states.
 - Distinguish a new message from an edit, deletion, reaction, system event, or
   automated action.
 - Expose attachment name, type, size, progress, failure, and safe removal.
@@ -50,7 +52,8 @@ explicitly authorized and operationally safeguarded.
 Group preferences by purpose and consequence, not merely delivery technology.
 Clarify:
 
-- required service, security, transactional, digest, social, and marketing categories;
+- required service, security, transactional, digest, social, and marketing
+  categories;
 - email, SMS, push, in-product, webhook, or other channel availability;
 - per-event, per-project, per-workspace, or global scope;
 - frequency, quiet hours, timezone, batching, and urgent exceptions;

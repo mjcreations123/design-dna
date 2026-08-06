@@ -5,7 +5,9 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 
 # Design DNA
 
-Contents: [absolutes](#the-absolutes-come-first) ·
+## Contents
+
+[absolutes](#the-absolutes-come-first) ·
 [two axes](#two-axes-and-the-default-is-awesome) ·
 [authority](#resolve-authority) · [classify](#classify-the-work) ·
 [creative freedom](#preserve-creative-freedom) ·
@@ -135,8 +137,8 @@ aesthetic rule that did not come from the project or the absolutes.
 - Preserve repository instructions, unrelated work, established systems,
   and working integrations unless the task authorizes change.
 - Do not invent business facts, proof, people, metrics, reviews, assets,
-  availability, or integrations. Placeholders are visibly labeled AND
-  tracked in the [placeholder register](templates/placeholder-register-template.md).
+  availability, or integrations. Placeholders are visibly labeled AND tracked in
+  the [placeholder register](templates/placeholder-register-template.md).
 - Demo mode by default: no real form endpoints, payments, bookings,
   tracking, or production deployment before the owner says live in his own
   words. Dead CTAs get an explicit demo-notice behavior.
@@ -273,6 +275,7 @@ decision, then return to the router.
 | Research, analytics, user evidence | [Research and validation](references/quality/research-user-validation.md); [design-partner cadence](references/quality/design-partner-cadence.md) for durable products. |
 | Critique, heuristic or perception review | [Critique and expert review](references/quality/critique-and-expert-review.md); [expressive perception template](templates/expressive-perception-template.md). |
 | Private previews, screenshots, evaluation data | [Review data handling](references/quality/data-handling.md). |
+| Promoting, corroborating, or retiring a risk rule | [Evidence policy](references/evidence.md): source types, the corroboration bar, review intervals, and what never proves generated authorship. |
 | Classifying a review finding | [Review severity](references/quality/review-severity.md). |
 | Baseline-versus-candidate screenshot evidence | [Rendered comparison](references/quality/render-comparison.md). |
 | Capturing, probing, or pixel-measuring a page for the gate | [Render harness](references/quality/render-harness.md): CDP capture without reflow, probe sequencing, element-anchored sampling, the two-capture contrast method, fallback blocking. |

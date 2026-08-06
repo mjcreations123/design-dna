@@ -8,7 +8,8 @@ ecommerce reference as well when physical goods or one-time retail are central.
 
 Before commitment, show the applicable:
 
-- plan, billing period, currency, taxes, fees, included usage, limits, and overages;
+- plan, billing period, currency, taxes, fees, included usage, limits, and
+  overages;
 - trial length, payment requirement, conversion date, and end behavior;
 - discount duration, eligibility, and post-discount price;
 - renewal timing, cancellation effective date, refund policy, and notice;

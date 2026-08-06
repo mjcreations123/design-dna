@@ -27,7 +27,8 @@ means an equivalent achievable outcome, not identical screens.
 For each material step, record:
 
 - the user-visible promise, action, channel, and status;
-- information, consent, evidence, identity, or reference that crosses a boundary;
+- information, consent, evidence, identity, or reference that crosses a
+  boundary;
 - the receiving team, system, provider, or organization and named owner;
 - backstage dependencies, eligibility, policy, timing, and expiry;
 - failure, recovery, escalation, and alternate-channel behavior;

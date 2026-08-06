@@ -9,9 +9,10 @@ evidence_contract: "proportional-evidence-v1"
 
 <!-- proportional-evidence-v1 -->
 
-Use this record when public copy, calculations, diagrams, or interactions contain
-prices, quantities, durations, warranties, deadlines, performance figures,
-regulated statements, categorical claims, or other exact-sounding facts.
+Use this record when public copy, calculations, diagrams, or interactions
+contain prices, quantities, durations, warranties, deadlines, performance
+figures, regulated statements, categorical claims, or other exact-sounding
+facts.
 
 Do not treat `sample`, `demo`, or `concept` status as permission to invent
 authority. Mark scenario values explicitly and record the assumptions that make
@@ -33,6 +34,7 @@ them useful.
 
 - Claims still pending or prohibited:
 - Scenario values visibly labeled:
-- Categorical words reviewed (`all`, `every`, `always`, `never`, `best`, `only`):
+- Categorical words reviewed (`all`, `every`, `always`, `never`, `best`,
+  `only`):
 - Public copy checked against this ledger:
 - Owner approval and date:

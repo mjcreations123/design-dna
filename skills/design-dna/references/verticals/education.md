@@ -8,7 +8,8 @@ student information, credentials, and educational resources.
 Identify:
 
 - learner, educator, guardian, administrator, reviewer, and support roles;
-- age, prior knowledge, language, accessibility, device, bandwidth, and environment;
+- age, prior knowledge, language, accessibility, device, bandwidth, and
+  environment;
 - enrollment, prerequisites, schedule, attendance, progress, assessment,
   feedback, completion, and credential states;
 - public, class, group, private, graded, draft, archived, and retained content;
@@ -19,7 +20,8 @@ identity, outcomes, accreditation, or live classroom activity as real.
 
 ## Design for the learning goal
 
-- Make objectives, prerequisites, sequence, workload, materials, and completion clear.
+- Make objectives, prerequisites, sequence, workload, materials, and completion
+  clear.
 - Use examples, practice, feedback, retrieval, and reflection appropriate to
   the learning goal.
 - Preserve learner position, attempts, drafts, notes, and recovery.

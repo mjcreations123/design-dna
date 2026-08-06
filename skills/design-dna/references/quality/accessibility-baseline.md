@@ -24,22 +24,27 @@ jurisdiction.
   relying on a framework default.
 - Use semantic landmarks, headings, lists, tables, and controls.
 - Preserve a logical reading and focus order.
-- Give meaningful non-text content an appropriate text alternative; hide decoration.
-- Provide captions, transcripts, descriptions, or alternatives for time-based media as required.
+- Give meaningful non-text content an appropriate text alternative; hide
+  decoration.
+- Provide captions, transcripts, descriptions, or alternatives for time-based
+  media as required.
 - Do not use color, position, shape, sound, or motion as the only cue.
 - Meet WCAG 2.2 AA contrast requirements: at least 4.5:1 for normal text,
   3:1 for qualifying large text, and 3:1 for applicable meaningful UI
   boundaries or graphics. Treat APCA only as an additional developmental
   legibility diagnostic, never as a WCAG substitute or conformance claim.
-- Support reflow at 400%/320 CSS pixels (1.4.10) and user text-spacing overrides (1.4.12).
+- Support reflow at 400%/320 CSS pixels (1.4.10) and user text-spacing overrides
+  (1.4.12).
 - Keep instructions valid across orientation, zoom, theme, and input mode.
 
 ## Exclusion and assisted access
 
 Map barriers beyond conformance criteria on each critical path:
 
-- literacy, numeracy, jargon, memory load, stress, interruption, and time pressure;
-- language, locale, translation quality, reading direction, and cultural context;
+- literacy, numeracy, jargon, memory load, stress, interruption, and time
+  pressure;
+- language, locale, translation quality, reading direction, and cultural
+  context;
 - older or shared devices, small screens, limited storage, blocked media, slow
   or costly networks, offline use, and unavailable platform features;
 - missing documents, payment methods, identity credentials, private space, or
@@ -66,9 +71,12 @@ equivalent access that has not been confirmed.
   requirement.
 - Preserve focus when content opens, closes, updates, or navigates.
 - Give bypass mechanisms for repeated content.
-- When a skip link changes the URL fragment, verify keyboard focus reaches a meaningful programmatically focusable target; hash movement or visual scrolling alone is not a completed bypass.
+- When a skip link changes the URL fragment, verify keyboard focus reaches a
+  meaningful programmatically focusable target; hash movement or visual
+  scrolling alone is not a completed bypass.
 - Make titles, headings, and link purposes descriptive.
-- Avoid single-character shortcuts unless they can be disabled, remapped, or limited to focus.
+- Avoid single-character shortcuts unless they can be disabled, remapped, or
+  limited to focus.
 
 ## Input and interaction
 
@@ -79,10 +87,12 @@ equivalent access that has not been confirmed.
   (2.5.3).
 - Complete pointer actions on release when feasible, allow abort or undo, and
   avoid irreversible action on pointer-down (2.5.2).
-- Provide error identification, suggestions, and prevention for consequential submissions.
+- Provide error identification, suggestions, and prevention for consequential
+  submissions.
 - Avoid asking for the same information twice in one process (3.3.7).
 - Keep help in a consistent location when repeated (3.2.6).
-- Provide authentication that does not depend on a cognitive-function test (3.3.8).
+- Provide authentication that does not depend on a cognitive-function test
+  (3.3.8).
 - Offer non-drag and non-motion alternatives (2.5.7 and 2.5.4).
 - Meet the WCAG 2.2 AA 24 × 24 CSS pixel target-size floor or its documented
   spacing/inline/equivalent-control exceptions (2.5.8). Aim near 44 CSS pixels
@@ -124,8 +134,10 @@ stored record:
   independently (1.4.2).
 - Avoid unexpected context changes on focus or input.
 - Explain time limits and provide extension or recovery when applicable.
-- Use stable terminology, predictable placement, forgiving input, and undo where feasible.
-- Test zoom, memory burden, interruption, and error recovery on the critical path.
+- Use stable terminology, predictable placement, forgiving input, and undo where
+  feasible.
+- Test zoom, memory burden, interruption, and error recovery on the critical
+  path.
 
 ## Required verification
 
@@ -147,7 +159,8 @@ Perform, as applicable:
 - high contrast or forced colors;
 - touch target and orientation checks.
 
-Automated checks are supporting evidence, not coverage. Record tools, versions, routes, states, results, and unresolved limitations.
+Automated checks are supporting evidence, not coverage. Record tools, versions,
+routes, states, results, and unresolved limitations.
 
 ## Screen-reader smoke-test script
 
@@ -183,4 +196,7 @@ representative disabled-user validation.
 
 ## Specialist handoff
 
-Escalate to a dedicated accessibility audit and qualified human testing for high-risk services, legal certification, procurement conformance, complex widgets, charts, authentication, media, or assistive-technology claims. Never describe this baseline as an ADA/WCAG certification.
+Escalate to a dedicated accessibility audit and qualified human testing for
+high-risk services, legal certification, procurement conformance, complex
+widgets, charts, authentication, media, or assistive-technology claims. Never
+describe this baseline as an ADA/WCAG certification.

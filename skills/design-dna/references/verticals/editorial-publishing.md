@@ -9,7 +9,8 @@ becomes the primary job.
 
 Define:
 
-- article, issue, series, topic, author, contributor, media, correction, and archive relationships;
+- article, issue, series, topic, author, contributor, media, correction, and
+  archive relationships;
 - audience knowledge, reading length, entry source, and likely continuation;
 - editorial status, owner, publication and update dates, version, and locale;
 - citation, disclosure, sponsorship, moderation, and correction policies;
@@ -22,13 +23,16 @@ to template.
 
 ## Protect editorial trust
 
-- Name authors, editors, photographers, illustrators, and sources only when approved.
+- Name authors, editors, photographers, illustrators, and sources only when
+  approved.
 - Separate reported fact, analysis, opinion, quotation, estimate, correction,
   advertisement, sponsored material, and generated or transformed media.
 - Keep dates, timezones, update history, and material corrections visible.
-- Preserve citations, captions, credits, transcript relationships, and source notes.
+- Preserve citations, captions, credits, transcript relationships, and source
+  notes.
 - Do not invent readership, awards, subscriber counts, quotations, or authority.
-- Distinguish a machine-generated summary or translation when policy requires it.
+- Distinguish a machine-generated summary or translation when policy requires
+  it.
 
 ## Build a reading and discovery system
 

@@ -11,7 +11,8 @@ Collect approved:
 - current need, geography, eligibility, partners, and operational limits;
 - impact measures with method, period, denominator, and owner;
 - use of funds, restrictions, fees, matching terms, and tax treatment;
-- consented stories, imagery, credits, privacy boundaries, and safeguarding rules;
+- consented stories, imagery, credits, privacy boundaries, and safeguarding
+  rules;
 - ways to donate, volunteer, attend, advocate, learn, or request support.
 
 Do not invent urgency, beneficiaries, impact, tax deductibility, matching
@@ -33,7 +34,8 @@ organization's real safeguarding policy.
   tax, privacy, and communication consequences before submission.
 - Explain preset amounts only when their impact labels are sourced.
 - Keep optional tip and marketing consent separate from the donation.
-- Provide equitable non-digital or assistance paths when the organization supports them.
+- Provide equitable non-digital or assistance paths when the organization
+  supports them.
 
 Apply the subscription lifecycle to recurring giving and the ecommerce
 lifecycle to merchandise or ticket sales.

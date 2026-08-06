@@ -1,6 +1,7 @@
 # Content, information architecture, and copy
 
-Use this when shaping navigation, page sequence, labels, calls to action, or user-facing language.
+Use this when shaping navigation, page sequence, labels, calls to action, or
+user-facing language.
 
 ## Contents
 
@@ -15,10 +16,13 @@ Use this when shaping navigation, page sequence, labels, calls to action, or use
 2. Inventory approved facts, proof, legal text, owner, status, and expiration.
 3. Group content by user question rather than internal department.
 4. Order information by decision dependency.
-5. Choose navigation, taxonomy, search, filtering, and cross-links for the actual corpus.
+5. Choose navigation, taxonomy, search, filtering, and cross-links for the
+   actual corpus.
 6. Define what happens when content is absent, stale, restricted, or unknown.
 
-Do not invent history, metrics, testimonials, customers, availability, features, policies, locations, prices, or integrations. Label demo and placeholder content.
+Do not invent history, metrics, testimonials, customers, availability, features,
+policies, locations, prices, or integrations. Label demo and placeholder
+content.
 
 For every exact quantity, price, time, warranty, universal or near-universal
 statement, regulated claim, and calculator assumption, record the source,
@@ -33,7 +37,8 @@ proof-shaped authority.
   the point where the audience needs it.
 - Name consequential actions by their result when that result matters.
 - Explain requirements before input and errors near the cause.
-- Make confirmation, recovery, cancellation, and destructive consequences explicit.
+- Make confirmation, recovery, cancellation, and destructive consequences
+  explicit.
 - Keep terminology stable across navigation, headings, controls, and help.
 - Use plain language unless specialist vocabulary helps the intended audience.
 - Let headings summarize, invite, orient, quote, provoke, decorate, or perform
@@ -96,17 +101,20 @@ navigation levels, calls to action, states, or reviewers that do not apply.
   and actions. The journey or reading logic should still make sense.
 - **Route silhouette:** Compare the ordered user questions, proof, interactions,
   and actions across routes; shared structure needs a shared task reason.
-- **Truth:** Trace every factual claim and item of proof to a source or explicit placeholder.
+- **Truth:** Trace every factual claim and item of proof to a source or explicit
+  placeholder.
 - **Task:** Confirm each page answers the question implied by its entry point.
 - **Voice:** Mark repeated rhetorical constructions and remove copy that could
   move unchanged to an unrelated site without adding fake roughness or errors.
 - **Stress:** Test long, short, missing, translated, and user-generated content.
-- **Access:** Check descriptive link text, heading order, instructions, errors, and pronunciation-sensitive text.
+- **Access:** Check descriptive link text, heading order, instructions, errors,
+  and pronunciation-sensitive text.
 - **Production second eye:** When claim risk, release stakes, owner policy, or
   cultural context warrants independent review, have someone other than the
-  primary writer or generator check visible copy in the rendered build for omissions,
-  contradictions, truncation, stale language, stray methodology text, and
-  broken links. Record who maintains time-sensitive content and its next review
-  trigger.
+  primary writer or generator check visible copy in the rendered build for
+  omissions, contradictions, truncation, stale language, stray methodology text,
+  and broken links. Record who maintains time-sensitive content and its next
+  review trigger.
 
-Do not use SEO keywords to distort comprehension. Metadata and structured data must match visible, approved content.
+Do not use SEO keywords to distort comprehension. Metadata and structured data
+must match visible, approved content.
