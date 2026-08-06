@@ -131,7 +131,9 @@ error, and hidden accordion panels, plus alt text and meta descriptions:
   spelling `[\xC2\xC3\xE2]` (ripgrep) so the pattern itself survives any
   console encoding, plus the replacement character; expect rare false
   positives on legitimate French or Portuguese text and clear them by eye
-- Owner copy bans: the em dash character in any user-facing file
+- Owner copy bans: the em dash character in any user-facing file, grepped
+  encoding-proof as `rg -n "\x{2014}"`; the replacement character as
+  `rg -n "\x{FFFD}"`
 - AI-era phrases, compiled 2026-08, review by 2027-02 (the vocabulary is
   era-dated and shifts per model generation; refresh, never trust the 2023
   list): `elevate`, `seamless`, `unlock`, `empower`, `delve`, `leverage`,
@@ -141,16 +143,21 @@ error, and hidden accordion panels, plus alt text and meta descriptions:
   diagnosis lives in [convergence-watch](../convergence-watch.md)
   RISK-COPYFORM-001. This grep list is its mechanical arm.
 - Paste artifacts from model output: `oaicite`, `contentReference`,
-  `turn0search`, `[cite:`, `utm_source` inside body links, stray `**` and
-  `#` markdown residue, curly-quote inconsistency
+  `turn0search`, `[cite:`, stray `**` markdown residue
 
 Any hit is a ship blocker. These are mechanical greps the workflow actually
-runs; a rule that exists only as prose gets violated.
+runs; a rule that exists only as prose gets violated. Three checks need a
+grep plus eyes, so run them as manual triage, not pass/fail patterns:
+`utm_source` hits triaged to body links only, `#` residue judged on a
+rendered-text dump where hex colors and anchors cannot flood the match, and
+curly-versus-straight quote consistency compared across the page by eye.
 
 ## The review pass
 
-1. Extract every visible string per page per state (a DOM walk, not the
-   source).
+1. Extract every visible string per page per state: a DOM walk over
+   `textContent` with a per-node visibility flag, not the source and not
+   `innerText`, which returns empty for hidden panels and for anything in a
+   hidden automation tab.
 2. Run the residue greps.
 3. Apply the four-question gate to every string; log verdicts for anything
    borderline.

@@ -5,6 +5,12 @@ every build and every revision round, on the RENDERED output. Do not present
 the result until every P0 passes; a P0 hit is fixed and re-verified, never
 waived. P1 items are fixed or shown to carry a logged client direction.
 
+Scope on a bounded revision: all P0 lines always run on the touched surface;
+P1 and P2 lines run where the revision touches their subject; greenfield-only
+lines (rendered alternative, selection record) apply when new direction or
+new type was selected, which any font replacement triggers for the type
+lines.
+
 ## P0: owner absolutes
 
 - [ ] Zero em dashes in user-facing text (mechanical grep of shippable
@@ -30,7 +36,8 @@ waived. P1 items are fixed or shown to carry a logged client direction.
 - [ ] Parseable-text pass complete (four-question gate + residue greps in
       [parseable text](../references/quality/parseable-text.md)): no
       decorative pseudo-data, no fake liveness, no internal vocabulary, no
-      placeholder or binding residue, no mojibake, size floor respected
+      placeholder or binding residue, no mojibake, size floor respected,
+      no claim stated more than twice on one page
 - [ ] Screenshot pair at ~1440 AND ~375 for every page in scope, saved to
       disk, actually opened and looked at, paths cited
 - [ ] Demo/live state correct: still a demo unless the owner said live in
@@ -70,7 +77,6 @@ waived. P1 items are fixed or shown to carry a logged client direction.
       in [typography](../references/craft/typography.md), or carrying
       rendered proof for the exception
 - [ ] Descenders intact through every masked reveal
-- [ ] No claim stated more than twice on one page
 - [ ] Salience check: first three things noticed at each width are content,
       not decoration
 - [ ] One memorable element nameable per page (absence of flaws is not

@@ -274,7 +274,11 @@ screenshot needs a visible pane. Two traps make the obvious checks lie:
 is only ever a negative signal; and `getComputedStyle().fontFamily` reports
 the requested stack, never the face that painted.
 
-1. **Registration proof (family names).** For every family the CSS uses:
+1. **Registration proof (family names).** Enumerate the families to test by
+   walking computed styles of every element bearing a text node and taking
+   each non-generic family in its stack (exclude `serif`, `sans-serif`,
+   `monospace`, `system-ui`, `ui-*`); this catches the typo'd REQUEST that
+   an @font-face walk would miss. For each:
    `const faces = await document.fonts.load('16px "<Family>"')` (try/catch;
    the promise rejects when a matched face fails to load). An empty array is
    the deterministic detector for a FAMILY-NAME mismatch: a typo'd or
@@ -282,22 +286,36 @@ the requested stack, never the face that painted.
    or style; font matching is nearest-match, so requesting 700 against a
    400-only family happily returns the 400 face. Require `faces.length > 0`
    and every status `loaded`; weights and styles are step 3's job.
-2. **Paint proof.** Canvas width comparison with a width-diverse probe AND
-   the site's real headline string:
-   `ctx.font='72px monospace'` vs `'72px "Family", monospace'`; widths must
-   differ. Repeat against serif as a second baseline. Equal widths mean the
-   fallback painted, whatever the CSS says.
+2. **Paint proof.** Canvas width comparison with the site's real headline
+   string AND the canonical width-diverse probe
+   `ILil1| mmwWM 0O8B .,:; ’ftfi`
+   (narrow strokes, wide strokes, confusable rounds, punctuation, a curly
+   apostrophe, ligature triggers; extend it with any glyph the subset must
+   carry): `ctx.font='72px monospace'` vs `'72px "Family", monospace'`;
+   widths must differ. Repeat against serif as a second baseline. Equal
+   widths on both baselines mean the fallback painted, whatever the CSS
+   says.
 3. **Synthesis proof (weights and styles).** Enumerate every (family,
-   weight, style) combination in computed styles; each must be covered by a
-   registered face's DESCRIPTORS, read from `[...document.fonts]`. Parse
-   `FontFace.weight` as the raw descriptor string it is: a range like
-   `100 900` for variable fonts, a keyword (`normal` = 400, `bold` = 700),
-   or a single value treated as a degenerate range. Assert the CSS-used
-   weight falls INSIDE the range; never compare the string for equality,
-   which misreports every variable font as a missing weight. CSS 700 with
-   no covering face means faux bold is on screen.
-4. **Network proof.** `performance.getEntriesByType('resource')` contains
-   every expected font URL, each with `transferSize > 0` (network fetch) or
+   weight, style) combination in computed styles, skipping combinations
+   that resolve to generic or system families (those are judged by step 4's
+   zero-resource rule, not here); each remaining combination must be
+   covered by a registered face's DESCRIPTORS, read from
+   `[...document.fonts]`. Parse `FontFace.weight` as the raw descriptor
+   string it is: a range like `100 900` for variable fonts, a keyword
+   (`normal` = 400, `bold` = 700), or a single value treated as a
+   degenerate range. Assert the CSS-used weight falls INSIDE the range;
+   never compare the string for equality, which misreports every variable
+   font as a missing weight. For style: a computed `italic` is covered by
+   any face whose style descriptor contains `italic` or `oblique` (check
+   oblique angle ranges when given). CSS 700 with no covering face means
+   faux bold is on screen.
+4. **Network proof.** Build the expected-URL list from the CSSOM: iterate
+   `document.styleSheets`, collect `CSSFontFaceRule` src URLs (a
+   cross-origin stylesheet throws on `.cssRules`; fetch it directly or
+   exclude it deliberately, never silently). Then
+   `performance.getEntriesByType('resource')` filtered by initiatorType
+   `font` or a font-file extension must contain every expected URL, each
+   with `transferSize > 0` (network fetch) or
    `transferSize === 0 && decodedBodySize > 0` (cache hit); an entry with
    all sizes 0 is a blocked or cross-origin-opaque load, investigate. Fonts
    inlined as `data:` URIs never appear in resource timing; for those skip
@@ -307,7 +325,11 @@ the requested stack, never the face that painted.
    fail whether or not the CSS declares webfonts; that is the
    system-stack-as-identity failure.
 5. **Console proof.** Zero messages matching "Refused to load the font",
-   CORS, or 404 on font URLs.
+   CORS, or 404 on font URLs. Console history is not readable from page
+   JavaScript: capture through the automation harness console reader or
+   CDP `Log.enable` BEFORE the load or hard reload; a pre-navigation
+   `console.error` hook is the last resort and misses browser-generated
+   network errors.
 6. **Computed-size proof.** For each type role (hero, section head, body,
    caption) assert `getComputedStyle().fontSize` at 375, 768, and 1440
    against the intended values. Reaching those widths requires actually
