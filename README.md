@@ -134,7 +134,16 @@ Showcase prompt, and the material checklist.
 ## Install one route per host
 
 The canonical runtime is `skills/design-dna`. A personal installation should
-configure exactly one intended Design DNA discovery route in each host:
+configure exactly one intended Design DNA discovery route in each host.
+
+Get the package first:
+
+```text
+git clone https://github.com/mjcreations123/design-dna.git
+cd design-dna
+```
+
+### Supported route: the installer
 
 First create an isolated Python environment and install the exact locked
 maintainer dependencies. On Windows PowerShell:
@@ -177,6 +186,35 @@ Do not activate a direct skill and packaged plugin for the same host at the same
 time. The package includes both `.codex-plugin/plugin.json` and
 `.claude-plugin/plugin.json` for portable distribution, but those manifests are
 source artifacts until the corresponding plugin is deliberately installed.
+
+### Unsupported route: copy the runtime by hand
+
+Without Python, copy `skills/design-dna` to the host route directly. This
+installs the same runtime, but nothing verifies the result: no doctor report,
+no stale-route detection, no recoverable backup, and no transactional handling
+of a mixed Codex/Claude state. Prefer the installer whenever Python is
+available.
+
+```text
+# Claude Code, macOS or Linux
+cp -r skills/design-dna ~/.claude/skills/design-dna
+
+# Claude Code, Windows PowerShell
+Copy-Item -Recurse skills\design-dna $HOME\.claude\skills\design-dna
+
+# Codex: use ~/.agents/skills/design-dna as the destination instead
+```
+
+Restart the host, then confirm the skill is discoverable before relying on it.
+Updating means repeating the copy, and removing an old copy first avoids
+leaving stale reference files behind.
+
+### Scoping the skill to one project
+
+To limit Design DNA to a single repository rather than the whole account, copy
+`skills/design-dna` into that project's `.claude/skills/design-dna` instead of
+the home route. Per-project installations carry the same verification caveat as
+the manual route above.
 
 See [Installation and distribution](docs/INSTALLATION.md) for update, rollback,
 removal, and plugin details. Use [Troubleshooting](docs/TROUBLESHOOTING.md) for
