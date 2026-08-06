@@ -1,39 +1,39 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "3.5.0",
-  "distribution_sha256": "101470d9c4fd56c348af6b71530d30baff6a61a7a4a451cb42b770055347ef29",
-  "content_sha256": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
-  "codex_plugin_manifest_sha256": "ba20fac70b68c28d8d7717271488d137bf1b015ae3af9aab11512e8b47ff8297",
-  "claude_plugin_manifest_sha256": "5312ff199b6c34b5aaf65facf4028c422123e6d462d9fd040c295dcb935e1144",
-  "sbom_sha256": "02e470ee69a7b60e3f41dd57885f408598df5c3b5ffff0366d6f1d4c01ddc24f",
-  "compatibility_matrix_sha256": "c7cbbcb9523f729a461fe2ccac107b3d0c0e1f6822281435b183fce8f2c568da",
+  "version": "5.0.2",
+  "distribution_sha256": "bf8a25cdd7cafa663ca034b244b35f04b3f90d222b11928d42cbdeb1eeb8d6aa",
+  "content_sha256": "e2370c6bad55fd89b6a44768fac6c8d5068c953afdf1b5f72466ea7a86b1b6d9",
+  "codex_plugin_manifest_sha256": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
+  "claude_plugin_manifest_sha256": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
+  "sbom_sha256": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9",
+  "compatibility_matrix_sha256": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "101470d9c4fd56c348af6b71530d30baff6a61a7a4a451cb42b770055347ef29",
-    "runtime": "569dea14cbdd72aa87fd3dbc73aec9ab28602362dde2bac8f975cad6ad2b4020",
-    "codex_plugin_manifest": "ba20fac70b68c28d8d7717271488d137bf1b015ae3af9aab11512e8b47ff8297",
-    "claude_plugin_manifest": "5312ff199b6c34b5aaf65facf4028c422123e6d462d9fd040c295dcb935e1144",
-    "sbom": "02e470ee69a7b60e3f41dd57885f408598df5c3b5ffff0366d6f1d4c01ddc24f",
-    "compatibility_matrix": "c7cbbcb9523f729a461fe2ccac107b3d0c0e1f6822281435b183fce8f2c568da",
+    "distribution_tree": "bf8a25cdd7cafa663ca034b244b35f04b3f90d222b11928d42cbdeb1eeb8d6aa",
+    "runtime": "e2370c6bad55fd89b6a44768fac6c8d5068c953afdf1b5f72466ea7a86b1b6d9",
+    "codex_plugin_manifest": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
+    "claude_plugin_manifest": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
+    "sbom": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9",
+    "compatibility_matrix": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "b7831b8ad3c9baca3a827993518e37da88ce90325c3afacff2cea4b270d5d63c",
-    "distribution_docs": "a0c40a3508714e420ff4f637b73cdc3e457ecc28c6eec0373b740a17a3a6c349",
-    "eval_contract": "ca87b577dada45e79f596e5ca4fdeffbb5ae293a345e5e031bb1680e1b70e79c",
+    "compatibility_verification": "f770d885e650ddb71594b60fed7a3a51dda1b3501fee2f72c6a3430189a7e873",
+    "distribution_docs": "97b3526c6824331c56858554e929c7e4c37c316208fb534d7d3c51108b7e8601",
+    "eval_contract": "13991bcec02bff58cc4586582bc636b7ebc59d99d469d506ace14f30a37bc3d8",
     "eval_proof": "620b5a607cc75af514649227aef43f7c0f6fceb456bb429b7a8c29e1530624bd",
-    "evidence": "8e1b2a4a42c28c2806bbbcda243221bb5f40a6024f3164f06b87068acb162659",
-    "maintainer_tooling": "360437fef27ae2c7dd24d77a03f1ef080707bafa1c02b6bf51e97c871282284c",
-    "schemas": "da697ae1afe904daaac91c12147b035d300822b00117b09ac901be3fd4dcc081",
-    "tests": "ec1a6c11adfb9bcd55870a3d6c0fa6d9d1e990cbcd4798730de98c01b431dcfd"
+    "evidence": "fc7237df45cd1bc8372ca6dea1511c64cee4fad7ca69ca831398c47dca467d2a",
+    "maintainer_tooling": "cc20ef3e9aee433c2b210d0826c08a70649125a9aa5b51a951701b2947da3299",
+    "schemas": "2dfb712ac5b4b755f23c39ef4fb26a9065a7dc229753b5dfb712df2a84fac85a",
+    "tests": "521465d5e72b134e55f78202e7a8b4874e0db14f482ebf1dd40019a4a3456df7"
   },
-  "release_sha256": "533522804f8130ba87273aaf67c3fac619641e500ac4c442079b7195b654caeb",
-  "generated_at": "2026-07-30T06:17:53.175808+00:00",
+  "release_sha256": "7020fae426f5bf86a0ed7c7570e046760adca667ef34fd8be5a50c6fe6481961",
+  "generated_at": "2026-08-06T21:03:09.117901+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 26269,
-      "sha256": "ed835c3b30136ace22bc4388b4b8d99cd8cd26bd3279d932d9c1e86549acd236"
+      "size": 24754,
+      "sha256": "17b87f7954e06959b51e3130a812f1d46ef2b2945776ee6e18c77559482b60e3"
     },
     {
       "path": "agents",
@@ -54,16 +54,16 @@
       "sha256": null
     },
     {
-      "path": "policy/owner-defaults.yml",
+      "path": "policy/absolutes.md",
       "type": "file",
-      "size": 4436,
-      "sha256": "e8699ace4cbe32b121bdc8d054b5d802759590de8082d8e0bcf9a482af63c2b8"
+      "size": 7234,
+      "sha256": "eabf69f54186b17ec5fe45937c8ae7c4e414b63436ac2e0423378078280d41cb"
     },
     {
-      "path": "policy/type-convergence-watch.yml",
+      "path": "policy/owner-defaults.yml",
       "type": "file",
-      "size": 2471,
-      "sha256": "8a826c83bbacacd327731c5163360800e2b3982a42425002b3df62a03bafa101"
+      "size": 5486,
+      "sha256": "f9edcc5e2eb59b0a8797c4cecf210aefd2b3c55b573d5ea30977b7687d30942d"
     },
     {
       "path": "references",
@@ -74,8 +74,8 @@
     {
       "path": "references/convergence-watch.md",
       "type": "file",
-      "size": 8394,
-      "sha256": "a37c99ca9145e522eb207c407294fef3f6541e44d0409f9882165af19d3aa354"
+      "size": 20044,
+      "sha256": "0e3ab3cfe6dbc03115ffc9b64386a8954eee67e76fa4e4e42376c659f15e8617"
     },
     {
       "path": "references/craft",
@@ -86,122 +86,128 @@
     {
       "path": "references/craft/art-direction.md",
       "type": "file",
-      "size": 9189,
-      "sha256": "0b6ce4203d9f044524c24843f425e478d2f6e302fe0759fc8388da08157a9d00"
+      "size": 8196,
+      "sha256": "cd712e96dba915344cf5e0d56a18eee700ad3bf714f3cfb4ab75438e4a7cc12e"
     },
     {
       "path": "references/craft/brand-systems.md",
       "type": "file",
-      "size": 4221,
-      "sha256": "b8b42c6c8abd180a87ce8fa609e56ccc047a98f23b21c54641399cb70fb49daa"
+      "size": 4934,
+      "sha256": "1469aa3da65b364440e50b900ba779c80c9e9c6ea04ae06142c5c5dfd76e43f2"
     },
     {
       "path": "references/craft/color-composition.md",
       "type": "file",
-      "size": 3397,
-      "sha256": "034661c805c69d40d21c4cd3622223d66afa0ea6359db8243ed1e856994db516"
+      "size": 4906,
+      "sha256": "e107686c39fb602e61ac458f032e67bad343b39af2a192e673e751118cb8cce2"
     },
     {
       "path": "references/craft/content-ia.md",
       "type": "file",
-      "size": 5165,
-      "sha256": "14f7905ac3282fa65eee429b2319ec32f44ab7efccab153dedeb47d1bcde6a51"
+      "size": 6158,
+      "sha256": "da09e87e481f9d18f79456404016109f1e22a779d88cf1cf0d586bd4840b8eaa"
     },
     {
       "path": "references/craft/creative-exploration.md",
       "type": "file",
-      "size": 19521,
-      "sha256": "d89e58a9e05f908525d1c383a50ce598531e67eab9c79e44b9e2066fd2656999"
+      "size": 11512,
+      "sha256": "8931a39d6f92af8c36f7f0c2cefabba9942db63b3be4adaee83a181d46b65dfd"
     },
     {
       "path": "references/craft/data-visualization.md",
       "type": "file",
-      "size": 4279,
-      "sha256": "fefc5839fa3962fb7d4a786f8165ceea2d5be41440d5d74c0932f81d4fec7f0c"
+      "size": 5045,
+      "sha256": "5dc30f35d75eed2053f165d37919f052ff4be2bff8e5416715fee372de1edcba"
     },
     {
       "path": "references/craft/design-tuning-passes.md",
       "type": "file",
-      "size": 6652,
-      "sha256": "50dd2f4052c66a3d1589fd3d49c896c5889813c3ea4f1897514080e5516e3252"
+      "size": 5609,
+      "sha256": "5ed66c1284a69675483b3bc991fad11456ea530241d0181f2edf55e605099084"
     },
     {
       "path": "references/craft/editorial-art-direction.md",
       "type": "file",
-      "size": 7173,
-      "sha256": "a484b516eab5272ea153feaf38aad17ac07d759ba68e6cacf10a76ba1f530a99"
+      "size": 7268,
+      "sha256": "48a0d49deb84dbd11913563d71d602982357f990119f778aa45c089073d9e615"
     },
     {
       "path": "references/craft/expression-energy.md",
       "type": "file",
-      "size": 8796,
-      "sha256": "a1c1b9251cd1bfabeb28b2f9cfea27e5a1eefc22652bdc53bc8a20d0198e43e5"
+      "size": 6939,
+      "sha256": "2a7ece8dba295d75c30b9b3e621ef631114783a828e95268548946e59bcd3526"
     },
     {
       "path": "references/craft/iconography.md",
       "type": "file",
-      "size": 1750,
-      "sha256": "177e9e38890b82752087fc18ec8b33d17f130844300a7167cd319dc091a73b99"
+      "size": 3586,
+      "sha256": "384bec7579e709e31f04a7845cc427961873f25f3afa0bfea53e76893d3e5349"
     },
     {
       "path": "references/craft/imagery-illustration.md",
       "type": "file",
-      "size": 4429,
-      "sha256": "697a88cadeec2fd3293fe1becfee329f6c7857e4e021c8a706ba2591e952463c"
+      "size": 7281,
+      "sha256": "80f76be314a42b9ebac5857603e028c5e1a10e67583109c7b3d50c3a3b7ef7a7"
     },
     {
       "path": "references/craft/layout-density.md",
       "type": "file",
-      "size": 2493,
-      "sha256": "20daf099b380638d81bd37f8105cfa7026651b3ca05beb265fffd0065dad87a1"
+      "size": 4359,
+      "sha256": "7bf3ce03e9a51838c9e48e7c9d7365d7ace34d87bf6f4cf33f7302c0b919b804"
     },
     {
       "path": "references/craft/location-wayfinding.md",
       "type": "file",
-      "size": 3954,
-      "sha256": "946f80ed561e6f107f9955bd3d3fff5e0477e2286a0cef493d6fa30de54f4ab0"
+      "size": 3956,
+      "sha256": "c4bd992dfc54eff20753a58e800044dceaa7ceaa7f82baa2c19279916b73d4c5"
     },
     {
       "path": "references/craft/motion-interaction.md",
       "type": "file",
-      "size": 9915,
-      "sha256": "6f09d3dd76e59190629599deb583219ae15fed93d3278528af83cb0447fc13ae"
+      "size": 10239,
+      "sha256": "0df216e4ba44e74cd0b9fa5afae2cc51f93add43dd6bd60a46122bf9826cac9b"
     },
     {
       "path": "references/craft/responsive-adaptation.md",
       "type": "file",
-      "size": 3315,
-      "sha256": "95e2bcbaa0a2b58a49db2c3c369ee2f16e5c7162d9c0ce2403228cbe1cb915fa"
+      "size": 3943,
+      "sha256": "9942667b74095003538aa373f92a6f8ce1e9f00cd85f57668cd2dd429399a138"
     },
     {
       "path": "references/craft/route-family-art-direction.md",
       "type": "file",
-      "size": 9670,
-      "sha256": "90fa58a85e42b06cb2fce97be429469392b81500816515424a8ba498f472ecde"
+      "size": 10144,
+      "sha256": "18a55b9845e4d3383ff969c5706c28539170f7bddd3980cf7fdecbd98b7cbee5"
     },
     {
       "path": "references/craft/systems-components.md",
       "type": "file",
-      "size": 10755,
-      "sha256": "a6f747b412129648776d0e4418519f8f5e43804f21ffabd324152aad52919b7f"
+      "size": 11090,
+      "sha256": "af099e194f82088e8087132d6f9b6f727bc0bce2d50743017d7fe290eb3b32a6"
     },
     {
       "path": "references/craft/typography.md",
       "type": "file",
-      "size": 11908,
-      "sha256": "e33c3ff8a120adc46a564932dc1e246bdc351a935ef8d62e43721d28a227f08e"
+      "size": 22466,
+      "sha256": "3b8eb40c19ff95c4c6a025d543c4c1888d8d41ec1ff219d30f9d3349f54aa35f"
+    },
+    {
+      "path": "references/creative-freedom.md",
+      "type": "file",
+      "size": 10118,
+      "sha256": "33824a3ab8afc1699577905ea51e5fd6e417ad2300ed00a6fc73cc12ddcd231b"
     },
     {
       "path": "references/decision-case-studies.md",
       "type": "file",
-      "size": 6029,
-      "sha256": "75d27ed93b4d113a3f61c2e75f1ca7911524ef418aad2662a655626c56aac801"
+      "size": 6235,
+      "sha256": "744720d07edfe4a55037b58321ab123c9ab91a94e15a46fefaaad763003f0145"
     },
     {
       "path": "references/evidence.md",
       "type": "file",
-      "size": 3166,
-      "sha256": "728d7bbc3f5f6745aa77e22cd1e9b4be712c60cbd0f6e5961d172a1c69ddb6c6"
+      "size": 3178,
+      "sha256": "b041d465cc680dcd229d867fc4ff65488383cdb38ca345be0e0c70ad987a1926"
     },
     {
       "path": "references/flows",
@@ -224,32 +230,32 @@
     {
       "path": "references/flows/messaging-notifications.md",
       "type": "file",
-      "size": 3784,
-      "sha256": "39758582583d01616b132a8e03b2e0549f4e801caffb8824573ae2d7b87115ab"
+      "size": 3950,
+      "sha256": "b3f087b70936e4ceee894a2f7bfe862e90bab3a21cd58d2f9f5e1881ddc56b02"
     },
     {
       "path": "references/flows/privacy-consent-permissions.md",
       "type": "file",
-      "size": 5068,
-      "sha256": "7921a465e29479d7fa8308bc2016f781d073cd35d0858f1e7c9a5213bc042e23"
+      "size": 5526,
+      "sha256": "e13e57b59f0c038484d6a2500041ffa038fc3c99e20a6414107c0ddf08507819"
     },
     {
       "path": "references/flows/service-journey-handoffs.md",
       "type": "file",
-      "size": 4697,
-      "sha256": "955bf665c0ace7842bb1b7ee7de93be2ee06cf9a625d69bf1f780a73b4a0faeb"
+      "size": 4699,
+      "sha256": "2583682c19b351eae25fe9965d7b482dab5c760ee4750ab269f85bbc39008b7d"
     },
     {
       "path": "references/flows/subscription-billing.md",
       "type": "file",
-      "size": 3831,
-      "sha256": "fe209e4f8dea3557287a909012294029bf8f117861f3400b7c8b9be620670da3"
+      "size": 3833,
+      "sha256": "a5cf28ba8dbb4da1102fc7ac6625bb105dc3f8b5e4ed19ab88f66223faccde51"
     },
     {
       "path": "references/flows/support-complaints-appeals.md",
       "type": "file",
-      "size": 5082,
-      "sha256": "dff7b4c707b0d32296fe71dac6456e13b780d69626065224fa3eda2047a87f83"
+      "size": 5496,
+      "sha256": "2ea4f0b5563058a8aab92f3e45097ec32585716d55f88e83b5b596e49763b648"
     },
     {
       "path": "references/modes",
@@ -260,44 +266,44 @@
     {
       "path": "references/modes/experience.md",
       "type": "file",
-      "size": 2478,
-      "sha256": "99b0e8d5f6748ff1727ec83c328cad59bae18c8e1f45c3f3cf96120a50b063d8"
+      "size": 3285,
+      "sha256": "c5edacc9424a3ce7fe62dfd2241574a20c1a3107a32432e39e54eea967dc0661"
     },
     {
       "path": "references/modes/operate.md",
       "type": "file",
-      "size": 4207,
-      "sha256": "579c3c9803c9ab5836ba28390b9b22bf710626d7899296b61dbc42564015f7a0"
+      "size": 3836,
+      "sha256": "c7115cdc77a135f5618164b084d364d58d4c88b057fdd911b3918c984b9a7d6f"
     },
     {
       "path": "references/modes/persuade.md",
       "type": "file",
-      "size": 3875,
-      "sha256": "8f2986e20498a06c349315bc4c6d075789d7b2fd9e1e8c13f40d262833dc3a03"
+      "size": 3758,
+      "sha256": "2ed3e4221f08c9703c0d7bae6505535ce4ba3ec8ad03e4310fa5067ade518043"
     },
     {
       "path": "references/modes/read.md",
       "type": "file",
-      "size": 2535,
-      "sha256": "d517bc9440f764ef5ab79f3f34e60c893a18f55505a5d2184137524fe1375c56"
+      "size": 3059,
+      "sha256": "7980a55ad8e2e4acd49938e3ee60f884f61e36de588e01b2fb4eb50b143c1359"
     },
     {
       "path": "references/owner-policy.md",
       "type": "file",
-      "size": 1820,
-      "sha256": "932e5844ccd3897144d8eaeeedf8b20cecc1570d1cb9cb186c5cc402fd2cad18"
+      "size": 2407,
+      "sha256": "263ae484921c461c3e639087ee94e03004636d665915531c819325e0d497fc23"
     },
     {
       "path": "references/platform-claude.md",
       "type": "file",
-      "size": 1402,
-      "sha256": "229cfabf644afd71c5e8e41d544b59685256fec4ac39b220404763c3cafaa672"
+      "size": 1412,
+      "sha256": "700ed022b03dc0eca80c315ed8d03a565ec94487ec9efd38d4703a0a2529a54f"
     },
     {
       "path": "references/platform-codex.md",
       "type": "file",
-      "size": 1130,
-      "sha256": "5ebabe8b0f17bfc7b457fb5e86bfe8183c031e8dbd6dc77f22934df2d20c1d42"
+      "size": 1142,
+      "sha256": "96564f8e7c031dfb26783b5ed50a0e866b4ad7e79787f3af556c68a58d55da58"
     },
     {
       "path": "references/quality",
@@ -308,26 +314,26 @@
     {
       "path": "references/quality/accessibility-baseline.md",
       "type": "file",
-      "size": 9823,
-      "sha256": "cde19eff7d678f3722fe8741208f1e7d76c9b75ab1d88625f408b5e19ab13c44"
+      "size": 9847,
+      "sha256": "c578413d32ba5ec0568e609a134425b761d0eda5d7063a43e10a5dc6711d9d7b"
     },
     {
       "path": "references/quality/asset-integrity.md",
       "type": "file",
-      "size": 11026,
-      "sha256": "6c712489831ae2e3f4a7a9ce724c775412ff1954cd9f22cdf2527bb5c9694244"
+      "size": 13187,
+      "sha256": "cdb194acd09ebfa886cb04da70b77b97f2e9d726d5395b8c6ba793c34d3b7f98"
     },
     {
       "path": "references/quality/content-discovery.md",
       "type": "file",
-      "size": 8489,
-      "sha256": "91ef5cbcf104a172879dc8f9ffac7e8241bb308ce97c5e138e18c888f514cdf9"
+      "size": 9231,
+      "sha256": "08886aa2984b7fdf39f750390868dd714b52249602322ded0c8a8f5fd3c8bd60"
     },
     {
       "path": "references/quality/critique-and-expert-review.md",
       "type": "file",
-      "size": 3068,
-      "sha256": "590ea4a7e9b9f5c2c149a1e61c0927b89826c598796ef300809a62b4870d9e6d"
+      "size": 3836,
+      "sha256": "8b78f9b8c3424f9fb3001ad9548ee1bd3cb3c3069dc549cd51c2445cd4d3c695"
     },
     {
       "path": "references/quality/cultural-context-review.md",
@@ -350,20 +356,26 @@
     {
       "path": "references/quality/engineering-verification.md",
       "type": "file",
-      "size": 23616,
-      "sha256": "01be0b992e68cde8b0b15316bf5f43d31153b9d8cb797dfcf5cceb196e9b976e"
+      "size": 25607,
+      "sha256": "025ebee45bf3b23025a71ad1dfb175fcadb4eb04bf8b153a44490038dea9e85c"
     },
     {
       "path": "references/quality/evaluation.md",
       "type": "file",
-      "size": 5615,
-      "sha256": "4ade8593682fbd55f8a6ccb9c8bdbbd204a2c992946321727e69e34f16bd68c3"
+      "size": 6140,
+      "sha256": "1cbdc5b1be4c5b5489780a6744d98726458eb1ec2eb781ca4a7d89ff6c615d77"
     },
     {
       "path": "references/quality/finish-polish.md",
       "type": "file",
-      "size": 6877,
-      "sha256": "1143d72992bf1e291be1c0124ac9cb34576e1303349ab856026a94bf8bac668a"
+      "size": 6953,
+      "sha256": "5dd2e936d7a655cd7882f6c74cd4754a65115f3ab3ac20b3f5143d7bed8ca4fd"
+    },
+    {
+      "path": "references/quality/ledger.md",
+      "type": "file",
+      "size": 2908,
+      "sha256": "c9c8d2be80a225c5fe4ab60e20a7f86fffcd98b81575566f1683f1276abf1b03"
     },
     {
       "path": "references/quality/localization.md",
@@ -372,28 +384,46 @@
       "sha256": "9ecb72983913466a0a6fab33134f6a259767dfea9e20b9bbb75bc375879479e5"
     },
     {
+      "path": "references/quality/parseable-text.md",
+      "type": "file",
+      "size": 9064,
+      "sha256": "3aa6c3ddfc0da1aa91d9df06b111fab603a099c122e863685e429b99badf9f94"
+    },
+    {
       "path": "references/quality/performance.md",
       "type": "file",
       "size": 4157,
-      "sha256": "5ea0eeb7fb58962e8b109389cff676e82e1c999e085d9ab5429203f9fbbe85eb"
+      "sha256": "c4bd854edd0be9129057a349f81842495d664bc6763e8b1213be3adc8c2c31e2"
     },
     {
       "path": "references/quality/production-readiness.md",
       "type": "file",
-      "size": 3999,
-      "sha256": "ffe662797957d15a78c736731991355f9fdd61797dbb8d8ed97942d9d55805e4"
+      "size": 4009,
+      "sha256": "66bf9106bbf19e958ca5cbfcb0b1675be62e71f06d2a6e39d281b2f70e477396"
     },
     {
       "path": "references/quality/proof-to-build-fidelity.md",
       "type": "file",
-      "size": 4348,
-      "sha256": "2298c0859eff664f007c393970ec336138ba43bd803adfeb135681cd55716655"
+      "size": 5143,
+      "sha256": "61cb77b1400d740be3e242d11590e9f6ebb138158e6547205c26c1cc05881500"
+    },
+    {
+      "path": "references/quality/render-comparison.md",
+      "type": "file",
+      "size": 4123,
+      "sha256": "012511515ff42faa64bf1f79da1a185a71adba6f07d719e24f7fe23cf068804b"
+    },
+    {
+      "path": "references/quality/render-harness.md",
+      "type": "file",
+      "size": 6675,
+      "sha256": "5630dc8962c1f68d42a9276fddf48d6f7d2446e803cdafcfbd6ca0850eb7d6d0"
     },
     {
       "path": "references/quality/research-user-validation.md",
       "type": "file",
-      "size": 7340,
-      "sha256": "94d88421ffeefee0b194dac12557b68343ded92f4c94c984a857dde69290cbc2"
+      "size": 7655,
+      "sha256": "6eb7e959ce5f4b49a9d01a5f91edb4f23de62a485acea4a2b1f0f5447d82ca7c"
     },
     {
       "path": "references/quality/review-severity.md",
@@ -404,8 +434,8 @@
     {
       "path": "references/quality/specificity-review.md",
       "type": "file",
-      "size": 14019,
-      "sha256": "640df2dc3c17a17d1a01de6d20a84f9afc714f5b2eb714b0b9fa377baf4c672a"
+      "size": 13415,
+      "sha256": "a9244b4f03bf1afc134775d6b43c2232f5227ba684a3f7c50de97170c1385202"
     },
     {
       "path": "references/quality/tooling-adapters.md",
@@ -416,8 +446,8 @@
     {
       "path": "references/risk-rubric.md",
       "type": "file",
-      "size": 15045,
-      "sha256": "0c44dd2483c88bfe27515e6733306ef6cc65ea1608ace71dddb87300c4034be2"
+      "size": 15250,
+      "sha256": "d7bd961d2115e65321c7545bb468987bdbd069ebbe08901001ee3b8bcef43e9d"
     },
     {
       "path": "references/verticals",
@@ -428,26 +458,26 @@
     {
       "path": "references/verticals/ecommerce.md",
       "type": "file",
-      "size": 3283,
-      "sha256": "ff62d6c5c2e502c0f62d2693886b0447b4d77a3d547b449f99b6d19ef7e9ba9e"
+      "size": 3467,
+      "sha256": "fd568053b5ea101d15257c810b61702823c34d4b7afcbbc2dc872ed25f96f181"
     },
     {
       "path": "references/verticals/editorial-publishing.md",
       "type": "file",
-      "size": 3078,
-      "sha256": "fcfa964efde1cc18618d34317e3eff3fbd8e9093d386e5869969ba950536e207"
+      "size": 3181,
+      "sha256": "8cdbb9d123f998cbfbe6c556507f6a46733c4cccc8b87651d91aad7e7f324055"
     },
     {
       "path": "references/verticals/education.md",
       "type": "file",
-      "size": 3008,
-      "sha256": "cfaadb42e143d204a22dedc58c6779a410dbc7c836efd1f521805a48ace7c982"
+      "size": 3197,
+      "sha256": "467150a2252e4fa2098edd8a340b04c201849160afe96f5426a1a828a13df74a"
     },
     {
       "path": "references/verticals/local-business.md",
       "type": "file",
-      "size": 7065,
-      "sha256": "2e77620069c73ca5958d12c1393882dff05cb33716e7584e02f443d82554672e"
+      "size": 6447,
+      "sha256": "f6cbdd973822c94d44a7124017b5a4751656b36212d437b3601f7cd5d2a0c5d3"
     },
     {
       "path": "references/verticals/marketplace-community.md",
@@ -458,44 +488,56 @@
     {
       "path": "references/verticals/nonprofit-fundraising.md",
       "type": "file",
-      "size": 2744,
-      "sha256": "bb016f271435f09cd31d81b5861321012a5a4a911bd23d8bb8c98d3d63e4e72b"
+      "size": 2792,
+      "sha256": "3084121890cdd23c07c078364277d7f8317ac1d8db2c5fd398746ae48ad5828a"
     },
     {
       "path": "references/verticals/place-community-publication.md",
       "type": "file",
-      "size": 7959,
-      "sha256": "2af411bd047ec6aa680af24d556f40f7c13e5da84cac6402ec02a0643128a1ed"
+      "size": 8389,
+      "sha256": "397478e9d71f106ee511a25bc611f4237322cecef93b6f03b7585f63dc4d5da8"
     },
     {
       "path": "references/verticals/portfolio-case-studies.md",
       "type": "file",
-      "size": 3023,
-      "sha256": "095a62ad5da670c338a7890353a80ed1441320a8e775b3b827437f084de3b032"
+      "size": 3115,
+      "sha256": "af41162571ceed0d799881ecaa791e13bea3c05fdbd2e60dc5a1d816b4f8eb54"
     },
     {
       "path": "references/verticals/software-product.md",
       "type": "file",
-      "size": 4847,
-      "sha256": "9428b9ebaf472bb076e0c2d2737fe129a97c4feaf5c563779d9c260da982f591"
+      "size": 5405,
+      "sha256": "31b2726b490b6ddf5ab818d417ee2ebe5f2674afadee4bd5c75a0e371f663d21"
     },
     {
       "path": "references/verticals/travel-reservations.md",
       "type": "file",
-      "size": 2902,
-      "sha256": "a19c85cc0873af8e2e1e8ca124cf429c993ec6890e4f1333d66326196d03a76e"
+      "size": 2909,
+      "sha256": "38a2ea2a869ae05d1fe78e295d9b86570b34c87acb5b7f0458ad07270b6cfd01"
     },
     {
       "path": "references/workflow.md",
       "type": "file",
-      "size": 21230,
-      "sha256": "74062864f101833a1d72571ad3adf4ee0e3102f8d4c469685ad85e12f3fd3f34"
+      "size": 23743,
+      "sha256": "6425a63aef1ad920502424af5f828a8ea6701358bfc0e3ced74b6b7fbe5c0439"
     },
     {
       "path": "release.json",
       "type": "file",
-      "size": 81,
-      "sha256": "8b6fb8efe4f78e8fd423a7baa69a00169f679ecc2b6a42b9aba096b5dda122df"
+      "size": 80,
+      "sha256": "afe5e852634ab4c786116bbb23ffd3f9ca4c0ef9aa5967d61840ad1b656970b1"
+    },
+    {
+      "path": "schemas",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "schemas/render-review.schema.json",
+      "type": "file",
+      "size": 59585,
+      "sha256": "975b10d49ac8a07e4769b773fecd46e14198fca7ee1bc5749ee5edb5f78d6c10"
     },
     {
       "path": "scripts",
@@ -506,38 +548,38 @@
     {
       "path": "scripts/compare_render_reviews.mjs",
       "type": "file",
-      "size": 64951,
-      "sha256": "76927f4fecc2c87774d301e519a63492e7d4620423aa3d0c58a0ee5958973d1b"
+      "size": 67936,
+      "sha256": "f1b139885d1c9ef6f8ca978bca1a31893746d4cad0b6d975abd9b207c557274d"
     },
     {
       "path": "scripts/font_audit.py",
       "type": "file",
-      "size": 93148,
-      "sha256": "a05970dea9e04cfb0fd0a2b354b7b8add186a3979cd162da064f9cb241a69a20"
+      "size": 91662,
+      "sha256": "6cc8614760dce8fd8f7d4d2616054417b43407003b2facaf8f19d4a3bfdf5eb0"
     },
     {
       "path": "scripts/init_project_state.py",
       "type": "file",
-      "size": 311007,
-      "sha256": "033c014e4c75fb84332f44e686f485af1e6ec7b67fbf063dc2b9d9ad6366e43b"
+      "size": 349622,
+      "sha256": "5b72f75ad5de970bd11debd2c0a9d07a1436211065a8230ca9027d5ebb60e584"
     },
     {
       "path": "scripts/rendered_review.mjs",
       "type": "file",
-      "size": 167644,
-      "sha256": "aa71b1f64de5b82eb6fb8f1c782d2f79e90210191bc1a8575408a31cb26fdccc"
+      "size": 182478,
+      "sha256": "f35905b5cffc8ee971338e69696f8422ee391f7b93e7b39df58286ba5e9bf53b"
     },
     {
       "path": "scripts/route_family_audit.py",
       "type": "file",
-      "size": 98364,
-      "sha256": "8d83aaaaf69019562e5a7acffba10c9b8e4a3fcf798d8eb0479ec8ecb5e22c80"
+      "size": 119739,
+      "sha256": "5567a0962bf2bb552adfe00340be1994f5de2933f3e5f60727c7da5ab6aecf1b"
     },
     {
       "path": "scripts/scan_project.py",
       "type": "file",
-      "size": 189261,
-      "sha256": "2fb8c4bae0c139dbe09805233ba31a1431c4bc01301e72bc8e393a9ccebfa802"
+      "size": 118007,
+      "sha256": "62d2c77ccdf255c885aec4a666100a2ae8a65b510055e0044f9aabccfe562b6a"
     },
     {
       "path": "templates",
@@ -548,8 +590,8 @@
     {
       "path": "templates/asset-manifest.example.yml",
       "type": "file",
-      "size": 3039,
-      "sha256": "bd28ecfda4d6f34ad6e6f9f9ae81bd55966da5f058617b9388edf909e47cde62"
+      "size": 3200,
+      "sha256": "6cff090764e0d851e772f0d1b643e6267ece926b618e7a3cdd1ba48e3adebc7d"
     },
     {
       "path": "templates/asset-manifest.yml",
@@ -560,68 +602,86 @@
     {
       "path": "templates/claim-ledger-template.md",
       "type": "file",
-      "size": 1413,
-      "sha256": "f49c044dfb8b31849980d1d2d68cc2a965f055e41295a09a6f7d7858b6314564"
+      "size": 1496,
+      "sha256": "c1345f2fcaddb853794fb1d6aa064524e3a769308b2774d316aeee42dc55f067"
     },
     {
       "path": "templates/design-context-capsule-template.md",
       "type": "file",
-      "size": 1678,
-      "sha256": "f46b7c06649202000a682f3116b04f14b20e2138ddf6d9c2c7876d92127fd958"
+      "size": 2090,
+      "sha256": "a2549b4074efd9053c81acd79dca8495fd8f51c633659a80065b9c5dff8e31bb"
     },
     {
       "path": "templates/direction-proof-template.md",
       "type": "file",
-      "size": 5397,
-      "sha256": "dcfc665c35cf82b63295775a2237fa153e0dc76376bbce2d71bdc1a8ba264df3"
+      "size": 1540,
+      "sha256": "38d9fbade1526e3b960857cc26898f8666bed20aa6a19f57bdd79b2ce70b7d96"
     },
     {
       "path": "templates/direction-template.md",
       "type": "file",
-      "size": 12571,
-      "sha256": "160bf03fef6d8de844dc1107e189b26c1f55ffb76218a3815011444804c4364a"
+      "size": 2320,
+      "sha256": "db79fa602eebb4ff8226e546695404e6a928490a621d43fe7278029bfa0d1b87"
     },
     {
       "path": "templates/exploration-template.md",
       "type": "file",
-      "size": 4782,
-      "sha256": "6325f9123f925134adc29e5750ad01edfc28d88d0a83fbae9d91b436363d0e48"
+      "size": 1621,
+      "sha256": "0bf38844afe920f1c0a6d758ba8a9d6963a52faaf00733d29a3e346b106dac8b"
     },
     {
       "path": "templates/expressive-perception-template.md",
       "type": "file",
-      "size": 2065,
-      "sha256": "a6e1bd5a2693e49892d09c2ace158961c9691b3d98165062210a7d64cbd28979"
+      "size": 2315,
+      "sha256": "78eb6bc2e2323954b339492dd5996f29ad39e3ec33176ea2e5513c8c435fb5da"
     },
     {
       "path": "templates/handoff-template.md",
       "type": "file",
-      "size": 1979,
-      "sha256": "ea57cc32f30a4ea32afe05565d8097751cfb830f7c65202b2b78d5c1ee5754ce"
+      "size": 2656,
+      "sha256": "985b78a90210648a2709d023482825862473af737395adee41fa200127adbaa7"
+    },
+    {
+      "path": "templates/ledger-template.md",
+      "type": "file",
+      "size": 700,
+      "sha256": "79585202b16dae4ee295e01a6e2df2b546db7b1c82884583450e110a5338eb39"
     },
     {
       "path": "templates/motion-asset-contract-template.md",
       "type": "file",
-      "size": 1382,
-      "sha256": "c312bf02012d8cebaffe49a61efd622120fb3e5b2ad401c95dbdb950931fbc0b"
+      "size": 1916,
+      "sha256": "1c43c0a86eee6e82ee60bbce6118f0fd6622d50011bd9799b3e34de2372559ca"
     },
     {
       "path": "templates/owner-policy.example.yml",
       "type": "file",
-      "size": 3938,
-      "sha256": "83ce5a263f1e8a32e7493901f489afc38a7a759eb99eb6c92655ae2676a4641f"
+      "size": 1890,
+      "sha256": "dd59e4f5b7f73cb388a6ab778755bd05924cb1a513c513b9713dfc2052c05f7a"
+    },
+    {
+      "path": "templates/placeholder-register-template.md",
+      "type": "file",
+      "size": 666,
+      "sha256": "0de8652535829a844f1f525995b3cf048d9169bc0a0d82a8836c887715897cc3"
+    },
+    {
+      "path": "templates/preship-gate.md",
+      "type": "file",
+      "size": 4891,
+      "sha256": "05721ceb752599e9234c3ec4013a3af4be96e05e9fc1cd826f449baee496c08c"
     },
     {
       "path": "templates/proof-build-delta-template.md",
       "type": "file",
-      "size": 2091,
-      "sha256": "f771ed639486a47bbfe1ef43766654af8074b8ef5c076e2e457dc0948137d5f0"
+      "size": 2270,
+      "sha256": "b991496e4170c265d0fa0658127e91033fb1b0e1047e120b39633cc5f2cad9d2"
     },
     {
       "path": "templates/route-family-template.json",
       "type": "file",
-      "size": 5041,
-      "sha256": "562c0785485a6e1edda80b61184a61495371096e59bcf5e21d280bf493195852"
+      "size": 4792,
+      "sha256": "a28dbec61f4e280487d0c661de1823a81aa3817450b8ef8033022c2814e0522e"
     },
     {
       "path": "templates/scan-allowlist.example.json",
@@ -644,20 +704,20 @@
     {
       "path": "templates/state-matrix.example.yml",
       "type": "file",
-      "size": 871,
-      "sha256": "37f988886870db586b19f861328590bdb61d22b68a495c23e79a104ddb608816"
+      "size": 1106,
+      "sha256": "1559bdd085eaafce1a151eca8b1bdb121b977611193b6afbb8f06ae0ec126dcf"
     },
     {
       "path": "templates/user-validation-template.md",
       "type": "file",
-      "size": 4026,
-      "sha256": "200f78161499452311d9137cdf61bea6e18986f1329df4d832d7bbcc25d8e784"
+      "size": 4366,
+      "sha256": "d1735781489ae938c51cff667794b7ef9d838c724aca92910bfe7588051272b5"
     },
     {
       "path": "templates/visual-review-template.md",
       "type": "file",
-      "size": 12349,
-      "sha256": "2c63ee2bc2a1a7290074f6228928bccb8ccd0b78b69d8a47413ff85c12bfaa3a"
+      "size": 1981,
+      "sha256": "bd266b54a751330fcaea46d737e742dabc4b705b37b4a6a87e982ee8cb21ce46"
     }
   ],
   "distribution_files": [
@@ -670,8 +730,8 @@
     {
       "path": ".claude-plugin/plugin.json",
       "type": "file",
-      "size": 546,
-      "sha256": "5312ff199b6c34b5aaf65facf4028c422123e6d462d9fd040c295dcb935e1144"
+      "size": 568,
+      "sha256": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf"
     },
     {
       "path": ".codex-plugin",
@@ -682,8 +742,8 @@
     {
       "path": ".codex-plugin/plugin.json",
       "type": "file",
-      "size": 1117,
-      "sha256": "ba20fac70b68c28d8d7717271488d137bf1b015ae3af9aab11512e8b47ff8297"
+      "size": 1173,
+      "sha256": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351"
     },
     {
       "path": ".gitattributes",
@@ -730,8 +790,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 25185,
-      "sha256": "d2a7e6cb349844760b2ef3cf5b6657f6ba83ac097d9ad289db23354ec82c9287"
+      "size": 38220,
+      "sha256": "01665cf205916fb9652199b4e60508956858879fe822ad3290a13d32f36b806b"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -754,8 +814,8 @@
     {
       "path": "README.md",
       "type": "file",
-      "size": 14718,
-      "sha256": "b0a694cb46c0c51a3766e07bec614814e65350272fec25c84bee3df84e5de3c3"
+      "size": 18593,
+      "sha256": "3f358d00b299ac6aa87a67e584e5f1f4d217ec7639c3aa324f4e4136d0567524"
     },
     {
       "path": "SECURITY.md",
@@ -814,26 +874,26 @@
     {
       "path": "docs/QUICK_START.md",
       "type": "file",
-      "size": 10682,
-      "sha256": "ed506656a4f0f60a997dab1ec1971e7b6afe9246e8309d812afc0b6a7ded6567"
+      "size": 9112,
+      "sha256": "60c6d1676e22d27afa98fb479b98b08e0f86cc82a704c3fd2d1ea8aa96f0c22e"
     },
     {
       "path": "docs/RELEASE.md",
       "type": "file",
-      "size": 17146,
-      "sha256": "967d39a34c15bb56e7d463239bcda31dc7f2a750761abefac5cea5d1eda9ac28"
+      "size": 17302,
+      "sha256": "ecb123319fa86227603eb4325326ee657be55e6c7399feef68f64c0c89a0922a"
     },
     {
       "path": "docs/RENDER_COMPARISON.md",
       "type": "file",
-      "size": 4414,
-      "sha256": "c898f3d9b1bf5e8402078f8895dda27e9c7e8b1b77d2eb8da18e7455030e0ef3"
+      "size": 4769,
+      "sha256": "99836295c736d9ac812e275c11c142b0f775e39ee23e2229f14879db451ca3f4"
     },
     {
       "path": "docs/RESEARCH_BENCHMARK.md",
       "type": "file",
-      "size": 16033,
-      "sha256": "ef397a1ef1ac5d686d9a8af7e35cb5363850f51816e8c8c034779b8ca6657261"
+      "size": 16319,
+      "sha256": "0afc6b0e8314881e3c0983baea9a4ac46b98a97df2c005e5566ca9e354606ae5"
     },
     {
       "path": "docs/TROUBLESHOOTING.md",
@@ -898,8 +958,8 @@
     {
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
-      "size": 9672,
-      "sha256": "c7cbbcb9523f729a461fe2ccac107b3d0c0e1f6822281435b183fce8f2c568da"
+      "size": 9970,
+      "sha256": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -916,8 +976,8 @@
     {
       "path": "maintainer/evals/README.md",
       "type": "file",
-      "size": 23378,
-      "sha256": "bc40620e59a07431d313f532d1f7dcefc41b768104abdd492ab22aa7eaf50acb"
+      "size": 23808,
+      "sha256": "727e7582f86b5d8294d3fdfb6ca5dcb75d42f8c79631cc35cc9cee2b0d332f95"
     },
     {
       "path": "maintainer/evals/archive",
@@ -1000,8 +1060,8 @@
     {
       "path": "maintainer/evals/fixtures/behavioral-cases.json",
       "type": "file",
-      "size": 107985,
-      "sha256": "7c806c78cebaaea936aee7160baa0f0544224d3e3ec198849fcd179156b81802"
+      "size": 107952,
+      "sha256": "c2883b057573722a259ea943cf51a0bea410be6ab692ddfbc4135edc2a429547"
     },
     {
       "path": "maintainer/evals/fixtures/inputs",
@@ -1552,14 +1612,14 @@
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-anthology-positive/.design-dna/route-family.json",
       "type": "file",
-      "size": 16765,
-      "sha256": "36111ef587cedeb558ec27e47733b55fe79c0a53fff139bc315d7b4af1176c82"
+      "size": 16619,
+      "sha256": "db3f2d6e109d6df0ea0459b8642be892a2881e7f130d821d190e0ad734893623"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-anthology-positive/README.md",
       "type": "file",
-      "size": 538,
-      "sha256": "5ba96e42f06b8795ae2e1b469d98115c10383f8b0798765dd5b62d5ecd20962e"
+      "size": 608,
+      "sha256": "a707d08edab699eaec37592c8cd1e587513edfb6bbdf8d5136cbce3596e8d14c"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-anthology-positive/data-room",
@@ -1696,8 +1756,8 @@
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-broken-orphan-negative/.design-dna/route-family.json",
       "type": "file",
-      "size": 3280,
-      "sha256": "dfde3d1034f79ddf0c609c5722789905bf8de7f7d6eb224b4114e4cc62de863c"
+      "size": 4924,
+      "sha256": "17badeb1ecda085b1ab06762342052cdb0fba9831ef125e20eacfc8ac6fac970"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-broken-orphan-negative/README.md",
@@ -1750,8 +1810,8 @@
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-hash-negative/.design-dna/route-family.json",
       "type": "file",
-      "size": 8600,
-      "sha256": "f01c64485cd42f38e5c2d2f49e99a4ef82e2f40b9c408ccbbeb48b3aea657523"
+      "size": 11749,
+      "sha256": "4d52856a808c106a7fd52ef332b05f61138ae324b9d0784ffebc16f06212badb"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-hash-negative/README.md",
@@ -1780,8 +1840,8 @@
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-recolor-negative/.design-dna/route-family.json",
       "type": "file",
-      "size": 10470,
-      "sha256": "3185f05c3ebbbf4796c7a42eaf8e2f2c07a54f190a086b06dd8e007aa771adbd"
+      "size": 12045,
+      "sha256": "ea33f70e7b418f37d3c16db9f652300cb75bdffed0fe520dd1b853a4afd814de"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/route-family-recolor-negative/README.md",
@@ -1908,6 +1968,72 @@
       "type": "file",
       "size": 377,
       "sha256": "749338befe6ed1de51ffe8f1a795b9f001cfe1bcfdf0bf4cfbbfd31099cec48d"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/.design-dna",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/.design-dna/route-family.json",
+      "type": "file",
+      "size": 6744,
+      "sha256": "7a642cca4891cb2c895965c074a4a94560f6635bb1f4d32fd45cd93b5e494f77"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/Lakewood",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/Lakewood/index.html",
+      "type": "file",
+      "size": 423,
+      "sha256": "f94030e2be53ad883ca2345dc1cf11452da362d54d490f531d36c431f491d379"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/about.html",
+      "type": "file",
+      "size": 431,
+      "sha256": "fc8ed22280a05bac26c06f39097a2a5b49cb78bb270151f3b265f21b72f56aa3"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/index.html",
+      "type": "file",
+      "size": 404,
+      "sha256": "2b473286cf5f0be78e32b78dc3ca72fc17f9a0934df82941c8adfcbca9ee987f"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/made_here",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/made_here/index.html",
+      "type": "file",
+      "size": 417,
+      "sha256": "f1f3008b4addd28d0dd3a6f32b3edbbd8a47a4ac0be32688c5b2d1d503225045"
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/תורה",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/evals/fixtures/inputs/route-family-safe-paths-positive/תורה/index.html",
+      "type": "file",
+      "size": 405,
+      "sha256": "187a86027b2ecc65cfb3aec05b77ef70a3049c3cd000f39c43aef0ee27741d61"
     },
     {
       "path": "maintainer/evals/fixtures/inputs/rtl-long-content",
@@ -2146,8 +2272,8 @@
     {
       "path": "maintainer/evals/review-rubric.md",
       "type": "file",
-      "size": 18712,
-      "sha256": "90f2ace011098a4141355c92f5918fb7e077278e576077460c7fc36914e43b1e"
+      "size": 20347,
+      "sha256": "bd1b4ad0b00079143b38cdc6c34df30283294c8a281ed1304e6c824bbb499c54"
     },
     {
       "path": "maintainer/evals/schema.json",
@@ -2170,8 +2296,8 @@
     {
       "path": "maintainer/evidence/cards/EVD-001.md",
       "type": "file",
-      "size": 1608,
-      "sha256": "23bab808f02b3f44be712a40169b79bfbf7f32ec7badf44270c18c19aec30121"
+      "size": 3810,
+      "sha256": "b993a690b00b0a73f237c5b0eab9bb88fdde863f0a45a6cd71211b4ff5b9e525"
     },
     {
       "path": "maintainer/evidence/cards/EVD-002.md",
@@ -2206,8 +2332,8 @@
     {
       "path": "maintainer/evidence/cards/EVD-007.md",
       "type": "file",
-      "size": 1500,
-      "sha256": "dbb30ae92bf917a3b245f0e9c6f641aa71b2d3b00ec2368c742f795e2f4a6c08"
+      "size": 1783,
+      "sha256": "c68b89f96f2f67e19c90dcf8026133819c4472af1b8f4534e700ae85fcb48c33"
     },
     {
       "path": "maintainer/evidence/cards/EVD-008.md",
@@ -2296,14 +2422,14 @@
     {
       "path": "maintainer/evidence/cards/EVD-022.md",
       "type": "file",
-      "size": 1647,
-      "sha256": "01c621e5c9aed10fe31cfd9a47b9f29dac2d5134ed0c24168e28a346df6d770b"
+      "size": 1874,
+      "sha256": "0addeda3b61a26c6a012a77d54d71b22c5c972fc42c94a3bd98aa034877912e1"
     },
     {
       "path": "maintainer/evidence/cards/EVD-023.md",
       "type": "file",
-      "size": 1599,
-      "sha256": "1bd9055df5f0ad2169e480b12e342e6790f587802f1b203415a10d08fb45f077"
+      "size": 1819,
+      "sha256": "f924ee47bbe9a6dccc803e3c79b6c057aeabde8aaef92088711911c15c158398"
     },
     {
       "path": "maintainer/evidence/cards/EVD-024.md",
@@ -2344,8 +2470,8 @@
     {
       "path": "maintainer/evidence/cards/EVD-031.md",
       "type": "file",
-      "size": 2335,
-      "sha256": "95cf3134f50d4a02e0fa9f059cd63911bf4763d46412e4feede9236921f8c58b"
+      "size": 2582,
+      "sha256": "1f78b89c3ab07e83f386d4b30c33fa39751edfa1e4f4cdce54cd3efc9ab715bc"
     },
     {
       "path": "maintainer/evidence/cards/EVD-032.md",
@@ -2414,22 +2540,46 @@
       "sha256": "e80df29e5ac4acc64c442ab7bebb5df2d84cf338c445500ca0d644f606c78c89"
     },
     {
+      "path": "maintainer/evidence/cards/EVD-043.md",
+      "type": "file",
+      "size": 4046,
+      "sha256": "12a1f4689dffbb35c1e937beaf48c8ea44c16d5450aa05a39f243e0d2341446d"
+    },
+    {
+      "path": "maintainer/evidence/cards/EVD-044.md",
+      "type": "file",
+      "size": 4102,
+      "sha256": "f75c9b84f3c3c4b589c4b2440c7f269c0e016ca9ced06c3d96ab4ad370ab3658"
+    },
+    {
+      "path": "maintainer/evidence/cards/EVD-045.md",
+      "type": "file",
+      "size": 4023,
+      "sha256": "f230b76682e61498d36e3f56ea2f8464ed0c1210bf64b6127a063a7ec5e7d4e8"
+    },
+    {
       "path": "maintainer/evidence/index.yml",
       "type": "file",
-      "size": 3300,
-      "sha256": "256559f8ed3d4b4a7a8c8d542e6802ec8ff9044663b40e13de569b66bd680384"
+      "size": 3714,
+      "sha256": "9ee26eafb6ee1534a9f422dc399348768c69e1eeb5071475b9daae91b76e2adf"
     },
     {
       "path": "maintainer/evidence/research-log.md",
       "type": "file",
-      "size": 17412,
-      "sha256": "1758bf36f752ad00ee4568b27ac337b106fbb8343bed09858a719552dade8d63"
+      "size": 24526,
+      "sha256": "e02bd0e63c22ece8408b058f9946a78c61fd0902013e406a933e45b0929b3f9e"
     },
     {
       "path": "maintainer/evidence/snapshots",
       "type": "directory",
       "size": 0,
       "sha256": null
+    },
+    {
+      "path": "maintainer/evidence/snapshots/EVD-001.json",
+      "type": "file",
+      "size": 626,
+      "sha256": "26b0fcdbed67d97c6feeec9bb188b922b7216fe44f54c705bfe9e1957ba1d6f0"
     },
     {
       "path": "maintainer/evidence/snapshots/EVD-007.json",
@@ -2458,8 +2608,8 @@
     {
       "path": "maintainer/evidence/snapshots/EVD-031.json",
       "type": "file",
-      "size": 633,
-      "sha256": "9d421194e6d3c1687f6862649ecc50785ca36bcd80c52a741d0d7c54891e5b61"
+      "size": 772,
+      "sha256": "80741916f6052bced650bdc4d6c6f46c2a5f844d7d8969c5d93f2456ee272a8a"
     },
     {
       "path": "maintainer/evidence/snapshots/EVD-032.json",
@@ -2528,16 +2678,34 @@
       "sha256": "a307d77a5f59d057feaccc7964dcc9c8b994ccb00a9038885ee2fb67bdeb20ff"
     },
     {
+      "path": "maintainer/evidence/snapshots/EVD-043.json",
+      "type": "file",
+      "size": 713,
+      "sha256": "46161de6e04fc5ef6cd2897926d35927c1262d33566c3ff6e5919e74d2c7111a"
+    },
+    {
+      "path": "maintainer/evidence/snapshots/EVD-044.json",
+      "type": "file",
+      "size": 687,
+      "sha256": "4c21913a724cf11402165b3e92ba90cd3dfb4cad927812e93a593e8f2acad2e4"
+    },
+    {
+      "path": "maintainer/evidence/snapshots/EVD-045.json",
+      "type": "file",
+      "size": 701,
+      "sha256": "6afda6c8015e539753384680af8bb4e1be5df8e5878f2cc3bcaa2441b9b7be3c"
+    },
+    {
       "path": "maintainer/package-lock.json",
       "type": "file",
       "size": 1835,
-      "sha256": "8f35aab499594a35938ce0915e000a5c71c8b673bf330fdb73c6f88bb005c338"
+      "sha256": "8153c112948e8e8948b41dc60d2c25585a5e8995d9f77e5ebeef60a9907e78b8"
     },
     {
       "path": "maintainer/package.json",
       "type": "file",
       "size": 512,
-      "sha256": "fc03a6b4de04937c2888d9fcf46f6309a5f3a17690f05a40d9f3c2833054dca7"
+      "sha256": "8f95e23273cfe03ef59b85975f39fe52f378eb7e5193c54bde78b1c78c285662"
     },
     {
       "path": "maintainer/releases",
@@ -2573,7 +2741,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "02e470ee69a7b60e3f41dd57885f408598df5c3b5ffff0366d6f1d4c01ddc24f"
+      "sha256": "d9589d9781e2bf70a89dd00ddbd41175298b3e3d53c6ef2df0dc28b2eeda62f9"
     },
     {
       "path": "maintainer/schemas",
@@ -2620,8 +2788,8 @@
     {
       "path": "maintainer/schemas/design-review.schema.json",
       "type": "file",
-      "size": 55152,
-      "sha256": "d34978e6dcffb010474f6ca293b5e75e574c35c2156d9c5a6c5a27259b24d978"
+      "size": 61279,
+      "sha256": "ac58fc39f88c989eb1660cd8b5270b3bec8f6c4cd8673d1ada8bffe733da10e5"
     },
     {
       "path": "maintainer/schemas/eval-result.schema.json",
@@ -2650,8 +2818,8 @@
     {
       "path": "maintainer/schemas/font-audit.schema.json",
       "type": "file",
-      "size": 28874,
-      "sha256": "36739f8a82aae9d10885fef4cda50d997685b5424b10e6656e0388b9c93014dc"
+      "size": 27234,
+      "sha256": "00313872c26da769964393536f5889085e7cca9696c070dfe16dc571f6b35eca"
     },
     {
       "path": "maintainer/schemas/install-lifecycle-attestation.schema.json",
@@ -2674,14 +2842,8 @@
     {
       "path": "maintainer/schemas/owner-policy.schema.json",
       "type": "file",
-      "size": 3474,
-      "sha256": "1f84bf2461a70a012ae48e25999494acb761423311f83f84b56f8f7e8425f0e0"
-    },
-    {
-      "path": "maintainer/schemas/pattern-history.schema.json",
-      "type": "file",
-      "size": 3361,
-      "sha256": "7f9fda5e6eb53420818014a58ad049350eb578d79f0567b6ad6960b1922a1715"
+      "size": 1049,
+      "sha256": "92298983753bcb5e677bde01c981346b0ac997e7ad7ed5759f7ee9fe6fcbdfb1"
     },
     {
       "path": "maintainer/schemas/plugin.schema.json",
@@ -2698,8 +2860,8 @@
     {
       "path": "maintainer/schemas/project-state.schema.json",
       "type": "file",
-      "size": 2568,
-      "sha256": "239b53c855bbdae00cde235a7ae8e3d26167c372f7266a622080c87ad7889eb6"
+      "size": 4685,
+      "sha256": "e49a03f7942267ed7117175ec1b4d8da0c0149e2d72c95c431fcf29eaad769b1"
     },
     {
       "path": "maintainer/schemas/release-package.schema.json",
@@ -2728,20 +2890,20 @@
     {
       "path": "maintainer/schemas/render-review.schema.json",
       "type": "file",
-      "size": 53480,
-      "sha256": "eec8c0e60854b9913d589b0a651329c9a9344a40c46c6fda25750d2f10282198"
+      "size": 59585,
+      "sha256": "975b10d49ac8a07e4769b773fecd46e14198fca7ee1bc5749ee5edb5f78d6c10"
     },
     {
       "path": "maintainer/schemas/route-family-audit.schema.json",
       "type": "file",
-      "size": 21498,
-      "sha256": "a40b07e7058a635a361473d567cb0dea254d8ee592f09a1e9618e9b374e11936"
+      "size": 22277,
+      "sha256": "840c303bfcddbf45c05cfe3ceec1dc37dbd56719fc6cd4e9b1910ccf2ae3c660"
     },
     {
       "path": "maintainer/schemas/route-family.schema.json",
       "type": "file",
-      "size": 8841,
-      "sha256": "ceecc719d8b43bdabc825cd2e9095f76124ec4c513639bc8a8562c43e3dbf125"
+      "size": 10232,
+      "sha256": "e7916a15b48c5aa362682d0c75585cf36c29a703734000926a1eb2e9c7e75732"
     },
     {
       "path": "maintainer/schemas/route-verification.schema.json",
@@ -2764,8 +2926,8 @@
     {
       "path": "maintainer/schemas/scan-result.schema.json",
       "type": "file",
-      "size": 20502,
-      "sha256": "011a2a0d76643210a0ef089515148425b69af97f6c0f75f6103d1050ea66589d"
+      "size": 19897,
+      "sha256": "936bbb47188bbc6bda957c9a6ef1cba040533136e0a41cb6e6d74819a238441a"
     },
     {
       "path": "maintainer/schemas/test-attestation.schema.json",
@@ -2784,12 +2946,6 @@
       "type": "file",
       "size": 1695,
       "sha256": "3c42e47bc92cfb896364b67db932b260f5229f4eae5fac53e04c5d059f453593"
-    },
-    {
-      "path": "maintainer/schemas/type-convergence-watch.schema.json",
-      "type": "file",
-      "size": 2754,
-      "sha256": "28621121c777a266c6468d5c842b5c26df1cf5e39d3319445643bdd9dd73cc80"
     },
     {
       "path": "maintainer/scripts",
@@ -2824,8 +2980,8 @@
     {
       "path": "maintainer/scripts/audit_package.py",
       "type": "file",
-      "size": 332913,
-      "sha256": "01ecb1adc406d8955c5bc9a5a998cd9d6978efe0b27991aed9d30ea53976ee6a"
+      "size": 346598,
+      "sha256": "5ef09c2fb8e6372df19b2bea41b7428f7776e95b915f08f830d0ecfd3207406b"
     },
     {
       "path": "maintainer/scripts/build_manifest.py",
@@ -2854,32 +3010,26 @@
     {
       "path": "maintainer/scripts/common.py",
       "type": "file",
-      "size": 14137,
-      "sha256": "5b73c5628c62a29f72f7dfebff0b42b872521663ecfe264f5bdc1fb6c3444d21"
+      "size": 16458,
+      "sha256": "6a21a6bab45c576cd875fe80023f65ca6dd28992dec115a6f426b190591ca993"
     },
     {
       "path": "maintainer/scripts/detect_routes.py",
       "type": "file",
-      "size": 21060,
-      "sha256": "2940b38ad73543ab0ad107251cdb152f4ab355ebaee43f05e99f69c5578aa05b"
+      "size": 19476,
+      "sha256": "2a302fde0ab191c3bd7c1f0e7c4af1b1abe80755f31e52b8fca9a4fd809ec226"
     },
     {
       "path": "maintainer/scripts/manage_install.py",
       "type": "file",
-      "size": 100360,
-      "sha256": "36bd72586b7bd85cc2121c2c74681d3ecf166a5ff18d1c39244fc6bc4daa677a"
+      "size": 99767,
+      "sha256": "131aeff04e4cde0cbbe7c6a83caa7be1f1b051dd7759210002f28aded09e7e04"
     },
     {
       "path": "maintainer/scripts/package_release.py",
       "type": "file",
-      "size": 29296,
-      "sha256": "0e46e599b1bf136d6482d85fb9118fe7039e09e0520ba5836b8b31cd0e00ad24"
-    },
-    {
-      "path": "maintainer/scripts/pattern_history.py",
-      "type": "file",
-      "size": 16774,
-      "sha256": "0fcacfa6459fafeb38d52cbb2f0bf6a5f00bac5a52f8a155a30f462db4add9bf"
+      "size": 32133,
+      "sha256": "8b400808638948147c7cbce3991b51ffa47bc839cd05f96eaa527a89460255dd"
     },
     {
       "path": "maintainer/scripts/run_evals.py",
@@ -2896,8 +3046,8 @@
     {
       "path": "maintainer/scripts/validate_evidence.py",
       "type": "file",
-      "size": 39555,
-      "sha256": "2d0c305b97809c25d81aebc7d7a2d12343a724dd08014c424114f1bfc6db50b2"
+      "size": 39413,
+      "sha256": "a61dbce7d3789f1e21085c3d52ab289d4b6a346aa5ab257e9c8478d42a4bfd9a"
     },
     {
       "path": "maintainer/tests",
@@ -2906,16 +3056,52 @@
       "sha256": null
     },
     {
+      "path": "maintainer/tests/fixtures",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/tests/fixtures/render-review-schema3-template.json",
+      "type": "file",
+      "size": 103250,
+      "sha256": "f7be1b045c907dbf18d821bd5c4519960c38f90c4583fcf6f2cf5f71d3a24456"
+    },
+    {
+      "path": "maintainer/tests/fixtures/rendered-review-internal-horizontal-overflow",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "maintainer/tests/fixtures/rendered-review-internal-horizontal-overflow/index.html",
+      "type": "file",
+      "size": 1131,
+      "sha256": "37abc083dcf8d00b850f26414264091ca03b68f05bc7edea4bc702ad0f1bb5c5"
+    },
+    {
+      "path": "maintainer/tests/fixtures/rendered-review-internal-horizontal-overflow/styles.css",
+      "type": "file",
+      "size": 737,
+      "sha256": "1581e9b076f144a94b98f8f67bb119715da2788bfa3c91227b307e81c1f58d46"
+    },
+    {
       "path": "maintainer/tests/test_adversarial_eval_contract.py",
       "type": "file",
-      "size": 76212,
-      "sha256": "1961ae77d6dc46302a391d86019effc405487a4f56746664cb25ba690c6fe9da"
+      "size": 89570,
+      "sha256": "5dc6e0aadfac9202a9d80b5ed49866d0d793787b3948941a815ed294c5b6109d"
     },
     {
       "path": "maintainer/tests/test_codex_plugin_attestation.py",
       "type": "file",
       "size": 18231,
       "sha256": "9ce91b4c5df2ffde23bd619ee332b4c1d3e36915a0cd492d7bbea008f4340f33"
+    },
+    {
+      "path": "maintainer/tests/test_creative_freedom_contract.py",
+      "type": "file",
+      "size": 19397,
+      "sha256": "2e3df7ef547d272ac74e5ecfee16aa1c06082b2c1c484899c6d69416c6dc50c1"
     },
     {
       "path": "maintainer/tests/test_dependency_preflight.py",
@@ -2938,8 +3124,8 @@
     {
       "path": "maintainer/tests/test_font_audit.py",
       "type": "file",
-      "size": 34736,
-      "sha256": "f6f6269b9c9c30de82a3cdd4a8669607ce6ba8712ad15af7bdeefda6de782f6f"
+      "size": 43148,
+      "sha256": "7e6c3f36d5fc9162bf0a22b4d70374ad133e4c8b2948b437bd6b69754cb29b29"
     },
     {
       "path": "maintainer/tests/test_install_lifecycle_attestation.py",
@@ -2950,14 +3136,14 @@
     {
       "path": "maintainer/tests/test_maintainer_tools.py",
       "type": "file",
-      "size": 89511,
-      "sha256": "7e24fd36af2a8825434875289ee971bd6320daf6eda147579fffe560f20edf93"
+      "size": 87541,
+      "sha256": "21f28365eefc58e20ab291242c67fbe488d77dd2da8336ba93117bc29fa289a4"
     },
     {
       "path": "maintainer/tests/test_manage_install.py",
       "type": "file",
-      "size": 37983,
-      "sha256": "64eac608e7d3f490b606b749ed019a39f1ff3bf5264db8dd52895074953abc05"
+      "size": 39131,
+      "sha256": "a4cb017ba166db9486af8e76e111b761c875641cc6dc112e1c6f5837bb9efded"
     },
     {
       "path": "maintainer/tests/test_motion_review.py",
@@ -2966,22 +3152,28 @@
       "sha256": "abd523d419c0b40323970b8565691f08d25b58d87b6a0caaaa7cc48fadfd40a0"
     },
     {
+      "path": "maintainer/tests/test_proportional_evidence_contract.py",
+      "type": "file",
+      "size": 8740,
+      "sha256": "e85e3546457c6b188661cff2ad9bb3d90e62a2d8211ffa366ec6babbe4d49ea3"
+    },
+    {
       "path": "maintainer/tests/test_regression_edges.py",
       "type": "file",
-      "size": 11822,
-      "sha256": "c101c1c0a1730db44f88af238856041ab17ad88c9fc2795ee7e62b94450cf5e6"
+      "size": 11773,
+      "sha256": "eccdd226d3ecf17d6d60662b22da6536feb6db21df428b7d60aaf9f5381ee4db"
     },
     {
       "path": "maintainer/tests/test_release_product_tools.py",
       "type": "file",
-      "size": 15591,
-      "sha256": "209618b139802ffabfed0792623b0ddd3fc6972a0724f7f0cfa030017b9f722f"
+      "size": 20221,
+      "sha256": "97577d173a95cda1bb572f71438521b393ac7a8626a666bb16ca4bd8366bb469"
     },
     {
       "path": "maintainer/tests/test_release_proofs.py",
       "type": "file",
-      "size": 71680,
-      "sha256": "54e984c55d5914bca3c9fd02542cc841a2083e03d065dd4b7fee04d6e2dcf2b3"
+      "size": 74985,
+      "sha256": "d18ae7635d451148cb999dc8c10eb7e48bbe5df16d32b6d6d05d988734bda39d"
     },
     {
       "path": "maintainer/tests/test_release_signatures.py",
@@ -2992,56 +3184,62 @@
     {
       "path": "maintainer/tests/test_render_comparison.py",
       "type": "file",
-      "size": 17675,
-      "sha256": "36ba5819d4f51ba22183583c3926fbc21797ced4b9b230570e1df07436ecf1c6"
+      "size": 20178,
+      "sha256": "f0b9b11a5cf2ef3da4278fe2a8bbc89f58fe7dc126aaab620367957889d5c931"
     },
     {
       "path": "maintainer/tests/test_rendered_review_harness.py",
       "type": "file",
-      "size": 71738,
-      "sha256": "97ced52283be220f772d16e7fe731a8b0d10d8ad1d5bf4987c267c7333881c3a"
+      "size": 87182,
+      "sha256": "7b076167f9f1987a4960c462c01968ac8d352672ad28bce1aa7daffd3bb3b7e6"
     },
     {
       "path": "maintainer/tests/test_route_family_audit.py",
       "type": "file",
-      "size": 21549,
-      "sha256": "62c10c368019f9a03f59978cb54a95e7fd52f4d92be7c980fc3e6dd631d46ab2"
+      "size": 43040,
+      "sha256": "5d80b00bb91ed37b48c026d3d3024a53b6a62a37c4b9b263c1e8ea6098512063"
     },
     {
       "path": "maintainer/tests/test_route_integrity.py",
       "type": "file",
-      "size": 16337,
-      "sha256": "aa85e1d20da98a4de21945c0f98f19d31c2168ff3222c3abf4fd09d8a3d3dd3a"
+      "size": 17171,
+      "sha256": "7e8c99fc50f5f9f4f9f549eb7c88f7b9ba8eaf7ebafb73e24f1a3d7e3e4404ae"
     },
     {
       "path": "maintainer/tests/test_runtime_tools.py",
       "type": "file",
-      "size": 124443,
-      "sha256": "888e5a6208707e5a865b31292d0c8db55fdeae1a1897e051b94da0c14e027841"
+      "size": 129873,
+      "sha256": "3e663f3cf32fa881d3b395bc394649fb7dbb951fa4b6e50ddc673ba4db6a4a93"
     },
     {
       "path": "maintainer/tests/test_scanner_hardening.py",
       "type": "file",
-      "size": 110725,
-      "sha256": "3f88594959ac091e9ce6e529b9db473e7cb1450aa5703c867de56c765bb93db4"
+      "size": 111838,
+      "sha256": "f18c90faf68c51f9a1ea9767934ff5bf92ffafbc0d28f47533775496b652cf2b"
+    },
+    {
+      "path": "maintainer/tests/test_scanner_project_state_backups.py",
+      "type": "file",
+      "size": 5113,
+      "sha256": "3746a09628e350b2b8f867244a892e4b621442909d91ab76df09742c92dc3f62"
     },
     {
       "path": "maintainer/tests/test_scanner_v3_hardening.py",
       "type": "file",
-      "size": 18476,
-      "sha256": "213cc21717ac71f45a64c39e895fabeadce40a5e645285b991996ece9f58c10a"
+      "size": 17537,
+      "sha256": "93465675551718e71da208f68dc01ba7650bc3b296ae7c4ac98d99ec83cc4409"
     },
     {
       "path": "maintainer/tests/test_state_eval_integrity.py",
       "type": "file",
-      "size": 124997,
-      "sha256": "6ee8da704d0ef4b2bf27fca68d5a083f0442327a31dcc53d6111234dcbe95915"
+      "size": 117860,
+      "sha256": "5c1b111262eaeab480084f55fd7152b0fa0b53adbdd28154c391e6cfd3ae3ed2"
     },
     {
       "path": "maintainer/tests/test_supplied_media_fixture.py",
       "type": "file",
-      "size": 6710,
-      "sha256": "ed837979f1af569abcf8b8643944553f6fc2b74817dd4e374d7e50e99c3786bb"
+      "size": 7292,
+      "sha256": "bd67e13667cf762f80213fccdc1da3536f928dcd72d5755f38620459dd9c4620"
     },
     {
       "path": "maintainer/trust",
@@ -3070,8 +3268,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 26269,
-      "sha256": "ed835c3b30136ace22bc4388b4b8d99cd8cd26bd3279d932d9c1e86549acd236"
+      "size": 24754,
+      "sha256": "17b87f7954e06959b51e3130a812f1d46ef2b2945776ee6e18c77559482b60e3"
     },
     {
       "path": "skills/design-dna/agents",
@@ -3092,16 +3290,16 @@
       "sha256": null
     },
     {
-      "path": "skills/design-dna/policy/owner-defaults.yml",
+      "path": "skills/design-dna/policy/absolutes.md",
       "type": "file",
-      "size": 4436,
-      "sha256": "e8699ace4cbe32b121bdc8d054b5d802759590de8082d8e0bcf9a482af63c2b8"
+      "size": 7234,
+      "sha256": "eabf69f54186b17ec5fe45937c8ae7c4e414b63436ac2e0423378078280d41cb"
     },
     {
-      "path": "skills/design-dna/policy/type-convergence-watch.yml",
+      "path": "skills/design-dna/policy/owner-defaults.yml",
       "type": "file",
-      "size": 2471,
-      "sha256": "8a826c83bbacacd327731c5163360800e2b3982a42425002b3df62a03bafa101"
+      "size": 5486,
+      "sha256": "f9edcc5e2eb59b0a8797c4cecf210aefd2b3c55b573d5ea30977b7687d30942d"
     },
     {
       "path": "skills/design-dna/references",
@@ -3112,8 +3310,8 @@
     {
       "path": "skills/design-dna/references/convergence-watch.md",
       "type": "file",
-      "size": 8394,
-      "sha256": "a37c99ca9145e522eb207c407294fef3f6541e44d0409f9882165af19d3aa354"
+      "size": 20044,
+      "sha256": "0e3ab3cfe6dbc03115ffc9b64386a8954eee67e76fa4e4e42376c659f15e8617"
     },
     {
       "path": "skills/design-dna/references/craft",
@@ -3124,122 +3322,128 @@
     {
       "path": "skills/design-dna/references/craft/art-direction.md",
       "type": "file",
-      "size": 9189,
-      "sha256": "0b6ce4203d9f044524c24843f425e478d2f6e302fe0759fc8388da08157a9d00"
+      "size": 8196,
+      "sha256": "cd712e96dba915344cf5e0d56a18eee700ad3bf714f3cfb4ab75438e4a7cc12e"
     },
     {
       "path": "skills/design-dna/references/craft/brand-systems.md",
       "type": "file",
-      "size": 4221,
-      "sha256": "b8b42c6c8abd180a87ce8fa609e56ccc047a98f23b21c54641399cb70fb49daa"
+      "size": 4934,
+      "sha256": "1469aa3da65b364440e50b900ba779c80c9e9c6ea04ae06142c5c5dfd76e43f2"
     },
     {
       "path": "skills/design-dna/references/craft/color-composition.md",
       "type": "file",
-      "size": 3397,
-      "sha256": "034661c805c69d40d21c4cd3622223d66afa0ea6359db8243ed1e856994db516"
+      "size": 4906,
+      "sha256": "e107686c39fb602e61ac458f032e67bad343b39af2a192e673e751118cb8cce2"
     },
     {
       "path": "skills/design-dna/references/craft/content-ia.md",
       "type": "file",
-      "size": 5165,
-      "sha256": "14f7905ac3282fa65eee429b2319ec32f44ab7efccab153dedeb47d1bcde6a51"
+      "size": 6158,
+      "sha256": "da09e87e481f9d18f79456404016109f1e22a779d88cf1cf0d586bd4840b8eaa"
     },
     {
       "path": "skills/design-dna/references/craft/creative-exploration.md",
       "type": "file",
-      "size": 19521,
-      "sha256": "d89e58a9e05f908525d1c383a50ce598531e67eab9c79e44b9e2066fd2656999"
+      "size": 11512,
+      "sha256": "8931a39d6f92af8c36f7f0c2cefabba9942db63b3be4adaee83a181d46b65dfd"
     },
     {
       "path": "skills/design-dna/references/craft/data-visualization.md",
       "type": "file",
-      "size": 4279,
-      "sha256": "fefc5839fa3962fb7d4a786f8165ceea2d5be41440d5d74c0932f81d4fec7f0c"
+      "size": 5045,
+      "sha256": "5dc30f35d75eed2053f165d37919f052ff4be2bff8e5416715fee372de1edcba"
     },
     {
       "path": "skills/design-dna/references/craft/design-tuning-passes.md",
       "type": "file",
-      "size": 6652,
-      "sha256": "50dd2f4052c66a3d1589fd3d49c896c5889813c3ea4f1897514080e5516e3252"
+      "size": 5609,
+      "sha256": "5ed66c1284a69675483b3bc991fad11456ea530241d0181f2edf55e605099084"
     },
     {
       "path": "skills/design-dna/references/craft/editorial-art-direction.md",
       "type": "file",
-      "size": 7173,
-      "sha256": "a484b516eab5272ea153feaf38aad17ac07d759ba68e6cacf10a76ba1f530a99"
+      "size": 7268,
+      "sha256": "48a0d49deb84dbd11913563d71d602982357f990119f778aa45c089073d9e615"
     },
     {
       "path": "skills/design-dna/references/craft/expression-energy.md",
       "type": "file",
-      "size": 8796,
-      "sha256": "a1c1b9251cd1bfabeb28b2f9cfea27e5a1eefc22652bdc53bc8a20d0198e43e5"
+      "size": 6939,
+      "sha256": "2a7ece8dba295d75c30b9b3e621ef631114783a828e95268548946e59bcd3526"
     },
     {
       "path": "skills/design-dna/references/craft/iconography.md",
       "type": "file",
-      "size": 1750,
-      "sha256": "177e9e38890b82752087fc18ec8b33d17f130844300a7167cd319dc091a73b99"
+      "size": 3586,
+      "sha256": "384bec7579e709e31f04a7845cc427961873f25f3afa0bfea53e76893d3e5349"
     },
     {
       "path": "skills/design-dna/references/craft/imagery-illustration.md",
       "type": "file",
-      "size": 4429,
-      "sha256": "697a88cadeec2fd3293fe1becfee329f6c7857e4e021c8a706ba2591e952463c"
+      "size": 7281,
+      "sha256": "80f76be314a42b9ebac5857603e028c5e1a10e67583109c7b3d50c3a3b7ef7a7"
     },
     {
       "path": "skills/design-dna/references/craft/layout-density.md",
       "type": "file",
-      "size": 2493,
-      "sha256": "20daf099b380638d81bd37f8105cfa7026651b3ca05beb265fffd0065dad87a1"
+      "size": 4359,
+      "sha256": "7bf3ce03e9a51838c9e48e7c9d7365d7ace34d87bf6f4cf33f7302c0b919b804"
     },
     {
       "path": "skills/design-dna/references/craft/location-wayfinding.md",
       "type": "file",
-      "size": 3954,
-      "sha256": "946f80ed561e6f107f9955bd3d3fff5e0477e2286a0cef493d6fa30de54f4ab0"
+      "size": 3956,
+      "sha256": "c4bd992dfc54eff20753a58e800044dceaa7ceaa7f82baa2c19279916b73d4c5"
     },
     {
       "path": "skills/design-dna/references/craft/motion-interaction.md",
       "type": "file",
-      "size": 9915,
-      "sha256": "6f09d3dd76e59190629599deb583219ae15fed93d3278528af83cb0447fc13ae"
+      "size": 10239,
+      "sha256": "0df216e4ba44e74cd0b9fa5afae2cc51f93add43dd6bd60a46122bf9826cac9b"
     },
     {
       "path": "skills/design-dna/references/craft/responsive-adaptation.md",
       "type": "file",
-      "size": 3315,
-      "sha256": "95e2bcbaa0a2b58a49db2c3c369ee2f16e5c7162d9c0ce2403228cbe1cb915fa"
+      "size": 3943,
+      "sha256": "9942667b74095003538aa373f92a6f8ce1e9f00cd85f57668cd2dd429399a138"
     },
     {
       "path": "skills/design-dna/references/craft/route-family-art-direction.md",
       "type": "file",
-      "size": 9670,
-      "sha256": "90fa58a85e42b06cb2fce97be429469392b81500816515424a8ba498f472ecde"
+      "size": 10144,
+      "sha256": "18a55b9845e4d3383ff969c5706c28539170f7bddd3980cf7fdecbd98b7cbee5"
     },
     {
       "path": "skills/design-dna/references/craft/systems-components.md",
       "type": "file",
-      "size": 10755,
-      "sha256": "a6f747b412129648776d0e4418519f8f5e43804f21ffabd324152aad52919b7f"
+      "size": 11090,
+      "sha256": "af099e194f82088e8087132d6f9b6f727bc0bce2d50743017d7fe290eb3b32a6"
     },
     {
       "path": "skills/design-dna/references/craft/typography.md",
       "type": "file",
-      "size": 11908,
-      "sha256": "e33c3ff8a120adc46a564932dc1e246bdc351a935ef8d62e43721d28a227f08e"
+      "size": 22466,
+      "sha256": "3b8eb40c19ff95c4c6a025d543c4c1888d8d41ec1ff219d30f9d3349f54aa35f"
+    },
+    {
+      "path": "skills/design-dna/references/creative-freedom.md",
+      "type": "file",
+      "size": 10118,
+      "sha256": "33824a3ab8afc1699577905ea51e5fd6e417ad2300ed00a6fc73cc12ddcd231b"
     },
     {
       "path": "skills/design-dna/references/decision-case-studies.md",
       "type": "file",
-      "size": 6029,
-      "sha256": "75d27ed93b4d113a3f61c2e75f1ca7911524ef418aad2662a655626c56aac801"
+      "size": 6235,
+      "sha256": "744720d07edfe4a55037b58321ab123c9ab91a94e15a46fefaaad763003f0145"
     },
     {
       "path": "skills/design-dna/references/evidence.md",
       "type": "file",
-      "size": 3166,
-      "sha256": "728d7bbc3f5f6745aa77e22cd1e9b4be712c60cbd0f6e5961d172a1c69ddb6c6"
+      "size": 3178,
+      "sha256": "b041d465cc680dcd229d867fc4ff65488383cdb38ca345be0e0c70ad987a1926"
     },
     {
       "path": "skills/design-dna/references/flows",
@@ -3262,32 +3466,32 @@
     {
       "path": "skills/design-dna/references/flows/messaging-notifications.md",
       "type": "file",
-      "size": 3784,
-      "sha256": "39758582583d01616b132a8e03b2e0549f4e801caffb8824573ae2d7b87115ab"
+      "size": 3950,
+      "sha256": "b3f087b70936e4ceee894a2f7bfe862e90bab3a21cd58d2f9f5e1881ddc56b02"
     },
     {
       "path": "skills/design-dna/references/flows/privacy-consent-permissions.md",
       "type": "file",
-      "size": 5068,
-      "sha256": "7921a465e29479d7fa8308bc2016f781d073cd35d0858f1e7c9a5213bc042e23"
+      "size": 5526,
+      "sha256": "e13e57b59f0c038484d6a2500041ffa038fc3c99e20a6414107c0ddf08507819"
     },
     {
       "path": "skills/design-dna/references/flows/service-journey-handoffs.md",
       "type": "file",
-      "size": 4697,
-      "sha256": "955bf665c0ace7842bb1b7ee7de93be2ee06cf9a625d69bf1f780a73b4a0faeb"
+      "size": 4699,
+      "sha256": "2583682c19b351eae25fe9965d7b482dab5c760ee4750ab269f85bbc39008b7d"
     },
     {
       "path": "skills/design-dna/references/flows/subscription-billing.md",
       "type": "file",
-      "size": 3831,
-      "sha256": "fe209e4f8dea3557287a909012294029bf8f117861f3400b7c8b9be620670da3"
+      "size": 3833,
+      "sha256": "a5cf28ba8dbb4da1102fc7ac6625bb105dc3f8b5e4ed19ab88f66223faccde51"
     },
     {
       "path": "skills/design-dna/references/flows/support-complaints-appeals.md",
       "type": "file",
-      "size": 5082,
-      "sha256": "dff7b4c707b0d32296fe71dac6456e13b780d69626065224fa3eda2047a87f83"
+      "size": 5496,
+      "sha256": "2ea4f0b5563058a8aab92f3e45097ec32585716d55f88e83b5b596e49763b648"
     },
     {
       "path": "skills/design-dna/references/modes",
@@ -3298,44 +3502,44 @@
     {
       "path": "skills/design-dna/references/modes/experience.md",
       "type": "file",
-      "size": 2478,
-      "sha256": "99b0e8d5f6748ff1727ec83c328cad59bae18c8e1f45c3f3cf96120a50b063d8"
+      "size": 3285,
+      "sha256": "c5edacc9424a3ce7fe62dfd2241574a20c1a3107a32432e39e54eea967dc0661"
     },
     {
       "path": "skills/design-dna/references/modes/operate.md",
       "type": "file",
-      "size": 4207,
-      "sha256": "579c3c9803c9ab5836ba28390b9b22bf710626d7899296b61dbc42564015f7a0"
+      "size": 3836,
+      "sha256": "c7115cdc77a135f5618164b084d364d58d4c88b057fdd911b3918c984b9a7d6f"
     },
     {
       "path": "skills/design-dna/references/modes/persuade.md",
       "type": "file",
-      "size": 3875,
-      "sha256": "8f2986e20498a06c349315bc4c6d075789d7b2fd9e1e8c13f40d262833dc3a03"
+      "size": 3758,
+      "sha256": "2ed3e4221f08c9703c0d7bae6505535ce4ba3ec8ad03e4310fa5067ade518043"
     },
     {
       "path": "skills/design-dna/references/modes/read.md",
       "type": "file",
-      "size": 2535,
-      "sha256": "d517bc9440f764ef5ab79f3f34e60c893a18f55505a5d2184137524fe1375c56"
+      "size": 3059,
+      "sha256": "7980a55ad8e2e4acd49938e3ee60f884f61e36de588e01b2fb4eb50b143c1359"
     },
     {
       "path": "skills/design-dna/references/owner-policy.md",
       "type": "file",
-      "size": 1820,
-      "sha256": "932e5844ccd3897144d8eaeeedf8b20cecc1570d1cb9cb186c5cc402fd2cad18"
+      "size": 2407,
+      "sha256": "263ae484921c461c3e639087ee94e03004636d665915531c819325e0d497fc23"
     },
     {
       "path": "skills/design-dna/references/platform-claude.md",
       "type": "file",
-      "size": 1402,
-      "sha256": "229cfabf644afd71c5e8e41d544b59685256fec4ac39b220404763c3cafaa672"
+      "size": 1412,
+      "sha256": "700ed022b03dc0eca80c315ed8d03a565ec94487ec9efd38d4703a0a2529a54f"
     },
     {
       "path": "skills/design-dna/references/platform-codex.md",
       "type": "file",
-      "size": 1130,
-      "sha256": "5ebabe8b0f17bfc7b457fb5e86bfe8183c031e8dbd6dc77f22934df2d20c1d42"
+      "size": 1142,
+      "sha256": "96564f8e7c031dfb26783b5ed50a0e866b4ad7e79787f3af556c68a58d55da58"
     },
     {
       "path": "skills/design-dna/references/quality",
@@ -3346,26 +3550,26 @@
     {
       "path": "skills/design-dna/references/quality/accessibility-baseline.md",
       "type": "file",
-      "size": 9823,
-      "sha256": "cde19eff7d678f3722fe8741208f1e7d76c9b75ab1d88625f408b5e19ab13c44"
+      "size": 9847,
+      "sha256": "c578413d32ba5ec0568e609a134425b761d0eda5d7063a43e10a5dc6711d9d7b"
     },
     {
       "path": "skills/design-dna/references/quality/asset-integrity.md",
       "type": "file",
-      "size": 11026,
-      "sha256": "6c712489831ae2e3f4a7a9ce724c775412ff1954cd9f22cdf2527bb5c9694244"
+      "size": 13187,
+      "sha256": "cdb194acd09ebfa886cb04da70b77b97f2e9d726d5395b8c6ba793c34d3b7f98"
     },
     {
       "path": "skills/design-dna/references/quality/content-discovery.md",
       "type": "file",
-      "size": 8489,
-      "sha256": "91ef5cbcf104a172879dc8f9ffac7e8241bb308ce97c5e138e18c888f514cdf9"
+      "size": 9231,
+      "sha256": "08886aa2984b7fdf39f750390868dd714b52249602322ded0c8a8f5fd3c8bd60"
     },
     {
       "path": "skills/design-dna/references/quality/critique-and-expert-review.md",
       "type": "file",
-      "size": 3068,
-      "sha256": "590ea4a7e9b9f5c2c149a1e61c0927b89826c598796ef300809a62b4870d9e6d"
+      "size": 3836,
+      "sha256": "8b78f9b8c3424f9fb3001ad9548ee1bd3cb3c3069dc549cd51c2445cd4d3c695"
     },
     {
       "path": "skills/design-dna/references/quality/cultural-context-review.md",
@@ -3388,20 +3592,26 @@
     {
       "path": "skills/design-dna/references/quality/engineering-verification.md",
       "type": "file",
-      "size": 23616,
-      "sha256": "01be0b992e68cde8b0b15316bf5f43d31153b9d8cb797dfcf5cceb196e9b976e"
+      "size": 25607,
+      "sha256": "025ebee45bf3b23025a71ad1dfb175fcadb4eb04bf8b153a44490038dea9e85c"
     },
     {
       "path": "skills/design-dna/references/quality/evaluation.md",
       "type": "file",
-      "size": 5615,
-      "sha256": "4ade8593682fbd55f8a6ccb9c8bdbbd204a2c992946321727e69e34f16bd68c3"
+      "size": 6140,
+      "sha256": "1cbdc5b1be4c5b5489780a6744d98726458eb1ec2eb781ca4a7d89ff6c615d77"
     },
     {
       "path": "skills/design-dna/references/quality/finish-polish.md",
       "type": "file",
-      "size": 6877,
-      "sha256": "1143d72992bf1e291be1c0124ac9cb34576e1303349ab856026a94bf8bac668a"
+      "size": 6953,
+      "sha256": "5dd2e936d7a655cd7882f6c74cd4754a65115f3ab3ac20b3f5143d7bed8ca4fd"
+    },
+    {
+      "path": "skills/design-dna/references/quality/ledger.md",
+      "type": "file",
+      "size": 2908,
+      "sha256": "c9c8d2be80a225c5fe4ab60e20a7f86fffcd98b81575566f1683f1276abf1b03"
     },
     {
       "path": "skills/design-dna/references/quality/localization.md",
@@ -3410,28 +3620,46 @@
       "sha256": "9ecb72983913466a0a6fab33134f6a259767dfea9e20b9bbb75bc375879479e5"
     },
     {
+      "path": "skills/design-dna/references/quality/parseable-text.md",
+      "type": "file",
+      "size": 9064,
+      "sha256": "3aa6c3ddfc0da1aa91d9df06b111fab603a099c122e863685e429b99badf9f94"
+    },
+    {
       "path": "skills/design-dna/references/quality/performance.md",
       "type": "file",
       "size": 4157,
-      "sha256": "5ea0eeb7fb58962e8b109389cff676e82e1c999e085d9ab5429203f9fbbe85eb"
+      "sha256": "c4bd854edd0be9129057a349f81842495d664bc6763e8b1213be3adc8c2c31e2"
     },
     {
       "path": "skills/design-dna/references/quality/production-readiness.md",
       "type": "file",
-      "size": 3999,
-      "sha256": "ffe662797957d15a78c736731991355f9fdd61797dbb8d8ed97942d9d55805e4"
+      "size": 4009,
+      "sha256": "66bf9106bbf19e958ca5cbfcb0b1675be62e71f06d2a6e39d281b2f70e477396"
     },
     {
       "path": "skills/design-dna/references/quality/proof-to-build-fidelity.md",
       "type": "file",
-      "size": 4348,
-      "sha256": "2298c0859eff664f007c393970ec336138ba43bd803adfeb135681cd55716655"
+      "size": 5143,
+      "sha256": "61cb77b1400d740be3e242d11590e9f6ebb138158e6547205c26c1cc05881500"
+    },
+    {
+      "path": "skills/design-dna/references/quality/render-comparison.md",
+      "type": "file",
+      "size": 4123,
+      "sha256": "012511515ff42faa64bf1f79da1a185a71adba6f07d719e24f7fe23cf068804b"
+    },
+    {
+      "path": "skills/design-dna/references/quality/render-harness.md",
+      "type": "file",
+      "size": 6675,
+      "sha256": "5630dc8962c1f68d42a9276fddf48d6f7d2446e803cdafcfbd6ca0850eb7d6d0"
     },
     {
       "path": "skills/design-dna/references/quality/research-user-validation.md",
       "type": "file",
-      "size": 7340,
-      "sha256": "94d88421ffeefee0b194dac12557b68343ded92f4c94c984a857dde69290cbc2"
+      "size": 7655,
+      "sha256": "6eb7e959ce5f4b49a9d01a5f91edb4f23de62a485acea4a2b1f0f5447d82ca7c"
     },
     {
       "path": "skills/design-dna/references/quality/review-severity.md",
@@ -3442,8 +3670,8 @@
     {
       "path": "skills/design-dna/references/quality/specificity-review.md",
       "type": "file",
-      "size": 14019,
-      "sha256": "640df2dc3c17a17d1a01de6d20a84f9afc714f5b2eb714b0b9fa377baf4c672a"
+      "size": 13415,
+      "sha256": "a9244b4f03bf1afc134775d6b43c2232f5227ba684a3f7c50de97170c1385202"
     },
     {
       "path": "skills/design-dna/references/quality/tooling-adapters.md",
@@ -3454,8 +3682,8 @@
     {
       "path": "skills/design-dna/references/risk-rubric.md",
       "type": "file",
-      "size": 15045,
-      "sha256": "0c44dd2483c88bfe27515e6733306ef6cc65ea1608ace71dddb87300c4034be2"
+      "size": 15250,
+      "sha256": "d7bd961d2115e65321c7545bb468987bdbd069ebbe08901001ee3b8bcef43e9d"
     },
     {
       "path": "skills/design-dna/references/verticals",
@@ -3466,26 +3694,26 @@
     {
       "path": "skills/design-dna/references/verticals/ecommerce.md",
       "type": "file",
-      "size": 3283,
-      "sha256": "ff62d6c5c2e502c0f62d2693886b0447b4d77a3d547b449f99b6d19ef7e9ba9e"
+      "size": 3467,
+      "sha256": "fd568053b5ea101d15257c810b61702823c34d4b7afcbbc2dc872ed25f96f181"
     },
     {
       "path": "skills/design-dna/references/verticals/editorial-publishing.md",
       "type": "file",
-      "size": 3078,
-      "sha256": "fcfa964efde1cc18618d34317e3eff3fbd8e9093d386e5869969ba950536e207"
+      "size": 3181,
+      "sha256": "8cdbb9d123f998cbfbe6c556507f6a46733c4cccc8b87651d91aad7e7f324055"
     },
     {
       "path": "skills/design-dna/references/verticals/education.md",
       "type": "file",
-      "size": 3008,
-      "sha256": "cfaadb42e143d204a22dedc58c6779a410dbc7c836efd1f521805a48ace7c982"
+      "size": 3197,
+      "sha256": "467150a2252e4fa2098edd8a340b04c201849160afe96f5426a1a828a13df74a"
     },
     {
       "path": "skills/design-dna/references/verticals/local-business.md",
       "type": "file",
-      "size": 7065,
-      "sha256": "2e77620069c73ca5958d12c1393882dff05cb33716e7584e02f443d82554672e"
+      "size": 6447,
+      "sha256": "f6cbdd973822c94d44a7124017b5a4751656b36212d437b3601f7cd5d2a0c5d3"
     },
     {
       "path": "skills/design-dna/references/verticals/marketplace-community.md",
@@ -3496,44 +3724,56 @@
     {
       "path": "skills/design-dna/references/verticals/nonprofit-fundraising.md",
       "type": "file",
-      "size": 2744,
-      "sha256": "bb016f271435f09cd31d81b5861321012a5a4a911bd23d8bb8c98d3d63e4e72b"
+      "size": 2792,
+      "sha256": "3084121890cdd23c07c078364277d7f8317ac1d8db2c5fd398746ae48ad5828a"
     },
     {
       "path": "skills/design-dna/references/verticals/place-community-publication.md",
       "type": "file",
-      "size": 7959,
-      "sha256": "2af411bd047ec6aa680af24d556f40f7c13e5da84cac6402ec02a0643128a1ed"
+      "size": 8389,
+      "sha256": "397478e9d71f106ee511a25bc611f4237322cecef93b6f03b7585f63dc4d5da8"
     },
     {
       "path": "skills/design-dna/references/verticals/portfolio-case-studies.md",
       "type": "file",
-      "size": 3023,
-      "sha256": "095a62ad5da670c338a7890353a80ed1441320a8e775b3b827437f084de3b032"
+      "size": 3115,
+      "sha256": "af41162571ceed0d799881ecaa791e13bea3c05fdbd2e60dc5a1d816b4f8eb54"
     },
     {
       "path": "skills/design-dna/references/verticals/software-product.md",
       "type": "file",
-      "size": 4847,
-      "sha256": "9428b9ebaf472bb076e0c2d2737fe129a97c4feaf5c563779d9c260da982f591"
+      "size": 5405,
+      "sha256": "31b2726b490b6ddf5ab818d417ee2ebe5f2674afadee4bd5c75a0e371f663d21"
     },
     {
       "path": "skills/design-dna/references/verticals/travel-reservations.md",
       "type": "file",
-      "size": 2902,
-      "sha256": "a19c85cc0873af8e2e1e8ca124cf429c993ec6890e4f1333d66326196d03a76e"
+      "size": 2909,
+      "sha256": "38a2ea2a869ae05d1fe78e295d9b86570b34c87acb5b7f0458ad07270b6cfd01"
     },
     {
       "path": "skills/design-dna/references/workflow.md",
       "type": "file",
-      "size": 21230,
-      "sha256": "74062864f101833a1d72571ad3adf4ee0e3102f8d4c469685ad85e12f3fd3f34"
+      "size": 23743,
+      "sha256": "6425a63aef1ad920502424af5f828a8ea6701358bfc0e3ced74b6b7fbe5c0439"
     },
     {
       "path": "skills/design-dna/release.json",
       "type": "file",
-      "size": 81,
-      "sha256": "8b6fb8efe4f78e8fd423a7baa69a00169f679ecc2b6a42b9aba096b5dda122df"
+      "size": 80,
+      "sha256": "afe5e852634ab4c786116bbb23ffd3f9ca4c0ef9aa5967d61840ad1b656970b1"
+    },
+    {
+      "path": "skills/design-dna/schemas",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/schemas/render-review.schema.json",
+      "type": "file",
+      "size": 59585,
+      "sha256": "975b10d49ac8a07e4769b773fecd46e14198fca7ee1bc5749ee5edb5f78d6c10"
     },
     {
       "path": "skills/design-dna/scripts",
@@ -3544,38 +3784,38 @@
     {
       "path": "skills/design-dna/scripts/compare_render_reviews.mjs",
       "type": "file",
-      "size": 64951,
-      "sha256": "76927f4fecc2c87774d301e519a63492e7d4620423aa3d0c58a0ee5958973d1b"
+      "size": 67936,
+      "sha256": "f1b139885d1c9ef6f8ca978bca1a31893746d4cad0b6d975abd9b207c557274d"
     },
     {
       "path": "skills/design-dna/scripts/font_audit.py",
       "type": "file",
-      "size": 93148,
-      "sha256": "a05970dea9e04cfb0fd0a2b354b7b8add186a3979cd162da064f9cb241a69a20"
+      "size": 91662,
+      "sha256": "6cc8614760dce8fd8f7d4d2616054417b43407003b2facaf8f19d4a3bfdf5eb0"
     },
     {
       "path": "skills/design-dna/scripts/init_project_state.py",
       "type": "file",
-      "size": 311007,
-      "sha256": "033c014e4c75fb84332f44e686f485af1e6ec7b67fbf063dc2b9d9ad6366e43b"
+      "size": 349622,
+      "sha256": "5b72f75ad5de970bd11debd2c0a9d07a1436211065a8230ca9027d5ebb60e584"
     },
     {
       "path": "skills/design-dna/scripts/rendered_review.mjs",
       "type": "file",
-      "size": 167644,
-      "sha256": "aa71b1f64de5b82eb6fb8f1c782d2f79e90210191bc1a8575408a31cb26fdccc"
+      "size": 182478,
+      "sha256": "f35905b5cffc8ee971338e69696f8422ee391f7b93e7b39df58286ba5e9bf53b"
     },
     {
       "path": "skills/design-dna/scripts/route_family_audit.py",
       "type": "file",
-      "size": 98364,
-      "sha256": "8d83aaaaf69019562e5a7acffba10c9b8e4a3fcf798d8eb0479ec8ecb5e22c80"
+      "size": 119739,
+      "sha256": "5567a0962bf2bb552adfe00340be1994f5de2933f3e5f60727c7da5ab6aecf1b"
     },
     {
       "path": "skills/design-dna/scripts/scan_project.py",
       "type": "file",
-      "size": 189261,
-      "sha256": "2fb8c4bae0c139dbe09805233ba31a1431c4bc01301e72bc8e393a9ccebfa802"
+      "size": 118007,
+      "sha256": "62d2c77ccdf255c885aec4a666100a2ae8a65b510055e0044f9aabccfe562b6a"
     },
     {
       "path": "skills/design-dna/templates",
@@ -3586,8 +3826,8 @@
     {
       "path": "skills/design-dna/templates/asset-manifest.example.yml",
       "type": "file",
-      "size": 3039,
-      "sha256": "bd28ecfda4d6f34ad6e6f9f9ae81bd55966da5f058617b9388edf909e47cde62"
+      "size": 3200,
+      "sha256": "6cff090764e0d851e772f0d1b643e6267ece926b618e7a3cdd1ba48e3adebc7d"
     },
     {
       "path": "skills/design-dna/templates/asset-manifest.yml",
@@ -3598,68 +3838,86 @@
     {
       "path": "skills/design-dna/templates/claim-ledger-template.md",
       "type": "file",
-      "size": 1413,
-      "sha256": "f49c044dfb8b31849980d1d2d68cc2a965f055e41295a09a6f7d7858b6314564"
+      "size": 1496,
+      "sha256": "c1345f2fcaddb853794fb1d6aa064524e3a769308b2774d316aeee42dc55f067"
     },
     {
       "path": "skills/design-dna/templates/design-context-capsule-template.md",
       "type": "file",
-      "size": 1678,
-      "sha256": "f46b7c06649202000a682f3116b04f14b20e2138ddf6d9c2c7876d92127fd958"
+      "size": 2090,
+      "sha256": "a2549b4074efd9053c81acd79dca8495fd8f51c633659a80065b9c5dff8e31bb"
     },
     {
       "path": "skills/design-dna/templates/direction-proof-template.md",
       "type": "file",
-      "size": 5397,
-      "sha256": "dcfc665c35cf82b63295775a2237fa153e0dc76376bbce2d71bdc1a8ba264df3"
+      "size": 1540,
+      "sha256": "38d9fbade1526e3b960857cc26898f8666bed20aa6a19f57bdd79b2ce70b7d96"
     },
     {
       "path": "skills/design-dna/templates/direction-template.md",
       "type": "file",
-      "size": 12571,
-      "sha256": "160bf03fef6d8de844dc1107e189b26c1f55ffb76218a3815011444804c4364a"
+      "size": 2320,
+      "sha256": "db79fa602eebb4ff8226e546695404e6a928490a621d43fe7278029bfa0d1b87"
     },
     {
       "path": "skills/design-dna/templates/exploration-template.md",
       "type": "file",
-      "size": 4782,
-      "sha256": "6325f9123f925134adc29e5750ad01edfc28d88d0a83fbae9d91b436363d0e48"
+      "size": 1621,
+      "sha256": "0bf38844afe920f1c0a6d758ba8a9d6963a52faaf00733d29a3e346b106dac8b"
     },
     {
       "path": "skills/design-dna/templates/expressive-perception-template.md",
       "type": "file",
-      "size": 2065,
-      "sha256": "a6e1bd5a2693e49892d09c2ace158961c9691b3d98165062210a7d64cbd28979"
+      "size": 2315,
+      "sha256": "78eb6bc2e2323954b339492dd5996f29ad39e3ec33176ea2e5513c8c435fb5da"
     },
     {
       "path": "skills/design-dna/templates/handoff-template.md",
       "type": "file",
-      "size": 1979,
-      "sha256": "ea57cc32f30a4ea32afe05565d8097751cfb830f7c65202b2b78d5c1ee5754ce"
+      "size": 2656,
+      "sha256": "985b78a90210648a2709d023482825862473af737395adee41fa200127adbaa7"
+    },
+    {
+      "path": "skills/design-dna/templates/ledger-template.md",
+      "type": "file",
+      "size": 700,
+      "sha256": "79585202b16dae4ee295e01a6e2df2b546db7b1c82884583450e110a5338eb39"
     },
     {
       "path": "skills/design-dna/templates/motion-asset-contract-template.md",
       "type": "file",
-      "size": 1382,
-      "sha256": "c312bf02012d8cebaffe49a61efd622120fb3e5b2ad401c95dbdb950931fbc0b"
+      "size": 1916,
+      "sha256": "1c43c0a86eee6e82ee60bbce6118f0fd6622d50011bd9799b3e34de2372559ca"
     },
     {
       "path": "skills/design-dna/templates/owner-policy.example.yml",
       "type": "file",
-      "size": 3938,
-      "sha256": "83ce5a263f1e8a32e7493901f489afc38a7a759eb99eb6c92655ae2676a4641f"
+      "size": 1890,
+      "sha256": "dd59e4f5b7f73cb388a6ab778755bd05924cb1a513c513b9713dfc2052c05f7a"
+    },
+    {
+      "path": "skills/design-dna/templates/placeholder-register-template.md",
+      "type": "file",
+      "size": 666,
+      "sha256": "0de8652535829a844f1f525995b3cf048d9169bc0a0d82a8836c887715897cc3"
+    },
+    {
+      "path": "skills/design-dna/templates/preship-gate.md",
+      "type": "file",
+      "size": 4891,
+      "sha256": "05721ceb752599e9234c3ec4013a3af4be96e05e9fc1cd826f449baee496c08c"
     },
     {
       "path": "skills/design-dna/templates/proof-build-delta-template.md",
       "type": "file",
-      "size": 2091,
-      "sha256": "f771ed639486a47bbfe1ef43766654af8074b8ef5c076e2e457dc0948137d5f0"
+      "size": 2270,
+      "sha256": "b991496e4170c265d0fa0658127e91033fb1b0e1047e120b39633cc5f2cad9d2"
     },
     {
       "path": "skills/design-dna/templates/route-family-template.json",
       "type": "file",
-      "size": 5041,
-      "sha256": "562c0785485a6e1edda80b61184a61495371096e59bcf5e21d280bf493195852"
+      "size": 4792,
+      "sha256": "a28dbec61f4e280487d0c661de1823a81aa3817450b8ef8033022c2814e0522e"
     },
     {
       "path": "skills/design-dna/templates/scan-allowlist.example.json",
@@ -3682,20 +3940,20 @@
     {
       "path": "skills/design-dna/templates/state-matrix.example.yml",
       "type": "file",
-      "size": 871,
-      "sha256": "37f988886870db586b19f861328590bdb61d22b68a495c23e79a104ddb608816"
+      "size": 1106,
+      "sha256": "1559bdd085eaafce1a151eca8b1bdb121b977611193b6afbb8f06ae0ec126dcf"
     },
     {
       "path": "skills/design-dna/templates/user-validation-template.md",
       "type": "file",
-      "size": 4026,
-      "sha256": "200f78161499452311d9137cdf61bea6e18986f1329df4d832d7bbcc25d8e784"
+      "size": 4366,
+      "sha256": "d1735781489ae938c51cff667794b7ef9d838c724aca92910bfe7588051272b5"
     },
     {
       "path": "skills/design-dna/templates/visual-review-template.md",
       "type": "file",
-      "size": 12349,
-      "sha256": "2c63ee2bc2a1a7290074f6228928bccb8ccd0b78b69d8a47413ff85c12bfaa3a"
+      "size": 1981,
+      "sha256": "bd266b54a751330fcaea46d737e742dabc4b705b37b4a6a87e982ee8cb21ce46"
     }
   ]
 }

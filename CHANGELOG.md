@@ -26,6 +26,47 @@ adversarially reviewed, and revised in one session).
   RISK-IMGSET-001 updated to match.
 - Typography synthesis proof: a reference implementation snippet for
   descriptor-range coverage, so the check gets run instead of approximated.
+- Harness laws from three further builds: never double-run an interaction
+  (act in the navigation step, read in the probe, never both, or the second
+  run reports the toggled-back state), capture the exception rather than the
+  symptom, and the duplicate-variable-font trap where several weight-named
+  files are one variable face fetched repeatedly.
+- The vh full-page capture trap: `captureBeyondViewport` never converges on
+  a vh-driven layout, because the surface grows to the content height, the
+  vh sections grow with it, and the measurement chases itself. Capture
+  viewport slices at known offsets, and set `scrollBehavior = "auto"` first
+  or smooth scrolling silently returns the previous position and every slice
+  comes back identical.
+- Range-anchored contrast measurement: sample the glyph boxes from
+  `range.getClientRects()`, not the element box. A block-level heading spans
+  its whole column while its words cover a fraction of it, so element-box
+  sampling reports the darkest pixel of empty background and invents
+  failures that are not there.
+
+### Fixed
+
+- The paint-proof coincidence: two faces can measure identically and still
+  both be fallbacks, so the proof now requires a positive identification
+  rather than a difference.
+- Lazy images never load during a full-page capture, so the capture step
+  now forces them before measuring.
+- Copy voice gains a fingerprint axis, since repeated sentence shapes across
+  projects are a house tell in the same way a repeated palette is.
+
+### Package
+
+- `references/evidence.md` is reachable. It had no inbound link and no
+  router row, which the package audit reported as
+  `runtime-reference-unreachable`; it governs how risk rules are promoted
+  and retired, so it is now routed from the decision table.
+- Runtime prose is wrapped to the 80-column house convention. Roughly a
+  third of the files had drifted wider, which turned small edits into
+  whole-paragraph diffs. Markdown links are treated as atomic, because the
+  wide lines were wide precisely to keep `[text](target)` unbroken.
+- Contents maps added where the package's own 100-line rule requires them.
+- Package identity is one version across the runtime, both host plugin
+  manifests, and the compatibility matrix. The SBOM and release manifest are
+  regenerated from that identity rather than asserted.
 
 ## 5.0.1 - Working-artifact hygiene
 

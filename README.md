@@ -1,8 +1,44 @@
 # Design DNA
 
-> **Release status:** `5.0.0` is an unreleased candidate. Its workflow and
+**A web-design skill for coding agents, built to stop the output from looking
+like a coding agent made it.**
+
+It runs in Claude Code and Codex. Point it at a project and it works the way a
+studio does: read the real material first, write an art direction the project
+actually implies, prove the risky decisions at real widths before propagating
+them, build, then *look at the rendered page* and review what is actually
+there.
+
+Three things make it different from a prompt that says "make it look nice":
+
+- **No house style.** There is no bundled palette, font pool, or hero recipe
+  to inherit, because a beautiful default is still a fingerprint. Every visual
+  choice has to be derived from this project and defensible for it.
+- **It verifies by seeing.** Judging craft from source is prohibited. Nothing
+  is finished without rendered screenshots at desktop and mobile widths, and
+  the harness measures the page: real contrast against the real composited
+  background, which font actually painted, whether the strings on screen mean
+  anything.
+- **It cannot invent.** No fabricated statistics, reviews, people, or product
+  UI. Placeholders are labeled and tracked, and every build stays a demo until
+  its owner says otherwise in their own words.
+
+The runtime stays small. A decision router loads only the guidance the current
+decision needs, so a font question does not drag in the ecommerce, motion, and
+localization libraries.
+
+New here? [Quick start](docs/QUICK_START.md) ·
+[Install](#install-one-route-per-host) · [What it changes](#what-it-changes) ·
+[The skill itself](skills/design-dna/SKILL.md)
+
+---
+
+> **Release status:** `5.0.2` is an unreleased candidate. Its workflow and
 > package changes are implemented, but formal host, comparative, independent
-> rendered-review, and strict release qualification remain pending.
+> rendered-review, and strict release qualification remain pending. The
+> checked-in attestations predate this source and are retained as historical
+> inputs until regenerated; see
+> [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
 specific, time-appropriate, coherent, truthful, and fully implemented. It keeps
@@ -14,14 +50,24 @@ responsive production code, and inspect the rendered result for generic
 defaulting, weak craft, unfinished behavior, accessibility failures, and
 release residue.
 
-Version 4.0 adds a Range Study contract for deliberately varied multi-route
-sites, explicit cultural-context boundaries for place and community
-publications, and a breaking creative-freedom reset. It keeps shared truth,
-navigation, access, and identity dependable while leaving route bodies free to
-find materially different answers. It removes the former font-convergence
-policy and fixed visual recipes; rendered comparison now examines normalized
-geometry, topology, media/control density, and computed typography rather than
-using font names, copy, palette, or image identity as aesthetic verdicts.
+Version 5.0 merges three generations into one skill: the 4.0 architecture
+(authority order, capability presets, the decision router, flows, verticals,
+cultural review, scripts), the 3.4 dated risk vocabulary restored as expiring
+post-render tables, and the owner doctrine that 2.x had removed. It adds a
+two-tier accountable-owner policy whose ABSOLUTE tier no one may lift, a
+parseable-text gate for every visible string, a studio ledger that makes the
+skill notice when it repeats itself, and a one-page preship gate. The 5.0.x
+line then hardens all of it against real builds, most of that work in the
+capture-and-measurement harness.
+
+It carries forward the 4.0 Range Study contract for deliberately varied
+multi-route sites, and its cultural-context boundaries for place and community
+publications. Shared truth, navigation, access, and identity stay dependable
+while route bodies stay free to find materially different answers. There is no
+font-convergence policy and no fixed visual recipe; rendered comparison
+examines normalized geometry, topology, media and control density, and
+computed typography rather than treating font names, copy, palette, or image
+identity as aesthetic verdicts.
 
 It is not a style pack. It does not impose a replacement house style, infer
 authorship from aesthetics, or promise that AI involvement is undetectable.
