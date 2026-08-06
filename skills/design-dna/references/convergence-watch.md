@@ -20,6 +20,7 @@ when HARD 1's comparison protocol requires it.
 - [Dated watch: current clusters](#dated-watch-current-clusters)
 - [Dated watch: the font clusters](#dated-watch-the-font-clusters)
 - [Dated-signal watch: the opposite failure](#dated-signal-watch-the-opposite-failure)
+- [Builder-fingerprint hygiene](#builder-fingerprint-hygiene)
 - [The self-fingerprint](#the-self-fingerprint)
 
 ## Neutral-alone rule
@@ -92,6 +93,10 @@ discourse before using any row in a current-facing recommendation.
 | `RISK-COPYFORM-001` | Vague superlatives, interchangeable CTAs, "Revolutionize your workflow," repeated question openings, polished "not X, Y" contrasts, aphoristic endings, the same claim restated across sections. | Rewrite from concrete source language: inputs, outputs, constraints, consequences, next steps. Count claim repetitions; more than twice is noise. | Supplied brand language and a real editorial voice. |
 | `RISK-HUD-001` | Decorative pseudo-data: coordinates, serials, version strings, timestamps, degree readouts, barcode text, crosshair labels, terminal carets, pulsing dots on static content. | Run the [parseable-text](quality/parseable-text.md) four-question gate; bind to real data or delete. | A genuinely technical subject where every mark is true, at most one or two per viewport. |
 | `RISK-FWK-001` | An untouched starter or component-library preset carrying its stock tokens, radii, icons, spacing, and example composition into a public identity. | Inspect the actual preset; theme the relationships that need a project voice. | Defaults as an intentional internal or product standard. |
+| `RISK-SUBSTRATE-001` | The shadcn/v0/Bolt substrate read whole, whatever tool made it: zinc-slate neutral scale, Geist or Inter, one radius on every element, 1px muted borders, blanket Lucide icons, library token names surviving verbatim, developer-tool minimalism carried onto a non-developer subject. The test is reskinnability: if swapping theme tokens would change nothing, the layout is the library's. | Re-author the token layer until component provenance is not guessable: project-named tokens, a neutral scale with a chosen temperature, radius roles, curated or custom iconography. The client's world outranks the toolkit; a wedding shop must not pass as a developer dashboard. | A genuine developer tool whose audience lives in that language, with tokens still themed on purpose. The fully untouched preset is RISK-FWK-001. |
+| `RISK-FORMULA-001` | A builder house formula beyond the skeleton: industry stock hero, client-logo carousel, service-card row, about blurb, tiered pricing, contact form with map, palette derived mechanically from the logo, one generic quote funnel. Everything on the page is derivable from business type plus location, which is exactly what a 30-second wizard collects. | Build from facts a wizard never asked for: real inventory, the actual buying journey, the owner's photos and voice. The skeleton verdict itself belongs to ABSOLUTE 6's swap test in the [owner absolutes](../policy/absolutes.md); this row diagnoses the surrounding gestalt. | Any single formula section survives when a recorded content derivation put it there and its proof is real. |
+| `RISK-REVEAL-001` | One reveal cloned to every section: scroll-triggered fade-up applied uniformly, marketplace parallax layers, drifting blur backdrops with no content job. The motion equivalent of an unchosen font. | Spend the motion budget on purpose-built moments at full intensity, a different mechanism per act, each teaching or revealing something. Delete reveals that merely announce a section exists. | One orchestrated entrance for genuinely sequential content, with reduced-motion honored. |
+| `RISK-IMGSET-001` | The generated-image tell set: garbled or pseudo-text inside images, impossible hands or geometry, glossy default-model sheen, and images that disagree on light, grade, and lens because each was pulled or generated alone. Hotlinked stock CDNs and stranger-stock genres (handshakes, headset smiles) read the same way. | Art-direct imagery as one set: real client photography first, even phone-grade. Generated media only under one lighting and grade recipe with every final pixel inspected; the set-continuity procedure lives in the [specificity review](quality/specificity-review.md) media pass. | Documentary variation across real photographs is evidence, not a defect. |
 
 ## Dated watch: the font clusters
 
@@ -130,6 +135,43 @@ generated." Review these when a result reads old, tired, or amateur.
 
 An expressive or showcase brief must clear this table as well as the ones
 above. Absence of trend is not presence of craft.
+
+## Builder-fingerprint hygiene
+
+Compiled 2026-08. Review by 2027-02. Detection tools identify builders from
+six technical surfaces: meta tags, script and asset hosts, DOM attributes,
+class and token patterns, HTTP responses, and package heritage. A hand-built
+site that accidentally carries a builder's signals gets filed as template
+output by anyone with a free browser extension. The rule is positive: every
+external host, token name, and metadata field on the shipped site is one the
+author chose. Run this sweep on the RENDERED DOM and the shipped bundle, not
+the authored source; libraries inject attributes at runtime.
+
+Sweep the shipped output for:
+
+- `<meta name="generator">` in any form, from any framework or plugin
+- Builder hosts: framerusercontent, framer.com/m/, events.framer.com,
+  lovable.app, lovable-uploads, cdn.gpteng.co, gptengineer, bolt.host
+- Builder attributes and globals: `data-framer-`, `data-lovable`,
+  `data-component-id`, `__framer`, tagger plugins in any config file
+- Tool names and generated comments inside the JS bundle; bundles are
+  grepped by detectors, not just the DOM
+- Stock or placeholder tokens verbatim: bare-HSL shadcn variables, "Color 1"
+  and "Heading H1" style names, an untouched components/ui folder,
+  `placeholder.svg?height=` images
+- Default Tailwind palette classes on an untouched config (indigo-500,
+  slate-200 borders) surviving into a public identity
+- Scaffold leftovers: default favicon, default title, sample og-image,
+  machine-hashed asset filenames, create-next-app residue
+- Package heritage: builder plugins and unused scaffold dependencies in the
+  lockfile of a client-owned repo
+- An empty root div whose content exists only after hydration; the pitch
+  must be readable in the initial HTML
+
+Vercel and Netlify hosting headers are unavoidable and weak; leave them.
+Detector scoring is a quorum: one direct builder artifact convicts alone,
+stack coincidences convict only together. Eliminate the direct class to
+zero, then thin the coincidences until no quorum can form.
 
 ## The self-fingerprint
 

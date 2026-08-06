@@ -105,6 +105,18 @@ Strip self-descriptors: premium, luxury, world-class, high-end. Demonstrate,
 never claim. If a headline could sit unchanged on ten other products, the
 typography cannot save it; rewrite the words first.
 
+Write from checkable specifics: real nouns, prices, street names, people,
+dates. Every major section carries at least one fact only this business
+could state. Take one side per page: a stated preference, a limit, an
+honest constraint ("closed Mondays") reads human where inoffensiveness
+reads generated. Vary sentence shape: follow a long sentence with a
+fragment, and when lists keep landing in threes, restructure some to one,
+two, or four items. Ship an FAQ entry only when it answers a question a
+real customer asked, with a fact the owner confirmed; an answer with no
+number, price, or policy in it is deleted. Keep real quotes verbatim with
+their irregular phrasing. Irregularity comes from real voice kept intact,
+never from manufactured typos, slang, or planted awkwardness.
+
 ## Residue vocabulary sweep
 
 Grep the RENDERED text of every page and state, including empty, loading,
@@ -120,6 +132,17 @@ error, and hidden accordion panels, plus alt text and meta descriptions:
   console encoding, plus the replacement character; expect rare false
   positives on legitimate French or Portuguese text and clear them by eye
 - Owner copy bans: the em dash character in any user-facing file
+- AI-era phrases, compiled 2026-08, review by 2027-02 (the vocabulary is
+  era-dated and shifts per model generation; refresh, never trust the 2023
+  list): `elevate`, `seamless`, `unlock`, `empower`, `delve`, `leverage`,
+  `streamline`, `supercharge`, `in today's fast-paced`, `look no further`,
+  `nestled in the heart of`, `commitment to excellence`, `it's not just`,
+  `isn't just`. A hit is a rewrite trigger, not proof; the cluster
+  diagnosis lives in [convergence-watch](../convergence-watch.md)
+  RISK-COPYFORM-001. This grep list is its mechanical arm.
+- Paste artifacts from model output: `oaicite`, `contentReference`,
+  `turn0search`, `[cite:`, `utm_source` inside body links, stray `**` and
+  `#` markdown residue, curly-quote inconsistency
 
 Any hit is a ship blocker. These are mechanical greps the workflow actually
 runs; a rule that exists only as prose gets violated.

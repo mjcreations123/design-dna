@@ -78,6 +78,28 @@ audit of this studio's real builds and rejections.
   gate, font verification, parseable text, demo-by-default, ledger, and the
   preship gate.
 
+### Added from the detection research sweep
+
+A second 9-agent research pass over the owner-supplied source list (YouTube
+detection and critique content, Framer/Lovable/Bolt/v0/Durable/Wix/10Web
+builder output, Wappalyzer/BuiltWith/isitvibecoded detection tools, AI-copy
+detection, Reddit and HN discourse, GitHub detectors, academic detection
+papers, and an AI-versus-award-tier dataset comparison) produced:
+
+- Four new dated watch clusters: RISK-SUBSTRATE-001 (the shadcn/v0/Bolt
+  substrate and its reskinnability test), RISK-FORMULA-001 (the
+  small-business builder formula), RISK-REVEAL-001 (uniform scroll-reveal
+  motion), RISK-IMGSET-001 (the generated-image tell set).
+- The builder-fingerprint hygiene sweep: technical signals detection tools
+  use (generator tags, builder hosts and attributes, stock tokens, scaffold
+  residue, bundle comments), so hand-built work never carries false builder
+  signals; wired into the preship gate.
+- The dated AI-phrase grep list and paste-artifact sweep in parseable-text,
+  plus positive copy doctrine (checkable specifics, one side per page,
+  sentence-shape variety, FAQ facts, verbatim quotes).
+- Human-creativity indicators in the specificity review: the authorship
+  properties generated output does not exhibit, as review questions.
+
 ### Removed
 
 - `scripts/__pycache__/` build residue.

@@ -57,6 +57,10 @@ waived. P1 items are fixed or shown to carry a logged client direction.
 - [ ] Rotation test passed: display family absent from the last three
       rows; macrostructure differs from the previous two; class saturation
       rule applied
+- [ ] Builder-fingerprint sweep clean on the shipped output (the hygiene
+      list in [convergence-watch](../references/convergence-watch.md)): no
+      generator tags, builder hosts or attributes, stock token names, or
+      scaffold residue
 - [ ] Placeholder register empty, or every open row explicitly deferred by
       the owner (required empty before any live state)
 

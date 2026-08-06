@@ -127,6 +127,29 @@ Accountable-owner rejection reopens the affected conclusion. Address the
 organizing cause rather than rotating surface ingredients or adding detached
 effects.
 
+### Human-creativity indicators
+
+Generated and template output shows polish without authorship; these are
+the properties it does not exhibit. When the brief rejects generic work,
+ask which of them the candidate can answer. None is individually required,
+per the terms above, but a candidate that answers none of them has no
+evidence of authorship beyond polish, and polish alone no longer reads
+human.
+
+- Which structural element could exist on no other site, because the
+  content produced it?
+- Where does the work break one convention on purpose, and how does the
+  break serve the journey rather than decorate it?
+- Does the page have acts, changes of scene, scale, and rhythm, or is it
+  a stack of interchangeable modules?
+- Is there one interaction here that no template ships, and is it earned?
+- Do the images read as one art-directed set: same light, same grade,
+  same world?
+- Which claims carry a noun, number, place, or date only this business
+  could state?
+- Where is asymmetry doing a job: weighting, sequencing, or pointing the
+  eye?
+
 ## Audit copy and claims
 
 Review high-salience navigation, headings, labels, actions, numbers, and
