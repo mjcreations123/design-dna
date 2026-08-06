@@ -159,6 +159,18 @@ aesthetic rule that did not come from the project or the absolutes.
 - Verify by seeing: judging craft from code alone is prohibited. Nothing
   ships without the rendered screenshot pair, saved and looked at. If
   rendering is impossible, the deliverable is blocked and says so.
+- Working artifacts are never mistakable for the site. There is no private
+  render in a watched pane: anything written to disk or rendered may reach
+  the owner's eyes, and the owner's first sight of a rendered artifact
+  shapes every judgment after it. Internal renders (direction proofs,
+  specimen pages, harness pages) live under `.design-dna/proofs/`, never in
+  the site root, and carry a visible INTERNAL WORKING PROOF banner. A
+  specimen strip or candidate comparison never shares a page with a
+  composition that could be read as the design. A placeholder media area is
+  a flat neutral labeled frame, never a gradient fill or styled decoration;
+  a gradient block standing in for a photo IS the AI look. Before yielding
+  any turn, point every watched preview at the most finished state, and
+  present results with the saved gate screenshots, never a mid-process pane.
 - Consult the [ledger](references/quality/ledger.md) before directing and
   run its rotation test (family: absent from the last three rows;
   macrostructure: differs from the previous two; class saturation applies);

@@ -52,7 +52,10 @@ a specific checkable fact).
 Illegitimate: **decorative props** (fake telemetry, coordinates, serials,
 "SYS.01", degree readouts, barcode strings, crosshair labels, blueprint
 annotations on non-technical subjects) and **internal residue** (debug
-counters, placeholder copy, unresolved tokens, developer vocabulary).
+counters, placeholder copy, unresolved tokens, developer vocabulary, and
+the studio's own process language: specimen labels, typeface or candidate
+names, recipe notes, bracket placeholders like "[hero photo]" on any
+rendered surface a viewer could reach).
 
 Decorative technical marks are permissible only when the subject genuinely
 is technical, every mark is TRUE, and at most one or two appear per

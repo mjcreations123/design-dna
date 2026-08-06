@@ -181,6 +181,17 @@ unknowns, several like-for-like candidates, or competing route bodies. Avoid
 mistaking copy, palette, font, photograph, or decoration swaps on unchanged
 geometry for a new direction.
 
+Proof-artifact hygiene, learned from a real owner rejection: the owner saw
+in-progress proofs and judged them as the site. Every proof and specimen
+render is an internal artifact and must be impossible to mistake for the
+deliverable. Keep them under `.design-dna/proofs/`, give each a fixed
+visible banner reading INTERNAL WORKING PROOF with a one-line purpose, keep
+specimen strips and candidate labels on their own pages, and use flat
+neutral labeled frames for any not-yet-real media slot; never a gradient
+fill, which is itself the strongest generated-look signal. If a preview
+surface is open while you work, it shows scaffolding the moment you write
+it; re-point it at the most finished page before ending any working step.
+
 Render the comparisons that will reduce real uncertainty before scaling.
 Compare fit, comprehension, visual quality, typography, composition,
 attention, emotional effect, cultural and genre fit, content and media demands,

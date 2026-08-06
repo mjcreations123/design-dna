@@ -68,6 +68,9 @@ lines.
       list in [convergence-watch](../references/convergence-watch.md)): no
       generator tags, builder hosts or attributes, stock token names, or
       scaffold residue
+- [ ] No internal working artifact reachable as if it were the site:
+      proofs and specimens live under `.design-dna/proofs/` with their
+      INTERNAL banner, and every watched preview shows the finished page
 - [ ] Placeholder register empty, or every open row explicitly deferred by
       the owner (required empty before any live state)
 
