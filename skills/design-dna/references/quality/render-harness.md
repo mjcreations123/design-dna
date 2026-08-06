@@ -41,6 +41,12 @@ Confirm completeness mechanically: the capture height matches
 `scrollHeight` at the UNCHANGED viewport, and the bottom rows sample as
 footer pixels, not mid-section content.
 
+`captureBeyondViewport` never fires `loading="lazy"` images; a far-below-
+fold image captures as an empty box while nearer ones happen to load. Before
+the capture, sweep the scroll position through the full document height,
+return to the top, and `await Promise.all([...document.images].map(i =>
+i.decode()))` so every image is painted.
+
 ## Probe sequencing
 
 Probes run at whatever viewport the LAST navigation left. Three reads of

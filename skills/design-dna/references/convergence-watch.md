@@ -188,3 +188,13 @@ proposed hero composition, headline scale and case, eyebrow treatment,
 section rhythm, and footer form against the previous two ledger rows. If
 the wireframes match, the build has already failed regardless of palette
 and family. Typography and structure are one fingerprint.
+
+COPY VOICE is a fingerprint axis of its own, and the hardest to see from
+inside: a batch review of three structurally distinct builds still
+attributed all three to one writer by their kicker constructions,
+honesty-flex closers ("if not we say so"), shared demo-notice sentence
+skeletons, separator punctuation, and four-count section logic. For batch
+work, give each build its own voice register (dry administrative, blunt
+trade, warm narrative) and vary the mandated boilerplate's construction,
+not just its nouns. Masked copy from two builds should not read as one
+author.

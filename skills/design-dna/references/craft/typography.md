@@ -291,10 +291,15 @@ the requested stack, never the face that painted.
    `ILil1| mmwWM 0O8B .,:; ’ftfi`
    (narrow strokes, wide strokes, confusable rounds, punctuation, a curly
    apostrophe, ligature triggers; extend it with any glyph the subset must
-   carry): `ctx.font='72px monospace'` vs `'72px "Family", monospace'`;
-   widths must differ. Repeat against serif as a second baseline. Equal
-   widths on both baselines mean the fallback painted, whatever the CSS
-   says.
+   carry), at each weight the page actually uses, never only the default
+   400. Measure four widths: bare `monospace`, bare `serif`,
+   `"Family", monospace`, and `"Family", serif`. The face PAINTED when the
+   two stacked measurements equal each other AND differ from at least one
+   bare baseline; a fallback would follow its stack and make the two
+   stacked widths differ. Requiring difference from BOTH baselines is a
+   false-negative trap: a real face's advance width can coincide with one
+   baseline by chance (this studio hit a 0.7px coincidence against Times
+   on a live build).
 3. **Synthesis proof (weights and styles).** Enumerate every (family,
    weight, style) combination in computed styles, skipping combinations
    that resolve to generic or system families (those are judged by step 4's
