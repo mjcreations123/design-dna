@@ -253,8 +253,10 @@ already covered by [the two axes](#two-axes-and-the-default-is-awesome).
 | First complete render or observed durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
 | Explicit AI-looking, vibe-coded, templated, house-style concern | Direction from project evidence first; after a render, the [convergence review](references/convergence-watch.md); close with the [specificity review](references/quality/specificity-review.md). |
 | Palette, depth, composition | [Color and composition](references/craft/color-composition.md). |
+| Dark mode, a second colour scheme, a theme toggle | [Dual themes and dark mode](references/craft/theming-dark-mode.md): derive rather than invert, and both schemes are separate deliverables. |
 | Grid, grouping, rhythm, density | [Layout and density](references/craft/layout-density.md). |
 | Routes, navigation, headings, actions, content states | [Content and IA](references/craft/content-ia.md). |
+| Buttons, errors, empty states, confirmations, labels, any small functional string | [Microcopy](references/craft/microcopy.md). |
 | Multi-route anthology or capability showcase | [Route-family art direction](references/craft/route-family-art-direction.md); activate Range Study. |
 | Photography, generated media, illustration, external assets | [Imagery](references/craft/imagery-illustration.md) and [asset integrity](references/quality/asset-integrity.md). |
 | Icons or pictograms | [Iconography](references/craft/iconography.md). |
@@ -269,6 +271,8 @@ already covered by [the two axes](#two-axes-and-the-default-is-awesome).
 | Signup, auth, onboarding, account | [Identity and onboarding](references/flows/identity-account-onboarding.md). |
 | Plans, invoices, renewals, cancellations | [Subscription and billing](references/flows/subscription-billing.md). |
 | Inbox, chat, notifications | [Messaging and notifications](references/flows/messaging-notifications.md). |
+| Chat, assistant, copilot, generated-answer or streaming surface | [Conversational interfaces](references/flows/conversational-interfaces.md): the streaming contract, honest rendering of model output, provenance, and the named bans. |
+| Receipt, reset, confirmation, digest, campaign: the deliverable is an email | [Email as a medium](references/craft/email-design.md). |
 | Multi-step forms, consequential transactions | [Complex forms](references/flows/forms-complex-transactions.md). |
 | Cross-channel journeys, service handoffs | [Service journeys](references/flows/service-journey-handoffs.md); [service blueprint](templates/service-blueprint-template.md) when complex. |
 | Support, complaints, disputes, appeals | [Support flows](references/flows/support-complaints-appeals.md). |

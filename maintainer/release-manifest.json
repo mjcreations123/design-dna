@@ -1,24 +1,24 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "5.0.3",
-  "distribution_sha256": "5c9f0a8d70e4c602d6e9f2625b211baca0e1f0a93974965ab66bbe17d4842f68",
-  "content_sha256": "f7d5f16beeb1972598d585d73d53b86a718c081663f911613652b342a5ce3275",
-  "codex_plugin_manifest_sha256": "7a264808cae2c269c7e7544c67489c170d49d8de21a9828c2e342f25e0d48fe0",
-  "claude_plugin_manifest_sha256": "e1158e11c5d76ec8c7cad4c9ae8ddb5b533d89f524000ebbc0e0de282e91a02a",
-  "sbom_sha256": "16f98f1bc36671d1c976eb5b14bc262927f8c5454a153671095bb6543c780751",
-  "compatibility_matrix_sha256": "516431110731e3c336b933d8118892d2c876ddbf797edf897132f2b447497ca5",
+  "version": "5.0.4",
+  "distribution_sha256": "f3fcc595cb6b6782eca5110ec0e7f0b764fe92a83af122988343b686ecbd2cf7",
+  "content_sha256": "767a3ee560e11c11241da9d7bd1f32f144303351d7e105068770996edd0b4b7e",
+  "codex_plugin_manifest_sha256": "b983b49e756e0b6e4c0860f843ad05bf2bd757bf01647b96432266dc1eea4e57",
+  "claude_plugin_manifest_sha256": "f3f73a99e9fc7d75d175ff4d5a2d76c85728ebd94d431f9d062fed8f8b45134e",
+  "sbom_sha256": "54e9e76e32798d2ac5389257e9a2738fc175d19c65445e08c8a73e89306fb782",
+  "compatibility_matrix_sha256": "05a7be0096deaeb1fda542b80e33e625c798a78e9a85e79b44a1066f684899cb",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "5c9f0a8d70e4c602d6e9f2625b211baca0e1f0a93974965ab66bbe17d4842f68",
-    "runtime": "f7d5f16beeb1972598d585d73d53b86a718c081663f911613652b342a5ce3275",
-    "codex_plugin_manifest": "7a264808cae2c269c7e7544c67489c170d49d8de21a9828c2e342f25e0d48fe0",
-    "claude_plugin_manifest": "e1158e11c5d76ec8c7cad4c9ae8ddb5b533d89f524000ebbc0e0de282e91a02a",
-    "sbom": "16f98f1bc36671d1c976eb5b14bc262927f8c5454a153671095bb6543c780751",
-    "compatibility_matrix": "516431110731e3c336b933d8118892d2c876ddbf797edf897132f2b447497ca5",
+    "distribution_tree": "f3fcc595cb6b6782eca5110ec0e7f0b764fe92a83af122988343b686ecbd2cf7",
+    "runtime": "767a3ee560e11c11241da9d7bd1f32f144303351d7e105068770996edd0b4b7e",
+    "codex_plugin_manifest": "b983b49e756e0b6e4c0860f843ad05bf2bd757bf01647b96432266dc1eea4e57",
+    "claude_plugin_manifest": "f3f73a99e9fc7d75d175ff4d5a2d76c85728ebd94d431f9d062fed8f8b45134e",
+    "sbom": "54e9e76e32798d2ac5389257e9a2738fc175d19c65445e08c8a73e89306fb782",
+    "compatibility_matrix": "05a7be0096deaeb1fda542b80e33e625c798a78e9a85e79b44a1066f684899cb",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "ebb46e119da7ec4e55eaa780424b3de794ccbfbe3dd850d556de268a87eb7677",
-    "distribution_docs": "2867b4c65eae6f75de926aa7849cca4267f083cbb02a869d53716777c0ebd407",
+    "compatibility_verification": "ff971b6f4b4dcc558acfe4e1a8e97a1b8aeca7320b1e87b5c8389fd81a8c8283",
+    "distribution_docs": "cfceba3a8c974f9902d4aec7ef08d600f2c27aaf4cf9acecc561fa5ccaf164b3",
     "eval_contract": "13991bcec02bff58cc4586582bc636b7ebc59d99d469d506ace14f30a37bc3d8",
     "eval_proof": "620b5a607cc75af514649227aef43f7c0f6fceb456bb429b7a8c29e1530624bd",
     "evidence": "fc7237df45cd1bc8372ca6dea1511c64cee4fad7ca69ca831398c47dca467d2a",
@@ -26,14 +26,14 @@
     "schemas": "2dfb712ac5b4b755f23c39ef4fb26a9065a7dc229753b5dfb712df2a84fac85a",
     "tests": "521465d5e72b134e55f78202e7a8b4874e0db14f482ebf1dd40019a4a3456df7"
   },
-  "release_sha256": "d812018e3c793d18b72a1ee77e9d5a7a72738561c437844a0025c97bf16573e5",
-  "generated_at": "2026-08-07T04:41:51.778349+00:00",
+  "release_sha256": "f94616977c1fbf9090811c0a8789d016077542fa045ebc9b725276b24f4c60fb",
+  "generated_at": "2026-08-07T21:39:56.504679+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 25746,
-      "sha256": "1797b701a84d58f8211c77863d75f6e6291b8381995668f25a68e882664a718c"
+      "size": 26446,
+      "sha256": "bd7fff01d71c65ecbd1cd6f3e6578ff38f098e3d7a0cf65f3a78b7811f36c676"
     },
     {
       "path": "agents",
@@ -132,6 +132,12 @@
       "sha256": "48a0d49deb84dbd11913563d71d602982357f990119f778aa45c089073d9e615"
     },
     {
+      "path": "references/craft/email-design.md",
+      "type": "file",
+      "size": 7476,
+      "sha256": "b72b75929931e86d79c99423caffa623d07147a99d37d0047cf777597c125cd1"
+    },
+    {
       "path": "references/craft/expression-energy.md",
       "type": "file",
       "size": 6939,
@@ -162,6 +168,12 @@
       "sha256": "c4bd992dfc54eff20753a58e800044dceaa7ceaa7f82baa2c19279916b73d4c5"
     },
     {
+      "path": "references/craft/microcopy.md",
+      "type": "file",
+      "size": 8209,
+      "sha256": "272ef0832f7ab5d5ad22ce43fb289148c0f24bf06b4d1b0eef21d26a62d09959"
+    },
+    {
       "path": "references/craft/motion-interaction.md",
       "type": "file",
       "size": 10239,
@@ -184,6 +196,12 @@
       "type": "file",
       "size": 11090,
       "sha256": "af099e194f82088e8087132d6f9b6f727bc0bce2d50743017d7fe290eb3b32a6"
+    },
+    {
+      "path": "references/craft/theming-dark-mode.md",
+      "type": "file",
+      "size": 6862,
+      "sha256": "ca5d0391d120a6f685b3918793e0dd9535f17191d194ad66bcd86e041a5fe1dd"
     },
     {
       "path": "references/craft/typography.md",
@@ -214,6 +232,12 @@
       "type": "directory",
       "size": 0,
       "sha256": null
+    },
+    {
+      "path": "references/flows/conversational-interfaces.md",
+      "type": "file",
+      "size": 8641,
+      "sha256": "5f1b2cb0fdb0037dc24cad221e07e832218627329e890b089e72677619f26bfc"
     },
     {
       "path": "references/flows/forms-complex-transactions.md",
@@ -524,8 +548,8 @@
     {
       "path": "release.json",
       "type": "file",
-      "size": 80,
-      "sha256": "89ebb24bcad46df0c9bceb9bfd0eada6964fcc64a667b0870d33578177f005b8"
+      "size": 81,
+      "sha256": "aa1d32b9e292cb1f11a98f33d337f4d6cfd6e316447a87b57b90a85be4bf8e83"
     },
     {
       "path": "schemas",
@@ -730,8 +754,8 @@
     {
       "path": ".claude-plugin/plugin.json",
       "type": "file",
-      "size": 568,
-      "sha256": "e1158e11c5d76ec8c7cad4c9ae8ddb5b533d89f524000ebbc0e0de282e91a02a"
+      "size": 549,
+      "sha256": "f3f73a99e9fc7d75d175ff4d5a2d76c85728ebd94d431f9d062fed8f8b45134e"
     },
     {
       "path": ".codex-plugin",
@@ -742,8 +766,8 @@
     {
       "path": ".codex-plugin/plugin.json",
       "type": "file",
-      "size": 1173,
-      "sha256": "7a264808cae2c269c7e7544c67489c170d49d8de21a9828c2e342f25e0d48fe0"
+      "size": 1141,
+      "sha256": "b983b49e756e0b6e4c0860f843ad05bf2bd757bf01647b96432266dc1eea4e57"
     },
     {
       "path": ".gitattributes",
@@ -790,8 +814,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 40084,
-      "sha256": "666140078e98a9718b96688540b8863355587e9b145be12e4c5f3bf2b8d2ad05"
+      "size": 42928,
+      "sha256": "03fb9cd94d0ae020cd8991b384c42396fade6ce42421e35ed2de41412086cabb"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -815,7 +839,7 @@
       "path": "README.md",
       "type": "file",
       "size": 18593,
-      "sha256": "0287ed6525e5c4878b6885862f5aab3fd2f736df971f9ac715b239aaab912daa"
+      "sha256": "d74397a0524a1d144959a7033edf3a28e63e3d136f8d6b035579c2370ed3fdd8"
     },
     {
       "path": "SECURITY.md",
@@ -935,7 +959,7 @@
       "path": "maintainer/attestations/test-attestation.json",
       "type": "file",
       "size": 79626,
-      "sha256": "0e611cadb66b6de4b8d6f947a9e3b4825e68dcf0d57039e70d77be3c5cd95085"
+      "sha256": "68dd8c4fb63c8788cca5b56564fbd5e2e7aca07082f2cb3a400cf81929341d66"
     },
     {
       "path": "maintainer/compatibility",
@@ -958,8 +982,8 @@
     {
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
-      "size": 10682,
-      "sha256": "516431110731e3c336b933d8118892d2c876ddbf797edf897132f2b447497ca5"
+      "size": 10452,
+      "sha256": "05a7be0096deaeb1fda542b80e33e625c798a78e9a85e79b44a1066f684899cb"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -2741,7 +2765,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "16f98f1bc36671d1c976eb5b14bc262927f8c5454a153671095bb6543c780751"
+      "sha256": "54e9e76e32798d2ac5389257e9a2738fc175d19c65445e08c8a73e89306fb782"
     },
     {
       "path": "maintainer/schemas",
@@ -3268,8 +3292,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 25746,
-      "sha256": "1797b701a84d58f8211c77863d75f6e6291b8381995668f25a68e882664a718c"
+      "size": 26446,
+      "sha256": "bd7fff01d71c65ecbd1cd6f3e6578ff38f098e3d7a0cf65f3a78b7811f36c676"
     },
     {
       "path": "skills/design-dna/agents",
@@ -3368,6 +3392,12 @@
       "sha256": "48a0d49deb84dbd11913563d71d602982357f990119f778aa45c089073d9e615"
     },
     {
+      "path": "skills/design-dna/references/craft/email-design.md",
+      "type": "file",
+      "size": 7476,
+      "sha256": "b72b75929931e86d79c99423caffa623d07147a99d37d0047cf777597c125cd1"
+    },
+    {
       "path": "skills/design-dna/references/craft/expression-energy.md",
       "type": "file",
       "size": 6939,
@@ -3398,6 +3428,12 @@
       "sha256": "c4bd992dfc54eff20753a58e800044dceaa7ceaa7f82baa2c19279916b73d4c5"
     },
     {
+      "path": "skills/design-dna/references/craft/microcopy.md",
+      "type": "file",
+      "size": 8209,
+      "sha256": "272ef0832f7ab5d5ad22ce43fb289148c0f24bf06b4d1b0eef21d26a62d09959"
+    },
+    {
       "path": "skills/design-dna/references/craft/motion-interaction.md",
       "type": "file",
       "size": 10239,
@@ -3420,6 +3456,12 @@
       "type": "file",
       "size": 11090,
       "sha256": "af099e194f82088e8087132d6f9b6f727bc0bce2d50743017d7fe290eb3b32a6"
+    },
+    {
+      "path": "skills/design-dna/references/craft/theming-dark-mode.md",
+      "type": "file",
+      "size": 6862,
+      "sha256": "ca5d0391d120a6f685b3918793e0dd9535f17191d194ad66bcd86e041a5fe1dd"
     },
     {
       "path": "skills/design-dna/references/craft/typography.md",
@@ -3450,6 +3492,12 @@
       "type": "directory",
       "size": 0,
       "sha256": null
+    },
+    {
+      "path": "skills/design-dna/references/flows/conversational-interfaces.md",
+      "type": "file",
+      "size": 8641,
+      "sha256": "5f1b2cb0fdb0037dc24cad221e07e832218627329e890b089e72677619f26bfc"
     },
     {
       "path": "skills/design-dna/references/flows/forms-complex-transactions.md",
@@ -3760,8 +3808,8 @@
     {
       "path": "skills/design-dna/release.json",
       "type": "file",
-      "size": 80,
-      "sha256": "89ebb24bcad46df0c9bceb9bfd0eada6964fcc64a667b0870d33578177f005b8"
+      "size": 81,
+      "sha256": "aa1d32b9e292cb1f11a98f33d337f4d6cfd6e316447a87b57b90a85be4bf8e83"
     },
     {
       "path": "skills/design-dna/schemas",

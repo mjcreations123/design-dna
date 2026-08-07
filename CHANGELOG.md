@@ -5,6 +5,49 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.0.4 - Four missing surfaces
+
+A coverage audit over the whole reference tree, prompted by the owner asking
+what the skill still could not do. Most suspected gaps turned out to exist
+under different vocabulary; four were genuinely absent. Each new file is
+routed, so it loads when the decision arrives rather than sitting unreachable.
+
+### Added
+
+- `references/flows/conversational-interfaces.md`: the chat, assistant, and
+  generated-answer surface. The streaming contract as a set of real states
+  (idle, submitted, streaming, stopped, complete, and six distinguishable
+  failure modes) rather than an effect; honest rendering of model output,
+  including wide tables and code inside narrow containers and never treating
+  model markup as live HTML; provenance and correction paths; the composer;
+  metering and context limits. Named bans cover simulated typing on canned
+  content, artificial delay before an instant answer, fabricated confidence
+  scores, citation chrome with no retrieved source, and invented personas.
+  Streaming text is the hardest case for assistive technology, so the verify
+  section requires a real screen-reader pass rather than an assumption.
+- `references/craft/theming-dark-mode.md`: a second colour scheme as a second
+  design, not a filter. When to ship one at all, and the derivation rules that
+  inversion gets wrong: no pure black, no full-strength white body text,
+  accents that need retuning per scheme, elevation logic that reverses, and
+  per-scheme ink variants because a value that clears 4.5:1 on paper commonly
+  fails on dark. Imagery and logos need per-asset decisions rather than a
+  blanket CSS invert. The preference contract has three states (system, light,
+  dark), not two. Both schemes are separate deliverables under ABSOLUTE 11.
+- `references/craft/email-design.md`: email as its own medium. The structural
+  floor (tables, inline styles, backgrounds on cells, no flexbox or grid in
+  the installed base), designing for blocked images so alt text is visible
+  design, mail-client dark-mode inversion, fallback type as the real
+  typography, and the parts nobody designs: subject, preheader, sender name,
+  plain-text alternative, footer. Verification requires captures from real
+  mail clients, since a browser does not render this medium.
+- `references/craft/microcopy.md`: the generative counterpart to
+  parseable-text.md, which only removes strings. Outcome-not-mechanism
+  naming; the three parts of an error message and the ban on leaking
+  internals as body copy (ABSOLUTE 10); empty states as four distinct states
+  that are routinely written as one, including the failed-to-load case whose
+  "No items yet" copy is a lie the reader acts on; destructive confirmation;
+  why a placeholder is not a label; and translation expansion.
+
 ## 5.0.3 - Second-build hardening
 
 Learned from a build outside the studio: a friend of the owner tried the

@@ -33,7 +33,7 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Release status:** `5.0.3` is an unreleased candidate. Its workflow and
+> **Release status:** `5.0.4` is an unreleased candidate. Its workflow and
 > package changes are implemented, but formal host, comparative, independent
 > rendered-review, and strict release qualification remain pending. The
 > checked-in attestations predate this source and are retained as historical
