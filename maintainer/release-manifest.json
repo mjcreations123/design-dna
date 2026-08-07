@@ -2,22 +2,22 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "5.0.2",
-  "distribution_sha256": "cfb0033fe91cf261bc2783e6b135ca06b34fcab716d1e8c3d452c55fab0b6f97",
-  "content_sha256": "e058d09565843e0b15923d57d74ac492ef5a3f1a69655c13fabf4d95f772b24d",
+  "distribution_sha256": "878a6fafa0b897186d75163ee7a601dcf4efb8663394a0afd9037cf3c9416e74",
+  "content_sha256": "8462d03fdcbaa4ff7db08a85051b61c6b785e2bbd2f0cdd3927b5dcf1b91c677",
   "codex_plugin_manifest_sha256": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
   "claude_plugin_manifest_sha256": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-  "sbom_sha256": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff",
-  "compatibility_matrix_sha256": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
+  "sbom_sha256": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32",
+  "compatibility_matrix_sha256": "4a87bed3a837feaf48a3c391b226f7dfa58786ab9e8bd1e92545bc6a5ecc6469",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "cfb0033fe91cf261bc2783e6b135ca06b34fcab716d1e8c3d452c55fab0b6f97",
-    "runtime": "e058d09565843e0b15923d57d74ac492ef5a3f1a69655c13fabf4d95f772b24d",
+    "distribution_tree": "878a6fafa0b897186d75163ee7a601dcf4efb8663394a0afd9037cf3c9416e74",
+    "runtime": "8462d03fdcbaa4ff7db08a85051b61c6b785e2bbd2f0cdd3927b5dcf1b91c677",
     "codex_plugin_manifest": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
     "claude_plugin_manifest": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-    "sbom": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff",
-    "compatibility_matrix": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81",
+    "sbom": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32",
+    "compatibility_matrix": "4a87bed3a837feaf48a3c391b226f7dfa58786ab9e8bd1e92545bc6a5ecc6469",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "f770d885e650ddb71594b60fed7a3a51dda1b3501fee2f72c6a3430189a7e873",
+    "compatibility_verification": "2fc420765c591941c210dd210be7f30c5dd58b2aee30c2bcf74f0e83f6670308",
     "distribution_docs": "97b3526c6824331c56858554e929c7e4c37c316208fb534d7d3c51108b7e8601",
     "eval_contract": "13991bcec02bff58cc4586582bc636b7ebc59d99d469d506ace14f30a37bc3d8",
     "eval_proof": "620b5a607cc75af514649227aef43f7c0f6fceb456bb429b7a8c29e1530624bd",
@@ -26,8 +26,8 @@
     "schemas": "2dfb712ac5b4b755f23c39ef4fb26a9065a7dc229753b5dfb712df2a84fac85a",
     "tests": "521465d5e72b134e55f78202e7a8b4874e0db14f482ebf1dd40019a4a3456df7"
   },
-  "release_sha256": "2f6eccbcc2c9b0b11e6eca4846f1b7516e248efb4a8e2ff43c82b1d9fd6efebd",
-  "generated_at": "2026-08-06T22:24:08.851395+00:00",
+  "release_sha256": "38dad9acc8a40843408b44e57b93bf960611e2c90f9a79dac4232affdd039866",
+  "generated_at": "2026-08-07T01:40:30.819382+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -74,8 +74,8 @@
     {
       "path": "references/convergence-watch.md",
       "type": "file",
-      "size": 20762,
-      "sha256": "05719700e31f3ff41420560c8497d03e3c1eb34034ebdb2f2fcf9f67078fafa8"
+      "size": 23902,
+      "sha256": "d0b66c28ee98b8f4301e9e0ee76b18d6e9c8277e94f31f8b669332bc3a1c4cf7"
     },
     {
       "path": "references/craft",
@@ -934,8 +934,8 @@
     {
       "path": "maintainer/attestations/test-attestation.json",
       "type": "file",
-      "size": 68242,
-      "sha256": "073842d59c2f86c743c4583a4ada14055b6a8697b8abaaaacb17c3f4de5a62e2"
+      "size": 79626,
+      "sha256": "88501f5a95b2ebc965de4dc2b5018c3e86844c234ed7df44cf7cd404d912717a"
     },
     {
       "path": "maintainer/compatibility",
@@ -958,8 +958,8 @@
     {
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
-      "size": 9970,
-      "sha256": "5ebf2198ce0f0b0e38ef0402b121001854a05a51a49908dc755775c742016c81"
+      "size": 10423,
+      "sha256": "4a87bed3a837feaf48a3c391b226f7dfa58786ab9e8bd1e92545bc6a5ecc6469"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -2741,7 +2741,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "3f13c734be6d63592ad637ded7ab5d471053845610bd8dfeac53a6d13a8d8bff"
+      "sha256": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32"
     },
     {
       "path": "maintainer/schemas",
@@ -3310,8 +3310,8 @@
     {
       "path": "skills/design-dna/references/convergence-watch.md",
       "type": "file",
-      "size": 20762,
-      "sha256": "05719700e31f3ff41420560c8497d03e3c1eb34034ebdb2f2fcf9f67078fafa8"
+      "size": 23902,
+      "sha256": "d0b66c28ee98b8f4301e9e0ee76b18d6e9c8277e94f31f8b669332bc3a1c4cf7"
     },
     {
       "path": "skills/design-dna/references/craft",

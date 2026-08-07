@@ -31,6 +31,7 @@ decays, kept separate for exactly that reason.
 - [Post-render procedure](#post-render-procedure)
 - [Dated watch: current clusters](#dated-watch-current-clusters)
 - [Dated watch: the font clusters](#dated-watch-the-font-clusters)
+- [Dated watch: the generator defaults](#dated-watch-the-generator-defaults)
 - [Dated-signal watch: the opposite failure](#dated-signal-watch-the-opposite-failure)
 - [Builder-fingerprint hygiene](#builder-fingerprint-hygiene)
 - [The self-fingerprint](#the-self-fingerprint)
@@ -127,6 +128,56 @@ This table is the single canonical watch list; HARD 1 in the
 face on a current "use this instead" list is on a 12 to 18 month decay
 clock; Instrument Serif flipped from recommendation to tell in about a year.
 Date every recommendation.
+
+## Dated watch: the generator defaults
+
+Compiled 2026-08. These are the values a coding agent reaches for when
+nothing in the brief tells it what to reach for. They are listed exactly so
+a rendered result can be checked against them, and for no other purpose:
+none of these is wrong, none of them proves anything on its own, and a
+project whose own evidence lands on one of them keeps it and records why.
+The cluster is the finding. One hit is a coincidence.
+
+Where they came from is the reason they decay. Adam Wathan picked indigo as
+Tailwind UI's default accent around 2020, by his own account not as a design
+judgement but as a neutral placeholder that demoed well. Tailwind became the
+dominant utility framework, the tutorials and starter templates carried the
+default everywhere, models trained on that corpus learned that buttons are
+purple, and their output is now training data for the next round. It is a
+feedback loop, not a taste.
+
+**Colour, verified hex.** The 200 to 290 degree band carries almost all of
+it. Tailwind `indigo-500` #6366F1 and `indigo-600` #4F46E5; `violet-500`
+#8B5CF6 and `violet-600` #7C3AED; `purple-500` #A855F7 and `purple-600`
+#9333EA; `blue-500` #3B82F6 and `blue-600` #2563EB. The dark grounds run
+`slate-800` #1E293B, `slate-900` #0F172A and `slate-950` #020617. The
+gradient strings themselves are the signature: `from-blue-600
+to-indigo-700`, `from-indigo-500 to-purple-600`, and any of them applied to
+text. The owner absolutes already refuse the indigo-violet gradient kit and
+gradient text outright; this entry only supplies the exact values.
+
+**Faces.** Inter first, then Poppins, Roboto, Montserrat, Geist and DM Sans;
+one 2026 measurement put those six at roughly 94 percent of generated
+frontend output, which is a claim about that sample and not a law. The
+second tier is the attempted upgrade rather than the default: Space Grotesk,
+Instrument Serif, Geist again, and the single italic serif word set against
+an otherwise neutral grotesk. Cross-check every candidate against the
+[font clusters](#dated-watch-the-font-clusters) above; that list governs.
+
+**Shape and size.** `border-radius: 0.5rem` on everything alike; large
+low-opacity shadows and coloured glows standing in for depth; a centred hero
+with a decorative badge above the h1; three or four identical cards with an
+icon on top; a numbered 1-2-3 process strip; a horizontal band of statistics;
+emoji used as interface icons; and uppercase letterspaced micro-labels as
+the only labelling device on the page. That last one is a saturation
+finding, never a single-instance one: uppercase labels are ordinary
+editorial craft, and the tell is a page where they are the sole device.
+
+**The silhouette check.** Reduce the rendered home page to a 200 pixel wide
+black-on-white silhouette, do the same for several real competitors, and lay
+them side by side. If the page cannot be picked out of that row, the
+structure is the default regardless of which colours and faces it carries.
+This is a structural test, so run it after a render and never as a brief.
 
 ## Dated-signal watch: the opposite failure
 

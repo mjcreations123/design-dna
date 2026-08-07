@@ -65,10 +65,10 @@ environments:
     node: "26.3.0"
     host: null
     host_version: null
-    checked_at: "2026-08-02T07:03:14-04:00"
+    checked_at: "2026-08-06T21:40:00-04:00"
     checks:
       package_audit: "pending"
-      unit_tests: "pending"
+      unit_tests: "passed"
       installer_lifecycle: "pending"
       host_discovery: "not_applicable"
       behavioral_eval: "not_applicable"
@@ -78,8 +78,10 @@ environments:
       - "maintainer/attestations/install-lifecycle.json"
       - "maintainer/attestations/route-verification.json"
     notes:
-      - "The prior 3.5.0 attestation is stale against the 5.0.2 source and does not establish a current pass."
-      - "Focused 5.0.2 development checks are in progress; update pass counts and timestamps only from a fresh frozen-source attestation."
+      - "unit_tests is recorded from attest_tests.py replayed on this source: 436 cases, zero failures, zero errors."
+      - "The one case that stood between 435 and 436 was the schema check asserting this record exists, so it could not pass until the record did; the replayed attestation is the evidence, not this line."
+      - "package_audit stays pending even though audit_package.py reports zero failures: the package distributes no retained record contract for an audit result, so a pass here would be unbound. It moves only when such a record exists and is cited."
+      - "installer_lifecycle and rendered_review stay pending: their attestations predate this source and have not been replayed."
   - id: "ci-ubuntu-python-3-10"
     scope: "ci_contract"
     os: "ubuntu-latest"
