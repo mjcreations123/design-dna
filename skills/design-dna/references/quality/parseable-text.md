@@ -34,7 +34,11 @@ For EVERY visible text node, in order:
    coordinate that matches nothing: fail.
 3. **AUDIENCE.** Is every word one this business's customer would use about
    the business? Codebase vocabulary (component names, state names like
-   idle/active, mode labels, internal codenames, skill jargon) fails.
+   idle/active, mode labels, internal codenames, skill jargon) fails, and
+   so does the site's OWN operational state (connection status, sync
+   timestamps, build or version strings, environment names) even when
+   accurate: it is implementation detail, not something this business's
+   customer asked to see.
 4. **COST OF DELETION.** Delete it mentally. Did the visitor lose anything?
    If nothing is lost, the string goes, or is folded into the adjacent
    heading, or is replaced by one true specific fact that survives the same
@@ -51,11 +55,14 @@ a specific checkable fact).
 
 Illegitimate: **decorative props** (fake telemetry, coordinates, serials,
 "SYS.01", degree readouts, barcode strings, crosshair labels, blueprint
-annotations on non-technical subjects) and **internal residue** (debug
+annotations on non-technical subjects), **internal residue** (debug
 counters, placeholder copy, unresolved tokens, developer vocabulary, and
 the studio's own process language: specimen labels, typeface or candidate
 names, recipe notes, bracket placeholders like "[hero photo]" on any
-rendered surface a viewer could reach).
+rendered surface a viewer could reach), and **operational state** (a
+status/connection/live indicator, a sync timestamp, a build or version
+string, an environment name), which fails identically whether it is
+fabricated or genuinely true.
 
 Decorative technical marks are permissible only when the subject genuinely
 is technical, every mark is TRUE, and at most one or two appear per
@@ -74,9 +81,14 @@ P0 (ABSOLUTE-backed, never lifted):
 - **Decorative pseudo-data.** HUD readings, coordinates, serials,
   telemetry, tick-marked ledes, stamps, registry micro-chrome in margins or
   letterbox bars. "What are they even doing there."
-- **Fake liveness.** Pulsing status dots, "ONLINE" badges, ticking
-  counters, streaming logs on static content. Animate only what real data
-  changes.
+- **Fake liveness, and real status that is nobody's business.** Pulsing
+  status dots, "ONLINE"/"Connected"/"Synced" badges, ticking counters,
+  streaming logs on static content: fail because they are fabricated.
+  [Owner ABSOLUTE 10](../../policy/absolutes.md) goes further and fails
+  the identical marker even when it is wired to something real, on any
+  page type, not only product or dashboard UI: a shul or a plumber's site
+  has no backend state a visitor needs reported. Animate only what real
+  data changes, and only where reporting that data is the page's job.
 - **Strings below the size floor.** The canonical floor lives in the
   [typography numbers](../craft/typography.md#the-numbers): list every
   rendered string under 12px and justify each one's information value;
@@ -128,6 +140,12 @@ error, and hidden accordion panels, plus alt text and meta descriptions:
 - Placeholder: `lorem`, `ipsum`, `dolor`, `coming soon`, `under
   construction`, `TODO`, `TBD`, `FIXME`, `asdf`, `placeholder`, `sample
   text`, `your text here`
+- Status/connection theatre ([owner ABSOLUTE 10](../../policy/absolutes.md)):
+  `online`, `offline`, `connected`, `disconnected`, `synced`, `syncing`,
+  `live` used as a status word rather than an event name, `status:`; check
+  the rendered DOM directly for any small round element carrying a
+  `background-color` and no text content, since a bare colour dot is the
+  form this tell most often takes and no grep catches a shape
 - Binding leaks: `undefined`, `NaN`, `null`, `[object Object]`, `{{`, `}}`,
   `${`, `%s`, `Infinity`, raw JSON braces
 - Encoding: the mojibake signature, grepped with the encoding-proof

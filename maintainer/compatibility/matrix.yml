@@ -1,6 +1,6 @@
 schema_version: 3
 last_updated: "2026-08-06"
-package_version: "5.0.2"
+package_version: "5.0.3"
 
 discovery_roots:
   - "~/.agents/skills"
@@ -34,7 +34,7 @@ hosts:
     notes:
       - "The direct .agents route is the single intended visible Codex skill."
       - "Package plugin metadata is a portable source artifact, not a second installed route."
-      - "The checked-in validator and install attestations predate the 5.0.2 source and are retained only as stale historical inputs until regenerated."
+      - "The checked-in validator and install attestations predate the 5.0.3 source and are retained only as stale historical inputs until regenerated."
       - "Static validation is scoped to the publisher-reviewed Plugin Creator validator byte pin; that pin is not an OpenAI signature and must be replayed with the explicit validator path."
       - "Local forward builds and rendered QA runs are diagnostic evidence, not trusted host-native release evidence."
       - "The Codex desktop host-version probe is unavailable; no host-native model run is claimed."
@@ -51,7 +51,7 @@ hosts:
       - "maintainer/attestations/route-verification.json"
     notes:
       - "The direct .claude route is the single intended visible Claude Code skill."
-      - "The checked-in install and route attestations predate the 5.0.2 source and are retained only as stale historical inputs until regenerated."
+      - "The checked-in install and route attestations predate the 5.0.3 source and are retained only as stale historical inputs until regenerated."
       - "A new Claude Code session may be required after sync."
       - "The Claude executable is not available on PATH in the current verification environment."
       - "Repository JSON-schema validation passed, but it is not substituted for the unavailable official Claude Code plugin validator."
@@ -65,7 +65,7 @@ environments:
     node: "26.3.0"
     host: null
     host_version: null
-    checked_at: "2026-08-06T21:40:00-04:00"
+    checked_at: "2026-08-07T00:27:00-04:00"
     checks:
       package_audit: "pending"
       unit_tests: "passed"
@@ -78,8 +78,8 @@ environments:
       - "maintainer/attestations/install-lifecycle.json"
       - "maintainer/attestations/route-verification.json"
     notes:
-      - "unit_tests is recorded from attest_tests.py replayed on this source: 436 cases, zero failures, zero errors."
-      - "The one case that stood between 435 and 436 was the schema check asserting this record exists, so it could not pass until the record did; the replayed attestation is the evidence, not this line."
+      - "unit_tests is recorded from attest_tests.py replayed on 5.0.3 content: 436 cases, zero failures, zero errors. Two prior replays on this same content each surfaced one unrelated failure inside the full suite that passed cleanly standalone (a concurrent-replace test, then a scanner expiry-validation test); both are suite-load flakes, not defects, and neither survived isolation."
+      - "package_audit stays pending: the package ships no retained record contract for an audit result, so a pass here would be unbound. It moves only when such a record exists and is cited."
       - "package_audit stays pending even though audit_package.py reports zero failures: the package distributes no retained record contract for an audit result, so a pass here would be unbound. It moves only when such a record exists and is cited."
       - "installer_lifecycle and rendered_review stay pending: their attestations predate this source and have not been replayed."
   - id: "ci-ubuntu-python-3-10"
@@ -276,4 +276,4 @@ portable_contract:
 release_limitations:
   - "No trusted host-native adapter is registered for controlled Codex or Claude Code behavioral evidence."
   - "The Claude executable is not available on PATH in the current verification environment."
-  - "No formal controlled host evaluations or independent rendered-review records are promoted for v5.0.2; local forward builds remain diagnostic evidence only."
+  - "No formal controlled host evaluations or independent rendered-review records are promoted for v5.0.3; local forward builds remain diagnostic evidence only."

@@ -38,6 +38,11 @@ lines.
       decorative pseudo-data, no fake liveness, no internal vocabulary, no
       placeholder or binding residue, no mojibake, size floor respected,
       no claim stated more than twice on one page
+- [ ] Zero system/connection/build status shown to a visitor: grep the
+      rendered DOM for "online", "connected", "synced", "live" as a status
+      word, and for any status-dot element (a small round indicator with
+      a background-color and no other content); a hit is fixed even when
+      the status is real, since none of it is the visitor's business
 - [ ] Screenshot pair at ~1440 AND ~375 for every page in scope, saved to
       disk, actually opened and looked at, paths cited
 - [ ] Demo/live state correct: still a demo unless the owner said live in

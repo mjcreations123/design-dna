@@ -42,9 +42,12 @@ tier lifts only by explicit client direction, logged. The short version:
 8. NEVER a silent font fallback; the face that ships is the face that
    painted, proven by the rendered-font verification.
 9. NEVER a visible string a visitor cannot parse.
-10. NEVER a done-claim without the ~1440 and ~375 screenshot pair, saved
+10. NEVER a fake or real system/connection/build status shown to a
+    visitor (a green dot, an "Online" or "Connected" badge); no page
+    reports its own backend state to the people it is for.
+11. NEVER a done-claim without the ~1440 and ~375 screenshot pair, saved
     and looked at.
-11. NEVER live on inference; every build is a demo until the owner says
+12. NEVER live on inference; every build is a demo until the owner says
     live in his own words.
 
 These act pre-render, like a brand guideline. Everything subtler in this
@@ -155,7 +158,10 @@ aesthetic rule that did not come from the project or the absolutes.
 - Every visible string passes the
   [parseable-text](references/quality/parseable-text.md) gate. Keep
   customer-facing copy about the customer's subject; never narrate design
-  rationale, the visuals, or internal process onto the page.
+  rationale, the visuals, or internal process onto the page, and never
+  surface the site's own implementation or system state (connection
+  status, build or environment info, component or variable names) as
+  visitor content, real or fabricated.
 - Size follows information value: the biggest type answers the visitor's
   first question.
 - Verify by seeing: judging craft from code alone is prohibited. Nothing
@@ -238,7 +244,7 @@ already covered by [the two axes](#two-axes-and-the-default-is-awesome).
 | --- | --- |
 | Any build or revision nearing done | [Preship gate](templates/preship-gate.md); it is mandatory, not optional. |
 | Type selection, font loading, display emphasis, "fonts look bad" | [Typography](references/craft/typography.md), including the dated bench and the mandatory rendered-font verification. |
-| Decorative labels, HUD text, eyebrows, "random text," copy texture | [Parseable text](references/quality/parseable-text.md). |
+| Decorative labels, HUD text, eyebrows, "random text," copy texture, a status/connection/live indicator, implementation or system detail on the page | [Parseable text](references/quality/parseable-text.md). |
 | Starting any direction; avoiding self-repetition | [Ledger](references/quality/ledger.md). |
 | Missing, sparse, or contradictory project material | [Content discovery](references/quality/content-discovery.md). |
 | New direction, redesign, "generic," or "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |

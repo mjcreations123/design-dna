@@ -5,6 +5,37 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.0.3 - Second-build hardening
+
+Learned from a build outside the studio: a friend of the owner tried the
+skill and reported two things back, both traceable to one root cause. The
+content that would have stopped them already existed, three files deep in
+post-render review vocabulary, and never surfaced pre-render where it would
+have prevented the build rather than caught it afterward.
+
+### Added
+
+- `policy/absolutes.md`: **ABSOLUTE 10, NEVER show system, connection, or
+  build status to a visitor.** A green dot, an "Online"/"Connected"/
+  "Synced"/"Live" badge, an environment name, a build or version string, a
+  component or variable name: none of it is the visitor's business,
+  fabricated or genuinely true, on any page type, not only product or
+  dashboard UI. This is the pre-render half of the fix: it is now read
+  before any design work begins, not discovered only at the post-render
+  parseable-text pass. Existing absolutes 10 and 11 renumber to 11 and 12.
+- `templates/preship-gate.md` gains a matching P0 line: grep the rendered
+  DOM for status words and for any bare colour-dot element, since a status
+  dot is a shape, not a string, and no text grep catches it alone.
+- `references/quality/parseable-text.md` strengthens the existing "fake
+  liveness" entry (it already banned fabricated status dots) to name the
+  identical failure when the status is real, cross-referenced to the new
+  absolute, and adds "operational state" as a named illegitimate string
+  class alongside decorative props and internal residue.
+- The router row for parseable-text.md gains explicit trigger words
+  (status/connection/live indicator, implementation or system detail) so a
+  build carrying this symptom actually routes to the file that names it,
+  rather than depending on "decorative labels, HUD text" reading as a match.
+
 ## 5.0.2 - First-build hardening
 
 Learned from the skill's first live test (a one-page demo shop built,

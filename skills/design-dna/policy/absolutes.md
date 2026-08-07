@@ -72,12 +72,22 @@ this list is short and everything subtler lives in review vocabulary.
    [parseable text](../references/quality/parseable-text.md): meaning, truth,
    audience, cost of deletion. No decorative pseudo-data, no internal
    vocabulary, no placeholder residue.
-10. **NEVER claim done without the screenshot pair.** Rendered screenshots at
+10. **NEVER show system, connection, or build status to a visitor.** A green
+    (or any coloured) dot, an "Online," "Connected," "Synced," or "Live"
+    badge, a pulsing indicator, an environment name, a build or version
+    string, a component or variable name: none of it is the visitor's
+    business, whether it is fabricated or genuinely true. This applies on
+    every surface, not only product or dashboard UI; a shul, a plumber, or a
+    chesed board has no backend state to report either. If a real status
+    genuinely belongs on the page (an operator's own uptime page, a status
+    subdomain the client asked for by name), it is a deliberate, logged
+    exception, never a default.
+11. **NEVER claim done without the screenshot pair.** Rendered screenshots at
     ~1440 and ~375, saved to disk, actually opened and looked at, for every
     page in scope. Judging craft from code alone is prohibited. If rendering
     is impossible in the current environment, the deliverable is blocked and
     says so; it does not ship with caveats.
-11. **NEVER go live on inference.** Every build is a demo until the owner
+12. **NEVER go live on inference.** Every build is a demo until the owner
     says, in his own words, that it goes live. No real form endpoints,
     payments, bookings, or production deployment before that word. Dead CTAs
     get an explicit demo-notice behavior, never a silent dead click.
