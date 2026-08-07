@@ -2,22 +2,22 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "5.0.2",
-  "distribution_sha256": "878a6fafa0b897186d75163ee7a601dcf4efb8663394a0afd9037cf3c9416e74",
-  "content_sha256": "8462d03fdcbaa4ff7db08a85051b61c6b785e2bbd2f0cdd3927b5dcf1b91c677",
+  "distribution_sha256": "a2737c2b917b739dd2c48bdca4aeec3b62d42a062b459d2c91732aeb02859f79",
+  "content_sha256": "18acb8f14c5cddea008de47275ae27fd966cbb95253130031fd9cd5904c9ab81",
   "codex_plugin_manifest_sha256": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
   "claude_plugin_manifest_sha256": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-  "sbom_sha256": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32",
+  "sbom_sha256": "88a402e0e7b1c0615f4f4a4489b98ad56d71ac0bfad2dcc75f7eb59cbac5c89f",
   "compatibility_matrix_sha256": "4a87bed3a837feaf48a3c391b226f7dfa58786ab9e8bd1e92545bc6a5ecc6469",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "878a6fafa0b897186d75163ee7a601dcf4efb8663394a0afd9037cf3c9416e74",
-    "runtime": "8462d03fdcbaa4ff7db08a85051b61c6b785e2bbd2f0cdd3927b5dcf1b91c677",
+    "distribution_tree": "a2737c2b917b739dd2c48bdca4aeec3b62d42a062b459d2c91732aeb02859f79",
+    "runtime": "18acb8f14c5cddea008de47275ae27fd966cbb95253130031fd9cd5904c9ab81",
     "codex_plugin_manifest": "054d227e8231854824da83adea0c05ca5f729a5267584ae0e68ba2e39a1df351",
     "claude_plugin_manifest": "a0afeb5f11dd44b4b7648678db32548309aa5759f880f5daccf01fbcb1acc2cf",
-    "sbom": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32",
+    "sbom": "88a402e0e7b1c0615f4f4a4489b98ad56d71ac0bfad2dcc75f7eb59cbac5c89f",
     "compatibility_matrix": "4a87bed3a837feaf48a3c391b226f7dfa58786ab9e8bd1e92545bc6a5ecc6469",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "2fc420765c591941c210dd210be7f30c5dd58b2aee30c2bcf74f0e83f6670308",
+    "compatibility_verification": "01327914e32fe710fa9bd7c979c2cd996e8bc23214583cb7444e28e65c6b8918",
     "distribution_docs": "97b3526c6824331c56858554e929c7e4c37c316208fb534d7d3c51108b7e8601",
     "eval_contract": "13991bcec02bff58cc4586582bc636b7ebc59d99d469d506ace14f30a37bc3d8",
     "eval_proof": "620b5a607cc75af514649227aef43f7c0f6fceb456bb429b7a8c29e1530624bd",
@@ -26,8 +26,8 @@
     "schemas": "2dfb712ac5b4b755f23c39ef4fb26a9065a7dc229753b5dfb712df2a84fac85a",
     "tests": "521465d5e72b134e55f78202e7a8b4874e0db14f482ebf1dd40019a4a3456df7"
   },
-  "release_sha256": "38dad9acc8a40843408b44e57b93bf960611e2c90f9a79dac4232affdd039866",
-  "generated_at": "2026-08-07T01:40:30.819382+00:00",
+  "release_sha256": "11ecb8a864a72582911d39293c97ab978473b5bfd915b4a839850c01aa520fde",
+  "generated_at": "2026-08-07T02:31:50.884456+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -74,8 +74,8 @@
     {
       "path": "references/convergence-watch.md",
       "type": "file",
-      "size": 23902,
-      "sha256": "d0b66c28ee98b8f4301e9e0ee76b18d6e9c8277e94f31f8b669332bc3a1c4cf7"
+      "size": 27931,
+      "sha256": "a0f462b1c447320a459e877738c7b82e712b4d70f266ff9d8741344a32e6e11f"
     },
     {
       "path": "references/craft",
@@ -934,8 +934,8 @@
     {
       "path": "maintainer/attestations/test-attestation.json",
       "type": "file",
-      "size": 79626,
-      "sha256": "88501f5a95b2ebc965de4dc2b5018c3e86844c234ed7df44cf7cd404d912717a"
+      "size": 79628,
+      "sha256": "6e388e45b649fa709e24b233f88ddcd7bd56dce3e9b287f19f1596e877f9edbf"
     },
     {
       "path": "maintainer/compatibility",
@@ -2741,7 +2741,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "abb504d496a5791e56a5925ab92d2aac913a2c882ef7faade976087378766f32"
+      "sha256": "88a402e0e7b1c0615f4f4a4489b98ad56d71ac0bfad2dcc75f7eb59cbac5c89f"
     },
     {
       "path": "maintainer/schemas",
@@ -3310,8 +3310,8 @@
     {
       "path": "skills/design-dna/references/convergence-watch.md",
       "type": "file",
-      "size": 23902,
-      "sha256": "d0b66c28ee98b8f4301e9e0ee76b18d6e9c8277e94f31f8b669332bc3a1c4cf7"
+      "size": 27931,
+      "sha256": "a0f462b1c447320a459e877738c7b82e712b4d70f266ff9d8741344a32e6e11f"
     },
     {
       "path": "skills/design-dna/references/craft",

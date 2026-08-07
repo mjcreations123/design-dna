@@ -32,6 +32,7 @@ decays, kept separate for exactly that reason.
 - [Dated watch: current clusters](#dated-watch-current-clusters)
 - [Dated watch: the font clusters](#dated-watch-the-font-clusters)
 - [Dated watch: the generator defaults](#dated-watch-the-generator-defaults)
+- [Dated watch: the hero signature](#dated-watch-the-hero-signature)
 - [Dated-signal watch: the opposite failure](#dated-signal-watch-the-opposite-failure)
 - [Builder-fingerprint hygiene](#builder-fingerprint-hygiene)
 - [The self-fingerprint](#the-self-fingerprint)
@@ -178,6 +179,74 @@ black-on-white silhouette, do the same for several real competitors, and lay
 them side by side. If the page cannot be picked out of that row, the
 structure is the default regardless of which colours and faces it carries.
 This is a structural test, so run it after a render and never as a brief.
+
+## Dated watch: the hero signature
+
+Compiled 2026-08. The hero is the most scrutinised section on the page and
+the one with the tightest converged formula, so it earns its own entry
+beyond the general clusters above. Diagnose the cluster, never a single
+ingredient in isolation.
+
+**The skeleton.** Centred headline, one supporting line, one or two
+buttons, optional device mockup, all vertically stacked and horizontally
+centred inside the viewport. `[eyebrow pill] [headline] [subhead] [button]
+[button] [mockup]` is common enough across generated output that naming the
+slots predicts the render. The [owner absolutes](../policy/absolutes.md)
+already fail a page on this skeleton via the swap test; this entry is the
+anatomy behind that verdict, not a separate rule.
+
+**The eyebrow pill.** A small pill or plain label sitting directly above the
+headline, set in uppercase, letterspaced, and usually carrying a word like
+"New," "Introducing," or the product category. Distinguish it from an
+ordinary section kicker: the tell is the pill shape sitting immediately
+above display-scale type with nothing else on the page justifying its
+presence, not the existence of a small label.
+
+**Headline formulas.** Two shapes recur. The vague abstraction, most often
+"The future of [category]," which names no audience and no outcome and
+would fit any competitor unchanged. And the alliterative fragment pair,
+"Build faster. Ship smarter." in form, two short imperative clauses
+separated by a period, each three or four words, rhyming in structure
+rather than saying anything specific to the business. A headline this skill
+accepts names the audience and the outcome in one line; a headline that
+would read identically on a competitor's site has failed regardless of how
+it is set.
+
+**Gradient and glow, by the numbers.** The purple-to-cyan or violet-to-teal
+hero gradient is the fastest single visual tell in the current cluster;
+the exact hex values are the [generator defaults above](#dated-watch-the-generator-defaults).
+Sampled instances commonly sit near 80 percent saturation and 60 percent
+lightness in HSL, which is what gives the "AI hero" its glow rather than a
+photograph or a considered flat colour. A dark hero built on a radial glow
+halo behind the headline, or a large blurred colour blob standing in for a
+photograph, is the same tell restated: colour supplying atmosphere in place
+of a chosen image or a resolved composition.
+
+**Decorative motion.** A blinking text-caret set beside non-editable hero
+copy, styled to look like a terminal typing when nothing is actually being
+typed or edited. Elastic or bounce easing on hero elements that overshoot
+their resting position and settle back, applied because it was the
+animation library's default rather than because overshoot means anything
+here. Both are decoration borrowed from a different context (a code editor,
+a game UI) and pasted onto marketing copy that has no such context.
+
+**Imagery.** A floating 3D abstract shape or isometric browser-window mockup
+standing in for a real product screenshot or a real photograph, usually
+paired with the gradient background above. Real product UI (per the owner
+absolutes) or real photography beats an abstract stand-in; if neither
+exists yet, a labelled placeholder beats a shape pretending to be content.
+
+**CTA copy.** "Get Started" alone, with no object, no timeframe, and no
+sense of what happens next, is the single most repeated hero button string
+across generated output. It is not wrong on every project; the tell is
+reaching for it by default rather than testing what this visitor is
+actually being asked to do ("Start your free trial," "See pricing," "Book a
+walkthrough").
+
+None of this is a checklist to invert into a brief. A hero that is centred,
+uses a gradient, or asks someone to "get started" is not automatically
+generated; the failure is the unexamined bundle, reached for because
+nothing in the project told the page what else to be.
 
 ## Dated-signal watch: the opposite failure
 

@@ -2,10 +2,10 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "design-dna-5.0.2-8462d03fdcba",
-  "documentNamespace": "urn:uuid:14b4db4a-775d-57d2-848d-c50539d5a3eb",
+  "name": "design-dna-5.0.2-18acb8f14c5c",
+  "documentNamespace": "urn:uuid:dec73f63-6e72-52a4-b844-78028eacfe86",
   "creationInfo": {
-    "created": "2026-08-07T01:40:28.875444Z",
+    "created": "2026-08-07T02:13:46.025456Z",
     "creators": [
       "Tool: design-dna-build-sbom-1.0.0",
       "Person: Motty"
@@ -27,7 +27,7 @@
       "copyrightText": "Copyright (c) 2026 Motty. All rights reserved.",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Person: Motty",
-      "sourceInfo": "Runtime tree canonical content SHA-256: 8462d03fdcbaa4ff7db08a85051b61c6b785e2bbd2f0cdd3927b5dcf1b91c677. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
+      "sourceInfo": "Runtime tree canonical content SHA-256: 18acb8f14c5cddea008de47275ae27fd966cbb95253130031fd9cd5904c9ab81. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
