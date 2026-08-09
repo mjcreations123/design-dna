@@ -7,8 +7,8 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 
 ## Contents
 
-[absolutes](#the-absolutes-come-first) ·
-[two axes](#two-axes-and-the-default-is-awesome) ·
+[boundaries](#assurance-boundaries-come-first) ·
+[quality axes](#separate-specificity-from-ambition) ·
 [authority](#resolve-authority) · [classify](#classify-the-work) ·
 [creative freedom](#preserve-creative-freedom) ·
 [invariants](#keep-these-invariants) ·
@@ -18,70 +18,66 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 [evidence](#bound-readiness-and-evidence) · [the gate](#the-gate-restated)
 
 Create web work whose content, hierarchy, system, and behavior are visibly
-chosen for this project and audience. The bar has two halves, both
-mandatory: someone scrolling the finished work must never think "AI made
-this," and the work must be mistakable for a senior team at a top agency.
-Optimize for specificity, clarity, credibility, usability, time-register
-fit, and finish. Diagnose observable causes; never promise undetectable AI
-involvement, score aesthetic authorship, or claim human-only creation.
+chosen for this project and audience. Optimize for specificity, clarity,
+credibility, usability, time-register fit, visual quality, and finish.
+Reduce generic, repetitive, unsupported, careless, and artifact-heavy
+signals through project evidence and rendered review. Never promise
+undetectable AI involvement, score aesthetic authorship, claim human-only
+creation, or treat one ingredient as proof of how a site was made.
 
-## The absolutes come first
+## Assurance boundaries come first
 
-This installation carries a standing accountable-owner policy:
-[policy/absolutes.md](policy/absolutes.md). Read it before any design work.
-Its ABSOLUTE tier is never lifted by anyone, including a client; its HARD
-tier lifts only by explicit client direction, logged. The short version:
+Read [the assurance boundaries](policy/absolutes.md) before substantial
+design work. They reserve low freedom for truth, rights, privacy, access,
+working behavior, evidence honesty, delivery authority, and explicit project
+contracts. They do not contain a font, palette, punctuation, layout, motion,
+media, ornament, component, or style blacklist.
 
-1. NEVER an em dash in user-facing text.
-2. NEVER an animated number count-up.
-3. NEVER a fabricated statistic, testimonial, review, logo, or person.
-4. NEVER the indigo-violet gradient kit or gradient text.
-5. NEVER fake product UI.
-6. NEVER the hero, three-cards, testimonials, CTA, footer default skeleton.
-7. NEVER below 4.5:1 body contrast, 3:1 large, or without keyboard access.
-8. NEVER a silent font fallback; the face that ships is the face that
-   painted, proven by the rendered-font verification.
-9. NEVER a visible string a visitor cannot parse.
-10. NEVER a fake or real system/connection/build status shown to a
-    visitor (a green dot, an "Online" or "Connected" badge); no page
-    reports its own backend state to the people it is for.
-11. NEVER a done-claim without the ~1440 and ~375 screenshot pair, saved
-    and looked at.
-12. NEVER live on inference; every build is a demo until the owner says
-    live in his own words.
+Before enforcing any aesthetic constraint, trace it to an explicit owner,
+brand, cultural, repository, or project source. If it comes only from a past
+build, trend discussion, scanner, or producer preference, keep it as a
+post-render hypothesis. Do not invent a standing owner law from remembered
+criticism.
 
-These act pre-render, like a brand guideline. Everything subtler in this
-skill stays post-render review vocabulary and is never an inverse prompt.
+An installation may carry such a source. Look for an owner-standards record
+at `~/.claude/design-dna/owner-standards.md`, or the host-neutral
+`~/.design-dna/owner-standards.md`, and read it before the direction exists.
+It is the accountable owner's own dated record, so the constraints in it are
+traced and enforceable pre-render for that owner's work, unlike a trend list.
+It closes only the ingredients it names, for that owner only; everything else
+stays open. If no such file exists, proceed without one and do not
+reconstruct its contents from memory.
 
-## Two axes, and the default is awesome
+## Separate specificity from ambition
 
-One axis runs AI-looking to human-crafted. The other runs plain to rich.
-Passing the first axis while staying plain still fails: a page a visitor
-would call safe, thin, or boring has missed the bar exactly as badly as one
-that looks generated. The default target is rich: committed concept, real
-imagery, depth, dramatic scale, one signature done fully. Restraint is a
-committed, rendered-successful choice the brief supports, never the residue
-of timidity or missing assets. When unsure, aim more ambitious, not safer.
+One quality axis asks whether the work is project-specific rather than a
+reusable first draft. Another asks whether the chosen ambition is fully
+realized. A quiet information page can be more resolved than a cinematic
+showcase; a maximal composition can be more coherent than a minimal one.
+Neither richness nor restraint is the default.
 
-Your first instinct is the statistical mean: the top-ranked idea in your
-head is what every model run would ship. For greenfield, showcase, or
-open-direction work, never deliver the first-ranked concept without at
-least one materially different rendered alternative to compare against.
-Unspecific quality feedback ("more premium," "boring," "make it better")
-means ambition was too low: respond by raising the concept, imagery,
-depth, scale, and signature, never by staying plain and safe. If the
-approved direction is a committed quiet one, raise craft, specificity, and
-finish WITHIN it first, and reopen the direction only if the owner
-confirms the quiet itself is the complaint.
+Set energy, density, media, scale, motion, and surprise from the brief,
+audience, content, genre, owner preference, and production reality. Avoiding
+generic signals by stripping everything away is not a solution, and adding
+effects to a weak direction is not a solution. When feedback says "boring,"
+"too plain," or "not enough pizzazz," inspect the rendered organizing cause
+and raise the relevant ambition. When it says "noisy" or "confusing," edit
+the relevant hierarchy and relationships. Do not map either response to a
+universal style recipe.
+
+For an open or consequential direction, externalize enough contrast to
+challenge the first plausible answer. The useful evidence may be a second
+composition, a focused fragment, a reference decomposition, a content model,
+or a full rendered alternative. Its form and count follow uncertainty and
+stakes; no fixed concept quota applies.
 
 ## Resolve authority
 
 1. Safety, law, privacy, accessibility, factual integrity, repository
    instructions.
 2. Explicit user, accountable owner, approved client, product, and brand
-   requirements. The [owner absolutes](policy/absolutes.md) sit here,
-   always active. A project-local owner policy may add to them; nothing
-   below this tier may soften them.
+   requirements. A project-local policy may add exact constraints when its
+   owner, source, date, scope, and exception path are recorded.
 3. The task, surface mode, content, stack, and delivery constraints.
 4. Project evidence and documented rationale.
 5. Bundled [publisher defaults](policy/owner-defaults.yml), then heuristics.
@@ -105,8 +101,9 @@ Capability presets are cumulative; adding one cannot remove another:
 | --- | --- | --- |
 | Quick | Bounded repair in an established system, low risk. | Inspect context, preserve the system, implement changed states, run affected checks plus the preship gate on the touched surface. |
 | Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, full preship gate. |
-| Showcase | Expressive, premium, highly visible, or explicitly rejecting safe output. | Research, compare rendered alternatives that challenge the first default, deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
+| Showcase | Expressive, premium, highly visible, or explicitly rejecting safe output. | Research and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
 | Range Study | A multi-route brief explicitly requiring meaningful creative range. | Shared foundations stay dependable; route-family record before scaling; proof routes chosen by uncertainty; matched route atlas review. |
+| Batch Study | A controlled evaluation of at least three unrelated website briefs. | Freeze independent briefs and source packets; record human-auditable implementation isolation; resolve capture and contact-sheet data handling for built cases; bind each capture to its rendered route, profile, exact public-build manifest, and capture mode; freeze capture-set-bound site observations before sibling output or diagnostics; record the neutral-label whole-system first observation only after those reviews are frozen; keep planned and correctly blocked cases separate. |
 | High-risk | Consequential transactions, identity, money, regulated claims. | Task, state, and specialist evidence first; visual ambition cannot waive a safety gate. |
 | Asset-led | Material imagery, fonts, media needing a durable record. | Per-asset provenance, rights, privacy, factual status, delivery, accessibility. |
 
@@ -119,74 +116,85 @@ Identify every surface mode that describes the user's job: Persuade
 ([modes/experience](references/modes/experience.md)), Operate
 ([modes/operate](references/modes/operate.md)), Read
 ([modes/read](references/modes/read.md)). A hybrid route uses the guidance
-that answers its actual decisions.
+that answers its actual decisions. Name one primary job per route and any
+secondary jobs that materially change content, state, or review. When mode
+guidance pulls in different directions, the assurance boundaries and explicit
+project contract win first; then the primary job governs composition while a
+secondary mode adds only its applicable requirements.
 
 ## Preserve creative freedom
 
 Keep low-freedom rules for truth, rights, privacy, safety, accessibility,
-working behavior, repository constraints, explicit owner and brand
-requirements, and the owner absolutes. Keep aesthetic decisions
-high-freedom: beyond the absolutes there is no global font, palette, style,
+working behavior, repository constraints, and explicit owner and brand
+requirements. Keep aesthetic decisions high-freedom: there is no global font, palette, style,
 geometry, ornament, layout, interaction, motion, section-order, or
 concept-count whitelist or blacklist. Common choices are not automatically
 generic; uncommon choices are not automatically good. A fitting direction
 may be singular, plural, restrained, maximal, decorative, conventional,
 historically referential, or deliberately dissonant. Read
 [creative freedom](references/creative-freedom.md) before imposing an
-aesthetic rule that did not come from the project or the absolutes.
+aesthetic rule that did not come from the project or its assurance boundaries.
 
 ## Keep these invariants
 
 - Preserve repository instructions, unrelated work, established systems,
   and working integrations unless the task authorizes change.
 - Do not invent business facts, proof, people, metrics, reviews, assets,
-  availability, or integrations. Placeholders are visibly labeled AND tracked in
-  the [placeholder register](templates/placeholder-register-template.md).
-- Demo mode by default: no real form endpoints, payments, bookings,
-  tracking, or production deployment before the owner says live in his own
-  words. Dead CTAs get an explicit demo-notice behavior.
-- Every Persuade or Experience surface declares a deliberate display voice;
-  the [typography](references/craft/typography.md) selection protocol with
-  named rejects is mandatory for greenfield type.
-- A deliberate media strategy for every build. For Persuade and Experience
-  work whose value is physical or sensory, large real photography (or
-  disclosed generated concept media) is a launch requirement, not an
-  optimization; a text-led treatment there requires a logged owner
-  authorization naming the alternative offered. Missing supplied
-  photography is an input gap, never an instruction to design around
-  absence.
+  availability, or integrations. When unresolved material or behavior remains,
+  label it where confusion could occur and track it in the
+  [placeholder register](templates/placeholder-register-template.md).
+- Respect the declared delivery state. When the accountable owner or active
+  project policy says the work is a demo, do not connect real form endpoints,
+  payments, bookings, tracking, or production deployment until that owner
+  authorizes live operation. A demo control works locally, explains its state,
+  or is removed; it does not silently impersonate a live integration.
+- Treat typography as a designed system. Use the
+  [typography](references/craft/typography.md) protocol to choose, deliver,
+  and verify the roles the project actually needs. No family category,
+  pairing count, hosting method, or shortlist size is globally required.
+- Make a deliberate media decision for every build. When physical or sensory
+  recognition matters, test whether the selected photography, illustration,
+  generated concept media, data, objects, or type-led treatment actually
+  conveys it. Missing supplied photography is an input gap to resolve, not an
+  automatic instruction either to omit imagery or to manufacture a photo.
 - Every visible string passes the
   [parseable-text](references/quality/parseable-text.md) gate. Keep
-  customer-facing copy about the customer's subject; never narrate design
-  rationale, the visuals, or internal process onto the page, and never
-  surface the site's own implementation or system state (connection
-  status, build or environment info, component or variable names) as
-  visitor content, real or fabricated.
-- Size follows information value: the biggest type answers the visitor's
-  first question.
-- Verify by seeing: judging craft from code alone is prohibited. Nothing
-  ships without the rendered screenshot pair, saved and looked at. If
-  rendering is impossible, the deliverable is blocked and says so.
-- Working artifacts are never mistakable for the site. There is no private
-  render in a watched pane: anything written to disk or rendered may reach
-  the owner's eyes, and the owner's first sight of a rendered artifact
-  shapes every judgment after it. Internal renders (direction proofs,
-  specimen pages, harness pages) live under `.design-dna/proofs/`, never in
-  the site root, and carry a visible INTERNAL WORKING PROOF banner. A
-  specimen strip or candidate comparison never shares a page with a
-  composition that could be read as the design. A placeholder media area is
-  a flat neutral labeled frame, never a gradient fill or styled decoration;
-  a gradient block standing in for a photo IS the AI look. Before yielding
-  any turn, point every watched preview at the most finished state, and
-  present results with the saved gate screenshots, never a mid-process pane.
-- Consult the [ledger](references/quality/ledger.md) before directing and
-  run its rotation test (family: absent from the last three rows;
-  macrostructure: differs from the previous two; class saturation applies);
-  append its row on ship.
+  customer-facing copy relevant to the customer's subject or task. Do not
+  expose design rationale, implementation residue, component names, or false
+  system theater as visitor content. Truthful operational status, technical
+  detail, or atmosphere remains valid when the audience needs it and its
+  meaning is clear.
+- Size and prominence follow the intended encounter. The dominant element
+  should support the visitor's first question, task, invitation, or deliberate
+  point of tension; no universal type-size ordering applies.
+- Verify by seeing: code inspection cannot establish rendered craft. Save and
+  inspect project-relevant rendered evidence across the widths, states, and
+  preferences that can change the conclusion—normally including wide and
+  compact conditions for a substantial public surface. If the requested
+  visual conclusion cannot be rendered, identify that exact blocked claim.
+- Working artifacts are never mistakable for the accepted site. Separate
+  internal proofs according to the repository and host contract; a
+  project-local `.design-dna/proofs/` directory is one portable option, not a
+  mandatory location. Mark purpose wherever a reasonable viewer could confuse
+  a proof with final work, using wording and presentation suited to that host.
+  A placeholder media area is visibly labeled and cannot impersonate final
+  documentary or product imagery. If the agent controls a watched preview,
+  leave it on the most finished relevant state before yielding; otherwise do
+  not claim the preview was changed. Present saved screenshots only when they
+  were actually captured and remain useful evidence.
+- When several unrelated studio builds are in scope and owner-authorized
+  minimized history exists, consult the
+  [ledger](references/quality/ledger.md). Repetition is a review prompt, not
+  an automatic veto; project and brand fit outrank novelty for its own sake.
 - Preserve semantic structure, keyboard and touch access, visible focus,
   contrast, responsive reflow, reduced motion, and resilient fallbacks.
 - Implement visible controls and relevant states, or remove, disable with
   explanation, or clearly defer them.
+- Treat route count as information architecture, not a design quota. Every
+  page needs a distinct direct-entry question, content dependency, or task;
+  do not pad a multi-page request with aliases or split one encounter
+  arbitrarily. On a one-page site, omit sections that do not advance its real
+  encounter rather than stacking a generic long-form skeleton.
 - Never claim a browser, screenshot, user, accessibility, performance, or
   release check occurred when it did not.
 - When a community, religion, language, or lived identity is materially
@@ -200,28 +208,46 @@ aesthetic rule that did not come from the project or the absolutes.
 For a substantial build or redesign, read
 [the workflow](references/workflow.md) and use it as the spine:
 
-1. Inspect the project; frame audience, task, facts, assets, constraints,
-   delivery state. Declare demo mode and create the placeholder register.
+1. Inspect the project; frame audience, task, facts, assets, constraints, and
+   delivery state. Create a placeholder register only when unresolved material
+   or behavior exists.
 2. Gather truthful source material; define public orientation; establish
    content and route structure; choose the media path. For culturally
    central subjects, name the review authority before visual commitment.
-3. Consult the ledger. When direction is open or ambition is high, build a
-   retrieval-dated reference dossier, render enough materially different
-   evidence to expose the real choice (the first-instinct floor), record
-   perception before diagnosis, select with rationale.
-4. Proof the consequential decisions with real copy at real widths:
-   typography with the selection protocol, palette split into inks and
-   graphics, composition, media.
+3. When authorized cross-project evidence exists, consult the ledger without
+   turning repetition into a ban. For an open or high-stakes direction, build
+   a retrieval-dated reference dossier and externalize enough materially
+   different evidence to expose the real choice. Record perception before
+   diagnosis and select with rationale.
+4. For Standard or stronger new work and redesigns, record a free-form,
+   project-derived organizing logic and at least one consequential decision a
+   reviewer can observe; a bounded Quick repair may inherit the established
+   logic. Then proof consequential decisions with real material at real conditions.
+   Select the smallest evidence that can settle the chosen direction's actual
+   typography, color, composition, media, interaction, content, or responsive
+   risks; no fixed ingredient set applies.
 5. Extract only the reusable rules the project needs; keep justified
    one-offs. For a Range Study, separate shared foundations from route
-   bodies.
+   bodies. For a Batch Study, freeze each brief and source packet; record the
+   actual producer context, sibling-output exposure, allowed shared tooling,
+   shared exceptions, and study-level data handling; keep research,
+   implementation, and review exposure isolated between sites. Treat that
+   record as inspectable human evidence, not automatic proof. Do not
+   manufacture difference or transfer an aesthetic system merely to improve
+   the comparison.
 6. Implement the real path and states within the existing technical
    contract.
 7. Render, inspect, revise causes, rerun affected checks. For every
    substantial new build or visual redesign, run the
    [adversarial specificity review](references/quality/specificity-review.md)
    against the final implementation. Run the full
-   [preship gate](templates/preship-gate.md). Append the ledger row.
+   [preship gate](templates/preship-gate.md). Update an authorized ledger only
+   when its owner-approved milestone applies.
+   When Batch Study is active, finish each site's own gate and unprimed
+   observation before diagnostics, then record the neutral-label whole-system
+   first observation before revealing diagnostic material or the site-identity
+   map, and run the batch-range audit. Coverage readiness is not aesthetic
+   acceptance or proof that the human protocol was followed honestly.
    Obtain owner acceptance where required; disclose remaining limits.
 
 Ask only high-leverage concept questions whose answers would materially
@@ -238,15 +264,17 @@ diagnostic or finish references only after a render exists to diagnose. A
 post-render vocabulary consulted while choosing turns into an inverse
 prompt: the work starts being assembled to dodge a list instead of to answer
 the brief, which is the mechanism that produces something safe, generic, and
-already covered by [the two axes](#two-axes-and-the-default-is-awesome).
+already covered by [the two axes](#separate-specificity-from-ambition).
 
 | Decision or risk now | Load |
 | --- | --- |
 | Any build or revision nearing done | [Preship gate](templates/preship-gate.md); it is mandatory, not optional. |
-| Type selection, font loading, display emphasis, "fonts look bad" | [Typography](references/craft/typography.md), including the dated bench and the mandatory rendered-font verification. |
+| Type selection, font loading, display emphasis, "fonts look bad" | [Typography](references/craft/typography.md), including project-derived selection, spacing, delivery, and the applicable rendered-font verification branch. |
 | Decorative labels, HUD text, eyebrows, "random text," copy texture, a status/connection/live indicator, implementation or system detail on the page | [Parseable text](references/quality/parseable-text.md). |
-| Starting any direction; avoiding self-repetition | [Ledger](references/quality/ledger.md). |
-| Missing, sparse, or contradictory project material | [Content discovery](references/quality/content-discovery.md). |
+| Fiction/demo/unavailable/generated-media status that repeats, competes with the subject, or dominates direct entry | [Microcopy](references/craft/microcopy.md) for distinct consequences and proportional hierarchy, with [Content discovery](references/quality/content-discovery.md) for the underlying truth boundary. |
+| Authorized studio-history comparison; avoiding self-repetition | [Ledger](references/quality/ledger.md). Do not search or invent history when comparison is not authorized. |
+| Controlled comparison of three or more unrelated sites | [Batch Study evaluation](references/quality/batch-range-evaluation.md); activate Batch Study before building the cases, freeze an [unprimed site observation](templates/batch-site-observation-template.md) for each, then complete the [neutral-label whole-system review](templates/batch-whole-system-review-template.md). |
+| Missing, sparse, or contradictory project material; fictional, sample, demo, or prototype identity or scenario content | [Content discovery](references/quality/content-discovery.md), including the identity-to-fixture fit check even when the material appears plentiful. |
 | New direction, redesign, "generic," or "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
 | Open brief, greenfield direction, materially different options | [Creative exploration](references/craft/creative-exploration.md), then [art direction](references/craft/art-direction.md). |
 | "Make it impressive," premium, showcase, "too plain," "boring" | [Creative freedom](references/creative-freedom.md), [creative exploration](references/craft/creative-exploration.md), [expression and energy](references/craft/expression-energy.md); revision verbs via [design tuning passes](references/craft/design-tuning-passes.md); [finish and polish](references/quality/finish-polish.md) after direction works. |
@@ -266,12 +294,12 @@ already covered by [the two axes](#two-axes-and-the-default-is-awesome).
 | Brand identity, campaign, recognition across surfaces | [Brand systems](references/craft/brand-systems.md). |
 | Proof drifting during implementation | [Proof-to-build fidelity](references/quality/proof-to-build-fidelity.md) and its [delta ledger](templates/proof-build-delta-template.md). |
 | Figma, Storybook, token pipelines, motion tooling | [Tooling adapters](references/quality/tooling-adapters.md); [design-context capsule](templates/design-context-capsule-template.md) for compiled evidence. |
-| Chart, map, metric, comparison | [Data visualization](references/craft/data-visualization.md). |
+| Chart, map, metric, comparison, topology, process drawing, or other content-bearing explanatory diagram | [Data visualization](references/craft/data-visualization.md) with [responsive adaptation](references/craft/responsive-adaptation.md) when conditions change. |
 | Address, venue, directions, wayfinding | [Location and wayfinding](references/craft/location-wayfinding.md). |
 | Signup, auth, onboarding, account | [Identity and onboarding](references/flows/identity-account-onboarding.md). |
 | Plans, invoices, renewals, cancellations | [Subscription and billing](references/flows/subscription-billing.md). |
 | Inbox, chat, notifications | [Messaging and notifications](references/flows/messaging-notifications.md). |
-| Chat, assistant, copilot, generated-answer or streaming surface | [Conversational interfaces](references/flows/conversational-interfaces.md): the streaming contract, honest rendering of model output, provenance, and the named bans. |
+| Chat, assistant, copilot, generated-answer or streaming surface | [Conversational interfaces](references/flows/conversational-interfaces.md): the streaming contract, honest rendering of model output, provenance, and contextual failure modes. |
 | Receipt, reset, confirmation, digest, campaign: the deliverable is an email | [Email as a medium](references/craft/email-design.md). |
 | Multi-step forms, consequential transactions | [Complex forms](references/flows/forms-complex-transactions.md). |
 | Cross-channel journeys, service handoffs | [Service journeys](references/flows/service-journey-handoffs.md); [service blueprint](templates/service-blueprint-template.md) when complex. |
@@ -296,7 +324,7 @@ already covered by [the two axes](#two-axes-and-the-default-is-awesome).
 | Promoting, corroborating, or retiring a risk rule | [Evidence policy](references/evidence.md): source types, the corroboration bar, review intervals, and what never proves generated authorship. |
 | Classifying a review finding | [Review severity](references/quality/review-severity.md). |
 | Baseline-versus-candidate screenshot evidence | [Rendered comparison](references/quality/render-comparison.md). |
-| Capturing, probing, or pixel-measuring a page for the gate | [Render harness](references/quality/render-harness.md): CDP capture without reflow, probe sequencing, element-anchored sampling, the two-capture contrast method, fallback blocking. |
+| Capturing or probing a page for the gate | [Render harness](references/quality/render-harness.md): the shipped Playwright capture boundary, project-declared scenarios, capture limitations, and separate manual or specialist measurements. |
 | Scoped completion | [Engineering verification](references/quality/engineering-verification.md) and [evaluation](references/quality/evaluation.md). |
 | Production, launch, deployment claims | [Production readiness](references/quality/production-readiness.md) and every applicable specialist gate. |
 
@@ -324,6 +352,9 @@ Create only useful evidence records with `scripts/init_project_state.py`.
 Templates: [exploration](templates/exploration-template.md),
 [direction](templates/direction-template.md),
 [route family](templates/route-family-template.json),
+[batch study](templates/batch-range-template.json),
+[batch site observation](templates/batch-site-observation-template.md),
+[batch whole-system review](templates/batch-whole-system-review-template.md),
 [direction proof](templates/direction-proof-template.md),
 [visual review](templates/visual-review-template.md),
 [expressive perception](templates/expressive-perception-template.md),
@@ -354,11 +385,10 @@ the preship gate are never replaced by it.
 
 ## The gate, restated
 
-Nothing is presented as done until the
-[preship gate](templates/preship-gate.md) passes on the rendered output:
-every ABSOLUTE clean, the rendered-font verification green, the
-parseable-text pass complete, the ~1440 and ~375 screenshots saved and
-looked at, the placeholder register accounted for, the ledger row written,
-and the demo/live state stated in the owner's words. One P0 hit blocks the
-ship until fixed. If any of this cannot be run, the work is blocked and
-says so plainly; it does not ship with caveats.
+Nothing is presented as done until the applicable
+[preship gate](templates/preship-gate.md) passes on the rendered output. Bind
+the exact build and risk-selected route, width, state, preference, typography,
+content, media, access, and engineering evidence. A violated assurance
+boundary blocks the corresponding completion or release claim. Missing
+optional evidence is disclosed in scope; it does not become a fabricated
+pass, a taste rule, or a reason to invent records.

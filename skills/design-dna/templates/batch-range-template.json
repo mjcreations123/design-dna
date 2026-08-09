@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "classification": "internal",
+  "study": {
+    "id": "replace-with-study-id",
+    "title": "Replace with the controlled batch title",
+    "frozen_at": "2000-01-01T00:00:00Z",
+    "viewport_classes": [
+      {
+        "id": "wide",
+        "role": "wide",
+        "width": null,
+        "height": null,
+        "basis": "Replace with the project-specific reason for this wide review size.",
+        "required": true
+      },
+      {
+        "id": "narrow",
+        "role": "narrow",
+        "width": null,
+        "height": null,
+        "basis": "Replace with the project-specific reason for this narrow review size.",
+        "required": true
+      }
+    ],
+    "review_protocol": {
+      "site_observation": "unprimed-before-diagnostics",
+      "whole_system_comparison": "masked",
+      "automatic_aesthetic_pass": false
+    }
+  },
+  "data_handling": {
+    "status": "pending",
+    "capture_authorization": {
+      "status": "pending",
+      "basis": null
+    },
+    "contact_sheet_authorization": {
+      "status": "pending",
+      "basis": null
+    },
+    "classification": "internal",
+    "recipients": [],
+    "access_scope": null,
+    "retention": {
+      "mode": "pending",
+      "owner": null,
+      "delete_or_review_on": null,
+      "reason": "Resolve retention before any capture or contact-sheet evidence is created."
+    },
+    "transformations": []
+  },
+  "sites": [
+    {
+      "id": "site-a",
+      "mask_label": "Specimen A",
+      "status": "planned",
+      "independence_basis": "Explain why this brief and subject are independent from the other study cases.",
+      "brief": {
+        "path": "briefs/site-a.md",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "implementation_isolation": {
+        "status": "pending",
+        "source_packet": {
+          "path": "source-packets/site-a.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "producer_context_id": "replace-with-site-a-build-context-id",
+        "sibling_output_exposure": {
+          "state": "not-started",
+          "timing": "not-applicable",
+          "details": "No implementation has started; update this record before marking the site built."
+        },
+        "allowed_shared_tooling": [],
+        "shared_artifacts_or_exceptions": [],
+        "attested_by": null,
+        "attested_at": null
+      },
+      "build_root": "builds/site-a",
+      "public_root": null,
+      "render_report": null,
+      "pages": [
+        {
+          "id": "home",
+          "mask_label": "Page 1",
+          "route": "/",
+          "captures": []
+        }
+      ],
+      "unprimed_review": {
+        "status": "not-run",
+        "reviewer_id": null,
+        "sibling_output_seen_before_observation": null,
+        "diagnostic_material_seen_before_observation": null,
+        "observed_at": null,
+        "frozen_at": null,
+        "capture_set_sha256": null,
+        "evidence": null
+      },
+      "blocker": null
+    },
+    {
+      "id": "site-b",
+      "mask_label": "Specimen B",
+      "status": "planned",
+      "independence_basis": "Explain why this brief and subject are independent from the other study cases.",
+      "brief": {
+        "path": "briefs/site-b.md",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "implementation_isolation": {
+        "status": "pending",
+        "source_packet": {
+          "path": "source-packets/site-b.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "producer_context_id": "replace-with-site-b-build-context-id",
+        "sibling_output_exposure": {
+          "state": "not-started",
+          "timing": "not-applicable",
+          "details": "No implementation has started; update this record before marking the site built."
+        },
+        "allowed_shared_tooling": [],
+        "shared_artifacts_or_exceptions": [],
+        "attested_by": null,
+        "attested_at": null
+      },
+      "build_root": "builds/site-b",
+      "public_root": null,
+      "render_report": null,
+      "pages": [
+        {
+          "id": "home",
+          "mask_label": "Page 1",
+          "route": "/",
+          "captures": []
+        }
+      ],
+      "unprimed_review": {
+        "status": "not-run",
+        "reviewer_id": null,
+        "sibling_output_seen_before_observation": null,
+        "diagnostic_material_seen_before_observation": null,
+        "observed_at": null,
+        "frozen_at": null,
+        "capture_set_sha256": null,
+        "evidence": null
+      },
+      "blocker": null
+    },
+    {
+      "id": "site-c",
+      "mask_label": "Specimen C",
+      "status": "planned",
+      "independence_basis": "Explain why this brief and subject are independent from the other study cases.",
+      "brief": {
+        "path": "briefs/site-c.md",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "implementation_isolation": {
+        "status": "pending",
+        "source_packet": {
+          "path": "source-packets/site-c.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "producer_context_id": "replace-with-site-c-build-context-id",
+        "sibling_output_exposure": {
+          "state": "not-started",
+          "timing": "not-applicable",
+          "details": "No implementation has started; update this record before marking the site built."
+        },
+        "allowed_shared_tooling": [],
+        "shared_artifacts_or_exceptions": [],
+        "attested_by": null,
+        "attested_at": null
+      },
+      "build_root": "builds/site-c",
+      "public_root": null,
+      "render_report": null,
+      "pages": [
+        {
+          "id": "home",
+          "mask_label": "Page 1",
+          "route": "/",
+          "captures": []
+        }
+      ],
+      "unprimed_review": {
+        "status": "not-run",
+        "reviewer_id": null,
+        "sibling_output_seen_before_observation": null,
+        "diagnostic_material_seen_before_observation": null,
+        "observed_at": null,
+        "frozen_at": null,
+        "capture_set_sha256": null,
+        "evidence": null
+      },
+      "blocker": null
+    }
+  ],
+  "whole_system_review": {
+    "status": "not-run",
+    "masked": true,
+    "reviewer_id": null,
+    "site_identity_revealed_before_observation": false,
+    "diagnostic_material_seen_before_observation": false,
+    "observed_at": null,
+    "frozen_at": null,
+    "capture_set_sha256": null,
+    "evidence": null
+  },
+  "contextual_findings": []
+}
