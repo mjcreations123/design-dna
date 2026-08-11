@@ -86,8 +86,10 @@ content in a named scope. It is not permission to invent client facts.
    categories, visitor questions, action outcomes, states, or other content the
    chosen experience genuinely needs.
 4. Derive voice from the subject's nouns, verbs, setting, sensory qualities,
-   and audience relationship. A distinctive voice can be illustrative without
-   inventing a founder story, customer quote, or institutional authority.
+   and audience relationship. In a clearly fictional premise, invented people,
+   places, history, events, and local detail may support the world when they are
+   non-impersonating, fixture-bound, and unmistakable as fiction. Do not borrow
+   real people or institutions to manufacture authority.
 5. Use exact sample prices, dates, durations, quantities, or availability only
    when the interface genuinely needs them. Mark them as scenario values in
    the internal fixture and make their illustrative status clear wherever a
@@ -96,10 +98,23 @@ content in a named scope. It is not permission to invent client facts.
    reasonable visitor needs it. Do not repeat caveats in every section, make
    the site narrate its own design process, or satisfy a universal count.
 
-Never synthesize history, addresses, named real people, credentials,
-testimonials, awards, partnerships, measured results, live status, documentary
-events, or local detail as scenario texture. Those are proof-shaped claims, not
-harmless flavor.
+Before locking the public identity, compare what its nouns promise with the
+content the fixture can honestly sustain. Calling something a journal, archive,
+club, studio, marketplace, guide, dashboard, or another recognizable form may
+create expectations about contributors, chronology, records, participation,
+inventory, authority, or operating state. Those examples are not a required
+content checklist. Derive the actual expectation from the audience and chosen
+identity, then either provide enough bounded material to make the relationship
+credible or choose a more accurate public description. Repeated disclaimers do
+not repair a mismatch between the identity promise and the available world.
+
+Never invent or alter a real person's identity, a real institution's history,
+an operating address, credentials, testimonials, awards, partnerships,
+measured results, live status, or documentary events and present them as
+actual. Those are proof-shaped claims. Clearly bounded fiction may include its
+own invented names, places, chronology, events, and local texture when the
+fixture and public treatment prevent reasonable confusion with a real person,
+organization, endorsement, operating service, or documentary record.
 
 Generated concept media needs its own explicit authorization. The portable
 publisher policy does not grant it. Authorization may come from an explicit
@@ -147,9 +162,11 @@ not repeat missing facts, design methodology, or unresolved-input language
 until those caveats become the main content.
 
 Do not fabricate specifics, precision, local detail, quotations, or proof to
-cover a source gap. Stock media and decorative complexity may be valid creative
-materials, but they must not impersonate missing project evidence or appear by
-accident as compensation for it.
+cover a gap in a real project. In an authorized fictional fixture, create only
+the worldbuilding the experience needs and keep its status unmistakable. Stock
+media and decorative complexity may be valid creative materials, but they must
+not impersonate missing project evidence or appear by accident as compensation
+for it.
 
 ## Resolve contradictions
 

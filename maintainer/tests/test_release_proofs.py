@@ -1788,6 +1788,7 @@ class AuditProofModeTests(unittest.TestCase):
             for record in compatibility["environments"]
             if record["scope"] == "local_toolchain"
         )
+        local["checks"]["unit_tests"] = "passed"
         local["checks"]["package_audit"] = "pending"
         local["evidence"].remove(
             "maintainer/attestations/test-attestation.json"

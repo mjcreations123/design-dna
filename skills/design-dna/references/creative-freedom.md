@@ -28,11 +28,11 @@ section order, energy pattern, concept count, or degree of visual unity.
 Examples and recurring-pattern warnings are review vocabulary, not a menu,
 blacklist, reverse style guide, or prompt for an opposite-looking fashion.
 
-One carve-out: the standing [owner absolutes](../policy/absolutes.md) are
-active Inherited constraints at authority tier 2. They are small,
-owner-authored, dated, and never grow by producer habit. An active absolute
-is a constraint like a brand guideline, not a style prison, and nothing in
-this file softens it.
+The portable [assurance boundaries](../policy/absolutes.md) reserve low
+freedom for truth, rights, privacy, access, working behavior, evidence
+honesty, delivery authority, and explicit project contracts. They contain no
+portable taste policy. Treat an aesthetic constraint as inherited only when
+an accountable project or brand source actually establishes it.
 
 ## Classify constraints before directing
 
@@ -138,10 +138,11 @@ unchanged system. One inherited direction may be sufficient for a bounded
 repair. A highly open identity may need a wider field. Record why the evidence
 was sufficient rather than manufacturing unusable options to satisfy a count.
 
-One named exception to the no-fixed-count rule: for greenfield, Showcase, or
-open-direction work, the first-ranked concept MUST NOT ship without at least
-one materially different rendered alternative. That floor exists because the
-first instinct is the statistical mean; see
+For greenfield, Showcase, or open-direction work, expose enough contrast to
+challenge the first plausible answer. Depending on the uncertainty, that may
+be a materially different rendered candidate, a focused system or route
+fragment, a reference decomposition, a content-order proof, or another
+decision artifact. Do not prescribe a universal candidate count; see
 [creative exploration](craft/creative-exploration.md).
 
 ## Permit aesthetic autonomy
@@ -177,21 +178,30 @@ familiar structure, no motion, several type voices, or extreme restraint. It
 may fail while following every named method in this skill if the rendered
 result is ugly, generic, incoherent, careless, or wrong for the owner.
 
-Review on two axes at once. One axis runs AI-looking to human-crafted; the
-other runs plain to rich. Clearing the first axis while staying plain still
-fails: a page with zero individual defects and zero memorable elements is
-`RISK-PLAIN-001`, not a pass. Richness comes from a committed concept
-executed with craft, never from scattering effects; restraint is valid only
-as a committed, rendered-successful choice the brief supports.
+Review specificity and realized ambition separately. Quiet, conventional,
+image-led, typographic, dense, cinematic, and restrained work can each be
+fully authored or underdeveloped. Set the ambition from the project, then
+judge whether the rendered content, media, depth, scale, rhythm, interaction,
+and finish realize that target. Absence of obvious defects is not proof of
+quality, but no universal richness or memorability device is required.
 
 ## Anti-convergence check
 
-When authorized evidence exists, compare outputs only after masking names,
-copy, logos, and dominant photographs. Look for unexplained repetition in
-typography roles, opening geometry, route silhouettes, labels, components,
-motion, cadence, endings, and conspicuous gestures. Judge clusters and whole
-systems; no ingredient establishes a defect on its own. Repetition is valid
-when brand, task, platform, product-family, or editorial evidence explains it.
+When authorized evidence exists, compare outputs under neutral specimen labels
+and freeze the first observation before revealing the identity map. Neutral
+labels reduce identity priming; they do not alter or redact screenshot pixels.
+Look for unexplained repetition in typography roles, opening geometry, route
+silhouettes, labels, components, motion, cadence, endings, and conspicuous
+gestures. Judge clusters and whole systems; no ingredient establishes a defect
+on its own. Repetition is valid when brand, task, platform, product-family, or
+editorial evidence explains it.
+
+Do not pixel-transform every comparison as a ritual. Use a transformed copy
+only for an authorized privacy need or a stated comparison hypothesis, retain
+the verified original within its authorized boundary, and bind the record to
+the authority, method, original and transformed hashes, and resulting coverage
+loss or change. Never replace that evidence with an unprovable
+`geometry-preserved` assertion.
 
 This check does not detect AI authorship. It identifies repeated design
 decisions that need contextual human judgment.

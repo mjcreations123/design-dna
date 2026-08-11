@@ -376,6 +376,40 @@ def ensure_clean_worktree(plugin_root: Path) -> None:
         )
 
 
+def ensure_worktree_bytes_match_ref(plugin_root: Path, ref: str) -> None:
+    """Reject checkout filters or line-ending drift hidden by Git status.
+
+    ``git status`` compares normalized content, so a file declared ``eol=lf``
+    can contain CRLF bytes in the worktree while still appearing clean. The
+    release manifest is assembled from worktree bytes but the archive is
+    assembled from Git blobs; those two identities must be byte-for-byte
+    identical before packaging.
+    """
+    for relative, (_mode, object_id) in sorted(git_tree_records(plugin_root, ref).items()):
+        path = plugin_root.joinpath(*PurePosixPath(relative).parts)
+        if not path.is_file():
+            raise ToolFailure(
+                "release-package-worktree-file-missing",
+                "A tracked release file is missing from the worktree.",
+                path,
+            )
+        worktree = stable_bytes(path)
+        blob = git_command_bytes(plugin_root, "cat-file", "blob", object_id)
+        if worktree != blob:
+            raise ToolFailure(
+                "release-package-worktree-byte-drift",
+                (
+                    "A tracked file appears clean after Git normalization but "
+                    "its worktree bytes differ from the selected Git blob "
+                    f"(worktree={len(worktree)} bytes/"
+                    f"{hashlib.sha256(worktree).hexdigest()}, blob={len(blob)} "
+                    f"bytes/{hashlib.sha256(blob).hexdigest()}). Normalize the "
+                    "file bytes before regenerating release metadata."
+                ),
+                path,
+            )
+
+
 def resolved_commit(plugin_root: Path, ref: str) -> str:
     commit = git_command(
         plugin_root,
@@ -820,6 +854,7 @@ def main() -> int:
         ensure_clean_worktree(plugin_root)
         commit = resolved_commit(plugin_root, ref)
         validate_ref_matches_head(plugin_root, ref, commit)
+        ensure_worktree_bytes_match_ref(plugin_root, ref)
         release = load_json(plugin_root / "skills" / "design-dna" / "release.json")
         version = release.get("version") if isinstance(release, dict) else None
         if not isinstance(version, str):

@@ -1,27 +1,40 @@
 # Design DNA
 
-**A web-design skill for coding agents, built to stop the output from looking
-like a coding agent made it.**
+**A web-design skill for coding agents, built to turn project evidence into
+specific, resolved websites instead of interchangeable first drafts.**
 
-It runs in Claude Code and Codex. Point it at a project and it works the way a
-studio does: read the real material first, write an art direction the project
-actually implies, prove the risky decisions at real widths before propagating
+It is packaged for Claude Code and Codex. Point it at a project and it works
+the way a studio does: read the real material first, write an art direction the
+project actually implies, prove consequential decisions before propagating
 them, build, then *look at the rendered page* and review what is actually
-there.
+there. Host support is reported only from the current compatibility evidence;
+the package never treats a copied folder as proof of activation.
 
 Three things make it different from a prompt that says "make it look nice":
 
 - **No house style.** There is no bundled palette, font pool, or hero recipe
-  to inherit, because a beautiful default is still a fingerprint. Every visual
-  choice has to be derived from this project and defensible for it.
-- **It verifies by seeing.** Judging craft from source is prohibited. Nothing
-  is finished without rendered screenshots at desktop and mobile widths, and
-  the harness measures the page: real contrast against the real composited
-  background, which font actually painted, whether the strings on screen mean
-  anything.
-- **It cannot invent.** No fabricated statistics, reviews, people, or product
-  UI. Placeholders are labeled and tracked, and every build stays a demo until
-  its owner says otherwise in their own words.
+  to inherit. Project evidence shapes consequential organizing decisions;
+  familiar conventions may remain when they fit the task, established system,
+  audience, and maintenance reality.
+- **It tests taste before scale.** For an open, high-visibility, owner-sensitive,
+  or previously rejected direction, it uses a project-specific visual reference
+  dossier, a rendered direction proof, and a first-impression surface-fidelity
+  review. A clean technical build is not treated as proof that the result is
+  beautiful, credible, or ready to show a client.
+- **It verifies by seeing.** Source review cannot establish rendered craft.
+  The evidence covers the project-relevant widths, states, preferences, and
+  failure conditions that can change the conclusion. The bundled Playwright
+  reviewer records screenshots, computed-style and geometry observations,
+  overflow, images, selected interactions, and bounded accessibility
+  candidates; contrast, glyph-level font selection, assistive-technology
+  behavior, and aesthetic quality require separate appropriate evidence.
+- **It keeps fact and fiction legible.** Real-world claims, reviews,
+  credentials, operating status, and product behavior cannot be fabricated.
+  A clearly bounded fictional sample may author non-impersonating scenario
+  worldbuilding under its declared premise. Unresolved placeholders are
+  labeled and tracked. Concept, demo, staging, production, deployed, and live
+  are reported from current authority and evidence rather than collapsed into
+  one default state.
 
 The runtime stays small. A decision router loads only the guidance the current
 decision needs, so a font question does not drag in the ecommerce, motion, and
@@ -33,7 +46,7 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Release status:** `5.0.4` is an unreleased candidate. Its workflow and
+> **Release status:** `5.1.0` is an unreleased candidate. Its workflow and
 > package changes are implemented, but formal host, comparative, independent
 > rendered-review, and strict release qualification remain pending. The
 > checked-in attestations predate this source and are retained as historical
@@ -50,15 +63,15 @@ responsive production code, and inspect the rendered result for generic
 defaulting, weak craft, unfinished behavior, accessibility failures, and
 release residue.
 
-Version 5.0 merges three generations into one skill: the 4.0 architecture
-(authority order, capability presets, the decision router, flows, verticals,
-cultural review, scripts), the 3.4 dated risk vocabulary restored as expiring
-post-render tables, and the owner doctrine that 2.x had removed. It adds a
-two-tier accountable-owner policy whose ABSOLUTE tier no one may lift, a
-parseable-text gate for every visible string, a studio ledger that makes the
-skill notice when it repeats itself, and a one-page preship gate. The 5.0.x
-line then hardens all of it against real builds, most of that work in the
-capture-and-measurement harness.
+Version 5.1 keeps the 4.0 architecture—authority order, capability presets,
+the decision router, flows, verticals, cultural review, scripts, and the Range
+Study contract—while repairing the restrictive taste doctrine introduced in
+5.0. It limits hard policy to assurance boundaries such as truth, rights,
+privacy, accessibility, working behavior, evidence honesty, and delivery
+authority. Fonts, palettes, layouts, media, wording, ornament, motion, and
+other aesthetic ingredients remain project decisions. A new Batch Study
+protocol makes cross-project range testable without turning recurrence into a
+style blacklist or an authorship score.
 
 It carries forward the 4.0 Range Study contract for deliberately varied
 multi-route sites, and its cultural-context boundaries for place and community
@@ -86,6 +99,9 @@ Design DNA adds a repeatable operating system for:
   design decisions, and a reversible checkpoint when the risk warrants one;
 - translating requested visual and experiential qualities into
   project-specific observations rather than a preset expression recipe;
+- recovering from an ugly or owner-rejected result by reopening the public
+  proposition, material presence, composition, hierarchy, or type behavior
+  rather than adding effects or swapping a fashionable ingredient;
 - carrying the chosen `creative_logic` through whatever combination of
   typography, color, imagery, layout, motion, ornament, density, interaction,
   convention, or restraint the work needs;
@@ -125,8 +141,9 @@ extra assurances.
 | --- | --- | --- |
 | **Quick** | A bounded repair or low-risk change inside an established system. | Inspect context, preserve the system, implement changed states, and run affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Frame and direct the work, prove consequential decisions proportionately, implement, and complete rendered plus engineering review. |
-| **Showcase** | Expressive, premium, highly visible, owner-sensitive work, or a brief that rejects safe or generic output. | Research the real decision, compare enough directly reviewable answers to challenge the first default, select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
+| **Showcase** | Expressive, premium, highly visible, owner-sensitive work, or a brief that rejects safe or generic output. | Research the real decision and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
 | **Range Study** | A multi-route brief explicitly asks pages to demonstrate meaningful creative range. | Keep dependable truth, navigation, access, and operations; author the route-family record; prove routes selected by uncertainty; verify real paths; and review a matched route atlas. |
+| **Batch Study** | A controlled evaluation uses at least three unrelated briefs to test whether the method transfers across sites. | Freeze and isolate briefs/builds; bind matched captures to successful renderer routes, profiles, capture modes, exact pixels, and public-build manifests; freeze capture-set-bound unprimed observations; then compare derivation under neutral labels without turning recurrence into an aesthetic ban. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Prioritize task, state, content, specialist, and real-user evidence; visual ambition cannot waive a safety or production gate. |
 | **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Gate every listed asset on type-specific provenance, rights, privacy, factual status, approval, delivery, accessibility, and generated-media evidence. |
 
@@ -134,6 +151,10 @@ extra assurances.
 sites, client-facing demos, pitch concepts, and other work intended to
 demonstrate visual capability.** Use every applicable capability: Showcase work
 can also be High-risk.
+
+**Batch Study is not a portfolio factory.** It is a controlled evaluation of
+isolated briefs. A client-facing sample still needs its own public proposition,
+material, art direction, rendered taste review, and accountable-owner response.
 
 For substantial open or expressive work, exploration is not decoration around
 a first idea. Develop enough materially different evidence to expose the
@@ -171,8 +192,9 @@ claude.ai or the Claude Desktop chat application.
 
 Give the agent the best available business facts, copy, images, brand material,
 constraints, stack, required routes, and examples with reasons. Missing proof,
-pricing, reviews, people, availability, policies, or integrations must remain
-omitted or honestly pending.
+pricing, reviews, people, availability, policies, or integrations in a real
+project must remain omitted or honestly pending. An explicitly fictional
+sample can use bounded scenario content while keeping its status clear.
 
 See [Quick start](docs/QUICK_START.md) for capability guidance, a paste-ready
 Showcase prompt, and the material checklist.

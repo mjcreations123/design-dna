@@ -12,6 +12,7 @@ direction.
 - [Start from project authority and material](#start-from-project-authority-and-material)
 - [Research relationships, not looks to copy](#research-relationships-not-looks-to-copy)
 - [Form a project-specific creative logic](#form-a-project-specific-creative-logic)
+- [Keep the public surface true to the encounter](#keep-the-public-surface-true-to-the-encounter)
 - [Choose media deliberately](#choose-media-deliberately)
 - [Set ambition in the project's own terms](#set-ambition-in-the-projects-own-terms)
 - [Protect cultural and temporal specificity](#protect-cultural-and-temporal-specificity)
@@ -82,6 +83,28 @@ Use an observable decision ledger:
 
 No named aesthetic field or device is mandatory. Record candidate-specific
 descriptions only when the candidate genuinely uses them.
+
+## Keep the public surface true to the encounter
+
+Specificity is not a reason to make every public site resemble the maker's
+private design exercise. A record, archive, dossier, issue, dispatch board,
+field note, laboratory, gallery, manifest, or status system belongs on the
+surface only when it gives the actual visitor a useful or meaningful way to
+encounter this subject. It is not enough that the form gives the agent a
+distinctive composition.
+
+At the first consequential render, ask whether a visitor sees a credible public
+surface for the real subject and audience, or merely recognizes the device used
+to make the sample feel different. Compare the public proposition, hierarchy,
+media role, type behavior, composition, and interaction with the project's
+stated encounter. If the answer is weak, generic, artificial, or ugly, reopen
+the creative logic. Do not preserve a rejected premise by adding more labels,
+decorative systems, effects, or a different palette.
+
+For high-visibility, owner-sensitive, or previously rejected work, use
+[taste calibration](taste-calibration.md) before broad propagation. Its
+reference dossier and first-impression review are project-specific evidence,
+not a new house style.
 
 ## Choose media deliberately
 

@@ -14,19 +14,23 @@ Runtime guarantees:
 from __future__ import annotations
 
 import argparse
+import binascii
 import errno
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import secrets
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
 import time
+import zlib
 from datetime import date, datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import NoReturn
@@ -36,8 +40,10 @@ from urllib.parse import urlsplit
 STATE_SCHEMA_VERSION = 2
 RECORD_SCHEMA_VERSION = 1
 ASSET_SCHEMA_VERSION = 2
-EVIDENCE_CONTRACT_VERSION = 1
+EVIDENCE_CONTRACT_VERSION = 2
 PROPORTIONAL_EVIDENCE_CONTRACT = "proportional-evidence-v1"
+DIRECTION_CONTRACT_PROJECT_DERIVED = "project-derived-organizing-logic-v1"
+DIRECTION_CONTRACT_QUICK_EXEMPT = "quick-repair-exempt"
 UNIVERSAL_EVIDENCE_ANCHORS = (
     "identity-intent",
     "truth-provenance",
@@ -47,6 +53,7 @@ UNIVERSAL_EVIDENCE_ANCHORS = (
 )
 CORE_EVIDENCE_CAPABILITIES = {
     "asset-led",
+    "batch-study",
     "cultural-context",
     "high-risk",
     "range-study",
@@ -114,9 +121,13 @@ SEMVER = re.compile(
 )
 RECORD_TEMPLATES = {
     "exploration": ("exploration.md", "exploration-template.md"),
+    "taste-calibration": (
+        "taste-calibration.md", "taste-calibration-template.md",
+    ),
     "direction": ("direction.md", "direction-template.md"),
     "direction-proof": ("direction-proof.md", "direction-proof-template.md"),
     "route-family": ("route-family.json", "route-family-template.json"),
+    "batch-range": ("batch-range.json", "batch-range-template.json"),
     "visual-review": ("visual-review.md", "visual-review-template.md"),
     "claims": ("claims.md", "claim-ledger-template.md"),
     "assets": ("assets.yml", "asset-manifest.yml"),
@@ -129,13 +140,24 @@ PROFILES = {
     "greenfield": ("direction", "visual-review"),
     "standard": ("direction", "visual-review"),
     "showcase": (
-        "exploration", "direction", "direction-proof", "visual-review",
+        "exploration",
+        "taste-calibration",
+        "direction",
+        "direction-proof",
+        "visual-review",
     ),
     "range-study": (
         "exploration",
         "direction",
         "direction-proof",
         "route-family",
+        "visual-review",
+    ),
+    "batch-study": (
+        "exploration",
+        "direction",
+        "direction-proof",
+        "batch-range",
         "visual-review",
     ),
     "high-risk": (
@@ -151,6 +173,7 @@ CANONICAL_ASSURANCE_PROFILES = {
     "standard",
     "showcase",
     "range-study",
+    "batch-study",
     "high-risk",
     "asset-led",
 }
@@ -159,6 +182,7 @@ ASSURANCE_PROFILE_ORDER = (
     "standard",
     "showcase",
     "range-study",
+    "batch-study",
     "high-risk",
     "asset-led",
 )
@@ -169,10 +193,13 @@ REQUEST_PROFILE_ASSURANCE = {
     "greenfield": ("standard",),
     "showcase": ("showcase",),
     "range-study": ("standard", "range-study"),
+    "batch-study": ("standard", "batch-study"),
     "high-risk": ("high-risk",),
     "validation": ("high-risk",),
     "asset-led": ("asset-led",),
-    "full": ("showcase", "high-risk", "asset-led"),
+    "full": (
+        "showcase", "range-study", "batch-study", "high-risk", "asset-led",
+    ),
 }
 
 
@@ -215,6 +242,8 @@ def infer_assurance_profiles(
         profiles.add("standard")
     if "route-family" in observed:
         profiles.update({"standard", "range-study"})
+    if "batch-range" in observed:
+        profiles.update({"standard", "batch-study"})
     if observed & {"claims", "user-validation"}:
         profiles.add("high-risk")
     if "assets" in observed:
@@ -264,7 +293,9 @@ def inferred_evidence_capabilities(
     observed = set(assurance_profiles)
     return tuple(
         capability
-        for capability in ("range-study", "high-risk", "asset-led")
+        for capability in (
+            "range-study", "batch-study", "high-risk", "asset-led",
+        )
         if capability in observed
     )
 
@@ -305,6 +336,11 @@ def evidence_contract_payload(
     return {
         "version": EVIDENCE_CONTRACT_VERSION,
         "universal_anchors": list(UNIVERSAL_EVIDENCE_ANCHORS),
+        "direction_contract": (
+            DIRECTION_CONTRACT_QUICK_EXEMPT
+            if normalize_assurance_profiles(assurance_profiles) == ("quick",)
+            else DIRECTION_CONTRACT_PROJECT_DERIVED
+        ),
         "applicable_capabilities": list(capabilities),
         "extension_records": list(extension_records),
     }
@@ -319,6 +355,7 @@ def validate_evidence_contract(
     if not isinstance(payload, dict) or set(payload) != {
         "version",
         "universal_anchors",
+        "direction_contract",
         "applicable_capabilities",
         "extension_records",
     }:
@@ -336,6 +373,17 @@ def validate_evidence_contract(
         raise StateError(
             "invalid-evidence-contract",
             "evidence_contract must retain the five universal evidence anchors.",
+        )
+    expected_direction_contract = (
+        DIRECTION_CONTRACT_QUICK_EXEMPT
+        if normalize_assurance_profiles(assurance_profiles) == ("quick",)
+        else DIRECTION_CONTRACT_PROJECT_DERIVED
+    )
+    if payload.get("direction_contract") != expected_direction_contract:
+        raise StateError(
+            "invalid-evidence-contract",
+            "evidence_contract direction_contract does not match the "
+            "assurance profiles.",
         )
     raw_capabilities = payload.get("applicable_capabilities")
     if (
@@ -435,8 +483,37 @@ def validate_evidence_contract(
             )
         extensions.append(extension)
     return capabilities, extensions
+
+
+def migrate_evidence_contract(
+    payload: object,
+    assurance_profiles: tuple[str, ...],
+) -> tuple[tuple[str, ...], list[dict[str, object]]]:
+    """Upgrade the exact prior proportional state contract without data loss."""
+
+    prior_keys = {
+        "version",
+        "universal_anchors",
+        "applicable_capabilities",
+        "extension_records",
+    }
+    if (
+        isinstance(payload, dict)
+        and set(payload) == prior_keys
+        and payload.get("version") == 1
+    ):
+        upgraded = dict(payload)
+        upgraded["version"] = EVIDENCE_CONTRACT_VERSION
+        upgraded["direction_contract"] = (
+            DIRECTION_CONTRACT_QUICK_EXEMPT
+            if normalize_assurance_profiles(assurance_profiles) == ("quick",)
+            else DIRECTION_CONTRACT_PROJECT_DERIVED
+        )
+        return validate_evidence_contract(upgraded, assurance_profiles)
+    return validate_evidence_contract(payload, assurance_profiles)
 FRONTMATTER_FILES = {
     "claims.md", "direction.md", "direction-proof.md", "exploration.md",
+    "taste-calibration.md",
     "visual-review.md", "user-validation.md", "handoff.md",
 }
 SUBSTANTIVE_RECORDS = {
@@ -855,6 +932,10 @@ REQUIRED_RECORD_SECTIONS = {
         "Open decisions",
     },
 }
+PROJECT_DERIVED_DIRECTION_SECTIONS = {
+    "Project-derived organizing logic",
+    "Observable consequential design decisions",
+}
 REQUIRED_RECORD_LABELS = {
     "exploration": (),
     "direction": (),
@@ -890,6 +971,10 @@ CAPABILITY_REQUIRED_SECTIONS = {
         "direction": {"Range-study contract"},
         "visual-review": {"Range-study review"},
     },
+    "batch-study": {
+        "direction": {"Batch Study protocol"},
+        "visual-review": {"Batch Study review"},
+    },
     "cultural-context": {
         "direction": {"Cultural context and authority"},
         "visual-review": {"Cultural review"},
@@ -905,6 +990,7 @@ CAPABILITY_REQUIRED_SECTIONS = {
 }
 CAPABILITY_REQUIRED_RECORDS = {
     "range-study": {"route-family"},
+    "batch-study": {"batch-range"},
     "cultural-context": {"direction", "visual-review"},
     "high-risk": {"claims", "user-validation"},
     "asset-led": {"assets"},
@@ -1456,6 +1542,209 @@ def file_sha256(path: Path) -> tuple[int, str]:
     return size, digest.hexdigest()
 
 
+def verify_png_artifact(path: Path) -> tuple[int, int]:
+    """Decode a bounded PNG with the standard library and return dimensions."""
+
+    try:
+        size = path.stat().st_size
+        if size < 45 or size > 128 * 1024 * 1024:
+            raise StateError(
+                "render-evidence-image-invalid",
+                "Rendered PNG must be from 45 bytes through 128 MiB.",
+                path=path,
+            )
+        data = path.read_bytes()
+    except OSError as exc:
+        raise StateError(
+            "render-evidence-image-invalid",
+            str(exc),
+            path=path,
+        ) from exc
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise StateError(
+            "render-evidence-image-invalid",
+            "Rendered evidence is not a PNG.",
+            path=path,
+        )
+
+    offset = 8
+    width = height = bit_depth = color_type = interlace = None
+    compressed = bytearray()
+    seen_ihdr = seen_idat = seen_iend = seen_plte = False
+    idat_ended = False
+    while offset < len(data):
+        if offset + 12 > len(data):
+            raise StateError(
+                "render-evidence-image-invalid",
+                "PNG chunk header is truncated.",
+                path=path,
+            )
+        length = struct.unpack(">I", data[offset:offset + 4])[0]
+        chunk_type = data[offset + 4:offset + 8]
+        chunk_end = offset + 12 + length
+        if chunk_end > len(data):
+            raise StateError(
+                "render-evidence-image-invalid",
+                "PNG chunk data is truncated.",
+                path=path,
+            )
+        chunk_data = data[offset + 8:offset + 8 + length]
+        recorded_crc = struct.unpack(
+            ">I", data[offset + 8 + length:chunk_end]
+        )[0]
+        actual_crc = binascii.crc32(chunk_type)
+        actual_crc = binascii.crc32(chunk_data, actual_crc) & 0xFFFFFFFF
+        if actual_crc != recorded_crc:
+            raise StateError(
+                "render-evidence-image-invalid",
+                "PNG chunk checksum is invalid.",
+                path=path,
+            )
+
+        if chunk_type == b"IHDR":
+            if seen_ihdr or offset != 8 or length != 13:
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG must begin with exactly one valid IHDR chunk.",
+                    path=path,
+                )
+            (
+                width,
+                height,
+                bit_depth,
+                color_type,
+                compression,
+                filtering,
+                interlace,
+            ) = struct.unpack(">IIBBBBB", chunk_data)
+            valid_depths = {
+                0: {1, 2, 4, 8, 16},
+                2: {8, 16},
+                3: {1, 2, 4, 8},
+                4: {8, 16},
+                6: {8, 16},
+            }
+            if (
+                width < 1
+                or height < 1
+                or width > 32768
+                or height > 131072
+                or width * height > 64_000_000
+                or compression != 0
+                or filtering != 0
+                or interlace != 0
+                or color_type not in valid_depths
+                or bit_depth not in valid_depths[color_type]
+            ):
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG header, dimensions, or color format is unsupported.",
+                    path=path,
+                )
+            seen_ihdr = True
+        elif chunk_type == b"PLTE":
+            if not seen_ihdr or seen_idat or not 1 <= length <= 768 or length % 3:
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG palette placement or length is invalid.",
+                    path=path,
+                )
+            seen_plte = True
+        elif chunk_type == b"IDAT":
+            if not seen_ihdr or seen_iend or idat_ended:
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG IDAT chunks are out of order.",
+                    path=path,
+                )
+            seen_idat = True
+            compressed.extend(chunk_data)
+            if len(compressed) > 128 * 1024 * 1024:
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG compressed payload exceeds the audit limit.",
+                    path=path,
+                )
+        elif chunk_type == b"IEND":
+            if not seen_idat or seen_iend or length:
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG IEND is missing, duplicated, or malformed.",
+                    path=path,
+                )
+            seen_iend = True
+            offset = chunk_end
+            break
+        else:
+            if seen_idat:
+                idat_ended = True
+            if chunk_type[:1].isupper():
+                raise StateError(
+                    "render-evidence-image-invalid",
+                    "PNG contains an unsupported critical chunk.",
+                    path=path,
+                )
+        offset = chunk_end
+
+    if (
+        not seen_ihdr
+        or not seen_idat
+        or not seen_iend
+        or offset != len(data)
+        or (color_type == 3 and not seen_plte)
+    ):
+        raise StateError(
+            "render-evidence-image-invalid",
+            "PNG is incomplete or has trailing data.",
+            path=path,
+        )
+    assert (
+        isinstance(width, int)
+        and isinstance(height, int)
+        and isinstance(bit_depth, int)
+        and isinstance(color_type, int)
+        and interlace == 0
+    )
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color_type]
+    row_bytes = math.ceil(width * channels * bit_depth / 8)
+    expected_bytes = height * (row_bytes + 1)
+    if expected_bytes > 128 * 1024 * 1024:
+        raise StateError(
+            "render-evidence-image-invalid",
+            "PNG decoded payload exceeds the audit limit.",
+            path=path,
+        )
+    try:
+        decoder = zlib.decompressobj()
+        decoded = decoder.decompress(bytes(compressed), expected_bytes + 1)
+        decoded += decoder.flush(max(1, expected_bytes + 1 - len(decoded)))
+    except zlib.error as exc:
+        raise StateError(
+            "render-evidence-image-invalid",
+            f"PNG pixel stream cannot be decoded: {exc}",
+            path=path,
+        ) from exc
+    if (
+        len(decoded) != expected_bytes
+        or not decoder.eof
+        or decoder.unused_data
+        or decoder.unconsumed_tail
+    ):
+        raise StateError(
+            "render-evidence-image-invalid",
+            "PNG pixel stream does not match its declared dimensions.",
+            path=path,
+        )
+    for row in range(height):
+        if decoded[row * (row_bytes + 1)] > 4:
+            raise StateError(
+                "render-evidence-image-invalid",
+                f"PNG row {row} has an invalid filter.",
+                path=path,
+            )
+    return width, height
+
+
 def state_tree_records(root: Path) -> tuple[tuple[str, str, int, str], ...]:
     if not root.is_dir():
         raise StateError(
@@ -1744,6 +2033,389 @@ def validate_route_family_record(
     return payload, errors
 
 
+def validate_batch_range_record(
+    path: Path,
+) -> tuple[object, list[dict[str, str]]]:
+    """Validate the planning-safe shape of the optional batch record.
+
+    The initialized template intentionally contains unresolved paths, hashes,
+    and viewport dimensions. Exact evidence is therefore verified only by the
+    readiness audit after the project replaces those placeholders.
+    """
+
+    payload = read_json(path)
+    errors: list[dict[str, str]] = []
+
+    def add(location: str, code: str, message: str) -> None:
+        errors.append({"path": location, "code": code, "message": message})
+
+    expected_root = {
+        "schema_version",
+        "classification",
+        "study",
+        "data_handling",
+        "sites",
+        "whole_system_review",
+        "contextual_findings",
+    }
+    if not isinstance(payload, dict):
+        add("$", "invalid-root", "The record must be a JSON object.")
+        return payload, errors
+    if set(payload) != expected_root:
+        add("$", "invalid-properties", "The record has missing or unsupported root properties.")
+    if payload.get("schema_version") != 1:
+        add("$.schema_version", "unsupported-version", "schema_version must equal 1.")
+    if payload.get("classification") not in {"internal", "confidential"}:
+        add("$.classification", "invalid-classification", "Use internal or confidential.")
+
+    study = payload.get("study")
+    viewport_ids: set[str] = set()
+    roles: list[str] = []
+    if not isinstance(study, dict):
+        add("$.study", "invalid-study", "study must be an object.")
+    else:
+        required_study = {
+            "id", "title", "frozen_at", "viewport_classes", "review_protocol",
+        }
+        if set(study) != required_study:
+            add("$.study", "invalid-properties", "study has missing or unsupported properties.")
+        viewports = study.get("viewport_classes")
+        if not isinstance(viewports, list) or len(viewports) < 2:
+            add("$.study.viewport_classes", "invalid-viewports", "Declare at least wide and narrow classes.")
+        else:
+            for index, viewport in enumerate(viewports):
+                location = f"$.study.viewport_classes[{index}]"
+                if not isinstance(viewport, dict) or set(viewport) != {
+                    "id", "role", "width", "height", "basis", "required",
+                }:
+                    add(location, "invalid-viewport", "Viewport class has an unsupported shape.")
+                    continue
+                identifier = viewport.get("id")
+                role = viewport.get("role")
+                if not isinstance(identifier, str) or not EVIDENCE_CAPABILITY_PATTERN.fullmatch(identifier):
+                    add(f"{location}.id", "invalid-id", "Viewport ID must be a lowercase slug.")
+                elif identifier in viewport_ids:
+                    add(f"{location}.id", "duplicate-id", "Viewport IDs must be unique.")
+                else:
+                    viewport_ids.add(identifier)
+                if role not in {"wide", "narrow", "additional"}:
+                    add(f"{location}.role", "invalid-role", "Viewport role is unsupported.")
+                else:
+                    roles.append(role)
+        if roles.count("wide") != 1 or roles.count("narrow") != 1:
+            add("$.study.viewport_classes", "invalid-core-viewports", "Declare exactly one wide and one narrow role.")
+        protocol = study.get("review_protocol")
+        if not isinstance(protocol, dict) or protocol != {
+            "site_observation": "unprimed-before-diagnostics",
+            "whole_system_comparison": "masked",
+            "automatic_aesthetic_pass": False,
+        }:
+            add("$.study.review_protocol", "invalid-review-protocol", "The unprimed, masked, no-auto-pass protocol is required.")
+
+    data_handling = payload.get("data_handling")
+    required_data_handling = {
+        "status", "capture_authorization", "contact_sheet_authorization",
+        "classification", "recipients", "access_scope", "retention",
+        "transformations",
+    }
+    if (
+        not isinstance(data_handling, dict)
+        or set(data_handling) != required_data_handling
+    ):
+        add(
+            "$.data_handling",
+            "invalid-data-handling",
+            "data_handling has missing or unsupported properties.",
+        )
+    else:
+        if data_handling.get("status") not in {"pending", "resolved"}:
+            add(
+                "$.data_handling.status",
+                "invalid-status",
+                "Data handling must be pending or resolved.",
+            )
+        for name in ("capture_authorization", "contact_sheet_authorization"):
+            authorization = data_handling.get(name)
+            if (
+                not isinstance(authorization, dict)
+                or set(authorization) != {"status", "basis"}
+                or authorization.get("status")
+                not in {"pending", "authorized", "not-applicable"}
+            ):
+                add(
+                    f"$.data_handling.{name}",
+                    "invalid-authorization",
+                    "Authorization must declare a supported status and basis.",
+                )
+        if not isinstance(data_handling.get("recipients"), list):
+            add(
+                "$.data_handling.recipients",
+                "invalid-recipients",
+                "Data recipients must be an array.",
+            )
+        if not isinstance(data_handling.get("transformations"), list):
+            add(
+                "$.data_handling.transformations",
+                "invalid-transformations",
+                "Data transformations must be an array.",
+            )
+        retention = data_handling.get("retention")
+        if (
+            not isinstance(retention, dict)
+            or set(retention)
+            != {"mode", "owner", "delete_or_review_on", "reason"}
+            or retention.get("mode")
+            not in {"pending", "dated", "public", "not-applicable"}
+        ):
+            add(
+                "$.data_handling.retention",
+                "invalid-retention",
+                "Retention must declare a supported disposition and lifecycle fields.",
+            )
+
+    sites = payload.get("sites")
+    site_ids: set[str] = set()
+    if not isinstance(sites, list) or len(sites) < 3:
+        add("$.sites", "too-few-sites", "A Batch Study record requires at least three sites.")
+    else:
+        required_site = {
+            "id", "mask_label", "status", "independence_basis", "brief",
+            "implementation_isolation", "build_root", "public_root",
+            "render_report", "pages",
+            "unprimed_review", "blocker",
+        }
+        for index, site in enumerate(sites):
+            location = f"$.sites[{index}]"
+            if not isinstance(site, dict) or set(site) != required_site:
+                add(location, "invalid-site", "Site case has an unsupported shape.")
+                continue
+            site_id = site.get("id")
+            if not isinstance(site_id, str) or not EVIDENCE_CAPABILITY_PATTERN.fullmatch(site_id):
+                add(f"{location}.id", "invalid-id", "Site ID must be a lowercase slug.")
+            elif site_id in site_ids:
+                add(f"{location}.id", "duplicate-id", "Site IDs must be unique.")
+            else:
+                site_ids.add(site_id)
+            status = site.get("status")
+            if status not in {"planned", "built", "correctly_blocked"}:
+                add(f"{location}.status", "invalid-status", "Site status is unsupported.")
+            pages = site.get("pages")
+            if not isinstance(pages, list) or not pages:
+                add(f"{location}.pages", "invalid-pages", "Each site must declare at least one page.")
+            isolation = site.get("implementation_isolation")
+            required_isolation = {
+                "status", "source_packet", "producer_context_id",
+                "sibling_output_exposure", "allowed_shared_tooling",
+                "shared_artifacts_or_exceptions", "attested_by", "attested_at",
+            }
+            if (
+                not isinstance(isolation, dict)
+                or set(isolation) != required_isolation
+            ):
+                add(
+                    f"{location}.implementation_isolation",
+                    "invalid-isolation-attestation",
+                    "Implementation isolation has missing or unsupported properties.",
+                )
+            else:
+                if isolation.get("status") not in {"pending", "attested"}:
+                    add(
+                        f"{location}.implementation_isolation.status",
+                        "invalid-status",
+                        "Implementation isolation must be pending or attested.",
+                    )
+                source_packet = isolation.get("source_packet")
+                if (
+                    not isinstance(source_packet, dict)
+                    or set(source_packet) != {"path", "sha256"}
+                ):
+                    add(
+                        f"{location}.implementation_isolation.source_packet",
+                        "invalid-source-packet",
+                        "The frozen source packet must be a path and SHA-256 reference.",
+                    )
+                if not isinstance(isolation.get("producer_context_id"), str):
+                    add(
+                        f"{location}.implementation_isolation.producer_context_id",
+                        "invalid-producer-context",
+                        "A producer/build context identifier is required.",
+                    )
+                if not isinstance(isolation.get("allowed_shared_tooling"), list):
+                    add(
+                        f"{location}.implementation_isolation.allowed_shared_tooling",
+                        "invalid-shared-tooling",
+                        "Allowed shared tooling must be an array.",
+                    )
+                if not isinstance(
+                    isolation.get("shared_artifacts_or_exceptions"),
+                    list,
+                ):
+                    add(
+                        f"{location}.implementation_isolation.shared_artifacts_or_exceptions",
+                        "invalid-shared-exceptions",
+                        "Shared artifacts or exceptions must be an array.",
+                    )
+            if status == "planned":
+                if (
+                    not isinstance(site.get("build_root"), str)
+                    or not site["build_root"].strip()
+                ):
+                    add(
+                        f"{location}.build_root",
+                        "planned-build-root-missing",
+                        "A planned site must declare its isolated future build root.",
+                    )
+                if site.get("blocker") is not None:
+                    add(
+                        f"{location}.blocker",
+                        "planned-blocker-forbidden",
+                        "A planned site is not correctly blocked and must use a null blocker.",
+                    )
+                if site.get("public_root") is not None or site.get("render_report") is not None:
+                    add(
+                        location,
+                        "planned-render-evidence-forbidden",
+                        "A planned site must keep public_root and render_report null until a build has been captured.",
+                    )
+                if isinstance(pages, list):
+                    for page_index, page in enumerate(pages):
+                        captures = (
+                            page.get("captures")
+                            if isinstance(page, dict)
+                            else None
+                        )
+                        if captures != []:
+                            add(
+                                f"{location}.pages[{page_index}].captures",
+                                "planned-captures-forbidden",
+                                "A planned page must keep captures empty until it is built.",
+                            )
+                review = site.get("unprimed_review")
+                if (
+                    not isinstance(review, dict)
+                    or review.get("status") not in {"pending", "not-run"}
+                    or review.get("reviewer_id") is not None
+                    or review.get("sibling_output_seen_before_observation") is not None
+                    or review.get("diagnostic_material_seen_before_observation") is not None
+                    or review.get("observed_at") is not None
+                    or review.get("frozen_at") is not None
+                    or review.get("capture_set_sha256") is not None
+                    or review.get("evidence") is not None
+                ):
+                    add(
+                        f"{location}.unprimed_review",
+                        "planned-review-invalid",
+                        "A planned site's review must be pending or not-run with null reviewer, exposure, times, capture binding, and evidence.",
+                    )
+                if (
+                    isinstance(isolation, dict)
+                    and isolation.get("status") != "pending"
+                ):
+                    add(
+                        f"{location}.implementation_isolation.status",
+                        "planned-isolation-invalid",
+                        "A planned site cannot claim a completed implementation attestation.",
+                    )
+
+    whole_review = payload.get("whole_system_review")
+    required_whole_review = {
+        "status", "masked", "reviewer_id",
+        "site_identity_revealed_before_observation",
+        "diagnostic_material_seen_before_observation", "observed_at", "frozen_at",
+        "capture_set_sha256", "evidence",
+    }
+    if (
+        not isinstance(whole_review, dict)
+        or set(whole_review) != required_whole_review
+    ):
+        add(
+            "$.whole_system_review",
+            "invalid-review",
+            "whole_system_review has missing or unsupported protocol fields.",
+        )
+    if not isinstance(payload.get("contextual_findings"), list):
+        add("$.contextual_findings", "invalid-findings", "contextual_findings must be an array.")
+    return payload, errors
+
+
+def run_batch_range_readiness_audit(path: Path, project: Path) -> dict[str, object]:
+    """Run the bundled exact-evidence audit without creating an atlas/report."""
+
+    payload, structural_errors = validate_batch_range_record(path)
+    if structural_errors:
+        raise StateError(
+            "batch-range-validator-failed",
+            structural_errors[0]["message"],
+            path=path,
+        )
+    validator_path = Path(__file__).with_name("batch_range_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "batch-range-validator-missing",
+            "The bundled batch-range auditor is missing or redirected.",
+            path=validator_path,
+        )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_batch_range_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "batch-range-validator-load-failed",
+            "The bundled batch-range auditor could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+    except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
+        raise StateError(
+            "batch-range-validator-load-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    audit_error = getattr(module, "AuditError", None)
+    evidence_budget = getattr(module, "EvidenceBudget", None)
+    validate_contract = getattr(module, "validate_contract", None)
+    if (
+        not isinstance(audit_error, type)
+        or not issubclass(audit_error, Exception)
+        or not callable(evidence_budget)
+        or not callable(validate_contract)
+    ):
+        raise StateError(
+            "batch-range-validator-invalid-interface",
+            "The bundled batch-range auditor has an unsupported interface.",
+            path=validator_path,
+        )
+    try:
+        report, _atlas_inputs = validate_contract(
+            payload,
+            project,
+            evidence_budget(),
+            atlas_requested=False,
+        )
+    except audit_error as exc:
+        raise StateError(
+            "batch-range-validator-failed",
+            f"{exc.code}: {exc.message}",
+            path=validator_path,
+        ) from exc
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "batch-range-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if not isinstance(report, dict):
+        raise StateError(
+            "batch-range-validator-invalid-output",
+            "The bundled batch-range auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
 def write_stage_owner(stage_parent: Path, lock: ProjectMutationLock) -> None:
     lock.assert_owned()
     marker = stage_parent / STAGE_OWNER_RECORD
@@ -1885,7 +2557,23 @@ def state_manifest(
     ) + "\n"
 
 
-def template_text(template_root: Path, filename: str, version: str) -> str:
+def remove_markdown_sections(text: str, headings: set[str]) -> str:
+    """Remove complete level-two sections without interpreting their contents."""
+    if not headings:
+        return text
+    escaped = "|".join(re.escape(heading) for heading in sorted(headings))
+    pattern = re.compile(
+        rf"(?ms)^## (?:{escaped})[ \t]*\r?\n.*?(?=^## |\Z)"
+    )
+    return pattern.sub("", text)
+
+
+def template_text(
+    template_root: Path,
+    filename: str,
+    version: str,
+    assurance_profiles: tuple[str, ...] = ("standard",),
+) -> str:
     path = template_root / filename
     assert_safe_tree(template_root)
     try:
@@ -1893,6 +2581,14 @@ def template_text(template_root: Path, filename: str, version: str) -> str:
     except OSError as exc:
         raise StateError("template-read-failed", str(exc), path=path) from exc
     rendered = text.replace("__DESIGN_DNA_VERSION__", f"design-dna {version}")
+    if (
+        filename == "direction-template.md"
+        and set(assurance_profiles) == {"quick"}
+    ):
+        rendered = remove_markdown_sections(
+            rendered,
+            PROJECT_DERIVED_DIRECTION_SECTIONS,
+        )
     if "__DESIGN_DNA_VERSION__" in rendered:
         raise StateError("unresolved-template-token", "Template token was not resolved.", path=path)
     if filename in SUBSTANTIVE_TEMPLATE_FILES:
@@ -1916,6 +2612,26 @@ CAPABILITY_SECTION_PROMPTS = {
         "Reference the route atlas and direct-entry, link, and silhouette "
         "results. Record repeated structures that need revision without "
         "inventing an authorship score.",
+    ),
+    ("batch-study", "direction"): (
+        "Batch Study protocol",
+        "Reference the frozen independent briefs, frozen source packets, and "
+        "batch-range record. Name the producer contexts, sibling-output "
+        "exposure timing, allowed shared tooling or exceptions, isolated build "
+        "roots, project-derived viewport classes, neutral-label review, unprimed "
+        "review boundary, evidence-based block criteria, and capture/contact-sheet "
+        "authorization, access, retention, and transformation handling. Treat "
+        "implementation isolation as human-auditable evidence rather than "
+        "automatic proof. Do not prescribe visual difference or a novelty quota.",
+    ),
+    ("batch-study", "visual-review"): (
+        "Batch Study review",
+        "Reference the batch-range audit path and hash, built and correctly "
+        "blocked cases, unprimed site observations, neutral-label whole-system "
+        "evidence, resolved data handling, implementation-isolation attestations, "
+        "and contextual findings. State explicitly that evidence coverage is not "
+        "an automatic aesthetic pass, that attestations are not automated proof, "
+        "and that recorded transformations do not establish pixel redaction.",
     ),
     ("cultural-context", "direction"): (
         "Cultural context and authority",
@@ -5079,6 +5795,14 @@ def substantive_body_failures(
                     set(),
                 ),
             }
+        if (
+            record == "direction"
+            and set(required_assurance_profiles or {"standard"}) != {"quick"}
+        ):
+            required_sections = {
+                *required_sections,
+                *PROJECT_DERIVED_DIRECTION_SECTIONS,
+            }
     missing_sections = sorted(required_sections - set(sections))
     if missing_sections:
         failures.append(
@@ -5104,6 +5828,73 @@ def substantive_body_failures(
     ):
         if required_label_value(record, body, label) is None:
             failures.append(f"{label!r} is missing or still scaffold text")
+
+    if (
+        record == "direction"
+        and proportional
+        and set(required_assurance_profiles or {"standard"}) != {"quick"}
+    ):
+        project_evidence = (
+            markdown_label_value(body, "Project evidence") or ""
+        ).strip()
+        organizing_logic = (
+            markdown_label_value(body, "Organizing logic") or ""
+        ).strip()
+        if not non_placeholder(project_evidence):
+            failures.append(
+                "Project-derived organizing logic must bind non-placeholder "
+                "project evidence or authority"
+            )
+        if not non_placeholder(organizing_logic):
+            failures.append(
+                "Project-derived organizing logic must state the free-form "
+                "organizing relationship, sequence, or behavior"
+            )
+        if (
+            non_placeholder(project_evidence)
+            and non_placeholder(organizing_logic)
+            and re.sub(r"\W+", " ", project_evidence.casefold()).strip()
+            == re.sub(r"\W+", " ", organizing_logic.casefold()).strip()
+        ):
+            failures.append(
+                "Project evidence and organizing logic cannot repeat the same "
+                "generic boilerplate"
+            )
+        decision_headers, decision_rows = markdown_first_table(
+            sections.get("Observable consequential design decisions", "")
+        )
+        expected_decision_headers = (
+            "Decision",
+            "Project reason or source",
+            "Observable consequence",
+            "Verification",
+        )
+        if decision_headers != expected_decision_headers or not decision_rows:
+            failures.append(
+                "Observable consequential design decisions need at least one "
+                "row using the decision, project reason, observable "
+                "consequence, and verification evidence contract"
+            )
+        else:
+            for row_number, row in enumerate(decision_rows, start=1):
+                if len(row) != len(expected_decision_headers) or any(
+                    not non_placeholder(cell) for cell in row
+                ):
+                    failures.append(
+                        "Observable consequential design decision row "
+                        f"{row_number} is incomplete or still scaffold text"
+                    )
+                    continue
+                normalized_cells = {
+                    re.sub(r"\W+", " ", cell.casefold()).strip()
+                    for cell in row
+                }
+                if len(normalized_cells) != len(row):
+                    failures.append(
+                        "Observable consequential design decision row "
+                        f"{row_number} repeats generic boilerplate instead of "
+                        "binding reason, consequence, and verification"
+                    )
 
     if record == "exploration" and not proportional:
         table_contracts = (
@@ -5591,7 +6382,7 @@ def substantive_body_failures(
         expected_review_headers = (
             "Route/state",
             "Viewport/context",
-            "Evidence path and SHA-256",
+            "Rendered PNG path and SHA-256",
             "Observation",
         )
         if review_headers != expected_review_headers or not review_rows:
@@ -5601,7 +6392,7 @@ def substantive_body_failures(
             )
         else:
             artifact_index = review_headers.index(
-                "Evidence path and SHA-256"
+                "Rendered PNG path and SHA-256"
             )
             for row_number, row in enumerate(review_rows, start=1):
                 if len(row) != len(expected_review_headers) or any(
@@ -5612,13 +6403,29 @@ def substantive_body_failures(
                     )
                     continue
                 if project is not None and record_path is not None:
-                    _artifact, artifact_failures = bound_artifact(
+                    artifact, artifact_failures = bound_artifact(
                         row[artifact_index],
                         project=project,
                         record_path=record_path,
                         label=f"Rendered review row {row_number} artifact",
                     )
                     failures.extend(artifact_failures)
+                    if artifact is not None and not artifact_failures:
+                        if artifact.suffix.casefold() != ".png":
+                            failures.append(
+                                "Rendered review row "
+                                f"{row_number} evidence must use a .png "
+                                "extension that matches its declared type"
+                            )
+                        else:
+                            try:
+                                verify_png_artifact(artifact)
+                            except StateError as exc:
+                                failures.append(
+                                    "Rendered review row "
+                                    f"{row_number} evidence is not a decodable "
+                                    f"PNG: {exc}"
+                                )
         final_reviewed = (
             markdown_label_value(body, "Final implementation reviewed") or ""
         ).strip().casefold()
@@ -5824,7 +6631,7 @@ def substantive_body_failures(
                 ):
                     if len(row) <= artifact_index:
                         continue
-                    _artifact, artifact_failures = bound_artifact(
+                    artifact, artifact_failures = bound_artifact(
                         row[artifact_index],
                         project=project,
                         record_path=record_path,
@@ -5834,6 +6641,22 @@ def substantive_body_failures(
                         ),
                     )
                     failures.extend(artifact_failures)
+                    if artifact is not None and not artifact_failures:
+                        if artifact.suffix.casefold() != ".png":
+                            failures.append(
+                                "Coverage matrix row "
+                                f"{row_number} rendered evidence must use a "
+                                ".png extension that matches its type"
+                            )
+                        else:
+                            try:
+                                verify_png_artifact(artifact)
+                            except StateError as exc:
+                                failures.append(
+                                    "Coverage matrix row "
+                                    f"{row_number} rendered evidence is not a "
+                                    f"decodable PNG: {exc}"
+                                )
         if project is not None and record_path is not None:
             failures.extend(
                 render_comparison_body_failures(
@@ -6835,6 +7658,11 @@ def validate_state_root(
             evidence_capabilities = inferred_evidence_capabilities(
                 state_profiles
             )
+            if state_profiles and state_profiles != ("quick",):
+                failures.append(
+                    "state.json needs the current project-derived direction "
+                    "contract; run --migrate."
+                )
         elif state_profiles:
             try:
                 (
@@ -7058,6 +7886,19 @@ def validate_state_root(
                 )
         except StateError as exc:
             failures.append(f"Invalid route-family.json: {exc}")
+    batch_range_path = state_root / "batch-range.json"
+    if batch_range_path.is_file():
+        try:
+            _batch_range, batch_range_errors = validate_batch_range_record(
+                batch_range_path,
+            )
+            failures.extend(
+                "Invalid batch-range.json: "
+                f"{item['path']} {item['code']}: {item['message']}"
+                for item in batch_range_errors
+            )
+        except StateError as exc:
+            failures.append(f"Invalid batch-range.json: {exc}")
     failures.extend(migration_report_failures(project, state_root))
     for legacy in LEGACY_RECORD_FILES:
         if (state_root / legacy).is_file() and not failures:
@@ -7109,6 +7950,11 @@ def readiness_failures(project: Path) -> list[str]:
             evidence_capabilities = inferred_evidence_capabilities(
                 canonical_profiles
             )
+            if canonical_profiles != ("quick",):
+                return [
+                    "state.json needs the current project-derived direction "
+                    "contract before readiness; run --migrate."
+                ]
         else:
             (
                 evidence_capabilities,
@@ -7235,6 +8081,37 @@ def readiness_failures(project: Path) -> list[str]:
                         "replaced with a project-derived integer before "
                         "readiness can be claimed."
                     )
+    if "batch-range" in required_records:
+        batch_range_path = state_root / "batch-range.json"
+        if batch_range_path.is_file():
+            try:
+                batch_report = run_batch_range_readiness_audit(
+                    batch_range_path,
+                    project,
+                )
+                if batch_report.get("comparison_ready") is not True:
+                    gaps = batch_report.get("gaps")
+                    if isinstance(gaps, list) and gaps:
+                        for gap in gaps:
+                            if isinstance(gap, dict):
+                                failures.append(
+                                    "Batch Study evidence remains incomplete: "
+                                    f"{gap.get('code', 'unknown')} "
+                                    f"({gap.get('scope', 'study')}): "
+                                    f"{gap.get('message', 'No detail recorded.')}"
+                                )
+                    else:
+                        failures.append(
+                            "Batch Study evidence remains incomplete without "
+                            "a reported coverage gap."
+                        )
+                if batch_report.get("automatic_aesthetic_pass") is not False:
+                    failures.append(
+                        "Batch Study readiness cannot contain an automatic "
+                        "aesthetic pass."
+                    )
+            except StateError as exc:
+                failures.append(f"Invalid Batch Study readiness evidence: {exc}")
     if "cultural-context" in evidence_capabilities:
         review_path = state_root / "visual-review.md"
         if review_path.is_file():
@@ -7430,6 +8307,7 @@ def render_new_state(
                 template_root,
                 RECORD_TEMPLATES[record][1],
                 version,
+                assurance_profiles,
             )
             + capability_sections_text(record, effective_capabilities)
         )
@@ -8141,6 +9019,7 @@ def migration_payload(
 
 def migrate_staged_state(state_root: Path) -> list[str]:
     updated: list[str] = []
+    migration_changed = False
     state_path = state_root / "state.json"
     try:
         source_state_bytes = state_path.read_bytes()
@@ -8215,7 +9094,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         (
             migrated_capabilities,
             migrated_extensions,
-        ) = validate_evidence_contract(
+        ) = migrate_evidence_contract(
             source_contract,
             cumulative_profiles,
         )
@@ -8233,6 +9112,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
     )
     assurance_transition: dict[str, object] | None = None
     if state_changed:
+        migration_changed = True
         state_payload["schema_version"] = STATE_SCHEMA_VERSION
         state_payload["assurance_profiles"] = list(cumulative_profiles)
         state_payload["evidence_contract"] = migrated_contract
@@ -8374,6 +9254,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
             project_root,
         )
         if asset_migration is not None:
+            migration_changed = True
             identity = asset_migration["source_manifest_sha256"]
             if not any(
                 existing.get("source_manifest_sha256") == identity
@@ -8498,7 +9379,10 @@ def migrate_staged_state(state_root: Path) -> list[str]:
             )
             record_updated = True
         if record_updated:
+            migration_changed = True
             updated.append(record)
+    if not migration_changed:
+        return []
     payload = migration_payload(
         state_root,
         list(dict.fromkeys([*existing_record_updates, *updated])),
@@ -8802,7 +9686,19 @@ def _mutate_state_transaction_locked(
             code="candidate-state-changed",
             message="The staged mutation changed before promotion.",
         )
-        if dry_run:
+        if candidate_identity == source_identity:
+            actions.append(
+                {
+                    "action": (
+                        "migration-not-needed"
+                        if action == "migrated"
+                        else f"{action}:no-change"
+                    ),
+                    "path": str(state_root),
+                    "validation": "passed",
+                }
+            )
+        elif dry_run:
             actions.append(
                 {
                     "action": f"would-{action}",
@@ -8860,8 +9756,10 @@ def _mutate_state_transaction_locked(
                 message="The installed state changed during final validation.",
             )
             actions.extend(
-                [
-                    {"action": action, "path": str(state_root)},
+                [{"action": action, "path": str(state_root)}]
+            )
+            if action == "migrated":
+                actions.append(
                     {
                         "action": "backup-preserved",
                         "path": str(backup),
@@ -8869,9 +9767,8 @@ def _mutate_state_transaction_locked(
                             "The exact pre-migration state remains recoverable; "
                             "its privacy guard prevents accidental commits."
                         ),
-                    },
-                ]
-            )
+                    }
+                )
     except Exception as exc:
         primary_error = as_state_error(
             exc,
@@ -8887,6 +9784,31 @@ def _mutate_state_transaction_locked(
                 candidate_installed=candidate_installed,
                 backup_ignore_existed=backup_ignore_existed,
                 backup_guard_installed=backup_guard_installed,
+            )
+
+    if primary_error is None and backup is not None and action != "migrated":
+        backup_cleanup_error = cleanup_success_backup(backup, project)
+        if backup_cleanup_error is None:
+            actions.append(
+                {
+                    "action": "transaction-backup-removed",
+                    "path": str(backup),
+                    "reason": (
+                        "The validated status-only mutation is installed; its "
+                        "task-generated rollback copy is no longer needed."
+                    ),
+                }
+            )
+        else:
+            actions.append(
+                {
+                    "action": "transaction-backup-preserved",
+                    "path": str(backup),
+                    "reason": json.dumps(
+                        error_record(backup_cleanup_error),
+                        ensure_ascii=False,
+                    ),
+                }
             )
 
     cleanup_error = cleanup_stage_parent(
@@ -9042,6 +9964,38 @@ def cleanup_stage_parent(
             exc,
             code="staging-cleanup-failed",
             path=stage_parent,
+        )
+    return None
+
+
+def cleanup_success_backup(
+    backup: Path | None,
+    project: Path,
+) -> StateError | None:
+    """Remove only the exact task-generated rollback copy after verified success."""
+
+    if backup is None:
+        return None
+    try:
+        if entry_exists(backup):
+            assert_no_reparse_ancestors(backup, stop=project)
+            assert_contained(backup, project)
+            if (
+                backup.parent != project
+                or not backup.name.startswith(".design-dna.backup-")
+            ):
+                raise StateError(
+                    "broad-backup-cleanup-refused",
+                    "Only an exact direct transaction backup may be removed.",
+                    path=backup,
+                )
+            assert_safe_tree(backup)
+            shutil.rmtree(backup)
+    except Exception as exc:
+        return as_state_error(
+            exc,
+            code="transaction-backup-cleanup-failed",
+            path=backup,
         )
     return None
 
@@ -9218,14 +10172,36 @@ def _install_transaction_locked(
         )
         actions.append({"action": "installed", "path": str(state_root)})
         if moved_existing and backup is not None:
-            actions.append({
-                "action": "backup-preserved",
-                "path": str(backup),
-                "reason": (
-                    "The exact pre-initialization state remains recoverable; "
-                    "the owner-token transaction never deletes prior work."
-                ),
-            })
+            if force:
+                actions.append({
+                    "action": "backup-preserved",
+                    "path": str(backup),
+                    "reason": (
+                        "The forced refresh can replace owner-authored record "
+                        "content, so the exact prior state remains recoverable."
+                    ),
+                })
+            else:
+                backup_cleanup_error = cleanup_success_backup(backup, project)
+                if backup_cleanup_error is None:
+                    actions.append({
+                        "action": "transaction-backup-removed",
+                        "path": str(backup),
+                        "reason": (
+                            "The validated additive merge preserved the live "
+                            "record content; its task-generated rollback copy "
+                            "is no longer needed."
+                        ),
+                    })
+                else:
+                    actions.append({
+                        "action": "transaction-backup-preserved",
+                        "path": str(backup),
+                        "reason": json.dumps(
+                            error_record(backup_cleanup_error),
+                            ensure_ascii=False,
+                        ),
+                    })
             moved_existing = False
     except Exception as exc:
         primary_error = as_state_error(

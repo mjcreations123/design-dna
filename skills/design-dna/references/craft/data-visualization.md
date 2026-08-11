@@ -4,6 +4,15 @@ Use this when data is represented visually or interactively. This reference
 protects truthful interpretation, access, and decision support without
 prescribing a chart menu, visual grammar, dimensionality, or aesthetic style.
 
+## Contents
+
+- [Frame the evidence and question](#frame-the-evidence-and-question)
+- [Choose an open but honest form](#choose-an-open-but-honest-form)
+- [Make encoding accountable](#make-encoding-accountable)
+- [Preserve uncertainty and absence](#preserve-uncertainty-and-absence)
+- [Interaction and access](#interaction-and-access)
+- [Adapt and verify](#adapt-and-verify)
+
 ## Frame the evidence and question
 
 Record the audience, question or exploration, measure, unit, population, time
@@ -82,6 +91,19 @@ Recompose around the question when space, content, locale, input, or user
 settings change. A smaller surface may prioritize, disclose, scroll with
 context, transform the encoding, or provide a task-specific alternate view;
 it need not shrink or reproduce the same geometry.
+
+For a content-bearing explanatory diagram, preserve the labels and
+relationships that carry its claim. At a project-relevant narrow condition,
+verify that a person can identify the parts, follow the intended relationship,
+and recover context while moving through the graphic. Recomposition,
+segmentation, an overview plus detail, contextual pan or zoom, or an equivalent
+structured explanation may work. Choose from the question and interaction
+conditions; this is not a prescribed diagram style or mobile recipe.
+An overview preserves more than the outer silhouette when names, callouts,
+unknowns, statuses, or relationship categories determine what the reader must
+look for. Confirm that the initial view inventories those consequential parts,
+or makes their later location and discovery explicit, without shrinking every
+annotation into unreadable miniature text.
 
 Test the combinations that can change the interpretation: sparse, dense,
 extreme, negative, tied, missing, stale, rapidly changing, long-labeled, and

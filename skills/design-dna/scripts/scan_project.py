@@ -138,36 +138,6 @@ OWNER_POLICY_DEFAULT_VALUES = {
 MAX_TEXT_FILE_BYTES = 5 * 1024 * 1024
 SCAN_RESULT_SCHEMA_VERSION = 2
 SCAN_RESULT_ARTIFACT_TYPE = "design-dna-source-scan"
-PROMINENT_CLASS = re.compile(
-    r"(?<![A-Za-z0-9])(?:[A-Za-z0-9]+[-_])*"
-    r"(?:hero|headline|tagline|poster|wordmark|display)"
-    r"(?:[-_][A-Za-z0-9]+)*(?![A-Za-z0-9])|signal-board__message",
-    re.I,
-)
-SEMANTIC_FRAGMENT = re.compile(
-    r"(?<![A-Za-z0-9])(?:status|state|badge|chip|tag|severity|priority|success|error|"
-    r"warning|danger|active|inactive|open|closed|pending|approved|denied|"
-    r"available|unavailable|online|offline|price|amount|metric|data|quote|link)"
-    r"(?![A-Za-z0-9])",
-    re.I,
-)
-SEMANTIC_STATUS_TEXT = {
-    "active", "approved", "available", "blocked", "closed", "danger", "denied",
-    "error", "failed", "inactive", "offline", "online", "open", "pending",
-    "success", "unavailable", "warning",
-}
-TAILWIND_FOREGROUND = re.compile(
-    r"(?:^|\s)(?:[a-z0-9_-]+:)*text-(?:"
-    r"(?:purple|violet|indigo|blue|emerald|amber|rose|red|green|cyan|teal|"
-    r"lime|orange|yellow|pink|fuchsia|sky)(?:-[0-9]{2,3})?(?:/[0-9]{1,3})?"
-    r"|\[(?:#[0-9a-fA-F]{3,8}|(?:rgb|hsl|oklch|lab|color|var)[^\]]*)\]"
-    r")(?=\s|$|[\"'`}]|:)",
-    re.I,
-)
-FOREGROUND_DECLARATION = re.compile(
-    r"(?:^|[;{]\s*)(?:color|-webkit-text-fill-color)\s*:",
-    re.I,
-)
 NEGATIVE_OR_EXAMPLE_CONTEXT = re.compile(
     r"\b(?:do\s+not|don['’]t|must\s+not|never|avoid|remove|reject|forbid(?:den)?|"
     r"anti[- ]?pattern|bad\s+example|negative\s+example|placeholder|sample\s+of|"
@@ -184,17 +154,6 @@ RAW_FILLER = re.compile(
     r"\blorem(?:[\s\u00a0]|&(?:nbsp|#160|#x0*a0);)+ipsum\b",
     re.I,
 )
-QUANTITATIVE_CLAIM = re.compile(
-    r"(?<![A-Za-z0-9])(?:"
-    r"\$\s*\d[\d,.]*(?:\s*(?:to|[-–—])\s*\$?\s*\d[\d,.]*)?"
-    r"|"
-    r"\d+(?:\.\d+)?(?:\s*(?:to|[-–—])\s*\d+(?:\.\d+)?)?\s*"
-    r"(?:%|A\b|AWG\b|V\b|kW\b|kWh\b|miles?\b|mi\b|feet\b|ft\b|"
-    r"minutes?\b|mins?\b|hours?\b|days?\b|weeks?\b|months?\b|"
-    r"years?\b|year\b|in(?:ch(?:es)?)?\b|per\s+(?:hour|day|month|year)\b)"
-    r")",
-    re.I,
-)
 GENERATED_MEDIA_MARKER = re.compile(
     r"\b(?:AI[- ]generated|generated\s+(?:image|imagery|photo|photography)|"
     r"synthetic\s+(?:image|imagery|photo|photography)|"
@@ -203,7 +162,9 @@ GENERATED_MEDIA_MARKER = re.compile(
     re.I,
 )
 PUBLIC_META_COPY_MARKER = re.compile(
-    r"\b(?:design\s+(?:test|proof|direction)|"
+    r"\b(?:design[-\s]+(?:study|test|proof|direction)|"
+    r"(?:interaction|interface|studio)\s+study|code[-\s]+native|source\s+packet|"
+    r"commissioned\s+(?:fictional\s+)?scenario|"
     r"(?:(?:client|owner|project)\s+)?"
     r"(?:assets?|brand\s+materials?|approved\s+copy|client\s+details?)\s+"
     r"(?:are\s+|remain\s+)?"
@@ -1337,108 +1298,8 @@ def placeholder_proof_candidates(
     return findings
 
 
-def strip_markup(value: str) -> str:
-    return " ".join(
-        html.unescape(re.sub(r"<[^>]+>", " ", value)).split()
-    )
-
-
-def fragment_words(value: str) -> list[str]:
-    return re.findall(r"[^\W_]+(?:['’\-][^\W_]+)*", value, flags=re.UNICODE)
-
-
-def semantic_fragment(attrs: str, text: str, body_prefix: str) -> bool:
-    normalized = " ".join(text.casefold().split())
-    if normalized in SEMANTIC_STATUS_TEXT:
-        return True
-    if SEMANTIC_FRAGMENT.search(attrs):
-        return True
-    if re.search(r"\b(?:role|data-[A-Za-z0-9_-]*status)\s*=", attrs, re.I):
-        return True
-    return body_prefix.lower().rfind("<a") > body_prefix.lower().rfind("</a")
-
-
 def line_number(text: str, position: int) -> int:
     return text.count("\n", 0, position) + 1
-
-
-def foreground_css_classes(
-    records: list[tuple[Path, str, str]],
-) -> dict[str, list[dict[str, object]]]:
-    classes: dict[str, list[dict[str, object]]] = {}
-    rule_pattern = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
-    for path, relative, text in records:
-        if path.suffix.lower() not in {".css", ".scss"}:
-            continue
-        for match in rule_pattern.finditer(text):
-            selector, declarations = match.group(1), match.group(2)
-            if not FOREGROUND_DECLARATION.search(";" + declarations):
-                continue
-            for class_name in set(
-                re.findall(r"\.([A-Za-z_][A-Za-z0-9_-]*)", selector)
-            ):
-                classes.setdefault(class_name, []).append({
-                    "file": relative,
-                    "directory": path.parent,
-                    "line": line_number(text, match.start()),
-                    "signal": (
-                        f".{class_name} resolves to a foreground color declaration "
-                        f"in {relative}"
-                    ),
-                })
-    return classes
-
-
-def react_style_objects(
-    records: list[tuple[Path, str, str]],
-) -> dict[Path, dict[str, str]]:
-    by_file: dict[Path, dict[str, str]] = {}
-    outer = re.compile(
-        r"\b(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*"
-        r"\{((?:[^{}]|\{[^{}]*\}){0,3000})\}",
-        re.S,
-    )
-    inner = re.compile(
-        r"([A-Za-z_$][A-Za-z0-9_$]*)\s*:\s*\{([^{}]*)\}",
-        re.S,
-    )
-    color = re.compile(r"\b(?:color|WebkitTextFillColor)\s*:", re.I)
-    for path, relative, text in records:
-        if path.suffix.lower() not in {".astro", ".js", ".jsx", ".svelte", ".ts", ".tsx", ".vue"}:
-            continue
-        objects: dict[str, str] = {}
-        for match in outer.finditer(text):
-            name, body = match.group(1), match.group(2)
-            if color.search(body) and not inner.search(body):
-                objects[name] = f"{name} defines a foreground color in {relative}"
-            for nested in inner.finditer(body):
-                if color.search(nested.group(2)):
-                    reference = f"{name}.{nested.group(1)}"
-                    objects[reference] = (
-                        f"{reference} defines a foreground color in {relative}"
-                    )
-        by_file[path] = objects
-    return by_file
-
-
-def literal_class_values(attrs: str) -> list[str]:
-    values = [
-        match.group(2)
-        for match in re.finditer(
-            r"\b(?:class|className)\s*=\s*([\"'`])([^\"'`]*?)\1",
-            attrs,
-            re.S,
-        )
-    ]
-    values.extend(
-        match.group(2)
-        for match in re.finditer(
-            r"\bclassName\s*=\s*\{\s*([\"'`])([^\"'`]*?)\1\s*\}",
-            attrs,
-            re.S,
-        )
-    )
-    return values
 
 
 def visible_prose_records(
@@ -1464,51 +1325,6 @@ def visible_prose_records(
             "text": value,
         })
     return records
-
-
-def quantitative_claim_candidates(
-    records: list[tuple[Path, str, str]],
-) -> list[dict[str, object]]:
-    manual_review: list[dict[str, object]] = []
-    for path, relative, text in records:
-        prose = visible_prose_records(path, text)
-        claims: list[dict[str, object]] = []
-        for node in prose:
-            for match in QUANTITATIVE_CLAIM.finditer(str(node["text"])):
-                claims.append({
-                    "line": node["line"],
-                    "section": node["section"],
-                    "value": match.group(0),
-                })
-        section_ids = {
-            int(item["section"])
-            for item in claims
-            if item["section"] is not None
-        }
-        if len(claims) < 8 or len(section_ids) < 3:
-            continue
-        manual_review.append({
-            "file": relative,
-            "line": claims[0]["line"],
-            "check": "quantitative-claim-density",
-            "severity": "medium",
-            "reason": (
-                "Visible marketing copy contains a dense cluster of exact "
-                "figures across multiple sections. Source scanning cannot "
-                "establish whether those figures are approved facts."
-            ),
-            "evidence": {
-                "claim_count": len(claims),
-                "section_count": len(section_ids),
-                "claims": claims[:16],
-            },
-            "suggestion": (
-                "Trace each figure to approved project evidence, label it as "
-                "illustrative, qualify it precisely, or remove it."
-            ),
-            "owner_policy": None,
-        })
-    return manual_review
 
 
 def material_media_candidates(
@@ -1607,295 +1423,6 @@ def material_media_candidates(
             ),
             "owner_policy": None,
         })
-    return manual_review
-
-
-def typography_compression_candidates(
-    records: list[tuple[Path, str, str]],
-) -> list[dict[str, object]]:
-    """Find clustered or severe legibility-reducing typography controls."""
-    manual_review: list[dict[str, object]] = []
-    display_selector = re.compile(
-        r"(?:\bh[1-6]\b|(?:^|[-_.#\s])(?:display|headline|hero|poster|"
-        r"title)(?:$|[-_:\s>+~.#]))",
-        re.I,
-    )
-    reading_selector = re.compile(
-        r"(?:\b(?:body|p|li|dd|dt|blockquote|article)\b|"
-        r"(?:^|[-_.#\s])(?:body|copy|prose|paragraph|description|summary|"
-        r"lede|intro)(?:$|[-_:\s>+~.#]))",
-        re.I,
-    )
-    excluded_selector = re.compile(
-        r"(?:sr[-_]?only|visually[-_]?hidden|screen[-_]?reader)",
-        re.I,
-    )
-    letter_spacing = re.compile(
-        r"\b(?:letter-spacing|letterSpacing)\s*:\s*[\"']?\s*"
-        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<unit>em|rem|px)?\b",
-        re.I,
-    )
-    line_height = re.compile(
-        r"\b(?:line-height|lineHeight)\s*:\s*[\"']?\s*"
-        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<unit>em|rem)?\b",
-        re.I,
-    )
-    font_stretch = re.compile(
-        r"\b(?:font-stretch|fontStretch)\s*:\s*[\"']?\s*"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))%",
-        re.I,
-    )
-    width_axis = re.compile(
-        r"\b(?:font-variation-settings|fontVariationSettings)\s*:"
-        r"[^;{}]{0,240}"
-        r"[\"']wdth[\"']\s+"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))",
-        re.I,
-    )
-    horizontal_scale = re.compile(
-        r"\bscaleX\s*\(\s*"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<unit>%?)\s*\)",
-        re.I,
-    )
-    utility_tracking = re.compile(
-        r"\btracking-\[\s*"
-        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<unit>em|rem|px)\s*\]",
-        re.I,
-    )
-    utility_leading = re.compile(
-        r"\bleading-\[\s*"
-        r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<unit>em|rem)?\s*\]",
-        re.I,
-    )
-    utility_stretch = re.compile(
-        r"\[\s*font-stretch\s*:\s*"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))%\s*\]",
-        re.I,
-    )
-    utility_width_axis = re.compile(
-        r"\[\s*font-variation-settings\s*:[^\]]{0,180}?"
-        r"[\"']?wdth[\"']?(?:_|[\s:])+"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))[^\]]*\]",
-        re.I,
-    )
-    utility_scale = re.compile(
-        r"\bscale-x-(?:\[\s*)?"
-        r"(?P<value>(?:\d+(?:\.\d*)?|\.\d+))"
-        r"(?P<closing>\s*\])?",
-        re.I,
-    )
-
-    def signals_for(source: str, role: str) -> list[dict[str, object]]:
-        signals: list[dict[str, object]] = []
-        reading = role == "reading"
-
-        spacing = letter_spacing.search(source) or utility_tracking.search(source)
-        if spacing:
-            value = float(spacing.group("value"))
-            unit = (spacing.group("unit") or "").casefold()
-            threshold = -0.02 if reading else -0.03
-            pixel_threshold = -0.35 if reading else -0.5
-            if (
-                unit in {"em", "rem"} and value <= threshold
-            ) or (
-                unit == "px" and value <= pixel_threshold
-            ):
-                extreme = (
-                    value <= (-0.04 if reading else -0.07)
-                    if unit in {"em", "rem"}
-                    else value <= (-0.75 if reading else -1.0)
-                )
-                signals.append({
-                    "property": "letter-spacing",
-                    "value": f"{value:g}{unit}",
-                    "extreme": extreme,
-                })
-
-        leading = line_height.search(source) or utility_leading.search(source)
-        if leading:
-            value = float(leading.group("value"))
-            unit = (leading.group("unit") or "").casefold()
-            threshold = 1.35 if reading else 0.95
-            if unit in {"", "em"} and value < threshold:
-                signals.append({
-                    "property": "line-height",
-                    "value": f"{value:g}{unit}",
-                    "extreme": value < (1.2 if reading else 0.8),
-                })
-
-        stretch = font_stretch.search(source) or utility_stretch.search(source)
-        if stretch:
-            value = float(stretch.group("value"))
-            if value < 90:
-                signals.append({
-                    "property": "font-stretch",
-                    "value": f"{value:g}%",
-                    "extreme": value <= (80 if reading else 75),
-                })
-
-        width = width_axis.search(source) or utility_width_axis.search(source)
-        if width:
-            value = float(width.group("value"))
-            if value < 90:
-                signals.append({
-                    "property": "wdth-axis",
-                    "value": f"{value:g}",
-                    "extreme": value <= (80 if reading else 75),
-                })
-
-        scale = horizontal_scale.search(source) or utility_scale.search(source)
-        if scale:
-            value = float(scale.group("value"))
-            unit = (
-                (scale.groupdict().get("unit") or "")
-                if "unit" in scale.groupdict()
-                else ""
-            )
-            if utility_scale.fullmatch(scale.group(0)) or "scale-x-" in scale.group(0):
-                normalized = value / 100 if value > 2 else value
-            else:
-                normalized = value / 100 if unit == "%" else value
-            if normalized < 0.9:
-                signals.append({
-                    "property": "horizontal-scale",
-                    "value": f"{normalized:g}",
-                    "extreme": normalized <= (0.8 if reading else 0.75),
-                })
-        return signals
-
-    def append_review(
-        *,
-        relative: str,
-        line: int,
-        subject: str,
-        role: str,
-        signals: list[dict[str, object]],
-    ) -> None:
-        severe = any(bool(item.get("extreme")) for item in signals)
-        compound_display = role == "display" and len(signals) >= 2
-        compound_reading = role == "reading" and len(signals) >= 2
-        if not (severe or compound_display or compound_reading):
-            return
-        check = (
-            "compound-display-compression"
-            if compound_display
-            else "severe-typography-compression"
-        )
-        reason = (
-            "A prominent text treatment stacks at least two compression "
-            "controls. Tight tracking, narrow width, horizontal scaling, and "
-            "short leading can crowd real headings."
-            if compound_display
-            else (
-                "Reading text combines multiple crowding controls or uses an "
-                "extreme single control. Body copy, labels, and controls need "
-                "a larger comfort margin than a limited display treatment."
-                if role == "reading"
-                else (
-                    "A prominent text treatment uses an extreme single "
-                    "compression control. Even without a second trigger, this "
-                    "can make words touch or become difficult to parse."
-                )
-            )
-        )
-        manual_review.append({
-            "file": relative,
-            "line": line,
-            "check": check,
-            "severity": "medium",
-            "reason": reason,
-            "evidence": {
-                "subject": subject[:240],
-                "role": role,
-                "signals": signals,
-                "basis": (
-                    "display review triggers: tracking <= -0.03em or -0.5px, "
-                    "line-height < 0.95, stretch or wdth < 90; severe single "
-                    "triggers: tracking <= -0.07em, line-height < 0.8, "
-                    "stretch or wdth <= 75, or horizontal scale <= 0.75; "
-                    "reading roles use stricter comfort thresholds"
-                ),
-            },
-            "suggestion": (
-                "Proof the actual words at narrow, intermediate, and wide "
-                "sizes. Adjust the combination that causes crowding; compressed "
-                "display typography remains available when the actual words stay "
-                "legible, intentional, and resilient under content and viewport change."
-            ),
-            "owner_policy": None,
-        })
-
-    for path, relative, text in records:
-        suffix = path.suffix.lower()
-        if suffix not in {".css", ".less", ".scss"}:
-            continue
-        for block in CSS_DECLARATION_BLOCK.finditer(text):
-            selector = " ".join(block.group("header").split())
-            body = block.group("body")
-            if (
-                not selector
-                or selector.startswith("@")
-                or excluded_selector.search(selector)
-            ):
-                continue
-            role = (
-                "display"
-                if display_selector.search(selector)
-                else "reading"
-                if reading_selector.search(selector)
-                else ""
-            )
-            if not role:
-                continue
-            append_review(
-                relative=relative,
-                line=line_number(text, block.start()),
-                subject=selector,
-                role=role,
-                signals=signals_for(body, role),
-            )
-
-    element = re.compile(
-        r"<(?P<tag>body|article|blockquote|dd|div|dt|h[1-6]|li|p|section|"
-        r"span)\b(?P<attrs>[^>]*)>",
-        re.I | re.S,
-    )
-    for path, relative, text in records:
-        if path.suffix.lower() not in PROMINENT_MARKUP_SUFFIXES:
-            continue
-        for match in element.finditer(text):
-            attrs = match.group("attrs")
-            if excluded_selector.search(attrs):
-                continue
-            tag = match.group("tag").casefold()
-            role = (
-                "display"
-                if tag in {f"h{level}" for level in range(1, 7)}
-                or display_selector.search(attrs)
-                else "reading"
-                if tag in {
-                    "body", "article", "blockquote", "dd", "dt", "li", "p",
-                }
-                or reading_selector.search(attrs)
-                else ""
-            )
-            if not role:
-                continue
-            signals = signals_for(attrs, role)
-            if not signals:
-                continue
-            append_review(
-                relative=relative,
-                line=line_number(text, match.start()),
-                subject=f"<{tag}> inline or utility treatment",
-                role=role,
-                signals=signals,
-            )
     return manual_review
 
 
@@ -1999,200 +1526,6 @@ def nonfunctional_concept_affordance_candidates(
             ),
             "owner_policy": None,
         })
-    return manual_review
-
-
-def resolve_css_class(
-    class_name: str,
-    path: Path,
-    classes: dict[str, list[dict[str, object]]],
-) -> Optional[str]:
-    candidates = classes.get(class_name, [])
-    local = [
-        item for item in candidates
-        if item.get("directory") == path.parent
-    ]
-    selected = local if local else candidates if len(candidates) == 1 else []
-    if not selected:
-        return None
-    return str(selected[0]["signal"])
-
-
-def fragment_style_signal(
-    attrs: str,
-    path: Path,
-    css_classes: dict[str, list[dict[str, object]]],
-    style_objects: dict[Path, dict[str, str]],
-) -> tuple[Optional[str], bool]:
-    if re.search(
-        r"\bstyle\s*=\s*(?:[\"'][^\"']*(?:color|-webkit-text-fill-color)\s*:|"
-        r"\{\{[^{}]*(?:color|WebkitTextFillColor)\s*:)",
-        attrs,
-        re.I | re.S,
-    ):
-        return "inline foreground-color declaration", False
-
-    class_values = literal_class_values(attrs)
-    for value in class_values:
-        tailwind = TAILWIND_FOREGROUND.search(" " + value)
-        if tailwind:
-            return f"Tailwind foreground utility {tailwind.group(0).strip()}", False
-        for token in value.split():
-            bare = token.rsplit(":", 1)[-1]
-            resolved = resolve_css_class(bare, path, css_classes)
-            if resolved:
-                return resolved, False
-
-    module_refs = re.findall(
-        r"\bclassName\s*=\s*\{[^{}]{0,300}?"
-        r"([A-Za-z_$][A-Za-z0-9_$]*)\.([A-Za-z_$][A-Za-z0-9_$]*)",
-        attrs,
-        re.S,
-    )
-    for _namespace, class_name in module_refs:
-        resolved = resolve_css_class(class_name, path, css_classes)
-        if resolved:
-            return f"CSS Module reference resolves indirectly: {resolved}", False
-
-    direct_tailwind = TAILWIND_FOREGROUND.search(" " + attrs)
-    if direct_tailwind:
-        return f"Tailwind foreground utility {direct_tailwind.group(0).strip()}", False
-
-    style_reference = re.search(
-        r"\bstyle\s*=\s*\{\s*([A-Za-z_$][A-Za-z0-9_$]*"
-        r"(?:\.[A-Za-z_$][A-Za-z0-9_$]*)?)\s*\}",
-        attrs,
-    )
-    if style_reference:
-        reference = style_reference.group(1)
-        signal = style_objects.get(path, {}).get(reference)
-        if signal:
-            return f"React style reference resolves indirectly: {signal}", False
-
-    dynamic = bool(
-        re.search(r"\b(?:className|style)\s*=\s*\{", attrs)
-    )
-    return None, dynamic
-
-
-def prominent_fragment_candidates(
-    records: list[tuple[Path, str, str]],
-    css_classes: dict[str, list[dict[str, object]]],
-    style_objects: dict[Path, dict[str, str]],
-) -> list[dict[str, object]]:
-    """Surface prominent styled fragments without treating them as defects."""
-    manual_review: list[dict[str, object]] = []
-    block_pattern = re.compile(
-        r"<(?P<tag>h[1-6]|div|p|strong)\b(?P<attrs>[^>]*)>"
-        r"(?P<body>.*?)</(?P=tag)\s*>",
-        re.I | re.S,
-    )
-    fragment_pattern = re.compile(
-        r"<(?P<tag>span|em)\b(?P<attrs>[^>]*)>"
-        r"(?P<body>.*?)</(?P=tag)\s*>",
-        re.I | re.S,
-    )
-    for path, relative, text in records:
-        if path.suffix.lower() not in PROMINENT_MARKUP_SUFFIXES:
-            continue
-        for block in block_pattern.finditer(text):
-            tag = block.group("tag").casefold()
-            if not tag.startswith("h") and not PROMINENT_CLASS.search(
-                block.group("attrs")
-            ):
-                continue
-            body = block.group("body")
-            for fragment in fragment_pattern.finditer(body):
-                plain = strip_markup(fragment.group("body"))
-                words = fragment_words(plain)
-                if not words or len(words) > 2:
-                    continue
-                prefix = body[:fragment.start()]
-                attrs = fragment.group("attrs")
-                if semantic_fragment(attrs, plain, prefix):
-                    continue
-                signal, unresolved = fragment_style_signal(
-                    attrs, path, css_classes, style_objects
-                )
-                absolute_start = block.start("body") + fragment.start()
-                line = line_number(text, absolute_start)
-                if signal:
-                    manual_review.append({
-                        "file": relative,
-                        "line": line,
-                        "check": "prominent-fragment-context",
-                        "severity": "low",
-                        "fragment": plain[:80],
-                        "evidence": {
-                            "element": tag,
-                            "style_signal": signal,
-                            "basis": (
-                                "static source identifies a foreground-style "
-                                "change inside prominent copy"
-                            ),
-                        },
-                        "reason": (
-                            "A styled prominent fragment is a neutral expressive "
-                            "ingredient. Its presence, repetition, and word count "
-                            "do not establish visual harm or generated authorship."
-                        ),
-                        "suggestion": (
-                            "Review the rendered meaning, hierarchy, legibility, "
-                            "and declared project concerns. Keep it when it serves "
-                            "the composition; do not revise it because of a count."
-                        ),
-                        "owner_policy": None,
-                    })
-                elif unresolved:
-                    manual_review.append({
-                        "file": relative,
-                        "line": line,
-                        "check": "prominent-fragment-dynamic-style",
-                        "severity": "low",
-                        "fragment": plain[:80],
-                        "reason": (
-                            "A prominent fragment uses a runtime-computed class or "
-                            "style that static scanning cannot resolve. The source "
-                            "does not establish visual harm."
-                        ),
-                        "suggestion": (
-                            "Inspect the rendered fragment only if it intersects a "
-                            "declared project concern; never infer a defect from its "
-                            "presence or frequency alone."
-                        ),
-                        "owner_policy": None,
-                    })
-
-    selector_rule = re.compile(r"([^{}]+)\{([^{}]*)\}", re.S)
-    for path, relative, text in records:
-        if path.suffix.lower() not in {".css", ".scss"}:
-            continue
-        for match in selector_rule.finditer(text):
-            selector, declarations = match.group(1), match.group(2)
-            if (
-                not PROMINENT_CLASS.search(selector)
-                or not re.search(r"(?:span|em|:nth-child\()", selector, re.I)
-                or SEMANTIC_FRAGMENT.search(selector)
-                or not FOREGROUND_DECLARATION.search(";" + declarations)
-            ):
-                continue
-            manual_review.append({
-                "file": relative,
-                "line": line_number(text, match.start()),
-                "check": "prominent-fragment-selector-context",
-                "severity": "low",
-                "selector": " ".join(selector.split())[:160],
-                "reason": (
-                    "A prominent descendant selector changes foreground color, "
-                    "but source alone cannot establish fragment length, frequency, "
-                    "meaning, or visual harm."
-                ),
-                "suggestion": (
-                    "Review the rendered selector only in project context; do not "
-                    "treat its presence or count as an automatic finding."
-                ),
-                "owner_policy": None,
-            })
     return manual_review
 
 
@@ -2463,16 +1796,10 @@ def main() -> int:
             "deferred-content-visibility": "semantic_implementation",
             "placeholder-proof": "release_residue",
             "claim-needs-provenance": "truth_and_claims",
-            "quantitative-claim-density": "truth_and_claims",
             "generated-media-authenticity": "generated_concept_media",
             "media-authenticity-and-provenance": "truth_and_claims",
-            "compound-display-compression": "typography_comfort",
-            "severe-typography-compression": "typography_comfort",
             "public-meta-copy-contamination": "public_copy_boundary",
             "nonfunctional-concept-affordance": "working_controls",
-            "prominent-fragment-context": "content_hierarchy",
-            "prominent-fragment-dynamic-style": "content_hierarchy",
-            "prominent-fragment-selector-context": "content_hierarchy",
         }
         findings: list[dict[str, object]] = []
         suppressed_findings: list[dict[str, object]] = []
@@ -2626,17 +1953,9 @@ def main() -> int:
                     )
                     continue
                 findings.append(finding)
-        css_classes = foreground_css_classes(records)
-        style_objects = react_style_objects(records)
-        manual_review = prominent_fragment_candidates(
-            records, css_classes, style_objects
-        )
-        quantitative_review = quantitative_claim_candidates(records)
+        manual_review: list[dict[str, object]] = []
         media_review = material_media_candidates(records)
-        compression_review = typography_compression_candidates(records)
-        manual_review.extend(quantitative_review)
         manual_review.extend(media_review)
-        manual_review.extend(compression_review)
         manual_review.extend(public_meta_copy_candidates(records))
         manual_review.extend(
             nonfunctional_concept_affordance_candidates(records)
@@ -2958,10 +2277,6 @@ def main() -> int:
                 (
                     "Static scanning cannot prove runtime-computed class/style values, "
                     "component-rendered markup, semantic intent, or rendered prominence."
-                ),
-                (
-                    "Unresolved prominent-fragment cases are listed under manual_review "
-                    "and never promoted to gate failures automatically."
                 ),
                 (
                     "Media-reference prompts do not inspect image pixels; rendered "

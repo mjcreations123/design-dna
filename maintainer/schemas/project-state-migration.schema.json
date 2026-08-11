@@ -185,7 +185,20 @@
               {"const": ["showcase", "range-study", "high-risk"]},
               {"const": ["showcase", "range-study", "asset-led"]},
               {"const": ["showcase", "high-risk", "asset-led"]},
-              {"const": ["showcase", "range-study", "high-risk", "asset-led"]}
+              {"const": ["showcase", "range-study", "high-risk", "asset-led"]},
+              {"const": ["standard", "batch-study"]},
+              {"const": ["showcase", "batch-study"]},
+              {"const": ["batch-study", "high-risk"]},
+              {"const": ["batch-study", "asset-led"]},
+              {"const": ["standard", "batch-study", "asset-led"]},
+              {"const": ["showcase", "range-study", "batch-study"]},
+              {"const": ["showcase", "batch-study", "high-risk"]},
+              {"const": ["showcase", "batch-study", "asset-led"]},
+              {"const": ["batch-study", "high-risk", "asset-led"]},
+              {"const": ["showcase", "range-study", "batch-study", "high-risk"]},
+              {"const": ["showcase", "range-study", "batch-study", "asset-led"]},
+              {"const": ["showcase", "batch-study", "high-risk", "asset-led"]},
+              {"const": ["showcase", "range-study", "batch-study", "high-risk", "asset-led"]}
             ]
           },
           "required_records": {
@@ -193,7 +206,7 @@
             "minItems": 1,
             "uniqueItems": true,
             "items": {
-              "enum": ["exploration", "direction", "direction-proof", "route-family", "visual-review", "claims", "assets", "user-validation", "handoff"]
+              "enum": ["exploration", "taste-calibration", "direction", "direction-proof", "route-family", "batch-range", "visual-review", "claims", "assets", "user-validation", "handoff"]
             }
           },
           "reason": {"type": "string", "minLength": 1}

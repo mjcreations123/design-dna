@@ -5,6 +5,85 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.1.0 - Creative freedom and batch proof
+
+This release repairs the restrictive aesthetic doctrine introduced during the
+5.0 line and adds a controlled way to test whether Design DNA actually
+transfers across unrelated projects. It keeps strict truth, rights, privacy,
+accessibility, working-behavior, evidence, and delivery boundaries while
+returning typography, copy, composition, media, color, motion, ornament, and
+other aesthetic decisions to project evidence and rendered judgment.
+
+### Changed
+
+- Replaced the universal ABSOLUTE/HARD taste rulebook with assurance
+  boundaries. Familiar or unusual fonts, gradients, cards, status styling,
+  punctuation, system type, media choices, copy registers, and layout devices
+  can all be correct when their meaning, project fit, and execution hold.
+- Rebuilt typography around reading conditions, role relationships, language,
+  spacing, delivery, fallback, and actual painted-font evidence. There is no
+  portable "AI font" list, preferred family bench, rotation rule, fixed
+  pairing count, mandated hosting method, or universal scale.
+- Reworked convergence, specificity, parseable text, microcopy, dark-mode,
+  email, exploration, energy, ledger, workflow, and preship guidance so
+  post-render observations cannot harden into a reverse style guide or house
+  voice.
+- Made cross-project history opt-in, minimized, host-neutral, and
+  owner-authorized. An existing ledger is not standing permission to inspect
+  unrelated client history.
+
+### Added
+
+- `taste-calibration.md` and an optional project-local calibration record for
+  high-visibility, owner-sensitive, open, or previously rejected directions.
+  They use source-aware visual references, a rendered direction proof, and a
+  first-impression surface-fidelity review without imposing a global font,
+  palette, layout, media, or motion recipe.
+- A Batch Study protocol for three or more independently briefed sites, with a
+  project-local contract, schema, audit tool, neutral-label identity-blinded
+  comparison, exact evidence hashes, isolated build roots, route/capture
+  coverage, and optional atlas. Pixel transformation is optional and requires
+  a justified hypothesis or authorized privacy need, original and transformed
+  hashes, a recorded method, and an explicit coverage-impact statement.
+  The result reports coverage and contextual findings; it never produces an
+  authorship or aesthetic score.
+- A launch-completeness contract for every new or materially redesigned
+  website, covering the primary action, decision-blocking questions, response
+  or delivery expectation, success state, compact-screen action, crawl and
+  indexing policy, page descriptions and titles, sharing card, location and
+  directions, text alternatives, privacy and policy boundary, analytics
+  authorization, decision cue, and approved promotion. Each is recorded as
+  included, not applicable, or blocked in a project-local record, and none may
+  be satisfied by inventing an address, promise, policy, tracking ID, or offer.
+  A companion section names the reflex implementation that turns several of
+  these decisions into interchangeable furniture, so the item gets answered
+  without a default component being installed to answer it.
+- Regression contracts that reject renewed font/style whitelists, aesthetic
+  absolutes, hidden worktree byte drift, untracked empty-directory identity,
+  unsafe evidence URL queries, and unrelated malformed-skill discovery
+  failures.
+
+### Fixed
+
+- A clean technical build can no longer be treated as evidence that a website
+  is aesthetically convincing or client-ready. Direct feedback that a result is
+  ugly, artificial, generic, or maker-facing now reopens the public proposition
+  and creative logic rather than inviting only cosmetic polishing. Batch Study
+  fixtures are explicitly not portfolio proof.
+- GitHub Actions no longer uses the unavailable job-level `runner.temp`
+  context, allowing the matrix to start rather than fail before creating a
+  job.
+- Windows evaluation timeouts use a kill-on-close Job Object and verified
+  process-tree termination, with a measured fail-closed fallback.
+- Release packaging now rejects line-ending/filter drift hidden by Git status,
+  and distribution identity no longer binds empty directories that a clean
+  clone cannot reproduce.
+- The installer no longer mistakes an unrelated malformed skill for Design
+  DNA merely because its body says the skills can be paired.
+- Online evidence validation safely admits only the canonical single-video
+  YouTube query shape, follows the current GOV.UK source, and removes the stale
+  Spotify Design card after that publisher retired the cited site.
+
 ## 5.0.4 - Four missing surfaces
 
 A coverage audit over the whole reference tree, prompted by the owner asking

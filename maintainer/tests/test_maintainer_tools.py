@@ -319,6 +319,22 @@ class ManifestTests(unittest.TestCase):
             (two / "nested" / "file.txt").write_text("changed\n", encoding="utf-8")
             self.assertNotEqual(content_manifest(one), content_manifest(two))
 
+    def test_distribution_manifest_omits_untracked_empty_directories(self) -> None:
+        from build_manifest import distribution_manifest
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "plugin"
+            retained = root / "maintainer" / "evals" / "archive" / "proof.json"
+            retained.parent.mkdir(parents=True)
+            retained.write_text("{}\n", encoding="utf-8")
+            (root / "maintainer" / "evals" / "results").mkdir(parents=True)
+            records, _digest = distribution_manifest(root)
+            paths = {str(item["path"]) for item in records}
+
+            self.assertIn("maintainer/evals/archive/proof.json", paths)
+            self.assertIn("maintainer/evals/archive", paths)
+            self.assertNotIn("maintainer/evals/results", paths)
+
     def test_compiled_residue_enumerator_reports_cache_once_and_loose_files(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -483,6 +499,76 @@ class ManifestTests(unittest.TestCase):
         self.assertFalse(unsafe)
         self.assertEqual(message, "online host is not allowlisted")
         resolver.assert_not_called()
+
+    def test_online_probe_allows_only_canonical_youtube_video_query(self) -> None:
+        import check_links
+
+        public_answer = [(2, 1, 6, "", ("142.250.72.206", 443))]
+        with patch.object(
+            check_links.socket,
+            "getaddrinfo",
+            return_value=public_answer,
+        ):
+            safe, reason, host, port, addresses = check_links.resolve_external_target(
+                "https://www.youtube.com/watch?v=DNSXlBmukck",
+                set(),
+                {"www.youtube.com"},
+            )
+        self.assertTrue(safe, reason)
+        self.assertEqual(host, "www.youtube.com")
+        self.assertEqual(port, 443)
+        self.assertEqual(addresses, ("142.250.72.206",))
+
+        rejected = (
+            "https://www.youtube.com/watch?v=too-short",
+            "https://www.youtube.com/watch?v=DNSXlBmukck&token=secret",
+            "https://www.youtube.com/watch?token=DNSXlBmukck",
+            "https://example.test/path?value=DNSXlBmukck",
+        )
+        for url in rejected:
+            with self.subTest(url=url):
+                safe, reason = check_links.validate_external_target(
+                    url,
+                    set(),
+                    {"www.youtube.com", "example.test"},
+                )
+                self.assertFalse(safe)
+                self.assertEqual(reason, "query-bearing URL refused")
+
+        class _Transport:
+            def settimeout(self, _timeout: float) -> None:
+                pass
+
+            def sendall(self, payload: bytes) -> None:
+                self.payload = payload
+
+            def close(self) -> None:
+                pass
+
+        transport = _Transport()
+        with patch.object(
+            check_links.socket,
+            "create_connection",
+            return_value=transport,
+        ), patch.object(
+            check_links.ssl,
+            "create_default_context",
+        ) as context, patch.object(
+            check_links.http.client,
+            "HTTPResponse",
+        ) as response:
+            context.return_value.wrap_socket.return_value = transport
+            response.return_value.getheader.return_value = None
+            response.return_value.status = 204
+            status, _ = check_links.pinned_head(
+                "https://www.youtube.com/watch?v=DNSXlBmukck",
+                hostname="www.youtube.com",
+                port=443,
+                addresses=("142.250.72.206",),
+                timeout=1,
+            )
+        self.assertEqual(status, 204)
+        self.assertIn(b"HEAD /watch?v=DNSXlBmukck HTTP/1.1", transport.payload)
 
 
 class CachePreflightTests(unittest.TestCase):
@@ -1420,6 +1506,58 @@ class AuditMutationTests(unittest.TestCase):
                 )
             )
 
+    def test_evidence_review_interval_has_no_universal_day_ceiling(self) -> None:
+        from validate_evidence import validate
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = Path(temporary)
+            evidence = plugin / "maintainer" / "evidence" / "cards"
+            evidence.mkdir(parents=True)
+            (plugin / "maintainer" / "evidence" / "index.yml").write_text(
+                "schema_version: 2\nowner: Motty\nlast_reviewed: '2026-07-20'\n"
+                "next_review: '2028-07-20'\nrisks:\n  RISK-TEST-1:\n"
+                "    status: active\n    evidence: [EVD-001]\nrejected_hypotheses: {}\n",
+                encoding="utf-8",
+            )
+            body = "\n".join(
+                f"## {heading}\nRISK-TEST-1 remains project-specific.\n"
+                for heading in (
+                    "Claim",
+                    "Observation",
+                    "Scope and limitations",
+                    "Counterexamples",
+                    "Positive action",
+                    "Supports",
+                    "Validation",
+                    "Retention",
+                )
+            )
+            (evidence / "EVD-001.md").write_text(
+                "---\nschema_version: 2\nid: EVD-001\nstatus: active\nclassification: public\n"
+                "source_type: research\nowner: Motty\npublisher: Example Research\n"
+                "created: 2026-01-01\nlast_reviewed: 2026-07-20\n"
+                "next_review: 2028-07-20\nretrieved: 2026-07-20\nurl: https://example.com\n"
+                "locator: section 1\nconfidence: high\n---\n" + body,
+                encoding="utf-8",
+            )
+            failures, _, _ = validate(
+                plugin,
+                PLUGIN
+                / "maintainer"
+                / "schemas"
+                / "evidence-frontmatter.schema.json",
+                online=False,
+                strict_due=False,
+            )
+            self.assertFalse(
+                any(
+                    item["code"]
+                    in {"invalid-index-review-interval", "invalid-review-interval"}
+                    for item in failures
+                ),
+                failures,
+            )
+
 @unittest.skipUnless(
     __import__("importlib").util.find_spec("jsonschema"),
     "maintainer dependencies are not installed",
@@ -2092,6 +2230,179 @@ class EvalRunnerV3Tests(unittest.TestCase):
                 sentinel.exists(),
                 "a timed-out driver's descendant continued running",
             )
+
+    @unittest.skipUnless(os.name == "nt", "Windows job containment only")
+    def test_windows_job_termination_is_verified_without_taskkill(self) -> None:
+        import run_evals
+
+        class FakeProcess:
+            pid = 41001
+
+            def poll(self):
+                return None
+
+            def wait(self, timeout=None):
+                return 1
+
+        class FakeJob:
+            def __init__(self):
+                self.terminate_calls = 0
+                self.wait_calls = []
+
+            def terminate(self):
+                self.terminate_calls += 1
+
+            def wait_empty(self, milliseconds):
+                self.wait_calls.append(milliseconds)
+                return True
+
+        process = FakeProcess()
+        job = FakeJob()
+        with patch.object(run_evals, "_taskkill_process_tree") as taskkill:
+            evidence = run_evals.terminate_process_tree(process, job)
+        self.assertEqual(evidence["method"], "windows-job")
+        self.assertTrue(evidence["verified_empty"])
+        self.assertEqual(job.terminate_calls, 1)
+        self.assertEqual(job.wait_calls, [15000])
+        taskkill.assert_not_called()
+
+    @unittest.skipUnless(os.name == "nt", "Windows job containment only")
+    def test_windows_job_termination_fallback_is_measured_and_verified(
+        self,
+    ) -> None:
+        import run_evals
+
+        class FakeProcess:
+            pid = 41002
+
+            def poll(self):
+                return None
+
+            def wait(self, timeout=None):
+                return 1
+
+        class FakeJob:
+            def __init__(self):
+                self.wait_results = iter((False, True))
+
+            def terminate(self):
+                raise OSError(5, "job termination denied")
+
+            def wait_empty(self, milliseconds):
+                return next(self.wait_results)
+
+        taskkill_result = {
+            "attempted": True,
+            "returncode": 0,
+            "stdout": "SUCCESS: terminated process tree",
+            "stderr": "",
+            "error": None,
+        }
+        with patch.object(
+            run_evals,
+            "_taskkill_process_tree",
+            return_value=taskkill_result,
+        ) as taskkill:
+            evidence = run_evals.terminate_process_tree(
+                FakeProcess(),
+                FakeJob(),
+            )
+        self.assertEqual(evidence["method"], "taskkill-fallback")
+        self.assertTrue(evidence["verified_empty"])
+        self.assertFalse(evidence["job_termination"]["succeeded"])
+        self.assertEqual(evidence["taskkill"], taskkill_result)
+        taskkill.assert_called_once_with(41002)
+
+    @unittest.skipUnless(os.name == "nt", "Windows job containment only")
+    def test_windows_unverified_tree_termination_fails_with_exact_evidence(
+        self,
+    ) -> None:
+        import run_evals
+
+        class FakeProcess:
+            pid = 41003
+
+            def __init__(self):
+                self.killed = False
+
+            def poll(self):
+                return None
+
+            def kill(self):
+                self.killed = True
+
+            def wait(self, timeout=None):
+                return 1
+
+        class FakeJob:
+            def terminate(self):
+                raise OSError(5, "job termination denied")
+
+            def wait_empty(self, milliseconds):
+                return False
+
+        process = FakeProcess()
+        taskkill_result = {
+            "attempted": True,
+            "returncode": 128,
+            "stdout": "",
+            "stderr": "ERROR: process tree could not be terminated",
+            "error": None,
+        }
+        with patch.object(
+            run_evals,
+            "_taskkill_process_tree",
+            return_value=taskkill_result,
+        ):
+            with self.assertRaises(ToolFailure) as raised:
+                run_evals.terminate_process_tree(process, FakeJob())
+        self.assertEqual(
+            raised.exception.issue.code,
+            "process-tree-termination-failed",
+        )
+        self.assertIn('"returncode": 128', str(raised.exception))
+        self.assertIn(
+            "ERROR: process tree could not be terminated",
+            str(raised.exception),
+        )
+        self.assertIn('"verified_empty": false', str(raised.exception))
+        self.assertTrue(process.killed)
+
+    @unittest.skipUnless(os.name == "nt", "Windows job containment only")
+    def test_windows_assignment_failure_never_releases_driver(self) -> None:
+        import run_evals
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sentinel = root / "driver-was-released.txt"
+            command = [
+                sys.executable,
+                "-c",
+                (
+                    "from pathlib import Path; "
+                    f"Path({str(sentinel)!r}).write_text('unsafe', encoding='utf-8')"
+                ),
+            ]
+            with patch.object(
+                run_evals._WindowsProcessJob,
+                "assign",
+                side_effect=OSError(5, "job assignment denied"),
+            ):
+                with self.assertRaises(ToolFailure) as raised:
+                    run_evals.run_driver(
+                        command,
+                        cwd=root,
+                        environment=os.environ.copy(),
+                        timeout=5,
+                        stdout_path=root / "stdout.bin",
+                        stderr_path=root / "stderr.bin",
+                    )
+            self.assertEqual(
+                raised.exception.issue.code,
+                "process-containment-assignment-failed",
+            )
+            time.sleep(0.25)
+            self.assertFalse(sentinel.exists())
 
     def test_unsafe_workspace_symlink_is_a_recorded_run_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

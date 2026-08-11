@@ -620,7 +620,7 @@ class ReviewContractTests(unittest.TestCase):
         }]
         self.assertEqual(list(validator.iter_errors(available)), [])
 
-    def test_masked_layout_schema_requires_complete_hash_bound_record(
+    def test_identity_blinded_schema_defaults_to_unchanged_hash_bound_renders(
         self,
     ) -> None:
         schema = json.loads(
@@ -630,7 +630,7 @@ class ReviewContractTests(unittest.TestCase):
         comparison_schema = {
             "$schema": schema["$schema"],
             "$defs": schema["$defs"],
-            "$ref": "#/$defs/masked_layout_comparison",
+            "$ref": "#/$defs/identity_blinded_comparison",
         }
         validator = Draft202012Validator(comparison_schema)
         coverage = []
@@ -639,63 +639,74 @@ class ReviewContractTests(unittest.TestCase):
                 digest(f"source:{index}:mobile"),
                 digest(f"source:{index}:desktop"),
             ]
-            masked_hashes = [
-                digest(f"masked:{index}:mobile"),
-                digest(f"masked:{index}:desktop"),
-            ]
             coverage.append({
                 "case_id": f"case-{index}",
                 "run_id": f"suite:codex:case-{index}:skill:1",
                 "build_identity": digest(f"build:{index}"),
+                "neutral_label": f"Specimen {index + 1}",
                 "source_render_sha256s": source_hashes,
-                "masked_render_sha256s": masked_hashes,
                 "evidence": [
                     {
-                        "path": f"evidence/masked-{index}-mobile.png",
-                        "sha256": masked_hashes[0],
+                        "path": f"evidence/source-{index}-mobile.png",
+                        "sha256": source_hashes[0],
                     },
                     {
-                        "path": f"evidence/masked-{index}-desktop.png",
-                        "sha256": masked_hashes[1],
+                        "path": f"evidence/source-{index}-desktop.png",
+                        "sha256": source_hashes[1],
                     },
                 ],
             })
         comparison = {
             "method": (
-                "Replaced copy, logos, and dominant media with neutral blocks "
-                "while preserving responsive layout geometry."
+                "Assigned randomized neutral labels and froze observations "
+                "before revealing the case identity map."
             ),
-            "masking": {
-                "copy": "replaced-with-neutral-placeholder",
-                "logos": "masked",
-                "dominant_media": "replaced-with-neutral-placeholder",
+            "neutral_label_protocol": {
+                "assignment_method": (
+                    "A separate coordinator randomized labels before review."
+                ),
+                "identities_hidden": [
+                    "case-identity",
+                    "model",
+                    "host",
+                    "variant",
+                    "producer",
+                ],
+                "identity_revealed_before_observation": False,
+                "diagnostic_material_seen_before_observation": False,
             },
-            "layout_geometry_preserved": True,
             "coverage": coverage,
+            "pixel_transformation": None,
             "observations": [{
                 "case_ids": [record["case_id"] for record in coverage],
                 "outcome": "meaningful-structural-difference",
                 "assessment": (
-                    "The masked renders retain different organization and "
+                    "The original renders show different organization and "
                     "attention paths across the counted cases."
                 ),
                 "cluster_id": None,
                 "evidence": coverage[0]["evidence"],
             }],
             "limitations": [
-                "Masking does not establish authorship or complete design quality."
+                "Identity blinding does not establish authorship or complete design quality."
             ],
             "authorship_inference": "not-performed",
             "evidence": [{
-                "path": "evidence/masked-comparison.json",
-                "sha256": digest("masked-comparison"),
+                "path": "evidence/blinded-comparison.json",
+                "sha256": digest("blinded-comparison"),
             }],
         }
         self.assertEqual(list(validator.iter_errors(comparison)), [])
 
-        missing_logo_treatment = deepcopy(comparison)
-        del missing_logo_treatment["masking"]["logos"]
-        self.assertTrue(list(validator.iter_errors(missing_logo_treatment)))
+        revealed_identity = deepcopy(comparison)
+        revealed_identity["neutral_label_protocol"][
+            "identity_revealed_before_observation"
+        ] = True
+        self.assertTrue(list(validator.iter_errors(revealed_identity)))
+
+        partly_blinded = deepcopy(comparison)
+        partly_blinded["neutral_label_protocol"]["identities_hidden"].pop()
+        self.assertTrue(list(validator.iter_errors(partly_blinded)))
 
         incomplete_coverage = deepcopy(comparison)
         incomplete_coverage["coverage"].pop()
@@ -704,6 +715,41 @@ class ReviewContractTests(unittest.TestCase):
         authorship_claim = deepcopy(comparison)
         authorship_claim["authorship_inference"] = "human-authored"
         self.assertTrue(list(validator.iter_errors(authorship_claim)))
+
+        transformed = deepcopy(comparison)
+        transformed["pixel_transformation"] = {
+            "purpose": "hypothesis-test",
+            "justification": (
+                "A declared hypothesis requires comparing a transformed copy."
+            ),
+            "authorization": {
+                "status": "authorized",
+                "authority_id": "evaluation-owner",
+                "basis": "The evidence owner approved this bounded transformation.",
+                "evidence": [{
+                    "path": "evidence/transformation-authorization.txt",
+                    "sha256": digest("authorization"),
+                }],
+            },
+            "method": (
+                "Applied the recorded deterministic transform to one source render."
+            ),
+            "coverage_impact": (
+                "The transformed artifact cannot support copy or media-detail conclusions."
+            ),
+            "artifacts": [{
+                "source_render_sha256": coverage[0]["source_render_sha256s"][0],
+                "transformed_render_sha256": digest("transformed"),
+                "source_evidence": coverage[0]["evidence"][0],
+                "transformed_evidence": {
+                    "path": "evidence/transformed.png",
+                    "sha256": digest("transformed"),
+                },
+            }],
+        }
+        self.assertEqual(list(validator.iter_errors(transformed)), [])
+        del transformed["pixel_transformation"]["authorization"]
+        self.assertTrue(list(validator.iter_errors(transformed)))
 
     def test_schema_v3_requires_finding_lifecycle_evidence(self) -> None:
         schema = json.loads(
@@ -1558,30 +1604,30 @@ class ReleaseCoverageTests(unittest.TestCase):
             self.assertIn("release-comparison-render-format-invalid", codes)
             self.assertIn("review-closure-evidence-hash-mismatch", codes)
 
-    def test_masked_layout_evidence_references_are_hash_bound(self) -> None:
+    def test_identity_blinded_source_references_are_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             plugin = Path(temporary)
-            evidence_path = plugin / "evidence" / "masked-layout.txt"
+            evidence_path = plugin / "evidence" / "source-layout.txt"
             evidence_path.parent.mkdir(parents=True)
-            evidence_path.write_text("masked comparison", encoding="utf-8")
+            evidence_path.write_text("blinded comparison", encoding="utf-8")
             evidence_hash = hashlib.sha256(
                 evidence_path.read_bytes()
             ).hexdigest()
             reference = {
-                "path": "evidence/masked-layout.txt",
+                "path": "evidence/source-layout.txt",
                 "sha256": evidence_hash,
             }
             payload = {
                 "schema_version": 3,
-                "evidence_paths": ["evidence/masked-layout.txt"],
+                "evidence_paths": ["evidence/source-layout.txt"],
                 "cross_case_analysis": {
                     "evidence": [reference],
-                    "masked_layout_comparison": {
+                    "identity_blinded_comparison": {
                         "evidence": [reference],
                         "coverage": [{
-                            "masked_render_sha256s": [evidence_hash],
+                            "source_render_sha256s": [evidence_hash],
                             "evidence": [{
-                                "path": "evidence/masked-layout.txt",
+                                "path": "evidence/source-layout.txt",
                                 "sha256": "0" * 64,
                             }],
                         }],
@@ -1602,18 +1648,18 @@ class ReleaseCoverageTests(unittest.TestCase):
                 "review.json",
                 release_mode=False,
             )
-            masked_failures = [
+            blinded_failures = [
                 item for item in failures
-                if "masked_layout_comparison/coverage/0/evidence/0"
+                if "identity_blinded_comparison/coverage/0/evidence/0"
                 in item["path"]
             ]
-            self.assertEqual(len(masked_failures), 1)
+            self.assertEqual(len(blinded_failures), 1)
             self.assertEqual(
-                masked_failures[0]["code"],
+                blinded_failures[0]["code"],
                 "review-closure-evidence-hash-mismatch",
             )
 
-            payload["cross_case_analysis"]["masked_layout_comparison"][
+            payload["cross_case_analysis"]["identity_blinded_comparison"][
                 "coverage"
             ][0]["evidence"][0]["sha256"] = evidence_hash
             failures = audit_package.review_semantic_failures(
@@ -1622,12 +1668,12 @@ class ReleaseCoverageTests(unittest.TestCase):
                 "review.json",
                 release_mode=False,
             )
-            masked_format_failures = [
+            source_format_failures = [
                 item for item in failures
                 if item["code"]
-                == "release-cross-case-masked-render-format-invalid"
+                == "release-cross-case-source-render-format-invalid"
             ]
-            self.assertEqual(len(masked_format_failures), 1)
+            self.assertEqual(len(source_format_failures), 1)
 
     def test_rendered_coverage_cannot_mix_builds_or_skip_closure(self) -> None:
         failures, coverage = audit_package.release_behavioral_coverage_failures(
@@ -1756,31 +1802,27 @@ class ReleaseCoverageTests(unittest.TestCase):
                 "path": "evidence/cross-case.json",
                 "sha256": "e" * 64,
             }]
-            masked_coverage = []
+            blinded_coverage = []
             for index, record in enumerate(cross_case_builds):
-                masked_hashes = [
-                    digest(f"masked:{record['case_id']}:mobile"),
-                    digest(f"masked:{record['case_id']}:desktop"),
-                ]
-                masked_coverage.append({
+                blinded_coverage.append({
                     "case_id": record["case_id"],
                     "run_id": record["run_id"],
                     "build_identity": record["build_identity"],
+                    "neutral_label": f"Specimen {index + 1}",
                     "source_render_sha256s": record["render_sha256s"],
-                    "masked_render_sha256s": masked_hashes,
                     "evidence": [
                         {
-                            "path": f"evidence/masked-{index}-mobile.png",
-                            "sha256": masked_hashes[0],
+                            "path": f"evidence/source-{index}-mobile.png",
+                            "sha256": record["render_sha256s"][0],
                         },
                         {
-                            "path": f"evidence/masked-{index}-desktop.png",
-                            "sha256": masked_hashes[1],
+                            "path": f"evidence/source-{index}-desktop.png",
+                            "sha256": record["render_sha256s"][1],
                         },
                     ],
                 })
             matched[0][1]["cross_case_analysis"] = {
-                "schema_version": 1,
+                "schema_version": 2,
                 "builds": cross_case_builds,
                 "dimensions": [
                     {
@@ -1805,32 +1847,41 @@ class ReleaseCoverageTests(unittest.TestCase):
                         "component_card_grammar",
                     )
                 ],
-                "masked_layout_comparison": {
+                "identity_blinded_comparison": {
                     "method": (
-                        "Replaced copy, logos, and dominant media with neutral "
-                        "blocks while preserving each responsive composition."
+                        "Assigned randomized neutral labels and froze the first "
+                        "comparison observation before revealing identities."
                     ),
-                    "masking": {
-                        "copy": "replaced-with-neutral-placeholder",
-                        "logos": "masked",
-                        "dominant_media": "replaced-with-neutral-placeholder",
+                    "neutral_label_protocol": {
+                        "assignment_method": (
+                            "A separate coordinator randomized labels before review."
+                        ),
+                        "identities_hidden": [
+                            "case-identity",
+                            "model",
+                            "host",
+                            "variant",
+                            "producer",
+                        ],
+                        "identity_revealed_before_observation": False,
+                        "diagnostic_material_seen_before_observation": False,
                     },
-                    "layout_geometry_preserved": True,
-                    "coverage": masked_coverage,
+                    "coverage": blinded_coverage,
+                    "pixel_transformation": None,
                     "observations": [{
                         "case_ids": [
                             record["case_id"] for record in cross_case_builds
                         ],
                         "outcome": "meaningful-structural-difference",
                         "assessment": (
-                            "The masked responsive renders retain materially "
+                            "The unchanged responsive renders show materially "
                             "different organization and attention paths."
                         ),
                         "cluster_id": None,
-                        "evidence": masked_coverage[0]["evidence"],
+                        "evidence": blinded_coverage[0]["evidence"],
                     }],
                     "limitations": [
-                        "Masking cannot establish authorship or overall design quality."
+                        "Identity blinding cannot establish authorship or overall design quality."
                     ],
                     "authorship_inference": "not-performed",
                     "evidence": cross_evidence,
@@ -1863,11 +1914,11 @@ class ReleaseCoverageTests(unittest.TestCase):
             )
             self.assertEqual(details["quiet_perception_cases"], ["read-case"])
 
-            masked_comparison = matched[0][1]["cross_case_analysis"][
-                "masked_layout_comparison"
+            blinded_comparison = matched[0][1]["cross_case_analysis"][
+                "identity_blinded_comparison"
             ]
             del matched[0][1]["cross_case_analysis"][
-                "masked_layout_comparison"
+                "identity_blinded_comparison"
             ]
             failures, _details = (
                 audit_package.release_representative_review_failures(
@@ -1881,14 +1932,14 @@ class ReleaseCoverageTests(unittest.TestCase):
                 )
             )
             self.assertIn(
-                "release-cross-case-masked-comparison-missing",
+                "release-cross-case-identity-blinded-comparison-missing",
                 {item["code"] for item in failures},
             )
             matched[0][1]["cross_case_analysis"][
-                "masked_layout_comparison"
-            ] = masked_comparison
+                "identity_blinded_comparison"
+            ] = blinded_comparison
 
-            removed_masked_case = masked_comparison["coverage"].pop()
+            removed_blinded_case = blinded_comparison["coverage"].pop()
             failures, _details = (
                 audit_package.release_representative_review_failures(
                     "codex",
@@ -1901,13 +1952,13 @@ class ReleaseCoverageTests(unittest.TestCase):
                 )
             )
             self.assertIn(
-                "release-cross-case-masked-coverage-incomplete",
+                "release-cross-case-identity-blinded-coverage-incomplete",
                 {item["code"] for item in failures},
             )
-            masked_comparison["coverage"].append(removed_masked_case)
+            blinded_comparison["coverage"].append(removed_blinded_case)
 
-            masked_case = masked_comparison["coverage"][0]
-            removed_masked_hash = masked_case["masked_render_sha256s"].pop()
+            blinded_case = blinded_comparison["coverage"][0]
+            removed_source_evidence = blinded_case["evidence"].pop()
             failures, _details = (
                 audit_package.release_representative_review_failures(
                     "codex",
@@ -1920,12 +1971,75 @@ class ReleaseCoverageTests(unittest.TestCase):
                 )
             )
             self.assertIn(
-                "release-cross-case-masked-render-evidence-incomplete",
+                "release-cross-case-source-render-evidence-incomplete",
                 {item["code"] for item in failures},
             )
-            masked_case["masked_render_sha256s"].append(removed_masked_hash)
+            blinded_case["evidence"].append(removed_source_evidence)
 
-            removed_observed_case = masked_comparison["observations"][0][
+            blinded_comparison["neutral_label_protocol"][
+                "identity_revealed_before_observation"
+            ] = True
+            failures, _details = (
+                audit_package.release_representative_review_failures(
+                    "codex",
+                    coverage,
+                    matched,
+                    contexts,
+                    closure_paths,
+                    evidence_keys,
+                    plugin,
+                )
+            )
+            self.assertIn(
+                "release-cross-case-identity-blinding-incomplete",
+                {item["code"] for item in failures},
+            )
+            blinded_comparison["neutral_label_protocol"][
+                "identity_revealed_before_observation"
+            ] = False
+
+            second_label = blinded_comparison["coverage"][1]["neutral_label"]
+            blinded_comparison["coverage"][1]["neutral_label"] = (
+                blinded_comparison["coverage"][0]["neutral_label"]
+            )
+            failures, _details = (
+                audit_package.release_representative_review_failures(
+                    "codex",
+                    coverage,
+                    matched,
+                    contexts,
+                    closure_paths,
+                    evidence_keys,
+                    plugin,
+                )
+            )
+            self.assertIn(
+                "release-cross-case-identity-blinded-coverage-incomplete",
+                {item["code"] for item in failures},
+            )
+            blinded_comparison["coverage"][1]["neutral_label"] = second_label
+
+            blinded_comparison["pixel_transformation"] = {
+                "purpose": "hypothesis-test"
+            }
+            failures, _details = (
+                audit_package.release_representative_review_failures(
+                    "codex",
+                    coverage,
+                    matched,
+                    contexts,
+                    closure_paths,
+                    evidence_keys,
+                    plugin,
+                )
+            )
+            self.assertIn(
+                "release-cross-case-pixel-transformation-incomplete",
+                {item["code"] for item in failures},
+            )
+            blinded_comparison["pixel_transformation"] = None
+
+            removed_observed_case = blinded_comparison["observations"][0][
                 "case_ids"
             ].pop()
             failures, _details = (
@@ -1940,10 +2054,10 @@ class ReleaseCoverageTests(unittest.TestCase):
                 )
             )
             self.assertIn(
-                "release-cross-case-masked-observations-incomplete",
+                "release-cross-case-identity-blinded-observations-incomplete",
                 {item["code"] for item in failures},
             )
-            masked_comparison["observations"][0]["case_ids"].append(
+            blinded_comparison["observations"][0]["case_ids"].append(
                 removed_observed_case
             )
 

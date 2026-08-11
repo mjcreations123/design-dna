@@ -462,8 +462,51 @@ class RenderedReviewHarnessTests(unittest.TestCase):
             / "engineering-verification.md"
         ).read_text(encoding="utf-8")
         self.assertIn('--capture-manifest "CAPTURE_MANIFEST"', guidance)
-        self.assertIn("320, 375, and 430 CSS-pixel widths", guidance)
+        self.assertIn(
+            "derive exact widths, heights, preferences, input conditions,",
+            guidance,
+        )
+        self.assertIn(
+            "built-in compatibility matrix as a\nconvenience for broad discovery",
+            guidance,
+        )
+        self.assertNotIn("320, 375, and 430 CSS-pixel widths", guidance)
         self.assertIn("manual review still required", guidance)
+
+    def test_host_capture_guidance_bounds_fallback_and_runtime_state(self) -> None:
+        reference_root = (
+            PACKAGE_ROOT
+            / "skills"
+            / "design-dna"
+            / "references"
+        )
+        harness = (reference_root / "quality" / "render-harness.md").read_text(
+            encoding="utf-8"
+        )
+        workflow = (reference_root / "workflow.md").read_text(encoding="utf-8")
+        engineering = (
+            reference_root / "quality" / "engineering-verification.md"
+        ).read_text(encoding="utf-8")
+        preship = (
+            PACKAGE_ROOT
+            / "skills"
+            / "design-dna"
+            / "templates"
+            / "preship-gate.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("A hang, incorrect device-pixel crop", harness)
+        self.assertIn("Do not multiply capture matrices", harness)
+        self.assertIn("operating system's temporary area", harness)
+        self.assertIn("every success, failure, timeout, and interruption", harness)
+        self.assertIn("Stop task-owned preview servers", harness)
+        self.assertIn("deployable/public", workflow)
+        self.assertIn("Point servers,\n   packaging, and rendered capture", workflow)
+        self.assertIn("PROJECT/.design-dna/` beside `PROJECT/site/", engineering)
+        self.assertIn("the name is an example, not a\nrequired convention", engineering)
+        self.assertIn("validated additive merge or status-only update", engineering)
+        self.assertIn("legacy migration or forced refresh retains", engineering)
+        self.assertIn("The deployed or served public root excludes", preship)
 
     def test_missing_playwright_is_structured_and_cleans_owned_transaction(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-dna-missing-playwright-") as root:
@@ -1283,6 +1326,50 @@ class RenderedReviewHarnessTests(unittest.TestCase):
             self.assertNotIn("#intentional-scroll-content", selectors)
             self.assertNotIn("#intentional-hidden", selectors)
             self.assertNotIn("#intentional-clip", selectors)
+
+    def test_peer_surface_occluding_caption_text_is_reported(self) -> None:
+        module_dir, browser = self.require_browser()
+        fixture = (
+            PACKAGE_ROOT
+            / "maintainer"
+            / "tests"
+            / "fixtures"
+            / "rendered-review-text-occlusion"
+        )
+        with tempfile.TemporaryDirectory(prefix="design-dna-text-occlusion-") as root:
+            root_path = Path(root)
+            output = root_path / "review"
+            manifest = root_path / "capture-manifest.json"
+            profile = capture_profile("caption-wide-1440", 1440, 900)
+            write_capture_manifest(
+                manifest,
+                [profile],
+                [capture_scenario("caption-occlusion", [profile["id"]])],
+            )
+            result = run_harness(
+                *browser_arguments(
+                    fixture,
+                    output,
+                    browser,
+                    "caption-occlusion",
+                    "--capture-manifest",
+                    str(manifest),
+                ),
+                environment=browser_environment(module_dir),
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report, _validator = validate_report(output)
+            candidates = report["captures"][0]["document"]["layout"]["overflow_candidates"]
+            caption = next(
+                candidate
+                for candidate in candidates
+                if candidate["selector"] == "#occluded-caption"
+            )
+            self.assertIn("text-occluded-by-peer", caption["reasons"])
+            self.assertIn("#metadata-band", caption["occluding_selectors"])
+            self.assertFalse(
+                any(candidate["selector"] == "#clear-copy" for candidate in candidates)
+            )
 
     def test_ten_route_anthology_captures_matched_desktop_and_mobile(self) -> None:
         """Exercise the real browser path needed by a ten-route Range Study."""

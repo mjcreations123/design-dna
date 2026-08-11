@@ -61,9 +61,13 @@ TRUSTED_ONLINE_HOSTS = {
     "bolt.new",
     "carbondesignsystem.com",
     "community.vercel.com",
+    "developer.mozilla.org",
     "designsystem.digital.gov",
     "digital-strategy.ec.europa.eu",
     "help.figma.com",
+    "gov.uk",
+    "guidance.publishing.service.gov.uk",
+    "info.nrk.no",
     "newsroom.pinterest.com",
     "owasp.org",
     "pagesmith.ai",
@@ -78,6 +82,8 @@ TRUSTED_ONLINE_HOSTS = {
     "www.newwebsite.ai",
     "www.reddit.com",
     "www.w3.org",
+    "www.youtube.com",
+    "bradfrost.com",
 }
 REDIRECT_CODES = {301, 302, 303, 307, 308}
 
@@ -264,7 +270,28 @@ def resolve_external_target(
     if parsed.username is not None or parsed.password is not None:
         return False, "credential-bearing URL refused", None, None, ()
     if parsed.query:
-        return False, "query-bearing URL refused", None, None, ()
+        # Evidence cards may point at one exact YouTube video. Admit only the
+        # canonical public watch shape: one non-secret `v` parameter whose
+        # value has the fixed YouTube video-ID shape. Every other query remains
+        # rejected so the probe cannot leak tokens or arbitrary parameters.
+        try:
+            query = urllib.parse.parse_qsl(
+                parsed.query,
+                keep_blank_values=True,
+                strict_parsing=True,
+            )
+        except ValueError:
+            return False, "query-bearing URL refused", None, None, ()
+        youtube_watch = (
+            parsed.scheme == "https"
+            and normalized_hostname(hostname) == "www.youtube.com"
+            and parsed.path == "/watch"
+            and len(query) == 1
+            and query[0][0] == "v"
+            and re.fullmatch(r"[A-Za-z0-9_-]{11}", query[0][1]) is not None
+        )
+        if not youtube_watch:
+            return False, "query-bearing URL refused", None, None, ()
     if any(ord(character) < 32 or ord(character) == 127 for character in url):
         return False, "control character in URL refused", None, None, ()
     try:
@@ -361,6 +388,11 @@ def pinned_head(
         parsed.path or "/",
         safe="/:@!$&'()*+,;=-._~%",
     )
+    if parsed.query:
+        # `resolve_external_target` has already restricted this to one safe,
+        # canonical YouTube video ID. Preserve it so the probe checks the
+        # cited video rather than the generic /watch endpoint.
+        path += "?" + parsed.query
     failures: list[str] = []
     for address in addresses:
         raw_socket: socket.socket | None = None

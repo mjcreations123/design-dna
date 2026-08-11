@@ -363,10 +363,15 @@ Strict release audit requires each host marked `passed` to supply all of the fol
   observation cites a verified render, while explicitly source-only observations are segregated
   and cannot support visual claims;
 - release-level cross-case analysis bound to counted render hashes, with
-  masked `rendered_geometry` as the universal core and additional lenses
-  selected from evidence in the actual projects and outputs. Typography,
-  color or material behavior, labels, components, motion, media, CTA endings,
-  and responsive transformation are non-exhaustive examples, not requirements.
+  `rendered_geometry` as the universal core and a neutral-label,
+  identity-blinded first comparison observation. Identity blinding leaves the
+  verified screenshot pixels unchanged; an optional pixel transformation is
+  admissible only for a stated hypothesis or authorized privacy-minimization
+  need and must bind authority, method, original and transformed hashes, and
+  coverage impact. Additional lenses are selected from evidence in the actual
+  projects and outputs. Typography, color or material behavior, labels,
+  components, motion, media, CTA endings, and responsive transformation are
+  non-exhaustive examples, not requirements.
   Record applicability and supporting evidence for every chosen lens; explain
   a not-applicable result instead of inventing counterevidence or manufacturing
   a difference. Similarity is not a defect and difference is not a quota. A
@@ -377,6 +382,13 @@ Strict release audit requires each host marked `passed` to supply all of the fol
 
 A host recorded as `blocked`, `untested`, or otherwise incomplete remains incomplete. Missing host
 execution cannot be converted into a passing limitation.
+
+Cross-case analysis schema 2 records this protocol in
+`identity_blinded_comparison`. Each counted build keeps its original responsive
+render hashes and a unique neutral label. Set `pixel_transformation` to `null`
+for the default unchanged-pixel review; a non-null record must carry its
+purpose, authorization evidence, method, original/transformed hash pairs, and
+coverage impact.
 
 ## What results do and do not prove
 

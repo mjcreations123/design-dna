@@ -1,170 +1,191 @@
 # Microcopy
 
-Use this for the small functional strings: buttons, labels, helper text,
-errors, empty states, confirmations, loading and success messages, tooltips,
-and the sentence in a dialog that decides whether someone loses their work.
-[Parseable text](../quality/parseable-text.md) is the gate that removes
-strings which should not exist; this file is the craft of writing the ones
-that must. [Content and IA](content-ia.md) owns headings, body, and
-navigation naming.
+Use this for small functional strings: controls, labels, helper text, errors,
+empty or unavailable states, confirmations, progress, status, and recovery.
+[Parseable text](../quality/parseable-text.md) decides whether a string has a
+public job; this file helps write the strings that do. [Content and IA](content-ia.md)
+owns longer headings, body copy, and navigation structure.
 
-Microcopy is where a product's voice is actually experienced, because it is
-read at the moments that matter: when someone is confused, stuck, about to
-commit, or has just lost something. It is also where generated defaults are
-most obvious, because the statistical centre of this vocabulary is very
-narrow.
+Microcopy is part of behavior. Its quality depends on whether the interface
+state is true, the intended audience understands the language, the next step
+is possible, and the voice fits the project. No universal phrase list,
+sentence order, word count, tone, or punctuation style applies.
 
 ## Contents
 
-- [Write the outcome, not the mechanism](#write-the-outcome-not-the-mechanism)
-- [Errors](#errors)
-- [Empty states are four different states](#empty-states-are-four-different-states)
-- [Confirmation and destruction](#confirmation-and-destruction)
-- [Labels, helper text, and placeholders](#labels-helper-text-and-placeholders)
-- [Waiting and success](#waiting-and-success)
-- [Voice](#voice)
-- [Named bans](#named-bans)
-- [Verify](#verify)
+- [Bind the real state](#bind-the-real-state)
+- [Distribute status and boundary copy](#distribute-status-and-boundary-copy)
+- [Name actions and outcomes](#name-actions-and-outcomes)
+- [Write errors and recovery](#write-errors-and-recovery)
+- [Distinguish absence states](#distinguish-absence-states)
+- [Handle consequential actions](#handle-consequential-actions)
+- [Label and explain inputs](#label-and-explain-inputs)
+- [Write progress, status, and success](#write-progress-status-and-success)
+- [Carry the project voice](#carry-the-project-voice)
+- [Verify in context](#verify-in-context)
 
-## Write the outcome, not the mechanism
+## Bind the real state
 
-A control is named for what the person gets, in their words, not for what
-the system does internally. "Submit" describes the form's action; "Book the
-van" describes the person's. "Save" is fine when saving is the outcome;
-"Execute" never is.
+Before writing, record:
 
-Match the verb in the button to the verb in the heading that introduced it,
-and to the label on the page it leads to. A "Get a quote" button that opens a
-page titled "Contact us" has broken a small promise, and those accumulate.
+- what actually happened and what the system knows;
+- what remains saved, pending, reversible, unavailable, or uncertain;
+- what the person can do now and what requires another actor or system;
+- whether a claim about time, delivery, identity, availability, or success has
+  a real source;
+- the audience's vocabulary, language, stress level, and accessibility needs.
 
-Length is a design decision, not an accident. A three-word button that names
-the outcome beats a one-word button that names a category, and dialog
-buttons are the one place where longer labels reliably reduce mistakes,
-because "Delete 4 photos" and "Keep them" cannot be confused the way "OK" and
-"Cancel" can.
+Do not fill an unknown with reassuring prose. A fictional prototype may use
+representative strings when its demo boundary is visible and the state cannot
+be mistaken for a live fact.
 
-## Errors
+## Distribute status and boundary copy
 
-Every error message answers three things in this order: what happened, why,
-and what to do next. The third is the one most often missing, and it is the
-only one the reader actually needs.
+Make a material fiction, demo, unavailable, generated-media, safety, or
+operating boundary findable where a person can act on the mistaken assumption.
+Then separate distinct consequences. A page-level model status, an image-level
+media fact, and a control-level unavailable state may all be necessary; the
+same consequence repeated in a banner, every module, captions, and the footer
+can instead compete with the subject and make the interface feel less credible.
 
-- **Be specific about the cause.** "Something went wrong" tells a person
-  nothing and is the single most recognisable generated string in the
-  category. If the system knows the card was declined, say the card was
-  declined.
-- **Never blame the reader.** "Invalid input" makes them wrong; "Phone
-  numbers need 10 digits" makes the requirement clear.
-- **Never expose the internals.** A status code, a stack frame, an
-  environment name, a component name, or a request ID shown as body copy
-  fails the AUDIENCE question in
-  [parseable text](../quality/parseable-text.md) and is a visible
-  implementation detail under
-  [ABSOLUTE 10](../../policy/absolutes.md). A support reference is different
-  from a leaked internal, and is labelled as a reference the person can quote.
-- **Put it where the problem is.** A field error belongs at the field, not
-  only in a summary at the top, and it is announced to assistive technology
-  rather than only coloured red.
-- **Say whether the work survived.** After a failed save, the reader's first
-  question is whether they lost what they typed. Answer it.
-- **Distinguish what the person can fix from what they cannot.** A wrong
-  password is theirs to correct; an outage is not, and it needs a status and
-  a timeframe rather than a retry button that will fail again.
+Consolidate copy that says the same thing, while retaining claim-local facts
+whose consequence differs. Choose placement, persistence, and prominence from
+likelihood of misunderstanding, consequence, direct-entry context, and the
+surrounding task. Truthful status must not be hidden, but it does not
+automatically need to be the loudest visual element. Verify the rendered entry
+and the point of action rather than counting disclosures.
 
-## Empty states are four different states
+## Name actions and outcomes
 
-They are routinely written as one, which is why so many read as filler.
+A control label should make the resulting action or state predictable in its
+context. A conventional short label can be clearest; a longer object-specific
+label can reduce ambiguity or risk. Choose by the surrounding heading,
+control group, consequence, language, platform convention, and available
+space rather than a fixed word count.
 
-1. **First run.** Nothing exists yet because the person just arrived. This is
-   the most valuable empty state and the most wasted: it teaches what the
-   thing is for and offers the one action that starts it.
-2. **No results.** Their query matched nothing. Say what was searched, and
-   offer a way back: clear a filter, widen a date range, check a spelling.
-   Never imply the data does not exist when only the filter is wrong.
-3. **Cleared deliberately.** They finished everything or emptied it on
-   purpose. This is a success state and should read as one.
-4. **Failed to load.** Nothing is here because something broke. This is an
-   error wearing an empty state's clothes, and writing it as "No items yet"
-   is a lie the reader will act on.
+Keep terminology stable across the path unless the audience's mental model
+genuinely changes. If one control opens a differently named destination, the
+transition or destination should explain the relationship.
 
-## Confirmation and destruction
+Distinguish the repeated unit of action from the completion condition. A turn,
+step, move, item, stage, and finished outcome can each be valid, but a concise
+walkthrough must not present the final outcome as though it occurs inside every
+repeated unit. Verify the wording against the real state transition rather than
+the visual number of illustrated panels.
 
-Name the specific object and the actual consequence. "Are you sure?" carries
-no information; "Delete the Vine Avenue draft? This cannot be undone" carries
-both. State whether the action is reversible, and if it is, say for how long.
+Technical verbs, familiar defaults, playful language, icons, and terse labels
+are all available when the audience understands them and the consequence is
+clear. Review ambiguity and mismatch, not a phrase in isolation.
 
-The confirming button carries the verb, the cancelling button carries the
-safe outcome, and the destructive action is never the default focus. Where
-an undo is genuinely possible, an undo after the fact beats a dialog before
-it; do not ship an undo the backend cannot honour, per
-[complex forms](../flows/forms-complex-transactions.md).
+## Write errors and recovery
 
-## Labels, helper text, and placeholders
+An error provides the information useful at that moment. Depending on the
+case, it may need:
 
-A placeholder is not a label. It vanishes on focus, fails contrast in most
-implementations, and leaves the person staring at a filled field with no idea
-what it holds. Label every field visibly.
+- the affected object or action;
+- what happened or what remains unknown;
+- whether entered work survived;
+- what the person can change;
+- what the service or another actor must resolve;
+- a retry, alternate path, support reference, or safe stopping point.
 
-Helper text sets expectations before the error: the format, the limit, the
-reason a field is required, or what the business will do with it. One line,
-above the interaction rather than after the failure.
+Do not claim a cause, outage duration, retry outcome, or saved state the
+system cannot establish. Do not expose stack traces, secrets, component names,
+or raw infrastructure detail as ordinary body copy. A documented support
+reference or expert-facing diagnostic is different when the audience can use
+it and its sensitivity is controlled.
 
-Optional and required both need marking in a way that survives being read
-aloud, and "required" is more honest than an asterisk with a legend
-elsewhere.
+Place and announce an error where it is useful. A field-level issue normally
+belongs with that field; a summary can complement it when several errors or a
+long form make orientation difficult. Preserve input and focus where safe.
 
-## Waiting and success
+Write requirements without shaming the person. The exact register may be
+direct, formal, warm, clinical, playful, or technical according to the
+project; clarity and recovery are the outcome requirements.
 
-Say what is happening if it will take long enough to notice, and be honest
-about duration only when the system knows it. A progress bar that has no
-progress information behind it is fabricated data.
+## Distinguish absence states
 
-Success messages confirm the specific thing that happened and, where
-relevant, what happens next: who was emailed, when to expect a reply, where
-the file went. A success message that just says "Success" makes the reader
-check whether it worked.
+Do not collapse meaningfully different causes into the same empty screen.
+Possible states include first use, no matching results, completed work,
+permission limits, offline or stale data, failed loading, archived content,
+scheduled availability, and a genuinely empty collection. This is an open
+set, not a required taxonomy.
 
-## Voice
+For the state that actually exists, communicate only what helps: its cause
+when known, the current scope or filter, whether data may exist elsewhere,
+and an available next step. An intentionally quiet completion state or an
+informational dead end may need no action at all.
 
-Microcopy inherits the project's voice from
-[copy voice](../quality/parseable-text.md#copy-carries-information-the-visuals-cannot),
-and it is where a voice most often collapses into the default cheerful
-product register. A funeral home, a legal practice, and a skate shop should
-not apologise in the same words. Decide the register with the direction, then
-hold it in the smallest strings.
+## Handle consequential actions
 
-Exclamation marks are a decision, not punctuation weather. Most functional
-strings need none.
+For deletion, spending, publishing, permission changes, cancellation, or
+other consequential actions, identify the affected object and actual
+consequence. State reversibility, retention, timing, and downstream effects
+only when known.
 
-Strings expand when translated, commonly by a third or more from English,
-and concatenated fragments break entirely in other grammars. Write whole
-sentences per string and leave room, per
-[localization](../quality/localization.md).
+Choose confirmation, review, inline friction, delayed execution, or undo from
+severity, frequency, reversibility, and platform convention. Do not force a
+dialog for every action. Keep keyboard focus and accessible naming consistent
+with the safest understandable path without hiding the intended action.
 
-## Named bans
+## Label and explain inputs
 
-- "Oops!", "Uh oh", "Whoops", and every variant of cheerful failure.
-- "Something went wrong" with no cause and no next step.
-- "Get Started" as a default CTA, per the
-  [hero signature](../convergence-watch.md#dated-watch-the-hero-signature).
-- "Click here" as link text, which breaks link-list navigation.
-- "Please wait while we..." when the wait is imperceptible.
-- A cute 404 that jokes before it helps the person find the page.
-- An em dash anywhere in any string ([ABSOLUTE 1](../../policy/absolutes.md)).
-- A status code, environment name, or component name as body copy
-  ([ABSOLUTE 10](../../policy/absolutes.md)).
-- Sentences that describe the interface back to the reader.
+Every input needs an accessible name that remains available after the person
+enters a value. A persistent visible label is usually the most resilient
+implementation; another pattern must be proven under focus, autofill, error,
+zoom, translation, and assistive technology. A placeholder may provide an
+example or hint but does not by itself preserve the field's identity.
 
-## Verify
+Give format, limit, purpose, privacy, or required/optional information before
+failure when it materially changes what someone enters. Mark requirements in
+a way that is perceivable without relying on one visual cue. Do not add helper
+text merely to make every field look alike.
 
-Read every string aloud in the voice the direction chose. Pull all of them
-into one list and read them in sequence: repeated constructions, mismatched
-verbs, and drifting register are visible in a list and invisible in place.
+## Write progress, status, and success
 
-Trigger the real states rather than reading them in source: submit an empty
-form, submit a wrong value, kill the network mid-save, search for nonsense,
-delete something, and arrive as a genuinely new user. Every string reached
-that way is part of the
-[parseable-text review pass](../quality/parseable-text.md#the-review-pass)
-and the [preship gate](../../templates/preship-gate.md), including the ones
-only a failure can produce.
+Progress and status are valid when they report a real state the audience
+needs. Choose determinate progress only when the system has meaningful
+progress data; otherwise use honest pending language or another suitable
+feedback pattern. Do not fabricate percentages, queue positions, liveness,
+completion, or delivery estimates.
+
+A success state confirms what actually happened and any relevant next step.
+It may be a sentence, changed control state, receipt, redirect, animation,
+sound, or quiet completion. Match persistence and prominence to consequence;
+not every action needs a toast or celebratory voice.
+
+## Carry the project voice
+
+Derive functional voice from the approved direction, audience, locale, and
+situation. Maintain enough consistency that controls feel related, while
+allowing urgent, legal, safety, celebratory, and expert states to change
+register when their jobs differ.
+
+Familiar phrases, apologies, humor, exclamation marks, technical language,
+and repeated action labels are not automatically good or bad. Review whether
+they clarify the object, consequence, cause, or next step without delaying a
+stressed user or impersonating a brand voice the project does not have.
+
+Write whole localizable messages rather than concatenated English fragments.
+Verify expansion, plural rules, gender or formality where applicable, script,
+directionality, truncation, and screen-reader output with the
+[localization guidance](../quality/localization.md).
+
+## Verify in context
+
+Build an inventory of reachable functional strings and group them by route,
+state, action, and consequence. Look for terminology drift, false certainty,
+unexplained status, inconsistent objects, repeated filler, and strings that
+misdescribe the visible structure, count, relationship, or state after a
+responsive or interaction change, or exist only because a component template
+expected one. A precise number or noun must still map to
+what the reader can actually see and operate; replace stale wording with the
+current concept rather than forcing the interface to preserve an obsolete
+count.
+
+Trigger representative real states rather than reviewing source alone:
+invalid and incomplete input, no results, permission limits, interruption,
+slow or failed operations, recovery, consequential actions, and success as
+applicable. Review keyboard and screen-reader announcement, focus, wrapping,
+zoom, narrow layouts, translation, and long real content. Select cases from
+the product's risks; no fixed state list substitutes for its behavior.

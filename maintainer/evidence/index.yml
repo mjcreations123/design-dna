@@ -21,7 +21,7 @@ risks:
     evidence: ["EVD-001", "EVD-002", "EVD-032", "EVD-035", "EVD-036"]
   RISK-SYS-001:
     status: "active"
-    evidence: ["EVD-001", "EVD-002", "EVD-031", "EVD-040", "EVD-041", "EVD-042"]
+    evidence: ["EVD-001", "EVD-002", "EVD-031", "EVD-041", "EVD-042"]
   RISK-HIER-001:
     status: "active"
     evidence: ["EVD-019", "EVD-043", "EVD-044", "EVD-045"]
@@ -66,7 +66,7 @@ risks:
     evidence: ["EVD-002", "EVD-003", "EVD-024", "EVD-025"]
   RISK-REPEAT-001:
     status: "active"
-    evidence: ["EVD-001", "EVD-002", "EVD-024", "EVD-040", "EVD-041", "EVD-042", "EVD-043", "EVD-044", "EVD-045"]
+    evidence: ["EVD-001", "EVD-002", "EVD-024", "EVD-041", "EVD-042", "EVD-043", "EVD-044", "EVD-045"]
   RISK-RESIDUE-001:
     status: "active"
     basis: "owner_policy"

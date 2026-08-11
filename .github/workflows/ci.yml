@@ -28,7 +28,7 @@ jobs:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONHASHSEED: "0"
       DESIGN_DNA_PLAYWRIGHT_MODULE_DIR: ${{ github.workspace }}/maintainer/node_modules
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -87,7 +87,7 @@ jobs:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONHASHSEED: "0"
       DESIGN_DNA_PLAYWRIGHT_MODULE_DIR: ${{ github.workspace }}/maintainer/node_modules
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0

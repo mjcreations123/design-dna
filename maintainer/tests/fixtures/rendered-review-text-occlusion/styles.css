@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; color: #111; }
+main { width: min(100% - 32px, 720px); margin: 0 auto; padding: 24px 0; }
+.image-field { height: 150px; background: #d7c2a2; }
+#occluded-figure { margin: 24px 0; }
+#occluded-caption {
+  position: relative;
+  z-index: 1;
+  width: 330px;
+  height: 42px;
+  padding: 6px 0;
+  font-size: 16px;
+  line-height: 24px;
+}
+#metadata-band {
+  position: relative;
+  z-index: 2;
+  min-height: 44px;
+  margin-top: -18px;
+  padding: 12px;
+  background: #111;
+  color: #fff;
+}

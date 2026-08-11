@@ -178,12 +178,24 @@ requirement remains release-level evidence, not permission to inflate every
 expressive comparison.
 
 Add one release-level cross-case analysis bound to the counted mobile and desktop render hashes and
-covering the exact same four-mode counted set. Every analysis must include `rendered_geometry`, with
-an additional masked layout-fingerprint pass that excludes logos, copy, and dominant media so
-surface substitutions cannot simulate structural range. Choose any additional lenses from evidence
-in the actual projects and rendered outputs, not from a universal checklist. Typography roles,
-color or material behavior, label or section cadence, component grammar, motion, media, CTA endings,
-and responsive transformations are useful non-exhaustive examples, not a required set.
+covering the exact same four-mode counted set. Every analysis must include `rendered_geometry` and
+an identity-blinded pass: randomize neutral artifact labels, hide model, host, variant, producer, and
+case identity as the protocol requires, and freeze the first comparison observation before reveal.
+Identity blinding does not alter or redact the source pixels. Choose any additional lenses from
+evidence in the actual projects and rendered outputs, not from a universal checklist. Typography
+roles, color or material behavior, label or section cadence, component grammar, motion, media, CTA
+endings, and responsive transformations are useful non-exhaustive examples, not a required set.
+
+Pixel transformations are optional and exceptional. Use one only for a stated comparison hypothesis
+or an authorized privacy-minimization need. Bind the authority, method, original and transformed
+hashes, and coverage impact; do not certify an unmeasured `geometry-preserved` claim. A transformed
+artifact cannot silently replace the verified original or support conclusions about details it
+removed or displaced.
+
+Record this as cross-case analysis schema 2 under
+`identity_blinded_comparison`. Use unique neutral labels and the original
+responsive render hashes for every counted case. The default
+`pixel_transformation` value is `null`.
 
 For every declared lens, record applicability and supporting evidence. When it applies, record
 task-derived similarities, differences, and counterevidence; when it does not, explain why without

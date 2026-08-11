@@ -9,14 +9,13 @@ This reference does not prescribe an intensity, medium, sequence, or fixed
 aesthetic recipe. Read the
 [creative freedom boundary](../creative-freedom.md) first.
 
-Two axes frame every energy question. One runs AI-looking to human-crafted;
-the other runs plain to rich. Avoiding tells only moves the first axis, and
-a human-crafted but plain page still fails the owner's bar. The default
-target is rich: a committed concept executed with craft, real imagery,
-depth, dramatic scale, one signature done fully. When an owner asks for
-variety in a bold effect, vary the MECHANISM at equal intensity; a calmer
-variant of the same effect reads as boring, not as range. When unsure, aim
-more ambitious, not safer.
+Two axes frame every energy question. One asks whether the work is specific
+to its project; the other asks whether the requested ambition is fully
+realized. Avoiding generic tells by stripping away character can leave a
+thin result, while adding spectacle can leave a weak idea noisier. Set the
+target from the brief. When an owner asks for variety in a bold effect, keep
+the requested intensity comparable while varying the actual answer rather
+than merely repainting one mechanism.
 
 ## Contents
 
@@ -96,12 +95,12 @@ minimal style.
 
 Use [creative exploration](creative-exploration.md) when different expressive
 answers could materially change the result. Develop enough distinct evidence
-to challenge the first default; no fixed number of concepts or renders is
-required, with one exception: greenfield, Showcase, and open-direction work
-carries the fixed floor of at least one materially different rendered
-alternative before the first-ranked concept may ship. A candidate is
-different because it proposes a different answer to the brief, not merely
-because its surface ingredients change.
+to challenge the first default. Its form and count follow uncertainty and
+stakes: another rendered candidate may be useful, but a focused fragment,
+reference decomposition, content-order proof, or interaction study can expose
+the real choice more efficiently. A candidate is different because it
+proposes a different answer to the brief, not merely because its surface
+ingredients change.
 
 Do not show reviewers a trend-warning list before their first perception pass.
 Negative vocabulary can make both maker and reviewer search for the listed

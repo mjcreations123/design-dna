@@ -26,20 +26,25 @@ Before promoting a nonstandard risk:
 1. Create one source record per source.
 2. Record the exact claim, locator, retrieval date, scope, limitation,
    counterexample, positive action, confidence, owner, and next review.
-3. Require either two independent contextually relevant sources, repeated
-   internal evaluation across projects and hosts, or a clear standard.
-4. Keep individual social posts and vendor commentary as candidates unless
-   corroborated.
+3. Set the corroboration bar from authority, independence, volatility,
+   consequence, and uncertainty. One directly applicable authoritative
+   standard or first-party technical source may be enough within its limits;
+   perception and causal claims usually need independent or repeated evidence.
+4. Keep individual social posts and vendor commentary as scoped observations
+   unless stronger evidence or repeated evaluation supports broader use.
 5. Record source lineage and do not count a synthesis, its derivative catalog,
    and its upstream threads as independent corroboration.
 6. Map every active risk to active evidence and prevent retired evidence from
    authorizing it.
 7. Preserve rejected hypotheses so weak folklore does not repeatedly return.
 
-Review standards, formal research, and stable official guidance at least every
-180 days. Review community perception, platform defaults, and visual-trend
-observations at least every 90 days. A release audit should fail for overdue
-active evidence unless an explicit, dated exception is recorded.
+Set the next review from the claim's volatility, source authority, consequence,
+and cost of being wrong. Recheck a platform default or current perception when
+it may have changed before the decision; retain a stable standard longer when
+its version and applicability remain current. A release audit fails for stale
+evidence only when that staleness can change an active release conclusion.
+Record the reason for the interval or a dated, scoped exception rather than
+enforcing one calendar across all evidence types.
 
 ## Evaluate visual candidates proportionately
 

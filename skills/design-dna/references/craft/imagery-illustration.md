@@ -40,7 +40,15 @@ When the subject or brief depends on material recognition, atmosphere, scale,
 use, people, or place, verify that the chosen media approach actually conveys
 what the visitor needs. “No photos were supplied” does not settle the design;
 either obtain an authorized path, change the direction deliberately, or record
-the unresolved dependency.
+  the unresolved dependency.
+
+Do not let a missing asset plan quietly turn a material subject into a text-only
+interface experiment. Conversely, do not paste unrelated stock or generated
+images into a familiar layout merely to make it look finished. When imagery is
+high-leverage, the proof should show why this casting, crop, sequence, or
+alternative medium makes the subject more recognizable, desirable, or useful
+to the intended visitor. Review that relationship at rendered size before
+scaling it across the site.
 
 ## Direct the set at the level it needs
 
@@ -92,6 +100,13 @@ for one project and entirely appropriate illustration for another.
   reflections, perspective, and cultural detail.
 - Review the complete set for unwanted repetition, implausible uniformity,
   false continuity, inconsistent identity, and visual quality.
+- When one source image or crop appears beside several different claims,
+  observations, products, steps, or routes, review every content job. Reuse can
+  be an intentional study of one subject; a changed crop alone is not distinct
+  evidence of a changed phenomenon. Either make the repeated relationship the
+  honest point, provide media that shows the claimed distinction, or label the
+  image as atmosphere rather than proof. Do not impose a global image-count or
+  shot-list rule.
 - Do not imitate a living artist or proprietary campaign; derive broader
   transferable principles from authorized references.
 
@@ -101,17 +116,18 @@ for a burnt Basque cheesecake, it delivered a glazed New York cheesecake;
 the adversarial reviewer failed the whole page on the contradiction between
 the photographs and the copy's product claims, and that contradiction is
 precisely where a design-literate visitor's "AI made this" instinct fires.
-Two mandatory checks for every generated set:
+Review every generated set for:
 
 - **Subject-accuracy check:** the thing shown is the thing NAMED, verified
   against the copy's specific claims (scorched means scorched, crustless
   means crustless, the named dish is the depicted dish). An image can be
   beautiful, artifact-free, on-recipe, and still wrong.
-- **Prior-fighting rule:** when the model repeatedly inserts an element the
-  prompt excludes, either fight it with stronger negative phrasing for at
-  most one retry, or OWN the element in the copy so page and pictures tell
-  one story. Internal consistency across the set beats purity on any single
-  image; never ship half the set with the element and half without.
+- **Model-prior conflict:** when the model repeatedly inserts an element the
+  brief excludes, revise the prompt, edit or regenerate the asset, change the
+  generation method, choose another media form, or reject the asset. Do not
+  rewrite a factual product or documentary claim merely to excuse incorrect
+  imagery. Variation inside a set may be legitimate when the content permits
+  it; accidental contradiction is not.
 
 No generated-media prompt recipe or required shot trio applies globally.
 Create the images and variety this candidate needs.

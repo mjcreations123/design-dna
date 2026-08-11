@@ -373,16 +373,13 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             result_payload = payload(result)
             self.assertEqual(result_payload["findings"], [])
-            fragment_reviews = [
-                item
-                for item in result_payload["manual_review"]
-                if item["check"] == "prominent-fragment-context"
-            ]
-            self.assertEqual(len(fragment_reviews), 4)
             self.assertTrue(
-                all(
-                    "do not establish visual harm" in item["reason"]
-                    for item in fragment_reviews
+                {
+                    "prominent-fragment-context",
+                    "prominent-fragment-dynamic-style",
+                    "prominent-fragment-selector-context",
+                }.isdisjoint(
+                    {item["check"] for item in result_payload["manual_review"]}
                 )
             )
             self.assertTrue(
@@ -588,7 +585,7 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("project-relative", result.stderr)
 
-    def test_single_fragment_is_context_only_and_does_not_trip_fail_on(self) -> None:
+    def test_single_fragment_is_not_a_source_ingredient_detector(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
@@ -607,9 +604,9 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                     for item in result_payload["findings"]
                 )
             )
-            self.assertTrue(
+            self.assertFalse(
                 any(
-                    item["check"] == "prominent-fragment-context"
+                    str(item["check"]).startswith("prominent-fragment")
                     for item in result_payload["manual_review"]
                 )
             )
@@ -1003,10 +1000,15 @@ h1, .hero-title {
             }
             self.assertTrue(
                 {
-                    "compound-display-compression",
                     "public-meta-copy-contamination",
                     "nonfunctional-concept-affordance",
                 }.issubset(checks)
+            )
+            self.assertTrue(
+                {
+                    "compound-display-compression",
+                    "severe-typography-compression",
+                }.isdisjoint(checks)
             )
             self.assertTrue(
                 {
@@ -1095,6 +1097,30 @@ body { letter-spacing: normal; line-height: 1.6; }
             self.assertNotIn(
                 "public-meta-copy-contamination",
                 {item["check"] for item in payload(result)["manual_review"]},
+            )
+
+    def test_public_design_process_wording_is_reviewed_without_banning_disclosure(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "index.html").write_text(
+                "<header><small>Fictional interaction study</small></header>"
+                "<main><p>This puzzle is illustrative and has no live event.</p></main>",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = [
+                item
+                for item in payload(result)["manual_review"]
+                if item["check"] == "public-meta-copy-contamination"
+            ]
+            self.assertEqual(len(reviews), 1)
+            self.assertEqual(reviews[0]["evidence"]["match_count"], 1)
+            self.assertIn(
+                "keep every disclosure",
+                reviews[0]["suggestion"].casefold(),
             )
 
     def test_one_display_compression_control_is_not_a_cluster(self) -> None:
@@ -1194,7 +1220,7 @@ body { letter-spacing: normal; line-height: 1.6; }
                 {item["check"] for item in payload(result)["manual_review"]},
             )
 
-    def test_severe_single_and_reading_compression_require_review(self) -> None:
+    def test_typography_values_do_not_create_source_review(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "styles.css").write_text(
@@ -1210,27 +1236,16 @@ h1 { letter-spacing: -0.10em; line-height: 1.05; }
                 0,
                 result.stdout + result.stderr,
             )
-            severe = [
-                item
-                for item in payload(result)["manual_review"]
-                if item["check"] == "severe-typography-compression"
-            ]
-            self.assertEqual(len(severe), 2)
-            self.assertEqual(
-                {item["evidence"]["role"] for item in severe},
-                {"display", "reading"},
-            )
             self.assertTrue(
-                all(
-                    any(
-                        signal["extreme"]
-                        for signal in item["evidence"]["signals"]
-                    )
-                    for item in severe
+                {
+                    "compound-display-compression",
+                    "severe-typography-compression",
+                }.isdisjoint(
+                    {item["check"] for item in payload(result)["manual_review"]}
                 )
             )
 
-    def test_tailwind_and_inline_compression_require_review(self) -> None:
+    def test_tailwind_and_inline_typography_values_remain_neutral(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
@@ -1255,26 +1270,13 @@ export function Page() {
                 0,
                 result.stdout + result.stderr,
             )
-            typography = [
-                item
-                for item in payload(result)["manual_review"]
-                if item["check"] in {
+            self.assertTrue(
+                {
                     "compound-display-compression",
                     "severe-typography-compression",
-                }
-            ]
-            self.assertEqual(len(typography), 3)
-            self.assertEqual(
-                [item["check"] for item in typography].count(
-                    "compound-display-compression"
-                ),
-                1,
-            )
-            self.assertEqual(
-                [item["check"] for item in typography].count(
-                    "severe-typography-compression"
-                ),
-                2,
+                }.isdisjoint(
+                    {item["check"] for item in payload(result)["manual_review"]}
+                )
             )
 
     def test_moderate_inline_typography_avoids_compression_prompt(self) -> None:
@@ -1350,7 +1352,8 @@ export function Page() {
             self.assertNotIn("over-instrumented-concept-deck", checks)
             self.assertIn("public-meta-copy-contamination", checks)
             self.assertIn("nonfunctional-concept-affordance", checks)
-            self.assertIn("compound-display-compression", checks)
+            self.assertNotIn("compound-display-compression", checks)
+            self.assertNotIn("severe-typography-compression", checks)
 
     def test_compact_legitimate_status_interface_avoids_concept_deck_prompt(
         self,
@@ -1471,10 +1474,10 @@ export function Page() {
             }
             self.assertTrue(
                 {
-                    "quantitative-claim-density",
                     "generated-media-authenticity",
                 }.issubset(checks)
             )
+            self.assertNotIn("quantitative-claim-density", checks)
             self.assertTrue(
                 {
                     "copy-uniformity-cluster",
@@ -1736,7 +1739,7 @@ class ScannerShadcnTokenTests(unittest.TestCase):
 
 
 class ScannerProminentFragmentTests(unittest.TestCase):
-    def test_resolves_css_modules_style_objects_and_tailwind_arbitrary_colors(
+    def test_source_scanner_does_not_resolve_styled_fragments_as_ingredients(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1776,29 +1779,15 @@ class ScannerProminentFragmentTests(unittest.TestCase):
             self.assertEqual(
                 result.returncode, 0, result.stdout + result.stderr
             )
-            fragments = [
-                item
-                for item in payload(result)["manual_review"]
-                if item["check"] == "prominent-fragment-context"
-            ]
-            self.assertEqual(
-                {item["file"] for item in fragments},
+            self.assertTrue(
                 {
-                    "src/Hero.tsx",
-                    "src/ModuleHero.tsx",
-                    "src/ObjectHero.tsx",
-                    "src/TailwindHero.tsx",
-                },
+                    "prominent-fragment-context",
+                    "prominent-fragment-dynamic-style",
+                    "prominent-fragment-selector-context",
+                }.isdisjoint(
+                    {item["check"] for item in payload(result)["manual_review"]}
+                )
             )
-            signals = {
-                item["file"]: str(item["evidence"]["style_signal"])
-                for item in fragments
-            }
-            self.assertIn("foreground color declaration", signals["src/Hero.tsx"])
-            self.assertIn("CSS Module", signals["src/ModuleHero.tsx"])
-            self.assertIn("React style", signals["src/ObjectHero.tsx"])
-            self.assertIn("Tailwind", signals["src/TailwindHero.tsx"])
-            self.assertTrue(all(item["severity"] == "low" for item in fragments))
             self.assertFalse(
                 any(
                     item["rule"] == "decorative-headline-span"
@@ -1806,7 +1795,7 @@ class ScannerProminentFragmentTests(unittest.TestCase):
                 )
             )
 
-    def test_dynamic_style_is_manual_review_not_a_gate(self) -> None:
+    def test_dynamic_fragment_style_is_not_a_source_ingredient_detector(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
@@ -1825,10 +1814,11 @@ class ScannerProminentFragmentTests(unittest.TestCase):
                     for item in result_payload["findings"]
                 )
             )
-            self.assertEqual(len(result_payload["manual_review"]), 1)
-            self.assertEqual(
-                result_payload["manual_review"][0]["check"],
-                "prominent-fragment-dynamic-style",
+            self.assertFalse(
+                any(
+                    str(item["check"]).startswith("prominent-fragment")
+                    for item in result_payload["manual_review"]
+                )
             )
             self.assertTrue(result_payload["limitations"])
 

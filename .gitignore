@@ -20,4 +20,4 @@ maintainer/evals/work/
 maintainer/evals/results/*.partial
 maintainer/evals/artifacts/*.partial
 maintainer/evals/reviews/*.partial
-
+.playwright-browsers/

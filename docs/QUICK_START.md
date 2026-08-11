@@ -14,18 +14,39 @@ In Claude Code with a direct personal skill:
 /design-dna Build a time-appropriate website for [business or product] using the supplied facts and assets.
 ```
 
-Design DNA chooses a proportional assurance profile from the task. You do not
-need to describe its internal method. For a portfolio piece, client sample,
-pitch, demo, or other high-visibility work, request Showcase explicitly:
+Design DNA chooses a proportional assurance profile from the task. A fresh
+public-facing site representing a business, product, organization, place,
+creator, or campaign normally selects Showcase unless the task is explicitly a
+bounded utility or an approved existing system. You can also request it
+explicitly for a portfolio piece, client sample, pitch, demo, or other
+high-visibility work:
 
 ```text
 $design-dna Use Showcase to build an exceptional, time-appropriate sample website for [business or product] using the supplied facts and assets.
+```
+
+When the work needs to be genuinely impressive rather than merely complete,
+add the outcome you will judge in the render. For example:
+
+```text
+$design-dna Use Showcase and taste calibration. Build a client-facing website
+for [business or product]. Research current project- and category-relevant
+visual references, make a project-specific public encounter rather than a
+generic template or internal design exercise, and show me the rendered wide and
+narrow direction proof before scaling it. If the direction is ugly or
+unconvincing, replace the organizing answer instead of just changing fonts,
+colors, or effects.
 ```
 
 Use `/design-dna` instead of `$design-dna` for a direct Claude Code skill. If
 you deliberately installed the packaged Claude Code plugin, its namespaced
 command is `/design-dna:design-dna`. Configure only one discovery route per
 host.
+
+Showcase initialization includes an optional `taste-calibration.md` working
+record. Use it to preserve the public encounter, reference reasoning, and
+rendered first-impression response that changed the direction; it is not a
+form to complete merely to make a build look approved.
 
 Relevant natural-language requests are intended to activate the skill, but
 automatic loading is host- and version-dependent until observed in that
@@ -38,14 +59,24 @@ is required.
 | --- | --- | --- |
 | **Quick** | A bounded, low-risk repair or established-system change. | Focused context inspection, changed-state implementation, and affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Direction framing, proportionate proof of consequential decisions, rendered review, and engineering verification. |
-| **Showcase** | Expressive, premium, highly visible, owner-sensitive work or a brief that rejects safe or generic output. | Project research, enough directly reviewable alternatives to challenge the first default, a recorded selection, deeper visual craft, and adversarial review. |
+| **Showcase** | Expressive, premium, highly visible, owner-sensitive work or a brief that rejects safe or generic output. | Project research and directly reviewable contrast sufficient to challenge the first default; full alternatives when uncertainty, stakes, or owner choice justify them; a recorded selection, deeper visual craft, and adversarial review. |
 | **Range Study** | A real multi-route site must demonstrate meaningful creative range. | Dependable truth, navigation, accessibility, and operations; an explicit route-family record; route proof chosen by uncertainty; real-path checks; and a matched route atlas. |
+| **Batch Study** | A controlled evaluation compares at least three unrelated website briefs; it is not the ordinary workflow for producing several client sites. | Frozen isolated briefs/builds, project-declared capture classes, renderer/public-manifest-bound captures, capture-set-bound site observations, a later neutral-label whole-system review, and contextual findings without ingredient bans. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Stronger task, state, content, specialist, recovery, and real-user evidence. |
 | **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Type-specific provenance, rights, privacy, factual, approval, delivery, accessibility, and generated-media gates. |
 
 Quick and Standard are proportional base presets. Showcase, Range Study,
-High-risk, and Asset-led can apply together. Adding a capability cannot
+Batch Study, High-risk, and Asset-led can apply together. Adding a capability cannot
 silently remove a stronger one.
+
+Activate Batch Study before building its cases with `--profile batch-study`,
+or create `.design-dna/batch-range.json` from the packaged template. The
+`batch-range` filename is a stable internal interface; **Batch Study** is the
+user-facing capability name. Freeze each site's packaged unprimed-observation
+template before revealing sibling work, then use the packaged neutral-label
+whole-system template to compare organizing logic, spatial and material
+relationships, type roles, media, interaction, copy, and responsive behavior
+in context. Those are review lenses, not ingredients every site must change.
 
 For a multi-route showcase:
 
@@ -76,9 +107,10 @@ the one installation you configured:
 <INVOKE> Use Showcase to build a time-appropriate website for [business or
 product] using only supplied or approved facts and assets. Research the
 project, audience, current category context, and useful adjacent creative
-evidence at the depth this decision needs. Develop enough materially different,
-directly reviewable answers to challenge the first plausible default; do not
-manufacture a fixed number of concepts or merely reskin one composition.
+evidence at the depth this decision needs. Externalize directly reviewable
+contrast sufficient to challenge the first plausible default; build full
+alternatives when uncertainty, stakes, or my choice genuinely warrants them,
+and do not manufacture a concept quota or merely reskin one composition.
 Select the strongest answer with rationale and record its extensible
 creative_logic plus consequential observable decisions. Preserve a reversible
 checkpoint when useful, prove the decisions most likely to fail before broad
@@ -119,9 +151,13 @@ or another relevant source. Use the mix and quantity needed to answer the
 decision. Record transferable relationships and copying limits; do not average
 references into a fashionable template or treat a gallery as usability proof.
 
-Missing material remains pending, is omitted, or receives an honestly labeled
-and owner-authorized concept treatment. Do not invent proof, reviews, history,
-prices, availability, people, policies, access, or integrations.
+In a real project, missing material remains pending, is omitted, or receives
+an honestly labeled and owner-authorized concept treatment. Do not invent
+proof, reviews, history, prices, availability, people, policies, access, or
+integrations and present them as real. An explicitly fictional sample may use
+bounded, non-impersonating scenario worldbuilding when its premise and status
+remain unmistakable; it still cannot borrow real people, institutions,
+credentials, endorsements, or operating behavior to manufacture authority.
 
 ## Understand creative proof
 
@@ -136,6 +172,13 @@ transformation, image sequence, interaction, motion study, route body, or
 another representative artifact. Use the form and fidelity that can settle the
 uncertainty. Keep compared conditions sufficiently controlled for the intended
 decision and label anything unrendered or untested honestly.
+
+For a high-visibility or owner-sensitive visual result, include a
+first-impression check: does the render feel like a credible public website for
+the actual subject and visitor, use material intentionally, and remain
+convincing at a narrow condition? Passing a test suite is not an answer to that
+question. A direct “ugly” or “bad taste” response reopens the direction rather
+than calling for random polish.
 
 Carry the selected result in an extensible `creative_logic` record and an
 observable decision ledger. These records describe what this candidate

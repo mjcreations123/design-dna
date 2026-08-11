@@ -1,93 +1,230 @@
-# Preship gate
+# Proportional preship gate
 
-Copy this checklist into the working response and tick every line. Run it on
-every build and every revision round, on the RENDERED output. Do not present
-the result until every P0 passes; a P0 hit is fixed and re-verified, never
-waived. P1 items are fixed or shown to carry a logged client direction.
+Copy the applicable lines into the project review record. Bind the gate to the
+exact build, routes, states, browser, widths, preferences, date, and reviewer.
+Do not use this checklist to manufacture evidence records the project does not
+need.
 
-Scope on a bounded revision: all P0 lines always run on the touched surface;
-P1 and P2 lines run where the revision touches their subject; greenfield-only
-lines (rendered alternative, selection record) apply when new direction or
-new type was selected, which any font replacement triggers for the type
-lines.
+A failed applicable assurance boundary blocks the corresponding completion or
+release claim. Aesthetic findings require rendered evidence and contextual
+judgment; no font, palette, punctuation, component, layout, motion, media, or
+ornament category fails by itself.
 
-## P0: owner absolutes
+## Contents
 
-- [ ] Zero em dashes in user-facing text (mechanical grep of shippable
-      files and rendered DOM)
-- [ ] Zero animated number count-ups
-- [ ] Zero fabricated stats, testimonials, reviews, logos, people; every
-      demo stand-in visibly labeled AND present in the placeholder register
-- [ ] No indigo-violet gradient kit; no gradient text anywhere, including
-      single words
-- [ ] No fake product UI (div dashboards, invented metrics, drawn chrome)
-- [ ] Skeleton passes the swap test: the section order with its content
-      types could NOT ship unchanged for a different business in a
-      different vertical, and a recorded derivation drove the order
-- [ ] Contrast: 4.5:1 body, 3:1 large text and UI, from RENDERED computed
-      styles; pixel-sampled where text sits on photos or gradients
-- [ ] Keyboard access works; focus visible
-- [ ] Persuade/Experience display voice is a chosen, self-hosted face;
-      system stack only by written Operate/continuity/regulated decision
-- [ ] Rendered-font verification passed (all 8 steps in
-      [typography](../references/craft/typography.md)): registration,
-      paint, synthesis, network, console, computed sizes at 375/768/1440,
-      fallback rehearsal, and the look
-- [ ] Parseable-text pass complete (four-question gate + residue greps in
-      [parseable text](../references/quality/parseable-text.md)): no
-      decorative pseudo-data, no fake liveness, no internal vocabulary, no
-      placeholder or binding residue, no mojibake, size floor respected,
-      no claim stated more than twice on one page
-- [ ] Zero system/connection/build status shown to a visitor: grep the
-      rendered DOM for "online", "connected", "synced", "live" as a status
-      word, and for any status-dot element (a small round indicator with
-      a background-color and no other content); a hit is fixed even when
-      the status is real, since none of it is the visitor's business
-- [ ] Screenshot pair at ~1440 AND ~375 for every page in scope, saved to
-      disk, actually opened and looked at, paths cited
-- [ ] Demo/live state correct: still a demo unless the owner said live in
-      his own words; dead CTAs carry the demo notice
+- [A. Assurance boundaries](#a-assurance-boundaries)
+- [A.1 Launch completeness](#a1-launch-completeness)
+- [B. Rendered implementation](#b-rendered-implementation)
+- [C. Project-specific quality](#c-project-specific-quality)
+- [D. Range and batch checks when applicable](#d-range-and-batch-checks-when-applicable)
+- [E. Handoff and state](#e-handoff-and-state)
 
-## P1: hard tier and structure
+## A. Assurance boundaries
 
-- [ ] No watch-cluster face carrying a greenfield identity without the
-      logged comparison (two named rejects and the reason it wins)
-- [ ] Display face selection recorded with two named rejects and a
-      client-specific reason (ALL greenfield type, not only watch faces)
-- [ ] Greenfield/Showcase/open direction: at least one materially different
-      rendered alternative was produced and compared, paths cited
-- [ ] Persuade/Experience surfaces carry their declared media path rendered
-      at scale; a text-led treatment carries a logged owner authorization
-      naming the alternative offered
-- [ ] No single-word emphasis swaps without a recorded reason
-- [ ] No repeated eyebrow template above 3+ sections without a real job
-- [ ] Two type families max (third has a recorded role)
-- [ ] No emoji as interface; no mono outside code and data; no ordinals on
-      parallel items; no stat band without a logged client direction
-- [ ] Ledger consulted at direction time; this build's row appended or
-      updated in `~/.claude/design-dna/LEDGER.md`
-- [ ] Rotation test passed: display family absent from the last three
-      rows; macrostructure differs from the previous two; class saturation
-      rule applied
-- [ ] Builder-fingerprint sweep clean on the shipped output (the hygiene
-      list in [convergence-watch](../references/convergence-watch.md)): no
-      generator tags, builder hosts or attributes, stock token names, or
-      scaffold residue
-- [ ] No internal working artifact reachable as if it were the site:
-      proofs and specimens live under `.design-dna/proofs/` with their
-      INTERNAL banner, and every watched preview shows the finished page
-- [ ] Placeholder register empty, or every open row explicitly deferred by
-      the owner (required empty before any live state)
+- [ ] Public facts, people, proof, prices, metrics, capabilities, operating
+      state, quotes, endorsements, and documentary media are sourced,
+      proportionately labeled as scenarios, or omitted.
+- [ ] Rights, consent, privacy, attribution, generated-media status, cultural
+      authority, and publication scope are resolved for material that needs
+      them, or the exact release remains blocked.
+- [ ] Semantic structure, keyboard and touch behavior, focus, contrast,
+      reflow, alternatives, zoom, reduced motion, and meaningful status meet
+      the applicable access baseline.
+- [ ] Visible controls and routes work in the reviewed state, or communicate
+      an honest unavailable/demo condition without misleading affordance.
+- [ ] Generated, rendered, reviewed, accepted, installed, deployed, and live
+      states are reported separately and accurately.
+- [ ] No unauthorized production endpoint, data collection, transaction,
+      contact, tracking, publication, or live-system mutation was introduced.
+- [ ] Repository, platform, brand, security, and explicit project contracts
+      were preserved within scope; unrelated work remains intact.
+- [ ] The deployed or served public root excludes `.design-dna/`, source
+      packets, review evidence, transaction recovery, credentials, and browser
+      profiles. Disposable task-owned server and browser state was stopped and
+      removed, or the exact retained state and reason are recorded.
 
-## P2: polish sweep
+## A.1 Launch completeness
 
-- [ ] Type numbers inside the split ranges (micro-label vs display-scale)
-      in [typography](../references/craft/typography.md), or carrying
-      rendered proof for the exception
-- [ ] Descenders intact through every masked reveal
-- [ ] Salience check: first three things noticed at each width are content,
-      not decoration
-- [ ] One memorable element nameable per page (absence of flaws is not
-      presence of identity)
-- [ ] Reduced motion respected; images carry alt text; states (loading,
-      empty, error) render written content
+- [ ] For every new or materially redesigned website, the
+      [launch-completeness record](launch-completeness-template.md) resolves
+      all fifteen decisions as included, not applicable, or blocked. A bounded
+      Quick repair records the affected/inherited rows instead.
+- [ ] Every included launch decision is bound to the exact route, state,
+      configuration, asset, or external destination and was checked in the
+      final candidate. Not-applicable rows give a project reason; blocked rows
+      name the needed owner input and do not masquerade as live behavior.
+- [ ] A call to action, FAQ, response/delivery promise, success state, sticky
+      compact action, metadata, crawl policy, sharing card, directions,
+      alternative text, privacy/policy page, GA4, USP, or social promotion was
+      added only where its project conditions and authority support it. No
+      fabricated address, legal copy, tracking ID, bonus, or operational claim
+      was used to make the checklist appear complete.
+
+## B. Rendered implementation
+
+- [ ] The supported build, lint, type, and test gates for the changed scope
+      pass, or their exact failures and impact are recorded.
+- [ ] Every independently addressable route in scope was checked for direct
+      entry, reload, title, current-page state, links, history, and intended
+      indexing or canonical behavior.
+- [ ] Project-relevant wide and narrow captures were saved and opened. Every
+      materially distinct route body is represented; route sampling is used
+      only when the same system genuinely makes the omitted route redundant
+      and the rationale is recorded.
+- [ ] Additional risk-selected states were reviewed where applicable: short
+      height, intermediate width, 200 percent zoom, text spacing, open menus or
+      dialogs, long content, empty/error/success, reduced motion, no
+      JavaScript, print, localization, or orientation.
+- [ ] At project-relevant narrow conditions, the first meaningful subject
+      content or useful action and the distance between later meaningful
+      anchors were observed in the rendered route. Deliberate long-form or
+      spacious pacing has a project-derived reason; no universal pixel,
+      screen-count, or page-length maximum was used.
+- [ ] Content-bearing diagrams, maps, charts, process drawings, and comparable
+      explanatory graphics retain usable labels, essential relationships, and
+      an equivalent path where needed at narrow conditions. The chosen response
+      may recompose, prioritize, segment, provide contextual pan or zoom, or use
+      another project-specific approach; a uniformly shrunken graphic is not
+      treated as sufficient evidence by itself.
+- [ ] A briefing, tutorial, schematic, worked example, or simplified preview
+      that teaches an operable interface matches its real object names,
+      positions, topology, encodings, available moves, action unit, and finish
+      condition wherever a mismatch could change understanding. Any deliberate
+      simplification states its relevant limit.
+- [ ] On direct entry to a task surface, the first meaningful action or reading
+      instruction is discoverable before or at the artifact it governs.
+- [ ] Narrow comparisons preserve the actual comparison task, not only every
+      record. Equivalent fields or states remain close enough to compare through
+      the project-chosen transpose, selector, anchors, oriented scroll surface,
+      or other response; record identity, units, and selected lens remain
+      recoverable at the deepest meaningful field; serial stacking is not
+      accepted solely because it fits.
+- [ ] Responsive order preserves consequential dependencies. Eligibility,
+      exclusions, prerequisites, safety limits, price, permission, and action
+      remain associated before or at the decision they qualify rather than
+      becoming separated by a long narrow sequence.
+- [ ] When a core artifact uses pan or zoom, orientation and the complete extent
+      remain understandable through an overview, locator, equivalent structure,
+      or another tested response appropriate to the project.
+- [ ] When position affects meaning, the initial, intermediate, and terminal
+      states were exercised. The initial state reads as a located endpoint, not
+      an empty or uninitialized control; no particular meter or control form is
+      required.
+- [ ] An overview/detail treatment inventories consequential labels, callouts,
+      unknowns, statuses, or relationship categories in the initial view, or
+      makes their later location and discovery explicit without miniature text.
+- [ ] Console, network, failed images, missing alternatives, clipping,
+      internal horizontal overflow, and accidental layout shift were checked
+      in the rendered conditions.
+- [ ] Captions and body text were checked where adjacent bands, sticky regions,
+      positioned peers, or negative spacing could cover them. A current-viewport
+      occlusion advisory is triaged as a prompt, not treated as full-page proof.
+- [ ] Text placed over gradients, tonal bands, images, textures, or motion was
+      inspected against the actual composite where consequential copy crosses
+      changing boundaries; the surrounding base color was not used as a proxy.
+- [ ] Typography roles, spacing, wrapping, script coverage, and hierarchy were
+      inspected with real copy. Downloadable or identity-critical fonts use
+      evidence appropriate to the claim, with registration, availability,
+      computed style, delivery, metric, synthesis, fallback, and visual
+      observations kept distinct; intentional system fonts use the documented
+      platform branch.
+- [ ] Repeated label/value roles remain perceptibly separated with actual long
+      labels at relevant narrow widths and applicable text-spacing or locale
+      pressure; a fixed track was not accepted merely because sample labels fit.
+- [ ] Copy that names a visible count, relationship, object, or state still
+      matches the current rendered and interactive structure after responsive
+      adaptation.
+- [ ] Decorative labels do not reuse domain tokens, state letters, measurement
+      marks, or selection symbols in a way that implies a real value or state.
+- [ ] The smallest ordinary-reading and interactive, caption, credit, legend,
+      or utility roles were identified in the actual render. Their casing and
+      tracking were inspected at a project-relevant narrow width and with text
+      spacing enabled; any repeated compact-uppercase treatment has a recorded
+      project reason or was revised. No portable numeric type threshold was
+      substituted for this review.
+- [ ] Prominent, repeated, interactive, data-shaped, and doubtful public text
+      passed the contextual parseable-text review. Placeholder, binding,
+      citation, encoding, proof-page, and internal-process residue checks were
+      run and triaged.
+- [ ] Media was inspected as a rendered set for subject accuracy, crop,
+      quality, continuity, artifacts, rights, privacy, representation,
+      attribution, alternatives, and performance.
+- [ ] Reused media was reviewed against each adjacent claim or content job. A
+      repeated source or alternate crop is not treated as distinct evidence
+      unless the rendered pixels actually support that distinction; intentional
+      reuse and atmospheric media remain allowed and are labeled honestly. A
+      static frame is not described as evidence of temporal change.
+- [ ] Metadata, favicon, social image, source disclosures, 404 behavior, demo
+      boundaries, and ordinary footer/navigation details match the project
+      rather than a starter.
+- [ ] Material status and boundary copy is visible where misunderstanding has a
+      consequence. Repeated instances were compared by consequence and
+      consolidated when they merely duplicate one another; truth remains clear
+      without automatically becoming the loudest element on every route.
+
+## C. Project-specific quality
+
+- [ ] The result fulfills the actual audience, job, content, genre, time
+      register, owner preference, and stated ambition. Quiet or conventional
+      work is not penalized for lacking spectacle; expressive work is not
+      reduced to pass a generic minimalism test.
+- [ ] For a fictional, sample, demo, or prototype identity, the public nouns
+      were compared with the bounded fixture they promise. The fixture sustains
+      the relevant audience expectation or the identity was narrowed; no
+      category checklist or repeated disclaimer was used as a substitute.
+- [ ] Consequential type, composition, media, color, material, ornament,
+      interaction, motion, and content decisions can be explained from this
+      project or accepted aesthetic judgment rather than a hidden portable
+      recipe.
+- [ ] Where visual character or owner taste is material, a rendered
+      first-impression and surface-fidelity review confirms that the work reads
+      as a credible public encounter for this subject and audience rather than
+      a generic shell or maker-facing design exercise. A clean technical or
+      accessibility result was not used as a substitute for this judgment.
+- [ ] The opening, body sequence, hierarchy, proof, action logic, and ending
+      do not remain interchangeable with an unrelated site after changing
+      nouns and images, unless a real convention or system requirement
+      explains the similarity.
+- [ ] Prominent emphasis, labels, cards, stats, status, diagrams, gradients,
+      effects, and motion communicate or contribute intentionally; no
+      ingredient was removed merely because it appeared on a trend list.
+- [ ] Responsive behavior recomposes the creative logic and task rather than
+      only shrinking desktop or turning every relationship into the same card.
+- [ ] Direct owner rejection or user confusion has been treated as new
+      evidence: related routes and system consumers were re-audited, the cause
+      was revised, and the affected conditions were rerendered.
+
+## D. Range and batch checks when applicable
+
+- [ ] Sibling routes with different jobs have meaningfully different bodies;
+      shared navigation, identity, truth, access, and operating foundations
+      remain dependable.
+- [ ] For several unrelated builds, initial direction work was isolated from
+      sibling outputs when practical, then matched captures were compared
+      together after unprimed review.
+- [ ] Batch captures were classified and authorized before comparison.
+      Neutral labels reduced identity priming but were not described as pixel
+      redaction; any cropping, redaction, exclusion, recipients, and retention
+      limits were recorded with their coverage impact. Authorized originals
+      remain preserved inside their evidence boundary when a transformed copy
+      is needed; access was not broadened merely to retain them.
+- [ ] Opening geometry, silhouettes, type roles, emphasis, containers, media
+      relationships, motion, copy cadence, responsive transformation, and
+      endings were compared in context.
+- [ ] Repeated clusters were contextualized before becoming findings. Brand,
+      task, platform, product-family, genre, content, access, and maintenance
+      explanations were preserved.
+- [ ] Systemic causes reproduced across sites were fed back into guidance,
+      tooling, or regression tests without creating an inverse style prompt or
+      ingredient blacklist.
+
+## E. Handoff and state
+
+- [ ] Placeholder and unresolved-input records are empty, owner-deferred, or
+      clearly block the exact live claim they affect.
+- [ ] Owner visual acceptance, cultural acceptance, target-user validation,
+      specialist audits, and production readiness are stated separately from
+      producer self-review.
+- [ ] The final handoff identifies exact files or URLs, tested dimensions,
+      known limits, reversible checkpoints, and the one next action required
+      from the owner, if any.

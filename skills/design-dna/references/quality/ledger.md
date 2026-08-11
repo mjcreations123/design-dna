@@ -1,57 +1,72 @@
-# The studio ledger
+# Cross-project design ledger
 
-One row per shipped build, recording the choice axes that form a fingerprint.
-Sameness across the studio's own builds is the deepest tell: a beautiful
-choice repeated becomes a house style, and the owner kills builds for it.
-Two QA builds from one batch once shipped the same skeleton in different
-paint, and the same display family shipped on four separate projects. The
-ledger is the mechanism that prevents both.
+Use a ledger only when an accountable owner has authorized minimized
+cross-project comparison. Its purpose is to reveal an unexplained studio
+fingerprint across unrelated work, not to force novelty, rotate fonts, or ban
+a successful construction.
 
-## Where it lives
+## Storage and privacy
 
-`~/.claude/design-dna/LEDGER.md`, where `~` is the user home (on Windows,
-`%USERPROFILE%\.claude\design-dna\LEDGER.md`; expand it before scripting an
-append, since cmd.exe and raw Python paths do not expand `~`). Create the
-directory on first use. It deliberately lives OUTSIDE the skill package, so
-reinstalling or syncing the skill never erases it, and OUTSIDE every client
-repo, per the owner's rule that studio notes never ship in client git
-history. Row format is in
-[the ledger template](../../templates/ledger-template.md).
+Keep the canonical ledger outside skill packages and client repositories at a
+host-neutral user path such as `~/.design-dna/LEDGER.md`, or another location
+the accountable owner approves. Do not silently search other host directories.
+An existing legacy ledger may be imported only with owner authorization.
 
-## What a row records
+Record minimized design decisions, never confidential content, screenshots,
+participant data, internal business facts, or client material the owner did
+not authorize for comparison. Use anonymous or project-safe identifiers when
+names are unnecessary.
 
-Minimized choice axes only, never confidential client content: project name,
-date, surface mode, display family and its construction class (grotesk,
-serif, slab, humanist, display, mono), body family, palette poles, layout
-skeleton in one phrase, the signature move, motion language, and one-line
-notes. This minimization is what makes the ledger standing owner
-authorization for cross-project comparison under the privacy rules in the
-[specificity review](specificity-review.md).
+## What to record
 
-## The two duties
+Record only axes useful to later comparison:
 
-**Consult before directing.** At direction time, before the first candidate,
-read the last five rows. The rotation test, three parts, all mandatory:
+- date, project-safe identifier, surface modes, and relevant route count;
+- public job and intended ambition in a short phrase;
+- rendered typography roles and emphasis grammar, not only family names;
+- opening and ending models, main-content silhouette, density, and section
+  cadence;
+- media relationship, crop and sequencing model;
+- component, label, icon, border, radius, and decorative grammar when salient;
+- motion, transition, hover, and direct-interaction behavior;
+- responsive transformation and one project-specific decision;
+- evidence status, reviewer relationship, and unresolved limitation.
 
-1. The display family MUST NOT appear in the last three rows, and no two
-   builds in one batch may share a family.
-2. The macrostructure MUST NOT repeat: if the proposed hero composition,
-   headline scale and case, eyebrow treatment, section rhythm, and footer
-   form match either of the previous two rows, the direction has already
-   failed and goes back to candidates.
-3. Class saturation: when three of the last five rows share a construction
-   class, the class itself is a forming fingerprint, and the next shortlist
-   MUST carry a credible candidate from outside it. A face appearing in
-   three of the last ten rows is promoted to the studio-burned row of the
-   [convergence watch](../convergence-watch.md) and falls under HARD 1.
+Omit axes that are irrelevant. The template is in
+[ledger-template](../../templates/ledger-template.md).
 
-**Append on ship.** Appending this build's row is part of shipping; the
-[preship gate](../../templates/preship-gate.md) blocks without it. A
-revision to an existing build updates its row rather than adding one.
+## Consult without turning history into a recipe
 
-## What the ledger is not
+For a new unrelated project, inspect a small, relevant recent sample only
+after the project brief and source material are understood. Ask:
 
-Not a quality record, not a client deliverable, not a place for rejected
-candidates (those live in the project's own `.design-dna/`), and never a
-menu: repeating a PAST choice is the failure; picking from past choices as
-a shortcut is the same failure earlier.
+- Does the current candidate repeat a cluster of macrostructure, type roles,
+  media treatment, copy cadence, and interaction from unrelated work?
+- Does project, brand, task, platform, product-family, accessibility, or
+  maintenance evidence explain the repetition?
+- Would changing the repeated choice improve this project, or merely make it
+  different?
+- Is the supposed difference only another family name, palette, photograph,
+  or decorative effect over the same encounter?
+
+No family, category, layout, or device is disqualified by appearing in a
+fixed number of recent rows. Repetition raises a hypothesis; the rendered
+project and its evidence decide the disposition. An established client or
+product system may correctly repeat itself.
+
+For a deliberate batch or benchmark, use a temporary batch ledger so
+unshipped experiments do not contaminate production history. Compare masked
+wide and narrow captures together after each site has received an unprimed
+review.
+
+## Append and revise
+
+Append a row when a build is accepted or otherwise reaches the owner-approved
+ledger milestone. A revision updates the existing row when it retains the
+same design identity. Record rejected candidates only in the project-local
+direction record, not in the studio ledger.
+
+If no authorized ledger exists, record `cross-project comparison not
+performed` and continue. Do not invent history, infer it from absent files, or
+block an otherwise complete project solely because cross-project evidence is
+unavailable.

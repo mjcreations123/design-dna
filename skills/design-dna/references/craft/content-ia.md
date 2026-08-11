@@ -35,6 +35,10 @@ proof-shaped authority.
 
 - Make the offer, object, action, invitation, or narrative entry concrete at
   the point where the audience needs it.
+- On direct entry to a task surface, make the first meaningful action or
+  reading instruction discoverable before or at the artifact it governs. A
+  later detailed control can remain; the opening should not require using the
+  artifact before learning what to do.
 - Name consequential actions by their result when that result matters.
 - Explain requirements before input and errors near the cause.
 - Make confirmation, recovery, cancellation, and destructive consequences
@@ -48,6 +52,16 @@ proof-shaped authority.
   contrast, aphorism, or reassurance.
 - Use supporting labels when their informational, editorial, brand, or
   compositional role works in the rendered context; do not add them by habit.
+  Avoid reusing a domain symbol, token, state letter, or measurement mark as
+  decoration when that reuse can imply a real selection or value.
+
+When a briefing, tutorial, schematic, worked example, or simplified preview
+teaches a real interface, compare the teaching model with the operable model.
+Object names, positions, topology, encodings, available moves, and units of
+action must agree wherever a difference could change understanding. If a
+simplification is useful, identify its limits where they matter instead of
+quietly changing the grammar at the point of use. Keep the repeated action
+cycle distinct from the completion or success condition.
 
 Review promises, superlatives, rhetorical patterns, actions, and explanations
 as a system. Preserve intentional supplied voice; revise unsupported claims,
@@ -66,10 +80,11 @@ ambiguity, or repeated producer grammar rather than banning a sentence shape.
   domain meaning, or audience wording matters. The format and number of terms
   follow the corpus. Preserve intentional synonyms and register changes when
   the audience genuinely distinguishes them.
-- Draft representative public, action, error, empty, recovery, and success
-  copy early enough to shape hierarchy and components. Use approved real
-  language where possible; when evidence is missing, use a clear neutral voice
-  and mark the direction provisional.
+- Draft the consequential representative copy states the experience can
+  actually produce early enough to shape hierarchy and components. Use
+  approved real language where possible; when voice evidence is missing, use
+  plainly provisional scenario or placeholder language whose register follows
+  the audience and task instead of manufacturing a brand voice.
 
 ## Design the content system
 
@@ -85,6 +100,16 @@ Define:
 - allowed length and fallback behavior;
 - relationship to routes, metadata, structured data, and search;
 - empty, error, loading, success, and permission-denied messages.
+
+Derive required and optional fields from the real or approved scenario corpus,
+not from the visual desire to make every item equally complete. Test sparse,
+rich, ordinary, and outlier entries. Let honest differences in history,
+evidence, availability, authorship, media, state, or editorial importance change
+the amount and form of presentation when those differences matter. Do not pad
+every card, title, profile, product, article, or record to the same length just
+to complete a component matrix. In a fictional fixture, any variation must
+belong to the bounded world and content model; random omissions, fake wear, or
+manufactured inconsistency are not evidence of human authorship.
 
 For translated routes, locale-aware data, or language switching, use the
 [localization reference](../quality/localization.md) rather than treating

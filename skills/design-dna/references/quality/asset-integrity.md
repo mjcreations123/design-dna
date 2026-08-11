@@ -202,6 +202,13 @@ proportionate and do not repeat it through ordinary marketing copy.
   intentional. Coherence may include heterogeneous archives, documentary
   variation, deliberate contrast, or route-local media systems; do not
   cosmetically regularize the set into implausible uniformity.
+- When several crops or treatments of one source are meant to support different
+  observations, inspect the rendered pixels for the claimed distinction. A
+  caption cannot make near-identical windows isolate different evidence. Use a
+  more selective crop, scale, locator, annotation, alternate source, or revised
+  task when the distinction is otherwise carried only by prose. A static frame
+  must not be presented as visual evidence of temporal change; it may instead
+  prompt the reader to observe change in the real or interactive subject.
 - Preserve logo clear space, proportions, contrast, and approved variants.
 - Use responsive sources and reserve intrinsic dimensions.
 - Avoid embedding third parties when a static or privacy-preserving alternative

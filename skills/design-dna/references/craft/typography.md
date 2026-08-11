@@ -1,275 +1,205 @@
 # Typography
 
 Use this when choosing type, changing an established type system, styling
-prominent copy, or closing a build. Typography is where this studio's work
-has failed most often, so this file ends in a mandatory verification protocol:
-a build is not done until the intended fonts are proven to have painted.
+prominent copy, or closing a build. Typography is both an expressive medium
+and a delivery system. Judge the family, roles, spacing, language, layout,
+loading, fallback, and surrounding composition together.
 
-The three causes of every "terrible fonts" verdict on record, in order of
-frequency:
-
-1. **The face was never chosen.** A system stack (Segoe, Aptos, Arial,
-   system-ui) or one neutral grotesk carried the whole page, so the render
-   looked like an unstyled OS dialog. Competent hierarchy cannot rescue an
-   unchosen voice.
-2. **The chosen face never painted.** A CDN failed, a specificity bug ate the
-   size rule, a weight was missing and the browser synthesized it. CSS said
-   one thing, the pixels said another, and nobody looked.
-3. **The numbers were wrong.** Tracking, leading, measure, or scale outside
-   the ranges that read as professional.
-
-Every section below exists to kill one of those three.
+There is no universal set of "AI fonts," approved fonts, forbidden fonts,
+pairing categories, family count, hosting method, scale ratio, or tracking
+formula. A common face may be exactly right; a rare face may be arbitrary.
+The failure is an unexamined or poorly executed system, not a family name.
 
 ## Contents
 
-- [Choose a voice on purpose](#choose-a-voice-on-purpose)
-- [The pairing procedure](#the-pairing-procedure)
-- [The dated bench](#the-dated-bench)
-- [The numbers](#the-numbers)
-- [Fluid type](#fluid-type)
-- [Inks versus graphics](#inks-versus-graphics)
-- [Ship fonts like an engineer](#ship-fonts-like-an-engineer)
-- [Motion and masking laws](#motion-and-masking-laws)
-- [Proof real language in the real composition](#proof-real-language-in-the-real-composition)
-- [Proof Hebrew and mixed-direction type](#proof-hebrew-and-mixed-direction-type)
+- [Start from the reading situation](#start-from-the-reading-situation)
+- [Choose roles, not a recipe](#choose-roles-not-a-recipe)
+- [Compare enough to make a real decision](#compare-enough-to-make-a-real-decision)
+- [Tune spacing and hierarchy in the render](#tune-spacing-and-hierarchy-in-the-render)
+- [Treat emphasis as meaning](#treat-emphasis-as-meaning)
+- [Deliver fonts deliberately](#deliver-fonts-deliberately)
+- [Proof real language and mixed direction](#proof-real-language-and-mixed-direction)
 - [Audit delivery and provenance](#audit-delivery-and-provenance)
-- [MANDATORY: verify the rendered font](#mandatory-verify-the-rendered-font)
+- [Verify the delivered type system](#verify-the-delivered-type-system)
 
-## Choose a voice on purpose
+## Start from the reading situation
 
-Every Persuade or Experience surface MUST declare a deliberate display voice
-distinct from its body face. A system stack as the rendered display face is
-an automatic fail on those surfaces; a system stack is permissible only for
-dense Operate UI, product continuity, or regulated delivery, by written
-decision (the same exception list as RISK-PERIOD-001).
+Before naming a face, establish the actual conditions:
 
-Selection is a decision with named rejects, never a reach:
+- audience, language, script, familiarity, accessibility needs, and devices;
+- content roles, reading duration, density, tone, and highest-value message;
+- approved brand or product continuity and the degree of expressive freedom;
+- real headline lengths, names, numbers, punctuation, controls, and data;
+- performance, privacy, licensing, redistribution, maintenance, and fallback
+  constraints;
+- owner feedback about voice, age, crowding, small text, or sameness, scoped
+  to the exact work that caused it.
 
-1. Write three to five voice adjectives derived from THIS client's world, and
-   the near-misses they exclude.
-2. Shortlist three or more credible candidates. Set the longest real headline
-   and a real paragraph in each, at real sizes, and look.
-3. Record the winner, the two strongest rejects, and why the winner fits this
-   client. If the justification would fit any client in the vertical, it is
-   not a choice yet.
-4. Diff against the [ledger](../quality/ledger.md): the display family MUST
-   NOT appear in the last three ledger rows, no two builds in one batch may
-   share a family, and the construction-class saturation rule applies.
+Record a short type brief in project language. Examples of useful criteria
+are warm without nostalgia, fast scanning under pressure, comfortable Torah
+study in Hebrew and English, or mechanical without pretending to be code.
+These are examples, not selectable presets.
 
-The owner's recorded PRIOR, from three rejection rounds: a characterful
-grotesk at confident weight, mixed case. A prior is a starting bet, not a
-class verdict; any construction model may beat it through the selection
-protocol. The three recorded failures are dated, execution-bound readings,
-not class bans: an old-style serif pairing read old-fashioned on that build;
-neutral defaults (Geist, Inter, Archivo as display) read unstyled on those
-builds; quirky display faces (Unbounded, Syne) read vibe-coded there. A
-serif, slab, humanist, or display face that survives the named-rejects
-comparison wins on its own evidence, and any brief, audience, or owner
-evidence may override the prior (a wedding shop earned an elegant serif).
-Watch class saturation in the [ledger](../quality/ledger.md): when three of
-the last five rows share a construction class, the class itself is a forming
-fingerprint and the next shortlist MUST carry a credible candidate from
-outside it. Character never at the cost of legibility: script faces and
-high-contrast Didones stay out of body-adjacent and navigational text (HARD
-territory, recorded reason to deviate), and every display choice names the
-audience and why they can read it.
+## Choose roles, not a recipe
 
-A familiar face is not automatically generic and an unusual face is not
-automatically good. The tell is the absence of decision. Preserve an
-established, authorized brand typeface that still serves the work.
+Define only the roles the content needs. A project may use one family across
+every role, several related voices, a system stack, a custom face, variable
+axes, lettering, or no conventional display role. Pairing is optional. A
+system font can be an intentional identity decision, not an automatic sign of
+missing design.
 
-## The pairing procedure
+For every consequential role, decide:
 
-One face leads, one supports. Subtle differences look like accidents; clear
-differences look like design.
+- what the role must communicate or help someone do;
+- which face, style, weight, width, optical size, case, and punctuation serve
+  it;
+- how it relates to adjacent roles in scale, rhythm, contrast, and density;
+- how it changes with content, width, language, zoom, and user settings;
+- what fallback remains acceptable and what evidence will prove it.
 
-1. Choose the display face for voice (previous section).
-2. Choose the body face from a DIFFERENT construction model with similar
-   proportions: high-contrast serif display over neutral grotesk body,
-   characterful grotesk display over quiet humanist body. Reject a pairing
-   whose two faces share classification, similar contrast, and similar
-   terminals unless a recorded reason names why the near-pair serves this
-   project; near-identical pairs read as accidents.
-3. The body face must be a proven workhorse: multiple real weights, true
-   italics, open apertures, x-height around 60 to 75 percent of cap height,
-   no clotting in a squint test at 16px.
-4. Sanity-check x-height compatibility: set both at 16px and compare
-   lowercase x heights; over ~15 percent mismatch needs size compensation.
-5. Two families maximum. A third requires a distinct recorded role (true
-   code, tabular data) and its own loading budget. One variable family with
-   well-used axes often beats two static families.
+Use hierarchy to express information value. Adjacent levels need enough
+perceptible difference to remain distinguishable, but size, weight, width,
+case, color, placement, spacing, and motion are all available. Do not force a
+fixed modular scale or family count when another system reads better.
 
-## The dated bench
+## Compare enough to make a real decision
 
-Compiled 2026-08. A starting bench, not a whitelist: leaving it costs one
-recorded sentence, and for greenfield or Showcase work the SHORTLIST must
-include at least one credible off-bench candidate so the exit stays
-exercised. Named lists decay (Instrument Serif went from recommendation to
-tell in about a year), so re-verify this list against current discourse
-after mid-2027 and date any replacement.
+When type is open or the owner has rejected the fonts, render enough credible
+possibilities to expose the consequential difference. Use the longest real
+headline, ordinary paragraphs, navigation, controls, numbers, punctuation,
+and every required script inside the intended composition.
 
-There is no runtime list of permitted or refused families, and this bench is
-not one. It is a dated starting point for a comparison, and every entry is
-beatable by the project's own evidence. Judge a face by what it does for this
-project, at this size, in this composition, holding two things in mind:
+The comparison may contain several families, one family with different
+settings, an established brand option against a repair, or a system-stack
+continuity option. Its size follows uncertainty. Record the selected option,
+the strongest alternative or tension considered, and the project-specific
+reason the choice won. Do not require a named number of rejects.
 
-- a familiar choice is not automatically generic, and frequency of use is
-  never the finding by itself;
-- an unusual choice is not automatically distinctive, and novelty is no
-  substitute for fit.
+Do not consult a portable font blacklist or dated recommendation bench. When
+owner-authorized cross-project history exists, compare the rendered system
+with recent work only after the candidate exists. Repetition is a prompt to
+ask whether producer habit displaced project fit; it is not an automatic
+veto.
 
-The first question is never how often a face is used. It is whether the face
-says what this project needs said, and whether it holds up rendered at the
-sizes this page actually uses.
+Do not treat a new font as a cosmetic rescue for a rejected direction. When the
+whole page feels ugly, generic, artificial, or wrong, inspect how type behaves
+with subject material, composition, hierarchy, public voice, and media before
+swapping families. A change of face can be the right root correction when the
+role itself is wrong; it cannot make an unrelated public proposition feel
+considered by itself. Use [taste calibration](taste-calibration.md) when the
+owner's objection is to the rendered answer rather than a clearly isolated type
+role.
 
-The single canonical watch list of saturated and studio-burned faces lives
-in [convergence-watch](../convergence-watch.md); HARD 1 in the
-[owner absolutes](../../policy/absolutes.md) gates every face on it. A bench
-face is promoted to that watch when it appears in three of the last ten
-ledger rows; Bricolage Grotesque is the nearest to that trigger.
+## Tune spacing and hierarchy in the render
 
-**Characterful grotesks (display):** Bricolage Grotesque (passed owner
-review; nearing the promotion trigger), Cabinet Grotesk, General Sans at
-heavy weights, Familjen Grotesk, Hanken Grotesk at black, Anybody.
-**Serifs with drawing (display or editorial):** Fraunces (passed for the
-wedding vertical), Gambetta, Erode, Sentient, Boska, Zodiak.
-**Quiet bodies:** Switzer (body only), General Sans, Supreme, Ranade, Jost
-(passed), Be Vietnam Pro, Source Sans 3. **Mono, code and data only:**
-JetBrains Mono, Martian Mono, Spline Sans Mono.
+No numerical value fails merely for falling outside a house range. Use real
+copy and evaluate the relationships at the widths and settings that ship.
 
-Free tiers: Fontshare and uncut.wtf before the Google Fonts top ten. For
-identity-bearing client work with budget, real foundries outrank all of the
-above: Klim, Commercial Type, ABC Dinamo, Grilli Type, Displaay, Pangram
-Pangram, OH no Type.
+Inspect:
 
-## The numbers
+- **Letter spacing:** collisions, clogged counters, broken ligatures, loose
+  lowercase body text, over-tracked labels, and compressed words. Large type
+  may tolerate tighter spacing than small text; judge the actual face and
+  language rather than copying a universal value.
+- **Line spacing:** whether adjacent lines remain distinct without breaking
+  the intended texture. Test ascenders, descenders, diacritics, wrapped links,
+  and mixed scripts.
+- **Measure:** whether reading becomes tiring, choppy, or visually detached
+  from the composition. Responsive measure may change by role.
+- **Scale:** whether the largest type answers the first important question and
+  whether ordinary reading and controls remain comfortably legible.
+- **Weight and style:** whether requested files or variable-axis ranges exist,
+  whether synthesis occurs, and whether emphasis survives on the real
+  background.
+- **Wrapping:** intentional breaks, widows, orphaned fragments, hyphenation,
+  narrow columns, localization expansion, and text-spacing overrides.
+- **Label/value separation:** whether repeated metadata, facts, legends, or
+  compact controls keep the label and value perceptibly distinct at the real
+  narrow width. A fixed label track can silently become shorter than the
+  longest actual label; verify content-aware spacing, wrapping, localization,
+  and text-spacing overrides without prescribing one layout.
 
-Floors and ranges, checkable from computed styles. Deviations demand rendered
-proof, not intent.
+Treat observed collisions, lost letterforms, exhausting density, unreadable
+small text, or hierarchy that fails under actual content and user settings as
+review evidence. Judge the role, audience, script, device, contrast, zoom,
+text-spacing overrides, and rendered result; do not create a portable pixel,
+tracking, leading, width-axis, or scale threshold. Legal text is not exempt
+from readability.
 
-| Property | Rule |
-| --- | --- |
-| Body size | 16 to 21px; nothing anywhere below 12px without a justified information value (list and justify each); never below 11px except legally required fine print |
-| Body line-height | 1.4 to 1.6, unitless, rising with measure (60-75ch wants 1.5-1.7) |
-| Measure | 45 to 75ch target on desktop, 30 to 40ch on phones; max-width roughly 30x body px size |
-| Heading line-height | 0.95 to 1.25, falling as size rises; display-scale stacked headlines may go to 0.85 with descender-clip verification; a multi-line H1 at body leading is a named amateur tell |
-| Display tracking | 0 to -0.03em at 48px+, to -0.04em at 80px+ for tight grotesks; NEVER below -0.05em; NEVER negative below 32px |
-| Uppercase tracking | micro-labels +0.05em to +0.12em, always positive; display-scale uppercase 0 to +0.03em, negative only with rendered proof; uppercase limited to labels of a few words, never sentences |
-| Lowercase body tracking | 0; positive tracking on lowercase body only below ~12px |
-| Scale | body and UI sizes come from one ratio, 3 to 5 steps (dense UI 1.2, general 1.25, landing 1.333 to 1.5); hero and display sizes are chosen compositionally OUTSIDE the ratio chain, with hero-to-body 2.0+ as the floor on landing pages |
-| Hierarchy | adjacent levels differ on at least TWO axes (size + weight, size + case); same size in two weights within one role is a broken system |
-| Weights | one weight per role; load every weight and style the CSS uses; `font-synthesis: none` as a tripwire |
-| Alignment | left for reading text; centered only up to 3 lines; justify only with `hyphens: auto`; no pure #000 on #FFF for long-form |
-| Emphasis | italic OR weight, never both on one run; underline is for links only; under ~10 percent of any paragraph |
-| Punctuation | curly quotes in prose; `text-wrap: balance` on headings; no em dashes anywhere user-facing (owner ABSOLUTE) |
-| Size follows value | the biggest type goes to the highest-value information; a scale effect that demotes the primary answer below 16px loses |
+Test at project-relevant narrow, intermediate, and wide widths, 200 percent
+zoom, browser text-spacing overrides, and forced colors where applicable.
+Fluid type must preserve zoom and hierarchy; avoid viewport-only formulas
+that prevent text from scaling.
 
-## Fluid type
+## Treat emphasis as meaning
 
-- clamp() belongs on display text with 8px+ of range; body stays fixed 16 to
-  19px or one breakpoint bump.
-- Every clamp() derives from two explicit anchors and is written as rem
-  bounds with a rem + vw preferred value. A bare `Nvw` preferred value breaks
-  browser zoom and fails WCAG 1.4.4.
-- Verify numerically at 320, 375, 768, 1440, 1920: monotonic, inside bounds,
-  and the hierarchy never inverts (h1 > h2 > body at every width).
-- On phones, headings shrink 30 to 50 percent while body holds or grows.
+A colored, italic, underlined, outlined, animated, or differently faced word
+can be excellent. It becomes a generic tell when the gesture repeats without
+a semantic, editorial, interactive, or brand reason, fragments reading, or
+looks copied from an unrelated project.
 
-## Inks versus graphics
+Review emphasis in the full sentence and across the whole page:
 
-Split every palette at token time into INKS (text and text-bearing fills,
-4.5:1 minimum on their real surfaces) and GRAPHICS (borders, icons, decor,
-3:1 minimum). One hex MUST NOT hold both jobs; a brand accent used on text
-gets a purpose-built darker ink variant. This studio has shipped the same
-failure three times; the token split is the fix.
+- What relationship does the change express?
+- Is that relationship understandable without relying on color alone?
+- Does the treatment survive contrast, reflow, forced colors, and reduced
+  motion?
+- Does the page use the gesture consistently enough to communicate without
+  turning every headline into the same trick?
 
-Text over photography or gradients requires a scrim or plate sized to the
-text block, verified by sampling the rendered composite pixels behind the
-actual glyphs. Token arithmetic cannot see a pale window behind a headline.
-If the photo can change, the scrim alone must guarantee the floor.
+Keep or remove it based on the rendered answer, not because a category is
+fashionable or associated with generated sites.
 
-## Ship fonts like an engineer
+## Deliver fonts deliberately
 
-- **Self-host every face** as subsetted woff2 in the repo, same origin. A
-  third-party fonts CSS link is a defect unless the client requires it. CDNs
-  fail under ad blockers, firewalls, and outages, and the failure is silent.
-- `<link rel="preload" as="font" type="font/woff2" crossorigin>` for the one
-  or two above-the-fold faces. The `crossorigin` attribute is mandatory even
-  same-origin; without it the font downloads twice.
-- `font-display: swap` for identity faces; `optional` only for decorative
-  flourishes whose fallback is acceptable forever.
-- Ship a metric-compatible fallback: a second @font-face over `local()` with
-  `size-adjust`, `ascent-override`, `descent-override` tuned so a failed load
-  does not move layout. Verify by blocking the font and comparing heights.
-- Subset against the site's real corpus including punctuation, curly quotes,
-  diacritics, and currency; a probe string can pass while the headline's
-  apostrophe paints in the fallback.
-- Maximum 4 font files or 1 to 2 variable files; woff2 only. Before
-  shipping a family at several weights, hash the files: font services hand
-  out the SAME variable file under every weight name, so four `@font-face`
-  blocks can be four downloads of one file. Identical hashes mean one
-  declaration with a `font-weight` RANGE and `format("woff2-variations")`.
-- On Windows, write files as explicit UTF-8 and grep shippable files for the
-  mojibake signature after any edit touching typographic punctuation: use
-  the encoding-proof spelling `[\xC2\xC3\xE2]` in ripgrep (the literal
-  `[ÂÃâ]` works only when the pattern itself survives console encoding).
-  Expect rare false positives on legitimate French or Portuguese text; clear
-  those by eye.
+Choose self-hosted files, a trusted service, platform fonts, system fonts, or
+another delivery path from rights, privacy, performance, resilience, tooling,
+and maintenance evidence. No method is globally required.
 
-## Motion and masking laws
+For downloadable fonts:
 
-Learned on this studio's own builds:
+- record source, license, redistribution rights, files, subsets, weights,
+  styles, axes, and script coverage;
+- load only what the rendered project uses and configure an appropriate
+  `font-display` behavior;
+- preload only genuinely critical files and avoid duplicate variable-font
+  binaries declared as separate downloads;
+- set an intentional fallback and prevent unexpected faux bold or italic;
+- test failure behavior and layout stability rather than assuming the CSS
+  declaration is enough.
 
-- Never CSS-transition `font-weight` or `font-variation-settings` on text
-  that animates or scrubs; snap the axis under a paint-cheap cover.
-- Text-fitting code must suppress transitions while measuring, must not read
-  back its own previous inline value as a baseline, and must solve against
-  advance width minus trailing tracking.
-- Any masked or clipped text reveal gets descender slack: padding-bottom
-  ~0.2em with compensating negative margin, mask sized ~1.3em for roll
-  reveals. Verify with a deep-descender test string ("yes, giddy typography
-  jumps") at rest and mid-animation.
+For system or platform fonts, record why continuity, density, latency,
+privacy, regulation, or the chosen aesthetic makes that path appropriate.
+Verify the actual platform/browser matrix relevant to the project and define
+acceptable fallbacks.
 
-## Proof real language in the real composition
+Write text files as UTF-8 and inspect for mojibake after edits touching
+punctuation or non-Latin scripts. Treat hits as encoding evidence to inspect,
+not as a reason to prohibit punctuation.
 
-Build specimens from content that will ship: the longest likely heading,
-ordinary paragraphs, controls, navigation, names, numbers, prices, dates,
-punctuation, every required script. Judge inside the intended layout beside
-its actual media, at narrow, intermediate, and wide widths. Inspect crowded
-joins, clogged counters, kerning collisions in rendered headlines (AV, Wa,
-To pairs), line breaks, widows, and how the composition recomposes on a
-phone. A desktop poster lockup must not collapse into crowded fragments at
-375px. Test browser zoom at 200 percent, text-spacing overrides, and
-forced-colors mode.
+## Proof real language and mixed direction
 
-## Proof Hebrew and mixed-direction type
+Build proofs from the content that will ship: the longest likely heading,
+ordinary paragraphs, controls, navigation, names, numbers, dates, currencies,
+punctuation, and every required script. Judge them inside the intended layout
+beside actual media at the widths that change the composition.
 
-When Hebrew appears, define its content job before styling it: locale,
-isolated term, parallel translation, quotation, and sacred text carry
-different direction, line-breaking, and review requirements. Follow the
-current W3C Hebrew Layout Requirements and the
+When Hebrew or another right-to-left script appears, define its content job
+before styling it. Follow current script-specific layout requirements and the
 [localization contract](../quality/localization.md):
 
-- tie base direction to the active locale; mark passages with accurate
-  `lang` and `dir`;
-- isolate embedded names, URLs, numbers, and dates with deliberate
-  bidirectional markup;
+- mark language and base direction accurately;
+- isolate embedded names, URLs, numbers, and dates deliberately;
 - use logical properties and meaningful source order;
 - inspect punctuation, numerals, wrapping, selection, and copy/paste in real
   mixed-language sentences;
-- verify every required letter, mark, and diacritic exists in the actual
-  files and fallbacks; proof shaping and mark placement at shipping sizes;
-- never treat the script as visual texture, and never invent sacred text;
-- verify transliteration and sacred material with an accountable authority,
-  plus the [cultural-context review](../quality/cultural-context-review.md)
-  when lived identity is central.
+- verify the required letters, marks, shaping, and diacritics in the actual
+  files and fallback chain;
+- never use an unfamiliar script as visual texture or invent sacred text;
+- obtain accountable review for transliteration, sacred material, or
+  culturally central language.
 
 ## Audit delivery and provenance
-
-Inventory what the browser is asked to load and what actually ships: source,
-license, redistribution rights, formats, subsets, weights, styles, axes,
-required scripts, fallback order, preload and failure behavior. Do not infer
-rights or glyph coverage from a family name. Do not ship unused weights.
 
 When Python 3.10+ is available, run the bounded source inventory:
 
@@ -277,127 +207,52 @@ When Python 3.10+ is available, run the bounded source inventory:
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/font_audit.py" "PROJECT"
 ```
 
-`<DESIGN_DNA_SKILL_ROOT>` is the absolute directory containing the installed
-`SKILL.md`. The report is source evidence only. It is not a browser proof,
-license ruling, glyph test, or authorship detector. Rendered proof comes from
-the protocol below.
+`<DESIGN_DNA_SKILL_ROOT>` is the directory containing the installed
+`SKILL.md`. The report inventories source contracts; it is not a browser
+proof, license ruling, quality score, font blacklist, or authorship detector.
 
-## MANDATORY: verify the rendered font
+## Verify the delivered type system
 
-Run this after every build and every revision that touches type, in the real
-browser, before any ship claim. Steps 1 through 7 are loader- and
-layout-level APIs that work even in a hidden automation tab; only the final
-screenshot needs a visible pane. Two traps make the obvious checks lie:
-`document.fonts.check()` returns true for typo'd and system families, so it
-is only ever a negative signal; and `getComputedStyle().fontFamily` reports
-the requested stack, never the face that painted.
+After a build or a revision that affects type, choose evidence from the actual
+claim and failure risk. Bind every observation to the browser, build, route,
+state, width, and date. A CSS stack alone does not establish browser use, but
+no single universal proof sequence applies.
 
-1. **Registration proof (family names).** Enumerate the families to test by
-   walking computed styles of every element bearing a text node and taking
-   each non-generic family in its stack (exclude `serif`, `sans-serif`,
-   `monospace`, `system-ui`, `ui-*`); this catches the typo'd REQUEST that
-   an @font-face walk would miss. For each:
-   `const faces = await document.fonts.load('16px "<Family>"')` (try/catch;
-   the promise rejects when a matched face fails to load). An empty array is
-   the deterministic detector for a FAMILY-NAME mismatch: a typo'd or
-   unregistered family returns no faces. It CANNOT detect a missing weight
-   or style; font matching is nearest-match, so requesting 700 against a
-   400-only family happily returns the 400 face. Require `faces.length > 0`
-   and every status `loaded`; weights and styles are step 3's job.
-2. **Paint proof.** Canvas width comparison with the site's real headline
-   string AND the canonical width-diverse probe
-   `ILil1| mmwWM 0O8B .,:; ’ftfi`
-   (narrow strokes, wide strokes, confusable rounds, punctuation, a curly
-   apostrophe, ligature triggers; extend it with any glyph the subset must
-   carry), at each weight the page actually uses, never only the default
-   400. Measure four widths: bare `monospace`, bare `serif`,
-   `"Family", monospace`, and `"Family", serif`. The face PAINTED when the
-   two stacked measurements equal each other AND differ from at least one
-   bare baseline; a fallback would follow its stack and make the two
-   stacked widths differ. Requiring difference from BOTH baselines is a
-   false-negative trap: a real face's advance width can coincide with one
-   baseline by chance (this studio hit a 0.7px coincidence against Times
-   on a live build).
-3. **Synthesis proof (weights and styles).** Enumerate every (family,
-   weight, style) combination in computed styles, skipping combinations
-   that resolve to generic or system families (those are judged by step 4's
-   zero-resource rule, not here); each remaining combination must be
-   covered by a registered face's DESCRIPTORS, read from
-   `[...document.fonts]`. Parse `FontFace.weight` as the raw descriptor
-   string it is: a range like `100 900` for variable fonts, a keyword
-   (`normal` = 400, `bold` = 700), or a single value treated as a
-   degenerate range. Assert the CSS-used weight falls INSIDE the range;
-   never compare the string for equality, which misreports every variable
-   font as a missing weight. For style: a computed `italic` is covered by
-   any face whose style descriptor contains `italic` or `oblique` (check
-   oblique angle ranges when given). CSS 700 with no covering face means
-   faux bold is on screen. Reference implementation:
+Keep these evidence types separate:
 
-   ```js
-   const kw = { normal: 400, bold: 700 };
-   const cover = (desc, w) => {
-     const p = String(desc).split(/\s+/).map(t => kw[t] ?? parseFloat(t));
-     return p.length > 1 ? w >= p[0] && w <= p[1] : w === p[0];
-   };
-   const need = new Set(), GEN = ['serif','sans-serif','monospace','system-ui'];
-   document.querySelectorAll('*').forEach(el => {
-     if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
-     const cs = getComputedStyle(el);
-     const fam = cs.fontFamily.split(',')[0].replace(/["']/g, '').trim();
-     if (!GEN.includes(fam) && !fam.startsWith('ui-'))
-       need.add(fam + '|' + cs.fontWeight + '|' + cs.fontStyle);
-   });
-   const faces = [...document.fonts];
-   const missing = [...need].filter(k => {
-     const [f, w, st] = k.split('|');
-     return !faces.some(fc => fc.family.replace(/["']/g, '') === f &&
-       cover(fc.weight, +w) &&
-       (st === 'normal' ? true : /italic|oblique/.test(fc.style)));
-   });
-   // missing.length must be 0; anything listed is synthesized on screen
-   ```
-4. **Network proof.** Build the expected-URL list from the CSSOM: iterate
-   `document.styleSheets`, collect `CSSFontFaceRule` src URLs (a
-   cross-origin stylesheet throws on `.cssRules`; fetch it directly or
-   exclude it deliberately, never silently). Then
-   `performance.getEntriesByType('resource')` filtered by initiatorType
-   `font` or a font-file extension must contain every expected URL, each
-   with `transferSize > 0` (network fetch) or
-   `transferSize === 0 && decodedBodySize > 0` (cache hit); an entry with
-   all sizes 0 is a blocked or cross-origin-opaque load, investigate. Fonts
-   inlined as `data:` URIs never appear in resource timing; for those skip
-   this step and rely on steps 1 to 3. Zero font entries on a page that
-   loads fonts by URL means the fonts were never requested. Zero font
-   resources of ANY kind on a Persuade or Experience page is an automatic
-   fail whether or not the CSS declares webfonts; that is the
-   system-stack-as-identity failure.
-5. **Console proof.** Zero messages matching "Refused to load the font",
-   CORS, or 404 on font URLs. Console history is not readable from page
-   JavaScript: capture through the automation harness console reader or
-   CDP `Log.enable` BEFORE the load or hard reload; a pre-navigation
-   `console.error` hook is the last resort and misses browser-generated
-   network errors.
-6. **Computed-size proof.** For each type role (hero, section head, body,
-   caption) assert `getComputedStyle().fontSize` at 375, 768, and 1440
-   against the intended values. Reaching those widths requires actually
-   resizing the viewport before each read (CDP
-   `Emulation.setDeviceMetricsOverride` works in a hidden tab, or the
-   harness resize API); `clamp()` and vw values resolve against the CURRENT
-   viewport, so three reads at one width test one width. A hero whose
-   computed size equals the generic heading size means a specificity bug
-   ate the rule; this exact bug shipped on this studio's own showpiece.
-7. **Fallback rehearsal.** Block the font FILES, not the origin: DevTools
-   request blocking or CDP `Network.setBlockedURLs` on `*.woff2`, or
-   temporarily rename the files, or disable the `<style>`/stylesheet
-   containing the @font-face rules. (`document.fonts.clear()` does NOT
-   detach CSS-declared faces; do not use it.) Hard-reload, then verify
-   layout does not collapse, the deliberate fallback is readable, and
-   element heights match the loaded run within CLS tolerance.
-8. **Look.** The ~1440 and ~375 screenshots from the
-   [preship gate](../../templates/preship-gate.md), opened and examined:
-   does the display voice read as chosen, are descenders intact, is any
-   text clipped, does the hierarchy read at arm's length?
+- **Source inventory:** declared faces, files, descriptors, license record,
+  subsets, axes, and fallback intent. This shows configuration, not browser
+  selection.
+- **Browser availability:** `document.fonts`, `document.fonts.ready`, and
+  explicit load checks for consequential downloadable combinations. This can
+  establish registration or availability, not which face painted every glyph.
+- **Computed styling:** family stack, size, weight, style, leading, tracking,
+  language, and direction for selected roles. Computed `font-family` reports a
+  request, not glyph-level face selection.
+- **Delivery evidence:** requested URLs, status, MIME type, decoded bytes,
+  cache/service behavior, CORS/CSP, and console errors when network delivery is
+  material.
+- **Metric differential:** canvas or layout measurements against chosen
+  fallbacks can show that metrics changed. Similar metrics can collide, so call
+  this indirect evidence rather than paint proof and use real project strings
+  and scripts when it matters.
+- **Synthesis and axis evidence:** compare consequential requested
+  weight/style/axis combinations with registered descriptors when faux or
+  nearest-match substitution could change meaning or identity. Do not require
+  an exhaustive matrix when the project does not use it.
+- **Rendered layout:** inspect real wraps, line boxes, clipping, overflow,
+  hierarchy, scripts, and emphasis at the conditions that can change them.
+- **Fallback rehearsal:** when failure is material, block or disable the real
+  downloadable path, verify that the failure actually occurred, and inspect
+  readability, content visibility, and layout stability.
+- **Visual inspection:** open the final captures and inspect voice, spacing,
+  line breaks, descenders, mixed scripts, and the complete hierarchy. Repeat
+  under zoom, text-spacing, or platform conditions that are relevant.
 
-A failure at any step is a build failure. Fix the loading, the file, or the
-CSS; never ship the fallback silently and never downgrade the check to the
-declared stack.
+Use stronger browser or specialist instrumentation when a claim requires
+glyph-level face identification; the bundled rendered reviewer does not prove
+it. Record exact failures and revisions without upgrading indirect evidence to
+a stronger claim.
+
+A font-loading defect blocks only the type-delivery or visual claim it affects;
+it does not imply that every project must use a downloadable display face.

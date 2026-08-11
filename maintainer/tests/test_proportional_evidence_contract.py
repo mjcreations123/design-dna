@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import binascii
 import hashlib
 import importlib.util
 import json
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 from unittest import mock
 
@@ -28,22 +31,50 @@ def load_initializer():
     return module
 
 
-def compact_direction(*extra_sections: str) -> str:
-    return "\n".join(
-        (
-            "<!-- proportional-evidence-v1 -->",
-            "## Identity and intent",
-            "This build helps local customers compare the approved service options.",
-            "## Truth and provenance",
-            "Copy and identity come from the owner packet; no unsupported claims are used.",
-            "## Responsive, accessible, and functional behavior",
-            "Navigation, forms, long content, keyboard input, zoom, and narrow widths were covered.",
-            "## Owner and release state",
-            "Build ordinary-17 is self-reviewed; owner acceptance remains pending before release.",
-            *extra_sections,
-            "",
-        )
+def write_png(path: Path, width: int, height: int) -> str:
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        checksum = binascii.crc32(kind)
+        checksum = binascii.crc32(data, checksum) & 0xFFFFFFFF
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", checksum)
+
+    row = b"\x00" + (b"\x24\x68\xac" * width)
+    payload = (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+        + chunk(b"IDAT", zlib.compress(row * height))
+        + chunk(b"IEND", b"")
     )
+    path.write_bytes(payload)
+    return hashlib.sha256(payload).hexdigest()
+
+
+def compact_direction(
+    *extra_sections: str,
+    include_project_logic: bool = True,
+) -> str:
+    sections = [
+        "<!-- proportional-evidence-v1 -->",
+        "## Identity and intent",
+        "This build helps local customers compare the approved service options.",
+        "## Truth and provenance",
+        "Copy and identity come from the owner packet; no unsupported claims are used.",
+        "## Responsive, accessible, and functional behavior",
+        "Navigation, forms, long content, keyboard input, zoom, and narrow widths were covered.",
+        "## Owner and release state",
+        "Build ordinary-17 is self-reviewed; owner acceptance remains pending before release.",
+    ]
+    if include_project_logic:
+        sections.extend((
+            "## Project-derived organizing logic",
+            "- Project evidence: The approved service packet groups choices by the commitment each customer is ready to make.",
+            "- Organizing logic: Let commitment deepen across the page so comparison precedes detail and no option borrows authority from another.",
+            "## Observable consequential design decisions",
+            "| Decision | Project reason or source | Observable consequence | Verification |",
+            "| --- | --- | --- | --- |",
+            "| Keep the choice comparison adjacent to its constraints. | The approved packet treats eligibility and scope as part of each choice. | A visitor can compare an option and its constraint without crossing an unrelated section. | Inspect the rendered choice sequence with long approved copy at narrow and wide widths. |",
+        ))
+    sections.extend((*extra_sections, ""))
+    return "\n".join(sections)
 
 
 def compact_visual_review(digest: str) -> str:
@@ -54,7 +85,7 @@ def compact_visual_review(digest: str) -> str:
 - Final implementation reviewed: yes
 - Reviewer relationship: producer-self
 
-| Route/state | Viewport/context | Evidence path and SHA-256 | Observation |
+| Route/state | Viewport/context | Rendered PNG path and SHA-256 | Observation |
 | --- | --- | --- | --- |
 | /; default | 390x844; keyboard | evidence/review.png plus sha256:{digest} | Task and navigation remain usable. |
 
@@ -102,8 +133,7 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
             evidence = project / "evidence"
             evidence.mkdir()
             artifact = evidence / "review.png"
-            artifact.write_bytes(b"rendered ordinary project")
-            digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+            digest = write_png(artifact, 390, 844)
             self.assertEqual(
                 [],
                 self.module.substantive_body_failures(
@@ -117,6 +147,104 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
                     ),
                 ),
             )
+
+            artifact.write_bytes(b"arbitrary bytes renamed as a screenshot")
+            fake_digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+            fake_failures = self.module.substantive_body_failures(
+                "visual-review",
+                compact_visual_review(fake_digest),
+                project=project,
+                record_path=state_root / "visual-review.md",
+                required_assurance_profiles={"standard"},
+                evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+            )
+            self.assertTrue(
+                any("not a decodable PNG" in failure for failure in fake_failures),
+                fake_failures,
+            )
+
+            mismatched = evidence / "review.jpg"
+            mismatch_digest = write_png(mismatched, 390, 844)
+            mismatch_body = compact_visual_review(mismatch_digest).replace(
+                "evidence/review.png",
+                "evidence/review.jpg",
+            )
+            mismatch_failures = self.module.substantive_body_failures(
+                "visual-review",
+                mismatch_body,
+                project=project,
+                record_path=state_root / "visual-review.md",
+                required_assurance_profiles={"standard"},
+                evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+            )
+            self.assertTrue(
+                any("must use a .png extension" in failure for failure in mismatch_failures),
+                mismatch_failures,
+            )
+
+    def test_standard_direction_requires_logic_while_quick_repairs_are_exempt(self) -> None:
+        compact = compact_direction(include_project_logic=False)
+        standard_failures = self.module.substantive_body_failures(
+            "direction",
+            compact,
+            required_assurance_profiles={"standard"},
+            evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+        )
+        self.assertIn(
+            "missing required sections: Observable consequential design decisions, Project-derived organizing logic",
+            standard_failures,
+        )
+        self.assertEqual(
+            [],
+            self.module.substantive_body_failures(
+                "direction",
+                compact,
+                required_assurance_profiles={"quick"},
+                evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+            ),
+        )
+
+        boilerplate = compact_direction(
+            "## Project-derived organizing logic",
+            "- Project evidence: Use a clean modern design for this project.",
+            "- Organizing logic: Use a clean modern design for this project.",
+            "## Observable consequential design decisions",
+            "| Decision | Project reason or source | Observable consequence | Verification |",
+            "| --- | --- | --- | --- |",
+            "| Make it clean and modern. | Make it clean and modern. | Make it clean and modern. | Make it clean and modern. |",
+            include_project_logic=False,
+        )
+        boilerplate_failures = self.module.substantive_body_failures(
+            "direction",
+            boilerplate,
+            required_assurance_profiles={"standard"},
+            evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+        )
+        self.assertGreaterEqual(
+            sum("generic boilerplate" in failure for failure in boilerplate_failures),
+            2,
+            boilerplate_failures,
+        )
+
+    def test_quick_initializer_omits_the_exempt_direction_scaffold(self) -> None:
+        template_root = PLUGIN / "skills" / "design-dna" / "templates"
+        quick = self.module.template_text(
+            template_root,
+            "direction-template.md",
+            "test-version",
+            ("quick",),
+        )
+        standard = self.module.template_text(
+            template_root,
+            "direction-template.md",
+            "test-version",
+            ("standard",),
+        )
+        for heading in self.module.PROJECT_DERIVED_DIRECTION_SECTIONS:
+            self.assertNotIn(f"## {heading}", quick)
+            self.assertIn(f"## {heading}", standard)
+        self.assertNotIn("__REPLACE_WITH_A_CONSEQUENTIAL_DECISION__", quick)
+        self.assertIn("## Project-specific extensions", quick)
 
     def test_applicable_range_and_cultural_evidence_is_required(self) -> None:
         failures = self.module.substantive_body_failures(
@@ -145,6 +273,34 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
                     "range-study",
                     "cultural-context",
                 },
+                evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+            ),
+        )
+
+    def test_batch_study_requires_protocol_evidence_without_a_design_recipe(self) -> None:
+        failures = self.module.substantive_body_failures(
+            "direction",
+            compact_direction(),
+            required_assurance_profiles={"standard", "batch-study"},
+            required_evidence_capabilities={"batch-study"},
+            evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
+        )
+        self.assertIn("Batch Study protocol", "\n".join(failures))
+        complete = compact_direction(
+            "## Batch Study protocol",
+            (
+                "Three frozen briefs use isolated roots and project-derived "
+                "viewport classes; unprimed and masked review remain separate, "
+                "with no aesthetic score or novelty quota."
+            ),
+        )
+        self.assertEqual(
+            [],
+            self.module.substantive_body_failures(
+                "direction",
+                complete,
+                required_assurance_profiles={"standard", "batch-study"},
+                required_evidence_capabilities={"batch-study"},
                 evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
             ),
         )
@@ -179,6 +335,83 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
         )
         self.assertEqual(("sonic-wayfinding",), capabilities)
         self.assertEqual([extension], extensions)
+
+    def test_state_schema_binds_direction_contract_to_assurance_profile(self) -> None:
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        standard = json.loads(
+            self.module.state_manifest(
+                "5.1.0",
+                ("direction", "visual-review"),
+                ("standard",),
+            )
+        )
+        self.assertEqual(
+            standard["evidence_contract"]["direction_contract"],
+            "project-derived-organizing-logic-v1",
+        )
+        self.assertEqual(
+            [],
+            list(Draft202012Validator(schema).iter_errors(standard)),
+        )
+
+        quick = json.loads(
+            self.module.state_manifest(
+                "5.1.0",
+                ("direction", "visual-review"),
+                ("quick",),
+            )
+        )
+        self.assertEqual(
+            quick["evidence_contract"]["direction_contract"],
+            "quick-repair-exempt",
+        )
+        self.assertEqual(
+            [],
+            list(Draft202012Validator(schema).iter_errors(quick)),
+        )
+
+        mismatch = json.loads(json.dumps(standard))
+        mismatch["evidence_contract"]["direction_contract"] = (
+            "quick-repair-exempt"
+        )
+        self.assertTrue(
+            list(Draft202012Validator(schema).iter_errors(mismatch))
+        )
+        with self.assertRaises(self.module.StateError):
+            self.module.validate_evidence_contract(
+                mismatch["evidence_contract"],
+                ("standard",),
+            )
+        prior_contract = json.loads(
+            json.dumps(standard["evidence_contract"])
+        )
+        prior_contract["version"] = 1
+        del prior_contract["direction_contract"]
+        self.assertEqual(
+            ((), []),
+            self.module.migrate_evidence_contract(
+                prior_contract,
+                ("standard",),
+            ),
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state_root = project / ".design-dna"
+            state_root.mkdir()
+            legacy_standard = json.loads(json.dumps(standard))
+            del legacy_standard["evidence_contract"]
+            (state_root / "state.json").write_text(
+                json.dumps(legacy_standard),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                [
+                    "state.json needs the current project-derived direction "
+                    "contract before readiness; run --migrate."
+                ],
+                self.module.readiness_failures(project),
+            )
 
     def test_omitting_a_universal_anchor_fails(self) -> None:
         body = compact_direction().replace(

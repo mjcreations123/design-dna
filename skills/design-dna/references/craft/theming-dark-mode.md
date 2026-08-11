@@ -1,134 +1,78 @@
-# Dual themes and dark mode
+# Multiple color schemes and dark mode
 
-Use this when a project ships more than one colour scheme, when a client asks
-for dark mode, or when a surface must survive the operating system flipping
-it. [Colour and composition](color-composition.md) owns the palette itself
-and the ink-versus-graphics split; [systems and
-components](systems-components.md) owns token architecture. This file owns
-the decision to ship a second scheme and the craft of making both of them
-real.
+Use this when a project ships more than one color scheme, asks for dark mode,
+or must follow an operating-system preference. A second scheme is another
+rendered state of the design, not a mechanical filter.
 
-Dark mode is a second design, not a filter over the first. Shipping it
-doubles the surface that has to be art-directed, contrast-tested, and
-screenshotted, and half-finished dark mode is worse than none.
+## Decide from the project
 
-## Contents
+Dark, light, high-contrast, seasonal, user-selected, and single-scheme systems
+can all be appropriate. Decide from audience, use duration, environment,
+brand, content, platform convention, accessibility, maintenance, and owner
+preference. Do not assume that a particular vertical needs or does not need
+dark mode.
 
-- [Decide whether to ship it](#decide-whether-to-ship-it)
-- [Derive the dark scheme, never invert it](#derive-the-dark-scheme-never-invert-it)
-- [What has to change besides the background](#what-has-to-change-besides-the-background)
-- [Imagery, logos, and media](#imagery-logos-and-media)
-- [The preference contract](#the-preference-contract)
-- [Verify both schemes independently](#verify-both-schemes-independently)
+Record whether the scheme is:
 
-## Decide whether to ship it
+- the primary art direction;
+- a system-preference adaptation;
+- a manual user choice;
+- an accessibility mode;
+- a future or explicitly excluded feature.
 
-Ship a second scheme when the project earns it: long reading sessions, a
-tool used at night, a client whose brand genuinely lives dark, an operating
-context where the surrounding UI is dark. Skip it when the site is a short
-Persuade surface whose palette is derived from the client's world and whose
-visitors arrive once; a bakery does not need dark mode, and the effort buys
-more elsewhere.
+Do not leave a partial theme that styles only the page background and text.
 
-Never let dark-by-default arrive by inertia. A dark page with a saturated
-accent glow is a named cluster in the
-[generator defaults](../convergence-watch.md#dated-watch-the-generator-defaults):
-permanent dark mode with mid-grey body text is what a model reaches for when
-nothing told it what the palette should be. Dark is a legitimate committed
-direction, and the test is whether the project's own evidence chose it. When
-it did, record that in the direction; when it did not, the light scheme is
-the design and dark is a feature with a cost.
+## Derive relationships rather than invert values
 
-If the answer is "not now," say so in the direction record rather than
-leaving a broken half-theme in the tokens. A `prefers-color-scheme` block
-that styles four things and misses the rest is a defect, not a start.
+Review every semantic role in each scheme: grounds, surfaces, inks, graphics,
+links, focus, selection, disabled, warning, error, success, overlays, media
+scrims, fields, charts, maps, code, SVG, canvas, and native controls.
 
-## Derive the dark scheme, never invert it
+Pure black, pure white, saturated accents, unchanged brand colors, shadows,
+lighter elevated surfaces, borders, and glows are all available. Judge them
+from rendered contrast, halation, hierarchy, brand fit, and composition. No
+color value or elevation method is globally forbidden.
 
-An inverted palette is not a dark palette. Derive it:
+Typography may need optical changes between schemes, but do not require a
+weight or spacing adjustment without observing the real face and background.
 
-- **Do not use pure black.** A near-black in the project's own hue family
-  (a warm brown-black for a bakery, a cool slate for a marine subject) holds
-  the direction; #000 flattens it and raises halation against light text.
-- **Do not use pure white for body text.** Full-strength white on near-black
-  vibrates at reading sizes. Step it down and let the hierarchy come from
-  weight and spacing as well as luminance.
-- **Saturated colours read brighter on dark.** A brand accent tuned for a
-  white page usually needs desaturating and lightening to sit calmly on a
-  dark one. The
-  [ink versus graphic split](color-composition.md) applies per scheme: an ink
-  that clears 4.5:1 on paper may fail on the dark ground and needs its own
-  purpose-built variant.
-- **Elevation inverts its logic.** On light, higher surfaces cast shadows; on
-  dark, shadows disappear into the background and higher surfaces are
-  expressed by getting lighter. Copying the light scheme's shadow stack into
-  dark produces flat, muddy cards.
-- **Borders and dividers need separate values.** A hairline that reads as a
-  quiet rule on paper often vanishes on dark or, over-corrected, glows.
+## Treat media and identity explicitly
 
-## What has to change besides the background
+Inspect photographs, illustrations, diagrams, logos, transparent assets,
+embedded maps, charts, and third-party widgets in every scheme they can enter.
+Use approved scheme-specific assets or framing where needed. Do not recolor a
+brand mark or invert imagery without authority.
 
-Audit every token role, not only surface and text: focus rings, selection,
-disabled states, error and success colours, scrim and overlay opacity, code
-syntax highlighting, chart and data-visualisation series per
-[data visualization](data-visualization.md), map tiles, form field fills, and
-any colour baked into an SVG or an inline style.
+Record material per-scheme behavior in the asset manifest when the project
+needs durable handoff evidence.
 
-Type may need a small optical adjustment. Light text on a dark ground gains
-apparent weight, so a face set at a given weight on paper can read heavier in
-dark; a variable font makes this cheap to correct, and the
-[typography numbers](typography.md#the-numbers) still bound the result.
+## Define the preference contract
 
-## Imagery, logos, and media
+Choose system following, a binary control, a three-state control, per-page
+choice, or no manual control from the product contract. A three-state system
+is useful when users need system, light, and dark separately, but it is not a
+universal requirement.
 
-Photographs generally survive both schemes, but their surrounds do not: a
-photo with a white studio background sits in a glowing rectangle on a dark
-page. Decide per asset whether it is cropped, given a transparent
-background, given a scheme-specific variant, or deliberately framed.
+When a manual choice exists:
 
-Logos and marks almost always need a second version. A dark-ink logo on a
-dark ground is the most common visible break, and recolouring a client's mark
-without permission is a brand decision, not a CSS one; see
-[brand systems](brand-systems.md). Never apply a blanket CSS filter to invert
-imagery, which mangles photographs and shifts brand colour.
+- expose a semantic, keyboard-operable control with a clear current state;
+- persist only what the product and privacy contract permit;
+- apply the choice early enough to avoid a disruptive flash;
+- update `color-scheme` and relevant native or embedded content;
+- define what happens when the system preference changes.
 
-Illustrations, diagrams, and any asset with baked-in white need explicit
-treatment. Register each one in the
-[asset manifest](../../templates/asset-manifest.yml) with its per-scheme
-behaviour rather than discovering the problem in review.
+## Verify each scheme as a real state
 
-## The preference contract
+Capture and inspect every materially different scheme at the project-relevant
+wide and narrow conditions, plus states whose colors or assets differ. Check:
 
-Respect the operating system by default through `prefers-color-scheme`. When
-the product also offers a manual control, the contract has three states, not
-two: system, light, and dark. A two-state toggle silently overrides the
-system preference forever after one tap, which is a bug people notice at
-dusk.
+- rendered-pixel contrast for solid, translucent, image, and gradient grounds;
+- focus, selection, hover, disabled, error, empty, loading, and success;
+- live switching, first paint, persistence, browser chrome, canvas, charts,
+  maps, and embeds;
+- media edges, logos, icons, illustrations, and baked-in backgrounds;
+- forced colors as its own rendering mode rather than a synonym for dark;
+- performance and duplicate asset cost.
 
-Persist an explicit choice, apply it before first paint so the page does not
-flash the wrong scheme, and keep the control's current state legible without
-relying on the icon alone. Announce it as a real control with an accessible
-name, not a decorative sun and moon.
-
-`color-scheme` on the root lets form controls, scrollbars, and other native
-chrome follow the theme; without it, a dark page keeps light native widgets.
-
-## Verify both schemes independently
-
-Both schemes are separate deliverables under
-[ABSOLUTE 11](../../policy/absolutes.md): the screenshot pair is required at
-~1440 and ~375 in each scheme, saved and looked at, not assumed from the
-light run.
-
-- Re-measure contrast in dark from rendered pixels, per the
-  [render harness](../quality/render-harness.md). Token arithmetic does not
-  see a scrim, a photo, or a gradient behind the glyphs, and a value that
-  passes on paper commonly fails on dark.
-- Check focus visibility in both; a focus ring tuned for a white page often
-  disappears on a dark one.
-- Test the flip while the page is open, not only on load, including any
-  canvas, chart, embedded map, or iframe that caches its own colours.
-- Test forced-colors mode separately. It is a third rendering, not dark mode,
-  and it overrides both schemes.
-- Check every state in both: hover, disabled, error, empty, loading, and any
-  surface that only appears after interaction.
+Do not call the secondary scheme complete because token arithmetic or the
+primary scheme passed.

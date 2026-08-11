@@ -122,7 +122,7 @@ class ReleaseDependencyPreflightTests(unittest.TestCase):
             environment["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"],
         )
         self.assertEqual(
-            "${{ runner.temp }}/ms-playwright",
+            "${{ github.workspace }}/.playwright-browsers",
             environment["PLAYWRIGHT_BROWSERS_PATH"],
         )
         steps = job["steps"]

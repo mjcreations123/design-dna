@@ -311,6 +311,25 @@ class ReleaseArchiveTests(unittest.TestCase):
                 "release-package-worktree-dirty",
             )
 
+    def test_release_rejects_line_ending_drift_hidden_by_git_normalization(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = self.make_repository(Path(temporary))
+            tracked = repository / "file.txt"
+            tracked.write_bytes(b"stable\r\n")
+
+            with self.assertRaises(self.module.ToolFailure) as raised:
+                self.module.ensure_worktree_bytes_match_ref(repository, "HEAD")
+            self.assertEqual(
+                raised.exception.issue.code,
+                "release-package-worktree-byte-drift",
+            )
+            self.assertEqual(Path(raised.exception.issue.path), tracked)
+
+            tracked.write_bytes(b"stable\n")
+            self.module.ensure_worktree_bytes_match_ref(repository, "HEAD")
+
     def test_unsafe_or_lightweight_release_ref_is_rejected(self) -> None:
         with self.assertRaises(self.module.ToolFailure):
             self.module.validate_ref("--output=elsewhere")

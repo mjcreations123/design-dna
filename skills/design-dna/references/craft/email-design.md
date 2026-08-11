@@ -2,9 +2,8 @@
 
 Use this when the deliverable is an email: a receipt, a password reset, an
 order confirmation, a booking notice, a digest, or a campaign. Email is not a
-narrow web page. It renders in dozens of engines that disagree, it is often
-read with images switched off, and its layout language is closer to 2003 than
-to the rest of the work in this skill.
+narrow web page. It renders in clients with materially different capabilities
+and is often read with images switched off.
 [Messaging and notifications](../flows/messaging-notifications.md) owns which
 messages exist and what preferences govern them; this file owns making one
 render.
@@ -16,7 +15,7 @@ render.
 - [Design for images off](#design-for-images-off)
 - [Dark mode in mail clients](#dark-mode-in-mail-clients)
 - [Type in email](#type-in-email)
-- [The parts nobody designs](#the-parts-nobody-designs)
+- [Commonly overlooked message surfaces](#commonly-overlooked-message-surfaces)
 - [Access, law, and honesty](#access-law-and-honesty)
 - [Verify in real clients](#verify-in-real-clients)
 
@@ -25,38 +24,44 @@ render.
 Record which class this is, because the rules differ:
 
 - **Transactional**, sent because a person did something: receipts, resets,
-  confirmations, alerts. One job each, the answer at the top, no marketing
-  smuggled in. These are usually the most-opened messages a business sends
-  and are worth designing properly.
+  confirmations, alerts. Prioritize the information and next action the
+  triggering event requires. Keep unrelated promotion from obscuring service
+  information; do not force a multi-part receipt, safety notice, or account
+  change into a one-job or answer-first formula when its real task differs.
 - **Lifecycle or digest**, sent on a schedule or a trigger. Needs a real
   reason to exist per send and a frequency the recipient chose.
-- **Campaign**, sent to a list. Requires consent, an unsubscribe, and the
-  sender's real postal identity.
+- **Campaign**, sent to a list. Apply the consent, preference or unsubscribe,
+  sender-identification, and postal-identity obligations that govern the
+  audience, message, sender, and jurisdiction.
 
-Name the single question each email answers, and put that answer in the first
-screen: the amount and the date on a receipt, the button on a reset, the time
-and place on a booking. Everything else is support.
+Name the decision, record, invitation, or sequence the email must support.
+Prioritize the information needed before scrolling when urgency or task
+completion requires it. A receipt, narrative newsletter, safety notice, and
+campaign may need different openings and more than one related question; do
+not force them into one conversion formula.
 
 ## The structural floor
 
 Compiled 2026-08; mail-client behaviour shifts, so re-verify against current
 client testing rather than trusting this list forever.
 
-- **Tables carry layout.** Flexbox and CSS Grid are not usable across the
-  installed base, notably Outlook's desktop rendering engine on Windows.
-  Nested tables with explicit widths remain the reliable structure.
-- **Styles go inline.** Treat a `<style>` block as an enhancement that some
-  clients strip, not as the mechanism. Media queries are progressive.
-- **Around 600px** for the content column, fluid within it, single column
-  unless a second column genuinely carries different information. Multi-column
-  layouts that collapse on phones need explicit stacking rules.
-- **Backgrounds belong on table cells.** Outlook ignores background colour on
-  many inline elements but honours it on a `<td>`, which is why a durable
-  button puts the fill and padding on the cell and the link inside it rather
-  than styling an anchor.
-- **No JavaScript, no forms, no embedded video.** A poster image linking out
-  is the honest pattern.
-- **Padding beats margin.** Margin collapses inconsistently across clients.
+- Table-based layout remains the widest conservative baseline, notably for
+  desktop Outlook engines. Use modern layout only for a target-client contract
+  that supports it, with a complete fallback for the rest of the audience.
+- Keep critical presentation in the delivery form the selected clients
+  preserve. Inline styles are often the durable baseline; `<style>` blocks and
+  media queries can enhance clients that retain them.
+- Derive content width and column behavior from message density, expected
+  reading environment, and the actual client matrix. A roughly 600px fluid
+  column is common, not mandatory. Define how any columns stack or simplify.
+- Put backgrounds, padding, and click targets on elements the target clients
+  reliably render. Table cells are a common interoperable button foundation;
+  another implementation needs equivalent client evidence.
+- JavaScript is not available in ordinary email. Forms, embedded video, AMP,
+  and other enhanced features require an explicitly supported delivery
+  ecosystem plus an honest static or linked fallback.
+- Verify margin, padding, and spacing in real clients; their support and
+  collapse behavior differ.
 
 ## Design for images off
 
@@ -83,8 +88,10 @@ grey halo and a carefully chosen brand colour becomes something else.
 
 - Prefer transparent-background PNG or SVG logos so the mark sits on whatever
   ground the client produces.
-- Avoid pure white and pure black as the design's structural colours; both
-  are the values clients most aggressively invert.
+- Include pure and near-black/white values in the real-client test matrix when
+  the direction uses them. If a target client inverts or halos them in a way
+  that harms meaning or identity, adjust that relationship or provide an
+  asset/scheme-specific treatment; the values are not globally prohibited.
 - Do not rely on a coloured background alone to carry meaning, since it may
   not survive.
 - Test the actual dark rendering in the clients that matter to this client's
@@ -99,24 +106,27 @@ Webfonts load in some clients and not others, so the fallback stack is the
 real typography for a meaningful share of readers. Choose a stack whose
 metrics do not wreck the layout when the intended face is absent, and set
 line-height and size for the fallback as well as the ideal. The
-[typography numbers](typography.md#the-numbers) still apply: body around 16px
-and up, generous line-height, a measure that does not run the full width of a
-desktop mail window.
+[typography protocol](typography.md) still applies: tune the fallback's size,
+line-height, measure, weight, hierarchy, and wrapping in the real email layout.
+Persistent small print remains readable under zoom and client text settings;
+no universal type scale or family is imposed.
 
-Nothing below the size floor. Legal fine print in an email is still text a
-person has to be able to read.
+## Commonly overlooked message surfaces
 
-## The parts nobody designs
-
-- **The subject line** is the first design surface and is frequently
-  truncated; front-load it.
-- **The preheader**, the text a client previews after the subject, is
-  designed content. Left alone it fills with "View in browser" or the first
-  words of a header. Write it.
-- **The sender name** is read more than the subject.
-- **The plain-text alternative** is a real deliverable, not an afterthought.
-- **The footer** carries the legal identity, the unsubscribe, and the reason
-  this person is receiving the message.
+- **The subject line** is an early recognition and decision surface. Write it
+  so truncation in the target clients does not hide the information this
+  message most needs to convey.
+- **The preheader**, the text a client may preview after the subject, is an
+  intentional delivery decision. Supply, suppress, or allow it from the
+  message and target-client evidence; do not let accidental utility chrome or
+  irrelevant header text become the preview by oversight.
+- **The sender identity and subject** work together to establish recognition,
+  trust, and purpose. Do not claim a universal ranking without audience and
+  client evidence.
+- **The plain-text alternative**, when the delivery contract provides one, is
+  reviewed as a real representation rather than generated and ignored.
+- **The footer** carries the identity, preference, unsubscribe, explanation,
+  or legal information that applies to this message and jurisdiction.
 
 ## Access, law, and honesty
 
@@ -125,29 +135,30 @@ a link purpose that survives being read out of context. Tables used for
 layout carry a presentation role so assistive technology does not announce a
 grid where there is none.
 
-The [owner absolutes](../../policy/absolutes.md) apply here in full and name
-emails explicitly: no em dash in any string, and no fabricated content. Do
-not invent an order number, a delivery estimate, a savings figure, a
-countdown, or a personalised claim the system cannot support. A merge field
-that can render empty gets a designed fallback rather than "Hi ,".
+The [assurance boundaries](../../policy/absolutes.md) apply to email. Do not
+invent an order number, delivery estimate, savings figure, countdown, or
+personalized claim the system cannot support. Punctuation remains a voice and
+readability decision. A merge field that can render empty gets a designed
+fallback rather than "Hi ,".
 
-Consent, unsubscribe, and the sender's postal identity are legal requirements
-in most jurisdictions, and an unsubscribe that does not work is worse than
-none. Route these through
+Consent, unsubscribe, sender identification, and postal-address obligations
+depend on message class and jurisdiction. A required preference or unsubscribe
+path must work. Route these through
 [privacy and consent](../flows/privacy-consent-permissions.md) and
 [production readiness](../quality/production-readiness.md), and get a
 specialist before any live send.
 
 ## Verify in real clients
 
-A browser is not a verification environment for email. Send real test
-messages and look at them in the clients this audience actually uses, at
-minimum a desktop Outlook rendering, Gmail in browser and in app, and Apple
-Mail on a phone, in both light and dark, with images blocked and with images
-allowed.
+A browser alone is not a verification environment for email. Send real test
+messages and inspect the clients this audience actually uses, including a
+materially different or constrained rendering engine when compatibility risk
+is high. Select light/dark, images blocked/allowed, desktop/mobile, and other
+conditions from the recipient and delivery evidence rather than a permanent
+brand list.
 
-The screenshot requirement in [ABSOLUTE 11](../../policy/absolutes.md)
-applies to the deliverable as it renders: for email that means captures from
-mail clients, not from a local page. Check the plain-text alternative, every
-link target, the unsubscribe path end to end, and the message with a long
-name, a missing merge value, and a very long line of unbroken text.
+Rendered review applies to the medium: for email that means representative
+mail-client captures rather than only a local webpage. Check the plain-text
+alternative, link targets, the unsubscribe path end to end, and relevant
+content-pressure cases such as a long name, missing merge value, or an
+unbroken string.

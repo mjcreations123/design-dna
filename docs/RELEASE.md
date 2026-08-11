@@ -116,6 +116,8 @@ claiming the custom route is release-qualified.
 python -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
 npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm --prefix maintainer exec -- playwright install chromium
+python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json
+python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json --check
 python -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json --check
@@ -126,12 +128,18 @@ python -B maintainer/scripts/manage_install.py recover --host all
 python -B maintainer/scripts/manage_install.py sync --host all
 python -B maintainer/scripts/manage_install.py doctor --host all
 python -B maintainer/scripts/detect_routes.py --canonical skills/design-dna --home "<HOME>" --root "<HOME>/.agents/skills" --root "<HOME>/.claude/skills" --root "<HOME>/.claude/plugins/cache" --root "<HOME>/.codex/plugins/cache" --root "<HOME>/.codex/skills" --expected "<HOME>/.agents/skills/design-dna" --expected "<HOME>/.claude/skills/design-dna" --output maintainer/attestations/route-verification.json
-python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json
-python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json --check
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json --check
 python -B maintainer/scripts/audit_package.py --plugin-root . --home "<HOME>" --codex-validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>"
 ```
+
+The SBOM is generated before the test attestation because release-identity
+tests fail closed when its runtime or version binding is stale. Promote the
+test attestation only after that exact run passes, then update the local
+compatibility record from the promoted evidence. Keep package, install, host,
+and remote-matrix checks pending until their own evidence exists. Build the
+manifest last because it binds those promoted artifacts and compatibility
+claims; rebuild it after any later proof changes.
 
 Commit this passing candidate, run the remote matrix, retain and import the
 authenticated evidence, complete the required evaluation records, and update
@@ -149,10 +157,10 @@ python -B maintainer/scripts/audit_package.py --plugin-root . --home "<HOME>" --
 python -B maintainer/scripts/audit_package.py --plugin-root . --home "<HOME>" --codex-validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --release
 ```
 
-For 4.0.0, the actual previous promoted release identity remains
-`maintainer/releases/v3.3.0.manifest-identity.json`; the 3.4.0 and 3.5.0
-candidates were not promoted. Change that copy-ready path only when preparing
-a later version whose actual predecessor differs.
+The actual previous promoted release identity remains
+`maintainer/releases/v3.3.0.manifest-identity.json` because the later
+candidates were not promoted. Change that copy-ready path only after a newer
+version has genuinely completed promotion and its identity is retained.
 
 The test proof records the current interpreter with a portable token and a
 live-checked executable hash. The route proof stores only

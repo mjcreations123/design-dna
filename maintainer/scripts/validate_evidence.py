@@ -450,7 +450,7 @@ def validate(
         if reviewed > next_review:
             failures.append(issue("invalid-index-chronology", "maintainer/evidence/index.yml", "last_reviewed must not follow next_review."))
         interval = (next_review - reviewed).days
-        if not 1 <= interval <= 180:
+        if interval < 1:
             failures.append(issue("invalid-index-review-interval", "maintainer/evidence/index.yml", f"{interval} days"))
         if next_review < date.today():
             target = failures if strict_due else warnings
@@ -547,19 +547,7 @@ def validate(
                     ),
                 ))
             interval = (card_next_review - last_reviewed).days
-            maximum_interval = (
-                90
-                if metadata.get("source_type") in {
-                    "platform_documentation",
-                    "platform_guidance",
-                    "expert_guidance",
-                    "community_synthesis",
-                    "qualitative_community",
-                    "owner_preference",
-                }
-                else 180
-            )
-            if not 1 <= interval <= maximum_interval:
+            if interval < 1:
                 failures.append(issue("invalid-review-interval", relative, f"{interval} days"))
             if metadata.get("status") == "active" and card_next_review < date.today():
                 target = failures if strict_due else warnings

@@ -2919,6 +2919,88 @@ async function inspectDocument(page) {
       }
     }
 
+    // Sample painted text in the current viewport for peer elements that sit
+    // above it. This is deliberately an advisory: overlap can be intentional,
+    // but a sibling band, sticky surface, or positioned ornament covering a
+    // caption is not detectable from scrollWidth/scrollHeight alone.
+    const occlusionWalker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          if (!compact(node.textContent, 1)) return NodeFilter.FILTER_REJECT;
+          const parent = node.parentElement;
+          if (!parent || !visible(parent)) return NodeFilter.FILTER_REJECT;
+          if (parent.closest("script,style,noscript,template")) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      },
+    );
+    let inspectedTextNodes = 0;
+    while (
+      overflowCandidates.length < maxCandidates &&
+      inspectedTextNodes < maxCandidates * 12
+    ) {
+      const textNode = occlusionWalker.nextNode();
+      if (!textNode) break;
+      inspectedTextNodes += 1;
+      const element = textNode.parentElement;
+      if (!element) continue;
+      const range = document.createRange();
+      range.selectNodeContents(textNode);
+      const blockers = new Set();
+      for (const textRect of [...range.getClientRects()].slice(0, 12)) {
+        if (textRect.width < 3 || textRect.height < 3) continue;
+        if (
+          textRect.bottom <= 0 ||
+          textRect.top >= window.innerHeight ||
+          textRect.right <= 0 ||
+          textRect.left >= window.innerWidth
+        ) {
+          continue;
+        }
+        const y = Math.min(window.innerHeight - 1, Math.max(0, textRect.top + textRect.height / 2));
+        for (const fraction of [0.2, 0.5, 0.8]) {
+          const x = Math.min(
+            window.innerWidth - 1,
+            Math.max(0, textRect.left + textRect.width * fraction),
+          );
+          const top = document.elementFromPoint(x, y);
+          if (!top || element.contains(top) || top.contains(element)) continue;
+          blockers.add(selectorFor(top));
+        }
+      }
+      range.detach();
+      if (!blockers.size) continue;
+      const selector = selectorFor(element);
+      const existing = overflowCandidates.find((candidate) => candidate.selector === selector);
+      if (existing) {
+        if (!existing.reasons.includes("text-occluded-by-peer")) {
+          existing.reasons.push("text-occluded-by-peer");
+        }
+        existing.occluding_selectors = [...new Set([
+          ...(existing.occluding_selectors || []),
+          ...blockers,
+        ])].slice(0, 12);
+        continue;
+      }
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      overflowCandidates.push({
+        classification: "advisory-candidate",
+        selector,
+        text: compact(element.textContent, 160),
+        reasons: ["text-occluded-by-peer"],
+        rect: rectFor(element),
+        client: { width: element.clientWidth, height: element.clientHeight },
+        scroll: { width: element.scrollWidth, height: element.scrollHeight },
+        overflow: { x: style.overflowX, y: style.overflowY },
+        occluding_selectors: [...blockers].slice(0, 12),
+      });
+    }
+
     const images = [...document.images].slice(0, maxCandidates).map((image) => {
       const style = getComputedStyle(image);
       const rendered = image.getBoundingClientRect();

@@ -260,13 +260,32 @@ def distribution_manifest(
     excluded = {"maintainer/release-manifest.json"}
 
     def collect() -> list[dict[str, object]]:
-        records = [
+        raw_records = [
             entry_record(path, plugin_root)
             for path in walk_entries(
                 plugin_root,
                 ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
             )
             if path.relative_to(plugin_root).as_posix() not in excluded
+        ]
+        # Git cannot preserve an empty directory. Binding one into the
+        # distributable identity makes a clean clone differ from the source
+        # worktree even though every tracked byte is identical. Keep files and
+        # only the directory records needed to parent those files.
+        required_directories: set[str] = set()
+        for record in raw_records:
+            if record.get("type") != "file":
+                continue
+            parts = str(record["path"]).split("/")
+            for depth in range(1, len(parts)):
+                required_directories.add("/".join(parts[:depth]))
+        records = [
+            record
+            for record in raw_records
+            if (
+                record.get("type") == "file"
+                or str(record.get("path")) in required_directories
+            )
         ]
         records.sort(key=lambda item: str(item["path"]))
         return records

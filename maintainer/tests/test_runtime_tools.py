@@ -98,6 +98,34 @@ def write_png(path: Path, width: int, height: int) -> str:
 
 
 class InitializerTests(unittest.TestCase):
+    def test_showcase_initializes_the_optional_taste_calibration_record(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            result = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--profile",
+                "showcase",
+                "--json",
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            state_root = project / ".design-dna"
+            state = json.loads((state_root / "state.json").read_text(encoding="utf-8"))
+            self.assertIn("taste-calibration", state["records"])
+            self.assertTrue((state_root / "taste-calibration.md").is_file())
+            check = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
+
     def test_initializes_and_validates_transactionally(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary) / "project"
@@ -327,6 +355,7 @@ class InitializerTests(unittest.TestCase):
                 manifest["records"],
                 [
                     "exploration",
+                    "taste-calibration",
                     "direction",
                     "direction-proof",
                     "visual-review",
@@ -357,6 +386,185 @@ class InitializerTests(unittest.TestCase):
                 0,
                 checked.stdout + checked.stderr,
             )
+
+    def test_batch_study_profile_initializes_protocol_and_readiness_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            result = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--profile",
+                "batch-study",
+                "--json",
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            state = project / ".design-dna"
+            contract_path = state / "batch-range.json"
+            self.assertTrue(contract_path.is_file())
+            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+            self.assertEqual(len(contract["sites"]), 3)
+            self.assertTrue(
+                all(site["status"] == "planned" for site in contract["sites"])
+            )
+            self.assertTrue(
+                all(
+                    page["captures"] == []
+                    for site in contract["sites"]
+                    for page in site["pages"]
+                )
+            )
+            self.assertTrue(
+                all(
+                    not project.joinpath(*site["build_root"].split("/")).exists()
+                    for site in contract["sites"]
+                )
+            )
+            self.assertEqual(
+                contract["study"]["review_protocol"],
+                {
+                    "site_observation": "unprimed-before-diagnostics",
+                    "whole_system_comparison": "masked",
+                    "automatic_aesthetic_pass": False,
+                },
+            )
+            self.assertTrue(
+                all(
+                    viewport["width"] is None
+                    for viewport in contract["study"]["viewport_classes"]
+                )
+            )
+            self.assertEqual(contract["data_handling"]["status"], "pending")
+            self.assertEqual(
+                contract["data_handling"]["capture_authorization"]["status"],
+                "pending",
+            )
+            self.assertEqual(
+                contract["data_handling"]["contact_sheet_authorization"]["status"],
+                "pending",
+            )
+            self.assertTrue(
+                all(
+                    site["implementation_isolation"]["status"] == "pending"
+                    and site["implementation_isolation"]["source_packet"]["path"]
+                    and site["implementation_isolation"]["producer_context_id"]
+                    for site in contract["sites"]
+                )
+            )
+            manifest = json.loads(
+                (state / "state.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                manifest["assurance_profiles"],
+                ["standard", "batch-study"],
+            )
+            self.assertEqual(
+                manifest["records"],
+                [
+                    "exploration",
+                    "direction",
+                    "direction-proof",
+                    "batch-range",
+                    "visual-review",
+                ],
+            )
+            self.assertEqual(
+                manifest["evidence_contract"]["applicable_capabilities"],
+                ["batch-study"],
+            )
+            self.assertIn(
+                "## Batch Study protocol",
+                (state / "direction.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "frozen source packets",
+                (state / "direction.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "capture/contact-sheet authorization",
+                (state / "direction.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "## Batch Study review",
+                (state / "visual-review.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "do not establish pixel redaction",
+                (state / "visual-review.md").read_text(encoding="utf-8"),
+            )
+
+            for viewport in contract["study"]["viewport_classes"]:
+                viewport["width"] = 1200 if viewport["role"] == "wide" else 480
+                viewport["height"] = 800
+            for site in contract["sites"]:
+                site["independence_basis"] = (
+                    "This case has its own audience, task, subject research, "
+                    f"content constraints, and delivery context for {site['id']}."
+                )
+                brief_path = project.joinpath(*site["brief"]["path"].split("/"))
+                brief_path.parent.mkdir(parents=True, exist_ok=True)
+                brief_bytes = f"Frozen independent brief for {site['id']}.\n".encode()
+                brief_path.write_bytes(brief_bytes)
+                site["brief"]["sha256"] = hashlib.sha256(brief_bytes).hexdigest()
+                source_ref = site["implementation_isolation"]["source_packet"]
+                source_path = project.joinpath(*source_ref["path"].split("/"))
+                source_path.parent.mkdir(parents=True, exist_ok=True)
+                source_bytes = (
+                    f'{{"site":"{site["id"]}","sources":["owner-brief"]}}\n'
+                ).encode()
+                source_path.write_bytes(source_bytes)
+                source_ref["sha256"] = hashlib.sha256(source_bytes).hexdigest()
+            contract_path.write_text(
+                json.dumps(contract, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            checked = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+            readiness = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-ready",
+                "--json",
+            )
+            self.assertEqual(readiness.returncode, 1)
+            failures = "\n".join(json.loads(readiness.stdout)["failures"])
+            self.assertIn("remains draft", failures)
+            self.assertIn("batch study", failures.casefold())
+            self.assertIn("site-planned", failures)
+            self.assertNotIn("Invalid Batch Study readiness evidence", failures)
+            self.assertTrue(
+                all(
+                    not project.joinpath(*site["build_root"].split("/")).exists()
+                    for site in contract["sites"]
+                )
+            )
+
+            contract["sites"] = []
+            contract_path.write_text(
+                json.dumps(contract, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            malformed = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(malformed.returncode, 1)
+            malformed_failures = "\n".join(
+                json.loads(malformed.stdout)["failures"]
+            )
+            self.assertIn("too-few-sites", malformed_failures)
 
     def test_assurance_profiles_accumulate_and_every_added_record_is_ready_gated(
         self,
@@ -404,6 +612,7 @@ class InitializerTests(unittest.TestCase):
                 set(state["records"]),
                 {
                     "exploration",
+                    "taste-calibration",
                     "direction",
                     "direction-proof",
                     "visual-review",

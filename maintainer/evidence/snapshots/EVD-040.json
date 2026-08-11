@@ -1,9 +1,0 @@
-{
-  "schema_version": 2,
-  "evidence_id": "EVD-040",
-  "retrieved": "2026-07-30",
-  "url": "https://spotify.design/article/reimagining-design-systems-at-spotify",
-  "locator": "Introducing Encore; Encore Foundation; Local design systems; Some final thoughts",
-  "content_kind": "maintainer_summary",
-  "summary": "Spotify describes Encore as a family of connected design systems rather than one monolith. Shared foundations and tokens establish coherence, while local systems hold elements tailored to a product, platform, or audience. This is organizational practice from one company, not evidence that the same architecture fits every project."
-}

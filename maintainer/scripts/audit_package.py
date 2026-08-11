@@ -5533,19 +5533,19 @@ def review_semantic_failures(
             f"{label}#cross_case_analysis/evidence",
             evidence_keys,
         ))
-        masked_comparison = cross_case.get("masked_layout_comparison")
-        if isinstance(masked_comparison, dict):
+        blinded_comparison = cross_case.get("identity_blinded_comparison")
+        if isinstance(blinded_comparison, dict):
             failures.extend(review_evidence_reference_failures(
-                masked_comparison.get("evidence"),
+                blinded_comparison.get("evidence"),
                 plugin,
                 (
                     f"{label}#cross_case_analysis/"
-                    "masked_layout_comparison/evidence"
+                    "identity_blinded_comparison/evidence"
                 ),
                 evidence_keys,
             ))
             for collection in ("coverage", "observations"):
-                records = masked_comparison.get(collection)
+                records = blinded_comparison.get(collection)
                 if not isinstance(records, list):
                     continue
                 for index, record in enumerate(records):
@@ -5553,7 +5553,7 @@ def review_semantic_failures(
                         continue
                     record_label = (
                         f"{label}#cross_case_analysis/"
-                        "masked_layout_comparison/"
+                        "identity_blinded_comparison/"
                         f"{collection}/{index}"
                     )
                     failures.extend(review_evidence_reference_failures(
@@ -5564,10 +5564,10 @@ def review_semantic_failures(
                     ))
                     if collection != "coverage":
                         continue
-                    masked_hashes = record.get("masked_render_sha256s")
-                    masked_hash_set = (
-                        set(masked_hashes)
-                        if isinstance(masked_hashes, list)
+                    source_hashes = record.get("source_render_sha256s")
+                    source_hash_set = (
+                        set(source_hashes)
+                        if isinstance(source_hashes, list)
                         else set()
                     )
                     references = record.get("evidence")
@@ -5576,7 +5576,7 @@ def review_semantic_failures(
                     for evidence_index, evidence_record in enumerate(references):
                         if (
                             not isinstance(evidence_record, dict)
-                            or evidence_record.get("sha256") not in masked_hash_set
+                            or evidence_record.get("sha256") not in source_hash_set
                         ):
                             continue
                         relative = portable_relative(evidence_record.get("path"))
@@ -5593,10 +5593,11 @@ def review_semantic_failures(
                         )
                         if candidate.suffix.casefold() != ".png":
                             failures.append(issue(
-                                "release-cross-case-masked-render-format-invalid",
+                                "release-cross-case-source-render-format-invalid",
                                 evidence_label,
                                 (
-                                    "A masked responsive render must cite a "
+                                    "An identity-blinded comparison source "
+                                    "render must cite a "
                                     "decodable PNG."
                                 ),
                             ))
@@ -5605,10 +5606,74 @@ def review_semantic_failures(
                             verify_png(candidate)
                         except ToolFailure as exc:
                             failures.append(issue(
-                                "release-cross-case-masked-render-invalid",
+                                "release-cross-case-source-render-invalid",
                                 evidence_label,
                                 str(exc),
                             ))
+            transformation = blinded_comparison.get("pixel_transformation")
+            if isinstance(transformation, dict):
+                authorization = transformation.get("authorization")
+                if isinstance(authorization, dict):
+                    failures.extend(review_evidence_reference_failures(
+                        authorization.get("evidence"),
+                        plugin,
+                        (
+                            f"{label}#cross_case_analysis/"
+                            "identity_blinded_comparison/pixel_transformation/"
+                            "authorization/evidence"
+                        ),
+                        evidence_keys,
+                    ))
+                artifacts = transformation.get("artifacts")
+                if isinstance(artifacts, list):
+                    for index, artifact in enumerate(artifacts):
+                        if not isinstance(artifact, dict):
+                            continue
+                        artifact_label = (
+                            f"{label}#cross_case_analysis/"
+                            "identity_blinded_comparison/pixel_transformation/"
+                            f"artifacts/{index}"
+                        )
+                        for evidence_field in (
+                            "source_evidence",
+                            "transformed_evidence",
+                        ):
+                            reference = artifact.get(evidence_field)
+                            failures.extend(review_evidence_reference_failures(
+                                [reference] if isinstance(reference, dict) else reference,
+                                plugin,
+                                f"{artifact_label}/{evidence_field}",
+                                evidence_keys,
+                            ))
+                            if not isinstance(reference, dict):
+                                continue
+                            relative = portable_relative(reference.get("path"))
+                            if (
+                                relative is None
+                                or relative.casefold() not in evidence_keys
+                            ):
+                                continue
+                            candidate = absolute(
+                                plugin.joinpath(*relative.split("/"))
+                            )
+                            if candidate.suffix.casefold() != ".png":
+                                failures.append(issue(
+                                    "release-cross-case-transformed-render-format-invalid",
+                                    f"{artifact_label}/{evidence_field}",
+                                    (
+                                        "Pixel-transformation source and output "
+                                        "artifacts must cite decodable PNGs."
+                                    ),
+                                ))
+                                continue
+                            try:
+                                verify_png(candidate)
+                            except ToolFailure as exc:
+                                failures.append(issue(
+                                    "release-cross-case-transformed-render-invalid",
+                                    f"{artifact_label}/{evidence_field}",
+                                    str(exc),
+                                ))
         for collection in ("dimensions", "repeated_clusters"):
             records = cross_case.get(collection)
             if not isinstance(records, list):
@@ -7093,54 +7158,66 @@ def cross_case_analysis_failures(
                 ),
             ))
 
-    masked_comparison = analysis.get("masked_layout_comparison")
-    masked_risk_cluster_ids: set[str] = set()
-    if not isinstance(masked_comparison, dict):
+    blinded_comparison = analysis.get("identity_blinded_comparison")
+    blinded_risk_cluster_ids: set[str] = set()
+    if not isinstance(blinded_comparison, dict):
         failures.append(issue(
-            "release-cross-case-masked-comparison-missing",
+            "release-cross-case-identity-blinded-comparison-missing",
             label,
             (
                 "Cross-case release review needs a hash-bound comparison "
-                "with copy, logos, and dominant media masked or replaced."
+                "performed under neutral labels before the identity map or "
+                "diagnostic material is revealed."
             ),
         ))
     else:
-        method = masked_comparison.get("method")
-        masking = masked_comparison.get("masking")
-        allowed_treatments = {
-            "masked",
-            "replaced-with-neutral-placeholder",
+        method = blinded_comparison.get("method")
+        protocol = blinded_comparison.get("neutral_label_protocol")
+        hidden_identities = (
+            protocol.get("identities_hidden")
+            if isinstance(protocol, dict)
+            else None
+        )
+        allowed_hidden_identities = {
+            "case-identity",
+            "model",
+            "host",
+            "variant",
+            "producer",
         }
         if (
             not isinstance(method, str)
             or len(method.strip()) < 24
-            or not isinstance(masking, dict)
-            or set(masking) != {"copy", "logos", "dominant_media"}
-            or any(
-                masking.get(field) not in allowed_treatments
-                for field in ("copy", "logos", "dominant_media")
-            )
-            or masked_comparison.get("layout_geometry_preserved") is not True
+            or not isinstance(protocol, dict)
+            or not isinstance(protocol.get("assignment_method"), str)
+            or len(protocol["assignment_method"].strip()) < 24
+            or not isinstance(hidden_identities, list)
+            or not hidden_identities
+            or any(not isinstance(value, str) for value in hidden_identities)
+            or len(hidden_identities) != len(set(hidden_identities))
+            or set(hidden_identities) != allowed_hidden_identities
+            or protocol.get("identity_revealed_before_observation") is not False
+            or protocol.get("diagnostic_material_seen_before_observation") is not False
         ):
             failures.append(issue(
-                "release-cross-case-masking-method-incomplete",
-                f"{label}#cross_case_analysis/masked_layout_comparison",
+                "release-cross-case-identity-blinding-incomplete",
+                f"{label}#cross_case_analysis/identity_blinded_comparison",
                 (
-                    "Record the comparison method, preserve layout geometry, "
-                    "and explicitly mask or neutrally replace copy, logos, "
-                    "and dominant media."
+                    "Record neutral-label assignment, which identities were "
+                    "hidden, and a first observation frozen before identity "
+                    "or diagnostic reveal."
                 ),
             ))
-        if masked_comparison.get("authorship_inference") != "not-performed":
+        if blinded_comparison.get("authorship_inference") != "not-performed":
             failures.append(issue(
                 "release-cross-case-authorship-inference-prohibited",
-                f"{label}#cross_case_analysis/masked_layout_comparison",
+                f"{label}#cross_case_analysis/identity_blinded_comparison",
                 (
-                    "The masked comparison may assess structural range only; "
+                    "The blinded comparison may assess structural range only; "
                     "it cannot infer human or AI authorship."
                 ),
             ))
-        limitations = masked_comparison.get("limitations")
+        limitations = blinded_comparison.get("limitations")
         if (
             not isinstance(limitations, list)
             or not limitations
@@ -7150,49 +7227,54 @@ def cross_case_analysis_failures(
             )
         ):
             failures.append(issue(
-                "release-cross-case-masked-limitations-missing",
-                f"{label}#cross_case_analysis/masked_layout_comparison",
+                "release-cross-case-identity-blinded-limitations-missing",
+                f"{label}#cross_case_analysis/identity_blinded_comparison",
                 (
-                    "State at least one substantive limitation of the masked "
-                    "layout comparison."
+                    "State at least one substantive limitation of the "
+                    "identity-blinded comparison."
                 ),
             ))
-        top_evidence = masked_comparison.get("evidence")
+        top_evidence = blinded_comparison.get("evidence")
         if not isinstance(top_evidence, list) or not top_evidence:
             failures.append(issue(
-                "release-cross-case-masked-evidence-missing",
-                f"{label}#cross_case_analysis/masked_layout_comparison",
-                "The masked comparison needs hash-bound evidence.",
+                "release-cross-case-identity-blinded-evidence-missing",
+                f"{label}#cross_case_analysis/identity_blinded_comparison",
+                "The identity-blinded comparison needs hash-bound evidence.",
             ))
 
-        coverage = masked_comparison.get("coverage")
+        coverage = blinded_comparison.get("coverage")
         coverage_records = [
             record for record in coverage if isinstance(record, dict)
         ] if isinstance(coverage, list) else []
-        masked_case_ids = [
+        blinded_case_ids = [
             str(record.get("case_id")) for record in coverage_records
         ]
+        neutral_labels = [record.get("neutral_label") for record in coverage_records]
         if (
-            len(masked_case_ids) != len(set(masked_case_ids))
-            or set(masked_case_ids) != expected_case_ids
+            len(blinded_case_ids) != len(set(blinded_case_ids))
+            or set(blinded_case_ids) != expected_case_ids
+            or any(
+                not isinstance(value, str) or not value.strip()
+                for value in neutral_labels
+            )
+            or len(neutral_labels) != len(set(neutral_labels))
         ):
             failures.append(issue(
-                "release-cross-case-masked-coverage-incomplete",
-                f"{label}#cross_case_analysis/masked_layout_comparison/coverage",
+                "release-cross-case-identity-blinded-coverage-incomplete",
+                f"{label}#cross_case_analysis/identity_blinded_comparison/coverage",
                 (
-                    "Masked comparison coverage must bind the exact full set "
-                    "of counted representative case/build families."
+                    "Identity-blinded coverage must bind the exact full set "
+                    "of counted case/build families under unique neutral labels."
                 ),
             ))
         for index, record in enumerate(coverage_records):
             coverage_label = (
-                f"{label}#cross_case_analysis/masked_layout_comparison/"
+                f"{label}#cross_case_analysis/identity_blinded_comparison/"
                 f"coverage/{index}"
             )
             case_id = str(record.get("case_id"))
             expected = qualified_families.get(case_id)
             source_hashes = record.get("source_render_sha256s")
-            masked_hashes = record.get("masked_render_sha256s")
             references = record.get("evidence")
             reference_hashes = {
                 str(reference.get("sha256"))
@@ -7205,36 +7287,107 @@ def cross_case_analysis_failures(
                 or record.get("run_id") != expected.get("run_id")
                 or record.get("build_identity") != expected.get("build_identity")
                 or not isinstance(source_hashes, list)
+                or any(not isinstance(value, str) for value in source_hashes)
                 or set(source_hashes) != set(expected.get("render_sha256s", []))
                 or len(source_hashes) != len(set(source_hashes))
             ):
                 failures.append(issue(
-                    "release-cross-case-masked-build-binding-mismatch",
+                    "release-cross-case-identity-blinded-build-binding-mismatch",
                     coverage_label,
                     (
-                        "Each masked comparison entry must bind the exact "
+                        "Each identity-blinded comparison entry must bind the exact "
                         "counted run, build, and source render hashes."
                     ),
                 ))
             if (
-                not isinstance(masked_hashes, list)
-                or not masked_hashes
-                or not isinstance(source_hashes, list)
-                or len(masked_hashes) != len(source_hashes)
-                or len(masked_hashes) != len(set(masked_hashes))
-                or bool(set(masked_hashes) & set(source_hashes))
-                or not set(masked_hashes) <= reference_hashes
+                not isinstance(source_hashes, list)
+                or not source_hashes
+                or not set(source_hashes) <= reference_hashes
             ):
                 failures.append(issue(
-                    "release-cross-case-masked-render-evidence-incomplete",
+                    "release-cross-case-source-render-evidence-incomplete",
                     coverage_label,
                     (
-                        "Provide one distinct, hash-bound masked render for "
-                        "every counted responsive source render."
+                        "Provide hash-bound original evidence for every counted "
+                        "responsive render; identity blinding does not replace pixels."
                     ),
                 ))
 
-        observations = masked_comparison.get("observations")
+        transformation = blinded_comparison.get("pixel_transformation")
+        if transformation is not None:
+            authorization = (
+                transformation.get("authorization")
+                if isinstance(transformation, dict)
+                else None
+            )
+            artifacts = (
+                transformation.get("artifacts")
+                if isinstance(transformation, dict)
+                else None
+            )
+            all_source_hashes = {
+                str(value)
+                for record in coverage_records
+                for value in (
+                    record.get("source_render_sha256s")
+                    if isinstance(record.get("source_render_sha256s"), list)
+                    else []
+                )
+            }
+            transformation_invalid = (
+                not isinstance(transformation, dict)
+                or transformation.get("purpose")
+                not in {"hypothesis-test", "privacy-minimization"}
+                or not isinstance(transformation.get("justification"), str)
+                or len(transformation["justification"].strip()) < 24
+                or not isinstance(transformation.get("method"), str)
+                or len(transformation["method"].strip()) < 24
+                or not isinstance(transformation.get("coverage_impact"), str)
+                or len(transformation["coverage_impact"].strip()) < 24
+                or not isinstance(authorization, dict)
+                or authorization.get("status") != "authorized"
+                or not isinstance(authorization.get("authority_id"), str)
+                or not isinstance(authorization.get("basis"), str)
+                or len(authorization["basis"].strip()) < 16
+                or not isinstance(authorization.get("evidence"), list)
+                or not authorization["evidence"]
+                or not isinstance(artifacts, list)
+                or not artifacts
+            )
+            if not transformation_invalid:
+                for artifact in artifacts:
+                    if not isinstance(artifact, dict):
+                        transformation_invalid = True
+                        continue
+                    source_hash = artifact.get("source_render_sha256")
+                    transformed_hash = artifact.get("transformed_render_sha256")
+                    source_evidence = artifact.get("source_evidence")
+                    transformed_evidence = artifact.get("transformed_evidence")
+                    if (
+                        source_hash not in all_source_hashes
+                        or not isinstance(transformed_hash, str)
+                        or transformed_hash == source_hash
+                        or not isinstance(source_evidence, dict)
+                        or source_evidence.get("sha256") != source_hash
+                        or not isinstance(transformed_evidence, dict)
+                        or transformed_evidence.get("sha256") != transformed_hash
+                    ):
+                        transformation_invalid = True
+            if transformation_invalid:
+                failures.append(issue(
+                    "release-cross-case-pixel-transformation-incomplete",
+                    (
+                        f"{label}#cross_case_analysis/"
+                        "identity_blinded_comparison/pixel_transformation"
+                    ),
+                    (
+                        "An optional pixel transformation needs a stated "
+                        "hypothesis or privacy purpose, authorization, method, "
+                        "original/transformed hash pairs, and coverage impact."
+                    ),
+                ))
+
+        observations = blinded_comparison.get("observations")
         observation_records = [
             record for record in observations if isinstance(record, dict)
         ] if isinstance(observations, list) else []
@@ -7274,13 +7427,13 @@ def cross_case_analysis_failures(
                 continue
             observed_case_ids.update(selected)
             if outcome == "repeated-reskin-risk":
-                masked_risk_cluster_ids.add(cluster_id)
+                blinded_risk_cluster_ids.add(cluster_id)
         if observation_invalid or observed_case_ids != expected_case_ids:
             failures.append(issue(
-                "release-cross-case-masked-observations-incomplete",
-                f"{label}#cross_case_analysis/masked_layout_comparison/observations",
+                "release-cross-case-identity-blinded-observations-incomplete",
+                f"{label}#cross_case_analysis/identity_blinded_comparison/observations",
                 (
-                    "Hash-bound masked observations must compare every counted "
+                    "Hash-bound blinded observations must compare every counted "
                     "case and record a structural outcome without an authorship claim."
                 ),
             ))
@@ -7379,12 +7532,12 @@ def cross_case_analysis_failures(
                 "project-relevant comparison lenses."
             ),
         ))
-    if not masked_risk_cluster_ids <= cluster_ids:
+    if not blinded_risk_cluster_ids <= cluster_ids:
         failures.append(issue(
-            "release-cross-case-masked-risk-untracked",
+            "release-cross-case-identity-blinded-risk-untracked",
             label,
             (
-                "Every repeated reskin risk from the masked comparison needs "
+                "Every repeated reskin risk from the blinded comparison needs "
                 "an explicit repeated-cluster record and disposition."
             ),
         ))

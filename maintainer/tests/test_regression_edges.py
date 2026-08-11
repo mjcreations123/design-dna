@@ -52,9 +52,9 @@ class ScannerRegressionTests(unittest.TestCase):
             rules = {item["rule"] for item in payload["findings"]}
             self.assertNotIn("decorative-display-fragment", rules)
             self.assertNotIn("unexamined-default-font", rules)
-            self.assertTrue(
+            self.assertFalse(
                 any(
-                    item["check"] == "prominent-fragment-selector-context"
+                    str(item["check"]).startswith("prominent-fragment")
                     for item in payload["manual_review"]
                 )
             )
@@ -147,6 +147,11 @@ class ProjectStateRegressionTests(unittest.TestCase):
             )
             self.assertEqual(direction.read_text(encoding="utf-8"), original)
             self.assertTrue((project / ".design-dna" / "assets.yml").is_file())
+            self.assertEqual(
+                list(project.glob(".design-dna.backup-*")),
+                [],
+                "a validated additive merge must not leave a rollback copy",
+            )
 
     def test_force_refresh_keeps_recoverable_backup(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

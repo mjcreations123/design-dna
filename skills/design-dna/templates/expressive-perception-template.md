@@ -36,6 +36,11 @@ convert this into a universal aesthetic, novelty, energy, or AI score.
   protecting:
 - What feels generic, confusing, excessive, unfinished, wrong, or too
   restrained:
+- Does this read as a credible public surface for the actual subject and
+  audience, or as a maker-facing concept, exercise, or generic shell? Why:
+- Does its material presence (media, objects, type, composition, or another
+  chosen medium) carry the promised encounter rather than merely decorate it?
+- Narrow-condition encounter result, when relevant:
 - Unprompted language used by the reviewer:
 
 ## Recall or continued-use result

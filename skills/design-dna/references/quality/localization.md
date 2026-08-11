@@ -55,7 +55,7 @@ in-progress task.
 When Hebrew is material, use the current
 [W3C Hebrew Layout Requirements](https://www.w3.org/International/hlreq/) as a
 script-specific reference and complete the
-[Hebrew typography proof](../craft/typography.md#proof-hebrew-and-mixed-direction-type).
+[mixed-direction typography proof](../craft/typography.md#proof-real-language-and-mixed-direction).
 
 - Use `lang="he"` and `dir="rtl"` for Hebrew passages. Do not set the whole
   document to RTL when the active interface locale remains English.
@@ -97,12 +97,14 @@ Check, as applicable:
 
 ## Rendered and behavioral matrix
 
-Use representative short and long content in each script. Inspect narrow,
-intermediate, wide, zoomed, and text-spaced states; navigation, tables, forms,
-dialogs, toasts, charts, truncation, and mixed-direction values; keyboard and
-screen-reader order; font loading failure; and language switching during a
-real task. Include at least one locale whose expansion, grammar, and direction
-stress different assumptions from the source locale.
+Use representative short and long content for every supported locale and
+script, with coverage proportional to its routes and risks. Inspect the widths,
+zoom, text spacing, navigation, tables, forms, dialogs, messages, charts,
+truncation, mixed-direction values, reading order, font failure, and language-
+switch behavior that can change a real task. Do not invent or ship a locale
+merely to satisfy a stress-test category. When useful, an explicitly labeled
+non-shipping pseudolocale may expose expansion or direction assumptions; it is
+engineering evidence, not translated or culturally reviewed content.
 
 Record which locales, routes, content states, browsers, assistive technologies,
 and formatting cases were actually checked. Machine translation, pseudolocale

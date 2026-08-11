@@ -920,16 +920,19 @@ class RouteFamilyInitializerTests(unittest.TestCase):
             for route in payload["routes"]:
                 route["review_status"] = "accepted"
             write_contract(project, payload)
+            initializer = load_initializer_module()
             (project / ".design-dna" / "state.json").write_text(
                 json.dumps(
                     {
                         "assurance_profiles": ["standard", "range-study"],
                         "records": ["route-family"],
+                        "evidence_contract": initializer.evidence_contract_payload(
+                            ("standard", "range-study")
+                        ),
                     }
                 ),
                 encoding="utf-8",
             )
-            initializer = load_initializer_module()
             self.assertEqual(initializer.readiness_failures(project), [])
 
             payload["review"]["body_comparison"] = "manual-review-required"

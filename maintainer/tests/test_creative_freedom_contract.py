@@ -52,12 +52,85 @@ class CreativeFreedomContractTests(unittest.TestCase):
         typography = read(
             SKILL / "references" / "craft" / "typography.md"
         ).casefold()
-        self.assertIn("there is no runtime list", typography)
-        self.assertIn("a familiar choice is not automatically generic", typography)
-        self.assertIn("unusual choice is not automatically distinctive", typography)
+        self.assertIn("no universal set of \"ai fonts,\"", typography)
+        self.assertIn("system font can be an intentional identity decision", typography)
+        self.assertIn(
+            "self-hosted files, a trusted service, platform fonts, system fonts",
+            typography,
+        )
         self.assertNotIn("approved font list", typography)
         self.assertNotIn("forbidden font list", typography)
         self.assertNotIn("preferred font list", typography)
+
+    def test_runtime_cannot_reintroduce_aesthetic_absolutes(self) -> None:
+        runtime = "\n".join(
+            path.read_text(encoding="utf-8").casefold()
+            for path in sorted(SKILL.rglob("*"))
+            if path.is_file()
+            and path.suffix.casefold()
+            in {".md", ".yml", ".yaml", ".json", ".py", ".mjs"}
+        )
+        retired_rules = (
+            "never use an em dash",
+            "two families maximum",
+            "self-host every face",
+            "default target is rich",
+            "one memorable element",
+            "display family must not",
+            "must not be a familiar geometric sans",
+            "all-system-font typography on a flagship site is a failure",
+            "font rotation",
+            "quantitative-claim-density",
+            "compound-display-compression",
+            "severe-typography-compression",
+            "prominent-fragment-context",
+            "prominent-fragment-dynamic-style",
+            "prominent-fragment-selector-context",
+            "tracking <= -0.03em",
+            "horizontal scale <= 0.75",
+        )
+        for rule in retired_rules:
+            with self.subTest(rule=rule):
+                self.assertNotIn(rule, runtime)
+
+        assurance = read(SKILL / "policy" / "absolutes.md").casefold()
+        self.assertIn("not an aesthetic blacklist", assurance)
+        self.assertIn("truth and provenance", assurance)
+        self.assertIn("access and working behavior", assurance)
+        self.assertIn("aesthetic, expressive, compositional", assurance)
+        self.assertIn("ingredients remain neutral and open", assurance)
+        for motif in (
+            "hero formulas",
+            "font choices",
+            "colored-word",
+            "gradients",
+            "count-up",
+            "card grids",
+            "monospace labels",
+            "tiny captions",
+            "decorative numbers",
+        ):
+            with self.subTest(motif=motif):
+                self.assertNotIn(motif, assurance)
+
+    def test_neutral_ingredients_remain_available_to_project_judgment(self) -> None:
+        typography = read(SKILL / "references" / "craft" / "typography.md").casefold()
+        watch = " ".join(
+            read(SKILL / "references" / "convergence-watch.md")
+            .casefold()
+            .split()
+        )
+        freedom = read(SKILL / "references" / "creative-freedom.md").casefold()
+        policy = read(SKILL / "policy" / "owner-defaults.yml").casefold()
+
+        self.assertIn("a familiar card, gradient, serif, grotesk", watch)
+        self.assertIn("is not a finding by itself", watch)
+        self.assertIn("an unusual choice is not proof of quality", watch)
+        self.assertIn("system font can be an intentional identity decision", typography)
+        self.assertIn("colored, italic, underlined, outlined, animated", typography)
+        self.assertIn("singular, plural, layered, local, restrained, maximal", freedom)
+        self.assertIn("no universal richness or memorability device is required", freedom)
+        self.assertIn("gradients, icons, and conventional components are neutral", policy)
 
     def test_discovery_metadata_does_not_prescribe_one_time_register(self) -> None:
         skill_header = read(SKILL / "SKILL.md").split("---", 2)[1].casefold()
@@ -234,6 +307,207 @@ class CreativeFreedomContractTests(unittest.TestCase):
             with self.subTest(slot=fixed_slot):
                 self.assertNotIn(fixed_slot, templates)
 
+    def test_visual_review_requires_rendered_microtype_observation_without_a_house_scale(self) -> None:
+        review = read(
+            SKILL / "templates" / "visual-review-template.md"
+        ).casefold()
+        preship = read(SKILL / "templates" / "preship-gate.md").casefold()
+        normalized_review = " ".join(review.split())
+        for phrase in (
+            "smallest ordinary-reading role actually inspected",
+            "smallest interactive, caption, credit, legend, or utility role",
+            "narrow-width and text-spacing result",
+            "repeated compact-uppercase or tracking pattern disposition",
+            "numerical value is diagnostic evidence, never an automatic",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, normalized_review)
+        self.assertIn("no portable numeric type threshold", preship)
+        for house_value in ("12px", "13px", "0.05em", "0.1em"):
+            with self.subTest(house_value=house_value):
+                self.assertNotIn(house_value, review + preship)
+
+    def test_fictional_identity_must_fit_fixture_depth_without_a_category_recipe(self) -> None:
+        discovery = read(
+            SKILL / "references" / "quality" / "content-discovery.md"
+        ).casefold()
+        normalized_discovery = " ".join(discovery.split())
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        workflow = " ".join(
+            read(SKILL / "references" / "workflow.md").casefold().split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md").casefold().split()
+        )
+        self.assertIn("compare what its nouns promise", normalized_discovery)
+        self.assertIn("not a required content checklist", normalized_discovery)
+        self.assertIn(
+            "repeated disclaimers do not repair a mismatch",
+            normalized_discovery,
+        )
+        self.assertIn(
+            "provide enough bounded material",
+            normalized_discovery,
+        )
+        self.assertIn(
+            "fictional, sample, demo, or prototype identity or scenario content",
+            skill,
+        )
+        self.assertIn("even when the material appears plentiful", skill)
+        self.assertIn("even when the source packet appears plentiful", workflow)
+        self.assertIn("no category checklist", preship)
+
+    def test_content_models_preserve_evidence_based_variance_without_fake_irregularity(self) -> None:
+        content = " ".join(
+            read(SKILL / "references" / "craft" / "content-ia.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("test sparse, rich, ordinary, and outlier entries", content)
+        self.assertIn("not from the visual desire to make every item equally complete", content)
+        self.assertIn("do not pad every card", content)
+        self.assertIn("random omissions, fake wear, or manufactured inconsistency", content)
+
+    def test_reused_media_must_fit_each_claim_without_a_shot_quota(self) -> None:
+        imagery = " ".join(
+            read(SKILL / "references" / "craft" / "imagery-illustration.md")
+            .casefold()
+            .split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("review every content job", imagery)
+        self.assertIn("changed crop alone is not distinct evidence", imagery)
+        self.assertIn("do not impose a global image-count or shot-list rule", imagery)
+        self.assertIn("reused media was reviewed against each adjacent claim", preship)
+
+    def test_responsive_runway_and_explanatory_diagrams_use_project_evidence(self) -> None:
+        responsive = " ".join(
+            read(SKILL / "references" / "craft" / "responsive-adaptation.md")
+            .casefold()
+            .split()
+        )
+        data_visualization = " ".join(
+            read(SKILL / "references" / "craft" / "data-visualization.md")
+            .casefold()
+            .split()
+        )
+        review = " ".join(
+            read(SKILL / "templates" / "visual-review-template.md")
+            .casefold()
+            .split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md")
+            .casefold()
+            .split()
+        )
+        router = " ".join(read(SKILL / "SKILL.md").casefold().split())
+
+        self.assertIn("first delivers meaningful subject content or a useful action", responsive)
+        self.assertIn(
+            "not as a universal pixel, viewport, screen-count, or page-length limit",
+            responsive,
+        )
+        self.assertIn("shortening every mobile page is not the goal", responsive)
+        self.assertIn("content-bearing explanatory diagram", data_visualization)
+        self.assertIn("contextual pan or zoom", data_visualization)
+        self.assertIn("this is not a prescribed diagram style or mobile recipe", data_visualization)
+        self.assertIn("preserve the comparison task", responsive)
+        self.assertIn("serially stacking complete records", responsive)
+        self.assertIn("field-first transpose", responsive)
+        self.assertIn("fit-to-width preview is one option", responsive)
+        self.assertIn("decorative continuity devices", responsive)
+        self.assertIn("first meaningful subject content or useful action", review)
+        self.assertIn("comparison task result", review)
+        self.assertIn("repeated status/disclosure hierarchy", review)
+        self.assertIn("no universal mobile page length or screen-count target", review)
+        self.assertIn("a uniformly shrunken graphic is not treated as sufficient", preship)
+        self.assertIn("serial stacking is not accepted solely because it fits", preship)
+        self.assertIn("content-bearing explanatory diagram", router)
+
+    def test_truthful_boundaries_use_distinct_consequences_not_repetition(self) -> None:
+        microcopy = " ".join(
+            read(SKILL / "references" / "craft" / "microcopy.md")
+            .casefold()
+            .split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md")
+            .casefold()
+            .split()
+        )
+        router = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        self.assertIn("separate distinct consequences", microcopy)
+        self.assertIn("does not automatically need to be the loudest visual element", microcopy)
+        self.assertIn("rather than counting disclosures", microcopy)
+        self.assertIn("repeated instances were compared by consequence", preship)
+        self.assertIn("status that repeats, competes with the subject", router)
+
+    def test_batch_masking_uses_neutral_labels_and_preserves_authorized_originals(self) -> None:
+        watch = " ".join(
+            read(SKILL / "references" / "convergence-watch.md")
+            .casefold()
+            .split()
+        )
+        batch = " ".join(
+            read(SKILL / "references" / "quality" / "batch-range-evaluation.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("neutral labels reduce identity priming", watch)
+        self.assertIn("they are not pixel redaction", watch)
+        self.assertIn("authorized and needed for privacy, rights, or data minimization", watch)
+        self.assertIn("preserve the verified original", watch)
+        self.assertIn("record the transformation and resulting coverage loss", watch)
+        self.assertIn("preserve the verified original inside its authorized evidence boundary", batch)
+
+    def test_cross_project_review_blinds_identity_without_mandatory_pixel_transform(self) -> None:
+        specificity = " ".join(
+            read(SKILL / "references" / "quality" / "specificity-review.md")
+            .casefold()
+            .split()
+        )
+        freedom = " ".join(
+            read(SKILL / "references" / "creative-freedom.md")
+            .casefold()
+            .split()
+        )
+        for document in (specificity, freedom):
+            self.assertIn("neutral specimen labels", document)
+            self.assertIn("identity map", document)
+            self.assertIn("do not", document)
+            self.assertIn("original and transformed hashes", document)
+        self.assertIn("without changing the reviewed pixels", specificity)
+        self.assertIn("do not pixel-transform every comparison", freedom)
+        self.assertIn("unprovable `geometry-preserved` assertion", freedom)
+
+    def test_batch_review_templates_bind_external_snapshots_and_all_captures(self) -> None:
+        whole = read(
+            SKILL / "templates" / "batch-whole-system-review-template.md"
+        ).casefold()
+        site = read(
+            SKILL / "templates" / "batch-site-observation-template.md"
+        ).casefold()
+        self.assertIn("pre-review study-contract snapshot", whole)
+        self.assertIn("after freezing, record this file's sha-256", whole)
+        self.assertIn("do not append a self-hash", whole)
+        self.assertIn("do not transform screenshot pixels by default", whole)
+        self.assertIn("authorizing authority and evidence", whole)
+        self.assertIn("coverage impact", whole)
+        self.assertNotIn("contract sha-256:", whole)
+        self.assertIn("reviewed capture manifest", site)
+        self.assertIn("page or route", site)
+        self.assertIn("capture mode", site)
+        self.assertIn("do not compress a multi-route site", site)
+        self.assertIn("after freezing, record this file's sha-256", site)
+        self.assertIn("do not append a self-hash", site)
+        self.assertNotIn("wide capture path and sha-256", site)
+        self.assertNotIn("narrow capture path and sha-256", site)
+
     def test_greenfield_and_range_study_do_not_silently_require_showcase(self) -> None:
         initializer = read(SKILL / "scripts" / "init_project_state.py")
         self.assertIn('"greenfield": ("standard",)', initializer)
@@ -246,6 +520,24 @@ class CreativeFreedomContractTests(unittest.TestCase):
             '"range-study": ("showcase", "range-study")',
             initializer,
         )
+
+    def test_showcase_requires_contrast_not_plural_full_alternatives(self) -> None:
+        skill = read(SKILL / "SKILL.md").casefold()
+        readme = read(PACKAGE_ROOT / "README.md").casefold()
+        quick_start = read(PACKAGE_ROOT / "docs" / "QUICK_START.md").casefold()
+        for name, document in (
+            ("skill", skill),
+            ("readme", readme),
+            ("quick-start", quick_start),
+        ):
+            with self.subTest(document=name):
+                self.assertIn(
+                    "directly reviewable contrast sufficient to challenge",
+                    document,
+                )
+                self.assertIn("full alternatives when uncertainty", document)
+        self.assertNotIn("compare rendered alternatives that", skill)
+        self.assertNotIn("enough directly reviewable alternatives", quick_start)
 
     def test_render_report_records_neutral_geometry_and_computed_type_evidence(self) -> None:
         schema = load_json(SCHEMAS / "render-review.schema.json")
@@ -458,9 +750,177 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("not a recommended device", matrix)
         self.assertNotIn("last reviewed:", watch)
         self.assertNotIn("review by:", watch)
-        self.assertIn("intentionally contains no claim", watch)
-        self.assertIn("installed skill does not depend on", watch)
-        self.assertIn("not a portable runtime dependency", watch)
+        self.assertIn("does not detect ai authorship", watch)
+        self.assertIn("owner-authorized ledger", watch)
+        self.assertIn("do not conceal truthful implementation", watch)
+
+    def test_delivery_capture_type_and_batch_claims_stay_calibrated(self) -> None:
+        runtime = "\n".join(
+            path.read_text(encoding="utf-8").casefold()
+            for path in sorted(SKILL.rglob("*"))
+            if path.is_file()
+            and path.suffix.casefold()
+            in {".md", ".yml", ".yaml", ".json", ".py", ".mjs"}
+        )
+        policy = read(SKILL / "policy" / "owner-defaults.yml").casefold()
+        render_harness = read(
+            SKILL / "references" / "quality" / "render-harness.md"
+        ).casefold()
+        typography = read(
+            SKILL / "references" / "craft" / "typography.md"
+        ).casefold()
+        batch = read(
+            SKILL / "references" / "quality" / "batch-range-evaluation.md"
+        ).casefold()
+        workflow = read(SKILL / "references" / "workflow.md").casefold()
+        readme = read(PACKAGE_ROOT / "README.md").casefold()
+        quick_start = read(PACKAGE_ROOT / "docs" / "QUICK_START.md").casefold()
+        content_ia = read(SKILL / "references" / "craft" / "content-ia.md").casefold()
+        email = read(SKILL / "references" / "craft" / "email-design.md").casefold()
+
+        for retired_claim in (
+            "every build is a demo",
+            "every build stays a demo",
+            "demo_by_default",
+            "his own words",
+            "measure real composite contrast",
+            "roughly 12 css pixels",
+        ):
+            with self.subTest(retired_claim=retired_claim):
+                self.assertNotIn(retired_claim, runtime)
+
+        self.assertIn("delivery_state_honesty", policy)
+        self.assertIn("uses playwright", render_harness)
+        self.assertIn("does not calculate text contrast", render_harness)
+        self.assertIn("indirect evidence", typography)
+        self.assertIn("do not create a portable pixel", typography)
+        self.assertIn("does not redact their content", batch)
+        self.assertIn("screenshot pixels", batch)
+        self.assertIn("static, local, sandboxed", workflow)
+        self.assertIn("clearly bounded fictional sample", readme)
+        self.assertIn("explicitly fictional sample", quick_start)
+        self.assertNotIn("use a clear neutral voice", content_ia)
+        self.assertIn("instead of manufacturing a brand voice", content_ia)
+        self.assertNotIn('first\n  words of a header. write it.', email)
+        self.assertIn("target-client evidence", email)
+
+    def test_study_regressions_preserve_tasks_without_creating_style_recipes(self) -> None:
+        responsive = " ".join(
+            read(SKILL / "references" / "craft" / "responsive-adaptation.md")
+            .casefold()
+            .split()
+        )
+        assets = " ".join(
+            read(SKILL / "references" / "quality" / "asset-integrity.md")
+            .casefold()
+            .split()
+        )
+        visual_review = " ".join(
+            read(SKILL / "templates" / "visual-review-template.md")
+            .casefold()
+            .split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md")
+            .casefold()
+            .split()
+        )
+        content_ia = " ".join(
+            read(SKILL / "references" / "craft" / "content-ia.md")
+            .casefold()
+            .split()
+        )
+        data_visualization = " ".join(
+            read(SKILL / "references" / "craft" / "data-visualization.md")
+            .casefold()
+            .split()
+        )
+        microcopy = " ".join(
+            read(SKILL / "references" / "craft" / "microcopy.md")
+            .casefold()
+            .split()
+        )
+
+        self.assertIn("deepest meaningful field", responsive)
+        self.assertIn("preserve consequential dependency order", responsive)
+        self.assertIn("actual composite", responsive)
+        self.assertIn("initial, intermediate, and terminal positions", responsive)
+        self.assertIn("does not require a progress bar", responsive)
+        self.assertIn("caption cannot make near-identical windows", assets)
+        self.assertIn("static frame must not be presented", assets)
+        self.assertIn("deep-path comparison context", visual_review)
+        self.assertIn("consequential dependency order after reflow", visual_review)
+        self.assertIn("composite reading-ground result", visual_review)
+        self.assertIn("located endpoint", visual_review)
+        self.assertIn("referential copy result", visual_review)
+        self.assertIn("label/value separation result", visual_review)
+        self.assertIn("teaching-model parity result", visual_review)
+        self.assertIn("first meaningful action", content_ia)
+        self.assertIn("quietly changing the grammar", content_ia)
+        self.assertIn("repeated unit of action", microcopy)
+        self.assertIn("initial view inventories", data_visualization)
+        self.assertIn("static frame is not described as evidence", preship)
+        self.assertIn("none is a portable requirement", responsive)
+        self.assertNotIn("always use a sticky", responsive)
+        self.assertNotIn("always move exclusions", responsive)
+
+    def test_taste_calibration_recovers_direction_without_a_house_style(self) -> None:
+        calibration = " ".join(
+            read(SKILL / "references" / "craft" / "taste-calibration.md")
+            .casefold()
+            .split()
+        )
+        art_direction = " ".join(
+            read(SKILL / "references" / "craft" / "art-direction.md")
+            .casefold()
+            .split()
+        )
+        workflow = " ".join(
+            read(SKILL / "references" / "workflow.md").casefold().split()
+        )
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        review = " ".join(
+            read(SKILL / "templates" / "visual-review-template.md")
+            .casefold()
+            .split()
+        )
+        template = " ".join(
+            read(SKILL / "templates" / "taste-calibration-template.md")
+            .casefold()
+            .split()
+        )
+
+        for phrase in (
+            "this is not an ai detector, a style picker",
+            "technical cleanliness is necessary but not a beauty verdict",
+            "recover from an ugly result",
+            "replace the root decisions",
+            "does not make any family, density, media type, layout, or interaction universally good or bad",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, calibration)
+
+        self.assertIn("maker's private design exercise", art_direction)
+        self.assertIn("credible public surface", art_direction)
+        self.assertIn("batch study protocol silently turn it into a collection of abstract test specimens", workflow)
+        self.assertIn("ugly, artificial, generic, or not actually good", workflow)
+        self.assertIn("previous visual rejection", skill)
+        self.assertIn("not a font, palette, or effect swap", skill)
+        self.assertIn("a fresh public-facing site", skill)
+        self.assertIn("does not choose a house style", skill)
+        self.assertIn("for showcase work without an approved rendered direction", skill)
+        self.assertIn("first-impression and surface-fidelity review", review)
+        self.assertIn("it is not a style catalog, an ai score", template)
+
+        for forbidden_recipe in (
+            "must use a display font",
+            "one accent color",
+            "three directions are required",
+            "hero must",
+            "award-level",
+        ):
+            with self.subTest(forbidden_recipe=forbidden_recipe):
+                self.assertNotIn(forbidden_recipe, calibration)
 
 
 if __name__ == "__main__":

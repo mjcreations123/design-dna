@@ -34,6 +34,7 @@ import secrets
 import signal
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -96,6 +97,254 @@ SENSITIVE_TEXT = re.compile(
     r"(?i)(?:api[_-]?key|access[_-]?token|authorization|bearer\s|"
     r"password|private[_-]?key|secret|(?:^|[^a-z0-9])sk-[A-Za-z0-9])"
 )
+
+
+_WINDOWS_JOB_BOOTSTRAP = r"""
+import ctypes
+import subprocess
+import sys
+
+kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+kernel32.OpenEventW.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_wchar_p]
+kernel32.OpenEventW.restype = ctypes.c_void_p
+kernel32.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+kernel32.WaitForSingleObject.restype = ctypes.c_uint32
+kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+kernel32.CloseHandle.restype = ctypes.c_int
+
+ready = kernel32.OpenEventW(0x00100000, 0, sys.argv[1])
+if not ready:
+    print(
+        f"Design DNA containment bootstrap could not open its ready event: "
+        f"winerror={ctypes.get_last_error()}",
+        file=sys.stderr,
+    )
+    raise SystemExit(125)
+try:
+    wait_status = kernel32.WaitForSingleObject(ready, 30000)
+    if wait_status != 0:
+        print(
+            f"Design DNA containment bootstrap was not released: "
+            f"wait_status={wait_status} winerror={ctypes.get_last_error()}",
+            file=sys.stderr,
+        )
+        raise SystemExit(125)
+finally:
+    kernel32.CloseHandle(ready)
+
+driver = subprocess.Popen(sys.argv[2:], shell=False)
+raise SystemExit(driver.wait())
+"""
+
+
+def _windows_error_record(exc: BaseException) -> dict[str, object]:
+    return {
+        "type": type(exc).__name__,
+        "winerror": getattr(exc, "winerror", None),
+        "errno": getattr(exc, "errno", None),
+        "message": str(exc),
+    }
+
+
+class _WindowsProcessJob:
+    """Own a fail-closed Windows job before an evaluation driver can start."""
+
+    _JOB_OBJECT_EXTENDED_LIMIT_INFORMATION = 9
+    _JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
+    _PROCESS_TERMINATE = 0x0001
+    _PROCESS_SET_QUOTA = 0x0100
+    _WAIT_OBJECT_0 = 0x00000000
+    _WAIT_TIMEOUT = 0x00000102
+    _WAIT_FAILED = 0xFFFFFFFF
+
+    def __init__(self) -> None:
+        if os.name != "nt":
+            raise OSError("Windows process jobs are unavailable on this host")
+
+        import ctypes
+        from ctypes import wintypes
+
+        class BasicLimitInformation(ctypes.Structure):
+            _fields_ = [
+                ("PerProcessUserTimeLimit", ctypes.c_int64),
+                ("PerJobUserTimeLimit", ctypes.c_int64),
+                ("LimitFlags", wintypes.DWORD),
+                ("MinimumWorkingSetSize", ctypes.c_size_t),
+                ("MaximumWorkingSetSize", ctypes.c_size_t),
+                ("ActiveProcessLimit", wintypes.DWORD),
+                ("Affinity", ctypes.c_size_t),
+                ("PriorityClass", wintypes.DWORD),
+                ("SchedulingClass", wintypes.DWORD),
+            ]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [
+                ("ReadOperationCount", ctypes.c_uint64),
+                ("WriteOperationCount", ctypes.c_uint64),
+                ("OtherOperationCount", ctypes.c_uint64),
+                ("ReadTransferCount", ctypes.c_uint64),
+                ("WriteTransferCount", ctypes.c_uint64),
+                ("OtherTransferCount", ctypes.c_uint64),
+            ]
+
+        class ExtendedLimitInformation(ctypes.Structure):
+            _fields_ = [
+                ("BasicLimitInformation", BasicLimitInformation),
+                ("IoInfo", IoCounters),
+                ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t),
+                ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t),
+            ]
+
+        self._ctypes = ctypes
+        self._kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        self._kernel32.CreateJobObjectW.argtypes = [
+            ctypes.c_void_p,
+            wintypes.LPCWSTR,
+        ]
+        self._kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+        self._kernel32.SetInformationJobObject.argtypes = [
+            wintypes.HANDLE,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+        ]
+        self._kernel32.SetInformationJobObject.restype = wintypes.BOOL
+        self._kernel32.OpenProcess.argtypes = [
+            wintypes.DWORD,
+            wintypes.BOOL,
+            wintypes.DWORD,
+        ]
+        self._kernel32.OpenProcess.restype = wintypes.HANDLE
+        self._kernel32.AssignProcessToJobObject.argtypes = [
+            wintypes.HANDLE,
+            wintypes.HANDLE,
+        ]
+        self._kernel32.AssignProcessToJobObject.restype = wintypes.BOOL
+        self._kernel32.TerminateJobObject.argtypes = [
+            wintypes.HANDLE,
+            wintypes.UINT,
+        ]
+        self._kernel32.TerminateJobObject.restype = wintypes.BOOL
+        self._kernel32.WaitForSingleObject.argtypes = [
+            wintypes.HANDLE,
+            wintypes.DWORD,
+        ]
+        self._kernel32.WaitForSingleObject.restype = wintypes.DWORD
+        self._kernel32.CreateEventW.argtypes = [
+            ctypes.c_void_p,
+            wintypes.BOOL,
+            wintypes.BOOL,
+            wintypes.LPCWSTR,
+        ]
+        self._kernel32.CreateEventW.restype = wintypes.HANDLE
+        self._kernel32.SetEvent.argtypes = [wintypes.HANDLE]
+        self._kernel32.SetEvent.restype = wintypes.BOOL
+        self._kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        self._kernel32.CloseHandle.restype = wintypes.BOOL
+
+        self._handle = self._kernel32.CreateJobObjectW(None, None)
+        self._event_handle = None
+        if not self._handle:
+            self._raise_last_error("CreateJobObjectW")
+        try:
+            limits = ExtendedLimitInformation()
+            limits.BasicLimitInformation.LimitFlags = (
+                self._JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+            )
+            if not self._kernel32.SetInformationJobObject(
+                self._handle,
+                self._JOB_OBJECT_EXTENDED_LIMIT_INFORMATION,
+                ctypes.byref(limits),
+                ctypes.sizeof(limits),
+            ):
+                self._raise_last_error("SetInformationJobObject")
+            self.event_name = (
+                "Local\\DesignDnaEvalReady-"
+                f"{os.getpid()}-{secrets.token_hex(16)}"
+            )
+            self._event_handle = self._kernel32.CreateEventW(
+                None,
+                True,
+                False,
+                self.event_name,
+            )
+            if not self._event_handle:
+                self._raise_last_error("CreateEventW")
+        except BaseException:
+            self.close()
+            raise
+
+    def _raise_last_error(self, operation: str) -> None:
+        error = self._ctypes.get_last_error()
+        raise OSError(
+            error,
+            f"{operation} failed: {self._ctypes.FormatError(error).strip()}",
+        )
+
+    def wrapped_command(self, command: list[str]) -> list[str]:
+        return [
+            sys.executable,
+            "-I",
+            "-B",
+            "-c",
+            _WINDOWS_JOB_BOOTSTRAP,
+            self.event_name,
+            *command,
+        ]
+
+    def assign(self, process: subprocess.Popen[bytes]) -> None:
+        process_handle = self._kernel32.OpenProcess(
+            self._PROCESS_TERMINATE | self._PROCESS_SET_QUOTA,
+            False,
+            process.pid,
+        )
+        if not process_handle:
+            self._raise_last_error("OpenProcess")
+        try:
+            if not self._kernel32.AssignProcessToJobObject(
+                self._handle,
+                process_handle,
+            ):
+                self._raise_last_error("AssignProcessToJobObject")
+        finally:
+            self._kernel32.CloseHandle(process_handle)
+
+    def release_driver(self) -> None:
+        if not self._event_handle:
+            raise OSError("Windows driver-ready event is already closed")
+        if not self._kernel32.SetEvent(self._event_handle):
+            self._raise_last_error("SetEvent")
+
+    def terminate(self) -> None:
+        if not self._handle:
+            raise OSError("Windows process job is already closed")
+        if not self._kernel32.TerminateJobObject(self._handle, 1):
+            self._raise_last_error("TerminateJobObject")
+
+    def wait_empty(self, milliseconds: int) -> bool:
+        if not self._handle:
+            raise OSError("Windows process job is already closed")
+        status = self._kernel32.WaitForSingleObject(
+            self._handle,
+            milliseconds,
+        )
+        if status == self._WAIT_OBJECT_0:
+            return True
+        if status == self._WAIT_TIMEOUT:
+            return False
+        if status == self._WAIT_FAILED:
+            self._raise_last_error("WaitForSingleObject")
+        raise OSError(f"WaitForSingleObject returned unexpected status {status}")
+
+    def close(self) -> None:
+        if self._event_handle:
+            self._kernel32.CloseHandle(self._event_handle)
+            self._event_handle = None
+        if getattr(self, "_handle", None):
+            self._kernel32.CloseHandle(self._handle)
+            self._handle = None
 
 
 def digest_text(value: str) -> str:
@@ -1040,40 +1289,156 @@ def driver_identity(executable: str, environment: dict[str, str]) -> dict[str, o
     }
 
 
-def terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
-    if process.poll() is not None:
-        return
-    if os.name == "nt":
-        system_root = Path(
-            os.environ.get("SystemRoot", r"C:\Windows")
+def _bounded_process_text(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
+    return value[:4096]
+
+
+def _taskkill_process_tree(pid: int) -> dict[str, object]:
+    system_root = Path(os.environ.get("SystemRoot", r"C:\Windows"))
+    taskkill = system_root / "System32" / "taskkill.exe"
+    try:
+        completed = subprocess.run(
+            [
+                str(taskkill),
+                "/PID",
+                str(pid),
+                "/T",
+                "/F",
+            ],
+            capture_output=True,
+            timeout=15,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        taskkill = system_root / "System32" / "taskkill.exe"
-        try:
-            subprocess.run(
-                [
-                    str(taskkill),
-                    "/PID",
-                    str(process.pid),
-                    "/T",
-                    "/F",
-                ],
-                capture_output=True,
-                timeout=15,
-                check=False,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            process.kill()
-    else:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        return {
+            "attempted": True,
+            "returncode": completed.returncode,
+            "stdout": _bounded_process_text(completed.stdout),
+            "stderr": _bounded_process_text(completed.stderr),
+            "error": None,
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "attempted": True,
+            "returncode": None,
+            "stdout": _bounded_process_text(exc.stdout),
+            "stderr": _bounded_process_text(exc.stderr),
+            "error": {
+                "type": type(exc).__name__,
+                "timeout_seconds": exc.timeout,
+                "message": str(exc),
+            },
+        }
+    except OSError as exc:
+        return {
+            "attempted": True,
+            "returncode": None,
+            "stdout": "",
+            "stderr": "",
+            "error": _windows_error_record(exc),
+        }
+
+
+def terminate_process_tree(
+    process: subprocess.Popen[bytes],
+    windows_job: _WindowsProcessJob | None = None,
+) -> dict[str, object]:
+    evidence: dict[str, object] = {
+        "pid": process.pid,
+        "job_termination": None,
+        "taskkill": None,
+        "verified_empty": False,
+        "root_kill_attempted": False,
+    }
+    if os.name == "nt":
+        if windows_job is not None:
+            try:
+                windows_job.terminate()
+                evidence["job_termination"] = {
+                    "attempted": True,
+                    "succeeded": True,
+                    "error": None,
+                }
+            except OSError as exc:
+                evidence["job_termination"] = {
+                    "attempted": True,
+                    "succeeded": False,
+                    "error": _windows_error_record(exc),
+                }
+            try:
+                evidence["verified_empty"] = windows_job.wait_empty(15000)
+            except OSError as exc:
+                evidence["job_wait_error"] = _windows_error_record(exc)
+            if evidence["verified_empty"]:
+                try:
+                    process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    evidence["root_wait_after_job"] = "timed-out"
+                evidence["method"] = "windows-job"
+                return evidence
+        elif process.poll() is not None:
+            evidence["verified_empty"] = True
+            evidence["method"] = "already-exited"
+            return evidence
+
+        taskkill_evidence = _taskkill_process_tree(process.pid)
+        evidence["taskkill"] = taskkill_evidence
+        if windows_job is not None:
+            try:
+                evidence["verified_empty"] = windows_job.wait_empty(15000)
+            except OSError as exc:
+                evidence["job_wait_after_taskkill_error"] = (
+                    _windows_error_record(exc)
+                )
+        else:
+            try:
+                process.wait(timeout=15)
+                evidence["verified_empty"] = (
+                    taskkill_evidence["returncode"] == 0
+                )
+            except subprocess.TimeoutExpired:
+                evidence["root_wait_after_taskkill"] = "timed-out"
+        if evidence["verified_empty"]:
+            evidence["method"] = "taskkill-fallback"
+            return evidence
+
+        if process.poll() is None:
+            evidence["root_kill_attempted"] = True
+            try:
+                process.kill()
+                process.wait(timeout=15)
+                evidence["root_kill_succeeded"] = True
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                evidence["root_kill_succeeded"] = False
+                evidence["root_kill_error"] = _windows_error_record(exc)
+        raise ToolFailure(
+            "process-tree-termination-failed",
+            (
+                "Windows process-tree termination could not be verified: "
+                + json.dumps(evidence, sort_keys=True, ensure_ascii=True)
+            ),
+        )
+
+    if process.poll() is not None:
+        evidence["verified_empty"] = True
+        evidence["method"] = "already-exited"
+        return evidence
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
     try:
         process.wait(timeout=15)
     except subprocess.TimeoutExpired:
         process.kill()
         process.wait()
+    evidence["verified_empty"] = True
+    evidence["method"] = "posix-process-group"
+    return evidence
 
 
 def run_driver(
@@ -1087,55 +1452,106 @@ def run_driver(
 ) -> tuple[int, bool, bool, float]:
     creationflags = 0
     popen_options: dict[str, object] = {}
+    windows_job: _WindowsProcessJob | None = None
+    launched_command = command
     if os.name == "nt":
         creationflags = (
             getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
             | getattr(subprocess, "CREATE_NO_WINDOW", 0)
         )
+        try:
+            windows_job = _WindowsProcessJob()
+            launched_command = windows_job.wrapped_command(command)
+        except OSError as exc:
+            raise ToolFailure(
+                "process-containment-init-failed",
+                (
+                    "Windows job containment could not be initialized: "
+                    + json.dumps(
+                        _windows_error_record(exc),
+                        sort_keys=True,
+                        ensure_ascii=True,
+                    )
+                ),
+            ) from exc
     else:
         popen_options["start_new_session"] = True
     start = time.monotonic()
-    with stdout_path.open("wb") as stdout_handle, stderr_path.open(
-        "wb"
-    ) as stderr_handle:
-        process = subprocess.Popen(
-            command,
-            cwd=cwd,
-            env=environment,
-            stdout=stdout_handle,
-            stderr=stderr_handle,
-            shell=False,
-            creationflags=creationflags,
-            **popen_options,
-        )
-        timed_out = False
-        output_limit_exceeded = False
-        deadline = start + timeout
-        while True:
-            try:
-                output_bytes = stdout_path.stat().st_size + stderr_path.stat().st_size
-            except OSError as exc:
-                terminate_process_tree(process)
-                raise ToolFailure(
-                    "output-inspection-failed",
-                    str(exc),
-                    stdout_path.parent,
-                ) from exc
-            if output_bytes > MAX_OUTPUT_BYTES:
-                output_limit_exceeded = True
-                terminate_process_tree(process)
-                returncode = -1
-                break
-            observed = process.poll()
-            if observed is not None:
-                returncode = observed
-                break
-            if time.monotonic() >= deadline:
-                timed_out = True
-                terminate_process_tree(process)
-                returncode = -1
-                break
-            time.sleep(0.05)
+    try:
+        with stdout_path.open("wb") as stdout_handle, stderr_path.open(
+            "wb"
+        ) as stderr_handle:
+            process = subprocess.Popen(
+                launched_command,
+                cwd=cwd,
+                env=environment,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                shell=False,
+                creationflags=creationflags,
+                **popen_options,
+            )
+            if windows_job is not None:
+                try:
+                    windows_job.assign(process)
+                    windows_job.release_driver()
+                except OSError as exc:
+                    try:
+                        process.kill()
+                        process.wait(timeout=15)
+                    except (OSError, subprocess.TimeoutExpired):
+                        pass
+                    raise ToolFailure(
+                        "process-containment-assignment-failed",
+                        (
+                            "The evaluation driver was not released because "
+                            "Windows job assignment failed: "
+                            + json.dumps(
+                                _windows_error_record(exc),
+                                sort_keys=True,
+                                ensure_ascii=True,
+                            )
+                        ),
+                    ) from exc
+            timed_out = False
+            output_limit_exceeded = False
+            deadline = start + timeout
+            while True:
+                try:
+                    output_bytes = (
+                        stdout_path.stat().st_size
+                        + stderr_path.stat().st_size
+                    )
+                except OSError as exc:
+                    terminate_process_tree(process, windows_job)
+                    raise ToolFailure(
+                        "output-inspection-failed",
+                        str(exc),
+                        stdout_path.parent,
+                    ) from exc
+                if output_bytes > MAX_OUTPUT_BYTES:
+                    output_limit_exceeded = True
+                    terminate_process_tree(process, windows_job)
+                    returncode = -1
+                    break
+                observed = process.poll()
+                if observed is not None:
+                    returncode = observed
+                    if (
+                        windows_job is not None
+                        and not windows_job.wait_empty(100)
+                    ):
+                        terminate_process_tree(process, windows_job)
+                    break
+                if time.monotonic() >= deadline:
+                    timed_out = True
+                    terminate_process_tree(process, windows_job)
+                    returncode = -1
+                    break
+                time.sleep(0.05)
+    finally:
+        if windows_job is not None:
+            windows_job.close()
     return (
         returncode,
         timed_out,

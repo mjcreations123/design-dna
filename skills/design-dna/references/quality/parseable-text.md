@@ -1,192 +1,163 @@
-# Parseable text
+# Parseable public text
 
-Every visible string must earn its place. This file exists because the
-owner's single most repeated rejection, across four separate projects, is
-text on the page that a visitor cannot parse: decorative readouts, mono
-micro-labels, internal vocabulary, numbers pretending to be data. His words:
-"random text in the middle of nowhere that doesn't make sense and is just an
-eyesore." Tufte named the mechanism in 1983: ink whose purpose is to make
-the surface LOOK precise without carrying information.
-
-This is an owner ABSOLUTE (see [absolutes](../../policy/absolutes.md)). The
-gate below runs on the RENDERED page, in every state, at every breakpoint,
-on every build and revision round.
+Use this after the content model exists and again on the rendered candidate.
+Its purpose is to prevent fabricated proof, implementation residue, empty
+design jargon, and decorative text that accidentally masquerades as useful
+information. It is not a punctuation guide, phrase blacklist, sentence-shape
+recipe, or ban on atmosphere.
 
 ## Contents
 
-- [The four-question gate](#the-four-question-gate)
-- [The five string classes](#the-five-string-classes)
-- [Named bans from this studio's record](#named-bans-from-this-studios-record)
-- [Copy carries information the visuals cannot](#copy-carries-information-the-visuals-cannot)
-- [Residue vocabulary sweep](#residue-vocabulary-sweep)
-- [The review pass](#the-review-pass)
+- [Classify the string](#classify-the-string)
+- [Use the four-question review](#use-the-four-question-review)
+- [Distinguish atmosphere from false information](#distinguish-atmosphere-from-false-information)
+- [Keep disclosure visitor-facing, not process-facing](#keep-disclosure-visitor-facing-not-process-facing)
+- [Review copy specificity without writing by formula](#review-copy-specificity-without-writing-by-formula)
+- [Run bounded residue checks](#run-bounded-residue-checks)
+- [Close the rendered pass](#close-the-rendered-pass)
 
-## The four-question gate
+## Classify the string
 
-For EVERY visible text node, in order:
+Identify what each prominent or repeated string is doing:
 
-1. **MEANING.** Can a first-time visitor say what this string tells them or
-   lets them do? If the honest answer is "nothing, it is decoration
-   pretending to be information," it fails.
-2. **TRUTH.** If it looks like data (number, coordinate, timestamp, version,
-   status, price), is it real, and does it stay correct without manual
-   upkeep? A pulsing dot on static content, a fake terminal caret, a
-   coordinate that matches nothing: fail.
-3. **AUDIENCE.** Is every word one this business's customer would use about
-   the business? Codebase vocabulary (component names, state names like
-   idle/active, mode labels, internal codenames, skill jargon) fails, and
-   so does the site's OWN operational state (connection status, sync
-   timestamps, build or version strings, environment names) even when
-   accurate: it is implementation detail, not something this business's
-   customer asked to see.
-4. **COST OF DELETION.** Delete it mentally. Did the visitor lose anything?
-   If nothing is lost, the string goes, or is folded into the adjacent
-   heading, or is replaced by one true specific fact that survives the same
-   test.
+- **Action:** navigation, control, instruction, error, recovery, or next step.
+- **Subject content:** heading, explanation, caption, quotation, annotation,
+  label, taxonomy, data, or evidence about the visitor's subject.
+- **Atmosphere or voice:** language whose honest purpose is mood, rhythm,
+  identity, humor, ceremony, or composition rather than instruction.
+- **Disclosure:** source, limitation, privacy, generated-media, sample-data,
+  legal, or operational context the visitor actually needs.
+- **Residue or false information:** placeholder material, leaked component or
+  variable names, fake telemetry, fabricated status, unexplained codes, or
+  data-shaped decoration likely to be mistaken for a real fact.
 
-A string must pass all four or be removed, made real, or rewritten.
+All but the final class can be legitimate. Atmospheric language does not need
+to pretend it is data or utility; review it for aesthetic success and
+salience. Technical labels, version information, system status, and metrics
+are legitimate when the real audience needs them and the values are truthful,
+current, and accessible. They are defects when they are false, irrelevant, or
+used as generic visual chrome.
 
-## The five string classes
+## Use the four-question review
 
-Legitimate: **action copy** (navigation, buttons, controls), **content
-copy** (headings, body, captions that carry subject information), and
-**authored marginalia** (a footnote or annotation that rewards reading with
-a specific checkable fact).
+Apply these questions to high-salience, repeated, data-shaped, interactive,
+or doubtful strings. A full node-by-node log is useful only when the scope or
+risk warrants it.
 
-Illegitimate: **decorative props** (fake telemetry, coordinates, serials,
-"SYS.01", degree readouts, barcode strings, crosshair labels, blueprint
-annotations on non-technical subjects), **internal residue** (debug
-counters, placeholder copy, unresolved tokens, developer vocabulary, and
-the studio's own process language: specimen labels, typeface or candidate
-names, recipe notes, bracket placeholders like "[hero photo]" on any
-rendered surface a viewer could reach), and **operational state** (a
-status/connection/live indicator, a sync timestamp, a build or version
-string, an environment name), which fails identically whether it is
-fabricated or genuinely true.
+1. **Meaning:** What does the string communicate, enable, or contribute to the
+   intended experience?
+2. **Truth:** Could it be mistaken for a fact, person, result, status, price,
+   capability, quotation, or proof? If so, what source and freshness support
+   it?
+3. **Audience:** Is the language understandable and appropriate for the people
+   and context in the brief, including legitimate specialist vocabulary?
+4. **Relationship:** Does it clarify, distinguish, pace, or enrich its
+   surroundings, or does it duplicate, compete, or create false hierarchy?
 
-Decorative technical marks are permissible only when the subject genuinely
-is technical, every mark is TRUE, and at most one or two appear per
-viewport. Beyond that the aesthetic crosses into parody regardless of truth.
+Remove, rewrite, relabel, or make real anything that cannot justify its public
+role. Do not delete a successful aesthetic line merely because its purpose is
+expressive rather than utilitarian.
 
-## Named bans from this studio's record
+## Distinguish atmosphere from false information
 
-Each of these was rejected by the owner on a real build. Severity follows
-[policy/absolutes.md](../../policy/absolutes.md): items backed by an
-ABSOLUTE run inside the P0 parseable-text pass of the
-[preship gate](../../templates/preship-gate.md); items in the HARD tier are
-enforced at P1 and lift only by logged client direction.
+Decorative marks, marginalia, ordinals, coordinates, badges, terminal-like
+language, mono labels, status dots, and technical diagrams are neutral
+ingredients. Inspect the whole relationship:
 
-P0 (ABSOLUTE-backed, never lifted):
+- Do they belong to the subject, voice, or composition?
+- Could a reasonable visitor mistake them for live status, proof, sequence,
+  location, or capability?
+- Are any values real, current, and maintained?
+- Do they outrank information or controls that matter more?
+- Does the same gesture repeat across unrelated sections or projects without
+  a reason?
+- Does the treatment survive contrast, zoom, text spacing, forced colors,
+  localization, and reduced motion where relevant?
 
-- **Decorative pseudo-data.** HUD readings, coordinates, serials,
-  telemetry, tick-marked ledes, stamps, registry micro-chrome in margins or
-  letterbox bars. "What are they even doing there."
-- **Fake liveness, and real status that is nobody's business.** Pulsing
-  status dots, "ONLINE"/"Connected"/"Synced" badges, ticking counters,
-  streaming logs on static content: fail because they are fabricated.
-  [Owner ABSOLUTE 10](../../policy/absolutes.md) goes further and fails
-  the identical marker even when it is wired to something real, on any
-  page type, not only product or dashboard UI: a shul or a plumber's site
-  has no backend state a visitor needs reported. Animate only what real
-  data changes, and only where reporting that data is the page's job.
-- **Strings below the size floor.** The canonical floor lives in the
-  [typography numbers](../craft/typography.md#the-numbers): list every
-  rendered string under 12px and justify each one's information value;
-  unjustified strings are deleted, not shrunk. Nothing below 11px except
-  legally required fine print.
-- **Claim repetition.** A claim stated more than twice on one page is
-  noise. A "too busy" complaint triggers a repetition count before any
-  motion change.
+A fictional or illustrative interface may use representative labels and data
+when the demo boundary is proportionate and unmistakable. Do not present a
+concept mockup as a real product screenshot, customer result, or operating
+service.
 
-P1 (HARD-tier, liftable only by logged client direction):
+## Keep disclosure visitor-facing, not process-facing
 
-- **Mono micro-label chrome** outside code and data (HARD 6).
-- **Ordinal decoration on parallel items.** 01/02/03 kickers, index glyphs,
-  dots, and slashes on cards or categories that are not a genuine sequence
-  (HARD 7).
-- **The eyebrow template.** The same kicker construction above three or
-  more sections with no taxonomy, sequence, or navigation job (HARD 3). If
-  the eyebrow contains no word absent from the heading below it, delete it
-  or merge the one useful word into the heading.
+A necessary truth boundary should tell the visitor what could be misunderstood,
+what is illustrative or unavailable, and what action remains safe. It should
+not make the site repeatedly narrate the production workflow. Phrases such as
+`design study`, `interaction study`, `code-native`, `source packet`, or
+`commissioned scenario` may be accurate and may belong on a site that is
+actually about its making. Elsewhere, treat them as review prompts: they often
+describe the producer's evidence process rather than the visitor's subject.
 
-## Copy carries information the visuals cannot
+Choose disclosure placement from the actual risk. An identity-level boundary,
+a content-specific caption, a methods/source page, metadata, or a direct-entry
+notice can each be appropriate. Do not mechanically repeat the same caveat in
+the header, hero, every route, footer, and title; do not mechanically collapse
+all disclosure into one hidden page either. Every route must remain honest on
+direct entry, while the public identity and primary actions should lead with
+the subject unless production status is itself the subject.
 
-No sentence may describe what the visitor is already looking at. Every text
-block adds subject information the visuals cannot carry: what it is, what
-it does, what it costs, what happens next. Scenery narration is filler even
-when beautifully written.
+Generated-media status, fictional operating facts, unavailable capability, and
+legal or safety limits are separate disclosure jobs. Combine them only when the
+result remains clear. Keep internal fixtures, source-gap logs, assurance
+profiles, tool names, and build methodology in project evidence unless the
+audience genuinely needs them.
 
-Strip self-descriptors: premium, luxury, world-class, high-end. Demonstrate,
-never claim. If a headline could sit unchanged on ten other products, the
-typography cannot save it; rewrite the words first.
+## Review copy specificity without writing by formula
 
-Write from checkable specifics: real nouns, prices, street names, people,
-dates. Every major section carries at least one fact only this business
-could state. Take one side per page: a stated preference, a limit, an
-honest constraint ("closed Mondays") reads human where inoffensiveness
-reads generated. Vary sentence shape: follow a long sentence with a
-fragment, and when lists keep landing in threes, restructure some to one,
-two, or four items. Ship an FAQ entry only when it answers a question a
-real customer asked, with a fact the owner confirmed; an answer with no
-number, price, or policy in it is deleted. Keep real quotes verbatim with
-their irregular phrasing. Irregularity comes from real voice kept intact,
-never from manufactured typos, slang, or planted awkwardness.
+Prefer accurate nouns, constraints, examples, process detail, and owner voice
+when they are available. Preserve supplied language that is distinctive and
+true. Avoid generic reassurance that could move unchanged to an unrelated
+site, but do not force every section to contain a number, place, date,
+opinion, or irregular sentence pattern.
 
-## Residue vocabulary sweep
+Repeated phrasing is appropriate for navigation, taxonomy, product families,
+campaign language, accessibility, and deliberate rhythm. It becomes a finding
+when it adds no information, overwhelms hierarchy, or reveals an unexplained
+cross-project copy machine. Likewise, an eyebrow, FAQ, short fragment,
+three-item list, or familiar marketing phrase is not a defect by itself.
 
-Grep the RENDERED text of every page and state, including empty, loading,
-error, and hidden accordion panels, plus alt text and meta descriptions:
+Do not manufacture humanity with typos, slang, fake quotations, invented
+anecdotes, awkwardness, random punctuation, or intentional inconsistency.
 
-- Placeholder: `lorem`, `ipsum`, `dolor`, `coming soon`, `under
-  construction`, `TODO`, `TBD`, `FIXME`, `asdf`, `placeholder`, `sample
-  text`, `your text here`
-- Status/connection theatre ([owner ABSOLUTE 10](../../policy/absolutes.md)):
-  `online`, `offline`, `connected`, `disconnected`, `synced`, `syncing`,
-  `live` used as a status word rather than an event name, `status:`; check
-  the rendered DOM directly for any small round element carrying a
-  `background-color` and no text content, since a bare colour dot is the
-  form this tell most often takes and no grep catches a shape
-- Binding leaks: `undefined`, `NaN`, `null`, `[object Object]`, `{{`, `}}`,
-  `${`, `%s`, `Infinity`, raw JSON braces
-- Encoding: the mojibake signature, grepped with the encoding-proof
-  spelling `[\xC2\xC3\xE2]` (ripgrep) so the pattern itself survives any
-  console encoding, plus the replacement character; expect rare false
-  positives on legitimate French or Portuguese text and clear them by eye
-- Owner copy bans: the em dash character in any user-facing file, grepped
-  encoding-proof as `rg -n "\x{2014}"`; the replacement character as
-  `rg -n "\x{FFFD}"`
-- AI-era phrases, compiled 2026-08, review by 2027-02 (the vocabulary is
-  era-dated and shifts per model generation; refresh, never trust the 2023
-  list): `elevate`, `seamless`, `unlock`, `empower`, `delve`, `leverage`,
-  `streamline`, `supercharge`, `in today's fast-paced`, `look no further`,
-  `nestled in the heart of`, `commitment to excellence`, `it's not just`,
-  `isn't just`. A hit is a rewrite trigger, not proof; the cluster
-  diagnosis lives in [convergence-watch](../convergence-watch.md)
-  RISK-COPYFORM-001. This grep list is its mechanical arm.
-- Paste artifacts from model output: `oaicite`, `contentReference`,
-  `turn0search`, `[cite:`, stray `**` markdown residue
+## Run bounded residue checks
 
-Any hit is a ship blocker. These are mechanical greps the workflow actually
-runs; a rule that exists only as prose gets violated. Three checks need a
-grep plus eyes, so run them as manual triage, not pass/fail patterns:
-`utm_source` hits triaged to body links only, `#` residue judged on a
-rendered-text dump where hex colors and anchors cannot flood the match, and
-curly-versus-straight quote consistency compared across the page by eye.
+Extract rendered text from every relevant route and state, including hidden
+panels that can become visible, plus accessible names, alt text, title, and
+descriptions. Run deterministic checks for:
 
-## The review pass
+- unresolved placeholders and work markers such as `lorem`, `TODO`, `TBD`,
+  `FIXME`, `asdf`, `your text here`, or bracketed media instructions;
+- binding and serialization leaks such as `undefined`, `NaN`, `[object
+  Object]`, unresolved template braces, raw JSON, or literal variable names;
+- model or citation residue such as `oaicite`, `contentReference`, internal
+  turn identifiers, Markdown markers, or prompt text;
+- encoding damage including the replacement character and visually confirmed
+  mojibake;
+- generator tags, preview hosts, internal proof banners, skill vocabulary, or
+  environment details that should not ship.
 
-1. Extract every visible string per page per state: a DOM walk over
-   `textContent` with a per-node visibility flag, not the source and not
-   `innerText`, which returns empty for hidden panels and for anything in a
-   hidden automation tab.
-2. Run the residue greps.
-3. Apply the four-question gate to every string; log verdicts for anything
-   borderline.
-4. Count repeated constructions: identical eyebrow templates, identical
-   claims, identical strings inside one component.
-5. Salience check on the screenshots: name the first three things noticed
-   at each breakpoint. If any is a decorative string rather than the
-   headline, the imagery, or the action, the decoration outranks the
-   content and is reduced or cut.
-6. Fix, re-render, re-check. The pass is complete when every surviving
-   string has a job a visitor could name.
+Treat these as review candidates rather than a blind global ban when a real
+article, code sample, error-documentation page, or quoted source legitimately
+contains the token. Search results need human triage.
+
+Maintain a dated, review-only phrase watch only when current evidence supports
+it. A phrase hit can trigger a copy read; it never proves authorship and never
+blocks a page without a contextual finding.
+
+## Close the rendered pass
+
+1. Observe the page before loading motif vocabulary.
+2. Review prominent, repeated, interactive, data-shaped, and doubtful text
+   with the four questions.
+3. Run and triage the bounded residue checks.
+4. Inspect salience, hierarchy, typography, wrapping, and meaning at the
+   relevant wide and narrow renders.
+5. Exercise loading, empty, error, success, offline, permission, and recovery
+   copy when those states exist.
+6. Fix the underlying content or relationship, rerender the affected states,
+   and record unresolved truth or owner decisions.
+
+The pass succeeds when public text is truthful, comprehensible for its
+audience, appropriate to its role, visually resolved, and free of accidental
+internal residue. It does not require all sites to sound alike.

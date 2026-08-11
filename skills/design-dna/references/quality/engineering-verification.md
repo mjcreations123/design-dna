@@ -105,6 +105,16 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PRO
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-ready --json
 ```
 
+`PROJECT` is the application or repository boundary, not automatically its
+static public root. Keep `.design-dna/`, source packets, review records,
+transaction recovery, and private evidence outside anything that a local
+server, deploy command, ZIP, or hosting adapter will publish. Record and pass
+the narrower deployable root to serving, scanning, packaging, and rendered
+capture tools. For a static concept with no existing structure, a useful shape
+is `PROJECT/.design-dna/` beside `PROJECT/site/`; the name is an example, not a
+required convention. Browser user data and other disposable runtime state
+belong in a separately authorized temporary root, never in either tree.
+
 `--check-state` verifies structure and reports draft records as warnings.
 `--check-ready` is the completion gate: it uses the cumulative
 `assurance_profiles` persisted in schema-2 `state.json` and fails until every
@@ -146,6 +156,14 @@ reviewing which packaged template files it will replace. Keep mutable state in
 the project's `.design-dna/` directory, not in the installed skill. Follow each
 record's classification and do not commit restricted research or confidential
 material without its accountable owner's approval.
+
+The initializer uses an exact rollback copy during each mutation. After a
+validated additive merge or status-only update, it removes that task-generated
+copy; a legacy migration or forced refresh retains a guarded recovery copy
+because it can change or replace owner-authored structure. If staging or backup
+cleanup cannot be verified, the result names the retained path instead of
+claiming a clean transaction. Inspect that exact recovery state before any
+owner-authorized cleanup; never use a broad `.design-dna*` deletion.
 
 The helper validates structure and safety; it does not prove that a record's
 claims or observations are complete or true. Review the substance and bind
@@ -291,15 +309,16 @@ them through the human-review severity rubric.
 The scanner is deliberately bounded to evidence-bearing source concerns:
 literal filler, proof and claim provenance, content hidden by default,
 nonfunctional public controls, public leakage of internal methodology or
-unresolved production state, severe typography-compression signals, media
-truth/provenance/context, and incomplete source coverage. It does not warn on
+unresolved production state, media truth/provenance/context, and incomplete
+source coverage. It does not warn on typography values, quantitative-claim
+density, styled text fragments,
 gradients, pills, fade or hover recipes, eyebrows, emoji, icon metaphors,
 generic labels or calls to action, component-library tokens, large spacing,
 technical vocabulary, diagrams, canvas/SVG, or any other aesthetic ingredient
-by name or count. A styled fragment in prominent copy remains a manual context
-prompt at every frequency and never becomes an automatic finding. Judge these
-choices from the rendered result and an explicit project concern, not from
-portable source heuristics.
+by name or count. Judge these choices from the rendered result and an explicit
+project concern, not from portable source heuristics. A consequential number
+still needs provenance because of what it claims, not because a page contains a
+particular count of figures.
 
 Use `--content-site` only when documentation and content sources are part of the
 reviewed surface. Add `--structured-content` to opt in JSON, YAML, and YML;
@@ -379,36 +398,39 @@ node "<DESIGN_DNA_SKILL_ROOT>/scripts/rendered_review.mjs" "TARGET" --output "RE
 ```
 
 Use a served local directory or authorized URL when multiple routes matter and
-repeat `--route` for each in-scope path. The default public-route matrix
-captures 320 with the text-spacing override, 375, 430, intermediate, wide,
-short-height, dark-preference, reduced-motion, and forced-colors profiles;
-it also records console/network events, layout overflow, normalized geometry
-and topology, computed typography samples such as size, leading, tracking,
-stretch, and a wrapping estimate, computed font use, media, focus traversal,
-prominent fragment candidates, screenshots, and a contact sheet. These are
-neutral review observations, not aesthetic scores or rules. Review the
-findings and images rather than treating automation as a visual-quality,
-accessibility, authorship, or launch pass. Keep the output outside the served
-source tree and bind accepted evidence to the exact build.
-
-When the brief requires exact widths, short-height review, text-spacing proof,
-or a meaningful interaction state, create a bounded capture-manifest JSON
-outside both the source and output trees and pass
+repeat `--route` for each in-scope path. For substantial review, create a
+bounded capture-manifest JSON outside both the source and output trees and pass
 `--capture-manifest "CAPTURE_MANIFEST"`. Use the command's `--help` contract as
 the canonical field reference. Give every scenario a human-readable route and
-state label; prefer the real 320, 375, and 430 CSS-pixel widths plus the
-project's wide and short-height risks. Manifest actions are intentionally
+state label, and derive exact widths, heights, preferences, input conditions,
+and states from this project's supported audience, responsive transitions, and
+risks. Manifest actions are intentionally
 limited to `click`, `focus`, `fill`, `select`, and `check`; never try to encode
 arbitrary JavaScript, cross-origin navigation, payment, submission, or another
 consequential mutation. The harness applies the text-spacing override when
 requested, but records 200% and 400% zoom as manual review still required
 rather than pretending to simulate browser zoom.
 
+Without a manifest, the reviewer uses its built-in compatibility matrix as a
+convenience for broad discovery. That matrix is optional diagnostic coverage,
+not a declaration of project breakpoints: it can be excessive for a bounded
+repair and insufficient for a release. The report records console/network
+events, layout overflow, normalized geometry and topology, computed typography
+samples, computed font availability, media, focus traversal, current-viewport
+peer-occlusion candidates, styled-fragment candidates, screenshots, and a
+contact sheet. Occlusion candidates are bounded hit-test prompts rather than a
+full-page visibility proof. These are neutral observations,
+not composite-contrast measurement, glyph-level font proof, accessibility or
+screen-reader results, aesthetic scores, authorship evidence, or a launch pass.
+Review the findings and images, keep output outside the served source tree, and
+bind accepted evidence to the exact build.
+
 A generated command may repeat `--route` alongside `--capture-manifest` only
 when those declarations normalize to the exact same route set as the manifest
 scenarios; duplicate declarations are harmless, while missing or unexpected
-destinations fail closed. In manifest mode, the declared scenario, unique-route,
-and 72-capture ceilings govern instead of the nine-profile default route limit.
+destinations fail closed. In manifest mode, the declared scenario,
+unique-route, and 72-capture ceilings govern instead of the compatibility-
+matrix route limit.
 
 When an accepted baseline and candidate were captured with the same frozen
 schema-v3 contract, use the optional offline comparator described in

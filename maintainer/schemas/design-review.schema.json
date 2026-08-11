@@ -616,14 +616,14 @@
         }
       }
     },
-    "masked_layout_comparison": {
+    "identity_blinded_comparison": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "method",
-        "masking",
-        "layout_geometry_preserved",
+        "neutral_label_protocol",
         "coverage",
+        "pixel_transformation",
         "observations",
         "limitations",
         "authorship_inference",
@@ -635,23 +635,40 @@
           "minLength": 24,
           "maxLength": 2000
         },
-        "masking": {
+        "neutral_label_protocol": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["copy", "logos", "dominant_media"],
+          "required": [
+            "assignment_method",
+            "identities_hidden",
+            "identity_revealed_before_observation",
+            "diagnostic_material_seen_before_observation"
+          ],
           "properties": {
-            "copy": {
-              "enum": ["masked", "replaced-with-neutral-placeholder"]
+            "assignment_method": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 2000
             },
-            "logos": {
-              "enum": ["masked", "replaced-with-neutral-placeholder"]
+            "identities_hidden": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "case-identity",
+                  "model",
+                  "host",
+                  "variant",
+                  "producer"
+                ]
+              }
             },
-            "dominant_media": {
-              "enum": ["masked", "replaced-with-neutral-placeholder"]
-            }
+            "identity_revealed_before_observation": {"const": false},
+            "diagnostic_material_seen_before_observation": {"const": false}
           }
         },
-        "layout_geometry_preserved": {"const": true},
         "coverage": {
           "type": "array",
           "minItems": 4,
@@ -663,21 +680,20 @@
               "case_id",
               "run_id",
               "build_identity",
+              "neutral_label",
               "source_render_sha256s",
-              "masked_render_sha256s",
               "evidence"
             ],
             "properties": {
               "case_id": {"type": "string", "minLength": 1},
               "run_id": {"type": "string", "minLength": 1},
               "build_identity": {"type": "string", "minLength": 1},
-              "source_render_sha256s": {
-                "type": "array",
-                "minItems": 2,
-                "uniqueItems": true,
-                "items": {"$ref": "#/$defs/sha256"}
+              "neutral_label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
               },
-              "masked_render_sha256s": {
+              "source_render_sha256s": {
                 "type": "array",
                 "minItems": 2,
                 "uniqueItems": true,
@@ -691,6 +707,89 @@
               }
             }
           }
+        },
+        "pixel_transformation": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "purpose",
+                "justification",
+                "authorization",
+                "method",
+                "coverage_impact",
+                "artifacts"
+              ],
+              "properties": {
+                "purpose": {
+                  "enum": ["hypothesis-test", "privacy-minimization"]
+                },
+                "justification": {
+                  "type": "string",
+                  "minLength": 24,
+                  "maxLength": 2000
+                },
+                "authorization": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "authority_id",
+                    "basis",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "status": {"const": "authorized"},
+                    "authority_id": {"$ref": "#/$defs/identity"},
+                    "basis": {
+                      "type": "string",
+                      "minLength": 16,
+                      "maxLength": 2000
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "items": {"$ref": "#/$defs/evidence_reference"}
+                    }
+                  }
+                },
+                "method": {
+                  "type": "string",
+                  "minLength": 24,
+                  "maxLength": 2000
+                },
+                "coverage_impact": {
+                  "type": "string",
+                  "minLength": 24,
+                  "maxLength": 2000
+                },
+                "artifacts": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "source_render_sha256",
+                      "transformed_render_sha256",
+                      "source_evidence",
+                      "transformed_evidence"
+                    ],
+                    "properties": {
+                      "source_render_sha256": {"$ref": "#/$defs/sha256"},
+                      "transformed_render_sha256": {"$ref": "#/$defs/sha256"},
+                      "source_evidence": {"$ref": "#/$defs/evidence_reference"},
+                      "transformed_evidence": {"$ref": "#/$defs/evidence_reference"}
+                    }
+                  }
+                }
+              }
+            }
+          ]
         },
         "observations": {
           "type": "array",
@@ -784,13 +883,13 @@
         "schema_version",
         "builds",
         "dimensions",
-        "masked_layout_comparison",
+        "identity_blinded_comparison",
         "repeated_clusters",
         "conclusion",
         "evidence"
       ],
       "properties": {
-        "schema_version": {"const": 1},
+        "schema_version": {"const": 2},
         "builds": {
           "type": "array",
           "minItems": 4,
@@ -914,8 +1013,8 @@
             ]
           }
         },
-        "masked_layout_comparison": {
-          "$ref": "#/$defs/masked_layout_comparison"
+        "identity_blinded_comparison": {
+          "$ref": "#/$defs/identity_blinded_comparison"
         },
         "repeated_clusters": {
           "type": "array",

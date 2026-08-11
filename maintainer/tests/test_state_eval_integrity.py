@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import binascii
 import hashlib
 import importlib
 import importlib.util
 import json
 import os
 import re
+import struct
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
+import zlib
 from pathlib import Path
 from unittest.mock import patch
 
@@ -36,6 +39,23 @@ def run_python(script: Path, *arguments: str) -> subprocess.CompletedProcess[str
         env=environment,
         timeout=120,
     )
+
+
+def write_png(path: Path, width: int, height: int) -> str:
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        checksum = binascii.crc32(kind)
+        checksum = binascii.crc32(data, checksum) & 0xFFFFFFFF
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", checksum)
+
+    row = b"\x00" + (b"\x24\x68\xac" * width)
+    payload = (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+        + chunk(b"IDAT", zlib.compress(row * height))
+        + chunk(b"IEND", b"")
+    )
+    path.write_bytes(payload)
+    return hashlib.sha256(payload).hexdigest()
 
 
 def complete_visual_review() -> str:
@@ -101,6 +121,15 @@ def filled_cell(
         "Decision ID": f"DEC-{row_number + 1:02d}",
         "Concern": "composition",
         "Decision": "Lead with the approved visitor choice and adjacent proof.",
+        "Project reason or source": (
+            "The approved service packet binds each choice to its eligibility constraint."
+        ),
+        "Observable consequence": (
+            "Each choice remains adjacent to its constraint in the rendered sequence."
+        ),
+        "Verification": (
+            "Inspect the sequence with long approved copy at narrow and wide widths."
+        ),
         "Reason and evidence": "The source packet makes this the primary task.",
         "What should be observable": "The next action is clear before supporting detail.",
         "Adaptation or limit": "Recompose at narrow widths without changing priority.",
@@ -113,7 +142,7 @@ def filled_cell(
         "Route or flow": "/menu",
         "Route/state": "/menu; default",
         "Viewport/context": "390x844; keyboard; reduced motion",
-        "Evidence path and SHA-256": (
+        "Rendered PNG path and SHA-256": (
             "evidence/menu-review.png plus sha256:" + ("0" * 64)
         ),
         "Observation": "The primary task remained clear and usable.",
@@ -411,8 +440,7 @@ def materialize_visual_review_evidence(
     evidence = project / "evidence"
     evidence.mkdir(exist_ok=True)
     coverage = evidence / "menu-review.png"
-    coverage.write_bytes(b"\x89PNG\r\n\x1a\nmenu-review")
-    coverage_digest = hashlib.sha256(coverage.read_bytes()).hexdigest()
+    coverage_digest = write_png(coverage, 390, 844)
 
     review_dir = evidence / "render-review"
     review_dir.mkdir(exist_ok=True)
@@ -1936,6 +1964,11 @@ class ProjectRecordIntegrityTests(unittest.TestCase):
                 0,
                 completed.stdout + completed.stderr,
             )
+            self.assertEqual(
+                list(project.glob(".design-dna.backup-*")),
+                [],
+                "a verified completion marker must not retain a full state copy",
+            )
             check = run_python(
                 INIT,
                 "--project",
@@ -1985,6 +2018,11 @@ class ProjectRecordIntegrityTests(unittest.TestCase):
                 drafted.returncode,
                 0,
                 drafted.stdout + drafted.stderr,
+            )
+            self.assertEqual(
+                list(project.glob(".design-dna.backup-*")),
+                [],
+                "returning a record to draft must not retain a full state copy",
             )
             draft_text = record.read_text(encoding="utf-8")
             self.assertIn('record_status: "draft"', draft_text)
@@ -2136,6 +2174,66 @@ class ProjectRecordIntegrityTests(unittest.TestCase):
                 "Findings requires an explicit owner cell",
                 completed.stderr,
             )
+
+    def test_current_state_migration_is_idempotent_and_leaves_no_recovery_debris(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            initialized = run_python(
+                INIT,
+                "--project",
+                str(project),
+                "--record",
+                "direction",
+                "--json",
+            )
+            self.assertEqual(
+                initialized.returncode,
+                0,
+                initialized.stdout + initialized.stderr,
+            )
+            state_root = project / ".design-dna"
+            before = {
+                path.relative_to(state_root).as_posix(): path.read_bytes()
+                for path in state_root.rglob("*")
+                if path.is_file()
+            }
+
+            for _attempt in range(2):
+                migrated = run_python(
+                    INIT,
+                    "--project",
+                    str(project),
+                    "--migrate",
+                    "--json",
+                )
+                self.assertEqual(
+                    migrated.returncode,
+                    0,
+                    migrated.stdout + migrated.stderr,
+                )
+                payload = json.loads(migrated.stdout)
+                self.assertEqual(
+                    [item["action"] for item in payload["actions"]],
+                    ["migration-not-needed"],
+                )
+                self.assertEqual(
+                    list(project.glob(".design-dna.backup-*")),
+                    [],
+                )
+                self.assertEqual(
+                    list(project.glob(".design-dna-migrate-*")),
+                    [],
+                )
+                self.assertFalse((state_root / "migration-report.json").exists())
+                after = {
+                    path.relative_to(state_root).as_posix(): path.read_bytes()
+                    for path in state_root.rglob("*")
+                    if path.is_file()
+                }
+                self.assertEqual(after, before)
 
     def test_migration_is_dry_runnable_preserves_history_and_hash_binds_legacy(
         self,
@@ -2620,6 +2718,47 @@ if failure is not None:
             self.assertIsNotNone(refused)
             self.assertEqual("reparse-point-refused", refused.code)
             self.assertTrue(payload.is_file())
+
+    def test_invalid_migration_candidate_cleans_owned_stage_and_preserves_live_state(
+        self,
+    ) -> None:
+        initializer = load_initializer_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            initialized = run_python(
+                INIT,
+                "--project",
+                str(project),
+                "--json",
+            )
+            self.assertEqual(
+                initialized.returncode,
+                0,
+                initialized.stdout + initialized.stderr,
+            )
+            state_root = project / ".design-dna"
+            before = initializer.state_tree_identity(state_root)
+
+            def invalidate_candidate(staged: Path) -> None:
+                (staged / "direction.md").unlink()
+
+            with self.assertRaises(initializer.StateError) as raised:
+                initializer.mutate_state_transaction(
+                    project,
+                    initializer.release_version(INIT.parents[1]),
+                    action="migrated",
+                    dry_run=False,
+                    mutator=invalidate_candidate,
+                )
+
+            self.assertEqual("staged-state-invalid", raised.exception.code)
+            self.assertEqual(
+                initializer.state_tree_identity(state_root),
+                before,
+            )
+            self.assertEqual(list(project.glob(".design-dna-migrate-*")), [])
+            self.assertEqual(list(project.glob(".design-dna.backup-*")), [])
 
     def test_live_state_drift_before_promotion_is_preserved_and_refused(
         self,

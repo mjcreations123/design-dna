@@ -439,6 +439,44 @@ def parse_skill_name(skill_file: Path) -> str:
     return str(metadata["name"])
 
 
+def plausibly_design_dna(skill_file: Path) -> bool:
+    """Fail closed only when a malformed entry could be Design DNA.
+
+    Other skills may legitimately mention Design DNA in their body copy. A
+    frontmatter parse failure in one of those entries must not disable install
+    diagnostics for this package, so inspect only the directory name and the
+    apparent top-level ``name`` declarations in the frontmatter region.
+    """
+    if skill_file.parent.name.casefold() == "design-dna":
+        return True
+    try:
+        text = skill_file.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ManagerError("skill-route-read-failed", str(exc), skill_file) from exc
+    frontmatter = text
+    if text.startswith("---"):
+        closing = re.search(r"\r?\n---(?:\r?\n|\Z)", text[3:])
+        if closing is not None:
+            frontmatter = text[: closing.end() + 3]
+    declared_names = re.findall(
+        r"(?mi)^[ \t]*name[ \t]*:[ \t]*(.*?)[ \t]*$",
+        frontmatter,
+    )
+    for raw_name in declared_names:
+        raw_name = raw_name.split(" #", 1)[0].strip()
+        unquoted = raw_name.strip("\"'")
+        if re.fullmatch(r"[A-Za-z0-9._-]+", unquoted):
+            if unquoted.casefold() == "design-dna":
+                return True
+            continue
+        if re.search(
+            r"(?i)(?<![A-Za-z0-9-])design-dna(?![A-Za-z0-9-])",
+            raw_name,
+        ):
+            return True
+    return False
+
+
 def validate_design_dna_tree(path: Path) -> TreeIdentity:
     skill_file = path / "SKILL.md"
     if not skill_file.is_file():
@@ -740,14 +778,7 @@ def discover(root: Path) -> list[Path]:
             try:
                 declared_name = parse_skill_name(path)
             except ManagerError:
-                try:
-                    text = path.read_text(encoding="utf-8", errors="replace")
-                except OSError:
-                    text = ""
-                if path.parent.name.casefold() == "design-dna" or re.search(
-                    r"(?i)(?<![A-Za-z0-9-])design-dna(?![A-Za-z0-9-])",
-                    text[:16_384],
-                ):
+                if plausibly_design_dna(path):
                     raise
                 continue
             if declared_name == "design-dna":

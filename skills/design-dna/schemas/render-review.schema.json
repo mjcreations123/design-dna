@@ -1113,7 +1113,8 @@
               "outside-horizontal-viewport",
               "internal-horizontal-content-overflow",
               "horizontal-content-clipped",
-              "vertical-content-clipped"
+              "vertical-content-clipped",
+              "text-occluded-by-peer"
             ]
           }
         },
@@ -1128,6 +1129,12 @@
             "x": {"type": "string"},
             "y": {"type": "string"}
           }
+        },
+        "occluding_selectors": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {"type": "string"}
         }
       }
     },

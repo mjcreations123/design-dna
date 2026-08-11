@@ -35,14 +35,14 @@ independent perception review, expert review, accountable owner, or target
 user. Self-review can guide revision but cannot be relabeled as independent or
 owner acceptance.
 
-Cross-project comparison requires owner-authorized, minimized evidence. The
-[studio ledger](ledger.md) IS that evidence and that authorization: when it
-exists, consulting it here is mandatory, and its last five rows are the
-comparison baseline for typography, palette poles, skeleton, signature, and
-motion language. Record `cross-project repetition not assessed` only when no
-ledger exists. Direct owner feedback comparing named artifacts is already
-authorized for that comparison; do not dismiss it because an earlier broad
-comparison was unavailable.
+Cross-project comparison requires owner-authorized, minimized evidence. An
+existing file is not authorization by itself: consult the
+[studio ledger](ledger.md) only when its accountable owner, scope, and current
+task permit it. Select the smallest relevant comparison set by the repeated
+hypothesis being tested rather than a fixed row count or field list. When no
+authorized evidence exists, record `cross-project repetition not assessed`.
+Direct owner feedback comparing named artifacts authorizes that exact
+comparison; it does not authorize unrelated history mining.
 
 ## Observe before diagnosing
 
@@ -82,9 +82,19 @@ task, brand, platform, content, product-family, or maintenance evidence
 explains it. Conversely, changed words, pictures, fonts, palettes, and effects
 do not prove difference when the underlying encounter remains the same.
 
-For authorized cross-project comparison, mask names, logos, copy, and dominant
-photographs before judging producer fingerprints. Look for repeated clusters,
-not a single fashionable or familiar choice.
+For authorized cross-project comparison, assign neutral specimen labels and
+hide the identity map until the first comparison observation is frozen. This
+reduces identity priming without changing the reviewed pixels or pretending
+that visible copy, logos, and media have been redacted. Look for repeated
+clusters, not a single fashionable or familiar choice.
+
+Transform screenshot pixels only when an authorized privacy-minimization need
+or a specific comparison hypothesis makes the transformation necessary. Keep
+the verified original inside its authorized evidence boundary, and record the
+authority, hypothesis or privacy need, exact method, original and transformed
+hashes, and how the transformation changes what can still be concluded. Do
+not claim that a replacement preserved geometry merely because that was the
+intent; describe and evidence the actual coverage impact.
 
 ## Test comprehension and public meaning
 
@@ -114,41 +124,46 @@ terms:
   meaningful differences?
 - Does the result feel like a first generated arrangement, a producer habit,
   or a finished answer to this brief?
+- Does the visitor encounter a credible public surface for this subject, or a
+  maker-facing exercise whose internal metaphor, labels, or fictional process
+  leaks into the experience without a visitor-facing reason?
 
 Do not require a signature device, high/quiet sequence, multiple expression
 channels, bounded risk, removal test, or memorability trick. Use any of those
-only when the project declared it. The plain-axis floor still applies: the
-preship gate's one-nameable-memorable-element check and RISK-PLAIN-001 always
-run; what must not be required is any PARTICULAR device for achieving them.
-A restrained work can be extraordinary; a maximal work can be rigorous;
-either can also fail visually.
+only when it answers this project's question. A restrained work can be
+extraordinary; a maximal work can be rigorous; either can also fail visually.
+Judge whether the stated ambition is realized rather than imposing a portable
+definition of richness.
 
 Accountable-owner rejection reopens the affected conclusion. Address the
 organizing cause rather than rotating surface ingredients or adding detached
 effects.
 
-### Human-creativity indicators
+When a result is called ugly, artificial, or bad in taste, do not reduce that
+evidence to a request for more or less visual activity. Bind the exact render
+and replace the failing public proposition, material presence, composition,
+type behavior, hierarchy, or responsive encounter. Preserve facts and working
+behavior, then use [taste calibration](../craft/taste-calibration.md) to prove
+the new direction before applying finish polish.
 
-Generated and template output shows polish without authorship; these are
-the properties it does not exhibit. When the brief rejects generic work,
-ask which of them the candidate can answer. None is individually required,
-per the terms above, but a candidate that answers none of them has no
-evidence of authorship beyond polish, and polish alone no longer reads
-human.
+### Project-specificity questions
 
-- Which structural element could exist on no other site, because the
-  content produced it?
-- Where does the work break one convention on purpose, and how does the
-  break serve the journey rather than decorate it?
-- Does the page have acts, changes of scene, scale, and rhythm, or is it
-  a stack of interchangeable modules?
-- Is there one interaction here that no template ships, and is it earned?
-- Do the images read as one art-directed set: same light, same grade,
-  same world?
-- Which claims carry a noun, number, place, or date only this business
-  could state?
-- Where is asymmetry doing a job: weighting, sequencing, or pointing the
-  eye?
+When the brief rejects generic work, use only the questions that fit the
+candidate. They test whether project material shaped the result; they are not
+authorship indicators and no answer is individually required.
+
+- Which structural decisions came from this content, task, or audience?
+- Which conventions are preserved or changed, and why does that relationship
+  serve the journey?
+- Does the page's sequence and rhythm fit the material, or could its modules
+  move unchanged to an unrelated site?
+- Are interactions justified by a real task or intended experience?
+- Does the media set support the same factual and aesthetic world, including
+  deliberate documentary variation?
+- Which claims or explanations are specific because the project supports
+  them, and which remain generic or unverified?
+- How do alignment, asymmetry, or symmetry direct attention in this
+  composition?
 
 ## Audit copy and claims
 
@@ -164,12 +179,13 @@ Keep internal methodology, provenance detail, unresolved-input logs, and skill
 jargon out of customer copy unless the visitor genuinely needs a concise
 disclosure.
 
-Run the [parseable-text](parseable-text.md) four-question gate over every
-visible string as part of this audit: meaning, truth, audience, and cost of
-deletion. Decorative pseudo-data, internal vocabulary, fake liveness, and
-sub-12px unjustified micro-labels are P0 findings, not style notes. Include
-the residue greps (placeholder vocabulary, binding leaks, mojibake, the em
-dash character) on the rendered DOM of every state.
+Run the [parseable-text](parseable-text.md) review over high-salience,
+repeated, interactive, data-shaped, and doubtful strings. False proof,
+irrelevant status theatre, internal vocabulary, binding leaks, and unreadable
+microcopy are findings when observed in context. Include bounded residue
+checks for placeholders, implementation leaks, citation artifacts, and
+encoding damage; do not convert punctuation or ordinary phrases into an
+authorship test.
 
 Maintain a claim ledger for exact quantities, prices, times, warranties,
 universal statements, regulated claims, scenarios, and calculator assumptions:
@@ -191,14 +207,12 @@ for the project.
 
 Judge family choice, number of families, pairing or non-pairing, hierarchy,
 measure, tracking, leading, width, weight, optical settings, punctuation, and
-wrap behavior as one rendered system. No font family or numerical typography
-value fails merely because it is common, fashionable, unusual, compressed, or
-listed by another project. Exception: the
-[owner absolutes and HARD tier](../../policy/absolutes.md), including the
-watch-cluster comparison requirement, and the typography floors marked NEVER
-still apply; this section governs everything outside them. Revise when the
-result is illegible, crowded, visually weak, culturally wrong, unsupported,
-or inconsistent without reason.
+wrap behavior as one rendered system. No family or numerical value fails
+merely because it is common, fashionable, unusual, compressed, or used by
+another project. Revise when the result is illegible, crowded, visually weak,
+culturally wrong, unsupported, or inconsistent without reason. Follow the
+portable [assurance boundaries](../../policy/absolutes.md), which contain no
+font or typography recipe.
 
 Inspect prominent fragment emphasis—color, gradient, font, italic, underline,
 marker, sticker, background, or animation—in context. A single treatment can

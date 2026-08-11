@@ -1,132 +1,164 @@
 # Render harness
 
-How to actually capture, probe, and measure a page when the preship gate
-demands rendered proof. Every trap here was hit on a real build; the
-methods are the ones that survived.
+Use this when rendered evidence needs repeatable capture or browser-derived
+observations. Choose the capture and measurement method from the claim being
+made. A screenshot, computed style, network record, pixel sample, accessibility
+tree, and human visual review are different evidence; none silently substitutes
+for another.
 
 ## Contents
 
-- [Driving Chrome over CDP](#driving-chrome-over-cdp)
-- [Full-page capture without reflow](#full-page-capture-without-reflow)
-- [Probe sequencing](#probe-sequencing)
-- [Element-anchored measurement](#element-anchored-measurement)
-- [Pixel-sampled contrast, done right](#pixel-sampled-contrast-done-right)
-- [Fallback rehearsal mechanics](#fallback-rehearsal-mechanics)
+- [Use the bundled reviewer truthfully](#use-the-bundled-reviewer-truthfully)
+- [Bound host capture and browser state](#bound-host-capture-and-browser-state)
+- [Declare the scenarios that matter](#declare-the-scenarios-that-matter)
+- [Understand full-page capture](#understand-full-page-capture)
+- [Sequence state and probes](#sequence-state-and-probes)
+- [Anchor measurements to the rendered element](#anchor-measurements-to-the-rendered-element)
+- [Measure contrast with an appropriate method](#measure-contrast-with-an-appropriate-method)
+- [Rehearse failures separately](#rehearse-failures-separately)
+- [Protect captured data](#protect-captured-data)
 
-## Driving Chrome over CDP
+## Use the bundled reviewer truthfully
 
-When a preview pane cannot composite (hidden tab) or cannot resize, drive
-real Chrome headless directly: spawn with `--headless=new
---remote-debugging-port=P --user-data-dir=<temp> --hide-scrollbars
---force-device-scale-factor=1`, fetch `/json/list` for the page target,
-speak CDP over its WebSocket. Node's native fetch and WebSocket need zero
-dependencies. Enable `Page`, `Runtime`, `Log`, and `Network` domains and
-collect `Runtime.consoleAPICalled`, `Log.entryAdded`, and
-`Network.loadingFailed` in the same run; the console proof and network
-proof come free with every capture.
+The shipped `scripts/rendered_review.mjs` uses Playwright with a compatible
+local Chromium-family browser. It can save full-page screenshots and a contact
+sheet, and it records bounded observations such as console and network events,
+geometry, overflow, current-viewport text occlusion by a peer surface, computed
+typography, font availability, media, and focus traversal. Text occlusion is an
+advisory sampled from DOM text paint and hit testing; it can reveal a sibling
+band, sticky surface, or positioned ornament covering a caption, but it does
+not prove that every text pixel on a full page is unobscured. Read the
+command's `--help` output for the current interface.
 
-## Full-page capture without reflow
+It does not use the raw-CDP recipe that older versions of this reference
+described. It also does not prove composite contrast, glyph-level font
+selection, screen-reader behavior, usability, aesthetic quality, or
+authorship. Keep every conclusion within the report's own limitations and the
+evidence actually collected.
 
-NEVER capture a full page by resizing the viewport to the document height.
-vh-based layout re-flows against the new viewport, the page grows, and the
-capture truncates while looking complete; this studio shipped a review
-round on such a truncated pair. The correct method keeps the viewport at
-its real size:
+Use the project's established browser or visual-regression system when it
+already provides the needed evidence. Do not add or replace tooling merely to
+match this reference.
 
-1. `Page.getLayoutMetrics` for `cssContentSize`.
-2. `Page.captureScreenshot` with `captureBeyondViewport: true` and a
-   `clip` of `{x:0, y:0, width, height: contentSize.height}`.
+## Bound host capture and browser state
 
-Confirm completeness mechanically: the capture height matches
-`scrollHeight` at the UNCHANGED viewport, and the bottom rows sample as
-footer pixels, not mid-section content.
+In a desktop agent or GUI host, prefer an established project harness or the
+bundled reviewer when either can collect the claim-relevant evidence. Treat a
+host screenshot or raw browser-protocol path as supplemental, not as a reason
+to keep retrying a less reliable capture route. Give each attempt a bounded
+deadline. A hang, incorrect device-pixel crop, or unverifiable output ends that
+attempt; fall back to the bounded harness, preserve any useful limitation, and
+continue the review. Do not multiply capture matrices or persistent browser
+profiles to compensate for one failed screenshot call.
 
-On a vh-driven layout, `captureBeyondViewport` can fail to converge at
-all. Chrome grows the surface to the content height, the vh-sized sections
-grow with it, the content height grows again, and the capture spins: this
-studio watched a 375-wide page that shot fine at 1440 run past 170 seconds
-and produce nothing, while a viewport-only shot of the same page returned
-in two. Pinning the offending elements to pixel heights first did not fix
-it. When a page's structure is built on vh, do not full-page capture it.
-Capture viewport-sized slices at known scroll offsets instead: set
-`scrollBehavior=auto` first (smooth scrolling silently returns the old
-position, so every slice comes back identical), scroll, wait, then shoot.
-The slices are also the honest artifact, since they are what a visitor
-actually sees.
+If a browser path needs a user-data directory, create a unique, credential-free
+directory in the operating system's temporary area or another explicitly
+authorized scratch root. Keep it outside source, deployable/public output,
+accepted evidence, and project-state trees. Close the browser and remove that
+exact owned directory on every success, failure, timeout, and interruption
+path. If cleanup cannot be verified, report the exact retained path and size;
+do not call the run clean. Reuse an authenticated or persistent profile only
+when the real task requires that session and the authority and data-handling
+boundaries permit itâ€”never merely to render a local static site.
 
-`captureBeyondViewport` never fires `loading="lazy"` images; a far-below-
-fold image captures as an empty box while nearer ones happen to load. Before
-the capture, sweep the scroll position through the full document height,
-return to the top, and `await Promise.all([...document.images].map(i =>
-i.decode()))` so every image is painted.
+Stop task-owned preview servers after evidence collection unless the owner
+asked to keep a preview available. Server reachability, browser launch, and a
+saved PNG are separate facts; report each only when observed.
 
-## Probe sequencing
+## Declare the scenarios that matter
 
-Probes run at whatever viewport the LAST navigation left. Three reads of
-`getComputedStyle().fontSize` after a mobile shot test mobile three times;
-clamp() and vw resolve against the current viewport. Run per-width probes
-immediately after that width's navigation, or re-emulate metrics and
-re-navigate before probing. The same applies to media-feature emulation:
-re-navigate after `Emulation.setEmulatedMedia` or the override may not
-take.
+For substantial review, create a bounded capture manifest that names the real
+routes, states, exact viewport dimensions, input conditions, and preferences
+that can change the conclusion. Derive them from the product, audience,
+supported devices, responsive transitions, failure modes, and the changed
+surface. The manifest is the primary evidence contract; no permanent list of
+device widths is sufficient for every project.
 
-## Never run an interaction twice
+When no manifest is supplied, the bundled reviewer uses a compatibility matrix
+as a convenience for broad discovery. Treat that matrix as optional diagnostic
+coverage. It may be excessive for a small repair and insufficient for a real
+release claim. Do not describe its built-in dimensions as the project's
+responsive requirements or as privileged “real” devices.
 
-An interaction expression passed as BOTH the shot's `evalAfter` and a probe
-runs twice, and every toggle it performs is undone. This studio spent a
-debugging cycle on three "broken" features that were correct: claim, hold
-and pin had each been clicked twice. Separate the two roles absolutely:
-`evalAfter` ACTS, the probe only READS. Stash anything the action needs to
-report on `window.__x` and read it back in the probe.
+Keep scenarios bounded. Capture only the routes and states needed for the
+decision, and record any relevant state that the safe manifest actions cannot
+reach rather than injecting arbitrary script or triggering consequential
+external behavior.
 
-Subscribe to `Runtime.exceptionThrown` as well as console and network
-events. A module that throws during import attaches no listeners, so every
-control silently does nothing while the console stays empty; without
-exception capture that reads exactly like a state bug.
+## Understand full-page capture
 
-## Element-anchored measurement
+The bundled reviewer currently asks Playwright for `fullPage: true`. That is a
+useful overview, not a guarantee that every visual state was observed. Lazy
+content, viewport-height composition, sticky or scroll-linked behavior,
+virtualized lists, canvas or WebGL content, and intersection-driven reveals may
+need separate evidence.
 
-Never sample screenshots at hardcoded pixel offsets; any layout change
-silently moves the target and the numbers describe the wrong region. Probe
-`getBoundingClientRect()` (plus `scrollY`) for every element under test in
-the same run as the capture, and drive the sampler from those rects.
+By default the reviewer does not actively scroll the document before capture.
+For an authorized local target, `--scroll-sweep` can visit the page before the
+screenshot to warm some lazy or offscreen content. A sweep can also change
+intersection, sticky, animation, or scroll-linked state, so record that it ran
+and do not treat the result as equivalent to passive first-entry behavior.
 
-## Measure the glyphs, not the box
+When a full-page image reflows, truncates, duplicates, or misses the experience,
+use the project's browser tooling to capture viewport-sized states at recorded
+scroll positions, or save another artifact suited to the interaction. Bind that
+evidence to the same build and disclose that it came from a separate method;
+the bundled reviewer does not currently assemble those slices.
 
-An element's `getBoundingClientRect()` is the BLOCK, and a block-level
-heading spans the whole column while its words occupy a fraction of it.
-Sampling that rect reports the worst pixel anywhere in the column, which is
-usually empty photograph, and the run fills with failures that are not
-real: a 13px eyebrow measured 2.13:1 across its 856px block and 5.31:1
-across the 83px its letters actually cover.
+## Sequence state and probes
 
-Drive the sampler from Range rects instead. Walk the text nodes, and for
-each one `document.createRange(); range.selectNodeContents(node)` then take
-`getClientRects()`: one rect per rendered LINE, tight to the glyphs.
-Read `fontSize` and `fontWeight` off the parent at the same time and let
-them pick the floor, because a padded box is not large text just because
-the padding made it 24 pixels tall.
+Apply viewport, media preferences, content, and interaction state before
+reading computed values or taking the screenshot. A probe describes the state
+that exists when it runs, not a state implied by its filename. Keep mutating
+actions separate from read-only observations so a toggle, submit, or stop
+control is not accidentally exercised twice.
 
-## Pixel-sampled contrast, done right
+Record route, state label, viewport, preference, input modality, build ID, and
+capture time with each consequential observation. Console silence is not proof
+that an interaction works; exercise the supported path and inspect its visible
+result.
 
-Sampling a text region on a normal screenshot poisons the measurement two
-ways: the glyph pixels themselves, and the antialiasing halo between glyph
-and ground, which always produces mid-contrast values that read as
-failures. Filtering by color distance does not fix it; neighboring TEXT in
-another ink registers as low-contrast background.
+## Anchor measurements to the rendered element
 
-The clean method: capture twice. Second capture runs an `evalAfter` that
-sets `visibility:hidden` on the text elements under test, leaving the true
-composite background. Sample every few pixels across each element's rect
-on THAT capture and take the worst contrast against the element's ink
-token. Floors: 4.5:1 body, 3:1 large. This is the only trustworthy method
-for text over photographs, gradients, or scrims, and it is cheap.
+When measuring pixels or geometry outside the bundled reviewer, locate the
+target from the current DOM and its rendered rectangles rather than hard-coded
+screenshot offsets. For multi-line text, range rectangles can describe the
+actual lines more accurately than a block element's full column. Re-resolve
+the target after viewport, font, content, or state changes.
 
-## Fallback rehearsal mechanics
+These mechanics prevent a sampler from drifting onto unrelated pixels. They do
+not decide which measurement is valid or whether the rendered result is good.
 
-Block the font FILES, not the origin: `Network.setBlockedURLs` with
-`["*.woff2"]` before navigation, then reload and verify: the fallback
-stack's first face actually painted, document height within ~1 percent of
-the loaded run, key element boxes unchanged, and the page readable. Expect
-one blocked entry per declared font file in `Network.loadingFailed`; a
-count mismatch means a file you did not know you were shipping.
+## Measure contrast with an appropriate method
+
+The bundled reviewer does not calculate text contrast. Use an accessibility
+tool or measurement procedure that is validated for the actual background and
+content in question. Simple opaque foreground/background pairs, gradients,
+photographs, transparency, antialiasing, video, and changing canvas content may
+require different methods.
+
+A paired capture that hides only the text under test can help sample the
+composited background beneath that text, but it is an optional custom method,
+not a shipped `rendered_review.mjs` feature. If used, document the selectors,
+state mutation, sample geometry, color source, algorithm, standards threshold,
+browser, and validation against known cases. Do not report a computed token
+ratio or an unaudited pixel heuristic as measured composite contrast.
+
+## Rehearse failures separately
+
+Font blocking, image failure, offline behavior, reduced motion, forced colors,
+and other fallbacks need the mechanism appropriate to the real delivery path.
+The bundled capture manifest does not expose arbitrary request interception.
+Use existing tests or an authorized browser session to create the failure,
+verify that it actually occurred, inspect the resulting task and layout, and
+record the separate evidence. Do not infer a fallback from CSS declarations or
+from a failed request count alone.
+
+## Protect captured data
+
+Before capturing private or multi-project material, apply
+[review data handling](data-handling.md). Screenshots and contact sheets retain
+visible names, logos, copy, people, URLs, and media even when their filenames or
+labels are neutral. Classify and minimize the input, use synthetic data where
+required, define recipients and retention, and inspect every artifact before
+sharing.

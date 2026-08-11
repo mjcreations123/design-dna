@@ -26,24 +26,40 @@ Before changing code:
    components, and current working state.
 3. Identify user changes already present and preserve unrelated work.
 4. Determine the requested scope and the checks the repository supports.
-5. Identify the surface modes that describe each real user job; allow hybrid
+5. Resolve the project, deployable/public, evidence, and temporary-runtime
+   boundaries. Keep `.design-dna/` at the project boundary, outside any
+   directory that is served or published as static output. Point servers,
+   packaging, and rendered capture at the deployable root, not at a broader
+   project root that also contains records, sources, credentials, or recovery
+   state. Keep browser profiles and transaction scratch outside both accepted
+   evidence and deployable output.
+6. Identify the surface modes that describe each real user job; allow hybrid
    routes and do not impose a primary mode when that distinction adds no value.
-6. Select a proportional Quick or Standard base, then every applicable
-   Showcase, Range Study, High-risk, and Asset-led capability from `SKILL.md`.
+7. Select a proportional Quick or Standard base, then every applicable
+   Showcase, Range Study, Batch Study, High-risk, and Asset-led capability
+   from `SKILL.md`.
    These capabilities may coexist; the state normalizes redundant lower
    presets, and later additions may strengthen but never silently downgrade the
    persisted set.
-7. Identify whether the output is concept, demo, staging, or production.
-   Every build IS a demo until the owner says live in his own words; record
-   that state, create the
+8. Identify whether the output is concept, demo, staging, or production.
+   Derive that state from the current request, repository, integrations, and
+   accountable authority; do not downgrade an already authorized production
+   repair to a demo or infer launch authority from a deployment. Keep unknown
+   externally acting behavior nonproduction. Create the
    [placeholder register](../templates/placeholder-register-template.md) at
-   `.design-dna/placeholders.md`, and give dead CTAs an explicit demo-notice
-   behavior.
-8. Read the [owner absolutes](../policy/absolutes.md); they are active for
-   the whole build.
-9. Identify applicable specialist skills and gates. Design DNA owns art
+   `.design-dna/placeholders.md` only when unresolved material or behavior
+   exists, and make unavailable actions honest for the declared state.
+9. Read the [assurance boundaries](../policy/absolutes.md); apply the
+   truth, rights, access, behavior, evidence, delivery, and project-contract
+   boundaries relevant to this build. They contain no portable taste rules.
+10. Identify applicable specialist skills and gates. Design DNA owns art
    direction and rendered coherence; the specialist owns its narrow domain
    contract, and repository plus user instructions outrank both.
+11. For every new or materially redesigned website, create a short launch
+    record from [launch completeness](quality/launch-completeness.md). Resolve
+    all fifteen decisions as included, not applicable, or blocked before
+    delivery. This is a product and operating-path review, not a requirement to
+    paste fifteen generic sections or integrations into every design.
 
 Do not replace the stack, design system, or working integration merely because
 another tool is more familiar.
@@ -58,6 +74,10 @@ Record what materially changes the result:
 - requested ambition, energy, and memorability expressed as observable
   qualities rather than adjectives alone, plus the under-designed result the
   owner would reject;
+- for a high-visibility, open, owner-sensitive, or previously rejected public
+  surface, the visitor-facing quality that must be convincing and the exact
+  kind of weak, artificial, generic, or ugly encounter that would reopen the
+  direction rather than invite cosmetic polish;
 - the public orientation or entry condition appropriate to the experience:
   immediate comprehension for service, product, and task-led work, or an
   intentional invitation and continuation for work that deliberately unfolds;
@@ -71,8 +91,10 @@ Record what materially changes the result:
 - the deliberate media path, especially for physical, sensory, spatial,
   product, hospitality, retail, food, and event subjects: approved first-party,
   licensed, owner-authorized generated concept media, capture brief,
-  illustration, or owner-authorized text-led treatment (logged, naming the
-  alternative offered; never self-granted);
+  illustration, text, objects, data, sound, or another project-fitting medium.
+  Require accountable authorization for generation, publication, rights,
+  privacy, consent, or documentary implications—not for an ordinary
+  art-direction choice to work without photography;
 - accessibility, localization, performance, privacy, budget, schedule, and
   maintenance constraints;
 - production facts or integrations that still require owner confirmation.
@@ -86,6 +108,22 @@ derived from this project's real responsive risks. Record typography, media,
 motion, color, or interaction only
 when it is consequential; do not make every route perform difference through
 the same fields.
+
+For an explicit Batch Study, read
+[Batch Study evaluation](quality/batch-range-evaluation.md) before any case is
+built. Initialize it with `--profile batch-study`, or create
+`.design-dna/batch-range.json` from the
+[batch-range template](../templates/batch-range-template.json). Freeze each
+   independent brief, choose project-derived wide and narrow viewport classes,
+   assign neutral labels, declare isolated project roots with explicit
+   deployable/public subroots when project evidence is retained, freeze a distinct source
+packet for each case, record the producer context and sibling-output exposure,
+and define what would make a case correctly blocked. Add the study-level
+capture/contact-sheet authorization, access, retention, and transformation
+record before collecting pixels. This is an evaluation protocol, not a request for
+the sites to exhibit different ingredients or satisfy a novelty quota. The
+initialized cases remain `planned`: their routes and future roots are declared,
+but captures and review evidence stay empty until work actually occurs.
 
 For culturally central work, name the accountable owner, represented context,
 publication stance, terminology authority, owner-authorized cultural reviewer,
@@ -106,6 +144,21 @@ When material is sparse, contradictory, or mostly aspiration, use the
 truthful set that covers audience, job, real nouns, approved truth, proof,
 voice, identity material, operational reality, and accountable owners. Mark
 missing and contradicted inputs instead of replacing them with plausible copy.
+
+For an explicitly fictional, sample, demo, or prototype identity, use the
+same [content-discovery](quality/content-discovery.md) boundary even when the
+source packet appears plentiful. Before public naming, compare what the
+identity's nouns promise with the bounded fixture it can sustain. Derive the
+expectation from this audience and premise; do not turn examples such as a
+journal, archive, club, studio, or guide into a universal category checklist.
+
+When a sample is meant to demonstrate visual capability to an owner or client,
+do not let the Batch Study protocol silently turn it into a collection of
+abstract test specimens. A Batch Study evaluates controlled transfer and can
+keep cases intentionally fictional; it does not prove that its cases satisfy a
+real client's taste or public proposition. Use Showcase-level direction work,
+source-rich material, and owner-facing rendered review for work that will be
+judged as a portfolio or client sample.
 
 Ask only high-leverage questions whose answers can materially change the
 concept. Ask further focused questions when production accuracy, externally
@@ -150,16 +203,31 @@ usability or correctness.
 
 Use the [creative exploration method](craft/creative-exploration.md) when the
 direction is open, high-ambition, owner-sensitive, or previously rejected.
+Use [taste calibration](craft/taste-calibration.md) whenever the outcome will
+be judged primarily for visual quality or an owner has described an earlier
+result as ugly, artificial, generic, or not actually good. It turns that
+feedback into a public-encounter and direction question before the agent scales
+the existing composition.
 Use [route-family art direction](craft/route-family-art-direction.md) for a
 Range Study and [cultural-context review](quality/cultural-context-review.md)
 when lived identity is materially central.
 
+For a Batch Study, keep each case's brief, source packet, research, build, and
+direction work isolated until that case's unprimed observation is recorded.
+Do not direct one case from the other cases or from a post-render diagnostic
+list. Attest the actual producer/build context, exposure timing, allowed shared
+tooling, and shared artifacts or exceptions. Shared technical tooling is
+allowed only when it does not import a composition, content scaffold, or
+aesthetic system into the study cases. The attestation is human-auditable
+evidence, not automated proof of independence.
+
 ## 4. Calibrate and direct
 
-Consult the [studio ledger](quality/ledger.md) before the first candidate:
-read the last five rows and apply the rotation test. The display family must
-not repeat from the previous build, and the macrostructure must differ from
-the previous two rows.
+When an accountable owner has authorized minimized cross-project evidence,
+consult the [studio ledger](quality/ledger.md) after understanding the project
+brief. Compare repeated clusters without disqualifying a family,
+macrostructure, or device by recency alone. If no authorized ledger exists,
+record that boundary and continue without searching other host locations.
 
 Describe the intended relationship to time in project-specific language and
 evidence. A broad adjective by itself is not a direction.
@@ -171,6 +239,14 @@ of disliked motifs into the design prompt. Describe the selected creative
 logic in the form it actually takes: one premise, several local systems,
 atmosphere, convention, ornament, collage, narrative, utility, or another
 project-fitting structure. No universal unity model is required.
+
+For a visual-capability sample, high-visibility public page, or recovered
+direction, make a concise project read and a reference dossier before the main
+surface hardens. Research actual project material and relevant current visual
+relationships rather than browsing only for names of styles. The result must
+answer whether the proposed first view is a credible, desirable public
+encounter for this subject—not merely a different-looking demonstration of the
+agent's process.
 
 For a Range Study, write the family boundary explicitly: which truth,
 navigation, access, identity, and operating rules remain stable; which
@@ -187,16 +263,17 @@ unknowns, several like-for-like candidates, or competing route bodies. Avoid
 mistaking copy, palette, font, photograph, or decoration swaps on unchanged
 geometry for a new direction.
 
-Proof-artifact hygiene, learned from a real owner rejection: the owner saw
-in-progress proofs and judged them as the site. Every proof and specimen
-render is an internal artifact and must be impossible to mistake for the
-deliverable. Keep them under `.design-dna/proofs/`, give each a fixed
-visible banner reading INTERNAL WORKING PROOF with a one-line purpose, keep
-specimen strips and candidate labels on their own pages, and use flat
-neutral labeled frames for any not-yet-real media slot; never a gradient
-fill, which is itself the strongest generated-look signal. If a preview
-surface is open while you work, it shows scaffolding the moment you write
-it; re-point it at the most finished page before ending any working step.
+Keep every proof and specimen unmistakable from accepted public work wherever
+confusion is plausible. Use the repository's artifact convention when one
+exists; otherwise a project-local `.design-dna/proofs/` directory is a
+portable default, not a required host interface. Identify a proof's purpose in
+the form its viewer will actually encounter, and separate candidate controls
+from a composition that could be mistaken for the accepted design. Label
+not-yet-real media so it cannot impersonate final documentary or product
+imagery; no particular banner, fill, or placeholder style is globally
+required. If the agent controls an open preview surface, leave it on the most
+finished relevant state before ending the working step. Otherwise record that
+the preview state was outside the agent's control.
 
 Render the comparisons that will reduce real uncertainty before scaling.
 Compare fit, comprehension, visual quality, typography, composition,
@@ -207,7 +284,12 @@ materially useful; otherwise select with a recorded rationale. If rendering is
 unavailable, disclose what was not compared.
 
 Use the [direction template](../templates/direction-template.md) for a
-consequential build or redesign.
+consequential build or redesign. Standard and stronger new work records its
+organizing logic in project language plus at least one observable
+consequential decision. This is an evidence floor, not a style taxonomy: the
+logic and decision may use any structure or medium the project supports. A
+bounded Quick repair may inherit the established logic and omit those two
+anchors.
 
 ## 5. Proof the system
 
@@ -227,6 +309,13 @@ propagating dependent decisions. Reject a direction that only works with
 ideal-length copy, unavailable imagery, invented proof, or one desktop
 screenshot.
 
+For an owner-sensitive or previously rejected visual direction, include a
+surface-fidelity review in that proof. Open the render before reading diagnostic
+lists and judge whether its first encounter belongs to the public subject and
+audience, uses material intentionally, and preserves that encounter at a narrow
+condition. A green source, accessibility, or browser test result does not clear
+an ugly or unconvincing art-direction result.
+
 For a Range Study, render the routes that best expose family repetition and
 the widest consequential differences at matched viewports, then inspect them
 together. The number and character of those routes follows project risk, not a
@@ -238,7 +327,9 @@ routes.
 Build the truthful user path and accepted creative logic at coherent depth
 before proliferating incidental variations.
 
-- Make components consume the system rather than accumulating local values.
+- Centralize values and behavior when reuse, consistency, maintenance, or an
+  established system makes that useful; keep deliberate scoped one-offs when
+  their local role justifies them.
 - Preserve protected facts, files, tokens, component mappings, and integrations.
 - Create a reversible checkpoint before a material direction or system change
   when the repository or host supports one. Use bounded section- or
@@ -247,11 +338,22 @@ before proliferating incidental variations.
 - Implement relevant loading, empty, error, success, offline, permission, and
   recovery states.
 - Implement, disable with explanation, or remove visible controls.
-- Preserve semantic structure and source order.
+- Preserve semantic structure and a coherent reading and focus order. Visual
+  order may diverge from source order when meaning and keyboard or assistive-
+  technology navigation remain correct in every relevant layout.
 - For a declared route family, implement independently addressable paths with
   correct direct entry, reload, title, current-page state, history, and
   canonical or indexing intent. Do not count hash sections, query variants,
   aliases, or redirects as additional pages.
+- For a Batch Study, declare a non-overlapping future build root while a case is
+  `planned`; neither initialization nor audit creates it. Keep its captures
+  empty and its review pending or not-run. Once built, keep the site in that
+  declared root. A case that cannot proceed without invention, missing rights or
+  authority, unsafe action, or an unavailable required capability remains
+  `correctly_blocked` with evidence; it is not replaced with a weaker build.
+  Before saving captures, resolve their authorization, classification,
+  recipients/access scope, retention, and any crop, redaction, or exclusion
+  with its coverage impact. Do not infer pixel redaction from this record.
 - Keep concept data and actions visibly nonproduction.
 - Optimize and document external assets.
 - Preserve approved integrations unless the user asked to change them.
@@ -269,18 +371,28 @@ perception is material, the
 high-ambition work, then evaluate the final implementation with
 [evaluation](quality/evaluation.md).
 
-Three passes are mandatory on every round, not proportional:
+When the accountable owner rejects the visual premise, do not continue through
+finish passes on the same premise. Return to [taste calibration](craft/taste-calibration.md)
+and [creative exploration](craft/creative-exploration.md), preserve protected
+facts and working behavior, and make a new direction proof.
 
-1. **See it.** Screenshots at ~1440 and ~375 for every page in scope, saved
-   to disk, opened, and looked at, with paths cited in the review record.
-   Judging craft from code alone is prohibited. If the environment cannot
-   render, the deliverable is blocked and says so; disclosure never
-   substitutes for the render at ship time.
-2. **Prove the fonts painted.** The full rendered-font verification in
-   [typography](craft/typography.md): registration, paint, synthesis,
-   network, console, computed-size, and fallback proofs.
-3. **Parse every string.** The [parseable-text](quality/parseable-text.md)
-   review pass with its residue greps, in every state.
+Three evidence lanes apply proportionately:
+
+1. **See it.** Save and open project-relevant wide and narrow renders for
+   every materially distinct route body, plus the intermediate, short-height,
+   state, preference, language, print, or input conditions that can expose its
+   risks. Judging visual craft from code alone is prohibited. If the requested
+   visual conclusion cannot be rendered, state the exact blocked claim.
+2. **Verify the type system.** Use the applicable branch in
+   [typography](craft/typography.md). Select registration, browser
+   availability, computed styling, network delivery, metric comparison,
+   synthesis, fallback, and visual evidence according to the actual type claim
+   and risk. Keep those evidence types distinct; intentional system type uses
+   the documented platform branch.
+3. **Review public text.** Apply the
+   [parseable-text](quality/parseable-text.md) questions to prominent,
+   repeated, interactive, data-shaped, and doubtful strings; run bounded
+   residue checks over relevant routes and states.
 
 After the final implementation round of every substantial new build or visual
 redesign, run the
@@ -290,6 +402,21 @@ explicitly rejects an AI-looking, vibe-coded, templated, generic, or repeated
 house-style result, also use the deeper cross-route, aggregate copy,
 claim-provenance, evidence-to-polish, media-variance, residue, and
 cross-project-comparison lenses defined there.
+
+For a Batch Study, complete the per-site unprimed observations before loading
+those post-render lenses. After at least three sites are built, review the
+verified wide and narrow captures as a neutral-label whole system. Freeze its
+first comparison observation before diagnostic material or the site-identity
+map is revealed, record only findings tied to actual site and route contexts,
+and run `scripts/batch_range_audit.py`. Its `comparison_ready` result reports
+mechanically verifiable evidence and timing fields only; non-empty distinct
+files and declared booleans cannot prove that a human followed the protocol or
+made substantive observations. It never supplies an aesthetic pass, authorship inference, or
+portable list of ingredients to ban. Planned cases remain a separate,
+non-fatal readiness gap; they are never counted as built or correctly blocked.
+Built cases remain incomplete while data handling or implementation-isolation
+attestations are unresolved. Hashes and distinct IDs make the record
+inspectable; they do not certify what happened outside the recorded evidence.
 
 Compare the final candidate with the selected direction proof and the previous
 accepted or reviewed baseline. Record intentional evolution and unintended
@@ -314,6 +441,7 @@ Use a matrix proportionate to the work:
 | --- | --- |
 | Full public route | Continuous resizing plus representative narrow, common, and wide states; navigation and primary actions; content stress; accessibility baseline; build and runtime checks. |
 | Range Study route family | Every declared direct-entry path; matched atlas at at least two project-relevant exact widths; shared navigation and identity; pairwise closest-sibling review; route-specific responsive, reduced-motion, and no-JavaScript results; route count and link integrity. |
+| Batch Study | Planned cases reported separately with declared roots, routes, and empty captures; frozen per-site source packets and implementation-isolation attestations; resolved authorization, access, retention, and transformation handling for built captures; every built page/capture bound to a successful renderer route, profile, mode, exact pixels, and frozen public-build manifest; exact evidence and capture-set hashes; distinct site observations frozen before sibling output or diagnostics; a distinct neutral-label comparison started only after those observations and before diagnostics or the identity map; isolated build roots; correctly blocked cases reported separately; contextual human decision retained. |
 | App or transaction | Relevant routes, roles, states, keyboard/focus, destructive/recovery behavior, validation, responsive constraints, and data integrity. |
 | Component | Documented states, long/short/missing content, focus, input modalities, and container sizes. |
 | Existing-site review | Available routes and evidence; identify unavailable internals and unperformed checks. |
@@ -366,16 +494,23 @@ have not evaluated the relevant task.
 
 Before delivery:
 
-- run the full [preship gate](../templates/preship-gate.md) on the rendered
-  output; one P0 hit blocks the ship until fixed;
+- run the applicable [preship gate](../templates/preship-gate.md) on the
+  rendered output; a violated assurance boundary blocks the corresponding
+  completion or release claim;
 - review the final diff or changed-file set;
 - run the supported build and test gates;
 - inspect final rendered routes and states;
+- complete the fifteen [launch-completeness](quality/launch-completeness.md)
+  decisions against the exact candidate. Exercise included actions and links;
+  retain an honest reason for every not-applicable or blocked row. A blocked
+  operational, legal, location, tracking, or promotion decision blocks only
+  the corresponding live claim or release, not a truthful demo;
 - complete metadata, asset, claim, placeholder, comment/meta-language, and
   console residue checks; the placeholder register must be empty or every
   open row owner-deferred before any live state;
-- append or update this build's row in the
-  [studio ledger](quality/ledger.md);
+- append or update the [studio ledger](quality/ledger.md) only when its
+  accountable owner authorized comparison and this build reached the stated
+  ledger milestone;
 - confirm externally acting integrations and public claims with the owner;
 - confirm culturally central terminology, representation, and media against the
   exact candidate with an owner-authorized cultural reviewer, or keep public
@@ -395,7 +530,7 @@ Delivery state controls behavior:
 
 | State | Allowed behavior |
 | --- | --- |
-| Concept or demo | No live endpoint, payment, booking, ordering, map, tracking, cookie, or third-party embed unless explicitly approved. Label placeholders and demo-only controls. |
+| Concept or demo | Keep real side effects, public data collection, financial or booking actions, surveillance, and externally acting integrations disconnected unless explicitly approved. Static, local, sandboxed, or clearly illustrative representations may be appropriate when their rights, privacy, and factual status are honest. Label unresolved placeholders and demo-only controls. |
 | Existing integration | Preserve it unless asked to change it. Test with staging, mocks, or another non-destructive path. |
 | Production | Apply the [production-readiness boundary](quality/production-readiness.md); confirm public facts, assets, disclosures, integrations, privacy behavior, specialist gates, deployment authority, and release evidence with accountable owners. |
 
@@ -418,21 +553,23 @@ Possible records:
   exploration.md
   direction.md
   route-family.json           # optional explicit Range Study record
+  batch-range.json            # optional controlled unrelated-site study record
   direction-proof.md
   visual-review.md
   claims.md
   assets.yml
   user-validation.md
   handoff.md
-  placeholders.md             # mandatory placeholder register, created at preflight
+  launch-completeness.md      # launch decision record for new/redesigned sites
+  placeholders.md             # optional register when unresolved material or behavior exists
   owner-policy.yml            # optional, owner-approved governance
   state.json
 ```
 
 The do-not-copy-templates-by-hand rule covers unresolved EVIDENCE templates
-(direction, exploration, visual-review). The placeholder register and the
-preship gate are plain checklists and ARE copied by hand; the initializer
-does not create them.
+(direction, exploration, visual-review). When needed, the placeholder register
+and preship gate are plain checklists copied by hand; the initializer does not
+create them.
 
 Use one classification vocabulary:
 

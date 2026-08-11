@@ -196,6 +196,24 @@ class ManageInstallTests(unittest.TestCase):
         ])
         self.assert_valid_schema(after_payload)
 
+    def test_unrelated_invalid_skill_may_reference_design_dna_in_its_body(self) -> None:
+        unrelated = self.home / ".agents" / "skills" / "web-3d" / "SKILL.md"
+        unrelated.parent.mkdir(parents=True)
+        unrelated.write_text(
+            "---\n"
+            "name: [web-3d\n"
+            "description: Deliberately malformed unrelated fixture.\n"
+            "---\n"
+            "This skill can be paired with design-dna for overall art direction.\n",
+            encoding="utf-8",
+        )
+
+        completed, payload = self.command("doctor")
+        self.assertEqual(1, completed.returncode, payload)
+        self.assertEqual("install-needed", payload["hosts"][0]["status"])
+        self.assertEqual([], payload["hosts"][0]["discovery_candidates"])
+        self.assertEqual([], payload["errors"])
+
     def test_source_frontmatter_requires_one_top_level_scalar_name(self) -> None:
         invalid_entries = {
             "nested-name": (

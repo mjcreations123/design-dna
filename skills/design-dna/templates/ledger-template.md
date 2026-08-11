@@ -1,10 +1,13 @@
-# Studio ledger
+# Cross-project design ledger
 
-Home: `~/.claude/design-dna/LEDGER.md` (Windows:
-`%USERPROFILE%\.claude\design-dna\LEDGER.md`). One row per shipped build.
-Consulted before directing, appended on ship. See
+Suggested owner-approved home: `~/.design-dna/LEDGER.md`. Keep this outside
+skill packages and client repositories. Use only when an accountable owner has
+authorized minimized cross-project comparison. See
 [the ledger contract](../references/quality/ledger.md).
 
-| Project | Date | Mode | Display face | Class | Body face | Palette poles | Skeleton (one phrase) | Signature | Motion language | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| example-cafe | 2026-08-05 | Persuade | Bricolage Grotesque | grotesk | Switzer | burnt orange on bone | full-bleed photo hero, ledger-band menu, no cards | hand-set price board | curtain reveals, no fades | replaced count-up with static roll |
+| Project-safe ID | Date | Modes | Public job and ambition | Type roles and emphasis | Opening and ending | Main silhouette and cadence | Media relationship | Components and decoration | Motion and interaction | Responsive transformation | Evidence and notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| example-001 | YYYY-MM-DD | Persuade, Read | Short project-specific phrase | Describe the rendered role system, not just family names |  |  |  |  |  |  | reviewer relationship, unresolved limit |
+
+Omit irrelevant axes. Do not store confidential content, screenshots,
+participant data, or fixed pass/fail rotation counts.

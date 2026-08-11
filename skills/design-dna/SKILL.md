@@ -7,15 +7,15 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 
 ## Contents
 
-[boundaries](#assurance-boundaries-come-first) ·
-[quality axes](#separate-specificity-from-ambition) ·
-[authority](#resolve-authority) · [classify](#classify-the-work) ·
-[creative freedom](#preserve-creative-freedom) ·
-[invariants](#keep-these-invariants) ·
-[process spine](#follow-the-process-spine) ·
-[router](#load-guidance-only-for-the-decision-now) ·
-[specialists](#coordinate-specialists) ·
-[evidence](#bound-readiness-and-evidence) · [the gate](#the-gate-restated)
+[boundaries](#assurance-boundaries-come-first) |
+[quality axes](#separate-specificity-from-ambition) |
+[authority](#resolve-authority) | [classify](#classify-the-work) |
+[creative freedom](#preserve-creative-freedom) |
+[invariants](#keep-these-invariants) |
+[process spine](#follow-the-process-spine) |
+[router](#load-guidance-only-for-the-decision-now) |
+[specialists](#coordinate-specialists) |
+[evidence](#bound-readiness-and-evidence) | [the gate](#the-gate-restated)
 
 Create web work whose content, hierarchy, system, and behavior are visibly
 chosen for this project and audience. Optimize for specificity, clarity,
@@ -90,7 +90,7 @@ unresolved choice would materially change the result.
 
 | Scope | Required process |
 | --- | --- |
-| New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. |
+| New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. A fresh public-facing representation normally also selects Showcase. |
 | Component or meaningful visual change | Inherit the system, define the component's job and states, test changed behavior. |
 | Visual or UX review | Inspect rendered and source evidence; report observed causes and unperformed checks. |
 | Mechanical or purely functional change | Preserve the visual system, verify proportionately. |
@@ -103,13 +103,24 @@ Capability presets are cumulative; adding one cannot remove another:
 | Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, full preship gate. |
 | Showcase | Expressive, premium, highly visible, or explicitly rejecting safe output. | Research and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
 | Range Study | A multi-route brief explicitly requiring meaningful creative range. | Shared foundations stay dependable; route-family record before scaling; proof routes chosen by uncertainty; matched route atlas review. |
-| Batch Study | A controlled evaluation of at least three unrelated website briefs. | Freeze independent briefs and source packets; record human-auditable implementation isolation; resolve capture and contact-sheet data handling for built cases; bind each capture to its rendered route, profile, exact public-build manifest, and capture mode; freeze capture-set-bound site observations before sibling output or diagnostics; record the neutral-label whole-system first observation only after those reviews are frozen; keep planned and correctly blocked cases separate. |
+| Batch Study | A controlled evaluation of at least three unrelated website briefs. | Freeze independent briefs and source packets; record human-auditable implementation isolation; resolve capture and contact-sheet data handling for built cases; bind each capture to its rendered route, profile, exact public-build manifest, and capture mode; freeze capture-set-bound site observations before sibling output or diagnostics; record the neutral-label whole-system first observation only after those reviews are frozen; keep planned and correctly blocked cases separate. It is an evaluation method, not evidence that fictional specimens are a client-ready portfolio or a substitute for owner taste review. |
 | High-risk | Consequential transactions, identity, money, regulated claims. | Task, state, and specialist evidence first; visual ambition cannot waive a safety gate. |
 | Asset-led | Material imagery, fonts, media needing a durable record. | Per-asset provenance, rights, privacy, factual status, delivery, accessibility. |
 
-A prior result rejected as AI-looking, generic, or ugly selects at least
-Standard plus the convergence and specificity reviews; add Showcase when the
-owner also asks for impressive, premium, or really good.
+A fresh public-facing site that represents a business, product, organization,
+place, creator, or campaign is normally visual-capability work even when the
+brief says only "build a website." Select Showcase unless an approved existing
+system or an explicitly bounded utility task makes Standard or Quick the honest
+scope. This chooses direction and review depth; it does not choose a house
+style. For Showcase work without an approved rendered direction, load
+[taste calibration](references/craft/taste-calibration.md) before generating
+the first public surface.
+
+A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
+at least Standard plus [taste calibration](references/craft/taste-calibration.md),
+the convergence and specificity reviews; add Showcase when the owner also asks
+for impressive, premium, or really good. A direct rejection of the visual
+answer reopens the direction before more pages or cosmetic polish are added.
 
 Identify every surface mode that describes the user's job: Persuade
 ([modes/persuade](references/modes/persuade.md)), Experience
@@ -164,12 +175,17 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   system theater as visitor content. Truthful operational status, technical
   detail, or atmosphere remains valid when the audience needs it and its
   meaning is clear.
+- For every new or materially redesigned website, resolve the fifteen
+  [launch-completeness](references/quality/launch-completeness.md) decisions
+  before delivery. Each one is included, intentionally not applicable, or
+  blocked with an owner action; do not manufacture a CTA, FAQ, promise,
+  location, policy, tracker, or promotion merely to fill a row.
 - Size and prominence follow the intended encounter. The dominant element
   should support the visitor's first question, task, invitation, or deliberate
   point of tension; no universal type-size ordering applies.
 - Verify by seeing: code inspection cannot establish rendered craft. Save and
   inspect project-relevant rendered evidence across the widths, states, and
-  preferences that can change the conclusion—normally including wide and
+  preferences that can change the conclusion - normally including wide and
   compact conditions for a substantial public surface. If the requested
   visual conclusion cannot be rendered, identify that exact blocked claim.
 - Working artifacts are never mistakable for the accepted site. Separate
@@ -215,10 +231,12 @@ For a substantial build or redesign, read
    content and route structure; choose the media path. For culturally
    central subjects, name the review authority before visual commitment.
 3. When authorized cross-project evidence exists, consult the ledger without
-   turning repetition into a ban. For an open or high-stakes direction, build
-   a retrieval-dated reference dossier and externalize enough materially
-   different evidence to expose the real choice. Record perception before
-   diagnosis and select with rationale.
+   turning repetition into a ban. For an open, high-stakes, owner-sensitive, or
+   previously rejected direction, use [taste calibration](references/craft/taste-calibration.md):
+   build a retrieval-dated reference dossier, define the visitor-facing
+   encounter, and externalize enough materially different evidence to expose
+   the real choice. Record perception before diagnosis and select with
+   rationale.
 4. For Standard or stronger new work and redesigns, record a free-form,
    project-derived organizing logic and at least one consequential decision a
    reviewer can observe; a bounded Quick repair may inherit the established
@@ -276,6 +294,7 @@ already covered by [the two axes](#separate-specificity-from-ambition).
 | Controlled comparison of three or more unrelated sites | [Batch Study evaluation](references/quality/batch-range-evaluation.md); activate Batch Study before building the cases, freeze an [unprimed site observation](templates/batch-site-observation-template.md) for each, then complete the [neutral-label whole-system review](templates/batch-whole-system-review-template.md). |
 | Missing, sparse, or contradictory project material; fictional, sample, demo, or prototype identity or scenario content | [Content discovery](references/quality/content-discovery.md), including the identity-to-fixture fit check even when the material appears plentiful. |
 | New direction, redesign, "generic," or "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
+| "Ugly," "bad taste," "this is not actually good," "looks like a design exercise," previous visual rejection, or an owner-sensitive public sample | [Taste calibration](references/craft/taste-calibration.md), then [art direction](references/craft/art-direction.md). This is a direction-recovery path, not a font, palette, or effect swap. |
 | Open brief, greenfield direction, materially different options | [Creative exploration](references/craft/creative-exploration.md), then [art direction](references/craft/art-direction.md). |
 | "Make it impressive," premium, showcase, "too plain," "boring" | [Creative freedom](references/creative-freedom.md), [creative exploration](references/craft/creative-exploration.md), [expression and energy](references/craft/expression-energy.md); revision verbs via [design tuning passes](references/craft/design-tuning-passes.md); [finish and polish](references/quality/finish-polish.md) after direction works. |
 | First complete render or observed durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
@@ -285,6 +304,7 @@ already covered by [the two axes](#separate-specificity-from-ambition).
 | Grid, grouping, rhythm, density | [Layout and density](references/craft/layout-density.md). |
 | Routes, navigation, headings, actions, content states | [Content and IA](references/craft/content-ia.md). |
 | Buttons, errors, empty states, confirmations, labels, any small functional string | [Microcopy](references/craft/microcopy.md). |
+| Public-site CTA, FAQ, response/delivery promise, success state, sticky compact action, metadata, robots, social card, directions, alternatives, policy, GA4, USP, or promotion | [Website launch completeness](references/quality/launch-completeness.md). |
 | Multi-route anthology or capability showcase | [Route-family art direction](references/craft/route-family-art-direction.md); activate Range Study. |
 | Photography, generated media, illustration, external assets | [Imagery](references/craft/imagery-illustration.md) and [asset integrity](references/quality/asset-integrity.md). |
 | Icons or pictograms | [Iconography](references/craft/iconography.md). |
@@ -349,7 +369,8 @@ claims, public indexing, and production operations require the applicable
 specialist review or an explicit `unverified` release block.
 
 Create only useful evidence records with `scripts/init_project_state.py`.
-Templates: [exploration](templates/exploration-template.md),
+Templates: [taste calibration](templates/taste-calibration-template.md),
+[exploration](templates/exploration-template.md),
 [direction](templates/direction-template.md),
 [route family](templates/route-family-template.json),
 [batch study](templates/batch-range-template.json),
@@ -368,6 +389,7 @@ Templates: [exploration](templates/exploration-template.md),
 [complete example](templates/asset-manifest.example.yml),
 [user validation](templates/user-validation-template.md),
 [handoff](templates/handoff-template.md),
+[launch completeness](templates/launch-completeness-template.md),
 [scan allowlist](templates/scan-allowlist.json),
 [placeholder register](templates/placeholder-register-template.md),
 [studio ledger](templates/ledger-template.md), and the

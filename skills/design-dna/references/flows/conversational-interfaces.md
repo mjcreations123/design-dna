@@ -7,24 +7,23 @@ inboxes and owns presence, delivery, and moderation honesty; this file owns the
 generated-answer surface. For the product framing around it, pair with
 [software products](../verticals/software-product.md).
 
-The default chat UI is one of the most converged surfaces on the web: a
-centred column of alternating bubbles, a circular avatar per turn, three
-bouncing dots, and a paper-plane send icon. Reaching for that whole bundle
-unexamined is the same failure the
-[generator defaults](../convergence-watch.md#dated-watch-the-generator-defaults)
-describe. Decide the container from the conversation, not from the memory of
-every other chat product.
+Decide the container and visual language from the real conversation model,
+product context, content length, user task, and supported behavior. Bubbles,
+documents, inline answers, logs, panels, avatars, indicators, and send icons are
+all available when their relationships fit. After rendering, use the
+[post-render convergence review](../convergence-watch.md) if an unexplained
+bundle of familiar defaults has displaced the project's needs.
 
 ## Contents
 
 - [Model the conversation first](#model-the-conversation-first)
-- [The streaming contract](#the-streaming-contract)
+- [Model the response lifecycle](#model-the-response-lifecycle)
 - [Render generated output honestly](#render-generated-output-honestly)
 - [Uncertainty, provenance, and correction](#uncertainty-provenance-and-correction)
 - [The composer](#the-composer)
 - [Limits, cost, and context](#limits-cost-and-context)
 - [History and persistence](#history-and-persistence)
-- [Named bans](#named-bans)
+- [Truth and safety failures](#truth-and-safety-failures)
 - [Verify and escalate](#verify-and-escalate)
 
 ## Model the conversation first
@@ -50,40 +49,32 @@ and its consequential steps to
 money or send mail on someone's behalf is a High-risk surface, not a chat
 widget.
 
-## The streaming contract
+## Model the response lifecycle
 
-Token-by-token rendering is the 2026 baseline expectation, and it is a
-contract, not an effect. Design every state it implies:
+Record how this product actually responds: settled, chunked, token-streamed,
+tool-running, queued, offline, human-reviewed, or another supported model. Then
+design only the states and controls that model can produce. Relevant states may
+include idle, submitted, waiting, receiving, tool activity, stopped, partial,
+complete, refused, timed out, rate-limited, filtered, disconnected, or failed;
+their number and distinction follow real behavior and recovery needs.
 
-- **idle**, with a composer that says what this assistant is for in the
-  client's own words, not "Ask me anything";
-- **submitted**, before the first token, which is the only honest place for a
-  waiting indicator;
-- **streaming**, with a visible stop control that genuinely aborts the
-  request rather than hiding the output;
-- **stopped by the user**, which keeps the partial answer and says it is
-  partial;
-- **complete**, with whatever follow-up actions the product supports;
-- **failed**, distinguished by cause: a refusal, a timeout, a dropped
-  connection mid-stream, a rate limit, a content filter, an upstream outage.
-  Each needs its own recovery path, and a stream that dies halfway is not
-  the same event as a request that never started.
-
-Never simulate any of this. A typing indicator over canned content, an
-artificial delay before an instant answer, or a fake token-by-token reveal of
-text that already arrived whole are fabrications under
-[ABSOLUTE 3](../../policy/absolutes.md) and fake liveness under
-[parseable text](../quality/parseable-text.md). Animate the arrival of real
-tokens or do not animate.
+If the product streams, decide what is announced, whether interruption is
+supported, what a stop action actually cancels, and how a partial response is
+identified. If it returns settled or delayed results, show that honestly. A
+typing indicator over canned content, an artificial delay, or a fake token
+reveal misrepresents system behavior under the
+[assurance boundaries](../../policy/absolutes.md) and
+[parseable-text review](../quality/parseable-text.md).
 
 ## Render generated output honestly
 
-Model output is structured text and the surface has to carry its real
-structure: headings, lists, tables, code with a language label and a copy
-control, math, and links. Decide deliberately what happens to output the
-container cannot hold, because a wide table or a long code block inside a
-narrow centred bubble is the most common broken state on these surfaces. Give
-code and tables their own scroll container, never the page.
+Model output may contain headings, lists, tables, code, math, links, media, or
+another product-specific structure. Support only the forms the product
+actually returns, with semantics and controls appropriate to their use. Decide
+deliberately what happens when content exceeds its container. Local scrolling,
+wrapping, alternate views, downloads, responsive transformation, and page-level
+overflow each have different access and usability costs; choose and test the
+result rather than imposing one container recipe.
 
 Treat any markup the model emits as untrusted text. Render it as content, not
 as live markup, and never let a generated string reach the page as raw HTML.
@@ -103,24 +94,25 @@ in citation chrome.
 
 Never present a generated claim with more confidence than the system has, and
 never invent a confidence number to display: a percentage with no calibration
-behind it is fabricated data under
-[ABSOLUTE 3](../../policy/absolutes.md). Prefer stating the limit in words
+behind it is fabricated data under the
+[assurance boundaries](../../policy/absolutes.md). Prefer stating the limit in words
 that a visitor can act on, such as what the assistant cannot see, when its
 knowledge ends, and what it will not do.
 
-Give every answer a correction path: report, retry, edit the question, or
-reach a human, with the escalation route real rather than decorative. For
-regulated subjects follow
+Provide correction, retry, feedback, source inspection, or human escalation
+when the task, uncertainty, consequence, or real service supports it. Do not
+render decorative recovery or escalation controls whose path does not exist.
+For regulated subjects follow
 [production readiness](../quality/production-readiness.md) and require the
 applicable specialist before shipping.
 
 ## The composer
 
-The composer is the primary control and deserves more than an input with a
-send icon. Decide: multi-line growth and its ceiling, keyboard contract
-(Enter sends or Enter newlines, stated and consistent), attachment and paste
-handling with real progress and failure, whether an empty submit is possible,
-and what happens to a draft on navigation or reload.
+When a composer exists, treat it as a consequential control and decide its
+supported input, keyboard contract, growth, attachment or paste behavior,
+validation, submission, progress, failure, and draft persistence. A read-only
+answer panel, proactive assistant, voice surface, inline copilot, or embedded
+tool may have no composer or may make another control primary.
 
 Suggested prompts are content, not decoration. Ship them only when each one
 leads somewhere genuinely useful for this product; three invented examples of
@@ -144,34 +136,40 @@ deletion actually removes. Follow
 or used for training, and never imply a deletion the backend does not
 perform.
 
-## Named bans
+## Truth and safety failures
 
 - A typing or thinking indicator on content that is not being generated.
 - An artificial delay added to make an instant answer feel considered.
 - A fabricated confidence score, star rating, or accuracy percentage.
 - Citation chrome on an answer with no retrieved source behind it.
-- A generated avatar or invented persona name presented as a person, which
-  is a fabricated person under [ABSOLUTE 3](../../policy/absolutes.md).
-- Emoji as the assistant's face or as status markers (HARD 5).
+- A generated avatar or invented persona name presented as a real person,
+  which violates the [assurance boundaries](../../policy/absolutes.md).
 - A stop control that hides output while the request continues.
 - Raw model markup injected as live HTML.
-- The blinking terminal caret beside static hero copy, per the
-  [hero signature](../convergence-watch.md#dated-watch-the-hero-signature).
+- A blinking terminal caret beside static copy when it falsely implies live
+  generation.
+
+Emoji, mascots, icons, avatars, status markers, and terminal language remain
+contextual design ingredients. Review their meaning, tone, alternatives,
+operating truth, and rendered fit without treating the category itself as a
+failure.
 
 ## Verify and escalate
 
-Test a first-run empty state, a one-word question, a very long answer, a
-wide table and a long code block at 375px, a stopped generation, each
-distinct failure mode, a refusal, a rate limit, a dropped connection
-mid-stream, reload during streaming, a restored conversation, keyboard-only
-operation through send and stop, and reduced motion.
+Select tests from the real lifecycle, supported content, consequential actions,
+failure and recovery paths, persistence model, input methods, responsive
+transitions, and user settings. Use representative short, long, structured,
+partial, and failing content only where the product can produce it. Derive
+exact widths from the supported layout rather than a permanent device number.
 
-Streaming text is the hardest part of these surfaces for assistive
-technology. A naive live region announces every token. Announce that a
-response has started, then the settled result, and keep focus stable while
-tokens arrive; verify with a screen reader rather than assuming, per the
-[accessibility baseline](../quality/accessibility-baseline.md).
+When text streams, avoid a live region that announces every token. Choose an
+announcement cadence that fits the product, preserve focus, and verify the
+actual result with relevant assistive technology rather than assuming, per the
+[accessibility baseline](../quality/accessibility-baseline.md). Settled,
+chunked, and tool-running interfaces need their own status and focus behavior.
 
-Require security, privacy, legal, and domain specialists for retention,
-training use, regulated advice, agentic actions with real consequence, and
-any claim about what the model can or cannot do.
+Use the specialists implicated by the real product and claim. Security,
+privacy, legal, safety, or domain review is required when its corresponding
+retention, training, regulated-advice, data, agentic-action, or capability risk
+is in scope; a bounded read-only surface does not inherit an unrelated
+specialist checklist.

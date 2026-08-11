@@ -2,6 +2,86 @@
 
 This log records discovery coverage and exclusion decisions. Evidence cards, not search-result snippets, govern the risk registry.
 
+## 2026-08-10 public design-skill landscape and taste-recovery review
+
+### Question and method
+
+After an accountable owner rejected a ten-site demonstration as visually ugly,
+the review asked a different question from “which AI-looking ingredients should
+be banned?”: which public agent-skill practices help an agent make and reject a
+weak visual direction before it produces a technically complete but
+unconvincing site?
+
+Public GitHub source was collected from 17 Claude, Codex, and host-neutral skill
+collections. A strict front-matter pass found 374 design-relevant `SKILL.md`
+paths representing 198 unique bodies after duplicate removal. A broader path
+search was retained for discovery only because it also matched unrelated
+frontend, asset, and automation skills. High-signal entry, direction, brand,
+review, typography, responsive, animation, and design-system bodies were read
+closely; the full collection was catalogued but not treated as 198 independent
+quality studies. Current web results and Reddit threads were used to locate
+recurring practitioner hypotheses, not as empirical prevalence or causation
+evidence. Search results from X did not yield reliable primary material and
+were not used for a package claim.
+
+### Source matrix
+
+| Source | Useful bounded practice | Excluded or limited practice |
+| --- | --- | --- |
+| [Anthropic frontend-design](https://github.com/anthropics/skills/tree/main/skills/frontend-design) | Ground the purpose, audience, and page job; make the hero a project thesis; use rendered critique. | Its examples of default motifs are calibration language, not a portable ban list. |
+| [Claude Design](https://github.com/jiji262/claude-design-skill) | Verify concrete facts, treat real brand/product assets as first-class, declare a visual system, and test in a browser. | Fixed three-direction cycles, named style menus, and its broad prohibitions cannot govern every project. |
+| [Designer Skills](https://github.com/julianoczkowski/designer-skills) | Separate brief, system context, screenshot review, and refinement. | Fixed viewport, framework, mobile-first, dark-mode, and numeric recipes are context-specific. |
+| [ckw-design](https://github.com/connerkward/ckw-design-skill) | Make a project read, render early, critique the image rather than code alone, and identify the first plausible default. | Its hard spatial metrics and example motif warnings are not a universal aesthetic authority. |
+| [Impeccable](https://github.com/pbakaus/impeccable) | Distinguish new work, redesign, critique, polish, boldening, quieting, and hardening; replace a rejected visual world rather than splitting the difference. | Its named command taxonomy and product context files are an implementation, not a universal workflow contract. |
+| [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) and other style catalogs | A catalogue can help discover a fitting option or official design system. | A default stack, font bench, palette rotation, layout quota, or style preset becomes a house style and recreates the convergence it claims to prevent. |
+| [StyleSeed review](https://github.com/bitjaru/styleseed) and similar score-based reviewers | Coherence, states, and hierarchy are useful review concerns. | Numeric beauty scores and blanket rules for colors, radii, cards, type, and spacing cannot certify taste or cross-genre quality. |
+| [Frontend-design skill benchmark](https://github.com/dani-z/frontend-design-skill-benchmark) | A before/after harness can make an output difference visible. | Its pass criteria define success as avoiding named fonts, purple, centered/card layouts, and missing animation; its “with skill” examples repeatedly converge on warm-editorial and terminal treatments. It measures compliance with that doctrine, not broad visual quality or owner taste. |
+| Recent Reddit discussions on generic AI sites | Practitioners consistently describe missing positioning, real assets, and actual visual examples as more useful than vague “make it modern” prompts. | Threads are anecdotal, self-selected, and conflict on whether stricter preset systems solve the problem; none was promoted into a style rule. |
+
+### Adopt, adapt, reject
+
+- **Adopt:** source-aware project reads; real material and media decisions;
+  reference decomposition rather than copying; visible direction proofs before
+  scale; first-impression review; browser-rendered critique; and a clear return
+  to direction work when the owner rejects the visual premise.
+- **Adapt:** style catalogs and design systems as optional research inputs only
+  when the brief, existing product, or authority makes them relevant.
+- **Reject:** font, palette, icon, motion, hero, card, eyebrow, section-count,
+  score, framework, or device recipes presented as universal anti-AI medicine;
+  forced “award” motion; synthetic irregularity; and claims that a detector can
+  prove human authorship or beauty.
+
+### Package consequence
+
+Design DNA now adds `taste-calibration.md`, an optional calibration record, a
+surface-fidelity review field, explicit direction recovery for “ugly” feedback,
+and a boundary that Batch Study fixtures are not portfolio proof. The changes
+require project-specific references and a rendered public-encounter judgment
+when that judgment is material; they do not prescribe a visual family or create
+a new automated taste score.
+
+### Limits
+
+These repositories document workflows and creator preferences, not controlled
+outcome research. A high-signal source can show a useful method while still
+shipping a rigid taste doctrine. Search availability, repos, and social
+discussions change over time. No part of this review proves that a result will
+be loved by every audience or impossible to identify as AI-assisted.
+
+### Follow-up registry and community cross-check
+
+The current [Design & UI skills registry](https://www.skills.sh/topic/design),
+additional GitHub discovery, Reddit threads, and a current X/Twitter search
+were checked after the initial catalog. The registry confirms that the public
+ecosystem offers both project-reading/review methods and strongly prescriptive
+style operators. Community discussion of scanner-led “unslop” workflows also
+contains the useful counterexample: several reviewers described the resulting
+before/after work as still generic. This supports using a scanner only to raise
+a post-render hypothesis, never as a beauty verdict or an automatic design
+generator. X/Twitter again produced announcements and personal reports rather
+than stable, method-bearing primary evidence, so it did not create a package
+rule.
+
 ## 2026-08-02 productive-friction source calibration
 
 The March 2026 preprint *Interrogating Design Homogenization in Web Vibe
@@ -121,9 +201,12 @@ examples were not promoted into universal recipes.
   unsupported, reduced-motion, and no-JavaScript verification.
 - `EVD-039` adds script-specific typography and responsive checks without
   pretending that a technical standard supplies cultural authority.
-- `EVD-040`, `EVD-041`, and `EVD-042` support a constructive
-  shared-foundation/local-expression model and an explicit check for one
-  body recipe disguised by surface variation.
+- `EVD-041` and `EVD-042` support a constructive shared-foundation and
+  local-expression model and an explicit check for one body recipe disguised
+  by surface variation. The former Spotify Design source `EVD-040` was
+  removed from the active registry on 2026-08-08 after its publisher retired
+  the Design site and the exact article redirected to an unrelated product
+  homepage; Git history retains the dated card and snapshot.
 
 ### Limits and exclusions
 
