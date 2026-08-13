@@ -12,6 +12,6 @@
     "check:render-comparison": "node --check ../skills/design-dna/scripts/compare_render_reviews.mjs"
   },
   "devDependencies": {
-    "playwright": "1.61.1"
+    "playwright": "1.62.1"
   }
 }
