@@ -387,6 +387,7 @@ already covered by [the two axes](#separate-specificity-from-ambition).
 | Travel, ticketing, reservations | [Travel and reservations](references/verticals/travel-reservations.md). |
 | Nonprofit, campaign, donations | [Nonprofit and fundraising](references/verticals/nonprofit-fundraising.md). |
 | Courses, schools, credentials | [Education](references/verticals/education.md). |
+| Writing or reviewing shipped HTML, CSS, and JavaScript | [Implementation integrity](references/quality/implementation-integrity.md), especially its silent-defeat list before trusting that any declaration applied. |
 | Public or interactive implementation | [Accessibility baseline](references/quality/accessibility-baseline.md). |
 | Runtime cost, media weight, third parties | [Performance](references/quality/performance.md). |
 | Locales, translation, RTL | [Localization](references/quality/localization.md). |

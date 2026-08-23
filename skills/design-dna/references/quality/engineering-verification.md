@@ -31,6 +31,10 @@ Before implementation:
 - read repository instructions and relevant documentation;
 - inspect the framework, package manager, scripts, browser support, and
   deployment target;
+- resolve every dependency, version, and API surface from the project's own
+  manifest and the current registry rather than from a remembered value;
+  adopt the established package manager instead of replacing it, and leave
+  unrelated dependency ranges untouched;
 - identify the existing design system and testing conventions;
 - map the authoritative sources for product facts, content, assets, tokens,
   components, interaction behavior, and release state;
@@ -482,6 +486,11 @@ Review:
 - responsive behavior and localization;
 - source licenses and generated-asset disclosures;
 - whether screenshots match the final build.
+
+For the shipped HTML, CSS, and JavaScript itself, apply
+[implementation integrity](implementation-integrity.md). Its silent-defeat
+list covers declarations that parse, validate, and do nothing, which source
+review and passing builds both miss by construction.
 
 ## Protect external state
 

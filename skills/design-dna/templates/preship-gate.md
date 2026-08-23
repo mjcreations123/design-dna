@@ -63,7 +63,17 @@ ornament category fails by itself.
 ## B. Rendered implementation
 
 - [ ] The supported build, lint, type, and test gates for the changed scope
-      pass, or their exact failures and impact are recorded.
+      pass, or their exact failures and impact are recorded. No gate was made
+      to pass by lowering a threshold, narrowing what it measures, excluding
+      the failing case, or suppressing the finding.
+- [ ] Declarations that can be silently defeated were confirmed in the
+      computed result rather than the source, for each mechanism this build
+      actually uses: intrinsic ratios against dimension attributes, the
+      `hidden` attribute against component display rules, component color
+      inside every section ground it appears on, reveal animations whose
+      trigger may never fire, sticky travel within its own container, form
+      fields arriving in the submitted payload, and overflow detection a
+      clipping container can suppress.
 - [ ] Every independently addressable route in scope was checked for direct
       entry, reload, title, current-page state, links, history, and intended
       indexing or canonical behavior.

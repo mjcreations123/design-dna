@@ -38,7 +38,13 @@ preference or remembered criticism.
 4. **Evidence honesty.** Report generated, rendered, reviewed, accepted,
    installed, deployed, and live states separately. Do not claim a browser,
    user, accessibility, performance, cultural, or release check that did not
-   occur.
+   occur. Never satisfy a check by weakening the check: not by lowering a
+   threshold, narrowing the scope measured, excluding the failing case,
+   adding an exception to accommodate it, or suppressing the finding. A gate
+   that cannot pass honestly is reporting a real defect, and the defect is
+   the thing to change. Revising a standard is an owner decision, taken
+   explicitly and on the record, never a side effect of making a run
+   report success.
 5. **Delivery authority.** Do not publish, connect production services,
    collect real data, transact, contact people, or change live systems unless
    the user authorized that action and the required operational checks pass.

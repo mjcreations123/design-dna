@@ -74,6 +74,7 @@ class FieldImportContractTests(unittest.TestCase):
         for target in (
             "references/quality/default-basins.md",
             "references/quality/artwork-fidelity.md",
+            "references/quality/implementation-integrity.md",
             "references/flows/redesign.md",
             "references/craft/feedback-states.md",
             "templates/design-handoff-template.md",
@@ -96,6 +97,86 @@ class FieldImportContractTests(unittest.TestCase):
     def test_convergence_review_points_at_the_basins(self) -> None:
         watch = read("references/convergence-watch.md")
         self.assertIn("quality/default-basins.md", watch)
+
+
+class ImplementationIntegrityContractTests(unittest.TestCase):
+    """Keep the shipped-code layer covered without importing a lint dialect."""
+
+    def test_silent_defeat_list_names_its_observed_mechanisms(self) -> None:
+        integrity = " ".join(
+            read("references/quality/implementation-integrity.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("silent defeat", integrity)
+        # each entry is an observed inert-declaration mechanism, not a style rule
+        for mechanism in (
+            "aspect-ratio",
+            "presentational hints",
+            "[hidden]",
+            "one class more specific",
+            "the start state must be the visible state",
+            "containing block",
+            "built-in members before author",
+            "self-test the detector",
+        ):
+            with self.subTest(mechanism=mechanism):
+                self.assertIn(mechanism, integrity)
+        self.assertIn("treat this as a live list", integrity)
+
+    def test_integrity_reference_stays_in_the_working_behavior_lane(self) -> None:
+        integrity = " ".join(
+            read("references/quality/implementation-integrity.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("working behavior is a low-freedom area", integrity)
+        self.assertIn("nothing here constrains an aesthetic choice", integrity)
+        # it must not quietly become a taste or vocabulary gate
+        for overreach in (
+            "forbidden term",
+            "rename symbol",
+            "banned word",
+            "must not name",
+        ):
+            with self.subTest(overreach=overreach):
+                self.assertNotIn(overreach, integrity)
+
+    def test_integrity_defers_to_the_existing_completion_gates(self) -> None:
+        integrity = read("references/quality/implementation-integrity.md")
+        for target in (
+            "engineering-verification.md",
+            "preship-gate.md",
+            "production-readiness.md",
+        ):
+            with self.subTest(target=target):
+                self.assertIn(target, integrity)
+        folded = " ".join(integrity.casefold().split())
+        self.assertIn("establish implementation integrity only", folded)
+
+    def test_a_gate_may_never_be_weakened_to_pass(self) -> None:
+        assurance = " ".join(
+            read("policy/absolutes.md").casefold().split()
+        )
+        self.assertIn("never satisfy a check by weakening the check", assurance)
+        self.assertIn("lowering a threshold", assurance)
+        self.assertIn("suppressing the finding", assurance)
+        self.assertIn("revising a standard is an owner decision", assurance)
+
+        gate = " ".join(read("templates/preship-gate.md").casefold().split())
+        self.assertIn("no gate was made to pass by lowering a threshold", gate)
+        self.assertIn("silently defeated", gate)
+        self.assertIn("computed result rather than the source", gate)
+
+    def test_versions_are_resolved_not_remembered(self) -> None:
+        verification = " ".join(
+            read("references/quality/engineering-verification.md")
+            .casefold()
+            .split()
+        )
+        self.assertIn("rather than from a remembered value", verification)
+        self.assertIn("leave unrelated dependency ranges untouched", verification)
+        self.assertIn("implementation-integrity.md", verification)
 
 
 if __name__ == "__main__":
