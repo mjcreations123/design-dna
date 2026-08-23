@@ -1,6 +1,6 @@
 schema_version: 3
-last_updated: "2026-08-11"
-package_version: "5.1.0"
+last_updated: "2026-08-12"
+package_version: "5.3.0"
 
 discovery_roots:
   - "~/.agents/skills"
@@ -65,7 +65,7 @@ environments:
     node: "26.3.0"
     host: null
     host_version: null
-    checked_at: "2026-08-11T01:10:00Z"
+    checked_at: "2026-08-12T19:39:55Z"
     checks:
       package_audit: "pending"
       unit_tests: "pending"
@@ -78,7 +78,7 @@ environments:
       - "maintainer/attestations/install-lifecycle.json"
       - "maintainer/attestations/route-verification.json"
     notes:
-      - "The retained 5.1.0 suite attestation is historical and binds runtime 506c3968761578930aba37a5fb1accc0664604919e32329536726180e20f0594, not this changed candidate."
+      - "The checked-in local test attestation predates the current 5.2.0 CPE source and its two-root release runner. Regenerate it from a cache-clean candidate; record its actual count and bound hashes in that attestation rather than inferring them here."
       - "package_audit stays pending even though audit_package.py reports zero failures: the package distributes no retained record contract for an audit result, so a pass here would be unbound. It moves only when such a record exists and is cited."
       - "Current local test and installer-lifecycle evidence must be regenerated after the frozen candidate artifacts are built; rendered review remains pending."
   - id: "ci-ubuntu-python-3-10"
@@ -275,4 +275,5 @@ portable_contract:
 release_limitations:
   - "No trusted host-native adapter is registered for controlled Codex or Claude Code behavioral evidence."
   - "The Claude executable is not available on PATH in the current verification environment."
-  - "No formal controlled host evaluations or independent rendered-review records are promoted for v5.1.0; local forward builds remain diagnostic evidence only."
+  - "No formal controlled host evaluations or independent rendered-review records are promoted for this 5.2.0 candidate; local forward builds remain diagnostic evidence only."
+  - "Connected Public Experience records, when selected, are project-level evidence only; they do not establish host activation, owner acceptance, target-user validation, production readiness, real service operation, or visual quality."

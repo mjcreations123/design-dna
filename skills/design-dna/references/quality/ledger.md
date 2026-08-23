@@ -35,10 +35,13 @@ Record only axes useful to later comparison:
 Omit axes that are irrelevant. The template is in
 [ledger-template](../../templates/ledger-template.md).
 
-## Consult without turning history into a recipe
+## Consult before selection without turning history into a recipe
 
 For a new unrelated project, inspect a small, relevant recent sample only
-after the project brief and source material are understood. Ask:
+after the project brief and source material are understood, and only with the
+accountable owner's authorization. When Project Contrast is active, first
+record a brief-native alternate organizing answer without showing it prior
+work; then inspect the smallest relevant closest-sibling sample. Ask:
 
 - Does the current candidate repeat a cluster of macrostructure, type roles,
   media treatment, copy cadence, and interaction from unrelated work?
@@ -53,6 +56,12 @@ No family, category, layout, or device is disqualified by appearing in a
 fixed number of recent rows. Repetition raises a hypothesis; the rendered
 project and its evidence decide the disposition. An established client or
 product system may correctly repeat itself.
+
+The ledger is a lineage aid, not a visual seed bank. Store only project-safe
+descriptions of the organizing answer, opening, content operation, body
+progression, responsive encounter, and consequential shared foundations. Do
+not turn past work into an ingredient rotation calendar or retain client
+screenshots, identities, assets, or confidential copy merely to compare it.
 
 For a deliberate batch or benchmark, use a temporary batch ledger so
 unshipped experiments do not contaminate production history. Compare masked

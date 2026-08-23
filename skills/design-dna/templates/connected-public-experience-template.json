@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "created_with": "__DESIGN_DNA_VERSION__",
+  "record_status": "draft",
+  "classification": "internal",
+  "applicability": {
+    "status": "blocked",
+    "reason": null,
+    "blocking_dependency": null,
+    "next_action": null
+  },
+  "pre_direction_constraints": {
+    "direct_entry_questions": [],
+    "truth_and_entity_constraints": []
+  },
+  "selected_root_continuity": {
+    "selected_root_id": null,
+    "continuity_model": null,
+    "handoffs_or_resets": [],
+    "meaningful_path": {
+      "arrival": null,
+      "decision": null,
+      "action": null,
+      "outcome": null,
+      "recovery_or_continuation": null
+    },
+    "state_authority_crosswalk": [],
+    "proof_plan": {
+      "rendered": [],
+      "functional": []
+    }
+  },
+  "root_variation": {
+    "strategy": "not-required",
+    "detail": null,
+    "entries": [],
+    "project_contrast_mapping": null
+  },
+  "staff_admin_split": {
+    "status": "not-requested",
+    "public_boundary": null,
+    "back_office_boundary": null,
+    "operate_mode": "not-required",
+    "final_evidence": null,
+    "fixture": {
+      "status": "none",
+      "authority": null,
+      "content_or_state": null,
+      "boundary": null,
+      "descriptor": null
+    }
+  },
+  "final_closure": {
+    "status": "draft",
+    "reviewed_build_id": null,
+    "rendered_evidence": [],
+    "functional_path_evidence": [],
+    "proof_coverage": {
+      "direct_entry_evidence_ids": [],
+      "recovery_or_continuation_evidence_ids": []
+    },
+    "conclusion": null,
+    "limitations": null
+  }
+}

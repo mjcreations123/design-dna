@@ -332,6 +332,48 @@ and mapped only to risks they directly support.
   restrained work remains valid when the task, evidence, and accountable owner
   support it.
 
+## 2026-08-11 direction-diversity review
+
+### Question
+
+An owner found that recent outputs had stopped looking generic or obviously
+machine-made, but still felt like variations of one studio answer. The review
+asked whether the portable skill was accidentally producing a safe house
+grammar and what process change could reduce that risk without adding a style
+blacklist.
+
+### Sources checked
+
+- Doshi and Hauser, *Science Advances* (2024), on individually improved but
+  collectively more similar AI-assisted stories.
+- Anderson, Shah, and Kreminski, CHI EA (2024), on group-level homogenization
+  analysis for ChatGPT-assisted ideation.
+- Wadinambiarachchi et al. (2024 preprint), on AI-image ideation, fixation,
+  and divergent thinking.
+- Leahy et al., DRS (2018), on design heuristics and less-similar concept
+  generation.
+- Brad Frost's components, recipes, and snowflakes model, plus WCAG 2.2
+  consistent navigation guidance.
+
+### Decision
+
+The sources are adjacent-process evidence, not a detector for website quality,
+AI use, or originality. They support one narrow intervention: before broad
+implementation of an unrelated public build with owner-identified recurrence
+risk, derive a brief-native encounter, externalize a materially different
+counter-answer, then inspect authorized rendered evidence after an unprimed
+first observation. Reuse shared access, navigation, and platform foundations
+where justified; do not reuse an unexplained page recipe.
+
+### Limits
+
+- No study above proves a particular website is attractive, unattractive, or
+  AI-generated.
+- Variation in a font, palette, shape, media crop, or animation alone does
+  not establish a different public encounter.
+- The resulting Project Contrast record remains qualitative, owner-scoped,
+  authorization-bound, and explicitly incapable of issuing an aesthetic score.
+
 ## 2026-07-28 delta review
 
 ### Channels and changes checked

@@ -642,10 +642,13 @@ class CachePreflightTests(unittest.TestCase):
             environment["PYTHONPATH"] = "."
             for name in self.ENTRYPOINTS:
                 with self.subTest(entrypoint=name):
+                    flags = ["-B"]
+                    if name == "attest_tests.py":
+                        flags = ["-I", "-S", "-B"]
                     result = subprocess.run(
                         [
                             sys.executable,
-                            "-B",
+                            *flags,
                             f"maintainer/scripts/{name}",
                         ],
                         cwd=copied_plugin,
@@ -720,11 +723,17 @@ class CachePreflightTests(unittest.TestCase):
             environment["PYTHONPATH"] = str(archive)
             for name in self.ENTRYPOINTS:
                 with self.subTest(entrypoint=name):
+                    flags = ["-B"]
+                    command_suffix: list[str] = []
+                    if name == "attest_tests.py":
+                        flags = ["-I", "-S", "-B"]
+                        command_suffix = ["--help"]
                     result = subprocess.run(
                         [
                             sys.executable,
-                            "-B",
+                            *flags,
                             f"maintainer/scripts/{name}",
+                            *command_suffix,
                         ],
                         cwd=copied_plugin,
                         text=True,
@@ -733,20 +742,30 @@ class CachePreflightTests(unittest.TestCase):
                         env=environment,
                         timeout=120,
                     )
-                    self.assertEqual(
-                        result.returncode,
-                        2,
-                        result.stdout + result.stderr,
-                    )
-                    payload = json.loads(result.stdout)
-                    self.assertTrue(
-                        any(
-                            item["code"] == "untrusted-import-path"
-                            and Path(item["path"]) == archive
-                            for item in payload["failures"]
-                        ),
-                        payload,
-                    )
+                    if name == "attest_tests.py":
+                        # Startup isolation ignores the archive entirely; it
+                        # need not discover an untrusted path after Python has
+                        # already excluded it from import initialization.
+                        self.assertEqual(
+                            result.returncode,
+                            0,
+                            result.stdout + result.stderr,
+                        )
+                    else:
+                        self.assertEqual(
+                            result.returncode,
+                            2,
+                            result.stdout + result.stderr,
+                        )
+                        payload = json.loads(result.stdout)
+                        self.assertTrue(
+                            any(
+                                item["code"] == "untrusted-import-path"
+                                and Path(item["path"]) == archive
+                                for item in payload["failures"]
+                            ),
+                            payload,
+                        )
                     self.assertFalse(marker.exists())
 
     def test_nonimportable_name_prefixes_do_not_trigger_shadow_guard(
@@ -767,10 +786,13 @@ class CachePreflightTests(unittest.TestCase):
             environment["PYTHONPATH"] = "."
             for name in self.ENTRYPOINTS:
                 with self.subTest(entrypoint=name):
+                    flags = ["-B"]
+                    if name == "attest_tests.py":
+                        flags = ["-I", "-S", "-B"]
                     result = subprocess.run(
                         [
                             sys.executable,
-                            "-B",
+                            *flags,
                             f"maintainer/scripts/{name}",
                             "--help",
                         ],
@@ -1014,6 +1036,74 @@ class AuditMutationTests(unittest.TestCase):
             self.assertIn("release-manifest-identity-unavailable", codes)
             self.assertIn("release-test-attestation-missing", codes)
 
+    def test_missing_release_manifest_reports_recorded_identity_gap(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            copied_plugin = root / "plugin"
+            shutil.copytree(
+                PLUGIN,
+                copied_plugin,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
+            sbom_path = copied_plugin / "maintainer" / "sbom.spdx.json"
+            generated_sbom = run_script(
+                "build_sbom.py",
+                "--plugin-root",
+                str(copied_plugin),
+                "--output",
+                str(sbom_path),
+            )
+            self.assertEqual(
+                generated_sbom.returncode,
+                0,
+                generated_sbom.stdout + generated_sbom.stderr,
+            )
+            manifest_path = copied_plugin / "maintainer" / "release-manifest.json"
+            generated = run_script(
+                "build_manifest.py",
+                "--skill-root",
+                str(copied_plugin / "skills" / "design-dna"),
+                "--output",
+                str(manifest_path),
+            )
+            self.assertEqual(
+                generated.returncode,
+                0,
+                generated.stdout + generated.stderr,
+            )
+            self.assertTrue(manifest_path.is_file())
+            manifest_path.unlink()
+
+            common_args = (
+                "audit_package.py",
+                "--plugin-root",
+                str(copied_plugin),
+                "--home",
+                str(root),
+            )
+            development = run_script(*common_args)
+            development_payload = json.loads(development.stdout)
+            expected = {
+                "release-manifest-missing",
+                "release-manifest-identity-unavailable",
+            }
+            self.assertTrue(
+                expected
+                <= {item["code"] for item in development_payload["warnings"]},
+                development_payload,
+            )
+
+            release = run_script(*common_args, "--release")
+            self.assertNotEqual(release.returncode, 0, release.stdout + release.stderr)
+            release_payload = json.loads(release.stdout)
+            self.assertTrue(
+                expected
+                <= {item["code"] for item in release_payload["failures"]},
+                release_payload,
+            )
+
     def test_owner_policy_example_matches_active_policy_schema(self) -> None:
         from audit_package import owner_policy_example_failures
 
@@ -1191,8 +1281,59 @@ class AuditMutationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temporary:
             copied_plugin = Path(temporary) / "plugin"
-            shutil.copytree(PLUGIN, copied_plugin)
+            def ignore_derived_archives(
+                directory: str,
+                _names: list[str],
+            ) -> set[str]:
+                relative = Path(directory).resolve().relative_to(
+                    PLUGIN.resolve()
+                ).as_posix()
+                if relative in {
+                    "maintainer/evals",
+                    "maintainer/compatibility",
+                }:
+                    return {"archive"}
+                return set()
+
+            shutil.copytree(
+                PLUGIN,
+                copied_plugin,
+                ignore=ignore_derived_archives,
+            )
             skill_root = copied_plugin / "skills" / "design-dna"
+            # Release identity deliberately retains archival evaluation and
+            # compatibility outcomes, while test attestation deliberately
+            # excludes those generated outputs to avoid a circular record.
+            # Synthesize the two archive probes in this isolated fixture so
+            # this release-identity unit test does not make current archived
+            # outcomes an implicit input to the combined release test suite.
+            archived_eval = (
+                copied_plugin
+                / "maintainer"
+                / "evals"
+                / "archive"
+                / "codex-coffee-regression-20260726"
+                / "README.md"
+            )
+            self.assertFalse(archived_eval.parent.exists())
+            archived_eval.parent.mkdir(parents=True, exist_ok=True)
+            archived_eval.write_text(
+                "synthetic retained evaluation outcome\n",
+                encoding="utf-8",
+            )
+            archived_compatibility = (
+                copied_plugin
+                / "maintainer"
+                / "compatibility"
+                / "archive"
+                / "verification-2026-07-26.md"
+            )
+            self.assertFalse(archived_compatibility.parent.exists())
+            archived_compatibility.parent.mkdir(parents=True, exist_ok=True)
+            archived_compatibility.write_text(
+                "synthetic retained compatibility outcome\n",
+                encoding="utf-8",
+            )
             baseline = package_manifest(skill_root)
             mutations = {
                 "maintainer_tooling": "maintainer/scripts/audit_package.py",

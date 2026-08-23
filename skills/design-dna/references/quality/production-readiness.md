@@ -4,6 +4,14 @@ Use this near handoff when a website or web UI may move beyond a concept.
 Readiness is stage-, route-, and environment-specific evidence; it is not a
 visual impression or a blanket claim.
 
+## Contents
+
+- [Name the stage and boundary](#name-the-stage-and-boundary)
+- [Complete public discoverability](#complete-public-discoverability)
+- [Trigger specialist review](#trigger-specialist-review)
+- [Prepare the operational handoff](#prepare-the-operational-handoff)
+- [Record the release evidence](#record-the-release-evidence)
+
 ## Name the stage and boundary
 
 | Stage | Evidence boundary |
@@ -66,6 +74,32 @@ Confirm ownership and recovery for:
 Document the expected release sequence, verification signals, rollback
 threshold, and named decision owner. Test production-like behavior through the
 safest available environment.
+
+### Free-tier operational defaults, dated 2026-08
+
+For the operational slots the launch-completeness record forces a decision
+on, these free tiers were verified against their own published limits in
+August 2026. Confirm the vendor's current pricing page at launch; free
+tiers shrink without notice, and the studio's settled stack decisions
+outrank this list. For anything not listed, look it up in the maintained
+free-for.dev catalog rather than trusting memory.
+
+- Forms: Formspree free is 50 submissions per form per month; when a demo
+  outgrows it, Web3Forms and Formspark offer about 250 per month, and
+  FormSubmit is a registration-free plain POST endpoint.
+- Transactional email: Resend free is 3,000 per month with a 100-per-day
+  cap and one custom domain.
+- Address forwarding: ImprovMX or Cloudflare's bundled forwarding route
+  info@ addresses to a real inbox; verify SPF, DKIM, and DMARC with a
+  free mail tester on launch day before declaring email done.
+- Analytics: the host platform's native analytics first; cookieless free
+  tiers (Umami and Seline class) run to a few thousand events per month.
+  Non-commercial-only tools are not usable on client sites.
+- Uptime: UptimeRobot free watches 50 monitors at five-minute intervals.
+- Errors: Sentry free is around 5,000 events per month; a log drain into
+  the host platform covers server-side visibility.
+- Redirect service: a free HTTPS redirect host covers old-domain to
+  new-domain forwarding at handoff when the old host cannot 301 itself.
 
 ## Record the release evidence
 

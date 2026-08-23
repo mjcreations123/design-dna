@@ -35,6 +35,14 @@ records the prior field and values, the target capabilities, every required
 record, and the reason for the transition. Existing report history is carried
 forward rather than replaced.
 
+Migration treats a persisted High-risk profile or High-risk evidence capability
+as a consequential declaration, not as a clue to reinterpret from an
+incomplete record inventory. It preserves that declaration, aligns the profile
+and capability, and creates any missing direction, visual-review, claims, or
+user-validation records as drafts. It does not invent their completion. By
+contrast, standalone claims or user-validation records with no persisted
+High-risk declaration migrate as ordinary Standard supplemental evidence.
+
 This does not replace the separate Markdown evidence-record schema. Its
 current version remains 1; a record is not stale merely because its
 frontmatter says `schema_version: 1`.

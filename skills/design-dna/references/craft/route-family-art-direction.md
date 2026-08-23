@@ -11,6 +11,7 @@ visitor job while the site remains trustworthy and navigable.
 ## Contents
 
 - [Define the shared contract](#define-the-shared-contract)
+- [Use it beyond Range Study](#use-it-beyond-range-study)
 - [Let route jobs determine reuse](#let-route-jobs-determine-reuse)
 - [Record the family without prescribing it](#record-the-family-without-prescribing-it)
 - [Prove real routes](#prove-real-routes)
@@ -41,6 +42,36 @@ mean or how the navigation operates on every page.
 The shared foundation does not require one grid, font system, color field,
 header silhouette, component recipe, motion language, density, or page cadence
 unless project authority makes that choice systemic.
+
+## Use it beyond Range Study
+
+Read this guidance for any public build with multiple independently
+addressable routes when their visitor situations, material, or sequence might
+diverge. **Range Study** remains the stronger evidence capability for an
+explicit anthology or expressive-range claim; an ordinary multi-route site
+does not need to manufacture a range record merely because it has navigation.
+
+Before one body recipe spreads, make a concise project-local map of each
+route's visitor occasion, dominant content operation, first task-bearing or
+subject-bearing encounter, progression, ending or next state, and relevant
+narrow transformation. If two routes intentionally share a body operation,
+state the task, content, brand, platform, or maintenance reason. This maps
+actual route ownership; it is not a list of required page archetypes or visual
+ingredients.
+
+When a content object, decision, or state travels between routes, add its
+visitor-facing handoff to that same map: what carries, what intentionally
+resets, how a direct entry reconstructs context, and what result or recovery
+remains available. Do not add artificial persistence merely to make a family
+look like an application; a clearly bounded local state or a deliberate fresh
+entry can be the appropriate behavior.
+
+At wide and narrow conditions, inspect whether persistent navigation, identity,
+context, or a public shell helps orientation without replacing the route's own
+first meaningful material or useful action. A shared shell may be completely
+correct. When it dominates unrelated route bodies, treat that as a direction
+question to explain or reopen rather than as a reason to rotate fonts, colors,
+shapes, or effects.
 
 ## Let route jobs determine reuse
 
@@ -176,6 +207,9 @@ the family before declaring range or polishing isolated pages. Review:
 - shared navigation, identity, truth, terminology, access, and operations;
 - repeated main-content sequences, openings, component grammar, type roles,
   media treatment, interaction, motion, copy cadence, and endings;
+- whether the first wide and narrow encounter gives each materially distinct
+  route its own subject-bearing material or useful action before a persistent
+  shell becomes the whole public impression;
 - whether repeated decisions have a task, brand, content, platform, or
   maintenance reason;
 - whether allegedly different routes remain the same experience with new

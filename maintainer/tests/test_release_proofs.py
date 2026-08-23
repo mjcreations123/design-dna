@@ -48,6 +48,13 @@ def make_attestation_fixture(root: Path) -> Path:
         "# Design DNA\n",
         encoding="utf-8",
     )
+    for name in ("tests", "scripts"):
+        directory = runtime / name
+        directory.mkdir()
+        (directory / f"{name}.txt").write_text(
+            f"stable runtime {name}\n",
+            encoding="utf-8",
+        )
     for name in ("tests", "scripts", "schemas"):
         directory = maintainer / name
         directory.mkdir(parents=True)
@@ -55,6 +62,18 @@ def make_attestation_fixture(root: Path) -> Path:
             f"stable {name}\n",
             encoding="utf-8",
         )
+    for name in (
+        "cache_preflight.py",
+        "run_release_tests.py",
+        "attest_tests.py",
+        "build_manifest.py",
+        "common.py",
+    ):
+        shutil.copy2(SCRIPTS / name, maintainer / "scripts" / name)
+    shutil.copy2(
+        SCHEMAS / "test-attestation.schema.json",
+        maintainer / "schemas" / "test-attestation.schema.json",
+    )
     shutil.copy2(
         PLUGIN / "maintainer" / "requirements-dev.txt",
         maintainer / "requirements-dev.txt",
@@ -62,6 +81,86 @@ def make_attestation_fixture(root: Path) -> Path:
     shutil.copy2(
         PLUGIN / "maintainer" / "requirements-dev.lock",
         maintainer / "requirements-dev.lock",
+    )
+    for name in ("package.json", "package-lock.json"):
+        shutil.copy2(PLUGIN / "maintainer" / name, maintainer / name)
+    for directory in (".codex-plugin", ".claude-plugin"):
+        manifest = plugin / directory / "plugin.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(
+            json.dumps({"name": f"attestation-{directory}"}) + "\n",
+            encoding="utf-8",
+        )
+    for name in (
+        ".gitattributes",
+        ".gitignore",
+        "README.md",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "DATA_HANDLING.md",
+        "LICENSE",
+        "SECURITY.md",
+        "SUPPORT.md",
+        "THIRD_PARTY_NOTICES.md",
+    ):
+        (plugin / name).write_text(
+            f"attestation fixture source: {name}\n",
+            encoding="utf-8",
+        )
+    docs = plugin / "docs"
+    docs.mkdir()
+    (docs / "QUICK_START.md").write_text(
+        "attestation fixture documentation\n",
+        encoding="utf-8",
+    )
+    workflow = plugin / ".github" / "workflows" / "ci.yml"
+    workflow.parent.mkdir(parents=True, exist_ok=True)
+    workflow.write_text(
+        "name: attestation-fixture\n"
+        "on: [push]\n"
+        "jobs:\n"
+        "  test:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps: []\n",
+        encoding="utf-8",
+    )
+    evals = maintainer / "evals"
+    fixtures = evals / "fixtures"
+    fixtures.mkdir(parents=True)
+    (evals / "README.md").write_text(
+        "attestation fixture evaluation contract\n",
+        encoding="utf-8",
+    )
+    (evals / "review-rubric.md").write_text(
+        "attestation fixture evaluation rubric\n",
+        encoding="utf-8",
+    )
+    (evals / "schema.json").write_text("{}\n", encoding="utf-8")
+    (fixtures / "behavioral-cases.json").write_text(
+        "[]\n",
+        encoding="utf-8",
+    )
+    compatibility = maintainer / "compatibility"
+    compatibility.mkdir()
+    (compatibility / "matrix.yml").write_text(
+        "environments: []\n",
+        encoding="utf-8",
+    )
+    (compatibility / "trusted-host-adapters.yml").write_text(
+        "hosts: {}\n",
+        encoding="utf-8",
+    )
+    trust = maintainer / "trust"
+    trust.mkdir()
+    (trust / "codex-plugin-validator.json").write_text(
+        "{}\n",
+        encoding="utf-8",
+    )
+    evidence = maintainer / "evidence"
+    evidence.mkdir()
+    (evidence / "index.yml").write_text(
+        "entries: []\n",
+        encoding="utf-8",
     )
     return plugin
 
@@ -105,6 +204,117 @@ def fake_unittest_result(
     return subprocess.CompletedProcess(command, 1, stdout=b"", stderr=stderr)
 
 
+def make_release_runner_fixture(
+    root: Path,
+    test_source: str,
+    *,
+    test_name: str = "test_release_runner_fixture.py",
+    runtime_test_source: str | None = None,
+    runtime_test_name: str = "test_runtime_release_runner_fixture.py",
+    include_attester: bool = False,
+) -> Path:
+    plugin = root / "plugin"
+    runtime = plugin / "skills" / "design-dna"
+    scripts = plugin / "maintainer" / "scripts"
+    tests = plugin / "maintainer" / "tests"
+    runtime_tests = runtime / "tests"
+    runtime.mkdir(parents=True)
+    scripts.mkdir(parents=True)
+    tests.mkdir(parents=True)
+    runtime_tests.mkdir(parents=True)
+    script_names = ["cache_preflight.py", "run_release_tests.py"]
+    if include_attester:
+        # Importing the attester as a release test library exercises the
+        # runner's real import context rather than a mock of it.
+        script_names.extend(("attest_tests.py", "build_manifest.py", "common.py"))
+    for name in script_names:
+        shutil.copy2(SCRIPTS / name, scripts / name)
+    (tests / test_name).write_text(
+        test_source,
+        encoding="utf-8",
+    )
+    (runtime_tests / runtime_test_name).write_text(
+        runtime_test_source
+        or (
+            "import unittest\n\n"
+            "class RuntimePassing(unittest.TestCase):\n"
+            "    def test_runtime_ok(self):\n"
+            "        self.assertTrue(True)\n"
+        ),
+        encoding="utf-8",
+    )
+    return plugin
+
+
+def run_release_runner(
+    plugin: Path,
+    *,
+    inherit_bytecode_guard: bool = True,
+    environment_overrides: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    environment = os.environ.copy()
+    if inherit_bytecode_guard:
+        environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    else:
+        environment.pop("PYTHONDONTWRITEBYTECODE", None)
+    environment["PYTHONUTF8"] = "1"
+    if environment_overrides:
+        environment.update(environment_overrides)
+    return subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-B",
+            str(plugin / "maintainer" / "scripts" / "run_release_tests.py"),
+        ],
+        cwd=plugin,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=environment,
+        timeout=30,
+        check=False,
+    )
+
+
+def run_attestation_cli(
+    plugin: Path,
+    output: Path,
+    *,
+    isolated: bool,
+    environment_overrides: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    """Run the copied attester through its real process boundary."""
+
+    environment = os.environ.copy()
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    environment["PYTHONUTF8"] = "1"
+    if environment_overrides:
+        environment.update(environment_overrides)
+    command = [sys.executable]
+    if isolated:
+        command.extend(("-I", "-S"))
+    command.extend((
+        "-B",
+        str(plugin / "maintainer" / "scripts" / "attest_tests.py"),
+        "--plugin-root",
+        ".",
+        "--output",
+        str(output),
+    ))
+    return subprocess.run(
+        command,
+        cwd=plugin,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=environment,
+        timeout=60,
+        check=False,
+    )
+
+
 def write_skill(path: Path, marker: str = "same") -> None:
     path.mkdir(parents=True)
     (path / "SKILL.md").write_text(
@@ -133,7 +343,7 @@ def make_ci_import_fixture(
         plugin / "maintainer" / "schemas" / "ci-run-import.schema.json",
     )
     workflow = plugin / ".github" / "workflows" / "ci.yml"
-    workflow.parent.mkdir(parents=True)
+    workflow.parent.mkdir(parents=True, exist_ok=True)
     python_version = ".".join(platform.python_version().split(".")[:2])
     workflow.write_text(
         "jobs:\n"
@@ -492,7 +702,711 @@ def make_codex_plugin_fixture(
     return plugin
 
 
+class CandidateMetadataTests(unittest.TestCase):
+    """Keep the unreleased candidate's public contract coherent with runtime."""
+
+    def test_v520_docs_and_manifests_describe_opt_in_cpe_standard_first(self) -> None:
+        documents = {
+            "CHANGELOG.md": PLUGIN / "CHANGELOG.md",
+            "README.md": PLUGIN / "README.md",
+            "docs/QUICK_START.md": PLUGIN / "docs" / "QUICK_START.md",
+            "docs/RELEASE.md": PLUGIN / "docs" / "RELEASE.md",
+        }
+        texts = {
+            name: path.read_text(encoding="utf-8")
+            for name, path in documents.items()
+        }
+        for name, content in texts.items():
+            with self.subTest(document=name):
+                self.assertIn("Connected Public Experience", content)
+
+        quick_start = texts["docs/QUICK_START.md"]
+        self.assertIn("begins at Standard", quick_start)
+        self.assertNotIn("normally selects Showcase", quick_start)
+        self.assertIn(
+            "public status,\nvisibility, and route count alone do not select it",
+            quick_start,
+        )
+        for name in ("README.md", "docs/QUICK_START.md"):
+            with self.subTest(showcase_selector_document=name):
+                content = texts[name]
+                self.assertIn("High visibility or owner sensitivity alone does not select it", content)
+                self.assertIn("premium, showcase, high-ambition", content)
+                self.assertIn("direction recovery", content)
+        self.assertIn("remains Standard", texts["README.md"])
+        self.assertIn("Intensify Standard's rendered first-impression", quick_start)
+        self.assertIn(
+            "CPE closure does not prove owner acceptance",
+            texts["CHANGELOG.md"],
+        )
+        self.assertIn(
+            "It does not prove\n  owner acceptance",
+            texts["docs/RELEASE.md"],
+        )
+
+        manifests = {
+            ".codex-plugin/plugin.json": PLUGIN / ".codex-plugin" / "plugin.json",
+            ".claude-plugin/plugin.json": PLUGIN / ".claude-plugin" / "plugin.json",
+        }
+        release_version = json.loads(
+            (PLUGIN / "skills" / "design-dna" / "release.json").read_text(
+                encoding="utf-8"
+            )
+        )["version"]
+        for name, path in manifests.items():
+            with self.subTest(manifest=name):
+                manifest = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(manifest["version"], release_version)
+                self.assertIn("connected-public-experience", manifest["keywords"])
+                self.assertIn("connected public", manifest["description"].casefold())
+
+        matrix = yaml.safe_load(
+            (PLUGIN / "maintainer" / "compatibility" / "matrix.yml").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(matrix["package_version"], release_version)
+        self.assertTrue(
+            any(
+                item.startswith(
+                    "Connected Public Experience records, when selected, "
+                    "are project-level evidence only"
+                )
+                for item in matrix["release_limitations"]
+            )
+        )
+
+
 class TestAttestationTests(unittest.TestCase):
+    def test_release_runner_emits_docstring_skip_on_one_parseable_line(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "class DocstringBearingSkip(unittest.TestCase):\n"
+                "    @unittest.skip('fixture')\n"
+                "    def test_platform_branch(self):\n"
+                "        '''This docstring must not break the skip identity.'''\n"
+                "\n",
+            )
+            completed = run_release_runner(plugin)
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            test_id = (
+                "test_release_runner_fixture.DocstringBearingSkip."
+                "test_platform_branch"
+            )
+            self.assertIn(
+                f"test_platform_branch ({test_id}) ... skipped 'fixture'",
+                completed.stderr,
+            )
+            self.assertNotIn(
+                "This docstring must not break the skip identity.",
+                completed.stderr,
+            )
+            parsed, _stdout, _stderr, _digest = (
+                attest_tests.parse_unittest_result(
+                    subprocess.CompletedProcess(
+                        [sys.executable, "-B", "runner.py"],
+                        completed.returncode,
+                        completed.stdout.encode("utf-8"),
+                        completed.stderr.encode("utf-8"),
+                    )
+                )
+            )
+            self.assertEqual(parsed["skipped_test_ids"], [test_id])
+
+    def test_release_runner_keeps_maintainer_package_importable(self) -> None:
+        """Absolute-script execution must retain the documented CLI context."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "from maintainer.tests.runner_import_support import MARKER\n"
+                "import unittest\n\n"
+                "class PackageImport(unittest.TestCase):\n"
+                "    def test_package_import(self):\n"
+                "        self.assertEqual(MARKER, 'available')\n",
+            )
+            support = (
+                plugin
+                / "maintainer"
+                / "tests"
+                / "runner_import_support.py"
+            )
+            support.write_text("MARKER = 'available'\n", encoding="utf-8")
+
+            completed = run_release_runner(plugin)
+
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            self.assertIn(
+                "test_package_import (test_release_runner_fixture."
+                "PackageImport.test_package_import) ... ok",
+                completed.stderr,
+            )
+            self.assertNotIn("ModuleNotFoundError", completed.stderr)
+
+    def test_release_runner_allows_attester_library_import_under_isolation(
+        self,
+    ) -> None:
+        """The runner's controlled package root remains usable by test imports."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import attest_tests\n"
+                "import unittest\n\n"
+                "class AttesterLibraryImport(unittest.TestCase):\n"
+                "    def test_runner_context_is_retained(self):\n"
+                "        self.assertTrue(callable(attest_tests.main))\n"
+                "        self.assertFalse(attest_tests._DIRECT_CLI_BOOTSTRAP)\n",
+                include_attester=True,
+            )
+
+            completed = run_release_runner(plugin)
+
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            self.assertIn(
+                "test_runner_context_is_retained (test_release_runner_fixture."
+                "AttesterLibraryImport.test_runner_context_is_retained) ... ok",
+                completed.stderr,
+            )
+            self.assertIn("Ran 2 tests", completed.stderr)
+            self.assertNotIn(
+                "non-canonical import path",
+                completed.stdout + completed.stderr,
+            )
+
+    def test_release_runner_executes_runtime_cpe_tests_without_name_shadowing(
+        self,
+    ) -> None:
+        """Both roots count even when their CPE modules share a bare name."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "class MaintainerCPE(unittest.TestCase):\n"
+                "    def test_maintainer_coverage(self):\n"
+                "        self.assertTrue(True)\n",
+                test_name="test_connected_public_experience.py",
+                runtime_test_name="test_connected_public_experience.py",
+                runtime_test_source=(
+                    "import unittest\n\n"
+                    "class RuntimeCPE(unittest.TestCase):\n"
+                    "    def test_runtime_coverage(self):\n"
+                    "        self.assertTrue(True)\n"
+                ),
+            )
+
+            completed = run_release_runner(plugin)
+
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            self.assertIn(
+                "test_maintainer_coverage (test_connected_public_experience."
+                "MaintainerCPE.test_maintainer_coverage) ... ok",
+                completed.stderr,
+            )
+            self.assertIn(
+                "test_runtime_coverage (test_connected_public_experience."
+                "RuntimeCPE.test_runtime_coverage) ... ok",
+                completed.stderr,
+            )
+            parsed, _stdout, _stderr, _digest = (
+                attest_tests.parse_unittest_result(
+                    subprocess.CompletedProcess(
+                        [sys.executable, "-B", "runner.py"],
+                        completed.returncode,
+                        completed.stdout.encode("utf-8"),
+                        completed.stderr.encode("utf-8"),
+                    )
+                )
+            )
+            self.assertEqual(parsed["tests_run"], 2)
+
+    def test_release_runner_isolates_duplicate_module_fixtures_by_root(
+        self,
+    ) -> None:
+        """A later duplicate module must not replace an earlier setUpModule."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "def setUpModule():\n"
+                "    raise RuntimeError('maintainer fixture must run')\n\n"
+                "class MaintainerCollision(unittest.TestCase):\n"
+                "    def test_hidden_by_bad_discovery(self):\n"
+                "        self.fail('setUpModule should have stopped this test')\n",
+                test_name="test_collision.py",
+                runtime_test_name="test_collision.py",
+                runtime_test_source=(
+                    "import unittest\n\n"
+                    "class RuntimeCollision(unittest.TestCase):\n"
+                    "    def test_runtime_still_runs(self):\n"
+                    "        self.assertTrue(True)\n"
+                ),
+            )
+
+            completed = run_release_runner(plugin)
+
+            self.assertEqual(completed.returncode, 1, completed.stderr)
+            self.assertIn(
+                "=== Design DNA release test root: maintainer/tests ===",
+                completed.stderr,
+            )
+            self.assertIn(
+                "maintainer fixture must run",
+                completed.stderr,
+            )
+            self.assertIn("setUpModule (test_collision)", completed.stderr)
+            self.assertIn(
+                "=== Design DNA release test root: skills/design-dna/tests ===",
+                completed.stderr,
+            )
+            self.assertIn(
+                "test_runtime_still_runs (test_collision.RuntimeCollision."
+                "test_runtime_still_runs) ... ok",
+                completed.stderr,
+            )
+            parsed, _stdout, _stderr, _digest = (
+                attest_tests.parse_unittest_result(
+                    subprocess.CompletedProcess(
+                        [sys.executable, "-B", "runner.py"],
+                        completed.returncode,
+                        completed.stdout.encode("utf-8"),
+                        completed.stderr.encode("utf-8"),
+                    )
+                )
+            )
+            self.assertEqual(parsed["status"], "failed")
+            self.assertEqual(parsed["errors"], 1)
+            self.assertEqual(parsed["tests_run"], 1)
+
+    def test_release_runner_preserves_cache_preflight(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "class Passing(unittest.TestCase):\n"
+                "    def test_ok(self):\n"
+                "        self.assertTrue(True)\n",
+            )
+            residue = plugin / "maintainer" / "tests" / "__pycache__"
+            residue.mkdir()
+            (residue / "fixture.pyc").write_bytes(b"compiled")
+            completed = run_release_runner(plugin)
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertIn(
+                "maintainer-cache-residue",
+                {finding["code"] for finding in payload["failures"]},
+            )
+
+    def test_release_runner_refuses_a_nonisolated_bootstrap(self) -> None:
+        """A direct runner invocation cannot silently skip startup isolation."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "class Passing(unittest.TestCase):\n"
+                "    def test_ok(self):\n"
+                "        self.assertTrue(True)\n",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    str(plugin / "maintainer" / "scripts" / "run_release_tests.py"),
+                ],
+                cwd=plugin,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+                timeout=30,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertEqual(
+                payload["failures"][0]["code"],
+                "release-test-runner-isolation-required",
+            )
+
+    def test_release_runner_main_refuses_nonisolated_dynamic_import(
+        self,
+    ) -> None:
+        """A startup hook cannot call an imported runner main to reach discovery."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plugin = make_release_runner_fixture(
+                root,
+                "import unittest\n\n"
+                "class Passing(unittest.TestCase):\n"
+                "    def test_ok(self):\n"
+                "        self.assertTrue(True)\n",
+            )
+            injected = root / "external-pythonpath"
+            injected.mkdir()
+            marker = root / "runner-imported-main.txt"
+            runner = plugin / "maintainer" / "scripts" / "run_release_tests.py"
+            (injected / "sitecustomize.py").write_text(
+                "import builtins\n"
+                "import importlib.util\n"
+                "import os\n"
+                "import sys\n"
+                "import unittest\n"
+                "from pathlib import Path\n"
+                f"MARKER = Path({json.dumps(str(marker))})\n"
+                f"SCRIPT = {json.dumps(str(runner))}\n"
+                "unittest.TestLoader.discover = (\n"
+                "    lambda self, *args, **kwargs: unittest.TestSuite()\n"
+                ")\n"
+                "sys.path.insert(0, str(Path(SCRIPT).parent))\n"
+                "spec = importlib.util.spec_from_file_location(\n"
+                "    'startup_imported_release_runner', SCRIPT\n"
+                ")\n"
+                "module = importlib.util.module_from_spec(spec)\n"
+                "sys.modules[spec.name] = module\n"
+                "spec.loader.exec_module(module)\n"
+                "builtins.design_dna_startup_imported_runner = module\n"
+                "MARKER.write_text('hook-imported', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    "-c",
+                    (
+                        "import builtins; "
+                        f"open({str(marker)!r}, 'w', encoding='utf-8').write('main-invoked'); "
+                        "raise SystemExit("
+                        "builtins.design_dna_startup_imported_runner.main())"
+                    ),
+                ],
+                cwd=plugin,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                env={
+                    **os.environ,
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "PYTHONPATH": str(injected),
+                },
+                timeout=30,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "main-invoked")
+            payload = json.loads(completed.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertEqual(
+                payload["failures"][0]["code"],
+                "release-test-runner-isolation-required",
+            )
+
+    def test_attester_main_refuses_nonisolated_dynamic_import(
+        self,
+    ) -> None:
+        """A startup hook cannot forge an attestation by importing main."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plugin = make_attestation_fixture(root)
+            injected = root / "external-pythonpath"
+            injected.mkdir()
+            marker = root / "attester-imported-main.txt"
+            output = root / "forged-attestation.json"
+            attester = plugin / "maintainer" / "scripts" / "attest_tests.py"
+            (injected / "sitecustomize.py").write_text(
+                "import builtins\n"
+                "import importlib.util\n"
+                "import os\n"
+                "import subprocess\n"
+                "import sys\n"
+                "from pathlib import Path\n"
+                f"MARKER = Path({json.dumps(str(marker))})\n"
+                f"SCRIPT = {json.dumps(str(attester))}\n"
+                f"PLUGIN = {json.dumps(str(plugin))}\n"
+                f"OUTPUT = {json.dumps(str(output))}\n"
+                "sys.path.insert(0, str(Path(SCRIPT).parent))\n"
+                "spec = importlib.util.spec_from_file_location(\n"
+                "    'startup_imported_attester', SCRIPT\n"
+                ")\n"
+                "module = importlib.util.module_from_spec(spec)\n"
+                "sys.modules[spec.name] = module\n"
+                "spec.loader.exec_module(module)\n"
+                "subprocess.run = lambda *args, **kwargs: subprocess.CompletedProcess(\n"
+                "    args[0], 0, b'', b'Ran 733 tests in 0.001s\\n\\nOK\\n'\n"
+                ")\n"
+                "builtins.design_dna_startup_imported_attester = module\n"
+                "MARKER.write_text('hook-imported', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-B",
+                    "-c",
+                    (
+                        "import builtins, sys; "
+                        f"sys.argv = [{str(attester)!r}, '--plugin-root', {str(plugin)!r}, '--output', {str(output)!r}]; "
+                        f"open({str(marker)!r}, 'w', encoding='utf-8').write('main-invoked'); "
+                        "raise SystemExit("
+                        "builtins.design_dna_startup_imported_attester.main())"
+                    ),
+                ],
+                cwd=plugin,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                env={
+                    **os.environ,
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    "PYTHONPATH": str(injected),
+                },
+                timeout=30,
+                check=False,
+            )
+            self.assertEqual(completed.returncode, 2, completed.stderr)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "main-invoked")
+            self.assertFalse(output.exists())
+            payload = json.loads(completed.stdout)
+            self.assertFalse(payload["ok"])
+            self.assertEqual(
+                payload["failures"][0]["code"],
+                "test-attestation-isolation-required",
+            )
+
+    def test_attester_direct_isolated_cli_runs_the_real_two_root_suite(
+        self,
+    ) -> None:
+        """The direct ``-I -S -B`` CLI keeps its own controlled bootstrap."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plugin = make_attestation_fixture(root)
+            (plugin / "maintainer" / "tests" / "test_real_maintainer.py").write_text(
+                "import unittest\n\n"
+                "class RealMaintainer(unittest.TestCase):\n"
+                "    def test_real_maintainer_case(self):\n"
+                "        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            (plugin / "skills" / "design-dna" / "tests" / "test_real_runtime.py").write_text(
+                "import unittest\n\n"
+                "class RealRuntime(unittest.TestCase):\n"
+                "    def test_real_runtime_case(self):\n"
+                "        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            output = root / "isolated-attestation.json"
+
+            completed = run_attestation_cli(plugin, output, isolated=True)
+
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            record = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(record["result"]["tests_run"], 2)
+            self.assertEqual(
+                record["command"],
+                [
+                    attest_tests.PYTHON_EXECUTABLE_TOKEN,
+                    "-I",
+                    "-S",
+                    "-B",
+                    attest_tests.RELEASE_TEST_RUNNER,
+                ],
+            )
+
+    def test_attester_ignores_external_sitecustomize_only_when_isolated(
+        self,
+    ) -> None:
+        """A startup hook cannot turn an injected empty suite into a pass."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plugin = make_attestation_fixture(root)
+            (plugin / "maintainer" / "tests" / "test_real_maintainer.py").write_text(
+                "import os\n"
+                "import unittest\n\n"
+                "class RealMaintainer(unittest.TestCase):\n"
+                "    def test_real_maintainer_case(self):\n"
+                "        self.assertNotIn('PYTHONPATH', os.environ)\n"
+                "        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            (plugin / "skills" / "design-dna" / "tests" / "test_real_runtime.py").write_text(
+                "import unittest\n\n"
+                "class RealRuntime(unittest.TestCase):\n"
+                "    def test_real_runtime_case(self):\n"
+                "        self.assertTrue(True)\n",
+                encoding="utf-8",
+            )
+            injected = root / "external-pythonpath"
+            injected.mkdir()
+            marker = root / "sitecustomize-load-count.txt"
+            (injected / "sitecustomize.py").write_text(
+                "from pathlib import Path\n"
+                "import os\n"
+                "import unittest\n"
+                "marker = Path(os.environ['DESIGN_DNA_HOOK_MARKER'])\n"
+                "count = int(marker.read_text(encoding='utf-8')) if marker.exists() else 0\n"
+                "marker.write_text(str(count + 1), encoding='utf-8')\n"
+                "unittest.TestLoader.discover = lambda self, *args, **kwargs: unittest.TestSuite()\n",
+                encoding="utf-8",
+            )
+            hook_environment = {
+                "PYTHONPATH": str(injected),
+                "DESIGN_DNA_HOOK_MARKER": str(marker),
+            }
+            rejected_output = root / "nonisolated-attestation.json"
+            rejected = run_attestation_cli(
+                plugin,
+                rejected_output,
+                isolated=False,
+                environment_overrides=hook_environment,
+            )
+            self.assertEqual(rejected.returncode, 2, rejected.stderr)
+            self.assertTrue(marker.is_file())
+            self.assertEqual(marker.read_text(encoding="utf-8"), "1")
+            self.assertFalse(rejected_output.exists())
+            rejected_payload = json.loads(rejected.stdout)
+            self.assertFalse(rejected_payload["ok"])
+            self.assertEqual(
+                rejected_payload["failures"][0]["code"],
+                "test-attestation-isolation-required",
+            )
+
+            output = root / "isolated-attestation.json"
+            accepted = run_attestation_cli(
+                plugin,
+                output,
+                isolated=True,
+                environment_overrides=hook_environment,
+            )
+            self.assertEqual(
+                accepted.returncode,
+                0,
+                accepted.stdout + accepted.stderr,
+            )
+            # ``-I -S`` prevents the external hook from running in both the
+            # attester and its release-runner child.  It cannot replace real
+            # discovery with its injected empty suite.
+            self.assertEqual(marker.read_text(encoding="utf-8"), "1")
+            record = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(record["result"]["tests_run"], 2)
+            self.assertEqual(
+                record["command"],
+                [
+                    attest_tests.PYTHON_EXECUTABLE_TOKEN,
+                    "-I",
+                    "-S",
+                    "-B",
+                    attest_tests.RELEASE_TEST_RUNNER,
+                ],
+            )
+
+    def test_release_runner_prevents_child_python_bytecode_residue(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import subprocess\n"
+                "import sys\n"
+                "import unittest\n"
+                "from pathlib import Path\n\n"
+                "class ChildPython(unittest.TestCase):\n"
+                "    def test_child_process(self):\n"
+                "        completed = subprocess.run(\n"
+                "            [sys.executable, '-c', 'import child_target'],\n"
+                "            cwd=Path(__file__).parent,\n"
+                "            capture_output=True,\n"
+                "            text=True,\n"
+                "            check=False,\n"
+                "        )\n"
+                "        self.assertEqual(completed.returncode, 0, completed.stderr)\n",
+            )
+            child = (
+                plugin
+                / "maintainer"
+                / "tests"
+                / "child_target.py"
+            )
+            child.write_text("MARKER = 'child'\n", encoding="utf-8")
+            completed = run_release_runner(
+                plugin,
+                inherit_bytecode_guard=False,
+            )
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stdout + completed.stderr,
+            )
+            self.assertFalse(
+                (plugin / "maintainer" / "tests" / "__pycache__").exists()
+            )
+
+    def test_release_runner_returns_nonzero_for_unsuccessful_suite(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_release_runner_fixture(
+                Path(temporary),
+                "import unittest\n\n"
+                "class Failing(unittest.TestCase):\n"
+                "    def test_failure(self):\n"
+                "        self.fail('intentional release runner failure')\n",
+            )
+            completed = run_release_runner(plugin)
+            self.assertEqual(completed.returncode, 1, completed.stderr)
+            self.assertIn("FAILED (failures=1)", completed.stderr)
+
+    def test_parser_rejects_docstring_bearing_skip_output(self) -> None:
+        result = subprocess.CompletedProcess(
+            [sys.executable, "-B", "runner.py"],
+            0,
+            stdout=b"",
+            stderr=(
+                "test_two (suite.Case.test_two)\n"
+                "A docstring separates the identity and result. ... skipped 'fixture'\n"
+                "\n"
+                "----------------------------------------------------------------------\n"
+                "Ran 1 test in 0.010s\n"
+                "\n"
+                "OK (skipped=1)\n"
+            ).encode("utf-8"),
+        )
+        with self.assertRaises(attest_tests.ToolFailure) as raised:
+            attest_tests.parse_unittest_result(result)
+        self.assertEqual(
+            raised.exception.issue.code,
+            "test-attestation-skip-identity-incomplete",
+        )
+
     def test_release_skip_requires_exact_environment_and_evidence_waiver(
         self,
     ) -> None:
@@ -645,10 +1559,7 @@ class TestAttestationTests(unittest.TestCase):
                 baseline["tooling_sha256"],
             )
             self.assertEqual(
-                attest_tests.identity_group_sha256(
-                    plugin,
-                    ("maintainer/tests",),
-                ),
+                attest_tests.test_execution_input_sha256(plugin),
                 baseline["tests_sha256"],
             )
             with self.assertRaises(attest_tests.ToolFailure) as raised:
@@ -677,7 +1588,176 @@ class TestAttestationTests(unittest.TestCase):
                 {
                     key for key in before if before[key] != after[key]
                 },
-                {"runtime_sha256"},
+                {"runtime_sha256", "tests_sha256"},
+            )
+
+    def test_attestation_binds_executed_runtime_tests_and_scripts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_attestation_fixture(Path(temporary))
+            before = attest_tests.attested_input_hashes(plugin)
+            runtime_test = (
+                plugin
+                / "skills"
+                / "design-dna"
+                / "tests"
+                / "test_connected_public_experience.py"
+            )
+            runtime_test.write_text(
+                "# exact runtime CPE execution coverage\n",
+                encoding="utf-8",
+            )
+            after_test = attest_tests.attested_input_hashes(plugin)
+            self.assertEqual(
+                {
+                    key for key in before if before[key] != after_test[key]
+                },
+                {"runtime_sha256", "tests_sha256"},
+            )
+
+            runtime_script = (
+                plugin
+                / "skills"
+                / "design-dna"
+                / "scripts"
+                / "connected_public_experience_audit.py"
+            )
+            runtime_script.write_text(
+                "# exact runtime CPE script execution coverage\n",
+                encoding="utf-8",
+            )
+            after_script = attest_tests.attested_input_hashes(plugin)
+            self.assertEqual(
+                {
+                    key for key in after_test if after_test[key] != after_script[key]
+                },
+                {"runtime_sha256", "tests_sha256"},
+            )
+
+    def test_attestation_binds_nonruntime_execution_surfaces_and_detects_drift(
+        self,
+    ) -> None:
+        cases = (
+            ("Codex plugin manifest", ".codex-plugin/plugin.json"),
+            ("top-level README", "README.md"),
+            ("documentation tree", "docs/QUICK_START.md"),
+            ("CI workflow", ".github/workflows/ci.yml"),
+            (
+                "validator trust policy",
+                "maintainer/trust/codex-plugin-validator.json",
+            ),
+            (
+                "evaluation fixture",
+                "maintainer/evals/fixtures/behavioral-cases.json",
+            ),
+            (
+                "compatibility matrix",
+                "maintainer/compatibility/matrix.yml",
+            ),
+        )
+
+        def runner(
+            _selected_plugin: Path,
+            command: list[str],
+        ) -> subprocess.CompletedProcess[bytes]:
+            return fake_unittest_result(command)
+
+        for label, relative in cases:
+            with self.subTest(surface=label), tempfile.TemporaryDirectory() as temporary:
+                plugin = make_attestation_fixture(Path(temporary))
+                record = attest_tests.create_attestation(plugin, runner=runner)
+                before = dict(record["inputs"])
+                target = plugin / relative
+                original = target.read_text(encoding="utf-8")
+                # Preserve JSON validity while still changing its exact bytes.
+                suffix = "\n" if target.suffix == ".json" else "\n# source drift\n"
+                target.write_text(original + suffix, encoding="utf-8")
+                after = attest_tests.attested_input_hashes(plugin)
+                self.assertEqual(
+                    {
+                        key for key in before if before[key] != after[key]
+                    },
+                    {"tests_sha256"},
+                )
+                manifest = {
+                    "generated_at": after_timestamp(
+                        record["completed_at"],
+                        seconds=1,
+                    )
+                }
+                failures = audit_package.test_attestation_failures(
+                    record,
+                    plugin,
+                    SCHEMAS / "test-attestation.schema.json",
+                    manifest,
+                )
+                self.assertIn(
+                    "release-test-attestation-input-drift",
+                    {item["code"] for item in failures},
+                )
+
+    def test_attestation_missing_declared_execution_surfaces_fail_closed(
+        self,
+    ) -> None:
+        cases = (
+            ".codex-plugin/plugin.json",
+            "README.md",
+            "docs",
+            ".github/workflows/ci.yml",
+            "maintainer/trust/codex-plugin-validator.json",
+            "maintainer/evals/fixtures",
+            "maintainer/compatibility/matrix.yml",
+        )
+        for relative in cases:
+            with self.subTest(surface=relative), tempfile.TemporaryDirectory() as temporary:
+                plugin = make_attestation_fixture(Path(temporary))
+                target = plugin / relative
+                if target.is_dir():
+                    for child in target.iterdir():
+                        child.unlink()
+                    target.rmdir()
+                else:
+                    target.unlink()
+                with self.assertRaises(attest_tests.ToolFailure) as raised:
+                    attest_tests.attested_input_hashes(plugin)
+                self.assertEqual(
+                    raised.exception.issue.code,
+                    "test-attestation-input-missing",
+                )
+
+    def test_attestation_execution_manifest_is_bounded_and_non_circular(
+        self,
+    ) -> None:
+        manifest_paths = {
+            relative
+            for _label, relative, _kind
+            in attest_tests.TEST_EXECUTION_INPUT_MANIFEST
+        }
+        self.assertIn(".codex-plugin/plugin.json", manifest_paths)
+        self.assertIn("README.md", manifest_paths)
+        self.assertIn("docs", manifest_paths)
+        self.assertIn(".github/workflows/ci.yml", manifest_paths)
+        self.assertIn("maintainer/trust/codex-plugin-validator.json", manifest_paths)
+        self.assertIn("maintainer/evals/fixtures", manifest_paths)
+        self.assertIn("maintainer/compatibility/matrix.yml", manifest_paths)
+        for path in manifest_paths:
+            self.assertFalse(
+                any(
+                    attest_tests._execution_input_paths_overlap(path, derived)
+                    for derived in attest_tests.DERIVED_EXECUTION_OUTPUT_PATHS
+                ),
+                path,
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            plugin = make_attestation_fixture(Path(temporary))
+            before = attest_tests.attested_input_hashes(plugin)
+            (plugin / "local-scratch-not-a-release-input.txt").write_text(
+                "untracked local scratch\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                attest_tests.attested_input_hashes(plugin),
+                before,
             )
 
     def test_dependency_attestation_rejects_an_incomplete_closure(self) -> None:
@@ -725,7 +1805,13 @@ class TestAttestationTests(unittest.TestCase):
                 record["command"][0],
                 attest_tests.PYTHON_EXECUTABLE_TOKEN,
             )
-            self.assertEqual(record["command"][1], "-B")
+            self.assertEqual(
+                record["command"],
+                [
+                    attest_tests.PYTHON_EXECUTABLE_TOKEN,
+                    *attest_tests.UNITTEST_ARGUMENTS,
+                ],
+            )
             self.assertEqual(
                 record["python"]["executable"],
                 attest_tests.PYTHON_EXECUTABLE_TOKEN,
@@ -788,10 +1874,11 @@ class TestAttestationTests(unittest.TestCase):
                 attest_tests.TEST_SUITE_TIMEOUT_SECONDS,
                 3600,
             )
-            self.assertEqual(
-                mocked_run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"],
-                "1",
-            )
+            environment = mocked_run.call_args.kwargs["env"]
+            self.assertEqual(environment["PYTHONDONTWRITEBYTECODE"], "1")
+            self.assertNotIn("PYTHONPATH", environment)
+            self.assertNotIn("PYTHONHOME", environment)
+            self.assertNotIn("VIRTUAL_ENV", environment)
 
     def test_attestation_redacts_local_roots_and_binds_python_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -988,6 +2075,22 @@ class TestAttestationTests(unittest.TestCase):
 
 
 class CodexPluginValidationProofTests(unittest.TestCase):
+    def test_atomic_attestation_write_creates_missing_output_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = (
+                Path(temporary)
+                / "plugin"
+                / "maintainer"
+                / "attestations"
+                / "codex-plugin-validation.json"
+            )
+            payload = {"status": "fixture"}
+
+            attest_codex_plugin.atomic_write_json(output, payload)
+
+            self.assertEqual(json.loads(output.read_text(encoding="utf-8")), payload)
+            self.assertTrue(output.parent.is_dir())
+
     def test_release_proof_replays_exact_external_validator(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

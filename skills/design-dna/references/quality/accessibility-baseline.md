@@ -66,9 +66,17 @@ equivalent access that has not been confirmed.
 
 - Make every operation available by keyboard without a trap.
 - Use visible focus (2.4.7) that is not obscured by authored content (2.4.11).
-  Review focus indicator area and contrast as a quality target; do not
-  misrepresent the WCAG 2.2 AAA Focus Appearance criterion (2.4.13) as an AA
-  requirement.
+  Sticky headers, docked bars, and overlays are the usual offenders: tab
+  through the full page and confirm the focused element is never hidden
+  behind a fixed surface. Review focus indicator area and contrast as a
+  quality target; do not misrepresent the WCAG 2.2 AAA Focus Appearance
+  criterion (2.4.13) as an AA requirement.
+- Style focus for keyboard visibility without flashing rings on every
+  pointer click: the focus-visible distinction exists for exactly this, and
+  removing an outline is acceptable only with an equal-or-better visible
+  replacement in place.
+- Give in-page anchor targets scroll margin so a heading landed on by a
+  fragment link or skip mechanism is not buried under a sticky header.
 - Preserve focus when content opens, closes, updates, or navigates.
 - Give bypass mechanisms for repeated content.
 - When a skip link changes the URL fragment, verify keyboard focus reaches a

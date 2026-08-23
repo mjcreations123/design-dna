@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "record_type": "design-dna-install-lifecycle-attestation",
-  "created_at": "2026-08-09T05:24:31Z",
+  "created_at": "2026-08-13T07:49:28Z",
   "package": "design-dna",
-  "release_version": "5.1.0",
+  "release_version": "5.2.0",
   "inputs": {
     "runtime_source": "skills/design-dna",
     "runtime": {
-      "sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-      "entry_count": 122,
-      "file_count": 111,
-      "byte_count": 1653402
+      "sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+      "entry_count": 152,
+      "file_count": 138,
+      "byte_count": 2670621
     },
     "files": {
       "attestor": {
@@ -71,10 +71,10 @@
     "marker_file": ".lifecycle-attestation-prior",
     "marker_sha256": "0bf56ee7835fe1ca0c92ee5be0c9dd0675f2141325558af25e330ca38075f0c8",
     "identity": {
-      "sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
-      "entry_count": 123,
-      "file_count": 112,
-      "byte_count": 1653458
+      "sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
+      "entry_count": 153,
+      "file_count": 139,
+      "byte_count": 2670677
     },
     "differs_from_runtime": true
   },
@@ -83,9 +83,9 @@
       "name": "install-prior",
       "command": "install",
       "source_role": "prior-fixture",
-      "source_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
-      "operation_record_sha256": "7de83548e494f37e4f9e8557414f7294dc67c656ebf0c7c6141eb8c7856094e0",
-      "semantic_record_sha256": "20fbc2502c8d4ddf5ea7cb3abb28f3822abc1d11d35c0527b645bc679e663c4e",
+      "source_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
+      "operation_record_sha256": "a1391bbfdb14d0716fc20d88ef3e16f25230b30b910a71e949f8790ee775bb08",
+      "semantic_record_sha256": "0280139bd5185017ed5a986385d14d0cce67e0a52afe312f8f21dce66a4d3890",
       "operation_schema_valid": true,
       "operation": {
         "command": "install",
@@ -98,7 +98,7 @@
             "host": "codex",
             "action": "installed",
             "executed": true,
-            "installed_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "installed_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "previous_sha256": null,
             "backup_id_present": false,
             "replacement_backup_created": false,
@@ -108,7 +108,7 @@
             "host": "claude",
             "action": "installed",
             "executed": true,
-            "installed_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "installed_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "previous_sha256": null,
             "backup_id_present": false,
             "replacement_backup_created": false,
@@ -120,13 +120,13 @@
         {
           "host": "codex",
           "exists": true,
-          "sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+          "sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
           "release_runtime_parity": false
         },
         {
           "host": "claude",
           "exists": true,
-          "sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+          "sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
           "release_runtime_parity": false
         }
       ]
@@ -135,9 +135,9 @@
       "name": "update-current",
       "command": "update",
       "source_role": "release-runtime",
-      "source_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-      "operation_record_sha256": "8631ea0d62499250ad1293e18a6fd6e737d34a274d073e9d6788c52dd6edc7e3",
-      "semantic_record_sha256": "1fb8a746b129867cb195d7a56145e41d0304e5c150ac8a0e3351227167368267",
+      "source_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+      "operation_record_sha256": "60601c702ac00153ef9f5930c0c199e2cc6e05f2e0c31d2b435770fd6a29be1b",
+      "semantic_record_sha256": "74360f25008436a40cffadbc35f04576c2536704769ecf6edf34c6aef6bc2281",
       "operation_schema_valid": true,
       "operation": {
         "command": "update",
@@ -150,8 +150,8 @@
             "host": "codex",
             "action": "updated",
             "executed": true,
-            "installed_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-            "previous_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "installed_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+            "previous_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "backup_id_present": true,
             "replacement_backup_created": false,
             "canonical_parity": null
@@ -160,8 +160,8 @@
             "host": "claude",
             "action": "updated",
             "executed": true,
-            "installed_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-            "previous_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "installed_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+            "previous_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "backup_id_present": true,
             "replacement_backup_created": false,
             "canonical_parity": null
@@ -172,13 +172,13 @@
         {
           "host": "codex",
           "exists": true,
-          "sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+          "sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
           "release_runtime_parity": true
         },
         {
           "host": "claude",
           "exists": true,
-          "sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+          "sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
           "release_runtime_parity": true
         }
       ]
@@ -187,9 +187,9 @@
       "name": "rollback-prior",
       "command": "rollback",
       "source_role": "release-runtime",
-      "source_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-      "operation_record_sha256": "21d851580c0ba9bd93e83daf6a2a8dc0c827b66aca7616fc0b7cd4923f577bb6",
-      "semantic_record_sha256": "9fe6bc84a053c9ea1f99d7041b0c9f6e72770586fc9dc3f4068cb9976a50dd8f",
+      "source_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+      "operation_record_sha256": "aae9465eb109315c53d5f9ce98e88d64dde710019ac181ea048718eefd9600a0",
+      "semantic_record_sha256": "4e2569fef25d4621cecbdb3b6ff9682b5e416fc24d1c9f1bdb45ecee86357efd",
       "operation_schema_valid": true,
       "operation": {
         "command": "rollback",
@@ -202,8 +202,8 @@
             "host": "codex",
             "action": "rolled-back",
             "executed": true,
-            "installed_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
-            "previous_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+            "installed_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
+            "previous_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
             "backup_id_present": true,
             "replacement_backup_created": true,
             "canonical_parity": false
@@ -212,8 +212,8 @@
             "host": "claude",
             "action": "rolled-back",
             "executed": true,
-            "installed_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
-            "previous_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+            "installed_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
+            "previous_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
             "backup_id_present": true,
             "replacement_backup_created": true,
             "canonical_parity": false
@@ -224,13 +224,13 @@
         {
           "host": "codex",
           "exists": true,
-          "sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+          "sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
           "release_runtime_parity": false
         },
         {
           "host": "claude",
           "exists": true,
-          "sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+          "sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
           "release_runtime_parity": false
         }
       ]
@@ -239,9 +239,9 @@
       "name": "uninstall-prior",
       "command": "uninstall",
       "source_role": "release-runtime",
-      "source_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
-      "operation_record_sha256": "f49464c0aab21e009616e51919142826bf5c85a6307e4957d1ef0f775423b61e",
-      "semantic_record_sha256": "a5915f1fcd5fef507c8e87a57b6e17d48145a4c0f08fbc7aa38b13b0e2d31b33",
+      "source_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
+      "operation_record_sha256": "ec6df6cda3b1da4b7103282546708fabf667c05d157f2528db5f1caa72fdaacb",
+      "semantic_record_sha256": "d49ba4a6209ca1fe0ecc31fb5f4bc4377f3d8596650b606dd167e3424645f632",
       "operation_schema_valid": true,
       "operation": {
         "command": "uninstall",
@@ -255,7 +255,7 @@
             "action": "uninstalled",
             "executed": true,
             "installed_sha256": null,
-            "previous_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "previous_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "backup_id_present": true,
             "replacement_backup_created": false,
             "canonical_parity": null
@@ -265,7 +265,7 @@
             "action": "uninstalled",
             "executed": true,
             "installed_sha256": null,
-            "previous_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "previous_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "backup_id_present": true,
             "replacement_backup_created": false,
             "canonical_parity": null
@@ -304,19 +304,19 @@
           {
             "reason": "rollback-replaced-current",
             "status": "available",
-            "skill_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+            "skill_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
             "payload_present": true
           },
           {
             "reason": "uninstall",
             "status": "available",
-            "skill_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "skill_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "payload_present": true
           },
           {
             "reason": "update",
             "status": "restored",
-            "skill_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "skill_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "payload_present": false
           }
         ]
@@ -333,19 +333,19 @@
           {
             "reason": "rollback-replaced-current",
             "status": "available",
-            "skill_sha256": "b77feafc2e1791a841016b9d7c230ab44f4419306feef1ef7253bdfa4855fccf",
+            "skill_sha256": "740f310c1b5aaf2f4583e6094ca864e7ac9abe6f2f5b08351f613bb9bcc26787",
             "payload_present": true
           },
           {
             "reason": "uninstall",
             "status": "available",
-            "skill_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "skill_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "payload_present": true
           },
           {
             "reason": "update",
             "status": "restored",
-            "skill_sha256": "8e46537a34023e5b6d73f3bede06706ccf4226a9a3d2a6ed219e2b582eb37dd9",
+            "skill_sha256": "f610509b6fbf5144cce181c08ca208c10cecfed5c220277ea1e6631e94b65823",
             "payload_present": false
           }
         ]

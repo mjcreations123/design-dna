@@ -94,9 +94,15 @@ content in a named scope. It is not permission to invent client facts.
    when the interface genuinely needs them. Mark them as scenario values in
    the internal fixture and make their illustrative status clear wherever a
    reasonable visitor could treat them as operating facts.
-6. Keep public concept or sample disclosure proportionate and place it where a
-   reasonable visitor needs it. Do not repeat caveats in every section, make
-   the site narrate its own design process, or satisfy a universal count.
+6. Map the public concept or sample boundary to the factual fixture and actual
+   behavior: give a visitor who arrives without context a clear orientation,
+   and label a claim, media item, control, form, certification, transaction,
+   or integration locally when its illustrative or unavailable state changes a
+   reasonable expectation. A persistent orientation may carry across linked
+   routes when it remains visible; an independently shared direct entry needs
+   enough context of its own. Do not repeat a generic caveat merely because
+   content moves between routes or sections, make the site narrate its own
+   design process, or satisfy a universal count.
 
 Before locking the public identity, compare what its nouns promise with the
 content the fixture can honestly sustain. Calling something a journal, archive,

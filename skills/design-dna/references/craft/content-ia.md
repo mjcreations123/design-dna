@@ -14,11 +14,21 @@ user-facing language.
 
 1. Name what the user is trying to understand, decide, find, or complete.
 2. Inventory approved facts, proof, legal text, owner, status, and expiration.
-3. Group content by user question rather than internal department.
+3. Group content by user question rather than an internal department, producer
+   workstream, direction record, or database/content-model category.
 4. Order information by decision dependency.
 5. Choose navigation, taxonomy, search, filtering, and cross-links for the
    actual corpus.
 6. Define what happens when content is absent, stale, restricted, or unknown.
+7. When a material entity, selection, or decision crosses routes, state what
+   carries, what intentionally resets, what direct entry needs to reconstruct,
+   and why that relationship helps the visitor.
+8. Put shareable state in the address: a filter, tab, page, variant, or
+   expanded view a visitor might bookmark, share, or return to belongs in
+   the URL, so the link reproduces what they were looking at. Navigation
+   uses real links (open-in-new-tab and middle-click must work), and
+   history back restores position and state; Back is part of the
+   interface, not an afterthought.
 
 Do not invent history, metrics, testimonials, customers, availability, features,
 policies, locations, prices, or integrations. Label demo and placeholder
@@ -45,13 +55,22 @@ proof-shaped authority.
   explicit.
 - Keep terminology stable across navigation, headings, controls, and help.
 - Use plain language unless specialist vocabulary helps the intended audience.
+- Treat a request's "because" clause and other design rationale as internal
+  input. Let it shape the encounter, hierarchy, media, and interaction; do not
+  echo it as a public explanation, label, category, or help panel unless the
+  brief explicitly asks for that explanation or a visitor needs it for a real
+  task, consequence, or disclosure.
 - Let headings summarize, invite, orient, quote, provoke, decorate, or perform
   another editorial role when that role is intentional and accessible.
 - Preserve useful copy texture from supplied voice and subject-matter language.
   Do not make every section open with a question, misconception, polished
   contrast, aphorism, or reassurance.
-- Use supporting labels when their informational, editorial, brand, or
-  compositional role works in the rendered context; do not add them by habit.
+- Start heroes and sections with their actual heading or content. Do not add a
+  supporting eyebrow, kicker, overline, or label merely to tell the visitor
+  what the following heading or paragraph is about. Keep one only when it
+  independently communicates a real category, sequence, source/date, state,
+  or explicit editorial/brand convention the heading cannot replace; a
+  compositional desire alone is not enough.
   Avoid reusing a domain symbol, token, state letter, or measurement mark as
   decoration when that reuse can imply a real selection or value.
 
@@ -99,6 +118,8 @@ Define:
 - locale and translation status;
 - allowed length and fallback behavior;
 - relationship to routes, metadata, structured data, and search;
+- cross-route entity, selection, state, handoff, reset, and recovery behavior
+  when they are material;
 - empty, error, loading, success, and permission-denied messages.
 
 Derive required and optional fields from the real or approved scenario corpus,

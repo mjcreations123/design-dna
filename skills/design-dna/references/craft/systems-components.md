@@ -9,6 +9,7 @@ third-party UI library.
 - [Inherit before inventing](#inherit-before-inventing)
 - [Establish sources of truth](#establish-sources-of-truth)
 - [Structure token tiers](#structure-token-tiers)
+- [Keep public grammar provisional until it earns reuse](#keep-public-grammar-provisional-until-it-earns-reuse)
 - [Theme dependencies deliberately](#theme-dependencies-deliberately)
 - [Design component contracts](#design-component-contracts)
 - [Map design intent to implementation](#map-design-intent-to-implementation)
@@ -84,6 +85,41 @@ high-zoom, and reduced-motion behavior where a value can affect them. Avoid
 aliases or duplication that obscure authority, but do not reject a local or
 visually named value when that is the clearest truthful model.
 
+## Keep public grammar provisional until it earns reuse
+
+Treat the first route's visible shell as a project experiment, not as a
+studio-wide answer waiting to be copied. A CSS variable, component, or
+well-executed first route does not become an identity token merely because it
+exists. Keep the following concerns distinct, even if one implementation file
+contains them together:
+
+- **Technical and accessibility foundations:** values and behaviors whose
+  primary job is contrast, focus visibility, target size, forced-colors,
+  reduced motion, resilient spacing, or platform compatibility. Share these
+  only at the scope their actual consumers need.
+- **Approved identity tokens:** a named brand decision with an accountable
+  source, intended consumers, and a review boundary. A token may support a
+  family without dictating every route's public composition.
+- **Route-local public grammar:** the opening encounter, information model,
+  spatial rhythm, type behavior, material relationship, density, and public
+  interaction that make this subject recognizable. Keep it local while its
+  audience and reuse value are unproven.
+
+Promote a public-grammar decision only when a named additional consumer needs
+the same relationship and rendered, reviewable evidence shows that the shared
+contract serves both contexts. Record the consumer, the compatibility reason,
+the exact build or artifact, the reviewer, and the limits of what was promoted.
+Recurrence alone is not evidence of identity; it can be accidental studio
+habit. Conversely, do not force a proven shared identity decision back into a
+local one merely to create surface variation.
+
+When starting an unrelated public project, inherit technical and approved
+identity foundations deliberately, then derive its public grammar from the new
+brief, material, audience, and task. A local grammar can use components or
+custom properties without being promoted. This preserves maintainability
+without allowing the first polished shell to silently become every later
+site's organizing answer.
+
 ## Theme dependencies deliberately
 
 Framework and library defaults are valid inputs, not automatic art direction.
@@ -118,6 +154,12 @@ may include:
 Use composition, variants, configuration, bespoke implementations, or a
 combination according to the actual contract. Prevent local pages from
 accidentally forking shared behavior while preserving justified one-offs.
+
+One geometric anatomy note that applies wherever rounded elements nest: for
+the curves to read as concentric, the inner element's radius relates to the
+outer radius minus the inset between them, not to the same token. Equal
+radii on nested boxes produce visibly thickening corners; the correction is
+arithmetic, not taste, and worth encoding wherever the nesting recurs.
 
 ## Map design intent to implementation
 
@@ -178,6 +220,12 @@ responsive containers, theming, and accessibility. Before changing a supported
 contract, locate consumers and choose a compatible change, migration, or
 versioned break. Before retirement, prove that consumers, documentation,
 tests, assets, tokens, exports, and examples have been reconciled.
+
+For a consequential public-grammar decision, treat `provisional` as an actual
+evidence state: name the route, visitor condition, direct render, owner or
+reviewer, and next decision. Do not call it `supported` solely because a
+producer likes it or a source-level check passes. If no additional consumer is
+named, preserve it as a route-local decision and say so in the handoff.
 
 ## Govern exceptions
 

@@ -10,7 +10,7 @@ them, build, then *look at the rendered page* and review what is actually
 there. Host support is reported only from the current compatibility evidence;
 the package never treats a copied folder as proof of activation.
 
-Three things make it different from a prompt that says "make it look nice":
+Four things make it different from a prompt that says "make it look nice":
 
 - **No house style.** There is no bundled palette, font pool, or hero recipe
   to inherit. Project evidence shapes consequential organizing decisions;
@@ -46,12 +46,13 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Release status:** `5.1.0` is an unreleased candidate. Its workflow and
-> package changes are implemented, but formal host, comparative, independent
-> rendered-review, and strict release qualification remain pending. The
-> checked-in attestations predate this source and are retained as historical
-> inputs until regenerated; see
-> [the compatibility matrix](maintainer/compatibility/matrix.yml).
+> **Candidate status:** `5.2.0` is not a release. Candidate source and package
+> metadata can identify a version, while a local, hash-bound test attestation
+> can establish only the checks it actually ran against that exact tree. Current
+> host discovery, install lifecycle, route behavior, independent evaluation,
+> CI, signatures, and strict release qualification each need their own current
+> evidence. Retained 5.1 host, install, and route records are historical inputs,
+> not v5.2 qualification; see [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
 specific, time-appropriate, coherent, truthful, and fully implemented. It keeps
@@ -63,15 +64,18 @@ responsive production code, and inspect the rendered result for generic
 defaulting, weak craft, unfinished behavior, accessibility failures, and
 release residue.
 
-Version 5.1 keeps the 4.0 architecture—authority order, capability presets,
+Version 5.2 keeps the 4.0 architecture—authority order, capability presets,
 the decision router, flows, verticals, cultural review, scripts, and the Range
 Study contract—while repairing the restrictive taste doctrine introduced in
 5.0. It limits hard policy to assurance boundaries such as truth, rights,
 privacy, accessibility, working behavior, evidence honesty, and delivery
 authority. Fonts, palettes, layouts, media, wording, ornament, motion, and
-other aesthetic ingredients remain project decisions. A new Batch Study
-protocol makes cross-project range testable without turning recurrence into a
-style blacklist or an authorship score.
+other aesthetic ingredients remain project decisions. Its Batch Study protocol
+makes cross-project range testable without turning recurrence into a style
+blacklist, authorship score, or automatic aesthetic result. Its optional
+Connected Public Experience capability makes a project-level public continuity
+claim reviewable without treating a detailed site as a page-count or stack
+quota.
 
 It carries forward the 4.0 Range Study contract for deliberately varied
 multi-route sites, and its cultural-context boundaries for place and community
@@ -81,6 +85,32 @@ font-convergence policy and no fixed visual recipe; rendered comparison
 examines normalized geometry, topology, media and control density, and
 computed typography rather than treating font names, copy, palette, or image
 identity as aesthetic verdicts.
+
+Version 5.2 hardens **Project Contrast** for an unrelated public build that
+risks repeating a studio's safe answer and adds **Direction Challenge** as its
+deliberately stronger escalation. Project Contrast makes the agent derive a
+brief-native encounter, challenge the first organizing answer before code
+spreads, compare only owner-authorized nearest-sibling evidence, and resolve a
+wide/narrow collision test after rendering. It does not rotate fonts, colors,
+shapes, layouts, or effects. The point is different derivation, not random
+decoration. Direction Challenge applies only for an explicit recurrence
+requirement or an explicitly requested high-ambition greenfield challenge. It
+records three or more incompatible brief-native roots before polished examples,
+proves two roots at wide and narrow conditions, and selects against a rendered
+rejected root with an independent unprimed view.
+Project Contrast binds an authorized closest sibling where recurrence is in
+scope. Neither capability supplies an automatic beauty, originality,
+authorship, or aesthetic pass.
+
+**Connected Public Experience (CPE)** is selected only when a brief explicitly
+asks for a detailed, connected, customer-facing, app-like, or
+client-demonstration public experience, or when the public promise depends on
+content, decisions, or state carrying between routes. It records an
+applicability/status crosswalk and exact direct-entry, recovery, rendered, and
+functional continuity evidence for that project. It does not require a page
+count, visual style, admin, backend, database, funnel, or live integration, and
+it does not prove owner acceptance, target-user validation, production
+readiness, real service operation, or visual quality.
 
 It is not a style pack. It does not impose a replacement house style, infer
 authorship from aesthetics, or promise that AI involvement is undetectable.
@@ -132,29 +162,47 @@ quality guidance is loaded only when the task needs it.
 
 Design DNA scales its evidence and review to the work. Quick and Standard are
 proportional base presets. The project state stores a canonical cumulative
-capability set: Showcase, Range Study, and High-risk can apply together, and an
-asset-led record automatically adds its own gate without weakening another.
-Redundant lower presets are normalized away rather than retained as misleading
-extra assurances.
+capability set: Showcase, Connected Public Experience, Project Contrast,
+Direction Challenge, Range Study, Batch Study, High-risk, and Asset-led can
+apply together without weakening one another. Redundant lower presets are
+normalized away rather than retained as misleading extra assurances.
 
 | Capability preset | Use it for | Minimum assurance |
 | --- | --- | --- |
 | **Quick** | A bounded repair or low-risk change inside an established system. | Inspect context, preserve the system, implement changed states, and run affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Frame and direct the work, prove consequential decisions proportionately, implement, and complete rendered plus engineering review. |
-| **Showcase** | Expressive, premium, highly visible, owner-sensitive work, or a brief that rejects safe or generic output. | Research the real decision and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
+| **Connected Public Experience** | Only when the brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | An opt-in applicability marker, root-specific continuity model, truthful status crosswalk, and exact direct-entry/recovery rendered and functional evidence; no page-count, admin, backend, database, funnel, or live-integration quota. |
+| **Showcase** | A brief expressly asks for premium, showcase, or high-ambition work; it needs rejected-direction recovery; or the owner explicitly requests that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Research the real decision and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
+| **Project Contrast** | An unrelated public build needs to feel materially unlike recent studio work, or an owner says sites feel alike. | A brief-native counter-answer before broad implementation, owner-authorized closest-sibling context when available, and rendered wide/narrow collision review. It requires an explained encounter-level relationship, not a changed ingredient list. |
+| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately requests a high-ambition greenfield challenge. | Record three or more incompatible brief-native roots before polished examples; bind two roots to wide/narrow proof slices; select against a rendered rejected root and freeze an independent unprimed view. It is a scoped challenge, not a standing three-concept rule. |
 | **Range Study** | A multi-route brief explicitly asks pages to demonstrate meaningful creative range. | Keep dependable truth, navigation, access, and operations; author the route-family record; prove routes selected by uncertainty; verify real paths; and review a matched route atlas. |
-| **Batch Study** | A controlled evaluation uses at least three unrelated briefs to test whether the method transfers across sites. | Freeze and isolate briefs/builds; bind matched captures to successful renderer routes, profiles, capture modes, exact pixels, and public-build manifests; freeze capture-set-bound unprimed observations; then compare derivation under neutral labels without turning recurrence into an aesthetic ban. |
+| **Batch Study** | A controlled evaluation uses at least three unrelated briefs to test whether the method transfers across sites. | Freeze and isolate briefs/builds; bind matched captures to successful renderer routes, profiles, capture modes, exact pixels, and public-build manifests; freeze capture-set-bound unprimed observations; complete a neutral-label whole-system review; then record a separate human contextual disposition. Protocol coverage and human closure remain distinct. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Prioritize task, state, content, specialist, and real-user evidence; visual ambition cannot waive a safety or production gate. |
 | **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Gate every listed asset on type-specific provenance, rights, privacy, factual status, approval, delivery, accessibility, and generated-media evidence. |
 
-**Showcase is the recommended capability preset for portfolio pieces, sample
-sites, client-facing demos, pitch concepts, and other work intended to
-demonstrate visual capability.** Use every applicable capability: Showcase work
-can also be High-risk.
+**A fresh public-facing site begins at Standard**, including full public
+rendered and engineering review. Public status, visibility, and route count do
+not themselves select Showcase. Add Showcase when the brief expressly calls for
+a premium, showcase, high-ambition answer or direction recovery; it can also be
+High-risk.
+
+High-visibility or owner-sensitive work that does not meet that explicit
+Showcase trigger remains Standard. It still receives stronger rendered
+first-impression, surface-fidelity, and taste review in proportion to the
+decision; that review depth does not silently select a different capability.
 
 **Batch Study is not a portfolio factory.** It is a controlled evaluation of
 isolated briefs. A client-facing sample still needs its own public proposition,
 material, art direction, rendered taste review, and accountable-owner response.
+
+For Batch Study, `comparison_ready` means the declared, mechanically
+verifiable capture-and-review protocol is covered. It does not report whether a
+human thinks the sites are good. After the neutral-label whole-system review is
+frozen, a capture-set-bound human contextual disposition may establish
+`human_contextual_ready` by closing every material contextual finding.
+`final_ready` is only the conjunction of those two fields; even then the audit
+reports `automatic_aesthetic_pass: false`. None of those fields is package
+release qualification or a replacement for accountable owner review.
 
 For substantial open or expressive work, exploration is not decoration around
 a first idea. Develop enough materially different evidence to expose the
@@ -176,10 +224,24 @@ For a direct personal installation, start with a short request:
 | Claude Code | `/design-dna Build a time-appropriate website for this coffee shop using the supplied facts and assets.` |
 
 Design DNA selects the proportional assurance capabilities from the task. Say
-`Use Showcase` when the result is a portfolio piece, sample, pitch, demo, or
-another high-visibility expression of design capability. Say `Use Range Study`
-when a real multi-route site must demonstrate materially different page forms
-while retaining one usable family.
+`Use Connected Public Experience` only when public content, decisions, or state
+must carry between routes, or the brief expressly asks for that kind of detailed
+customer-facing experience. It adds continuity proof, not a fuller-site, admin,
+backend, database, funnel, or live-integration requirement. Say `Use Showcase`
+when the brief expressly asks for a premium, showcase, high-ambition answer or
+direction recovery. Say `Use Range Study` when a real multi-route site must
+demonstrate materially different page forms while retaining one usable family.
+
+Say `Use Project Contrast` when the site must be materially unlike recent
+unrelated studio work. The agent will not make it “different” by cycling
+through fonts or palettes; it will test a different public encounter and body
+organization against the smallest owner-authorized comparison evidence.
+
+Say `Use Direction Challenge` only when you explicitly want the stronger
+high-ambition challenge, or when an owner recurrence requirement activates it
+beside Project Contrast. It explores incompatible roots before the first
+polished answer takes over; it does not force every ordinary project through a
+three-concept presentation.
 
 Both host integrations are designed for relevant natural-language discovery,
 but actual automatic loading is host- and version-dependent and must be
@@ -328,7 +390,7 @@ closure. Reuse the isolated environment created above; in the commands below,
 ```text
 npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm --prefix maintainer exec -- playwright install chromium
-<PYTHON> -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
+<PYTHON> -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 <PYTHON> -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json
 <PYTHON> -B maintainer/scripts/validate_evidence.py --plugin-root .
 <PYTHON> -B maintainer/scripts/check_links.py .
@@ -340,6 +402,17 @@ The Codex validator must match the deliberately reviewed byte pin in
 into that file without reviewing the new validator source; the pin is publisher
 evidence, not an OpenAI signature. The attestor uses Python isolation and
 private input snapshots and does not retain validator output content.
+
+Its command must include `-I -S -B`: this blocks inherited Python paths and
+site startup hooks before the attester begins, then it adds only canonical
+maintainer modules and interpreter-owned dependencies. That hardens local
+execution against environment injection; it is not evidence that the Python
+executable, operating system, or trusted dependency installation is
+uncompromised.
+
+The non-isolated entry-point refusal is a fail-closed command-drift guard, not
+proof that a Python process remained trustworthy after arbitrary startup code
+ran. Use the exact external -I -S -B command for CI and release work.
 
 Rendered browser review additionally needs Node.js 20 or newer, Playwright,
 and a compatible browser. The commands above install the exact JavaScript
@@ -366,11 +439,15 @@ Design DNA separates:
    review;
 5. repeated skill-versus-baseline comparison.
 
-A diagnostic build is useful feedback, not release proof. The strict release
-audit fails closed when controlled host evidence, responsive rendered evidence,
-review attribution, test integrity, route parity, or current compatibility
-records are missing. It does not turn unavailable evidence into a marketing
-claim.
+A diagnostic build is useful feedback, not release proof. A Project Contrast,
+Direction Challenge, Connected Public Experience, or Batch Study record is
+evidence about the exact project and captures it binds; it does not prove
+package installation, host loading, or release status. CPE also does not prove
+owner acceptance, target-user validation, production readiness, real service
+operation, or visual quality. The strict release audit fails closed when
+controlled host evidence, responsive rendered evidence, review attribution,
+test integrity, route parity, or current compatibility records are missing. It
+does not turn unavailable evidence into a marketing claim.
 
 See [Evaluation guide](docs/EVALUATION.md),
 [cross-build rendered comparison](docs/RENDER_COMPARISON.md),

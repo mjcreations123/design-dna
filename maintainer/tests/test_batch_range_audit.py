@@ -452,6 +452,8 @@ def make_contract(
                 "context": "The first brief asks a specific audience to complete its primary task quickly.",
                 "observation": "The unprimed reviewer lost that task beneath a competing block in the rendered page.",
                 "evidence": [finding_evidence],
+                "severity": "medium",
+                "impact": "material",
                 "disposition": "open",
             }
         ],
@@ -489,6 +491,44 @@ def refresh_review_capture_bindings(contract: dict[str, object]) -> None:
         site["unprimed_review"]["capture_set_sha256"] = site_digest
         built.append({"site_id": site["id"], "capture_set_sha256": site_digest})
     contract["whole_system_review"]["capture_set_sha256"] = canonical_digest(built)
+
+
+def record_final_no_material_disposition(
+    project: Path,
+    contract: dict[str, object],
+    *,
+    evidence_path: str = "reviews/human-contextual-disposition.md",
+) -> None:
+    """Put a valid fixture through the separate human-finalization boundary.
+
+    The normal fixture intentionally starts with an open material finding so
+    protocol coverage can be exercised independently.  Success-path tests
+    that need a zero process exit must resolve that finding and add a fresh
+    decision artifact rather than treating coverage alone as a launch pass.
+    """
+
+    for finding in contract["contextual_findings"]:
+        finding["disposition"] = "resolved"
+    refresh_review_capture_bindings(contract)
+    contract["human_contextual_disposition"] = {
+        "status": "no-material-cluster-observed",
+        "reviewer_id": "accountable-reviewer",
+        "decided_at": "2026-08-09T00:00:00Z",
+        "capture_set_sha256": contract["whole_system_review"]["capture_set_sha256"],
+        "evidence": write_ref(
+            project,
+            evidence_path,
+            (
+                "The accountable reviewer recorded a fresh final contextual "
+                "disposition after the frozen whole-system observation.\n"
+            ).encode("utf-8"),
+        ),
+        "rationale": (
+            "The frozen study has no open or accepted material contextual "
+            "finding after the recorded correction."
+        ),
+        "finding_ids": [],
+    }
 
 
 def run_audit(project: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -538,21 +578,41 @@ class BatchRangeAuditTests(unittest.TestCase):
                 "--atlas",
                 "records/masked-atlas.png",
             )
-            self.assertEqual(result.returncode, 0, result.stderr)
+            # Coverage is complete, but a command must not exit successfully
+            # until a separate, capture-bound human disposition is recorded.
+            self.assertEqual(result.returncode, 1, result.stderr)
             summary = json.loads(result.stdout)
             self.assertTrue(summary["execution_ok"])
             self.assertTrue(summary["comparison_ready"])
+            self.assertFalse(summary["human_contextual_ready"])
+            self.assertFalse(summary["final_ready"])
             self.assertFalse(summary["automatic_aesthetic_pass"])
             self.assertEqual(
                 summary["decision_status"],
-                "human-contextual-review-required",
+                "human-contextual-disposition-required",
             )
             report = json.loads((project / "records" / "report.json").read_text(encoding="utf-8"))
             self.report_validator.validate(report)
             self.assertEqual(report["summary"]["built_site_count"], 3)
             self.assertEqual(report["summary"]["verified_capture_count"], 6)
+            self.assertEqual(report["summary"]["material_contextual_finding_count"], 1)
+            self.assertEqual(
+                report["summary"]["open_material_contextual_finding_count"],
+                1,
+            )
             self.assertEqual(report["correctly_blocked"], [])
             self.assertFalse(report["automatic_aesthetic_pass"])
+            self.assertIsNone(report["human_contextual_disposition"])
+            self.assertFalse(report["human_contextual_ready"])
+            self.assertFalse(report["final_ready"])
+            self.assertEqual(
+                report["decision_status"],
+                "human-contextual-disposition-required",
+            )
+            self.assertIn(
+                "human-contextual-disposition-missing",
+                {gap["code"] for gap in report["human_contextual_gaps"]},
+            )
             self.assertFalse(
                 report["whole_system_review"][
                     "diagnostic_material_seen_before_observation"
@@ -573,6 +633,187 @@ class BatchRangeAuditTests(unittest.TestCase):
                 atlas = project / "records" / "masked-atlas.png"
                 self.assertTrue(atlas.is_file())
                 self.assertEqual(digest(atlas.read_bytes()), report["atlas"]["sha256"])
+
+    def test_human_contextual_disposition_uses_exact_pending_and_final_shapes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-dna-batch-human-disposition-") as temporary:
+            project = Path(temporary)
+            contract = make_contract(project)
+            contract["human_contextual_disposition"] = {
+                "status": "pending",
+                "reviewer_id": None,
+                "decided_at": None,
+                "capture_set_sha256": None,
+                "evidence": None,
+                "rationale": None,
+                "finding_ids": [],
+            }
+            self.contract_validator.validate(contract)
+            write_contract(project, contract)
+            pending = run_audit(project)
+            self.assertEqual(pending.returncode, 1, pending.stderr)
+            self.assertEqual(
+                json.loads(pending.stdout)["decision_status"],
+                "human-contextual-disposition-pending",
+            )
+
+            contract["human_contextual_disposition"]["reviewer_id"] = "not-allowed-while-pending"
+            with self.assertRaises(ValidationError):
+                self.contract_validator.validate(contract)
+
+            contract["contextual_findings"][0]["disposition"] = "resolved"
+            contract["human_contextual_disposition"] = {
+                "status": "no-material-cluster-observed",
+                "reviewer_id": "accountable-reviewer",
+                "decided_at": "2026-08-09T00:00:00Z",
+                "capture_set_sha256": contract["whole_system_review"]["capture_set_sha256"],
+                "evidence": write_ref(
+                    project,
+                    "reviews/human-contextual-disposition.md",
+                    b"The accountable reviewer recorded the contextual disposition after the frozen whole-system observation.\n",
+                ),
+                "rationale": "The frozen study has no open or accepted material contextual finding after the recorded correction.",
+                "finding_ids": [],
+            }
+            self.contract_validator.validate(contract)
+            write_contract(project, contract)
+            result = run_audit(project)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            summary = json.loads(result.stdout)
+            self.assertTrue(summary["comparison_ready"])
+            self.assertTrue(summary["human_contextual_ready"])
+            self.assertTrue(summary["final_ready"])
+            self.assertEqual(
+                summary["decision_status"],
+                "final-human-contextual-disposition-recorded",
+            )
+            report = json.loads(
+                (project / ".design-dna" / "batch-range-audit.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.report_validator.validate(report)
+            self.assertEqual(
+                report["human_contextual_disposition"]["status"],
+                "no-material-cluster-observed",
+            )
+            self.assertEqual(report["human_contextual_gaps"], [])
+
+    def test_human_disposition_evidence_cannot_reuse_any_reserved_study_artifact(self) -> None:
+        for reuse_kind in (
+            "brief",
+            "source-packet",
+            "render-report",
+            "capture",
+            "unprimed-review",
+            "whole-review",
+            "finding-evidence",
+            "same-bytes-alias",
+        ):
+            with self.subTest(reuse_kind=reuse_kind), tempfile.TemporaryDirectory(
+                prefix="design-dna-batch-human-disposition-reuse-"
+            ) as temporary:
+                project = Path(temporary)
+                contract = make_contract(project)
+                contract["contextual_findings"][0]["disposition"] = "resolved"
+                refresh_review_capture_bindings(contract)
+                whole_evidence = contract["whole_system_review"]["evidence"]
+                if reuse_kind == "same-bytes-alias":
+                    original = project.joinpath(*whole_evidence["path"].split("/"))
+                    reused_evidence = write_ref(
+                        project,
+                        "reviews/decision-alias.md",
+                        original.read_bytes(),
+                    )
+                else:
+                    reserved_refs = {
+                        "brief": contract["sites"][0]["brief"],
+                        "source-packet": contract["sites"][0][
+                            "implementation_isolation"
+                        ]["source_packet"],
+                        "render-report": contract["sites"][0]["render_report"],
+                        "capture": {
+                            "path": contract["sites"][0]["pages"][0]["captures"][0][
+                                "path"
+                            ],
+                            "sha256": contract["sites"][0]["pages"][0]["captures"][0][
+                                "sha256"
+                            ],
+                        },
+                        "unprimed-review": contract["sites"][0]["unprimed_review"][
+                            "evidence"
+                        ],
+                        "whole-review": whole_evidence,
+                        "finding-evidence": contract["contextual_findings"][0][
+                            "evidence"
+                        ][0],
+                    }
+                    reused_evidence = dict(reserved_refs[reuse_kind])
+                contract["human_contextual_disposition"] = {
+                    "status": "no-material-cluster-observed",
+                    "reviewer_id": "accountable-reviewer",
+                    "decided_at": "2026-08-09T00:00:00Z",
+                    "capture_set_sha256": contract["whole_system_review"]["capture_set_sha256"],
+                    "evidence": reused_evidence,
+                    "rationale": (
+                        "The human decision must be recorded as a new frozen "
+                        "artifact after the whole-system review."
+                    ),
+                    "finding_ids": [],
+                }
+                self.contract_validator.validate(contract)
+                write_contract(project, contract)
+                result = run_audit(project)
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(
+                    stderr_payload(result)["error"]["code"],
+                    "human-disposition-evidence-not-separate",
+                )
+
+    def test_release_blocking_contextual_risk_cannot_close_final_readiness(self) -> None:
+        with tempfile.TemporaryDirectory(
+            prefix="design-dna-batch-release-blocking-risk-"
+        ) as temporary:
+            project = Path(temporary)
+            contract = make_contract(project)
+            finding = contract["contextual_findings"][0]
+            finding["impact"] = "release-blocking"
+            finding["disposition"] = "accepted-contextual-risk"
+            refresh_review_capture_bindings(contract)
+            contract["human_contextual_disposition"] = {
+                "status": "accepted-contextual-risk",
+                "reviewer_id": "accountable-reviewer",
+                "decided_at": "2026-08-09T00:00:00Z",
+                "capture_set_sha256": contract["whole_system_review"]["capture_set_sha256"],
+                "evidence": write_ref(
+                    project,
+                    "reviews/accepted-risk-decision.md",
+                    b"The accountable reviewer documented the proposed contextual risk disposition.\n",
+                ),
+                "rationale": (
+                    "The reviewer documented the contextual risk but the "
+                    "release-blocking issue still requires a real resolution."
+                ),
+                "finding_ids": ["finding-one"],
+            }
+            self.contract_validator.validate(contract)
+            write_contract(project, contract)
+            result = run_audit(project)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            summary = json.loads(result.stdout)
+            self.assertTrue(summary["execution_ok"])
+            self.assertTrue(summary["comparison_ready"])
+            self.assertFalse(summary["human_contextual_ready"])
+            self.assertFalse(summary["final_ready"])
+            report = json.loads(
+                (project / ".design-dna" / "batch-range-audit.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.report_validator.validate(report)
+            self.assertIn(
+                "release-blocking-contextual-findings-unresolved",
+                {gap["code"] for gap in report["human_contextual_gaps"]},
+            )
 
     def test_runtime_router_and_workflow_expose_protocol_not_a_recipe(self) -> None:
         skill = SKILL.read_text(encoding="utf-8")
@@ -1124,7 +1365,7 @@ class BatchRangeAuditTests(unittest.TestCase):
                 rendered["screenshot"]["pixel_height"] = 14
 
             mutate_render_report(project, site, update)
-            refresh_review_capture_bindings(contract)
+            record_final_no_material_disposition(project, contract)
             self.contract_validator.validate(contract)
             write_contract(project, contract)
             result = run_audit(project)
@@ -1268,7 +1509,7 @@ class BatchRangeAuditTests(unittest.TestCase):
                 "unprimed-review-incomplete",
                 {gap["code"] for gap in report["gaps"]},
             )
-            refresh_review_capture_bindings(contract)
+            record_final_no_material_disposition(project, contract)
             write_contract(project, contract)
             repaired = run_audit(project)
             self.assertEqual(repaired.returncode, 0, repaired.stderr)
@@ -1277,6 +1518,7 @@ class BatchRangeAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="design-dna-batch-no-atlas-") as temporary:
             project = Path(temporary)
             contract = make_contract(project)
+            record_final_no_material_disposition(project, contract)
             write_contract(project, contract)
             result = run_audit(project)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -1295,6 +1537,7 @@ class BatchRangeAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="design-dna-batch-hebrew-basis-") as temporary:
             project = Path(temporary)
             contract = make_contract(project)
+            record_final_no_material_disposition(project, contract)
             contract["sites"][0]["independence_basis"] = (
                 "הנושא, הקהל, המשימה, מבנה התוכן וחומרי המקור נבחרו בנפרד "
                 "ולא נגזרו מאתר אחר במחקר המבוקר."
@@ -1338,6 +1581,7 @@ class BatchRangeAuditTests(unittest.TestCase):
             report_tmp = write_ref(project, "records/report.json.tmp", b"declared report sibling\n")
             atlas_tmp = write_ref(project, "records/atlas.png.tmp", b"declared atlas sibling\n")
             contract["contextual_findings"][0]["evidence"].extend([report_tmp, atlas_tmp])
+            record_final_no_material_disposition(project, contract)
             write_contract(project, contract)
             result = run_audit(
                 project,

@@ -10,6 +10,7 @@ to avoid.
 - [Set up the study before building](#set-up-the-study-before-building)
 - [Capture without diagnostic priming](#capture-without-diagnostic-priming)
 - [Compare derivation rather than ingredients](#compare-derivation-rather-than-ingredients)
+- [Record human contextual disposition](#record-human-contextual-disposition)
 - [Audit the evidence](#audit-the-evidence)
 
 ## Set up the study before building
@@ -100,7 +101,11 @@ project's Range Study.
   interaction purpose, copy cadence, and overall system behavior. Do not
   compare isolated ingredients or reward difference for its own sake.
 - Record only contextual findings. Tie each observation to named study sites,
-  routes when applicable, and evidence. A repeated observation may justify a
+  routes when applicable, and evidence. Give every finding a declared
+  `severity` (`low`, `medium`, `high`, or `critical`) and `impact`
+  (`informational`, `bounded`, `material`, or `release-blocking`). A finding
+  is material when either field says so: `medium` or stronger severity, or
+  `material`/`release-blocking` impact. A repeated observation may justify a
   workflow improvement; it never becomes a global font, style, layout, motion,
   or novelty ban by frequency alone.
 
@@ -150,6 +155,45 @@ Do not turn a cluster into an AI score, an authorship claim, a permanent style
 ban, or a novelty quota. The useful result is a contextual cause, a defensible
 revision, and a regression condition that protects creative freedom.
 
+## Record human contextual disposition
+
+After the neutral-label whole-system review is frozen, create a separate
+non-empty human disposition record from
+[the human disposition template](../../templates/batch-human-contextual-disposition-template.md).
+Hash it and add its path/SHA-256 to `human_contextual_disposition.evidence` in
+the Batch Study contract. It is a durable statement of a human decision, not
+an aesthetic score or proof of reviewer identity.
+
+Bind that record to the exact current whole-study `capture_set_sha256`, name a
+reviewer and zoned decision time after the frozen whole-system observation, and
+record a substantive rationale. Keep this disposition record separate from the
+per-site and neutral-label observation evidence so the later decision remains
+inspectable.
+
+Use exactly one of these statuses:
+
+- `pending` while the current capture set does not yet have a final human
+  disposition; leave reviewer, time, capture binding, evidence, rationale, and
+  finding IDs null or empty.
+- `no-material-cluster-observed` when the frozen capture set has no open or
+  accepted material contextual cluster. Name no finding IDs.
+- `revisions-required` when a human has identified the finding IDs that require
+  change and a refreshed capture-set-bound decision.
+- `accepted-contextual-risk` only when the record names exactly the material
+  findings whose own disposition is `accepted-contextual-risk`; state why the
+  risk is accepted in context. It cannot close a finding whose impact is
+  `release-blocking`; resolve that finding before final readiness.
+- `blocked` when a human disposition cannot yet be made. State the actual
+  block and the evidence for it; do not relabel an ordinary weak build as
+  blocked.
+
+An open material finding keeps `human_contextual_ready` false even if all
+capture, hash, timing, and isolation checks are complete. A resolved material
+finding may be followed by `no-material-cluster-observed` only after the
+current capture set and human record are refreshed. Low or bounded findings
+remain visible but do not automatically override the recorded contextual
+decision.
+
 ## Audit the evidence
 
 ```text
@@ -170,9 +214,13 @@ declarations, and zoned chronology from study freeze through site-review freeze
 to whole-system observation. It preserves the separation among planned, built,
 and correctly blocked cases. A valid
 planned case produces explicit readiness gaps rather than being misreported as
-built or blocked. The CLI summary records `execution_ok: true` and
-`comparison_ready: false`; the CLI's incomplete-coverage exit status is not a
-contract or filesystem failure. PNG capture bytes are decoded with the portable
+built or blocked. The CLI summary records `execution_ok: true` and the separate
+coverage and human-contextual fields. It exits nonzero whenever `final_ready`
+is false, including when protocol coverage is complete but the required human
+contextual disposition remains missing, pending, blocked, or cannot close a
+material finding. That nonzero result marks incomplete readiness, not a
+malformed contract or a machine-generated aesthetic verdict. PNG capture bytes
+are decoded with the portable
 runtime; JPEG and WebP capture verification requires Pillow. When Pillow is
 available, `--atlas` assembles a neutral-label contact sheet only when
 contact-sheet authorization is resolved and affirmative. Capture payloads are
@@ -188,10 +236,13 @@ the auditor refuses a new atlas until an accountable owner renews the date or
 the evidence is deleted under the recorded policy.
 
 Treat `comparison_ready` as a coverage statement about the declared and
-mechanically verifiable protocol only. Evidence bytes and boolean records do
-not prove that a reviewer followed the protocol honestly. Even a complete report
-sets `automatic_aesthetic_pass` to `false` and requires a human contextual
-decision. If a case is still planned, fewer than three cases were built,
+mechanically verifiable protocol only. `human_contextual_ready` reports whether
+the capture-set-bound human disposition has closed every material contextual
+finding, and `final_ready` is their conjunction. Evidence bytes and boolean
+records do not prove that a reviewer followed the protocol honestly. Even a
+complete report sets `automatic_aesthetic_pass` to `false`; `final_ready` means
+only that the declared human contextual boundary is recorded, never that the
+auditor judged the sites aesthetically good. If a case is still planned, fewer than three cases were built,
 captures are missing, an
 unprimed review is absent, review evidence is empty or reused, sibling output
 or diagnostic material was seen before a required first observation, review

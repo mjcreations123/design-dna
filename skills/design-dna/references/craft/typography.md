@@ -118,6 +118,17 @@ Inspect:
   narrow width. A fixed label track can silently become shorter than the
   longest actual label; verify content-aware spacing, wrapping, localization,
   and text-spacing overrides without prescribing one layout.
+- **Descender clearance:** italic or swash display words containing y, g,
+  j, p, or q clip against very tight leading, especially when the line box
+  sits directly on a boundary. Audit every italic display word in the
+  render and reserve the leading or padding the descenders actually need;
+  the clip is measurable from glyph boxes and invisible in the source.
+- **Numerals and glued pairs:** compared figures need tabular fixed-width
+  numerals so digits align down a column; a value and its unit, a shortcut
+  and its key, or a two-word mark are glued with a non-breaking space so a
+  wrap never strands the second half. A headline wrap that leaves one
+  stranded word is a wrapping defect the balancing text-wrap behaviors can
+  often fix; verify the real headline, not the declaration.
 
 Treat observed collisions, lost letterforms, exhausting density, unreadable
 small text, or hierarchy that fails under actual content and user settings as
@@ -159,9 +170,18 @@ and maintenance evidence. No method is globally required.
 For downloadable fonts:
 
 - record source, license, redistribution rights, files, subsets, weights,
-  styles, axes, and script coverage;
+  styles, axes, and script coverage. Professional foundry libraries with
+  free commercial licensing and privacy-conscious mirrors of common font
+  CDNs are legitimate sources when budget or data-protection constraints
+  apply; the license record is identical either way;
+- when the direction's face is licensed and cannot ship, record the
+  substitute mapping explicitly: the closest available face, the
+  corrective settings that make it serve the role, and at least one named
+  face that would not be an acceptable substitute, with the reason. A
+  recorded mapping keeps future editors from silently degrading the role;
 - load only what the rendered project uses and configure an appropriate
-  `font-display` behavior;
+  `font-display` behavior; subset by script coverage where the license and
+  tooling allow, so readers do not download alphabets the site never sets;
 - preload only genuinely critical files and avoid duplicate variable-font
   binaries declared as separate downloads;
 - set an intentional fallback and prevent unexpected faux bold or italic;
@@ -210,6 +230,10 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/font_audit.py" "PROJECT"
 `<DESIGN_DNA_SKILL_ROOT>` is the directory containing the installed
 `SKILL.md`. The report inventories source contracts; it is not a browser
 proof, license ruling, quality score, font blacklist, or authorship detector.
+When present, `source_integrity_complete` means only that this bounded source
+and file-inventory scan completed without its recorded incompleteness
+conditions. It is not a rendered typography-quality pass and does not replace
+the evidence below.
 
 ## Verify the delivered type system
 

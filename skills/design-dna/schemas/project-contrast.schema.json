@@ -1,0 +1,583 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/project-contrast.schema.json",
+  "title": "Design DNA Project Contrast Record",
+  "description": "A qualitative, owner-authorized comparison record. It has no uniqueness score, AI-authorship field, or font/palette quota.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_with",
+    "record_status",
+    "classification",
+    "scope",
+    "source_to_encounter",
+    "selected_direction",
+    "exploration",
+    "design_signature",
+    "comparison",
+    "evidence",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "created_with": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": ".*\\S.*"},
+    "record_status": {"$ref": "#/$defs/lifecycleStatus"},
+    "classification": {"enum": ["internal", "confidential"]},
+    "scope": {"$ref": "#/$defs/scope"},
+    "source_to_encounter": {"$ref": "#/$defs/sourceToEncounter"},
+    "selected_direction": {"$ref": "#/$defs/selectedDirection"},
+    "exploration": {"$ref": "#/$defs/exploration"},
+    "design_signature": {"$ref": "#/$defs/designSignature"},
+    "comparison": {"$ref": "#/$defs/comparison"},
+    "evidence": {"$ref": "#/$defs/evidence"},
+    "review": {"$ref": "#/$defs/review"}
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1, "maxLength": 8000, "pattern": ".*\\S.*"},
+    "draftableText": {"oneOf": [{"$ref": "#/$defs/nonEmptyString"}, {"type": "null"}]},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"},
+    "draftableId": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "lifecycleStatus": {"enum": ["draft", "direction-ready", "proof-ready", "reviewed"]},
+    "fileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "buildRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "file"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "file": {"$ref": "#/$defs/fileRef"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "surface_scope", "route_coverage", "trigger", "comparison_authority"],
+      "properties": {
+        "project_id": {"$ref": "#/$defs/draftableId"},
+        "surface_scope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonEmptyString"}
+        },
+        "route_coverage": {"$ref": "#/$defs/routeCoverage"},
+        "trigger": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "comparison_authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "basis"],
+          "properties": {
+            "status": {"enum": ["authorized", "not-authorized", "inherited-system", "not-applicable"]},
+            "basis": {"$ref": "#/$defs/draftableText"}
+          }
+        }
+      }
+    },
+    "sourceToEncounter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visitor_occasion", "primary_job", "subject_material", "content_operation", "nontransferable_constraints"],
+      "properties": {
+        "visitor_occasion": {"$ref": "#/$defs/draftableText"},
+        "primary_job": {"$ref": "#/$defs/draftableText"},
+        "subject_material": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "evidence", "design_consequence"],
+            "properties": {
+              "kind": {"$ref": "#/$defs/draftableText"},
+              "evidence": {"$ref": "#/$defs/draftableText"},
+              "design_consequence": {"$ref": "#/$defs/draftableText"}
+            }
+          }
+        },
+        "content_operation": {"$ref": "#/$defs/draftableText"},
+        "nontransferable_constraints": {"type": "array", "items": {"$ref": "#/$defs/nonEmptyString"}}
+      }
+    },
+    "selectedDirection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state", "observable_predictions"],
+      "properties": {
+        "organizing_answer": {"$ref": "#/$defs/draftableText"},
+        "opening_encounter": {"$ref": "#/$defs/draftableText"},
+        "dominant_content_unit": {"$ref": "#/$defs/draftableText"},
+        "body_progression": {"$ref": "#/$defs/draftableText"},
+        "ending_or_next_state": {"$ref": "#/$defs/draftableText"},
+        "observable_predictions": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "decision", "project_basis", "rendered_condition", "expected_observation", "status"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "decision": {"$ref": "#/$defs/nonEmptyString"},
+              "project_basis": {"$ref": "#/$defs/nonEmptyString"},
+              "rendered_condition": {"$ref": "#/$defs/nonEmptyString"},
+              "expected_observation": {"$ref": "#/$defs/nonEmptyString"},
+              "status": {"enum": ["planned", "observed", "revised", "not-applicable"]}
+            }
+          }
+        }
+      }
+    },
+    "exploration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_answer_risk", "challenge_method", "challenging_answer", "selection_reason", "why_sufficient"],
+      "properties": {
+        "first_answer_risk": {"$ref": "#/$defs/draftableText"},
+        "challenge_method": {"oneOf": [{"enum": ["counter-model", "alternate-proof", "reference-decomposition", "not-needed"]}, {"type": "null"}]},
+        "challenging_answer": {"$ref": "#/$defs/draftableText"},
+        "selection_reason": {"$ref": "#/$defs/draftableText"},
+        "why_sufficient": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "designSignature": {
+      "description": "Project-derived qualitative axes selected because they materially matter here. This is not a prescribed visual-style inventory or quota.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selection_status", "selection_basis", "axes"],
+      "properties": {
+        "selection_status": {"enum": ["draft", "selected", "not-applicable"]},
+        "selection_basis": {"$ref": "#/$defs/draftableText"},
+        "axes": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["axis", "status", "project_basis", "decision", "observable_effect"],
+            "properties": {
+              "axis": {"$ref": "#/$defs/id"},
+              "group": {"oneOf": [{"enum": ["encounter", "surface-language"]}, {"type": "null"}]},
+              "status": {"enum": ["selected", "not-applicable"]},
+              "project_basis": {"$ref": "#/$defs/nonEmptyString"},
+              "decision": {"$ref": "#/$defs/nonEmptyString"},
+              "observable_effect": {"$ref": "#/$defs/nonEmptyString"}
+            }
+          }
+        }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comparators", "shared_decisions", "shared_public_shell", "contrast_claims", "surface_grammar_observations", "contrast_prompt", "counterfactual_swap_test"],
+      "properties": {
+        "closest_sibling_selection": {"$ref": "#/$defs/closestSiblingSelection"},
+        "comparators": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "relationship", "evidence"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "relationship": {"enum": ["closest-sibling", "approved-system", "known-template"]},
+              "evidence": {"oneOf": [{"$ref": "#/$defs/comparatorEvidence"}, {"type": "null"}]}
+            }
+          }
+        },
+        "shared_decisions": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["decision", "origin", "why_shared", "status"],
+            "properties": {
+              "decision": {"$ref": "#/$defs/nonEmptyString"},
+              "origin": {"enum": ["brand", "task", "platform", "accessibility", "maintenance"]},
+              "why_shared": {"$ref": "#/$defs/nonEmptyString"},
+              "status": {"enum": ["accepted", "rebuild"]}
+            }
+          }
+        },
+        "shared_public_shell": {"$ref": "#/$defs/sharedPublicShell"},
+        "contrast_claims": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "domain", "level", "candidate_observation", "comparator_observation", "relationship", "subject_cause", "evidence", "status"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "domain": {"$ref": "#/$defs/nonEmptyString"},
+              "level": {"enum": ["encounter", "opening", "body", "content-unit", "public-shell", "type-behavior", "media-role", "interaction-purpose", "mobile-encounter", "project-defined"]},
+              "candidate_observation": {"$ref": "#/$defs/nonEmptyString"},
+              "comparator_observation": {"$ref": "#/$defs/nonEmptyString"},
+              "relationship": {"enum": ["different", "shared-with-reason", "not-comparable"]},
+              "subject_cause": {"$ref": "#/$defs/nonEmptyString"},
+              "evidence": {
+                "oneOf": [
+                  {"$ref": "#/$defs/nonEmptyString"},
+                  {"$ref": "#/$defs/evidenceBinding"}
+                ]
+              },
+              "status": {"enum": ["planned", "observed", "revised", "accepted", "not-applicable"]}
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {"level": {"const": "public-shell"}},
+                  "required": ["level"]
+                },
+                "then": {
+                  "properties": {
+                    "evidence": {"$ref": "#/$defs/evidenceBinding"}
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "level": {
+                      "enum": ["encounter", "opening", "body", "content-unit", "mobile-encounter"]
+                    },
+                    "relationship": {"const": "different"},
+                    "status": {"const": "accepted"}
+                  },
+                  "required": ["level", "relationship", "status"]
+                },
+                "then": {
+                  "properties": {
+                    "evidence": {"$ref": "#/$defs/structuralClaimEvidenceBinding"}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "surface_grammar_observations": {
+          "description": "Freeform, project-defined observations about the candidate's public surface grammar. The record binds observations to captures and authorized comparison evidence; it does not prescribe visual ingredients.",
+          "type": "array",
+          "maxItems": 24,
+          "items": {"$ref": "#/$defs/surfaceGrammarObservation"}
+        },
+        "contrast_prompt": {"$ref": "#/$defs/contrastPrompt"},
+        "counterfactual_swap_test": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "removed_or_swapped", "remaining_identity", "result", "follow_up"],
+          "properties": {
+            "method": {"oneOf": [{"const": "reasoned-review"}, {"type": "null"}]},
+            "removed_or_swapped": {"type": "array", "items": {"$ref": "#/$defs/nonEmptyString"}},
+            "remaining_identity": {"$ref": "#/$defs/draftableText"},
+            "result": {"oneOf": [{"enum": ["not-interchangeable", "still-too-close", "not-applicable"]}, {"type": "null"}]},
+            "follow_up": {"$ref": "#/$defs/draftableText"}
+          }
+        }
+      }
+    },
+    "routeCoverage": {
+      "description": "A declared evidence boundary for public routes. It is not a page-count, style, or capture quota.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "rationale"],
+      "properties": {
+        "mode": {"enum": ["representative", "all-discovered-public-routes", "sampled-with-rationale"]},
+        "rationale": {"$ref": "#/$defs/draftableText"},
+        "discovered_route_map": {
+          "description": "When static public routes are safely discovered, map each one either to its own reviewed wide/narrow capture pair or to a job/system-equivalent reviewed representative. This is coverage evidence, not a route-count quota.",
+          "type": "array",
+          "maxItems": 512,
+          "items": {"$ref": "#/$defs/routeCoverageMapEntry"}
+        }
+      }
+    },
+    "routeCoverageMapEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route", "coverage", "representative_route", "equivalence_rationale"],
+      "properties": {
+        "route": {"$ref": "#/$defs/nonEmptyString"},
+        "coverage": {"enum": ["captured", "represented"]},
+        "representative_route": {"$ref": "#/$defs/draftableText"},
+        "equivalence_rationale": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "evidenceBinding": {
+      "description": "References to the record's hash-bound candidate captures and authorized comparators, plus a concise human-readable evidence note.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture_ids", "comparator_ids", "note"],
+      "properties": {
+        "capture_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "comparator_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "note": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "structuralClaimEvidenceBinding": {
+      "description": "The rendered evidence required for an accepted structural contrast claim. It binds at least one exact candidate capture and one authorized comparator artifact; it does not prescribe a visual ingredient or an aesthetic score.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture_ids", "comparator_ids", "note"],
+      "properties": {
+        "capture_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "comparator_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "note": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "sharedPublicShell": {
+      "description": "Classifies a shared implementation boundary without hiding public-facing chrome inside a technical label.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "technical_boundary", "public_observation", "source", "evidence"],
+      "properties": {
+        "classification": {"enum": ["technical-foundation", "approved-public-system", "candidate-public-shell"]},
+        "technical_boundary": {"$ref": "#/$defs/draftableText"},
+        "public_observation": {"$ref": "#/$defs/draftableText"},
+        "source": {"$ref": "#/$defs/draftableText"},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/evidenceBinding"}, {"type": "null"}]},
+        "approval": {"oneOf": [{"$ref": "#/$defs/ownerApproval"}, {"type": "null"}]}
+      }
+    },
+    "ownerApproval": {
+      "description": "A scoped, hash-bound owner approval for visible public system chrome. It does not approve unrelated project bodies by implication.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "scope", "evidence"],
+      "properties": {
+        "status": {"enum": ["draft", "owner-approved", "not-approved"]},
+        "scope": {"$ref": "#/$defs/draftableText"},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/fileRef"}, {"type": "null"}]}
+      }
+    },
+    "surfaceGrammarObservation": {
+      "description": "A project-defined, freeform public-surface comparison. It is not an inventory of fonts, palettes, shapes, or effects.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "project_defined_label", "selected_signature_axis_refs", "candidate_observation", "comparator_observation", "relationship", "project_cause", "source", "evidence", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "project_defined_label": {"$ref": "#/$defs/nonEmptyString"},
+        "selected_signature_axis_refs": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "candidate_observation": {"$ref": "#/$defs/nonEmptyString"},
+        "comparator_observation": {"$ref": "#/$defs/nonEmptyString"},
+        "relationship": {"enum": ["different", "shared-with-reason", "not-comparable"]},
+        "project_cause": {"$ref": "#/$defs/nonEmptyString"},
+        "source": {"$ref": "#/$defs/nonEmptyString"},
+        "evidence": {"$ref": "#/$defs/evidenceBinding"},
+        "status": {"enum": ["planned", "observed", "revised", "accepted", "not-applicable"]}
+      }
+    },
+    "contrastPrompt": {
+      "description": "Project-specific prompts for encounter collision, public-shell collision, and surface-grammar review. They are not a list of ingredients that must differ.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["encounter_collision", "public_shell_collision", "surface_grammar"],
+      "properties": {
+        "encounter_collision": {"$ref": "#/$defs/draftableText"},
+        "public_shell_collision": {"$ref": "#/$defs/draftableText"},
+        "surface_grammar": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "comparatorEvidence": {
+      "description": "An owner-authorized comparison artifact. Structural abstracts are permitted when retaining a comparator image is inappropriate.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "file", "access", "retention", "purpose"],
+      "properties": {
+        "kind": {"enum": ["image", "structural-abstract"]},
+        "file": {"$ref": "#/$defs/fileRef"},
+        "access": {"$ref": "#/$defs/nonEmptyString"},
+        "retention": {"$ref": "#/$defs/nonEmptyString"},
+        "purpose": {"$ref": "#/$defs/nonEmptyString"},
+        "image_source": {"oneOf": [{"$ref": "#/$defs/comparatorImageSource"}, {"type": "null"}]}
+      }
+    },
+    "comparatorImageSource": {
+      "description": "Hash-bound source metadata for an image comparator. Full-page source extent prevents a thumbnail or crop from standing in for a route encounter.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_build", "route", "capture_state", "viewport", "extent"],
+      "properties": {
+        "source_build": {"$ref": "#/$defs/buildRef"},
+        "route": {"$ref": "#/$defs/nonEmptyString"},
+        "capture_state": {"enum": ["default", "interaction"]},
+        "viewport": {"$ref": "#/$defs/viewport"},
+        "extent": {"$ref": "#/$defs/comparatorImageExtent"}
+      }
+    },
+    "comparatorImageExtent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "pixel_width", "pixel_height"],
+      "properties": {
+        "mode": {"const": "full-page"},
+        "pixel_width": {"type": "integer", "minimum": 240, "maximum": 32768},
+        "pixel_height": {"type": "integer", "minimum": 240, "maximum": 32768}
+      }
+    },
+    "closestSiblingSelection": {
+      "description": "A hash-bound owner-authorized ledger snapshot or explicit selection record that identifies the nearest relevant prior comparator. It records lineage, not a style ranking.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "source_kind", "evidence", "comparator_ids", "owner_authorization", "selection_reason"],
+      "properties": {
+        "status": {"enum": ["draft", "selected", "not-applicable"]},
+        "source_kind": {"oneOf": [{"enum": ["owner-authorized-ledger-snapshot", "owner-authorized-selection-record"]}, {"type": "null"}]},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/fileRef"}, {"type": "null"}]},
+        "comparator_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "owner_authorization": {"$ref": "#/$defs/draftableText"},
+        "selection_reason": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "renderReviewReference": {
+      "description": "An exact, hash-bound schema-3 rendered-review report. Its ID lets candidate captures name the report and capture they actually use.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "file"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "file": {"$ref": "#/$defs/fileRef"}
+      }
+    },
+    "renderReviewCaptureBinding": {
+      "description": "Links one Project Contrast capture to one capture emitted by a named schema-3 rendered-review report.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "capture_id"],
+      "properties": {
+        "report_id": {"$ref": "#/$defs/id"},
+        "capture_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}$"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_build", "render_reviews", "captures"],
+      "properties": {
+        "candidate_build": {"oneOf": [{"$ref": "#/$defs/buildRef"}, {"type": "null"}]},
+        "render_reviews": {
+          "description": "Schema-3 rendered-review reports whose exact output markers and linked capture artifacts are verified by the Project Contrast auditor.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/renderReviewReference"}
+        },
+        "captures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "route", "viewport", "capture_mode", "capture_state", "candidate_build_id", "file", "render_review"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "route": {"$ref": "#/$defs/nonEmptyString"},
+              "viewport": {"$ref": "#/$defs/viewport"},
+              "capture_mode": {
+                "description": "The rendered-review harness emits a full-page PNG. This mode describes image content, not whether the captured state was reached through interaction.",
+                "const": "full-page"
+              },
+              "capture_state": {
+                "description": "Whether the bound schema-3 capture is the default state or a completed allowlisted interaction state. It is independent of the full-page image mode.",
+                "enum": ["default", "interaction"]
+              },
+              "candidate_build_id": {"$ref": "#/$defs/id"},
+              "file": {"$ref": "#/$defs/fileRef"},
+              "render_review": {"$ref": "#/$defs/renderReviewCaptureBinding"}
+            }
+          }
+        }
+      }
+    },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "width", "height", "viewport_class"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "width": {"type": "integer", "minimum": 240, "maximum": 32768},
+        "height": {"type": "integer", "minimum": 240, "maximum": 32768},
+        "viewport_class": {"enum": ["wide", "narrow", "intermediate"]}
+      }
+    },
+    "reviewEvidence": {
+      "description": "A hash-bound review record. The auditor distinguishes a self-review from an independent unprimed review, and binds the exact candidate/comparator evidence the reviewer was exposed to.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer_id", "relationship", "exposure", "observed_at", "frozen_at", "evidence", "reviewed_capture_ids", "reviewed_comparator_ids", "first_observation", "limitations"],
+      "properties": {
+        "status": {"enum": ["draft", "pending", "complete", "not-available"]},
+        "reviewer_id": {"oneOf": [{"$ref": "#/$defs/nonEmptyString"}, {"type": "null"}]},
+        "relationship": {"oneOf": [{"enum": ["self-review", "independent-human", "independent-agent", "owner-authorized-independent"]}, {"type": "null"}]},
+        "exposure": {"oneOf": [{"enum": ["unprimed-candidate-captures-only", "paired-candidate-and-authorized-comparator-evidence"]}, {"type": "null"}]},
+        "observed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+        "frozen_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/fileRef"}, {"type": "null"}]},
+        "reviewed_capture_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "reviewed_comparator_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+        "first_observation": {"$ref": "#/$defs/draftableText"},
+        "limitations": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unprimed", "paired", "disposition", "owner_review"],
+      "properties": {
+        "unprimed": {"$ref": "#/$defs/reviewEvidence"},
+        "paired": {"$ref": "#/$defs/reviewEvidence"},
+        "paired_outcome": {"oneOf": [{"$ref": "#/$defs/pairedOutcome"}, {"type": "null"}]},
+        "disposition": {"enum": ["draft", "pending", "accepted", "rework", "blocked"]},
+        "owner_review": {"$ref": "#/$defs/ownerReview"}
+      }
+    },
+    "pairedOutcome": {
+      "description": "A structured paired-review conclusion. still-too-close is a rework signal, not a cosmetic exception.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "basis", "earliest_reopen_decision"],
+      "properties": {
+        "result": {"oneOf": [{"enum": ["not-interchangeable", "still-too-close", "inconclusive"]}, {"type": "null"}]},
+        "basis": {"$ref": "#/$defs/draftableText"},
+        "earliest_reopen_decision": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "ownerReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer_id", "relationship", "observed_at", "evidence", "limitations"],
+      "properties": {
+        "status": {"enum": ["draft", "not-requested", "pending", "accepted", "rejected"]},
+        "reviewer_id": {"oneOf": [{"$ref": "#/$defs/nonEmptyString"}, {"type": "null"}]},
+        "relationship": {"oneOf": [{"enum": ["not-applicable", "producer", "accountable-owner", "owner-authorized-human", "independent-human"]}, {"type": "null"}]},
+        "observed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/fileRef"}, {"type": "null"}]},
+        "limitations": {"$ref": "#/$defs/draftableText"},
+        "candidate_build_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "reviewed_capture_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+      }
+    }
+  }
+}

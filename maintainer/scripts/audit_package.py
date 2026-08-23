@@ -8691,7 +8691,21 @@ def main() -> int:
                 ))
         else:
             target = failures if args.release else warnings
-            target.append({"code": "release-manifest-missing", "path": "maintainer/release-manifest.json", "message": "Generate the release manifest before release."})
+            target.extend((
+                issue(
+                    "release-manifest-missing",
+                    "maintainer/release-manifest.json",
+                    "Generate the release manifest before release.",
+                ),
+                issue(
+                    "release-manifest-identity-unavailable",
+                    "maintainer/release-manifest.json",
+                    (
+                        "No recorded checksummed release identity is "
+                        "available to compare with the current package."
+                    ),
+                ),
+            ))
 
         ci_failures, ci_details = ci_contract_failures(
             compatibility,

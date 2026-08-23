@@ -34,6 +34,8 @@ them useful.
 
 - Claims still pending or prohibited:
 - Scenario values visibly labeled:
+- Boundary map for scenario claims: context-free orientation, direct-entry
+  routes, action-local labeling, and duplicate copy consolidated:
 - Categorical words reviewed (`all`, `every`, `always`, `never`, `best`,
   `only`):
 - Public copy checked against this ledger:

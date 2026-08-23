@@ -61,7 +61,11 @@ as supplemental evidence rather than substituting it for required captures.
 
 For every high or medium finding, record location, evidence, user impact,
 likely cause, and the condition that would verify a fix. Do not infer
-authorship or score the site by a style-ingredient list.
+authorship or score the site by a style-ingredient list. When the finding is
+added to the Batch Study contract, declare both `severity` (`low`, `medium`,
+`high`, or `critical`) and `impact` (`informational`, `bounded`, `material`,
+or `release-blocking`) so the later human disposition can distinguish a
+material unresolved issue from a bounded note.
 
 ## Disposition
 

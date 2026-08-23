@@ -16,6 +16,8 @@
     "data_handling",
     "coverage_status",
     "comparison_ready",
+    "human_contextual_ready",
+    "final_ready",
     "automatic_aesthetic_pass",
     "decision_status",
     "summary",
@@ -24,7 +26,9 @@
     "correctly_blocked",
     "whole_system_review",
     "contextual_findings",
+    "human_contextual_disposition",
     "gaps",
+    "human_contextual_gaps",
     "limitations",
     "contract",
     "atlas",
@@ -63,8 +67,20 @@
     "data_handling": {"$ref": "#/$defs/data_handling"},
     "coverage_status": {"enum": ["complete", "incomplete"]},
     "comparison_ready": {"type": "boolean"},
+    "human_contextual_ready": {"type": "boolean"},
+    "final_ready": {"type": "boolean"},
     "automatic_aesthetic_pass": {"const": false},
-    "decision_status": {"const": "human-contextual-review-required"},
+    "decision_status": {
+      "enum": [
+        "final-human-contextual-disposition-recorded",
+        "protocol-coverage-incomplete",
+        "human-contextual-disposition-required",
+        "human-contextual-disposition-pending",
+        "revisions-required",
+        "blocked",
+        "human-contextual-disposition-incomplete"
+      ]
+    },
     "summary": {"$ref": "#/$defs/summary"},
     "built_sites": {
       "type": "array",
@@ -83,7 +99,17 @@
       "type": "array",
       "items": {"$ref": "#/$defs/contextual_finding"}
     },
+    "human_contextual_disposition": {
+      "oneOf": [
+        {"$ref": "#/$defs/human_contextual_disposition"},
+        {"type": "null"}
+      ]
+    },
     "gaps": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/gap"}
+    },
+    "human_contextual_gaps": {
       "type": "array",
       "items": {"$ref": "#/$defs/gap"}
     },
@@ -97,6 +123,59 @@
     "atlas": {"$ref": "#/$defs/atlas"},
     "resource_usage": {"$ref": "#/$defs/resource_usage"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"comparison_ready": {"const": true}}},
+      "then": {"properties": {"coverage_status": {"const": "complete"}}},
+      "else": {"properties": {"coverage_status": {"const": "incomplete"}}}
+    },
+    {
+      "if": {"properties": {"comparison_ready": {"const": false}}},
+      "then": {"properties": {"final_ready": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"human_contextual_ready": {"const": false}}},
+      "then": {"properties": {"final_ready": {"const": false}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "comparison_ready": {"const": true},
+          "human_contextual_ready": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "final_ready": {"const": true},
+          "decision_status": {"const": "final-human-contextual-disposition-recorded"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"final_ready": {"const": true}}},
+      "then": {
+        "properties": {
+          "comparison_ready": {"const": true},
+          "human_contextual_ready": {"const": true},
+          "decision_status": {"const": "final-human-contextual-disposition-recorded"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision_status": {"const": "final-human-contextual-disposition-recorded"}
+        }
+      },
+      "then": {
+        "properties": {
+          "comparison_ready": {"const": true},
+          "human_contextual_ready": {"const": true},
+          "final_ready": {"const": true}
+        }
+      }
+    }
+  ],
   "$defs": {
     "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -517,7 +596,7 @@
     "contextual_finding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "site_ids", "routes", "context", "observation", "evidence", "disposition"],
+      "required": ["id", "site_ids", "routes", "context", "observation", "evidence", "severity", "impact", "disposition"],
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "site_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
@@ -525,6 +604,8 @@
         "context": {"type": "string", "minLength": 20, "maxLength": 4000},
         "observation": {"type": "string", "minLength": 20, "maxLength": 4000},
         "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence_ref"}},
+        "severity": {"enum": ["low", "medium", "high", "critical"]},
+        "impact": {"enum": ["informational", "bounded", "material", "release-blocking"]},
         "disposition": {"enum": ["open", "resolved", "accepted-contextual-risk"]}
       }
     },
@@ -541,7 +622,7 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declared_site_count", "planned_site_count", "built_site_count", "correctly_blocked_site_count", "built_page_count", "verified_capture_count", "contextual_finding_count"],
+      "required": ["declared_site_count", "planned_site_count", "built_site_count", "correctly_blocked_site_count", "built_page_count", "verified_capture_count", "contextual_finding_count", "material_contextual_finding_count", "open_material_contextual_finding_count"],
       "properties": {
         "declared_site_count": {"type": "integer", "minimum": 3},
         "planned_site_count": {"type": "integer", "minimum": 0},
@@ -549,8 +630,90 @@
         "correctly_blocked_site_count": {"type": "integer", "minimum": 0},
         "built_page_count": {"type": "integer", "minimum": 0},
         "verified_capture_count": {"type": "integer", "minimum": 0},
-        "contextual_finding_count": {"type": "integer", "minimum": 0}
+        "contextual_finding_count": {"type": "integer", "minimum": 0},
+        "material_contextual_finding_count": {"type": "integer", "minimum": 0},
+        "open_material_contextual_finding_count": {"type": "integer", "minimum": 0}
       }
+    },
+    "human_contextual_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewer_id", "decided_at", "capture_set_sha256", "evidence", "rationale", "finding_ids"],
+      "properties": {
+        "status": {
+          "enum": ["pending", "no-material-cluster-observed", "revisions-required", "accepted-contextual-risk", "blocked"]
+        },
+        "reviewer_id": {
+          "oneOf": [
+            {"type": "string", "minLength": 1, "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "decided_at": {"type": ["string", "null"], "format": "date-time"},
+        "capture_set_sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "evidence": {
+          "oneOf": [
+            {"$ref": "#/$defs/evidence_ref"},
+            {"type": "null"}
+          ]
+        },
+        "rationale": {
+          "oneOf": [
+            {"type": "string", "minLength": 20, "maxLength": 4000},
+            {"type": "null"}
+          ]
+        },
+        "finding_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "pending"}}},
+          "then": {
+            "properties": {
+              "reviewer_id": {"type": "null"},
+              "decided_at": {"type": "null"},
+              "capture_set_sha256": {"type": "null"},
+              "evidence": {"type": "null"},
+              "rationale": {"type": "null"},
+              "finding_ids": {"maxItems": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "reviewer_id": {"type": "string", "minLength": 1, "maxLength": 200},
+              "decided_at": {"type": "string", "format": "date-time"},
+              "capture_set_sha256": {"$ref": "#/$defs/sha256"},
+              "evidence": {"$ref": "#/$defs/evidence_ref"},
+              "rationale": {"type": "string", "minLength": 20, "maxLength": 4000}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"enum": ["revisions-required", "accepted-contextual-risk"]}
+            }
+          },
+          "then": {"properties": {"finding_ids": {"minItems": 1}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"const": "no-material-cluster-observed"}
+            }
+          },
+          "then": {"properties": {"finding_ids": {"maxItems": 0}}}
+        }
+      ]
     },
     "atlas": {
       "type": "object",

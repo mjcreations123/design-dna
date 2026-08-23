@@ -1,7 +1,36 @@
 #!/usr/bin/env python3
-"""Run the exact maintainer unittest suite and atomically attest its result."""
+"""Run the exact release unittest suite and atomically attest its result."""
 
 from __future__ import annotations
+
+# A Python ``sitecustomize`` hook runs before ordinary script code.  If this
+# attester were launched normally, such a hook could replace subprocess,
+# hashing, or unittest parsing before this module could inspect it.  The
+# authoritative CLI therefore accepts only a startup-isolated interpreter.
+# This has to happen before cache preflight and every non-stdlib import; a
+# post-startup scan would be too late to establish trust.
+import sys as _startup_sys
+
+_ISOLATED_BOOTSTRAP = (
+    bool(_startup_sys.flags.isolated)
+    and bool(_startup_sys.flags.no_site)
+    and bool(_startup_sys.flags.dont_write_bytecode)
+)
+# Only the direct attester command owns its import bootstrap.  The isolated
+# release runner deliberately makes the package root importable while it
+# discovers tests; an attester imported by one of those tests is a library and
+# must retain that already-controlled context.  Keep this separate from the
+# main gate below: importing a module never authorizes an attestation write.
+_DIRECT_CLI_BOOTSTRAP = __name__ == "__main__"
+if _DIRECT_CLI_BOOTSTRAP and not _ISOLATED_BOOTSTRAP:
+    _startup_sys.stdout.write(
+        "{\"ok\": false, \"failures\": [{\"code\": "
+        "\"test-attestation-isolation-required\", \"message\": "
+        "\"Launch with python -I -S -B so startup hooks and inherited "
+        "Python paths cannot alter attestation.\"}]}\n"
+    )
+    raise SystemExit(2)
+del _startup_sys
 
 _CACHE_PREFLIGHT_PATH = (
     __file__.replace("\\", "/").rsplit("/", 1)[0] + "/cache_preflight.py"
@@ -26,11 +55,144 @@ import platform
 import re
 import subprocess
 import sys
+import sysconfig
 import tempfile
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable
+
+
+def _is_within_interpreter_root(path: Path, root: Path) -> bool:
+    try:
+        path.resolve().relative_to(root.resolve())
+    except (OSError, ValueError):
+        return False
+    return True
+
+
+def _interpreter_owned_roots() -> tuple[Path, ...]:
+    """Find only paths owned by the executing interpreter or its venv.
+
+    Python versions before 3.14 can expose the base prefix under ``-S`` even
+    when the executable belongs to a virtual environment.  The executable and
+    its adjacent ``pyvenv.cfg`` are canonical interpreter facts; inherited
+    environment variables and caller import paths are intentionally ignored.
+    """
+
+    candidates = [Path(sys.prefix), Path(sys.base_prefix)]
+    executable = Path(sys.executable)
+    try:
+        if not executable.is_absolute():
+            executable = executable.absolute()
+        if not executable.is_file():
+            raise OSError("Python executable is not a regular file")
+    except OSError as exc:
+        raise RuntimeError(
+            "The isolated test attester cannot resolve its Python executable."
+        ) from exc
+    for candidate in (executable.parent, executable.parent.parent):
+        try:
+            if (candidate / "pyvenv.cfg").is_file():
+                candidates.append(candidate)
+        except OSError as exc:
+            raise RuntimeError(
+                "The isolated test attester cannot inspect its virtual environment."
+            ) from exc
+    roots: list[Path] = []
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve(strict=True)
+        except OSError as exc:
+            raise RuntimeError(
+                "The isolated test attester has an unreadable interpreter root."
+            ) from exc
+        if resolved not in roots:
+            roots.append(resolved)
+    return tuple(roots)
+
+
+def _canonical_site_packages(roots: tuple[Path, ...]) -> tuple[Path, ...]:
+    """Return existing interpreter-owned dependency directories only."""
+
+    # A selected venv is the dependency boundary. Do not fall through to
+    # arbitrary base-interpreter site packages merely because they are owned
+    # by the executable's underlying Python installation.
+    venv_roots = tuple(
+        root for root in roots if (root / "pyvenv.cfg").is_file()
+    )
+    dependency_roots = venv_roots or (Path(sys.prefix).resolve(),)
+    candidates: list[Path] = []
+    for key in ("purelib", "platlib"):
+        value = sysconfig.get_path(key)
+        if value:
+            candidates.append(Path(value))
+    version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    for root in dependency_roots:
+        candidates.extend((
+            root / "Lib" / "site-packages",
+            root / "lib" / version / "site-packages",
+            root / "lib64" / version / "site-packages",
+        ))
+    approved: list[Path] = []
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+            exists = resolved.is_dir()
+        except OSError as exc:
+            raise RuntimeError(
+                "The isolated test attester cannot inspect a dependency path."
+            ) from exc
+        if not exists or not any(
+            _is_within_interpreter_root(resolved, root)
+            for root in dependency_roots
+        ):
+            continue
+        if resolved not in approved:
+            approved.append(resolved)
+    return tuple(approved)
+
+
+def _install_isolated_import_paths() -> None:
+    """Install only canonical maintainer modules and pinned dependencies.
+
+    ``-I -S`` leaves the standard library available but does not process site
+    packages.  Add the script directory and interpreter-owned package roots
+    directly, after preflight, without honoring ``.pth`` files or any inherited
+    Python path.  Ordinary module imports keep their existing behavior when
+    this file is imported by the unit suite rather than executed as the CLI.
+    """
+
+    if not (_DIRECT_CLI_BOOTSTRAP and _ISOLATED_BOOTSTRAP):
+        return
+    if any(name in sys.modules for name in ("site", "sitecustomize", "usercustomize")):
+        raise RuntimeError("The isolated test attester detected site initialization.")
+    roots = _interpreter_owned_roots()
+    interpreter_paths: list[str] = []
+    for entry in sys.path:
+        if not entry:
+            raise RuntimeError("The isolated test attester received an empty import path.")
+        try:
+            resolved = Path(entry).resolve()
+        except OSError as exc:
+            raise RuntimeError(
+                "The isolated test attester cannot resolve an interpreter path."
+            ) from exc
+        if not any(_is_within_interpreter_root(resolved, root) for root in roots):
+            raise RuntimeError(
+                "The isolated test attester received a non-canonical import path."
+            )
+        interpreter_paths.append(str(resolved))
+    script_directory = Path(__file__).resolve().parent
+    sys.path[:] = [
+        *dict.fromkeys(interpreter_paths),
+        str(script_directory),
+        *(str(path) for path in _canonical_site_packages(roots)),
+    ]
+    sys.path_importer_cache.clear()
+
+
+_install_isolated_import_paths()
 
 from jsonschema import Draft202012Validator, FormatChecker
 try:
@@ -60,20 +222,103 @@ from common import (
 )
 
 
-UNITTEST_ARGUMENTS = (
-    "-B",
-    "-m",
-    "unittest",
-    "discover",
-    "-s",
-    "maintainer/tests",
-    "-p",
-    "test_*.py",
-    "-v",
+RELEASE_TEST_RUNNER = "maintainer/scripts/run_release_tests.py"
+# ``-I`` stops environment-derived path/startup configuration before Python
+# initializes, while ``-S`` suppresses site and therefore sitecustomize and
+# usercustomize.  The runner restores only canonical dependency directories
+# after its cache preflight.  Keep these flags in the attested record: a pass
+# from a normal interpreter is not an equivalent execution.
+UNITTEST_ARGUMENTS = ("-I", "-S", "-B", RELEASE_TEST_RUNNER)
+
+# ``tests_sha256`` predates the full execution-input contract and remains its
+# schema-stable field name.  It is now the digest of this *bounded* manifest.
+# Each entry is ``(label, package-relative path, expected kind)``.  The labels
+# make the hash construction auditable without inventing a new record shape.
+#
+# This is intentionally not a whole-worktree hash: a scratch file, local
+# environment, or generated proof must not become an implicit test input.
+# Conversely, every non-generated canonical source surface intentionally read
+# by the two release-test roots belongs here.  Keep derived release outputs out
+# of this list: SBOMs, attestations, release manifests, and evaluation results
+# are outputs that would make a test attestation circular.
+TEST_EXECUTION_INPUT_MANIFEST = (
+    # Exact executable suite and the runtime it exercises.
+    ("runtime_skill", "skills/design-dna", "directory"),
+    ("maintainer_test_tree", "maintainer/tests", "directory"),
+    ("maintainer_scripts", "maintainer/scripts", "directory"),
+    ("maintainer_schemas", "maintainer/schemas", "directory"),
+    ("release_runner", RELEASE_TEST_RUNNER, "file"),
+    ("attester", "maintainer/scripts/attest_tests.py", "file"),
+    (
+        "attestation_schema",
+        "maintainer/schemas/test-attestation.schema.json",
+        "file",
+    ),
+    # Test-environment declarations and package-manager configuration.
+    ("python_requirements", "maintainer/requirements-dev.txt", "file"),
+    ("python_requirements_lock", "maintainer/requirements-dev.lock", "file"),
+    ("node_package_manifest", "maintainer/package.json", "file"),
+    ("node_package_lock", "maintainer/package-lock.json", "file"),
+    # Host package entry points are directly asserted by release tests.
+    ("codex_plugin_manifest", ".codex-plugin/plugin.json", "file"),
+    ("claude_plugin_manifest", ".claude-plugin/plugin.json", "file"),
+    # The published contract is asserted, not merely shipped alongside tests.
+    ("git_attributes", ".gitattributes", "file"),
+    ("git_ignore", ".gitignore", "file"),
+    ("readme", "README.md", "file"),
+    ("changelog", "CHANGELOG.md", "file"),
+    ("contributing", "CONTRIBUTING.md", "file"),
+    ("data_handling", "DATA_HANDLING.md", "file"),
+    ("license", "LICENSE", "file"),
+    ("security", "SECURITY.md", "file"),
+    ("support", "SUPPORT.md", "file"),
+    ("third_party_notices", "THIRD_PARTY_NOTICES.md", "file"),
+    ("documentation", "docs", "directory"),
+    # ``ci.yml`` is parsed by the release-proof suite.  Other repository
+    # configuration remains outside the bounded contract unless a release test
+    # starts reading it and this manifest is deliberately extended.
+    ("ci_workflow", ".github/workflows/ci.yml", "file"),
+    # Evaluation contract and fixed fixture corpus, excluding derived outcomes.
+    ("eval_readme", "maintainer/evals/README.md", "file"),
+    ("eval_rubric", "maintainer/evals/review-rubric.md", "file"),
+    ("eval_schema", "maintainer/evals/schema.json", "file"),
+    ("eval_fixtures", "maintainer/evals/fixtures", "directory"),
+    # Compatibility and trust policy are parsed by release proof/audit tests.
+    ("compatibility_matrix", "maintainer/compatibility/matrix.yml", "file"),
+    (
+        "compatibility_host_adapters",
+        "maintainer/compatibility/trusted-host-adapters.yml",
+        "file",
+    ),
+    (
+        "codex_validator_trust",
+        "maintainer/trust/codex-plugin-validator.json",
+        "file",
+    ),
+    # Curated evidence is a source registry validated by the release suite.
+    ("evidence_registry", "maintainer/evidence", "directory"),
+)
+
+# Explicitly guard the contract against a future accidental circular input.
+# These paths are release products or retained evaluation outcomes, not source
+# surfaces used to define the suite that attests them.
+DERIVED_EXECUTION_OUTPUT_PATHS = (
+    "maintainer/sbom.spdx.json",
+    "maintainer/release-manifest.json",
+    "maintainer/attestations",
+    "maintainer/evals/results",
+    "maintainer/evals/reviews",
+    "maintainer/evals/artifacts",
+    "maintainer/evals/archive",
+    "maintainer/compatibility/archive/ci-runs",
 )
 ATTESTED_INPUTS = {
     "runtime_sha256": ("skills/design-dna",),
-    "tests_sha256": ("maintainer/tests",),
+    # The schema-compatible tests_sha256 value is calculated from
+    # TEST_EXECUTION_INPUT_MANIFEST rather than this tuple.
+    "tests_sha256": tuple(
+        path for _label, path, _kind in TEST_EXECUTION_INPUT_MANIFEST
+    ),
     "tooling_sha256": ("maintainer/scripts",),
     "schemas_sha256": ("maintainer/schemas",),
     "requirements_sha256": ("maintainer/requirements-dev.txt",),
@@ -107,6 +352,49 @@ PYTHON_EXECUTABLE_TOKEN = "python-current-environment"
 # subprocesses. Keep a hard ceiling, but allow enough time for supported slower
 # Windows and synchronized-folder environments to complete deterministically.
 TEST_SUITE_TIMEOUT_SECONDS = 3600
+
+
+def require_authoritative_isolation() -> None:
+    """Reject an attestation CLI path that was not isolated at interpreter start.
+
+    This check intentionally belongs in main as well as the early direct
+    script guard. A normal-started startup hook can import this module under a
+    non-main name and invoke main(); that must never reach subprocess execution
+    or an attestation write. The external -I -S -B invocation remains the
+    actual pre-startup defense. Once arbitrary startup code has run, Python
+    code cannot attest that the interpreter process itself was not modified.
+    """
+
+    if not _ISOLATED_BOOTSTRAP:
+        raise ToolFailure(
+            "test-attestation-isolation-required",
+            (
+                "Launch with python -I -S -B so startup hooks and inherited "
+                "Python paths cannot alter attestation."
+            ),
+        )
+
+
+def isolated_subprocess_environment() -> dict[str, str]:
+    """Drop inherited Python controls before launching the release runner.
+
+    ``-I -S`` protects the runner's startup, but environment variables remain
+    visible to its test subprocesses.  Preserve ordinary OS configuration while
+    removing every Python-specific override and virtual-environment selector;
+    the explicit executable and the runner's controlled import bootstrap are
+    the only Python execution inputs.
+    """
+
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("PYTHON")
+        and key.upper() not in {"VIRTUAL_ENV", "VIRTUAL_ENV_PROMPT"}
+    }
+    # Child Python processes launched by release tests inherit this explicit
+    # guard even when a test omits ``-B`` itself.
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    return environment
 
 
 def utc_now() -> str:
@@ -309,33 +597,115 @@ def pinned_dependencies(plugin_root: Path) -> list[dict[str, str]]:
     return records
 
 
-def attested_input_hashes(plugin_root: Path) -> dict[str, str]:
-    required_directories = (
-        plugin_root / "skills" / "design-dna",
-        plugin_root / "maintainer" / "tests",
-        plugin_root / "maintainer" / "scripts",
-        plugin_root / "maintainer" / "schemas",
+def _execution_input_paths_overlap(first: str, second: str) -> bool:
+    """Return whether two portable package-relative paths overlap."""
+
+    return (
+        first == second
+        or first.startswith(second + "/")
+        or second.startswith(first + "/")
     )
-    for path in required_directories:
+
+
+def validated_test_execution_inputs(
+    plugin_root: Path,
+) -> tuple[tuple[str, str, str, Path], ...]:
+    """Validate and resolve the fixed, non-circular release-test inputs.
+
+    ``identity_group_sha256`` intentionally represents an absent path so that
+    generic release identities can compare incomplete trees.  Test attestation
+    cannot do that: every declared release-test source must exist with its
+    expected kind before a pass can be recorded or replayed.
+    """
+
+    labels: set[str] = set()
+    relatives: set[str] = set()
+    resolved: list[tuple[str, str, str, Path]] = []
+    for label, relative, expected_kind in TEST_EXECUTION_INPUT_MANIFEST:
+        if (
+            not label
+            or not label.isascii()
+            or not re.fullmatch(r"[a-z][a-z0-9_]*", label)
+            or label in labels
+        ):
+            raise ToolFailure(
+                "test-attestation-input-contract-invalid",
+                "Execution-input labels must be unique lowercase ASCII identifiers.",
+                plugin_root,
+            )
+        if (
+            not relative
+            or UNSAFE_PORTABLE_PATH.search(relative)
+            or PurePosixPath(relative).as_posix() != relative
+            or relative in relatives
+        ):
+            raise ToolFailure(
+                "test-attestation-input-contract-invalid",
+                "Execution-input paths must be unique safe portable paths.",
+                plugin_root,
+            )
+        if expected_kind not in {"file", "directory"}:
+            raise ToolFailure(
+                "test-attestation-input-contract-invalid",
+                "Execution-input kinds must be file or directory.",
+                plugin_root / relative,
+            )
+        if any(
+            _execution_input_paths_overlap(relative, derived)
+            for derived in DERIVED_EXECUTION_OUTPUT_PATHS
+        ):
+            raise ToolFailure(
+                "test-attestation-input-contract-invalid",
+                "Execution inputs must not overlap generated release outputs.",
+                plugin_root / relative,
+            )
+        path = plugin_root / relative
         assert_no_reparse_path(path, stop=plugin_root)
-        if not path.is_dir():
+        if not path.exists():
             raise ToolFailure(
                 "test-attestation-input-missing",
-                "Required attestation input directory is missing.",
+                f"Required test-execution input {label!r} is missing.",
                 path,
             )
-    required_files = (
-        plugin_root / "maintainer" / "requirements-dev.txt",
-        plugin_root / "maintainer" / "requirements-dev.lock",
-    )
-    for required_file in required_files:
-        assert_no_reparse_path(required_file, stop=plugin_root)
-        if not required_file.is_file():
+        if expected_kind == "file" and not path.is_file():
             raise ToolFailure(
-                "test-attestation-input-missing",
-                "A required pinned maintainer dependency file is missing.",
-                required_file,
+                "test-attestation-input-kind-invalid",
+                f"Test-execution input {label!r} must be a regular file.",
+                path,
             )
+        if expected_kind == "directory" and not path.is_dir():
+            raise ToolFailure(
+                "test-attestation-input-kind-invalid",
+                f"Test-execution input {label!r} must be a directory.",
+                path,
+            )
+        labels.add(label)
+        relatives.add(relative)
+        resolved.append((label, relative, expected_kind, path))
+    return tuple(resolved)
+
+
+def test_execution_input_sha256(plugin_root: Path) -> str:
+    """Hash the labeled deterministic source manifest for the release suite."""
+
+    digest = hashlib.sha256()
+    for label, relative, _expected_kind, _path in (
+        validated_test_execution_inputs(plugin_root)
+    ):
+        item_digest = identity_group_sha256(plugin_root, (relative,))
+        digest.update(label.encode("ascii"))
+        digest.update(b"\0")
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(item_digest.encode("ascii"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def attested_input_hashes(plugin_root: Path) -> dict[str, str]:
+    # Resolve every declared surface before calculating any hash.  A record
+    # must never certify a suite whose source contract is partially absent.
+    validated_test_execution_inputs(plugin_root)
     reject_compiled_python_residue(
         (
             plugin_root / relative
@@ -356,7 +726,11 @@ def attested_input_hashes(plugin_root: Path) -> dict[str, str]:
         ),
     )
     return {
-        name: identity_group_sha256(plugin_root, paths)
+        name: (
+            test_execution_input_sha256(plugin_root)
+            if name == "tests_sha256"
+            else identity_group_sha256(plugin_root, paths)
+        )
         for name, paths in ATTESTED_INPUTS.items()
     }
 
@@ -378,7 +752,7 @@ def parse_unittest_result(
     if tests_run <= 0:
         raise ToolFailure(
             "test-attestation-suite-empty",
-            "The exact maintainer suite ran no tests.",
+            "The exact release suite ran no tests.",
         )
     counts = {
         "failures": 0,
@@ -750,9 +1124,7 @@ def run_exact_suite(
     plugin_root: Path,
     command: list[str],
 ) -> subprocess.CompletedProcess[bytes]:
-    environment = os.environ.copy()
-    environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    environment["PYTHONUTF8"] = "1"
+    environment = isolated_subprocess_environment()
     try:
         return subprocess.run(
             command,
@@ -892,6 +1264,12 @@ def atomic_write_json(path: Path, payload: object) -> None:
 
 
 def main() -> int:
+    try:
+        require_authoritative_isolation()
+    except ToolFailure as exc:
+        emit({"ok": False, "failures": [exc.issue.as_dict()]})
+        return 2
+
     parser = argparse.ArgumentParser(description=__doc__)
     default_plugin = Path(__file__).resolve().parents[2]
     parser.add_argument("--plugin-root", type=Path, default=default_plugin)
@@ -916,15 +1294,12 @@ def main() -> int:
                 / "test-attestation.json"
             )
         )
-        protected = (
-            plugin_root / "skills" / "design-dna",
-            plugin_root / "maintainer" / "tests",
-            plugin_root / "maintainer" / "scripts",
-            plugin_root / "maintainer" / "schemas",
-            plugin_root / "maintainer" / "requirements-dev.txt",
-            plugin_root / "maintainer" / "requirements-dev.lock",
-        )
-        if any(output == path or is_within(output, path) for path in protected):
+        protected = validated_test_execution_inputs(plugin_root)
+        if any(
+            output == path
+            or (expected_kind == "directory" and is_within(output, path))
+            for _label, _relative, expected_kind, path in protected
+        ):
             raise ToolFailure(
                 "test-attestation-output-overlaps-input",
                 "The attestation output must be outside its hashed inputs.",

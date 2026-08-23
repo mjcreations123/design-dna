@@ -309,8 +309,9 @@ class InitializerTests(unittest.TestCase):
             project = Path(temporary) / "project"
             project.mkdir()
             result = run_script(
-                INIT, "--project", str(project), "--record", "direction-proof",
-                "--record", "user-validation", "--json",
+                INIT, "--project", str(project), "--profile", "high-risk",
+                "--record", "direction-proof", "--record", "user-validation",
+                "--json",
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             state = project / ".design-dna"
@@ -322,10 +323,233 @@ class InitializerTests(unittest.TestCase):
             self.assertEqual(manifest["records"], ["direction-proof", "user-validation"])
             self.assertEqual(
                 manifest["assurance_profiles"],
-                ["high-risk"],
-                "A direction proof must not escalate an explicit custom record set "
-                "into a showcase profile.",
+                ["standard"],
+                "Explicit records override --profile and must not silently retain "
+                "a High-risk gate.",
             )
+            self.assertNotIn(
+                "high-risk",
+                manifest["evidence_contract"]["applicable_capabilities"],
+            )
+
+    def test_explicit_high_risk_profile_initializes_and_requires_full_set(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            initialized = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--profile",
+                "high-risk",
+                "--json",
+            )
+            self.assertEqual(
+                initialized.returncode,
+                0,
+                initialized.stdout + initialized.stderr,
+            )
+            state = project / ".design-dna"
+            manifest_path = state / "state.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                manifest["records"],
+                ["direction", "visual-review", "claims", "user-validation"],
+            )
+            self.assertEqual(
+                manifest["evidence_contract"]["applicable_capabilities"],
+                ["high-risk"],
+            )
+            checked = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+            ready = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-ready",
+                "--json",
+            )
+            self.assertEqual(ready.returncode, 1, ready.stdout + ready.stderr)
+            readiness_failures = "\n".join(json.loads(ready.stdout)["failures"])
+            self.assertIn("claims.md", readiness_failures)
+            self.assertIn("user-validation.md", readiness_failures)
+
+            manifest["records"].remove("user-validation")
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            incomplete = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(
+                incomplete.returncode,
+                1,
+                incomplete.stdout + incomplete.stderr,
+            )
+            self.assertTrue(
+                any(
+                    "Applicable evidence capability high-risk requires records: "
+                    "user-validation." in failure
+                    for failure in json.loads(incomplete.stdout)["failures"]
+                )
+            )
+
+    def test_migration_preserves_an_existing_high_risk_state(self) -> None:
+        """New record inference must not silently lower an old risk boundary."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            initialized = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--profile",
+                "high-risk",
+                "--json",
+            )
+            self.assertEqual(
+                initialized.returncode,
+                0,
+                initialized.stdout + initialized.stderr,
+            )
+            manifest_path = project / ".design-dna" / "state.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["assurance_profiles"] = ["high-risk"]
+            manifest["evidence_contract"]["applicable_capabilities"] = [
+                "high-risk"
+            ]
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            migrated = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--migrate",
+                "--json",
+            )
+            self.assertEqual(
+                migrated.returncode,
+                0,
+                migrated.stdout + migrated.stderr,
+            )
+            preserved = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(preserved["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                preserved["evidence_contract"]["applicable_capabilities"],
+                ["high-risk"],
+            )
+
+    def test_migration_preserves_persisted_high_risk_state_with_incomplete_records(
+        self,
+    ) -> None:
+        """Migration adds draft evidence instead of guessing a lower risk level."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            initialized = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--record",
+                "claims",
+                "--json",
+            )
+            self.assertEqual(
+                initialized.returncode,
+                0,
+                initialized.stdout + initialized.stderr,
+            )
+            manifest_path = project / ".design-dna" / "state.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["assurance_profiles"] = ["high-risk"]
+            manifest["evidence_contract"]["applicable_capabilities"] = [
+                "high-risk"
+            ]
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            migrated = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--migrate",
+                "--json",
+            )
+            self.assertEqual(
+                migrated.returncode,
+                0,
+                migrated.stdout + migrated.stderr,
+            )
+            repaired = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(repaired["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                repaired["evidence_contract"]["applicable_capabilities"],
+                ["high-risk"],
+            )
+            self.assertEqual(
+                repaired["records"],
+                ["claims", "direction", "visual-review", "user-validation"],
+            )
+            for filename in ("direction.md", "visual-review.md", "user-validation.md"):
+                self.assertTrue((project / ".design-dna" / filename).is_file())
+            report = json.loads(
+                (
+                    project / ".design-dna" / "migration-report.json"
+                ).read_text(encoding="utf-8")
+            )
+            self.assertIn(
+                "does not infer completion or downgrade",
+                report["assurance_transitions"][0]["reason"],
+            )
+            checked = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--check-state",
+                "--json",
+            )
+            self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+
+    def test_high_risk_evidence_capability_requires_its_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            project.mkdir()
+            rejected = run_script(
+                INIT,
+                "--project",
+                str(project),
+                "--record",
+                "claims",
+                "--record",
+                "user-validation",
+                "--evidence-capability",
+                "high-risk",
+                "--json",
+            )
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn("--profile high-risk", rejected.stderr)
 
     def test_showcase_profile_initializes_exploration_gate(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

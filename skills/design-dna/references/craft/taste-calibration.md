@@ -16,6 +16,7 @@ considered direction.
 
 ## Contents
 
+- [Treat calibration as an evidence lifecycle](#treat-calibration-as-an-evidence-lifecycle)
 - [Define the public encounter](#define-the-public-encounter)
 - [Use references as visual evidence](#use-references-as-visual-evidence)
 - [Write a project read](#write-a-project-read)
@@ -23,6 +24,29 @@ considered direction.
 - [Review surface fidelity](#review-surface-fidelity)
 - [Recover from an ugly result](#recover-from-an-ugly-result)
 - [Keep the boundary honest](#keep-the-boundary-honest)
+
+## Treat calibration as an evidence lifecycle
+
+When this method is activated, create a project-local record and treat it as
+substantive evidence, not a decorative planning paragraph. Give the record an
+honest current state such as `draft`, `proof-ready`, `reviewed`, `reopened`, or
+`blocked`, an exact candidate/build, the reviewer relationship, evidence paths,
+and the next irreversible decision. The file's existence does not mean a
+direction has been calibrated, accepted, or made beautiful.
+
+For an owner-recurrence concern, an owner-rejected direction, or an open
+Showcase, bind direct reviewable proof artifacts for both the selected and
+counter directions before broad implementation whenever possible. A useful
+proof makes the entry encounter and dominant content operation visible at the
+relevant wide and narrow conditions; a paragraph describing an alternative is
+not a substitute. When a counter-proof cannot be made, record the exact
+inability, its consequence for the decision, the accountable authority, and
+the next step rather than quietly treating the comparison as complete.
+
+Narrative direction, proof, and review notes may summarize this work, but the
+authoritative lifecycle and status remain in the applicable Project Contrast
+and Direction Challenge records. Do not use a narrative field to claim that
+either record is ready, reviewed, or accepted.
 
 ## Define the public encounter
 
@@ -102,6 +126,21 @@ evidence to expose a consequential choice when uncertainty warrants that
 contrast. A second direction is useful when it changes the proposed encounter,
 not when it merely swaps a font, palette, image, or ornament on unchanged
 geometry. There is no mandatory concept count, reference count, or proof shape.
+
+When the owner says unrelated projects are starting to feel alike, pair this
+proof with [Project Contrast](../quality/project-contrast.md). First define a
+brief-native alternate organizing answer without looking at prior output; only
+then use the smallest authorized nearest-sibling evidence to test whether the
+selected encounter is genuinely project-derived. Do not use previous work as a
+style sampler or solve a collision with cosmetic variation.
+
+For an owner recurrence, rejection, or open Showcase, do not begin broad
+implementation from one verbal concept and a cosmetic "alternate." Bind
+directly reviewable selected and counter proof artifacts, or record the exact
+reason that a counter-proof is unavailable and reopen the decision boundary
+when that limitation matters. Keep their evidence status in the canonical
+Project Contrast or Direction Challenge record; the calibration record makes
+the project read and human response legible alongside it.
 
 Technical cleanliness is necessary but not a beauty verdict. A screenshot can
 have working controls, perfect semantics, responsive reflow, and no console

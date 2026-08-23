@@ -22,6 +22,16 @@ but they are tools rather than aesthetic obligations. Choose their scope from
 the actual content and maintenance needs. A justified one-off does not have to
 be normalized into a reusable recipe.
 
+Two structural checks that repeatedly catch a layout chosen before its
+content: a grid should have as many cells as it has content, so an empty
+tile pasted in to complete a pleasing shape means the shape was decided
+first and the grid should be reshaped to the real inventory; and
+containers nested inside containers inside containers usually mean the
+composition began from components rather than relationships, so ask what
+each frame is for and keep the one framing move that earns its place.
+Neither is a ban on grids or cards; both are questions about derivation
+that the render answers.
+
 ## Make density fit the situation
 
 Density may respond to frequency, complexity, expertise, urgency, device,

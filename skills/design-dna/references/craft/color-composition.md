@@ -4,6 +4,13 @@ Use this when color or spatial composition materially affects meaning, identity,
 orientation, atmosphere, or action. It is an outcome guide, not a palette,
 token, contrast-distribution, or layout recipe.
 
+## Contents
+
+- [Start from the creative logic](#start-from-the-creative-logic)
+- [Give color accountable meaning](#give-color-accountable-meaning)
+- [Compose relationships rather than a silhouette](#compose-relationships-rather-than-a-silhouette)
+- [Review the rendered system](#review-the-rendered-system)
+
 ## Start from the creative logic
 
 Classify the constraints before making aesthetic decisions:
@@ -38,6 +45,18 @@ review question is whether its use supports the declared creative logic and
 the rendered whole, not whether it is reserved for a prescribed number of
 accents or placed only on a primary action.
 
+Whatever the palette, write its budget down. The strongest recurring craft
+device in well-run brand systems is not a particular accent count but an
+explicit scarcity grammar: for each accent, where it may appear and where
+it must not. "The ceremony color appears only at the one ceremonial
+moment," "the sale color lives only on price rows," "the signature red is
+the ring mark and nothing else" are enforceable sentences; "use the accent
+tastefully" is not. Record the budget with the palette in the project
+system (and in the handoff record), so a later editor cannot dilute the
+accent into doing every job, which is how a considered color becomes a
+generic wash. The budget's values are the project's own; this is a
+recording discipline, not an allocation rule.
+
 Verify required foreground/background combinations and interactive states in
 the real rendered context, including text over media, overlays, focus, hover,
 active, selected, disabled, visited, loading, error, and forced-color behavior
@@ -68,6 +87,13 @@ reading logic need to be learnable on their own terms.
 Optical corrections are legitimate. Encode recurring behavior when that makes
 maintenance safer, and document meaningful one-offs rather than erasing them
 to satisfy a token system.
+
+For page-scale pacing, a band-sequence notation is a cheap authoring and
+review device: write the page as its sequence of grounds (for example
+"cream, cream-card, dark image band, cream, accent callout, dark footer")
+and read the sequence for unintended repetition or monotony. The notation
+imposes no rhythm; it makes whatever rhythm exists visible enough to judge,
+and it travels well into the handoff record.
 
 ## Review the rendered system
 

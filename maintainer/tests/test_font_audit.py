@@ -64,6 +64,7 @@ class FontAuditSchemaTests(unittest.TestCase):
             result_payload = payload(result)
             self.validator.validate(result_payload)
             self.assertTrue(result_payload["execution_ok"])
+            self.assertTrue(result_payload["source_integrity_complete"])
             self.assertEqual(
                 result_payload["audit_status"],
                 "no-font-evidence",
@@ -97,9 +98,18 @@ class FontAuditSchemaTests(unittest.TestCase):
             with self.assertRaises(ValidationError):
                 self.validator.validate(contradictory)
 
+            contradictory = json.loads(json.dumps(clean))
+            contradictory["source_integrity_complete"] = False
+            with self.assertRaises(ValidationError):
+                self.validator.validate(contradictory)
+
             self.assertEqual(clean["schema_version"], 2)
             legacy = json.loads(json.dumps(clean))
             legacy["type_watch"] = {"loaded": False}
+            with self.assertRaises(ValidationError):
+                self.validator.validate(legacy)
+            legacy = json.loads(json.dumps(clean))
+            legacy["quality_passed"] = True
             with self.assertRaises(ValidationError):
                 self.validator.validate(legacy)
 
@@ -810,7 +820,7 @@ class FontAuditParsingSafetyTests(unittest.TestCase):
             VALIDATOR.validate(result_payload)
             self.assertTrue(result_payload["execution_ok"])
             self.assertFalse(result_payload["ok"])
-            self.assertFalse(result_payload["quality_passed"])
+            self.assertFalse(result_payload["source_integrity_complete"])
             self.assertEqual(result_payload["audit_status"], "incomplete")
             self.assertTrue(result_payload["review_required"])
             self.assertEqual(
@@ -904,7 +914,7 @@ class FontAuditParsingSafetyTests(unittest.TestCase):
             result_payload = payload(result)
             VALIDATOR.validate(result_payload)
             self.assertEqual(result_payload["audit_status"], "incomplete")
-            self.assertFalse(result_payload["quality_passed"])
+            self.assertFalse(result_payload["source_integrity_complete"])
             self.assertEqual(
                 result_payload["completeness"]["dynamic_contract_count"],
                 3,

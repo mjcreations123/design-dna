@@ -27,6 +27,12 @@
     "contextual_findings": {
       "type": "array",
       "items": {"$ref": "#/$defs/contextual_finding"}
+    },
+    "human_contextual_disposition": {
+      "oneOf": [
+        {"$ref": "#/$defs/human_contextual_disposition"},
+        {"type": "null"}
+      ]
     }
   },
   "$defs": {
@@ -642,6 +648,8 @@
         "context",
         "observation",
         "evidence",
+        "severity",
+        "impact",
         "disposition"
       ],
       "properties": {
@@ -663,10 +671,113 @@
           "minItems": 1,
           "items": {"$ref": "#/$defs/file_ref"}
         },
+        "severity": {
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "impact": {
+          "enum": ["informational", "bounded", "material", "release-blocking"]
+        },
         "disposition": {
           "enum": ["open", "resolved", "accepted-contextual-risk"]
         }
       }
+    },
+    "human_contextual_disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer_id",
+        "decided_at",
+        "capture_set_sha256",
+        "evidence",
+        "rationale",
+        "finding_ids"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "no-material-cluster-observed",
+            "revisions-required",
+            "accepted-contextual-risk",
+            "blocked"
+          ]
+        },
+        "reviewer_id": {
+          "oneOf": [
+            {"type": "string", "minLength": 1, "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "decided_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "capture_set_sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "evidence": {
+          "oneOf": [
+            {"$ref": "#/$defs/file_ref"},
+            {"type": "null"}
+          ]
+        },
+        "rationale": {
+          "oneOf": [
+            {"type": "string", "minLength": 20, "maxLength": 4000},
+            {"type": "null"}
+          ]
+        },
+        "finding_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "pending"}}},
+          "then": {
+            "properties": {
+              "reviewer_id": {"type": "null"},
+              "decided_at": {"type": "null"},
+              "capture_set_sha256": {"type": "null"},
+              "evidence": {"type": "null"},
+              "rationale": {"type": "null"},
+              "finding_ids": {"maxItems": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "reviewer_id": {"type": "string", "minLength": 1, "maxLength": 200},
+              "decided_at": {"type": "string", "format": "date-time"},
+              "capture_set_sha256": {"$ref": "#/$defs/sha256"},
+              "evidence": {"$ref": "#/$defs/file_ref"},
+              "rationale": {"type": "string", "minLength": 20, "maxLength": 4000}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"enum": ["revisions-required", "accepted-contextual-risk"]}
+            }
+          },
+          "then": {"properties": {"finding_ids": {"minItems": 1}}}
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"const": "no-material-cluster-observed"}
+            }
+          },
+          "then": {"properties": {"finding_ids": {"maxItems": 0}}}
+        }
+      ]
     }
   }
 }

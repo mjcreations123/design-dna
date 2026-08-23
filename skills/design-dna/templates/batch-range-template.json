@@ -210,5 +210,14 @@
     "capture_set_sha256": null,
     "evidence": null
   },
-  "contextual_findings": []
+  "contextual_findings": [],
+  "human_contextual_disposition": {
+    "status": "pending",
+    "reviewer_id": null,
+    "decided_at": null,
+    "capture_set_sha256": null,
+    "evidence": null,
+    "rationale": null,
+    "finding_ids": []
+  }
 }

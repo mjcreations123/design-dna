@@ -10,6 +10,8 @@ recipe, or ban on atmosphere.
 
 - [Classify the string](#classify-the-string)
 - [Use the four-question review](#use-the-four-question-review)
+- [Default to the heading, not a pre-heading label](#default-to-the-heading-not-a-pre-heading-label)
+- [Keep rationale and internal taxonomy off the public surface](#keep-rationale-and-internal-taxonomy-off-the-public-surface)
 - [Distinguish atmosphere from false information](#distinguish-atmosphere-from-false-information)
 - [Keep disclosure visitor-facing, not process-facing](#keep-disclosure-visitor-facing-not-process-facing)
 - [Review copy specificity without writing by formula](#review-copy-specificity-without-writing-by-formula)
@@ -57,6 +59,56 @@ risk warrants it.
 Remove, rewrite, relabel, or make real anything that cannot justify its public
 role. Do not delete a successful aesthetic line merely because its purpose is
 expressive rather than utilitarian.
+
+## Default to the heading, not a pre-heading label
+
+Do not add an eyebrow, kicker, overline, mini-label, or compact all-caps line
+before a hero, heading, paragraph, or section as generic hierarchy. Start with
+the actual heading or content. In particular, do not use a small line merely
+to paraphrase or foreshadow the adjacent subject: "The optical study" above a
+heading already about an optical study adds no visitor-useful information.
+
+Keep or introduce a pre-heading label only when it communicates a different,
+project-grounded fact that the adjacent heading cannot replace without losing
+meaning: an actual category or taxonomy, source/date, true sequence, active
+state, or an explicit editorial/brand convention. A desire to make a section
+feel designed is not enough, and ordinary sections do not need a label.
+
+This rule does not suppress functional text: form labels, navigation, captions,
+credits, metadata, table labels, legends, and truthful operational status still
+serve distinct jobs. It also does not turn the visual treatment itself into a
+global style ban; evaluate the whole hierarchy and the current project's
+evidence.
+
+## Keep rationale and internal taxonomy off the public surface
+
+Treat a brief's explanation of why a design should feel or work a certain way
+as private direction. For example, "make the arrival quieter because visitors
+are waiting" should affect the encounter, hierarchy, pacing, and material
+choices; it does not authorize a public label, heading, caption, tooltip, or
+"why this is here" panel that repeats the producer's reasoning.
+
+Likewise, do not promote internal working language into visitor-facing
+categories just because it helps organize the project. Creative logic, review
+records, fixtures, source gaps, workflow stages, component names, route IDs,
+database or content-model fields, raw back-end states, analytics terms, and
+back-office categories are internal by default. A category belongs on the
+public surface only when it names a real subject, choice, collection, status,
+or task that the intended visitor recognizes and needs.
+
+Before retaining a doubtful explanation or category, ask:
+
+1. Did this originate as public source material or an explicit public-copy
+   request, rather than a producer's note or implementation detail?
+2. Does the visitor need it to understand the actual subject, make a choice,
+   complete an action, or avoid a concrete misconception?
+3. If status or disclosure is necessary, can it state the visitor consequence
+   without narrating the design, workflow, or system behind it?
+
+If the answer is no, remove it from the public surface and keep it in the
+relevant project record. A product whose actual purpose is to explain methods,
+operations, or technical systems can publish that information, but it still
+needs a real audience and public job rather than a designer's self-explanation.
 
 ## Distinguish atmosphere from false information
 
@@ -114,8 +166,11 @@ opinion, or irregular sentence pattern.
 Repeated phrasing is appropriate for navigation, taxonomy, product families,
 campaign language, accessibility, and deliberate rhythm. It becomes a finding
 when it adds no information, overwhelms hierarchy, or reveals an unexplained
-cross-project copy machine. Likewise, an eyebrow, FAQ, short fragment,
-three-item list, or familiar marketing phrase is not a defect by itself.
+cross-project copy machine. An eyebrow, FAQ, short fragment, three-item list,
+or familiar marketing phrase is not a defect merely by its form. A pre-heading
+label is a finding when it is mechanically inserted before headings, merely
+repeats the adjacent subject, or acts as generic micro-hierarchy rather than
+communicating an independent visitor-useful fact.
 
 Do not manufacture humanity with typos, slang, fake quotations, invented
 anecdotes, awkwardness, random punctuation, or intentional inconsistency.

@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
-  "version": "5.1.0",
-  "description": "Cross-host web-design direction and verification for truthful, time-appropriate, project-specific interfaces and coherent multi-route range studies.",
+  "version": "5.3.0",
+  "description": "Cross-host web-design direction for truthful project-specific interfaces, opt-in connected public continuity, Project Contrast, and Direction Challenge.",
   "author": {
     "name": "Motty"
   },
@@ -10,15 +10,20 @@
     "web-design",
     "frontend",
     "art-direction",
+    "creative-direction",
+    "route-family",
     "design-review",
     "responsive-design",
+    "connected-public-experience",
+    "project-contrast",
+    "direction-challenge",
     "non-generic"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Design DNA",
-    "shortDescription": "Specific web design with coherent creative range.",
-    "longDescription": "Build, redesign, or review websites through project evidence, proportional assurance, project-derived art direction, coherent multi-route range studies, cultural-context boundaries, responsive implementation, and adversarial verification.",
+    "shortDescription": "Project-specific web design with truthful proof.",
+    "longDescription": "Build, redesign, or review project-specific websites with rendered verification, opt-in Connected Public Experience continuity, Project Contrast for recurrence concerns, and Direction Challenge for escalated high-ambition concepts.",
     "developerName": "Motty",
     "category": "Productivity",
     "capabilities": [
@@ -26,7 +31,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use Design DNA; add Range Study for multi-route showcases and cultural review when lived identity is central."
+      "Use $design-dna for a project-specific website; add Connected Public Experience only when public state spans routes."
     ],
     "brandColor": "#164E63"
   }

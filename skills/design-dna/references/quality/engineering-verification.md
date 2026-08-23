@@ -100,7 +100,8 @@ Initialize only records that preserve a consequential decision or evidence:
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile standard --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile showcase --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile range-study --json
-python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --record direction --record claims --record handoff --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --record direction --record handoff --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile high-risk --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-state --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-ready --json
 ```
@@ -122,10 +123,24 @@ listed record is complete and hash-bound. Assets receive their own semantic
 readiness checks. Record prose, a later capability request, or an explicitly
 added record cannot silently weaken or escape the persisted gates.
 
-A standalone `--record` request intentionally adds useful evidence without
-selecting another capability preset. Once listed, that record still
-participates in `--check-ready`. The gate does not infer records absent from
-`state.json`, run unlisted workflow or specialist reviews, or prove production
+A standalone `--record` request intentionally selects only the named useful
+record. `claims` and `user-validation` are supplemental evidence records, not
+a High-risk classification: either one, or both together, can be selected for
+an otherwise Standard project without silently creating the other record or a
+High-risk gate. `--record` overrides `--profile`; select `--profile high-risk`
+without `--record` when the project is actually consequential. That explicit
+preset initializes direction, visual review, claims, and user-validation, and
+its readiness gate requires the complete set. A `high-risk` evidence
+capability is valid only alongside the High-risk assurance profile; it cannot
+be selected on its own. Migration preserves any persisted High-risk profile or
+capability even when its record inventory is incomplete, aligns the capability
+to the profile, and adds only missing draft records. It never guesses from
+claims or validation records that a new project is High-risk, and it never
+downgrades a persisted consequential declaration because evidence is missing.
+The compatibility
+`validation` preset selects the standalone user-validation record and does not
+select High-risk. The gate does not invent arbitrary records beyond selected
+capabilities, run unlisted workflow or specialist reviews, or prove production
 and launch readiness; apply those requirements separately when the delivery
 claim needs them.
 
@@ -170,19 +185,23 @@ claims or observations are complete or true. Review the substance and bind
 visual evidence to the tested build. If Python 3.10+ is unavailable, create the
 necessary records manually and disclose that helper validation did not run.
 
-Use `showcase` for open, expressive, high-visibility, or owner-sensitive work;
-it initializes exploration, direction, direction proof, and visual review.
+Use `showcase` only when the brief expressly calls for a premium, showcase, or
+high-ambition answer, or when a rejected visual direction needs recovery; it
+initializes exploration, direction, direction proof, and visual review. A
+fresh public-facing site begins at Standard unless one of those Showcase
+conditions is actually present.
 Use `range-study` when independently addressable routes need deliberately
-different creative worlds. It persists both Showcase and Range Study
-capabilities and adds the route-family record; it does not let page count,
-palette changes, or font changes substitute for structural range.
+different creative worlds. It persists Standard plus Range Study capabilities
+and adds the route-family record. Add Showcase separately only when the brief
+independently meets its condition; route count, palette changes, or font
+changes do not substitute for structural range or select Showcase.
 Use `high-risk` for consequential flows that need direction, visual review,
 claims, and user-validation records. The `--profile` values are request
 presets, not mutually exclusive completion claims: repeated initialization
 merges applicable capabilities, persists the canonical cumulative set, and
 normalizes away redundant Quick or Standard tiers. `quick` and `standard` keep
 completion requirements proportional; `substantial` and `greenfield` remain
-compatibility aliases for Standard and Showcase initialization respectively.
+compatibility aliases for Standard initialization.
 Add `handoff` explicitly only for a maintained product, shared system, or
 production-bound surface.
 
@@ -319,6 +338,11 @@ by name or count. Judge these choices from the rendered result and an explicit
 project concern, not from portable source heuristics. A consequential number
 still needs provenance because of what it claims, not because a page contains a
 particular count of figures.
+
+The scanner also cannot decide whether a pre-heading label merely repeats the
+heading beside it or was inserted by habit. That is a rendered
+[parseable-text](parseable-text.md) hierarchy review, not a source-level
+ingredient ban.
 
 Use `--content-site` only when documentation and content sources are part of the
 reviewed surface. Add `--structured-content` to opt in JSON, YAML, and YML;

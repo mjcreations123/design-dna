@@ -818,7 +818,26 @@ def safe_local_candidates(
         return "unsafe-local-path", []
     if clean_path.startswith("/"):
         stripped = clean_path.lstrip("/")
-        candidates = [root / stripped, root / "public" / stripped]
+        root_absolute = Path(os.path.abspath(os.fspath(root)))
+        source_absolute = Path(os.path.abspath(os.fspath(source_file)))
+        try:
+            source_relative = source_absolute.relative_to(root_absolute)
+        except ValueError:
+            source_relative = None
+
+        # A directory literally named ``site`` is a common static public root.
+        # When the source document is inside it, a root-relative browser URL is
+        # rooted there, not at the repository root. Do not fall back to another
+        # candidate in that case: doing so would hide a genuinely missing
+        # public asset if an unrelated repository-level file happens to exist.
+        if (
+            source_relative is not None
+            and source_relative.parts
+            and source_relative.parts[0].casefold() == "site"
+        ):
+            candidates = [root_absolute / source_relative.parts[0] / stripped]
+        else:
+            candidates = [root_absolute / stripped, root_absolute / "public" / stripped]
     else:
         candidates = [source_file.parent / clean_path]
     safe: list[Path] = []
@@ -2571,7 +2590,7 @@ def main() -> int:
                 "rendered typography quality, licensing rights, or browser use."
             ),
             "audit_status": audit_status,
-            "quality_passed": not incomplete,
+            "source_integrity_complete": not incomplete,
             "exit_code": 1 if incomplete else 0,
             "scan_scope": {
                 "source_suffixes": sorted(SOURCE_SUFFIXES),

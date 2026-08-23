@@ -16,7 +16,7 @@ ornament category fails by itself.
 - [A.1 Launch completeness](#a1-launch-completeness)
 - [B. Rendered implementation](#b-rendered-implementation)
 - [C. Project-specific quality](#c-project-specific-quality)
-- [D. Range and batch checks when applicable](#d-range-and-batch-checks-when-applicable)
+- [D. Project Contrast, range, and batch checks when applicable](#d-project-contrast-range-and-batch-checks-when-applicable)
 - [E. Handoff and state](#e-handoff-and-state)
 
 ## A. Assurance boundaries
@@ -67,6 +67,25 @@ ornament category fails by itself.
 - [ ] Every independently addressable route in scope was checked for direct
       entry, reload, title, current-page state, links, history, and intended
       indexing or canonical behavior.
+- [ ] Every capture and probe used as evidence carries the page's identity
+      (URL, title, and any non-success HTTP status) bound with it, so an
+      error page, blank document, or dead server cannot pass as a green
+      observation.
+- [ ] At compact conditions, the mechanical floors were measured in the
+      render where applicable: interactive target sizes against the
+      accessibility floor, text-input font size that does not force a
+      focus zoom, page zoom not disabled or capped, fixed and docked
+      elements clearing the safe-area insets, and focused elements never
+      hidden behind sticky surfaces.
+- [ ] The in-between states of consequential interactions were exercised,
+      not inferred: the submit lifecycle including in-flight and failure
+      with preserved input, skeleton-to-content handoff without layout
+      shift, empty and zero-result states, and any offered undo actually
+      undoing.
+- [ ] Where the build reproduces supplied artwork, the rendered result was
+      compared against the reference at the artwork's own width, the
+      extraction sheet was walked row by row, and remaining deviations are
+      recorded with reasons for the owner's knowing approval.
 - [ ] Project-relevant wide and narrow captures were saved and opened. Every
       materially distinct route body is represented; route sampling is used
       only when the same system genuinely makes the omitted route redundant
@@ -136,6 +155,15 @@ ornament category fails by itself.
       adaptation.
 - [ ] Decorative labels do not reuse domain tokens, state letters, measurement
       marks, or selection symbols in a way that implies a real value or state.
+- [ ] A hero, paragraph, or section does not acquire a small pre-heading merely
+      to repeat what its adjacent heading or copy already says. Any eyebrow,
+      kicker, or overline retained there communicates a distinct,
+      project-grounded visitor fact or an explicit editorial/brand convention.
+- [ ] Public headings, labels, categories, captions, navigation, and help do
+      not narrate the producer's design rationale, workflow, project records,
+      internal-only state, or implementation/data-model vocabulary. Any
+      explanation or status has a real visitor-facing purpose and states the
+      visitor consequence rather than the production story.
 - [ ] The smallest ordinary-reading and interactive, caption, credit, legend,
       or utility roles were identified in the actual render. Their casing and
       tracking were inspected at a project-relevant narrow width and with text
@@ -157,10 +185,15 @@ ornament category fails by itself.
 - [ ] Metadata, favicon, social image, source disclosures, 404 behavior, demo
       boundaries, and ordinary footer/navigation details match the project
       rather than a starter.
-- [ ] Material status and boundary copy is visible where misunderstanding has a
-      consequence. Repeated instances were compared by consequence and
-      consolidated when they merely duplicate one another; truth remains clear
-      without automatically becoming the loudest element on every route.
+- [ ] Material status and boundary copy is visible at every consequential
+      expectation point, including a direct-entry route that lacks carried
+      context. For a sparse, fictional, or internal concept, compare the
+      rendered context-free entry and each consequential claim or action with
+      its factual fixture, claim ledger, and actual behavior. An already
+      visible persistent orientation may satisfy linked routes; repeated
+      generic caveats were consolidated when they merely duplicate one
+      another. Truth remains clear without automatically becoming the loudest
+      element on every route.
 
 ## C. Project-specific quality
 
@@ -172,6 +205,21 @@ ornament category fails by itself.
       were compared with the bounded fixture they promise. The fixture sustains
       the relevant audience expectation or the identity was narrowed; no
       category checklist or repeated disclaimer was used as a substitute.
+- [ ] When a detailed, connected, customer-facing, app-like, or
+      client-demonstration experience was selected, direct-entry questions,
+      material route handoffs or deliberate resets, one meaningful action path,
+      its outcome, and its recovery or continuation were verified in the final
+      candidate. The result may be honestly local-only or illustrative; it
+      does not imply an admin, backend, or live operation.
+- [ ] When the explicit Connected Public Experience capability is selected and
+      applicable, its canonical final closure binds the exact reviewed build,
+      rendered evidence, and functional-path artifact or recorded result,
+      including direct-entry and recovery/continuation proof. A justified
+      not-applicable record names its reason; a blocked record remains blocked.
+- [ ] When a staff/admin branch is requested, its public/back-office split,
+      Operate-mode task, approved/sandbox/local non-empty fixture boundary, and
+      relevant functional proof are recorded. No empty decorative admin was
+      used to imply a live operation.
 - [ ] Consequential type, composition, media, color, material, ornament,
       interaction, motion, and content decisions can be explained from this
       project or accepted aesthetic judgment rather than a hidden portable
@@ -185,6 +233,11 @@ ornament category fails by itself.
       do not remain interchangeable with an unrelated site after changing
       nouns and images, unless a real convention or system requirement
       explains the similarity.
+- [ ] When Project Contrast is active, the selected direction, its
+      brief-native counter-answer, the comparison authority or limitation, and
+      the wide/narrow collision-test evidence are bound to the exact candidate.
+      A “still too close” result reopens the earliest shared encounter decision;
+      a font, palette, shape, or effect swap alone does not close it.
 - [ ] Prominent emphasis, labels, cards, stats, status, diagrams, gradients,
       effects, and motion communicate or contribute intentionally; no
       ingredient was removed merely because it appeared on a trend list.
@@ -194,7 +247,7 @@ ornament category fails by itself.
       evidence: related routes and system consumers were re-audited, the cause
       was revised, and the affected conditions were rerendered.
 
-## D. Range and batch checks when applicable
+## D. Project Contrast, range, and batch checks when applicable
 
 - [ ] Sibling routes with different jobs have meaningfully different bodies;
       shared navigation, identity, truth, access, and operating foundations

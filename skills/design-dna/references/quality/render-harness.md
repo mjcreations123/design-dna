@@ -9,6 +9,7 @@ for another.
 ## Contents
 
 - [Use the bundled reviewer truthfully](#use-the-bundled-reviewer-truthfully)
+- [Drive interactive capture with the Playwright CLI](#drive-interactive-capture-with-the-playwright-cli)
 - [Bound host capture and browser state](#bound-host-capture-and-browser-state)
 - [Declare the scenarios that matter](#declare-the-scenarios-that-matter)
 - [Understand full-page capture](#understand-full-page-capture)
@@ -40,6 +41,48 @@ Use the project's established browser or visual-regression system when it
 already provides the needed evidence. Do not add or replace tooling merely to
 match this reference.
 
+## Drive interactive capture with the Playwright CLI
+
+For the hands-on capture and probing between bundled-reviewer runs
+(state exploration, media-emulation checks, scroll-position slices,
+element crops, quick console and network reads), the standard tool is the
+Playwright CLI: the `@playwright/cli` npm package, a one-shot command
+interface over a per-workspace daemon that keeps the live browser, page
+state, and emulation between shell commands. Pin the installed version in
+the project record; it tracks a Playwright prerelease channel, so an
+unpinned install can change behavior between runs. On a machine with a
+real Chrome installed it uses that browser directly with no download.
+
+The invocations that cover this reference's recurring needs: `open` and
+`resize` for viewport control, with `--device` or `--mobile` for true
+device emulation including pixel ratio; `screenshot` for viewport,
+`--full-page`, `--hires` (device pixels), or an element by selector;
+`snapshot --boxes` for an accessibility tree with geometry; `console` and
+`requests` for errors; `eval` for computed styles and font status; and
+`run-code` for anything needing the full API in one batch, including
+media emulation for reduced motion, color scheme, and forced colors,
+which then persists for subsequent commands. Sessions are scoped to the
+working directory, matching the one-session-per-project convention;
+`kill-all` clears zombie daemons, an environment variable unlocks
+`file://` targets when no server exists, and capture output should be
+directed outside cloud-synced trees.
+
+Two disciplines make its evidence trustworthy. First, identity: every
+command response reports the page URL, title, and any non-success HTTP
+status, and navigation failure exits nonzero. Bind title and status into
+recorded observations, so a dead server's error page can never pass as a
+green capture; a probe result without page identity is not evidence.
+Second, the full-page limitation below still applies: `--full-page` is
+the same composite-from-top capture as any other tool, so scroll-driven
+work is proven with real scrolling plus viewport captures, never with a
+full-page image alone.
+
+The raw devtools-protocol script remains a named fallback for
+environments where the CLI cannot install, with the same identity
+discipline; the bundled reviewer remains the only source of the
+schema-bound review report, which the CLI complements and never
+replaces.
+
 ## Bound host capture and browser state
 
 In a desktop agent or GUI host, prefer an established project harness or the
@@ -59,7 +102,7 @@ exact owned directory on every success, failure, timeout, and interruption
 path. If cleanup cannot be verified, report the exact retained path and size;
 do not call the run clean. Reuse an authenticated or persistent profile only
 when the real task requires that session and the authority and data-handling
-boundaries permit itâ€”never merely to render a local static site.
+boundaries permit it—never merely to render a local static site.
 
 Stop task-owned preview servers after evidence collection unless the owner
 asked to keep a preview available. Server reachability, browser launch, and a

@@ -167,6 +167,33 @@ unnecessary decoding, and hidden background rendering. Transform and opacity
 are useful, not mandatory; other properties and runtimes are acceptable when
 measured evidence supports them.
 
+Recurring implementation mechanics worth checking whenever they apply:
+
+- Continuous input values (pointer position, scroll progress, magnetic and
+  parallax offsets) belong in the animation system's own value pipeline or
+  in CSS scroll-driven timelines, not in per-frame component state that
+  re-renders the tree; a scroll listener driving framework state is the
+  classic source of jank and leaks.
+- One animation engine owns a given element tree. Mixing a scroll library,
+  a spring library, and a 3D runtime on the same elements makes them fight
+  over the same frames; give each engine its own subtree and job.
+- Scroll-linked triggers measure real element geometry: verify the trigger
+  and end positions in the render and recalculate them on resize and
+  content change. The recurring failure is a pin or scrub sequence whose
+  start was measured mid-viewport, so it fires half-scrolled; its symptom
+  is only visible in the render, never in the code.
+- A transition must be interruptible: new input redirects or cancels a
+  running sequence instead of queueing behind it, and cleanup runs on every
+  exit path including unmount mid-flight.
+- Text under animated transform can blur; animate a wrapper rather than
+  the text node when sharpness matters, and verify settled sharpness.
+- SVG transforms behave predictably when applied to a group wrapper with
+  its transform box set to the element's own bounds and an explicit
+  origin; a transform on a bare path uses the coordinate system, not the
+  shape, and drifts.
+- Heavy blur, translucency, and glass surfaces honor the reduced
+  transparency preference with a solid fallback, alongside reduced motion.
+
 Inspect representative recordings or frames where normal-speed review hides
 problems. Verify input latency, cancellation, settle, compositing, clipping,
 text sharpness, memory, CPU/GPU use, battery implications, loading, cleanup,

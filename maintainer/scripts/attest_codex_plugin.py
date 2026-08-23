@@ -888,15 +888,42 @@ def comparable(payload: dict[str, object]) -> dict[str, object]:
 
 
 def atomic_write_json(path: Path, payload: object) -> None:
-    temporary = path.parent / f".{path.name}.{os.getpid()}.tmp"
+    # A release fixture may intentionally begin without generated evidence.
+    # Verify the whole intended path before creating its absent output parent,
+    # then verify the newly created parent again so the convenience does not
+    # turn a missing directory into a reparse-point escape.
+    path = absolute(path)
+    assert_no_reparse_path(path)
+    assert_no_reparse_path(path.parent)
     try:
-        with temporary.open("x", encoding="utf-8", newline="\n") as stream:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise ToolFailure(
+            "codex-plugin-attestation-write-failed",
+            str(exc),
+            path,
+        ) from exc
+    assert_no_reparse_path(path.parent)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=path.parent,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(
+            descriptor,
+            "w",
+            encoding="utf-8",
+            newline="\n",
+        ) as stream:
             json.dump(payload, stream, ensure_ascii=False, indent=2)
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
+        assert_no_reparse_path(temporary, stop=path.parent)
         os.replace(temporary, path)
-    except OSError as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         raise ToolFailure(
             "codex-plugin-attestation-write-failed",
             str(exc),

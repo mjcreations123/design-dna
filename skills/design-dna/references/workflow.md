@@ -1,8 +1,13 @@
 # Process spine
 
-Use this process spine for substantial website or web-UI work. Scale it down
-for a component, mechanical change, or review-only request. Create artifacts
-only when they preserve a consequential decision or useful evidence.
+Use this process spine after [Direction start](quality/direction-start.md)
+frames a provisional hypothesis and grounding supports the selected creative
+logic for substantial website or web-UI work. Do not call a pre-grounding
+hypothesis selected or advance it as `direction-ready`. Load the phase you are
+entering instead of front-loading every section before the first direction
+exists. Scale it down for a component, mechanical change, or review-only
+request. Create artifacts only when they preserve a consequential decision or
+useful evidence.
 
 ## Contents
 
@@ -35,9 +40,12 @@ Before changing code:
    evidence and deployable output.
 6. Identify the surface modes that describe each real user job; allow hybrid
    routes and do not impose a primary mode when that distinction adds no value.
-7. Select a proportional Quick or Standard base, then every applicable
-   Showcase, Range Study, Batch Study, High-risk, and Asset-led capability
-   from `SKILL.md`.
+7. Select the proportional base and applicable capabilities from
+   [Direction start](quality/direction-start.md): fresh public work starts at
+   Standard with full public rendered review, while Showcase is reserved for
+   an expressly premium, showcase, high-ambition, or direction-recovery brief.
+   Then add every applicable Project Contrast, Direction Challenge, Range
+   Study, Batch Study, High-risk, and Asset-led capability from `SKILL.md`.
    These capabilities may coexist; the state normalizes redundant lower
    presets, and later additions may strengthen but never silently downgrade the
    persisted set.
@@ -48,7 +56,13 @@ Before changing code:
    externally acting behavior nonproduction. Create the
    [placeholder register](../templates/placeholder-register-template.md) at
    `.design-dna/placeholders.md` only when unresolved material or behavior
-   exists, and make unavailable actions honest for the declared state.
+   exists, and make unavailable actions honest for the declared state. For a
+   sparse, fictional, or internal concept, record a boundary map from the
+   fixture or claim ledger and actual behavior: a context-free entry
+   orientation, every claim- or action-local illustrative/unavailable state,
+   and duplicate status copy to consolidate. A persistent orientation may
+   serve linked routes only when it remains visible; a likely shared or
+   direct-entry route cannot rely on a prior page.
 9. Read the [assurance boundaries](../policy/absolutes.md); apply the
    truth, rights, access, behavior, evidence, delivery, and project-contract
    boundaries relevant to this build. They contain no portable taste rules.
@@ -64,9 +78,17 @@ Before changing code:
 Do not replace the stack, design system, or working integration merely because
 another tool is more familiar.
 
+Preflight can narrow a first hypothesis, but it cannot commit creative logic.
+Complete this minimum repository/system inspection and the proportional
+grounding in section 3 before treating a direction as selected, advancing a
+record to `direction-ready`, or spreading it through broad implementation.
+
 ## 2. Frame the job
 
-Record what materially changes the result:
+Record what materially changes the result. Treat any direction sketched during
+this framing as provisional until the grounding phase confirms that the
+repository/system and project/category material do not materially change its
+encounter:
 
 - audience, primary task, decision, and success condition;
 - business or service outcome, channel, arrival context, trust requirement,
@@ -109,6 +131,40 @@ motion, color, or interaction only
 when it is consequential; do not make every route perform difference through
 the same fields.
 
+When Project Contrast is selected for an unlike-recent-work request, create
+`.design-dna/project-contrast.json` through the initializer before broad
+implementation. Begin from the current brief and source packet, not a gallery
+of prior output. State the visitor occasion, public job, subject material or
+operating reality, and the proposed organizing answer. Challenge that first
+answer with one materially different answer that changes the encounter,
+content operation, or body progression rather than only its palette, type
+family, imagery, ornament, or effect. Then, and only when the accountable
+owner has authorized it, inspect the smallest useful closest-sibling evidence.
+Record intentional shared foundations separately from project-owned
+differences. An approved existing brand or product system may use the
+inherited-system disposition; a new unrelated public surface may not close
+contrast by random variation or unexplained cosmetic substitution. Keep the
+record honestly staged: `draft` while its fields are unresolved,
+`direction-ready` once the brief-derived encounter, counter-answer, signature,
+and structural/surface-language prompts exist, `proof-ready` once exact
+candidate and wide/narrow evidence are bound, and `reviewed` only after the
+applicable review/disposition is recorded. For an owner recurrence requirement,
+the signature must contain a nonempty project-selected encounter-axis set and
+surface-language-axis set. Those evidence groups are not a style quota or a
+list of ingredients that must differ.
+
+For an explicit three-root recurrence escalation or expressly requested
+multi-root high-ambition greenfield concept challenge, add
+`.design-dna/direction-challenge.json` through the same initializer and read
+[Direction Challenge](quality/direction-challenge.md). A premium or
+high-ambition website alone remains Showcase.
+Before polished examples or broad implementation, record three incompatible
+brief-native roots and an exact pairwise matrix; then render wide and narrow
+proof slices from two different roots. Select the direction against a rendered
+rejected root and freeze an independent unprimed observation. This is a
+deliberately scoped escalation, not a general instruction to produce three
+concepts, rotate visual ingredients, or adopt a shared design schema.
+
 For an explicit Batch Study, read
 [Batch Study evaluation](quality/batch-range-evaluation.md) before any case is
 built. Initialize it with `--profile batch-study`, or create
@@ -139,6 +195,19 @@ diagram, low-fidelity markup, or a rendered scaffold; its purpose is to prove
 information and action order before surface styling makes weak structure look
 finished.
 
+When the brief asks for a detailed, connected, customer-facing, app-like, or
+client-demonstration experience, or when the public promise depends on linked
+content or state, also use [Connected public
+experience](quality/connected-public-experience.md). Before the first visual
+candidate, select its capability and record the canonical applicability marker,
+material direct-entry questions, and truth/entity constraints. Keep those
+pre-direction constraints separate from the selected root's own handoffs or
+resets, meaningful path with an outcome and recovery or continuation, status
+crosswalk, and proof plan. Load the smallest applicable category or flow
+reference before direction. This is not a requirement for an admin, backend,
+page count, fake integration, or funnel; a static editorial or reference
+surface can mark it not applicable with a reason.
+
 When material is sparse, contradictory, or mostly aspiration, use the
 [minimum source packet](quality/content-discovery.md). Gather the smallest
 truthful set that covers audience, job, real nouns, approved truth, proof,
@@ -156,9 +225,13 @@ When a sample is meant to demonstrate visual capability to an owner or client,
 do not let the Batch Study protocol silently turn it into a collection of
 abstract test specimens. A Batch Study evaluates controlled transfer and can
 keep cases intentionally fictional; it does not prove that its cases satisfy a
-real client's taste or public proposition. Use Showcase-level direction work,
-source-rich material, and owner-facing rendered review for work that will be
-judged as a portfolio or client sample.
+real client's taste or public proposition. Use source-rich material and
+owner-facing rendered review for work that will be judged as a portfolio or
+client sample. Choose **Standard** for an ordinary sample and add **Showcase**
+only when the brief expressly calls for premium, showcase, or high-ambition
+direction work, or when a rejected direction needs recovery. Client visibility
+or owner sensitivity intensifies the rendered and taste review; it does not by
+itself select Showcase.
 
 Ask only high-leverage questions whose answers can materially change the
 concept. Ask further focused questions when production accuracy, externally
@@ -197,6 +270,15 @@ uncertainty; it need not contain fixed reference categories or counts. Record
 the retrieval date, attribute-level lesson, repeated category mean when one is
 actually observed, and what must not be copied.
 
+Before committing selected creative logic, combine the minimum repository and
+system inspection from preflight with enough project and category grounding to
+answer the questions that could materially change the encounter. The approved
+brief, existing system, and supplied sources can satisfy this read. External
+research is not required when it is unavailable, unauthorized, or cannot change
+the decision; do not browse merely to produce a research artifact. If a
+material question remains unresolved, record the boundary and keep the
+direction reversible rather than advancing it as selected or `direction-ready`.
+
 Do not copy layouts, wording, distinctive interaction, assets, logos, or brand
 identifiers. Do not treat awards, likes, pins, or engagement as proof of
 usability or correctness.
@@ -223,6 +305,11 @@ evidence, not automated proof of independence.
 
 ## 4. Calibrate and direct
 
+Only after the grounding in section 3 supports it, settle the selected creative
+logic. Any opening, root, or organizing answer noted earlier remains a
+provisional hypothesis; it cannot justify broad implementation or a
+`direction-ready` record by itself.
+
 When an accountable owner has authorized minimized cross-project evidence,
 consult the [studio ledger](quality/ledger.md) after understanding the project
 brief. Compare repeated clusters without disqualifying a family,
@@ -240,13 +327,29 @@ logic in the form it actually takes: one premise, several local systems,
 atmosphere, convention, ornament, collage, narrative, utility, or another
 project-fitting structure. No universal unity model is required.
 
-For a visual-capability sample, high-visibility public page, or recovered
-direction, make a concise project read and a reference dossier before the main
+For a visual-capability sample, a public surface whose brief expressly calls
+for premium or high-ambition work, or a recovered direction, make a concise
+project read and a reference dossier before the main
 surface hardens. Research actual project material and relevant current visual
 relationships rather than browsing only for names of styles. The result must
 answer whether the proposed first view is a credible, desirable public
 encounter for this subject—not merely a different-looking demonstration of the
 agent's process.
+
+When Project Contrast is active, make the likely first answer visible before
+implementation and create a brief-native counter-answer without loading prior
+site output. The counter-answer must change an encounter-level relationship,
+such as entry model, content operation, body progression, or task path. It is
+not a color, font, photo, surface, or animation swap. Only after the required
+grounding supports a selection may the Project Contrast record advance to
+`direction-ready`; then use the smallest owner-authorized nearest-sibling
+sample as a diagnostic, record justified shared foundations, and reopen the
+earliest unexplained shared decision. An inherited product or brand system may
+document why its repeated foundation is correct; it is not forced to perform
+novelty. Write one review prompt for structural/encounter comparison and one
+for surface-language comparison before proof. Prompts ask what a reviewer
+should look for in this project; they are neither universal bans nor an
+instruction to rotate type, palette, geometry, or motion.
 
 For a Range Study, write the family boundary explicitly: which truth,
 navigation, access, identity, and operating rules remain stable; which
@@ -255,6 +358,22 @@ routes from consequential uncertainty and useful contrast, not from fixed
 restrained, expressive, or discovery archetypes. Material difference must be
 visible in the rendered bodies and cannot be established only by replacing
 copy, color, or photographs.
+
+For any multi-route public project, make a small route-body map before copying
+a page recipe: each independently addressable route's visitor occasion,
+dominant content operation, opening or first task-bearing encounter, body
+progression, ending or next state, and relevant narrow transformation. A route
+whose body intentionally reuses another's operation records the task, content,
+brand, platform, or maintenance reason. This is project direction evidence,
+not a mandatory page taxonomy or a demand that every route look different.
+
+Full Range Study remains for an explicit anthology or expressive-range claim.
+Outside that claim, shared navigation, access, identity, and platform behavior
+may remain consistent while route bodies differ only where task, material, or
+sequence requires it. Review the first wide and narrow encounter for each
+materially distinct body: a persistent public shell may orient the visitor, but
+it must not silently substitute for the route's own subject, task, or reason to
+continue.
 
 For a consequential open direction, explore enough materially different
 evidence to challenge the first plausible answer. The right form may be one
@@ -392,7 +511,10 @@ Three evidence lanes apply proportionately:
 3. **Review public text.** Apply the
    [parseable-text](quality/parseable-text.md) questions to prominent,
    repeated, interactive, data-shaped, and doubtful strings; run bounded
-   residue checks over relevant routes and states.
+   residue checks over relevant routes and states. For a sparse, fictional,
+   or internal concept, render-check the recorded boundary map at a
+   context-free entry and at every consequential claim or action against the
+   fixture or ledger and actual behavior, not a disclosure count.
 
 After the final implementation round of every substantial new build or visual
 redesign, run the
@@ -411,12 +533,22 @@ map is revealed, record only findings tied to actual site and route contexts,
 and run `scripts/batch_range_audit.py`. Its `comparison_ready` result reports
 mechanically verifiable evidence and timing fields only; non-empty distinct
 files and declared booleans cannot prove that a human followed the protocol or
-made substantive observations. It never supplies an aesthetic pass, authorship inference, or
-portable list of ingredients to ban. Planned cases remain a separate,
+made substantive observations. After that frozen comparison, record the
+capture-set-bound human contextual disposition from the
+[Batch Study evaluation](quality/batch-range-evaluation.md). The audit reports
+`human_contextual_ready` separately, and `final_ready` only when both protocol
+coverage and the declared human disposition are ready. Neither result supplies
+an aesthetic pass, authorship inference, or portable list of ingredients to
+ban. Planned cases remain a separate,
 non-fatal readiness gap; they are never counted as built or correctly blocked.
 Built cases remain incomplete while data handling or implementation-isolation
 attestations are unresolved. Hashes and distinct IDs make the record
 inspectable; they do not certify what happened outside the recorded evidence.
+The standalone audit exits successfully only at `final_ready`: a protocol-ready
+study still has an incomplete result until its separate decision record is
+frozen. That decision artifact must be distinct from the study's screenshots,
+reviews, source material, and finding attachments, and a release-blocking
+finding must be resolved rather than accepted as contextual risk.
 
 Compare the final candidate with the selected direction proof and the previous
 accepted or reviewed baseline. Record intentional evolution and unintended
@@ -441,7 +573,7 @@ Use a matrix proportionate to the work:
 | --- | --- |
 | Full public route | Continuous resizing plus representative narrow, common, and wide states; navigation and primary actions; content stress; accessibility baseline; build and runtime checks. |
 | Range Study route family | Every declared direct-entry path; matched atlas at at least two project-relevant exact widths; shared navigation and identity; pairwise closest-sibling review; route-specific responsive, reduced-motion, and no-JavaScript results; route count and link integrity. |
-| Batch Study | Planned cases reported separately with declared roots, routes, and empty captures; frozen per-site source packets and implementation-isolation attestations; resolved authorization, access, retention, and transformation handling for built captures; every built page/capture bound to a successful renderer route, profile, mode, exact pixels, and frozen public-build manifest; exact evidence and capture-set hashes; distinct site observations frozen before sibling output or diagnostics; a distinct neutral-label comparison started only after those observations and before diagnostics or the identity map; isolated build roots; correctly blocked cases reported separately; contextual human decision retained. |
+| Batch Study | Planned cases reported separately with declared roots, routes, and empty captures; frozen per-site source packets and implementation-isolation attestations; resolved authorization, access, retention, and transformation handling for built captures; every built page/capture bound to a successful renderer route, profile, mode, exact pixels, and frozen public-build manifest; exact evidence and capture-set hashes; distinct site observations frozen before sibling output or diagnostics; a distinct neutral-label comparison started only after those observations and before diagnostics or the identity map; a later capture-set-bound human contextual disposition that closes material findings separately from protocol coverage; isolated build roots; correctly blocked cases reported separately. |
 | App or transaction | Relevant routes, roles, states, keyboard/focus, destructive/recovery behavior, validation, responsive constraints, and data integrity. |
 | Component | Documented states, long/short/missing content, focus, input modalities, and container sizes. |
 | Existing-site review | Available routes and evidence; identify unavailable internals and unperformed checks. |
@@ -519,6 +651,16 @@ Before delivery:
 - keep internal direction and evidence files out of commits unless the project
   permits them.
 
+When the repository itself transfers to the client, ship a client-facing
+DESIGN.md in the repository root, filled from the accepted system per the
+[client handoff template](../templates/design-handoff-template.md): the
+real tokens with their semantic roles, the accent budget, the type roles
+and any substitute mapping, component traits, media policy, motion policy,
+short do and do-not lists derived from actual decisions, and an honest
+known-gaps section. Its job begins after handoff, keeping the owner's
+future edits and AI assistants on-system; write it from the shipped build,
+never from another brand's record.
+
 For a consequential product or maintained design system, leave a proportionate
 handoff packet beside the implementation: source-of-truth order, selected
 direction and decision rationale, token and component mappings, important
@@ -552,6 +694,8 @@ Possible records:
 .design-dna/
   exploration.md
   direction.md
+  project-contrast.json      # optional owner-authorized recurrence record
+  direction-challenge.json   # optional explicit three-root/multi-root challenge record
   route-family.json           # optional explicit Range Study record
   batch-range.json            # optional controlled unrelated-site study record
   direction-proof.md

@@ -1,6 +1,6 @@
 interface:
   display_name: "Design DNA"
   short_description: "Specific web design with coherent creative range"
-  default_prompt: "Use $design-dna; add Range Study for multi-route showcases and cultural review when lived identity is central."
+  default_prompt: "Use $design-dna to build a project-specific website; activate Project Contrast when unrelated sites feel alike."
 policy:
   allow_implicit_invocation: true

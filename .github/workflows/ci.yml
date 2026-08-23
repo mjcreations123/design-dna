@@ -57,7 +57,7 @@ jobs:
       - name: Verify dependency consistency
         run: python -m pip check
       - name: Run and attest unit and adversarial tests with zero unwaived skips
-        run: python -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json"
+        run: python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json"
       - name: Validate evidence
         run: python -B maintainer/scripts/validate_evidence.py --plugin-root .
       - name: Check internal links

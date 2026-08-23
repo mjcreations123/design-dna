@@ -54,9 +54,17 @@ UNIVERSAL_EVIDENCE_ANCHORS = (
 CORE_EVIDENCE_CAPABILITIES = {
     "asset-led",
     "batch-study",
+    "connected-public-experience",
     "cultural-context",
+    "direction-challenge",
     "high-risk",
+    "project-contrast",
     "range-study",
+}
+CAPABILITY_PROFILE_COMMANDS = {
+    "project-contrast": "--profile project-contrast",
+    "direction-challenge": "--profile direction-challenge",
+    "high-risk": "--profile high-risk",
 }
 EVIDENCE_CAPABILITY_PATTERN = re.compile(
     r"[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?"
@@ -65,6 +73,22 @@ EVIDENCE_EXTENSION_ID_PATTERN = re.compile(
     r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
 )
 EVIDENCE_EXTENSION_STATUSES = {"draft", "complete", "not-applicable"}
+OWNER_RECURRENCE_TRIGGER = "owner-recurrence-requirement"
+OWNER_RECURRENCE_RECORDS = ("project-contrast", "direction-challenge")
+OWNER_RECURRENCE_CAPABILITIES = frozenset(OWNER_RECURRENCE_RECORDS)
+INITIALIZATION_TRIGGERS = {OWNER_RECURRENCE_TRIGGER}
+TRIGGER_EVIDENCE_CAPABILITIES = {
+    OWNER_RECURRENCE_TRIGGER: (
+        "project-contrast",
+        "direction-challenge",
+    ),
+}
+TRIGGER_RECORDS = {
+    OWNER_RECURRENCE_TRIGGER: (
+        "project-contrast",
+        "direction-challenge",
+    ),
+}
 VISUAL_FINDINGS_CONTRACT = "visual-review-findings-v2"
 VISUAL_FINDINGS_HEADERS = (
     "Severity",
@@ -128,6 +152,16 @@ RECORD_TEMPLATES = {
     "direction-proof": ("direction-proof.md", "direction-proof-template.md"),
     "route-family": ("route-family.json", "route-family-template.json"),
     "batch-range": ("batch-range.json", "batch-range-template.json"),
+    "project-contrast": (
+        "project-contrast.json", "project-contrast-template.json",
+    ),
+    "direction-challenge": (
+        "direction-challenge.json", "direction-challenge-template.json",
+    ),
+    "connected-public-experience": (
+        "connected-public-experience.json",
+        "connected-public-experience-template.json",
+    ),
     "visual-review": ("visual-review.md", "visual-review-template.md"),
     "claims": ("claims.md", "claim-ledger-template.md"),
     "assets": ("assets.yml", "asset-manifest.yml"),
@@ -139,10 +173,28 @@ PROFILES = {
     "substantial": ("direction", "visual-review"),
     "greenfield": ("direction", "visual-review"),
     "standard": ("direction", "visual-review"),
+    "connected-public-experience": (
+        "direction",
+        "connected-public-experience",
+        "visual-review",
+    ),
     "showcase": (
         "exploration",
         "taste-calibration",
         "direction",
+        "direction-proof",
+        "visual-review",
+    ),
+    "project-contrast": (
+        "direction",
+        "project-contrast",
+        "visual-review",
+    ),
+    "direction-challenge": (
+        "exploration",
+        "taste-calibration",
+        "direction",
+        "direction-challenge",
         "direction-proof",
         "visual-review",
     ),
@@ -172,6 +224,9 @@ CANONICAL_ASSURANCE_PROFILES = {
     "quick",
     "standard",
     "showcase",
+    "connected-public-experience",
+    "direction-challenge",
+    "project-contrast",
     "range-study",
     "batch-study",
     "high-risk",
@@ -181,6 +236,9 @@ ASSURANCE_PROFILE_ORDER = (
     "quick",
     "standard",
     "showcase",
+    "connected-public-experience",
+    "direction-challenge",
+    "project-contrast",
     "range-study",
     "batch-study",
     "high-risk",
@@ -192,13 +250,22 @@ REQUEST_PROFILE_ASSURANCE = {
     "standard": ("standard",),
     "greenfield": ("standard",),
     "showcase": ("showcase",),
+    "connected-public-experience": (
+        "standard", "connected-public-experience",
+    ),
+    "direction-challenge": ("direction-challenge",),
+    "project-contrast": ("standard", "project-contrast"),
     "range-study": ("standard", "range-study"),
     "batch-study": ("standard", "batch-study"),
     "high-risk": ("high-risk",),
-    "validation": ("high-risk",),
+    # The compatibility validation preset selects one supplemental research
+    # record.  It is not a declaration that the project is High-risk.
+    "validation": ("standard",),
     "asset-led": ("asset-led",),
     "full": (
-        "showcase", "range-study", "batch-study", "high-risk", "asset-led",
+        "showcase", "connected-public-experience", "direction-challenge",
+        "project-contrast", "range-study", "batch-study", "high-risk",
+        "asset-led",
     ),
 }
 
@@ -222,7 +289,7 @@ def normalize_assurance_profiles(
         )
     if observed - {"quick"}:
         observed.discard("quick")
-    if observed & {"showcase", "high-risk"}:
+    if observed & {"showcase", "direction-challenge", "high-risk"}:
         observed.discard("standard")
     if not observed:
         observed.add("standard")
@@ -240,12 +307,21 @@ def infer_assurance_profiles(
     profiles: set[str] = set()
     if observed & {"exploration", "direction-proof"}:
         profiles.add("standard")
+    if "connected-public-experience" in observed:
+        profiles.update({"standard", "connected-public-experience"})
     if "route-family" in observed:
         profiles.update({"standard", "range-study"})
     if "batch-range" in observed:
         profiles.update({"standard", "batch-study"})
-    if observed & {"claims", "user-validation"}:
-        profiles.add("high-risk")
+    if "project-contrast" in observed:
+        profiles.update({"standard", "project-contrast"})
+    if "direction-challenge" in observed:
+        profiles.update({"standard", "direction-challenge"})
+    # Claim and user-validation records can be useful on an otherwise ordinary
+    # project. Their presence (individually or together) is not a risk
+    # classification. Only an explicit --profile high-risk declaration, or an
+    # already-persisted High-risk state retained during merge/migration, creates
+    # the High-risk capability and its complete companion-record obligations.
     if "assets" in observed:
         profiles.add("asset-led")
     if observed & {"direction", "visual-review", "handoff"}:
@@ -285,6 +361,40 @@ def merged_assurance_profiles(
     )
 
 
+def contract_declares_capability(payload: object, capability: str) -> bool:
+    """Read a legacy capability declaration without treating records as intent.
+
+    This deliberately answers only whether the persisted contract named a
+    capability.  It does not try to reverse-engineer intent from a partial
+    inventory of supplemental records, because that guess could silently lower
+    a consequential assurance declaration during migration.
+    """
+
+    return (
+        isinstance(payload, dict)
+        and isinstance(payload.get("applicable_capabilities"), list)
+        and capability in payload["applicable_capabilities"]
+    )
+
+
+def require_capability_profile_consistency(
+    capabilities: tuple[str, ...] | list[str] | set[str],
+    assurance_profiles: tuple[str, ...] | list[str] | set[str],
+) -> None:
+    """Keep a High-risk evidence gate bound to its explicit assurance profile."""
+
+    normalized_profiles = set(normalize_assurance_profiles(assurance_profiles))
+    if "high-risk" in set(capabilities) and "high-risk" not in normalized_profiles:
+        raise StateError(
+            "high-risk-profile-required",
+            (
+                "High-risk evidence requires the high-risk assurance profile. "
+                "Use --profile high-risk; it initializes direction, visual-review, "
+                "claims, and user-validation together."
+            ),
+        )
+
+
 def inferred_evidence_capabilities(
     assurance_profiles: tuple[str, ...] | list[str] | set[str],
 ) -> tuple[str, ...]:
@@ -294,7 +404,9 @@ def inferred_evidence_capabilities(
     return tuple(
         capability
         for capability in (
-            "range-study", "batch-study", "high-risk", "asset-led",
+            "project-contrast", "direction-challenge",
+            "connected-public-experience", "range-study", "batch-study",
+            "high-risk", "asset-led",
         )
         if capability in observed
     )
@@ -322,23 +434,66 @@ def normalize_evidence_capabilities(
     return normalized
 
 
+def missing_capability_records(
+    capability: str,
+    records: tuple[str, ...] | list[str] | set[str],
+) -> tuple[str, ...]:
+    """Return canonical records a selected capability still lacks."""
+
+    return tuple(
+        sorted(CAPABILITY_REQUIRED_RECORDS.get(capability, set()) - set(records))
+    )
+
+
+def require_capability_record_selection(
+    capabilities: tuple[str, ...] | list[str] | set[str],
+    records: tuple[str, ...] | list[str] | set[str],
+) -> None:
+    """Reject capability-only selections that could create broken state."""
+
+    for capability in capabilities:
+        profile_command = CAPABILITY_PROFILE_COMMANDS.get(capability)
+        if capability == "high-risk":
+            raise StateError(
+                "high-risk-profile-required",
+                (
+                    "High-risk evidence is selected only by "
+                    f"{profile_command}; "
+                    "that preset initializes direction, visual-review, claims, "
+                    "and user-validation together."
+                ),
+            )
+        if profile_command is None or not missing_capability_records(capability, records):
+            continue
+        raise StateError(
+            "evidence-capability-record-required",
+            (
+                f"Evidence capability {capability} requires its canonical record. "
+                f"Use {profile_command} instead of --evidence-capability "
+                f"{capability}."
+            ),
+        )
+
+
 def evidence_contract_payload(
     assurance_profiles: tuple[str, ...],
     requested_capabilities: tuple[str, ...] | list[str] = (),
     extension_records: tuple[dict[str, object], ...] | list[dict[str, object]] = (),
 ) -> dict[str, object]:
+    canonical_profiles = normalize_assurance_profiles(assurance_profiles)
     capabilities = normalize_evidence_capabilities(
         [
-            *inferred_evidence_capabilities(assurance_profiles),
+            *inferred_evidence_capabilities(canonical_profiles),
             *requested_capabilities,
         ]
     )
+    require_capability_profile_consistency(capabilities, canonical_profiles)
     return {
         "version": EVIDENCE_CONTRACT_VERSION,
         "universal_anchors": list(UNIVERSAL_EVIDENCE_ANCHORS),
         "direction_contract": (
             DIRECTION_CONTRACT_QUICK_EXEMPT
-            if normalize_assurance_profiles(assurance_profiles) == ("quick",)
+            if canonical_profiles == ("quick",)
             else DIRECTION_CONTRACT_PROJECT_DERIVED
         ),
         "applicable_capabilities": list(capabilities),
@@ -395,6 +550,7 @@ def validate_evidence_contract(
             "applicable_capabilities must be a unique list.",
         )
     capabilities = normalize_evidence_capabilities(raw_capabilities)
+    require_capability_profile_consistency(capabilities, assurance_profiles)
     implied = set(inferred_evidence_capabilities(assurance_profiles))
     if not implied.issubset(capabilities):
         raise StateError(
@@ -509,8 +665,25 @@ def migrate_evidence_contract(
             if normalize_assurance_profiles(assurance_profiles) == ("quick",)
             else DIRECTION_CONTRACT_PROJECT_DERIVED
         )
-        return validate_evidence_contract(upgraded, assurance_profiles)
-    return validate_evidence_contract(payload, assurance_profiles)
+    elif isinstance(payload, dict):
+        upgraded = dict(payload)
+    else:
+        return validate_evidence_contract(payload, assurance_profiles)
+
+    # A persisted assurance profile is authoritative.  Bring an older contract
+    # forward by adding its implied gates, never by dropping that profile when
+    # a historical inventory is incomplete.
+    raw_capabilities = upgraded.get("applicable_capabilities")
+    if isinstance(raw_capabilities, list):
+        upgraded["applicable_capabilities"] = list(
+            dict.fromkeys(
+                [
+                    *raw_capabilities,
+                    *inferred_evidence_capabilities(assurance_profiles),
+                ]
+            )
+        )
+    return validate_evidence_contract(upgraded, assurance_profiles)
 FRONTMATTER_FILES = {
     "claims.md", "direction.md", "direction-proof.md", "exploration.md",
     "taste-calibration.md",
@@ -518,6 +691,7 @@ FRONTMATTER_FILES = {
 }
 SUBSTANTIVE_RECORDS = {
     "exploration.md": "exploration",
+    "taste-calibration.md": "taste-calibration",
     "claims.md": "claims",
     "direction.md": "direction",
     "direction-proof.md": "direction-proof",
@@ -527,6 +701,7 @@ SUBSTANTIVE_RECORDS = {
 }
 SUBSTANTIVE_TEMPLATE_FILES = {
     "exploration-template.md",
+    "taste-calibration-template.md",
     "claim-ledger-template.md",
     "direction-template.md",
     "direction-proof-template.md",
@@ -566,6 +741,14 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
         "Candidate field",
         "Proof comparison",
         "Selection",
+    },
+    "taste-calibration": {
+        "Record lifecycle and evidence boundary",
+        "Public encounter and project read",
+        "Reference dossier",
+        "Direction proof",
+        "First-impression and surface-fidelity response",
+        "Disposition",
     },
     "direction": {
         "Identity and outcome",
@@ -660,6 +843,7 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         "Selected proof identity and artifact",
         "Fatal assumption, unresolved owner decision, or release block",
     ),
+    "taste-calibration": (),
     "direction": (
         "Project, candidate/build, and date",
         "Accountable owner and decision scope",
@@ -900,6 +1084,14 @@ REQUIRED_RECORD_SECTIONS = {
         "Evidence and candidate reasoning",
         "Decision and limits",
     },
+    "taste-calibration": {
+        "Record lifecycle and evidence boundary",
+        "Public encounter and project read",
+        "Reference dossier",
+        "Direction proof",
+        "First-impression and surface-fidelity response",
+        "Disposition",
+    },
     "direction": {
         "Identity and intent",
         "Truth and provenance",
@@ -932,16 +1124,46 @@ REQUIRED_RECORD_SECTIONS = {
         "Open decisions",
     },
 }
+STANDARD_VISUAL_REVIEW_SECTIONS = {
+    "Review scope and capture rationale",
+    "First-impression and surface-fidelity review",
+    "Preship and specificity closure",
+}
+REVIEW_SCOPE_CAPTURE_HEADERS = (
+    "Route/state or reviewed body",
+    "Material review risk or not-applicable reason",
+    "Wide capture ID",
+    "Narrow capture ID",
+    "Disposition",
+)
+SURFACE_FIDELITY_HEADERS = (
+    "Review focus",
+    "Applicability or disposition",
+    "Rendered PNG path and SHA-256",
+    "Observation or limitation",
+)
+PRESHIP_SPECIFICITY_HEADERS = (
+    "Closure",
+    "Applicability or disposition",
+    "Rendered PNG path and SHA-256",
+    "Result or limitation",
+)
+REVIEW_CLOSURE_DISPOSITIONS = {
+    "applicable",
+    "not-applicable",
+    "blocked",
+}
 PROJECT_DERIVED_DIRECTION_SECTIONS = {
     "Project-derived organizing logic",
     "Observable consequential design decisions",
 }
 REQUIRED_RECORD_LABELS = {
     "exploration": (),
+    "taste-calibration": (),
     "direction": (),
     "direction-proof": (
         "Reviewer relationship",
-        "Decision",
+        "Current decision",
     ),
     "visual-review": (
         "Build or artifact ID",
@@ -967,6 +1189,12 @@ REQUIRED_RECORD_LABELS = {
     ),
 }
 CAPABILITY_REQUIRED_SECTIONS = {
+    "connected-public-experience": {
+        "direction": {"Connected public experience (when selected)"},
+        "visual-review": {
+            "Connected public experience closure (when selected)"
+        },
+    },
     "range-study": {
         "direction": {"Range-study contract"},
         "visual-review": {"Range-study review"},
@@ -989,10 +1217,13 @@ CAPABILITY_REQUIRED_SECTIONS = {
     },
 }
 CAPABILITY_REQUIRED_RECORDS = {
+    "connected-public-experience": {"connected-public-experience"},
+    "project-contrast": {"project-contrast"},
+    "direction-challenge": {"direction-challenge"},
     "range-study": {"route-family"},
     "batch-study": {"batch-range"},
     "cultural-context": {"direction", "visual-review"},
-    "high-risk": {"claims", "user-validation"},
+    "high-risk": {"direction", "visual-review", "claims", "user-validation"},
     "asset-led": {"assets"},
 }
 
@@ -2058,10 +2289,14 @@ def validate_batch_range_record(
         "whole_system_review",
         "contextual_findings",
     }
+    optional_root = {"human_contextual_disposition"}
     if not isinstance(payload, dict):
         add("$", "invalid-root", "The record must be a JSON object.")
         return payload, errors
-    if set(payload) != expected_root:
+    if (
+        not expected_root.issubset(set(payload))
+        or not set(payload).issubset(expected_root | optional_root)
+    ):
         add("$", "invalid-properties", "The record has missing or unsupported root properties.")
     if payload.get("schema_version") != 1:
         add("$.schema_version", "unsupported-version", "schema_version must equal 1.")
@@ -2335,6 +2570,66 @@ def validate_batch_range_record(
         )
     if not isinstance(payload.get("contextual_findings"), list):
         add("$.contextual_findings", "invalid-findings", "contextual_findings must be an array.")
+
+    # Batch protocol coverage and a human contextual disposition deliberately
+    # remain separate.  Older/planned records may omit the latter, but when it
+    # is present it must have the bounded shape the exact-evidence auditor
+    # understands.  The auditor owns byte, chronology, and finding-state
+    # checks; this lightweight pass keeps an unsupported object from being
+    # treated as a future-compatible readiness record.
+    human_disposition = payload.get("human_contextual_disposition")
+    if human_disposition is not None:
+        required_disposition = {
+            "status", "reviewer_id", "decided_at", "capture_set_sha256",
+            "evidence", "rationale", "finding_ids",
+        }
+        if (
+            not isinstance(human_disposition, dict)
+            or set(human_disposition) != required_disposition
+        ):
+            add(
+                "$.human_contextual_disposition",
+                "invalid-human-contextual-disposition",
+                "The human contextual disposition has missing or unsupported fields.",
+            )
+        else:
+            status = human_disposition.get("status")
+            supported_statuses = {
+                "pending", "no-material-cluster-observed", "revisions-required",
+                "accepted-contextual-risk", "blocked",
+            }
+            if status not in supported_statuses:
+                add(
+                    "$.human_contextual_disposition.status",
+                    "invalid-human-contextual-status",
+                    "Use pending, no-material-cluster-observed, revisions-required, accepted-contextual-risk, or blocked.",
+                )
+            finding_ids = human_disposition.get("finding_ids")
+            if (
+                not isinstance(finding_ids, list)
+                or any(
+                    not isinstance(value, str) or not value.strip()
+                    for value in finding_ids
+                )
+            ):
+                add(
+                    "$.human_contextual_disposition.finding_ids",
+                    "invalid-human-contextual-finding-ids",
+                    "finding_ids must be an array of non-empty finding identifiers.",
+                )
+            if status == "pending" and (
+                human_disposition.get("reviewer_id") is not None
+                or human_disposition.get("decided_at") is not None
+                or human_disposition.get("capture_set_sha256") is not None
+                or human_disposition.get("evidence") is not None
+                or human_disposition.get("rationale") is not None
+                or finding_ids != []
+            ):
+                add(
+                    "$.human_contextual_disposition",
+                    "pending-human-contextual-disposition-invalid",
+                    "A pending human contextual disposition must keep reviewer, decision, capture, evidence, rationale null and finding_ids empty.",
+                )
     return payload, errors
 
 
@@ -2411,6 +2706,325 @@ def run_batch_range_readiness_audit(path: Path, project: Path) -> dict[str, obje
         raise StateError(
             "batch-range-validator-invalid-output",
             "The bundled batch-range auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
+def validate_project_contrast_record(
+    path: Path,
+) -> tuple[object, list[dict[str, str]]]:
+    """Validate the planning-safe Project Contrast JSON record.
+
+    Exact capture and review bytes remain an audit/readiness concern so a
+    freshly initialized record can truthfully remain planned.
+    """
+
+    payload = read_json(path)
+    validator_path = Path(__file__).with_name("project_contrast_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "project-contrast-validator-missing",
+            "The bundled Project Contrast validator is missing or redirected.",
+            path=validator_path,
+        )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_project_contrast_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "project-contrast-validator-load-failed",
+            "The bundled Project Contrast validator could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        validator = getattr(module, "validate_contract_payload")
+        errors, _contract = validator(payload)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise StateError(
+            "project-contrast-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if not isinstance(errors, list) or not all(
+        isinstance(entry, dict)
+        and set(entry) == {"path", "code", "message"}
+        and all(isinstance(entry[key], str) for key in entry)
+        for entry in errors
+    ):
+        raise StateError(
+            "project-contrast-validator-invalid-output",
+            "The bundled Project Contrast validator returned an unsupported result.",
+            path=validator_path,
+        )
+    return payload, errors
+
+
+def run_project_contrast_readiness_audit(
+    path: Path,
+    project: Path,
+) -> dict[str, object]:
+    """Run the bundled Project Contrast evidence audit without writing a report."""
+
+    payload, structural_errors = validate_project_contrast_record(path)
+    if structural_errors:
+        raise StateError(
+            "project-contrast-validator-failed",
+            structural_errors[0]["message"],
+            path=path,
+        )
+    validator_path = Path(__file__).with_name("project_contrast_audit.py")
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_project_contrast_readiness_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "project-contrast-validator-load-failed",
+            "The bundled Project Contrast auditor could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        audit = getattr(module, "audit_payload")
+        report = audit(project.resolve(strict=True), payload)
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "project-contrast-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if (
+        not isinstance(report, dict)
+        or report.get("automatic_aesthetic_pass") is not False
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("gaps"), list)
+        or not isinstance(report.get("findings"), list)
+    ):
+        raise StateError(
+            "project-contrast-validator-invalid-output",
+            "The bundled Project Contrast auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
+def validate_direction_challenge_record(
+    path: Path,
+) -> tuple[object, list[dict[str, str]]]:
+    """Validate the planning-safe Direction Challenge JSON record.
+
+    Schema-3 render package integrity, source snapshots, and exact capture
+    bindings remain an audit/readiness concern so initialization can create an
+    honest draft without manufacturing proof.
+    """
+
+    payload = read_json(path)
+    validator_path = Path(__file__).with_name("direction_challenge_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "direction-challenge-validator-missing",
+            "The bundled Direction Challenge validator is missing or redirected.",
+            path=validator_path,
+        )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_direction_challenge_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "direction-challenge-validator-load-failed",
+            "The bundled Direction Challenge validator could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        validator = getattr(module, "validate_contract_payload")
+        errors, _contract = validator(payload)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise StateError(
+            "direction-challenge-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if not isinstance(errors, list) or not all(
+        isinstance(entry, dict)
+        and set(entry) == {"path", "code", "message"}
+        and all(isinstance(entry[key], str) for key in entry)
+        for entry in errors
+    ):
+        raise StateError(
+            "direction-challenge-validator-invalid-output",
+            "The bundled Direction Challenge validator returned an unsupported result.",
+            path=validator_path,
+        )
+    return payload, errors
+
+
+def run_direction_challenge_readiness_audit(
+    path: Path,
+    project: Path,
+) -> dict[str, object]:
+    """Run the bundled Direction Challenge audit without writing a report."""
+
+    payload, structural_errors = validate_direction_challenge_record(path)
+    if structural_errors:
+        raise StateError(
+            "direction-challenge-validator-failed",
+            structural_errors[0]["message"],
+            path=path,
+        )
+    validator_path = Path(__file__).with_name("direction_challenge_audit.py")
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_direction_challenge_readiness_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "direction-challenge-validator-load-failed",
+            "The bundled Direction Challenge auditor could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        audit = getattr(module, "audit_payload")
+        report = audit(project.resolve(strict=True), payload)
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "direction-challenge-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if (
+        not isinstance(report, dict)
+        or report.get("automatic_aesthetic_pass") is not False
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("gaps"), list)
+        or not isinstance(report.get("findings"), list)
+    ):
+        raise StateError(
+            "direction-challenge-validator-invalid-output",
+            "The bundled Direction Challenge auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
+def validate_connected_public_experience_record(
+    path: Path,
+) -> tuple[object, list[dict[str, str]]]:
+    """Validate the planning-safe opt-in continuity record.
+
+    The selected capability can remain an intentional draft while direction is
+    still open. Exact final captures and functional-path results are evaluated
+    only by its readiness audit.
+    """
+
+    payload = read_json(path)
+    validator_path = Path(__file__).with_name(
+        "connected_public_experience_audit.py"
+    )
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "connected-public-experience-validator-missing",
+            "The bundled Connected Public Experience validator is missing or redirected.",
+            path=validator_path,
+        )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_connected_public_experience_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "connected-public-experience-validator-load-failed",
+            "The bundled Connected Public Experience validator could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        validator = getattr(module, "validate_contract_payload")
+        errors, _contract = validator(payload)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise StateError(
+            "connected-public-experience-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if not isinstance(errors, list) or not all(
+        isinstance(entry, dict)
+        and set(entry) == {"path", "code", "message"}
+        and all(isinstance(entry[key], str) for key in entry)
+        for entry in errors
+    ):
+        raise StateError(
+            "connected-public-experience-validator-invalid-output",
+            "The bundled Connected Public Experience validator returned an unsupported result.",
+            path=validator_path,
+        )
+    return payload, errors
+
+
+def run_connected_public_experience_readiness_audit(
+    path: Path,
+    project: Path,
+    evidence_capabilities: tuple[str, ...] | list[str] | set[str],
+) -> dict[str, object]:
+    """Run the opt-in continuity readiness audit without writing a report."""
+
+    payload, structural_errors = validate_connected_public_experience_record(
+        path,
+    )
+    if structural_errors:
+        raise StateError(
+            "connected-public-experience-validator-failed",
+            structural_errors[0]["message"],
+            path=path,
+        )
+    validator_path = Path(__file__).with_name(
+        "connected_public_experience_audit.py"
+    )
+    specification = importlib.util.spec_from_file_location(
+        "_design_dna_connected_public_experience_readiness_audit",
+        validator_path,
+    )
+    if specification is None or specification.loader is None:
+        raise StateError(
+            "connected-public-experience-validator-load-failed",
+            "The bundled Connected Public Experience auditor could not be loaded.",
+            path=validator_path,
+        )
+    module = importlib.util.module_from_spec(specification)
+    try:
+        specification.loader.exec_module(module)
+        audit = getattr(module, "audit_payload")
+        report = audit(
+            project.resolve(strict=True),
+            payload,
+            set(evidence_capabilities),
+        )
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "connected-public-experience-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if (
+        not isinstance(report, dict)
+        or report.get("automatic_aesthetic_pass") is not False
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("gaps"), list)
+        or not isinstance(report.get("findings"), list)
+    ):
+        raise StateError(
+            "connected-public-experience-validator-invalid-output",
+            "The bundled Connected Public Experience auditor returned an unsupported result.",
             path=validator_path,
         )
     return report
@@ -4796,6 +5410,7 @@ ASSURANCE_PROFILE_ALIASES = {
     "substantial": "standard",
     "showcase": "showcase",
     "greenfield": "standard",
+    "connected-public-experience": "connected-public-experience",
     "range-study": "range-study",
     "high-risk": "high-risk",
 }
@@ -4803,6 +5418,7 @@ PROFILE_REQUIREMENT_INHERITANCE = {
     "quick": ("quick",),
     "standard": ("standard",),
     "showcase": ("standard", "showcase"),
+    "connected-public-experience": ("standard",),
     "high-risk": ("standard", "high-risk"),
 }
 
@@ -5249,6 +5865,633 @@ def bound_artifact(
     return artifact, []
 
 
+def load_schema3_render_review_adapter() -> tuple[object | None, str | None]:
+    """Load the shipped schema-3 verifier without duplicating its contract.
+
+    Project Contrast already owns the narrow parser for renderer output.  The
+    state gate uses that verifier only for evidence integrity; it does not
+    import its comparison judgments or turn a renderer run into an aesthetic
+    pass.
+    """
+
+    adapter_path = Path(__file__).with_name("project_contrast_audit.py")
+    module_name = "design_dna_schema3_render_review_adapter"
+    try:
+        specification = importlib.util.spec_from_file_location(
+            module_name,
+            adapter_path,
+        )
+        if specification is None or specification.loader is None:
+            return None, "the packaged schema-3 rendered-review verifier is unavailable"
+        module = importlib.util.module_from_spec(specification)
+        sys.modules[module_name] = module
+        specification.loader.exec_module(module)
+    except Exception as exc:  # pragma: no cover - defensive package boundary
+        sys.modules.pop(module_name, None)
+        return None, f"the packaged schema-3 rendered-review verifier could not load: {exc}"
+    return module, None
+
+
+def schema3_rendered_review_context(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> tuple[dict[str, object] | None, list[str]]:
+    """Resolve one final visual-review report to its exact schema-3 captures."""
+
+    failures: list[str] = []
+    report_record = (
+        markdown_label_value(
+            body,
+            "Rendered-review report path, hash, contract, and execution result",
+        )
+        or ""
+    )
+    report_value = report_record.split(";", 1)[0].strip()
+    if not report_value:
+        return None, [
+            "Standard+ visual review must bind a schema-3 rendered-review report"
+        ]
+    report_path, report_failures = bound_artifact(
+        report_value,
+        project=project,
+        record_path=record_path,
+        label="Rendered-review report binding",
+    )
+    failures.extend(report_failures)
+    if report_path is None or report_failures:
+        return None, failures
+    if report_path.name != "render-review.json":
+        return None, [
+            *failures,
+            "Rendered-review report must bind render-review.json",
+        ]
+    try:
+        relative_report = report_path.relative_to(project).as_posix()
+    except ValueError:
+        return None, [
+            *failures,
+            "Rendered-review report must remain inside the selected project",
+        ]
+    _size, report_digest = file_sha256(report_path)
+    adapter, adapter_failure = load_schema3_render_review_adapter()
+    if adapter is None:
+        return None, [*failures, str(adapter_failure)]
+    try:
+        budget = getattr(adapter, "EvidenceBudget")()
+        context = getattr(adapter, "load_schema3_render_review")(
+            project,
+            {"path": relative_report, "sha256": report_digest},
+            "visual-review.rendered-review",
+            budget,
+        )
+    except Exception as exc:
+        message = getattr(exc, "message", str(exc))
+        return None, [
+            *failures,
+            "Standard+ visual review requires a valid path-bound schema-3 "
+            f"renderer report: {message}",
+        ]
+    if not isinstance(context, dict):
+        return None, [
+            *failures,
+            "Standard+ visual review could not resolve schema-3 renderer context",
+        ]
+    build_id = context.get("build_id")
+    source_sha = context.get("source_snapshot_manifest_sha256")
+    report = context.get("report")
+    if not isinstance(build_id, str) or not isinstance(source_sha, str):
+        return None, [
+            *failures,
+            "Schema-3 rendered-review context has no exact build/source identity",
+        ]
+    record_build = markdown_label_value(body, "Build or artifact ID") or ""
+    if build_id != record_build:
+        failures.append(
+            "Rendered-review build ID must match the visual-review build ID"
+        )
+    source_identity = (
+        markdown_label_value(body, "Source/workspace identity and SHA-256")
+        or ""
+    ).casefold()
+    if source_sha.casefold() not in source_identity:
+        failures.append(
+            "Source/workspace identity must name the exact schema-3 source-snapshot SHA-256"
+        )
+    contract_value = report_record.casefold()
+    required_tokens = (
+        build_id.casefold(),
+        source_sha.casefold(),
+        "execution_ok=true",
+    )
+    if any(token not in contract_value for token in required_tokens):
+        failures.append(
+            "Rendered-review binding must name the exact build ID, "
+            "source-snapshot SHA-256, and execution_ok=true"
+        )
+    if isinstance(report, dict):
+        contract = report.get("capture_contract")
+        mode = contract.get("contract_mode") if isinstance(contract, dict) else None
+        if not isinstance(mode, str) or mode.casefold() not in contract_value:
+            failures.append(
+                "Rendered-review binding must name the exact schema-3 capture mode"
+            )
+        contact = report.get("artifacts")
+        contact = contact.get("contact_sheet") if isinstance(contact, dict) else None
+        contact_value = (
+            markdown_label_value(body, "Coverage contact sheet or artifact index")
+            or ""
+        )
+        contact_path, contact_failures = bound_artifact(
+            contact_value,
+            project=project,
+            record_path=record_path,
+            label="Coverage contact sheet or artifact index",
+        )
+        failures.extend(contact_failures)
+        if not isinstance(contact, dict) or contact_path is None:
+            failures.append(
+                "Rendered-review report must bind its contact-sheet artifact"
+            )
+        else:
+            raw_contact_path = contact.get("path")
+            raw_contact_hash = contact.get("sha256")
+            if not isinstance(raw_contact_path, str) or not isinstance(raw_contact_hash, str):
+                failures.append(
+                    "Rendered-review contact-sheet metadata is incomplete"
+                )
+            else:
+                expected_contact = lexical_absolute(
+                    report_path.parent.joinpath(*PurePosixPath(raw_contact_path).parts)
+                )
+                _contact_size, actual_contact_hash = file_sha256(contact_path)
+                if (
+                    contact_path != expected_contact
+                    or actual_contact_hash != raw_contact_hash
+                ):
+                    failures.append(
+                        "Coverage contact-sheet binding must match the schema-3 "
+                        "render-review artifact"
+                    )
+    else:
+        failures.append("Schema-3 rendered-review context has no report object")
+    return context, failures
+
+
+def review_disposition(value: str) -> str:
+    """Return a normalized review applicability decision, or an empty string."""
+
+    normalized = value.strip().casefold().replace("not applicable", "not-applicable")
+    for status in REVIEW_CLOSURE_DISPOSITIONS:
+        if normalized == status or normalized.startswith(status + ";") or normalized.startswith(status + ":"):
+            return status
+    return ""
+
+
+def route_from_review_scope(value: str) -> str:
+    """Take the route token before a human-readable state/body annotation."""
+
+    return value.split(";", 1)[0].strip().split(maxsplit=1)[0]
+
+
+def schema3_capture_path(
+    report_path: Path,
+    capture: object,
+) -> tuple[Path | None, str | None]:
+    if not isinstance(capture, dict):
+        return None, None
+    screenshot = capture.get("screenshot")
+    if not isinstance(screenshot, dict):
+        return None, None
+    path = screenshot.get("path")
+    digest = screenshot.get("sha256")
+    if not isinstance(path, str) or not isinstance(digest, str):
+        return None, None
+    return (
+        lexical_absolute(report_path.parent.joinpath(*PurePosixPath(path).parts)),
+        digest,
+    )
+
+
+def schema3_capture_route(capture: object) -> str | None:
+    if not isinstance(capture, dict):
+        return None
+    final_url = capture.get("final_url")
+    if not isinstance(final_url, str):
+        return None
+    return urlsplit(final_url).path or "/"
+
+
+def visual_review_schema3_capture_matrix_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+    context: dict[str, object],
+) -> list[str]:
+    """Bind final review coverage to real schema-3 wide/narrow captures."""
+
+    failures: list[str] = []
+    sections = markdown_sections(body)
+    captures_by_id = context.get("captures_by_id")
+    report_path = context.get("report_path")
+    if not isinstance(captures_by_id, dict) or not isinstance(report_path, Path):
+        return ["Schema-3 rendered-review context has no capture index"]
+
+    capture_paths: dict[tuple[Path, str], str] = {}
+    capture_routes: dict[str, str] = {}
+    for capture_id, capture in captures_by_id.items():
+        if not isinstance(capture_id, str):
+            continue
+        path, digest = schema3_capture_path(report_path, capture)
+        route = schema3_capture_route(capture)
+        if path is not None and digest is not None:
+            capture_paths[(path, digest)] = capture_id
+        if route is not None:
+            capture_routes[capture_id] = route
+
+    review_headers, review_rows = markdown_first_table(
+        sections.get("Rendered review", "")
+    )
+    if review_headers == (
+        "Route/state",
+        "Viewport/context",
+        "Rendered PNG path and SHA-256",
+        "Observation",
+    ):
+        artifact_index = review_headers.index("Rendered PNG path and SHA-256")
+        for row_number, row in enumerate(review_rows, start=1):
+            if len(row) != len(review_headers):
+                continue
+            artifact, artifact_failures = bound_artifact(
+                row[artifact_index],
+                project=project,
+                record_path=record_path,
+                label=f"Rendered review row {row_number} artifact",
+            )
+            if artifact_failures or artifact is None:
+                continue
+            _size, digest = file_sha256(artifact)
+            capture_id = capture_paths.get((artifact, digest))
+            if capture_id is None:
+                failures.append(
+                    "Rendered review row "
+                    f"{row_number} must be the exact PNG emitted by a bound "
+                    "schema-3 renderer capture"
+                )
+                continue
+            expected_route = capture_routes.get(capture_id)
+            observed_route = route_from_review_scope(row[0])
+            if expected_route is not None and observed_route != expected_route:
+                failures.append(
+                    "Rendered review row "
+                    f"{row_number} route/state does not match its bound schema-3 capture"
+                )
+
+    scope_headers, scope_rows = markdown_first_table(
+        sections.get("Review scope and capture rationale", "")
+    )
+    if scope_headers != REVIEW_SCOPE_CAPTURE_HEADERS or not scope_rows:
+        return [
+            *failures,
+            "Review scope and capture rationale needs the exact route/body, "
+            "risk, wide, narrow, and disposition table",
+        ]
+    report_routes = set(capture_routes.values())
+    declared_routes: set[str] = set()
+    applicable_count = 0
+    reviewed_capture_ids: set[str] = set()
+    for row_number, row in enumerate(scope_rows, start=1):
+        if len(row) != len(REVIEW_SCOPE_CAPTURE_HEADERS) or any(
+            not non_placeholder(cell) for cell in row
+        ):
+            failures.append(
+                f"Review scope row {row_number} is incomplete"
+            )
+            continue
+        route = route_from_review_scope(row[0])
+        declared_routes.add(route)
+        reason = row[1]
+        wide_id = row[2]
+        narrow_id = row[3]
+        disposition = review_disposition(row[4])
+        if route not in report_routes:
+            failures.append(
+                f"Review scope row {row_number} route/body is not represented "
+                "by the schema-3 report"
+            )
+        if not disposition:
+            failures.append(
+                f"Review scope row {row_number} must declare applicable, "
+                "not-applicable, or blocked"
+            )
+            continue
+        if len(reason.strip()) < 24:
+            failures.append(
+                f"Review scope row {row_number} needs a substantive project "
+                "risk or not-applicable reason"
+            )
+        if disposition != "applicable":
+            if wide_id.casefold() not in {"not-applicable", "not applicable", "n/a", "none"} or narrow_id.casefold() not in {"not-applicable", "not applicable", "n/a", "none"}:
+                failures.append(
+                    f"Review scope row {row_number} must not name wide/narrow "
+                    "capture IDs when its body is not applicable or blocked"
+                )
+            continue
+        applicable_count += 1
+        wide = captures_by_id.get(wide_id)
+        narrow = captures_by_id.get(narrow_id)
+        if not isinstance(wide, dict) or not isinstance(narrow, dict):
+            failures.append(
+                f"Review scope row {row_number} must name exact schema-3 wide "
+                "and narrow capture IDs"
+            )
+            continue
+        if wide_id == narrow_id:
+            failures.append(
+                f"Review scope row {row_number} wide and narrow capture IDs "
+                "must be different"
+            )
+        if capture_routes.get(wide_id) != route or capture_routes.get(narrow_id) != route:
+            failures.append(
+                f"Review scope row {row_number} capture IDs must belong to its "
+                "declared route/body"
+            )
+        wide_viewport = wide.get("viewport")
+        narrow_viewport = narrow.get("viewport")
+        wide_path, wide_hash = schema3_capture_path(report_path, wide)
+        narrow_path, narrow_hash = schema3_capture_path(report_path, narrow)
+        if (
+            not isinstance(wide_viewport, dict)
+            or not isinstance(narrow_viewport, dict)
+            or not isinstance(wide_viewport.get("width"), int)
+            or not isinstance(narrow_viewport.get("width"), int)
+            or wide_viewport["width"] <= narrow_viewport["width"]
+            or wide_hash == narrow_hash
+            or wide_path is None
+            or narrow_path is None
+        ):
+            failures.append(
+                f"Review scope row {row_number} must bind distinct meaningful "
+                "wide and narrow schema-3 evidence"
+            )
+        reviewed_capture_ids.update({wide_id, narrow_id})
+    if not applicable_count:
+        failures.append(
+            "Review scope must include at least one applicable final rendered body"
+        )
+    missing_routes = sorted(report_routes - declared_routes)
+    if missing_routes:
+        failures.append(
+            "Review scope must explicitly disposition every route represented "
+            "by the schema-3 report: " + ", ".join(missing_routes)
+        )
+
+    def closure_table_failures(
+        section_name: str,
+        expected_headers: tuple[str, ...],
+        required_focuses: set[str],
+    ) -> list[str]:
+        local: list[str] = []
+        headers, rows = markdown_first_table(sections.get(section_name, ""))
+        if headers != expected_headers or not rows:
+            return [
+                f"{section_name} needs its exact applicability, rendered "
+                "evidence, and result table"
+            ]
+        found: set[str] = set()
+        for row_number, row in enumerate(rows, start=1):
+            if len(row) != len(expected_headers) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                local.append(f"{section_name} row {row_number} is incomplete")
+                continue
+            focus = row[0].casefold()
+            if focus in required_focuses:
+                found.add(focus)
+            disposition = review_disposition(row[1])
+            if not disposition:
+                local.append(
+                    f"{section_name} row {row_number} must declare applicable, "
+                    "not-applicable, or blocked"
+                )
+            artifact, artifact_failures = bound_artifact(
+                row[2],
+                project=project,
+                record_path=record_path,
+                label=f"{section_name} row {row_number} rendered evidence",
+            )
+            local.extend(artifact_failures)
+            if artifact is not None and not artifact_failures:
+                _size, digest = file_sha256(artifact)
+                if (artifact, digest) not in capture_paths:
+                    local.append(
+                        f"{section_name} row {row_number} must bind an exact "
+                        "schema-3 rendered PNG capture"
+                    )
+            if len(row[3].strip()) < 24:
+                local.append(
+                    f"{section_name} row {row_number} needs a substantive "
+                    "result or limitation"
+                )
+        missing = sorted(required_focuses - found)
+        if missing:
+            local.append(
+                f"{section_name} is missing required closure rows: "
+                + ", ".join(missing)
+            )
+        return local
+
+    failures.extend(
+        closure_table_failures(
+            "First-impression and surface-fidelity review",
+            SURFACE_FIDELITY_HEADERS,
+            {"first impression and surface fidelity"},
+        )
+    )
+    failures.extend(
+        closure_table_failures(
+            "Preship and specificity closure",
+            PRESHIP_SPECIFICITY_HEADERS,
+            {"adversarial specificity review", "preship gate"},
+        )
+    )
+    return failures
+
+
+def showcase_taste_calibration_failures(
+    body: str,
+    *,
+    project: Path | None,
+    record_path: Path | None,
+    required_assurance_profiles: tuple[str, ...] | set[str] | None,
+) -> list[str]:
+    """Validate calibration as evidence, without turning it into a taste score."""
+
+    failures: list[str] = []
+    sections = markdown_sections(body)
+    lifecycle = (markdown_label_value(body, "Current status") or "").strip().casefold()
+    if lifecycle not in {"draft", "proof-ready", "reviewed", "reopened", "blocked"}:
+        failures.append(
+            "Taste calibration Current status must be draft, proof-ready, "
+            "reviewed, reopened, or blocked"
+        )
+    for label in (
+        "Activation basis and applicable scope",
+        "Candidate/build under review",
+        "Reviewer relationship and date",
+        "Direct reviewable artifacts currently bound",
+        "Missing evidence, explicit inability, and next decision",
+    ):
+        if required_label_value("taste-calibration", body, label) is None:
+            failures.append(f"Taste calibration {label!r} is missing or still scaffold text")
+
+    disposition = (markdown_label_value(body, "Current disposition") or "").strip().casefold()
+    if not any(
+        disposition == status or disposition.startswith(status + ";")
+        for status in {"keep", "revise", "reopen direction", "reject", "blocked"}
+    ):
+        failures.append(
+            "Taste calibration Current disposition must be keep, revise, "
+            "reopen direction, reject, or blocked"
+        )
+
+    profiles = set(required_assurance_profiles or ())
+    if "showcase" not in profiles:
+        return failures
+
+    reference_headers, reference_rows = markdown_first_table(
+        sections.get("Reference dossier", "")
+    )
+    expected_reference_headers = (
+        "Source and retrieval date",
+        "Viewer-facing problem or role",
+        "Transferable relationship",
+        "Non-copying boundary",
+    )
+    if reference_headers != expected_reference_headers or not reference_rows:
+        failures.append(
+            "Showcase taste calibration needs at least one retrieval-dated "
+            "reference dossier row"
+        )
+    else:
+        for row_number, row in enumerate(reference_rows, start=1):
+            if len(row) != len(expected_reference_headers) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(
+                    f"Taste calibration reference dossier row {row_number} is incomplete"
+                )
+                continue
+            dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", row[0])
+            if not dates:
+                failures.append(
+                    f"Taste calibration reference dossier row {row_number} "
+                    "must include a retrieval date (YYYY-MM-DD)"
+                )
+            else:
+                try:
+                    if date.fromisoformat(dates[-1]) > datetime.now(timezone.utc).date():
+                        failures.append(
+                            f"Taste calibration reference dossier row {row_number} "
+                            "retrieval date may not be in the future"
+                        )
+                except ValueError:
+                    failures.append(
+                        f"Taste calibration reference dossier row {row_number} "
+                        "has an invalid retrieval date"
+                    )
+
+    for label in (
+        "Selected-direction proof evidence",
+        "Counter-direction proof evidence",
+    ):
+        value = markdown_label_value(body, label) or ""
+        if project is None or record_path is None:
+            if ARTIFACT_BINDING_PATTERN.fullmatch(value.strip()) is None:
+                failures.append(
+                    f"Showcase taste calibration {label} must bind a "
+                    "project-relative direct-reviewable artifact plus SHA-256"
+                )
+            continue
+        _artifact, artifact_failures = bound_artifact(
+            value,
+            project=project,
+            record_path=record_path,
+            label=f"Showcase taste calibration {label}",
+        )
+        failures.extend(artifact_failures)
+
+    recurrence = (
+        markdown_label_value(body, "Recurrence-risk disposition") or ""
+    ).strip()
+    recurrence_normalized = recurrence.casefold().replace(
+        "not applicable",
+        "not-applicable",
+    )
+    recurrence_status = next(
+        (
+            status
+            for status in ("active", "not-applicable", "blocked")
+            if recurrence_normalized == status
+            or recurrence_normalized.startswith(status + ";")
+            or recurrence_normalized.startswith(status + ":")
+        ),
+        "",
+    )
+    if not recurrence_status:
+        failures.append(
+            "Showcase taste calibration must explicitly disposition recurrence "
+            "risk as active, not-applicable, or blocked"
+        )
+        return failures
+    recurrence_fields = semicolon_fields(recurrence)
+    if recurrence_status in {"not-applicable", "blocked"}:
+        reason = recurrence_fields.get("reason", "")
+        if len(reason.strip()) < 24:
+            failures.append(
+                "Showcase taste calibration recurrence risk marked "
+                f"{recurrence_status} needs a substantive reason="
+            )
+        return failures
+
+    contrast_record = (
+        markdown_label_value(
+            body,
+            "Authoritative Project Contrast record path and current status, if active",
+        )
+        or ""
+    )
+    if ".design-dna/project-contrast.json" not in contrast_record.replace("\\", "/"):
+        failures.append(
+            "Active Showcase recurrence risk requires the authoritative "
+            ".design-dna/project-contrast.json record path"
+        )
+    if project is not None:
+        state_path = project / ".design-dna" / "state.json"
+        contrast_path = project / ".design-dna" / "project-contrast.json"
+        if not contrast_path.is_file():
+            failures.append(
+                "Active Showcase recurrence risk requires the selected "
+                "Project Contrast record file"
+            )
+        try:
+            state = read_json(state_path)
+            records = state.get("records") if isinstance(state, dict) else None
+            if not isinstance(records, list) or "project-contrast" not in records:
+                failures.append(
+                    "Active Showcase recurrence risk requires Project Contrast "
+                    "to be selected in state.json"
+                )
+        except StateError:
+            failures.append(
+                "Active Showcase recurrence risk cannot verify Project Contrast "
+                "without a readable project state"
+            )
+    return failures
+
+
 def rendered_review_body_failures(
     body: str,
     *,
@@ -5333,9 +6576,13 @@ def rendered_review_body_failures(
         if isinstance(build, dict)
         else None
     )
-    record_build_id = markdown_label_value(
-        body,
-        "Build, commit, or artifact ID",
+    # The proportional visual-review template deliberately uses the plainer
+    # ``Build or artifact ID`` label.  Older migrated records used the longer
+    # label below; accept it as a compatibility fallback rather than making a
+    # valid new template impossible to close.
+    record_build_id = (
+        markdown_label_value(body, "Build or artifact ID")
+        or markdown_label_value(body, "Build, commit, or artifact ID")
     )
     if not build_id or build_id != record_build_id:
         failures.append(
@@ -5642,9 +6889,9 @@ def render_comparison_body_failures(
         failures.append(
             "Cross-build comparison candidate must have a build ID"
         )
-    record_build_id = markdown_label_value(
-        body,
-        "Build, commit, or artifact ID",
+    record_build_id = (
+        markdown_label_value(body, "Build or artifact ID")
+        or markdown_label_value(body, "Build, commit, or artifact ID")
     )
     if candidate_id and candidate_id != record_build_id:
         failures.append(
@@ -5773,6 +7020,7 @@ def substantive_body_failures(
     required_assurance_profiles: tuple[str, ...] | set[str] | None = None,
     required_evidence_capabilities: tuple[str, ...] | set[str] | None = None,
     evidence_contract: str | None = None,
+    enforce_final_visual_binding: bool = False,
 ) -> list[str]:
     failures: list[str] = []
     sections = markdown_sections(body)
@@ -5786,6 +7034,9 @@ def substantive_body_failures(
         else LEGACY_REQUIRED_RECORD_SECTIONS[record]
     )
     capabilities = set(required_evidence_capabilities or ())
+    standard_or_stronger = bool(
+        set(required_assurance_profiles or {"standard"}) - {"quick"}
+    )
     if proportional:
         for capability in capabilities:
             required_sections = {
@@ -5797,11 +7048,20 @@ def substantive_body_failures(
             }
         if (
             record == "direction"
-            and set(required_assurance_profiles or {"standard"}) != {"quick"}
+            and standard_or_stronger
         ):
             required_sections = {
                 *required_sections,
                 *PROJECT_DERIVED_DIRECTION_SECTIONS,
+            }
+        if (
+            record == "visual-review"
+            and standard_or_stronger
+            and enforce_final_visual_binding
+        ):
+            required_sections = {
+                *required_sections,
+                *STANDARD_VISUAL_REVIEW_SECTIONS,
             }
     missing_sections = sorted(required_sections - set(sections))
     if missing_sections:
@@ -5829,10 +7089,20 @@ def substantive_body_failures(
         if required_label_value(record, body, label) is None:
             failures.append(f"{label!r} is missing or still scaffold text")
 
+    if record == "taste-calibration":
+        failures.extend(
+            showcase_taste_calibration_failures(
+                body,
+                project=project,
+                record_path=record_path,
+                required_assurance_profiles=required_assurance_profiles,
+            )
+        )
+
     if (
         record == "direction"
         and proportional
-        and set(required_assurance_profiles or {"standard"}) != {"quick"}
+        and standard_or_stronger
     ):
         project_evidence = (
             markdown_label_value(body, "Project evidence") or ""
@@ -6186,7 +7456,7 @@ def substantive_body_failures(
 
     if record == "direction-proof" and proportional:
         decision = (
-            markdown_label_value(body, "Decision") or ""
+            markdown_label_value(body, "Current decision") or ""
         ).strip().casefold()
         if decision not in {
             "proceed",
@@ -6196,7 +7466,7 @@ def substantive_body_failures(
             "blocked",
         }:
             failures.append(
-                "Decision must be proceed, revise, compare again, reject, or blocked"
+                "Current decision must be proceed, revise, compare again, reject, or blocked"
             )
         reviewer_relationship = (
             markdown_label_value(body, "Reviewer relationship") or ""
@@ -6239,7 +7509,7 @@ def substantive_body_failures(
             )
         if owner_status == "rejected" and decision not in {"revise", "reject"}:
             failures.append(
-                "Rejected owner disposition requires Decision revise or reject"
+                "Rejected owner disposition requires Current decision revise or reject"
             )
 
     if record == "direction-proof" and not proportional:
@@ -6349,11 +7619,14 @@ def substantive_body_failures(
                 )
 
     if record == "visual-review" and proportional:
-        if markdown_label_value(
-            body,
-            "Rendered-review report path, hash, contract, and execution result",
-        ):
-            if project is not None and record_path is not None:
+        schema3_context: dict[str, object] | None = None
+        if standard_or_stronger and enforce_final_visual_binding:
+            if project is None or record_path is None:
+                failures.append(
+                    "Standard+ visual review needs a project-local schema-3 "
+                    "rendered-review binding before completion"
+                )
+            else:
                 failures.extend(
                     rendered_review_body_failures(
                         body,
@@ -6361,6 +7634,32 @@ def substantive_body_failures(
                         record_path=record_path,
                     )
                 )
+                schema3_context, schema3_failures = schema3_rendered_review_context(
+                    body,
+                    project=project,
+                    record_path=record_path,
+                )
+                failures.extend(schema3_failures)
+                if schema3_context is not None:
+                    failures.extend(
+                        visual_review_schema3_capture_matrix_failures(
+                            body,
+                            project=project,
+                            record_path=record_path,
+                            context=schema3_context,
+                        )
+                    )
+        elif markdown_label_value(
+            body,
+            "Rendered-review report path, hash, contract, and execution result",
+        ) and project is not None and record_path is not None:
+            failures.extend(
+                rendered_review_body_failures(
+                    body,
+                    project=project,
+                    record_path=record_path,
+                )
+            )
         if markdown_label_value(
             body,
             (
@@ -6973,6 +8272,7 @@ def completed_record_failures(
         required_assurance_profiles=required_assurance_profiles,
         required_evidence_capabilities=required_evidence_capabilities,
         evidence_contract=metadata.get("evidence_contract"),
+        enforce_final_visual_binding=True,
     )
     missing = sorted(COMPLETE_RECORD_FIELDS - set(metadata))
     if missing:
@@ -7066,6 +8366,7 @@ def migration_report_failures(
         "completion_downgrades",
         "asset_manifest_migrations",
         "assurance_transitions",
+        "project_contrast_migrations",
     }
     if (
         not isinstance(payload, dict)
@@ -7128,7 +8429,10 @@ def migration_report_failures(
     if (
         not isinstance(updates, list)
         or len(updates) != len(set(map(str, updates)))
-        or any(str(item) not in SUBSTANTIVE_RECORDS.values() for item in updates)
+        or any(
+            str(item) not in {*SUBSTANTIVE_RECORDS.values(), "project-contrast"}
+            for item in updates
+        )
     ):
         failures.append(f"{MIGRATION_REPORT} record_updates is invalid.")
     completion_downgrades = payload.get("completion_downgrades", [])
@@ -7268,6 +8572,38 @@ def migration_report_failures(
             failures.append(
                 f"{label} unresolved_asset_ids must be unique asset IDs."
             )
+    project_contrast_migrations = payload.get("project_contrast_migrations", [])
+    if not isinstance(project_contrast_migrations, list):
+        failures.append(
+            f"{MIGRATION_REPORT} project_contrast_migrations must be a list."
+        )
+        project_contrast_migrations = []
+    project_contrast_migration_keys = {
+        "path",
+        "source_sha256",
+        "migrated_sha256",
+        "disposition",
+        "limitations",
+    }
+    observed_project_contrast_migrations: set[str] = set()
+    for index, entry in enumerate(project_contrast_migrations):
+        label = f"{MIGRATION_REPORT} project_contrast_migrations[{index}]"
+        if not isinstance(entry, dict) or set(entry) != project_contrast_migration_keys:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        source_hash = str(entry.get("source_sha256", ""))
+        if source_hash in observed_project_contrast_migrations:
+            failures.append(f"{label} duplicates a prior Project Contrast migration.")
+        observed_project_contrast_migrations.add(source_hash)
+        if entry.get("path") != "project-contrast.json":
+            failures.append(f"{label} has an invalid Project Contrast path.")
+        for hash_field in ("source_sha256", "migrated_sha256"):
+            if not re.fullmatch(r"[0-9a-f]{64}", str(entry.get(hash_field, ""))):
+                failures.append(f"{label} has an invalid {hash_field}.")
+        if entry.get("disposition") != "known-placeholder-record-reset-to-explicit-draft":
+            failures.append(f"{label} has an unsupported disposition.")
+        if not non_placeholder(str(entry.get("limitations", ""))):
+            failures.append(f"{label} limitations are not substantive.")
     assurance_transitions = payload.get("assurance_transitions", [])
     if not isinstance(assurance_transitions, list):
         failures.append(
@@ -7671,6 +9007,18 @@ def validate_state_root(
                 ) = validate_evidence_contract(contract, state_profiles)
             except StateError as exc:
                 failures.append(str(exc))
+        for capability in evidence_capabilities:
+            missing_records = missing_capability_records(capability, records)
+            if missing_records:
+                failure = (
+                    f"Applicable evidence capability {capability} requires records: "
+                    + ", ".join(missing_records)
+                    + "."
+                )
+                profile_command = CAPABILITY_PROFILE_COMMANDS.get(capability)
+                if profile_command is not None:
+                    failure += f" Reinitialize with {profile_command}."
+                failures.append(failure)
         for record in records:
             if record not in RECORD_TEMPLATES:
                 continue
@@ -7899,6 +9247,110 @@ def validate_state_root(
             )
         except StateError as exc:
             failures.append(f"Invalid batch-range.json: {exc}")
+    project_contrast_path = state_root / "project-contrast.json"
+    if project_contrast_path.is_file():
+        try:
+            project_contrast, project_contrast_errors = (
+                validate_project_contrast_record(project_contrast_path)
+            )
+            failures.extend(
+                "Invalid project-contrast.json: "
+                f"{entry['path']} {entry['code']}: {entry['message']}"
+                for entry in project_contrast_errors
+            )
+            expected = f"design-dna {current_version}"
+            if (
+                isinstance(project_contrast, dict)
+                and project_contrast.get("created_with") != expected
+            ):
+                warnings.append(
+                    "project-contrast.json was created with "
+                    f"{project_contrast.get('created_with', 'unknown')}; "
+                    f"current package is {expected}."
+                )
+            if isinstance(project_contrast, dict):
+                if project_contrast.get("record_status") == "draft":
+                    warnings.append(
+                        "project-contrast.json remains draft: it cannot supply a "
+                        "direction, proof, or reviewed recurrence claim."
+                    )
+                elif "record_status" not in project_contrast:
+                    warnings.append(
+                        "project-contrast.json predates the explicit lifecycle; "
+                        "migrate or replace its unresolved record before treating "
+                        "Project Contrast as clean."
+                    )
+        except StateError as exc:
+            failures.append(f"Invalid project-contrast.json: {exc}")
+    direction_challenge_path = state_root / "direction-challenge.json"
+    if direction_challenge_path.is_file():
+        try:
+            direction_challenge, direction_challenge_errors = (
+                validate_direction_challenge_record(direction_challenge_path)
+            )
+            failures.extend(
+                "Invalid direction-challenge.json: "
+                f"{entry['path']} {entry['code']}: {entry['message']}"
+                for entry in direction_challenge_errors
+            )
+            expected = f"design-dna {current_version}"
+            if (
+                isinstance(direction_challenge, dict)
+                and direction_challenge.get("created_with") != expected
+            ):
+                warnings.append(
+                    "direction-challenge.json was created with "
+                    f"{direction_challenge.get('created_with', 'unknown')}; "
+                    f"current package is {expected}."
+                )
+            if isinstance(direction_challenge, dict):
+                if direction_challenge.get("record_status") == "draft":
+                    warnings.append(
+                        "direction-challenge.json remains draft: it cannot supply "
+                        "three brief-native roots, proof slices, or a reviewed "
+                        "Direction Challenge claim."
+                    )
+                elif "record_status" not in direction_challenge:
+                    warnings.append(
+                        "direction-challenge.json predates the explicit lifecycle; "
+                        "replace its unresolved record before treating Direction "
+                        "Challenge as clean."
+                    )
+        except StateError as exc:
+            failures.append(f"Invalid direction-challenge.json: {exc}")
+    connected_public_experience_path = (
+        state_root / "connected-public-experience.json"
+    )
+    if connected_public_experience_path.is_file():
+        try:
+            connected_public_experience, connected_public_errors = (
+                validate_connected_public_experience_record(
+                    connected_public_experience_path,
+                )
+            )
+            failures.extend(
+                "Invalid connected-public-experience.json: "
+                f"{entry['path']} {entry['code']}: {entry['message']}"
+                for entry in connected_public_errors
+            )
+            expected = f"design-dna {current_version}"
+            if (
+                isinstance(connected_public_experience, dict)
+                and connected_public_experience.get("created_with") != expected
+            ):
+                warnings.append(
+                    "connected-public-experience.json was created with "
+                    f"{connected_public_experience.get('created_with', 'unknown')}; "
+                    f"current package is {expected}."
+                )
+            if isinstance(connected_public_experience, dict):
+                if connected_public_experience.get("record_status") == "draft":
+                    warnings.append(
+                        "connected-public-experience.json remains draft: it cannot "
+                        "support a final continuity or functional-path claim."
+                    )
+        except StateError as exc:
+            failures.append(f"Invalid connected-public-experience.json: {exc}")
     failures.extend(migration_report_failures(project, state_root))
     for legacy in LEGACY_RECORD_FILES:
         if (state_root / legacy).is_file() and not failures:
@@ -7907,6 +9359,7 @@ def validate_state_root(
                 f"{state_root / legacy}; its exact bytes are bound by "
                 f"{MIGRATION_REPORT}."
             )
+    failures.extend(owner_recurrence_integration_failures(state_root))
     return failures, warnings
 
 
@@ -7921,11 +9374,329 @@ def validate_state(
     )
 
 
+def owner_recurrence_integration_failures(
+    state_root: Path,
+    *,
+    require_resolved: bool = False,
+) -> list[str]:
+    """Keep an owner recurrence escalation paired, capable, and non-orphaned.
+
+    The trigger lives in the two canonical JSON records rather than in
+    ``state.json``. Consequently either record can declare it, and a state
+    check must treat that declaration as activating the complete paired
+    workflow. ``require_resolved`` is reserved for the user-facing state and
+    readiness gates: initialization and mutation must be able to create a
+    truthful paired draft before its evidence exists. This function
+    intentionally reads the supplied state root so the structural invariant
+    protects live checks and staged mutations.
+    """
+
+    labels = {
+        "project-contrast": "Project Contrast",
+        "direction-challenge": "Direction Challenge",
+    }
+    payloads: dict[str, dict[str, object] | None] = {}
+    trigger_lists: dict[str, list[str] | None] = {}
+    declaring_records: list[str] = []
+
+    for record in OWNER_RECURRENCE_RECORDS:
+        path = state_root / RECORD_TEMPLATES[record][0]
+        payload: dict[str, object] | None = None
+        if path.is_file():
+            try:
+                candidate = read_json(path)
+            except StateError:
+                candidate = None
+            if isinstance(candidate, dict):
+                payload = candidate
+        payloads[record] = payload
+        scope = payload.get("scope") if isinstance(payload, dict) else None
+        raw_triggers = scope.get("trigger") if isinstance(scope, dict) else None
+        triggers = (
+            raw_triggers
+            if isinstance(raw_triggers, list)
+            and all(isinstance(trigger, str) for trigger in raw_triggers)
+            else None
+        )
+        trigger_lists[record] = triggers
+        if triggers is not None and OWNER_RECURRENCE_TRIGGER in triggers:
+            declaring_records.append(record)
+
+    if not declaring_records:
+        return []
+
+    failures: list[str] = []
+    missing_files = [
+        record
+        for record in OWNER_RECURRENCE_RECORDS
+        if payloads[record] is None
+    ]
+    if missing_files:
+        failures.append(
+            "Active owner-recurrence-requirement is orphaned: both paired "
+            "records must exist; missing "
+            + ", ".join(RECORD_TEMPLATES[record][0] for record in missing_files)
+            + "."
+        )
+
+    state: dict[str, object] | None = None
+    manifest_path = state_root / "state.json"
+    if manifest_path.is_file():
+        try:
+            candidate_state = read_json(manifest_path)
+        except StateError:
+            candidate_state = None
+        if isinstance(candidate_state, dict):
+            state = candidate_state
+    if state is None:
+        failures.append(
+            "Active owner-recurrence-requirement cannot be kept non-orphaned "
+            "without a readable state.json that selects its paired records and "
+            "capabilities."
+        )
+    else:
+        raw_records = state.get("records")
+        records = (
+            set(raw_records)
+            if isinstance(raw_records, list)
+            and all(isinstance(record, str) for record in raw_records)
+            else set()
+        )
+        missing_records = sorted(set(OWNER_RECURRENCE_RECORDS) - records)
+        if missing_records:
+            failures.append(
+                "Active owner-recurrence-requirement is orphaned: state.json "
+                "must list both paired records; missing "
+                + ", ".join(missing_records)
+                + "."
+            )
+
+        evidence_contract = state.get("evidence_contract")
+        raw_capabilities = (
+            evidence_contract.get("applicable_capabilities")
+            if isinstance(evidence_contract, dict)
+            else None
+        )
+        capabilities = (
+            set(raw_capabilities)
+            if isinstance(raw_capabilities, list)
+            and all(isinstance(capability, str) for capability in raw_capabilities)
+            else set()
+        )
+        missing_capabilities = sorted(
+            OWNER_RECURRENCE_CAPABILITIES - capabilities
+        )
+        if missing_capabilities:
+            failures.append(
+                "Active owner-recurrence-requirement requires both applicable "
+                "evidence capabilities in state.json; missing "
+                + ", ".join(missing_capabilities)
+                + "."
+            )
+
+    missing_triggers = [
+        record
+        for record in OWNER_RECURRENCE_RECORDS
+        if trigger_lists[record] is None
+        or OWNER_RECURRENCE_TRIGGER not in trigger_lists[record]
+    ]
+    if missing_triggers:
+        failures.append(
+            "Active owner-recurrence-requirement has inconsistent paired "
+            "triggers: it must be declared in both project-contrast.json and "
+            "direction-challenge.json; missing from "
+            + ", ".join(RECORD_TEMPLATES[record][0] for record in missing_triggers)
+            + "."
+        )
+
+    if require_resolved:
+        for record in OWNER_RECURRENCE_RECORDS:
+            payload = payloads[record]
+            triggers = trigger_lists[record]
+            if (
+                isinstance(payload, dict)
+                and triggers is not None
+                and OWNER_RECURRENCE_TRIGGER in triggers
+                and payload.get("record_status") in {None, "draft"}
+            ):
+                failures.append(
+                    "Active owner-recurrence-requirement is still a "
+                    f"{labels[record]} draft: record its project-derived evidence "
+                    "before treating state as clean."
+                )
+    return failures
+
+
+def direction_challenge_final_build_binding_failures(
+    state_root: Path,
+    project: Path,
+) -> list[str]:
+    """Keep a reviewed Direction Challenge attached to the final build.
+
+    The canonical Challenge record deliberately proves roots before broad
+    implementation.  That is valuable, but it must not silently become a
+    claim about a later build.  This state-level bridge therefore accepts an
+    exact selected-proof/final-build match, or a final-review-bound delta
+    ledger that names and reviews the changed decisions.  It does not change
+    the Direction Challenge schema or treat prose alone as a bridge.
+    """
+
+    challenge_path = state_root / "direction-challenge.json"
+    review_path = state_root / "visual-review.md"
+    if not challenge_path.is_file() or not review_path.is_file():
+        return []
+    try:
+        challenge = read_json(challenge_path)
+        review_meta, review_body = read_frontmatter_document(review_path)
+    except StateError as exc:
+        return [f"Direction Challenge proof-to-build binding is unreadable: {exc}"]
+    if (
+        not isinstance(challenge, dict)
+        or challenge.get("record_status") != "reviewed"
+        or review_meta.get("record_status") != "complete"
+    ):
+        # Draft, proof-ready, and incomplete records already have their own
+        # truthful readiness failures. Do not manufacture an extra bridge claim.
+        return []
+    selection = challenge.get("selection")
+    proofs = challenge.get("proof_slices")
+    if not isinstance(selection, dict) or not isinstance(proofs, list):
+        return [
+            "Reviewed Direction Challenge has no readable selection/proof "
+            "boundary for final-build verification"
+        ]
+    chosen_root = selection.get("chosen_root_id")
+    selected_builds = {
+        proof.get("build_id")
+        for proof in proofs
+        if isinstance(proof, dict)
+        and proof.get("root_id") == chosen_root
+        and isinstance(proof.get("build_id"), str)
+    }
+    if not isinstance(chosen_root, str) or not selected_builds:
+        return [
+            "Reviewed Direction Challenge has no selected-root proof build "
+            "to bind to the final visual review"
+        ]
+    final_build = (markdown_label_value(review_body, "Build or artifact ID") or "").strip()
+    if not non_placeholder(final_build):
+        return [
+            "Final visual-review build identity is missing for Direction "
+            "Challenge proof-to-build verification"
+        ]
+    if final_build in selected_builds:
+        return []
+
+    label = "Direction Challenge proof-to-build delta evidence"
+    value = (markdown_label_value(review_body, label) or "").strip()
+    if not value:
+        return [
+            "Final visual-review build differs from the selected Direction "
+            "Challenge proof build; bind a completed proof-to-build delta "
+            "artifact in the visual-review record"
+        ]
+    normalized = value.casefold().replace("not applicable", "not-applicable")
+    if normalized.startswith("not-applicable"):
+        return [
+            "Direction Challenge proof-to-build delta cannot be not-applicable "
+            "when final visual-review build differs from selected proof build"
+        ]
+    artifact, artifact_failures = bound_artifact(
+        value,
+        project=project,
+        record_path=review_path,
+        label="Direction Challenge proof-to-build delta evidence",
+    )
+    failures = list(artifact_failures)
+    if artifact is None or artifact_failures:
+        return failures
+    if artifact.suffix.casefold() not in {".md", ".txt", ".json", ".log"}:
+        return [
+            *failures,
+            "Direction Challenge proof-to-build delta must be a UTF-8 Markdown, "
+            "text, JSON, or log artifact",
+        ]
+    try:
+        delta = artifact.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return [
+            *failures,
+            f"Direction Challenge proof-to-build delta is not readable UTF-8: {exc}",
+        ]
+    sections = markdown_sections(delta)
+    required_sections = {
+        "Identity",
+        "Implementation delta",
+        "Reconciliation",
+    }
+    missing_sections = sorted(required_sections - set(sections))
+    if missing_sections:
+        failures.append(
+            "Direction Challenge proof-to-build delta is missing required "
+            "reviewed-decision sections: " + ", ".join(missing_sections)
+        )
+        return failures
+    if any(len(sections[heading].strip()) < 24 for heading in required_sections):
+        failures.append(
+            "Direction Challenge proof-to-build delta has an empty reviewed "
+            "identity, implementation, or reconciliation section"
+        )
+    selected_value = (
+        markdown_label_value(delta, "Selected candidate and proof build ID")
+        or ""
+    )
+    final_value = (
+        markdown_label_value(delta, "Implementation build, commit, or artifact ID")
+        or ""
+    )
+    missing_selected = sorted(
+        build for build in selected_builds if build not in selected_value
+    )
+    if missing_selected:
+        failures.append(
+            "Direction Challenge proof-to-build delta must name every exact "
+            "selected proof build: " + ", ".join(missing_selected)
+        )
+    if final_build not in final_value:
+        failures.append(
+            "Direction Challenge proof-to-build delta must name the exact "
+            "final visual-review build"
+        )
+    headers, rows = markdown_first_table(sections["Implementation delta"])
+    expected_headers = (
+        "Decision ID",
+        "Source/content/asset/system authority",
+        "Implementation path and symbol",
+        "Relevant adaptation or state contract",
+        "Permitted deviation and reason",
+        "Current evidence",
+        "Disposition and owner",
+    )
+    if headers != expected_headers or not rows:
+        failures.append(
+            "Direction Challenge proof-to-build delta needs at least one "
+            "reviewed changed-decision row using the packaged ledger contract"
+        )
+    elif any(
+        len(row) != len(expected_headers) or any(not non_placeholder(cell) for cell in row)
+        for row in rows
+    ):
+        failures.append(
+            "Direction Challenge proof-to-build delta contains an incomplete "
+            "changed-decision row"
+        )
+    return failures
+
+
 def readiness_failures(project: Path) -> list[str]:
     state_root = project / ".design-dna"
+    failures = owner_recurrence_integration_failures(
+        state_root,
+        require_resolved=True,
+    )
     state = read_json(state_root / "state.json")
     if not isinstance(state, dict):
-        return ["state.json must contain an object."]
+        return [*failures, "state.json must contain an object."]
     profiles = state.get("assurance_profiles")
     records = state.get("records")
     if (
@@ -7936,13 +9707,14 @@ def readiness_failures(project: Path) -> list[str]:
         or not all(isinstance(item, str) for item in records)
     ):
         return [
+            *failures,
             "state.json must persist valid assurance_profiles and records "
             "before readiness can be checked."
         ]
     try:
         canonical_profiles = normalize_assurance_profiles(profiles)
     except StateError as exc:
-        return [str(exc)]
+        return [*failures, str(exc)]
     contract = state.get("evidence_contract")
     extension_records: list[dict[str, object]] = []
     try:
@@ -7952,6 +9724,7 @@ def readiness_failures(project: Path) -> list[str]:
             )
             if canonical_profiles != ("quick",):
                 return [
+                    *failures,
                     "state.json needs the current project-derived direction "
                     "contract before readiness; run --migrate."
                 ]
@@ -7961,14 +9734,13 @@ def readiness_failures(project: Path) -> list[str]:
                 extension_records,
             ) = validate_evidence_contract(contract, canonical_profiles)
     except StateError as exc:
-        return [str(exc)]
+        return [*failures, str(exc)]
     required_records = tuple(records)
     profile_label = "+".join(canonical_profiles)
-    failures: list[str] = []
     for capability in evidence_capabilities:
-        missing_records = sorted(
-            CAPABILITY_REQUIRED_RECORDS.get(capability, set())
-            - set(required_records)
+        missing_records = missing_capability_records(
+            capability,
+            required_records,
         )
         if missing_records:
             failures.append(
@@ -8105,6 +9877,30 @@ def readiness_failures(project: Path) -> list[str]:
                             "Batch Study evidence remains incomplete without "
                             "a reported coverage gap."
                         )
+                # Protocol/capture coverage is not a human contextual
+                # disposition.  Keep the two reports separate so an otherwise
+                # complete study cannot silently acquire an aesthetic or
+                # contextual acceptance claim from mechanical coverage alone.
+                if (
+                    batch_report.get("comparison_ready") is True
+                    and batch_report.get("final_ready") is not True
+                ):
+                    human_gaps = batch_report.get("human_contextual_gaps")
+                    if isinstance(human_gaps, list) and human_gaps:
+                        for gap in human_gaps:
+                            if isinstance(gap, dict):
+                                failures.append(
+                                    "Batch Study human contextual disposition "
+                                    "remains incomplete: "
+                                    f"{gap.get('code', 'unknown')} "
+                                    f"({gap.get('scope', 'study')}): "
+                                    f"{gap.get('message', 'No detail recorded.')}"
+                                )
+                    else:
+                        failures.append(
+                            "Batch Study human contextual disposition remains "
+                            "incomplete without a reported disposition gap."
+                        )
                 if batch_report.get("automatic_aesthetic_pass") is not False:
                     failures.append(
                         "Batch Study readiness cannot contain an automatic "
@@ -8112,6 +9908,157 @@ def readiness_failures(project: Path) -> list[str]:
                     )
             except StateError as exc:
                 failures.append(f"Invalid Batch Study readiness evidence: {exc}")
+    if "project-contrast" in required_records:
+        project_contrast_path = state_root / "project-contrast.json"
+        if project_contrast_path.is_file():
+            try:
+                project_contrast_report = run_project_contrast_readiness_audit(
+                    project_contrast_path,
+                    project,
+                )
+                if project_contrast_report.get("ready") is not True:
+                    gaps = project_contrast_report.get("gaps")
+                    findings = project_contrast_report.get("findings")
+                    if isinstance(gaps, list):
+                        for gap in gaps:
+                            if isinstance(gap, dict):
+                                failures.append(
+                                    "Project Contrast evidence remains incomplete: "
+                                    f"{gap.get('code', 'unknown')} "
+                                    f"({gap.get('message', 'No detail recorded.')})"
+                                )
+                    if isinstance(findings, list):
+                        for finding in findings:
+                            if (
+                                isinstance(finding, dict)
+                                and finding.get("blocking") is True
+                            ):
+                                failures.append(
+                                    "Project Contrast evidence is invalid: "
+                                    f"{finding.get('code', 'unknown')} "
+                                    f"({finding.get('message', 'No detail recorded.')})"
+                                )
+                    if not failures or not any(
+                        entry.startswith("Project Contrast evidence")
+                        for entry in failures
+                    ):
+                        failures.append(
+                            "Project Contrast evidence remains incomplete without "
+                            "a reported coverage gap."
+                        )
+                if project_contrast_report.get("automatic_aesthetic_pass") is not False:
+                    failures.append(
+                        "Project Contrast readiness cannot contain an automatic "
+                        "aesthetic pass."
+                    )
+            except StateError as exc:
+                failures.append(f"Invalid Project Contrast readiness evidence: {exc}")
+    if "direction-challenge" in required_records:
+        direction_challenge_path = state_root / "direction-challenge.json"
+        if direction_challenge_path.is_file():
+            try:
+                direction_challenge_report = run_direction_challenge_readiness_audit(
+                    direction_challenge_path,
+                    project,
+                )
+                reported_incomplete = False
+                if direction_challenge_report.get("ready") is not True:
+                    gaps = direction_challenge_report.get("gaps")
+                    findings = direction_challenge_report.get("findings")
+                    if isinstance(gaps, list):
+                        for gap in gaps:
+                            if isinstance(gap, dict):
+                                reported_incomplete = True
+                                failures.append(
+                                    "Direction Challenge evidence remains incomplete: "
+                                    f"{gap.get('code', 'unknown')} "
+                                    f"({gap.get('message', 'No detail recorded.')})"
+                                )
+                    if isinstance(findings, list):
+                        for entry in findings:
+                            if (
+                                isinstance(entry, dict)
+                                and entry.get("blocking") is True
+                            ):
+                                reported_incomplete = True
+                                failures.append(
+                                    "Direction Challenge evidence is invalid: "
+                                    f"{entry.get('code', 'unknown')} "
+                                    f"({entry.get('message', 'No detail recorded.')})"
+                                )
+                    if not reported_incomplete:
+                        failures.append(
+                            "Direction Challenge evidence remains incomplete without "
+                            "a reported coverage gap."
+                        )
+                if direction_challenge_report.get("automatic_aesthetic_pass") is not False:
+                    failures.append(
+                        "Direction Challenge readiness cannot contain an automatic "
+                        "aesthetic pass."
+                    )
+                if direction_challenge_report.get("ready") is True:
+                    failures.extend(
+                        direction_challenge_final_build_binding_failures(
+                            state_root,
+                            project,
+                        )
+                    )
+            except StateError as exc:
+                failures.append(
+                    f"Invalid Direction Challenge readiness evidence: {exc}"
+                )
+    if "connected-public-experience" in evidence_capabilities:
+        connected_public_experience_path = (
+            state_root / "connected-public-experience.json"
+        )
+        if connected_public_experience_path.is_file():
+            try:
+                connected_report = run_connected_public_experience_readiness_audit(
+                    connected_public_experience_path,
+                    project,
+                    evidence_capabilities,
+                )
+                if connected_report.get("ready") is not True:
+                    reported_incomplete = False
+                    gaps = connected_report.get("gaps")
+                    findings = connected_report.get("findings")
+                    if isinstance(gaps, list):
+                        for entry in gaps:
+                            if isinstance(entry, dict):
+                                reported_incomplete = True
+                                failures.append(
+                                    "Connected Public Experience evidence remains "
+                                    "incomplete: "
+                                    f"{entry.get('code', 'unknown')} "
+                                    f"({entry.get('message', 'No detail recorded.')})"
+                                )
+                    if isinstance(findings, list):
+                        for entry in findings:
+                            if (
+                                isinstance(entry, dict)
+                                and entry.get("blocking") is True
+                            ):
+                                reported_incomplete = True
+                                failures.append(
+                                    "Connected Public Experience evidence is invalid: "
+                                    f"{entry.get('code', 'unknown')} "
+                                    f"({entry.get('message', 'No detail recorded.')})"
+                                )
+                    if not reported_incomplete:
+                        failures.append(
+                            "Connected Public Experience evidence remains incomplete "
+                            "without a reported coverage gap."
+                        )
+                if connected_report.get("automatic_aesthetic_pass") is not False:
+                    failures.append(
+                        "Connected Public Experience readiness cannot contain an "
+                        "automatic aesthetic pass."
+                    )
+            except StateError as exc:
+                failures.append(
+                    "Invalid Connected Public Experience readiness evidence: "
+                    f"{exc}"
+                )
     if "cultural-context" in evidence_capabilities:
         review_path = state_root / "visual-review.md"
         if review_path.is_file():
@@ -8293,6 +10240,7 @@ def render_new_state(
     records: tuple[str, ...],
     assurance_profiles: tuple[str, ...],
     evidence_capabilities: tuple[str, ...] = (),
+    triggers: tuple[str, ...] = (),
 ) -> None:
     template_root = skill_root / "templates"
     effective_capabilities = normalize_evidence_capabilities(
@@ -8301,8 +10249,9 @@ def render_new_state(
             *evidence_capabilities,
         ]
     )
-    contents = {
-        RECORD_TEMPLATES[record][0]: (
+    contents: dict[str, str] = {}
+    for record in records:
+        content = (
             template_text(
                 template_root,
                 RECORD_TEMPLATES[record][1],
@@ -8311,8 +10260,36 @@ def render_new_state(
             )
             + capability_sections_text(record, effective_capabilities)
         )
-        for record in records
-    }
+        if record in {"project-contrast", "direction-challenge"} and triggers:
+            record_label = (
+                "Project Contrast"
+                if record == "project-contrast"
+                else "Direction Challenge"
+            )
+            try:
+                triggered_payload = json.loads(content)
+            except json.JSONDecodeError as exc:
+                raise StateError(
+                    f"{record}-template-invalid",
+                    f"{record_label} template must be valid JSON before triggers are recorded.",
+                    path=template_root / RECORD_TEMPLATES[record][1],
+                ) from exc
+            if not isinstance(triggered_payload, dict):
+                raise StateError(
+                    f"{record}-template-invalid",
+                    f"{record_label} template root must be an object.",
+                    path=template_root / RECORD_TEMPLATES[record][1],
+                )
+            scope = triggered_payload.get("scope")
+            if not isinstance(scope, dict):
+                raise StateError(
+                    f"{record}-template-invalid",
+                    f"{record_label} template must include a scope object.",
+                    path=template_root / RECORD_TEMPLATES[record][1],
+                )
+            scope["trigger"] = list(triggers)
+            content = json.dumps(triggered_payload, indent=2) + "\n"
+        contents[RECORD_TEMPLATES[record][0]] = content
     contents["state.json"] = state_manifest(
         version,
         records,
@@ -8340,6 +10317,7 @@ def merge_existing(
     version: str,
     assurance_profiles: tuple[str, ...],
     evidence_capabilities: tuple[str, ...],
+    triggers: tuple[str, ...],
 ) -> None:
     if not entry_exists(existing):
         return
@@ -8450,6 +10428,42 @@ def merge_existing(
             if target.exists():
                 target.unlink()
             shutil.copy2(source, target, follow_symlinks=False)
+    if triggers:
+        for record in ("project-contrast", "direction-challenge"):
+            contract_path = staged / RECORD_TEMPLATES[record][0]
+            if not contract_path.is_file():
+                continue
+            try:
+                contract = read_json(contract_path)
+            except StateError as exc:
+                raise StateError(
+                    "trigger-contract-invalid",
+                    f"Unable to add the recurrence trigger to {contract_path.name}: {exc}",
+                    path=contract_path,
+                ) from exc
+            scope = contract.get("scope") if isinstance(contract, dict) else None
+            current_triggers = scope.get("trigger") if isinstance(scope, dict) else None
+            if not isinstance(current_triggers, list) or not all(
+                isinstance(item, str) for item in current_triggers
+            ):
+                raise StateError(
+                    "trigger-contract-shape-invalid",
+                    f"{contract_path.name} must contain a string trigger list.",
+                    path=contract_path,
+                )
+            scope["trigger"] = list(dict.fromkeys([*current_triggers, *triggers]))
+            try:
+                contract_path.write_text(
+                    json.dumps(contract, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
+            except OSError as exc:
+                raise StateError(
+                    "trigger-contract-write-failed",
+                    str(exc),
+                    path=contract_path,
+                ) from exc
     inferred_records = [
         record
         for record, (filename, _) in RECORD_TEMPLATES.items()
@@ -8970,6 +10984,88 @@ def migrate_asset_manifest_contract(
     }
 
 
+def legacy_project_contrast_draft_like(payload: object) -> bool:
+    """Recognize only the prior packaged placeholder record, never real work."""
+
+    if not isinstance(payload, dict) or "record_status" in payload:
+        return False
+    scope = payload.get("scope")
+    source = payload.get("source_to_encounter")
+    direction = payload.get("selected_direction")
+    comparison = payload.get("comparison")
+    if not all(isinstance(value, dict) for value in (scope, source, direction, comparison)):
+        return False
+    return (
+        scope.get("project_id") == "replace-with-project-safe-id"
+        and isinstance(source.get("visitor_occasion"), str)
+        and source["visitor_occasion"].startswith("Replace with")
+        and isinstance(direction.get("organizing_answer"), str)
+        and direction["organizing_answer"].startswith("Replace with")
+        and "contrast_prompt" not in comparison
+    )
+
+
+def migrate_project_contrast_draft_template(
+    path: Path,
+    version: str,
+) -> dict[str, object] | None:
+    """Replace only the known pre-lifecycle placeholder with an honest draft.
+
+    A partially completed legacy record can carry real project reasoning, so it
+    is intentionally left untouched for a human-directed conversion instead of
+    being guessed into the new contract.
+    """
+
+    try:
+        source_bytes = path.read_bytes()
+        payload = read_json(path)
+    except (OSError, StateError) as exc:
+        raise StateError("project-contrast-migration-read-failed", str(exc), path=path) from exc
+    if not legacy_project_contrast_draft_like(payload):
+        return None
+
+    template_root = Path(__file__).resolve().parents[1] / "templates"
+    try:
+        target = json.loads(
+            template_text(
+                template_root,
+                "project-contrast-template.json",
+                version,
+            )
+        )
+    except (StateError, json.JSONDecodeError) as exc:
+        raise StateError("project-contrast-migration-template-invalid", str(exc), path=path) from exc
+    if not isinstance(target, dict):
+        raise StateError(
+            "project-contrast-migration-template-invalid",
+            "The lifecycle template must be a JSON object.",
+            path=path,
+        )
+    if payload.get("classification") in CLASSIFICATIONS:
+        target["classification"] = payload["classification"]
+    old_scope = payload.get("scope")
+    if isinstance(old_scope, dict):
+        old_triggers = old_scope.get("trigger")
+        if isinstance(old_triggers, list) and all(
+            isinstance(trigger, str) for trigger in old_triggers
+        ):
+            target_scope = target.get("scope")
+            if isinstance(target_scope, dict):
+                target_scope["trigger"] = list(dict.fromkeys(old_triggers))
+    rendered = json.dumps(target, indent=2, ensure_ascii=False) + "\n"
+    try:
+        path.write_text(rendered, encoding="utf-8", newline="\n")
+    except OSError as exc:
+        raise StateError("project-contrast-migration-write-failed", str(exc), path=path) from exc
+    return {
+        "path": "project-contrast.json",
+        "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "migrated_sha256": hashlib.sha256(rendered.encode("utf-8")).hexdigest(),
+        "disposition": "known-placeholder-record-reset-to-explicit-draft",
+        "limitations": "Only the prior packaged placeholder record was reset; project-specific legacy records require human-directed conversion.",
+    }
+
+
 def migration_payload(
     state_root: Path,
     updated_records: list[str],
@@ -8977,6 +11073,7 @@ def migration_payload(
     completion_downgrades: list[dict[str, object]],
     asset_manifest_migrations: list[dict[str, object]],
     assurance_transitions: list[dict[str, object]],
+    project_contrast_migrations: list[dict[str, object]],
 ) -> dict[str, object]:
     legacy_files: list[dict[str, object]] = []
     for filename in LEGACY_RECORD_FILES:
@@ -9014,10 +11111,12 @@ def migration_payload(
         payload["asset_manifest_migrations"] = asset_manifest_migrations
     if assurance_transitions:
         payload["assurance_transitions"] = assurance_transitions
+    if project_contrast_migrations:
+        payload["project_contrast_migrations"] = project_contrast_migrations
     return payload
 
 
-def migrate_staged_state(state_root: Path) -> list[str]:
+def migrate_staged_state(state_root: Path, current_version: str) -> list[str]:
     updated: list[str] = []
     migration_changed = False
     state_path = state_root / "state.json"
@@ -9079,12 +11178,40 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         existing_profiles = normalize_assurance_profiles(
             list(legacy_profiles) or list(infer_assurance_profiles(raw_records))
         )
+    source_contract = state_payload.get("evidence_contract")
+    persisted_high_risk_profile = "high-risk" in existing_profiles
+    persisted_high_risk_capability = contract_declares_capability(
+        source_contract,
+        "high-risk",
+    )
+    if persisted_high_risk_capability and not persisted_high_risk_profile:
+        # A state that persisted the gate but not its profile is malformed by
+        # the current contract.  Preserve the stronger historical declaration
+        # and reopen its evidence rather than silently weakening it.
+        existing_profiles = normalize_assurance_profiles(
+            [*existing_profiles, "high-risk"]
+        )
     cumulative_profiles = merged_assurance_profiles(
         list(existing_profiles),
         [],
         raw_records,
     )
-    source_contract = state_payload.get("evidence_contract")
+    # Taste calibration became a substantive Showcase/Direction Challenge
+    # record.  A migration must add an explicitly *draft* record rather than
+    # silently treating historical exploration as calibration evidence.
+    migrated_records = list(raw_records)
+    if "high-risk" in cumulative_profiles:
+        # High-risk is meaningful only with its whole evidence boundary.  Add
+        # missing records as drafts below; never treat their absence as proof
+        # that the persisted declaration should be downgraded.
+        migrated_records = list(
+            dict.fromkeys([*migrated_records, *PROFILES["high-risk"]])
+        )
+    if (
+        {"showcase", "direction-challenge"} & set(cumulative_profiles)
+        and "taste-calibration" not in migrated_records
+    ):
+        migrated_records.append("taste-calibration")
     if source_contract is None:
         migrated_capabilities = inferred_evidence_capabilities(
             cumulative_profiles
@@ -9107,6 +11234,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         state_payload.get("schema_version") != STATE_SCHEMA_VERSION
         or state_payload.get("assurance_profiles")
         != list(cumulative_profiles)
+        or state_payload.get("records") != migrated_records
         or "assurance_profile" in state_payload
         or source_contract != migrated_contract
     )
@@ -9115,6 +11243,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         migration_changed = True
         state_payload["schema_version"] = STATE_SCHEMA_VERSION
         state_payload["assurance_profiles"] = list(cumulative_profiles)
+        state_payload["records"] = migrated_records
         state_payload["evidence_contract"] = migrated_contract
         state_payload.pop("assurance_profile", None)
         state_path.write_text(
@@ -9138,11 +11267,20 @@ def migrate_staged_state(state_root: Path) -> list[str]:
             "source_profile_field": source_profile_field,
             "source_profile_values": source_profile_values,
             "target_assurance_profiles": list(cumulative_profiles),
-            "required_records": list(raw_records),
+            "required_records": list(migrated_records),
             "reason": (
-                "Converted scalar or incomplete assurance state to the "
-                "canonical cumulative capability set and retained every "
-                "listed record as a readiness requirement."
+                "Preserved the persisted High-risk assurance declaration or "
+                "evidence gate, aligned the state to the High-risk profile, "
+                "and added any missing High-risk records only as explicit "
+                "draft requirements; migration does not infer completion or "
+                "downgrade an incomplete consequential inventory."
+                if persisted_high_risk_profile or persisted_high_risk_capability
+                else (
+                    "Converted scalar or incomplete assurance state to the "
+                    "canonical cumulative capability set, retained every listed "
+                    "record as a readiness requirement, and added any newly "
+                    "required calibration record only as an explicit draft."
+                )
             ),
         }
     report_path = state_root / MIGRATION_REPORT
@@ -9150,6 +11288,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
     existing_completion_downgrades: list[dict[str, object]] = []
     existing_asset_migrations: list[dict[str, object]] = []
     existing_assurance_transitions: list[dict[str, object]] = []
+    existing_project_contrast_migrations: list[dict[str, object]] = []
     existing_record_updates: list[str] = []
     if report_path.is_file():
         existing_report = read_json(report_path)
@@ -9228,6 +11367,21 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         existing_assurance_transitions = [
             dict(item) for item in existing_transitions
         ]
+        existing_project_contrast = existing_report.get(
+            "project_contrast_migrations",
+            [],
+        )
+        if not isinstance(existing_project_contrast, list) or not all(
+            isinstance(item, dict) for item in existing_project_contrast
+        ):
+            raise StateError(
+                "invalid-migration-report",
+                "Existing project_contrast_migrations must be a list of objects.",
+                path=report_path,
+            )
+        existing_project_contrast_migrations = [
+            dict(item) for item in existing_project_contrast
+        ]
         prior_updates = existing_report.get("record_updates", [])
         if not isinstance(prior_updates, list) or not all(
             isinstance(item, str) for item in prior_updates
@@ -9247,6 +11401,28 @@ def migrate_staged_state(state_root: Path) -> list[str]:
             existing_assurance_transitions.append(assurance_transition)
     project_root = state_root.parent.parent
     persisted_profiles = cumulative_profiles
+    new_record_names = [
+        record for record in migrated_records if record not in raw_records
+    ]
+    if new_record_names:
+        template_root = Path(__file__).resolve().parents[1] / "templates"
+        for record in new_record_names:
+            record_path = state_root / RECORD_TEMPLATES[record][0]
+            if record_path.exists():
+                continue
+            record_path.write_text(
+                template_text(
+                    template_root,
+                    RECORD_TEMPLATES[record][1],
+                    current_version,
+                    cumulative_profiles,
+                )
+                + capability_sections_text(record, migrated_capabilities),
+                encoding="utf-8",
+                newline="\n",
+            )
+            migration_changed = True
+            updated.append(record)
     asset_path = state_root / "assets.yml"
     if asset_path.is_file():
         asset_migration = migrate_asset_manifest_contract(
@@ -9261,6 +11437,23 @@ def migrate_staged_state(state_root: Path) -> list[str]:
                 for existing in existing_asset_migrations
             ):
                 existing_asset_migrations.append(asset_migration)
+    project_contrast_path = state_root / "project-contrast.json"
+    if project_contrast_path.is_file():
+        project_contrast_migration = migrate_project_contrast_draft_template(
+            project_contrast_path,
+            current_version,
+        )
+        if project_contrast_migration is not None:
+            migration_changed = True
+            identity = project_contrast_migration["source_sha256"]
+            if not any(
+                existing.get("source_sha256") == identity
+                for existing in existing_project_contrast_migrations
+            ):
+                existing_project_contrast_migrations.append(
+                    project_contrast_migration
+                )
+            updated.append("project-contrast")
     for filename, record in SUBSTANTIVE_RECORDS.items():
         path = state_root / filename
         if not path.is_file():
@@ -9390,6 +11583,7 @@ def migrate_staged_state(state_root: Path) -> list[str]:
         existing_completion_downgrades,
         existing_asset_migrations,
         existing_assurance_transitions,
+        existing_project_contrast_migrations,
     )
     try:
         report_path.write_text(
@@ -9495,6 +11689,7 @@ def mark_record_complete(
         required_assurance_profiles=canonical_profiles,
         required_evidence_capabilities=evidence_capabilities,
         evidence_contract=metadata.get("evidence_contract"),
+        enforce_final_visual_binding=True,
     )
     if body_failures:
         raise StateError(
@@ -9582,6 +11777,59 @@ def mark_record_draft(state_root: Path, record: str) -> None:
         updates={"record_status": "draft"},
         removals=COMPLETE_RECORD_FIELDS,
     )
+
+
+def add_recurrence_triggers(
+    state_root: Path,
+    triggers: tuple[str, ...],
+) -> None:
+    """Add recurrence triggers to their paired evidence records.
+
+    The trigger is intentionally not a cosmetic preference. It requires both
+    Project Contrast and Direction Challenge evidence records so a later
+    readiness result cannot present a recurrence escalation as a clean state.
+    """
+
+    if not triggers or any(trigger not in INITIALIZATION_TRIGGERS for trigger in triggers):
+        raise StateError(
+            "invalid-recurrence-trigger",
+            "Only packaged recurrence triggers may be added.",
+            path=state_root,
+        )
+    manifest_path = state_root / "state.json"
+    manifest = read_json(manifest_path)
+    records = manifest.get("records") if isinstance(manifest, dict) else None
+    required_records = set(OWNER_RECURRENCE_RECORDS)
+    if not isinstance(records, list) or not required_records.issubset(records):
+        raise StateError(
+            "recurrence-records-required",
+            "--add-trigger only updates an already paired state. Use --profile showcase --trigger owner-recurrence-requirement to create or merge both Project Contrast and Direction Challenge records first.",
+            path=manifest_path,
+        )
+    for record in OWNER_RECURRENCE_RECORDS:
+        contract_path = state_root / RECORD_TEMPLATES[record][0]
+        contract = read_json(contract_path)
+        scope = contract.get("scope") if isinstance(contract, dict) else None
+        current = scope.get("trigger") if isinstance(scope, dict) else None
+        if not isinstance(current, list) or not all(isinstance(item, str) for item in current):
+            raise StateError(
+                "recurrence-trigger-shape-invalid",
+                f"{contract_path.name} must contain a string trigger list before it can be updated.",
+                path=contract_path,
+            )
+        merged = list(dict.fromkeys([*current, *triggers]))
+        if merged == current:
+            continue
+        scope["trigger"] = merged
+        try:
+            rendered = json.dumps(contract, indent=2, ensure_ascii=False) + "\n"
+            contract_path.write_text(rendered, encoding="utf-8", newline="\n")
+        except OSError as exc:
+            raise StateError(
+                "recurrence-trigger-write-failed",
+                str(exc),
+                path=contract_path,
+            ) from exc
 
 
 def mutate_state_transaction(
@@ -10009,6 +12257,7 @@ def install_transaction(
     dry_run: bool,
     assurance_profiles: tuple[str, ...] = ("standard",),
     evidence_capabilities: tuple[str, ...] = (),
+    triggers: tuple[str, ...] = (),
     version: str | None = None,
 ) -> list[dict[str, str]]:
     with ProjectMutationLock(project, "initialize") as lock:
@@ -10020,6 +12269,7 @@ def install_transaction(
             dry_run=dry_run,
             assurance_profiles=assurance_profiles,
             evidence_capabilities=evidence_capabilities,
+            triggers=triggers,
             version=version,
             lock=lock,
         )
@@ -10035,6 +12285,7 @@ def _install_transaction_locked(
     dry_run: bool,
     assurance_profiles: tuple[str, ...],
     evidence_capabilities: tuple[str, ...],
+    triggers: tuple[str, ...],
     version: str | None = None,
     lock: ProjectMutationLock,
 ) -> list[dict[str, str]]:
@@ -10058,6 +12309,7 @@ def _install_transaction_locked(
             "records": ",".join(records),
             "assurance_profiles": ",".join(assurance_profiles),
             "evidence_capabilities": ",".join(evidence_capabilities),
+            "triggers": ",".join(triggers),
         }]
 
     stage_parent: Path | None = None
@@ -10088,6 +12340,7 @@ def _install_transaction_locked(
             records,
             assurance_profiles,
             evidence_capabilities,
+            triggers,
         )
         merge_existing(
             state_root,
@@ -10097,6 +12350,7 @@ def _install_transaction_locked(
             version=version,
             assurance_profiles=assurance_profiles,
             evidence_capabilities=evidence_capabilities,
+            triggers=triggers,
         )
         assert_safe_tree(staged)
 
@@ -10329,13 +12583,29 @@ def main() -> int:
         metavar="RECORD",
         help="Return one substantive record to draft and remove stale completion metadata.",
     )
+    operation.add_argument(
+        "--add-trigger",
+        action="append",
+        choices=tuple(sorted(INITIALIZATION_TRIGGERS)),
+        default=[],
+        help=(
+            "Add a recurrence trigger to both already-initialized paired evidence "
+            "records. It requires Project Contrast and Direction Challenge to be "
+            "listed in state.json; it does not create a missing counterpart. "
+            "Repeating a trigger is idempotent."
+        ),
+    )
     parser.add_argument(
         "--profile", choices=tuple(PROFILES), default="standard",
         help="Record set to initialize when --record is not supplied (default: standard).",
     )
     parser.add_argument(
         "--record", action="append", choices=tuple(RECORD_TEMPLATES),
-        help="Create only this useful record; repeat to select more. Overrides --profile.",
+        help=(
+            "Create only this useful record; repeat to select more. Overrides "
+            "--profile, including high-risk; use --profile high-risk without "
+            "--record for its complete evidence set."
+        ),
     )
     parser.add_argument(
         "--evidence-capability",
@@ -10344,7 +12614,25 @@ def main() -> int:
         metavar="SLUG",
         help=(
             "Add an applicable evidence capability without selecting an "
-            "aesthetic recipe; repeat for cultural or project-specific risks."
+            "aesthetic recipe; repeat for cultural or project-specific risks. "
+            "Project Contrast and Direction Challenge require their named "
+            "profile or canonical record, while connected-public-experience "
+            "creates its canonical record. High-risk uses --profile high-risk "
+            "so its complete companion-record set is selected together."
+        ),
+    )
+    parser.add_argument(
+        "--trigger",
+        action="append",
+        choices=tuple(sorted(INITIALIZATION_TRIGGERS)),
+        default=[],
+        help=(
+            "During initialization or merge, declare an owner workflow trigger. "
+            "owner-recurrence-requirement selects both Project Contrast and "
+            "Direction Challenge records, their applicable capabilities, and the "
+            "same trigger in both records. It is available with --profile showcase, "
+            "--profile project-contrast, --profile direction-challenge, or an "
+            "explicit project-contrast or direction-challenge record."
         ),
     )
     parser.add_argument("--binding-kind", choices=("build", "artifact"))
@@ -10434,6 +12722,7 @@ def main() -> int:
             )
         mutation_selected = bool(
             args.migrate or args.mark_complete or args.mark_draft
+            or args.add_trigger
         )
         if args.mark_complete:
             missing_completion = [
@@ -10456,11 +12745,11 @@ def main() -> int:
                 path=project / ".design-dna",
             )
         if (args.check_state or args.check_ready or mutation_selected) and (
-            args.force or args.record or args.evidence_capability
+            args.force or args.record or args.evidence_capability or args.trigger
         ):
             raise StateError(
                 "incompatible-arguments",
-                "--force, --record, and --evidence-capability apply only to "
+                "--force, --record, --evidence-capability, and --trigger apply only to "
                 "initialization.",
                 path=project,
             )
@@ -10472,6 +12761,15 @@ def main() -> int:
             )
         if args.check_state or args.check_ready:
             failures, warnings = validate_state(project, version)
+            recurrence_failures = owner_recurrence_integration_failures(
+                project / ".design-dna",
+                require_resolved=True,
+            )
+            failures.extend(
+                failure
+                for failure in recurrence_failures
+                if failure not in failures
+            )
             if not failures and args.check_ready:
                 failures.extend(readiness_failures(project))
             result = {"ok": not failures, "project": str(project), "version": version, "failures": failures, "warnings": warnings}
@@ -10496,12 +12794,54 @@ def main() -> int:
                 version,
                 action="migrated",
                 dry_run=args.dry_run,
-                mutator=migrate_staged_state,
+                mutator=lambda staged: migrate_staged_state(staged, version),
             )
             result = {
                 "ok": True,
                 "project": str(project),
                 "version": version,
+                "actions": actions,
+            }
+            print(
+                json.dumps(result, indent=2)
+                if args.json
+                else "\n".join(
+                    f"{item['action']}: {item['path']}"
+                    for item in actions
+                )
+            )
+            return 0
+        if args.add_trigger:
+            selected_add_triggers = tuple(dict.fromkeys(args.add_trigger))
+            actions = mutate_state_transaction(
+                project,
+                version,
+                action="added-recurrence-trigger",
+                dry_run=args.dry_run,
+                mutator=lambda staged: add_recurrence_triggers(
+                    staged,
+                    selected_add_triggers,
+                ),
+            )
+            current_contract = read_json(
+                project / ".design-dna" / "project-contrast.json"
+            )
+            scope = (
+                current_contract.get("scope")
+                if isinstance(current_contract, dict)
+                else None
+            )
+            persisted_triggers = (
+                scope.get("trigger")
+                if isinstance(scope, dict)
+                and isinstance(scope.get("trigger"), list)
+                else []
+            )
+            result = {
+                "ok": True,
+                "project": str(project),
+                "version": version,
+                "triggers": persisted_triggers,
                 "actions": actions,
             }
             print(
@@ -10578,15 +12918,70 @@ def main() -> int:
                 )
             )
             return 0
-        selected = tuple(dict.fromkeys(args.record or PROFILES[args.profile]))
+        selected_triggers = tuple(dict.fromkeys(args.trigger))
+        trigger_profile_allowed = args.profile in {
+            "showcase", "project-contrast", "direction-challenge",
+        }
+        trigger_record_allowed = bool(
+            args.record
+            and (
+                "project-contrast" in args.record
+                or "direction-challenge" in args.record
+            )
+        )
+        if selected_triggers and not (trigger_profile_allowed or trigger_record_allowed):
+            raise StateError(
+                "trigger-profile-mismatch",
+                "owner-recurrence-requirement requires --profile showcase, --profile project-contrast, --profile direction-challenge, or an explicit recurrence record.",
+                path=project,
+            )
+        selected_evidence_capabilities = normalize_evidence_capabilities(
+            [
+                *args.evidence_capability,
+                *(
+                    capability
+                    for trigger in selected_triggers
+                    for capability in TRIGGER_EVIDENCE_CAPABILITIES[trigger]
+                ),
+            ]
+        )
+        selected = tuple(dict.fromkeys([
+            *(args.record or PROFILES[args.profile]),
+            *(
+                record
+                for trigger in selected_triggers
+                for record in TRIGGER_RECORDS[trigger]
+            ),
+            *(
+                "connected-public-experience"
+                for capability in selected_evidence_capabilities
+                if capability == "connected-public-experience"
+            ),
+        ]))
+        require_capability_record_selection(
+            selected_evidence_capabilities,
+            selected,
+        )
         selected_profile = "custom" if args.record else args.profile
         selected_assurance_profiles = assurance_profiles_for_request(
             selected_profile,
             selected,
         )
-        selected_evidence_capabilities = normalize_evidence_capabilities(
-            args.evidence_capability
-        )
+        if selected_triggers:
+            selected_assurance_profiles = normalize_assurance_profiles(
+                [
+                    *selected_assurance_profiles,
+                    "project-contrast",
+                    "direction-challenge",
+                ]
+            )
+        if "connected-public-experience" in selected_evidence_capabilities:
+            selected_assurance_profiles = normalize_assurance_profiles(
+                [
+                    *selected_assurance_profiles,
+                    "connected-public-experience",
+                ]
+            )
         actions = install_transaction(
             project,
             skill_root,
@@ -10595,6 +12990,7 @@ def main() -> int:
             dry_run=args.dry_run,
             assurance_profiles=selected_assurance_profiles,
             evidence_capabilities=selected_evidence_capabilities,
+            triggers=selected_triggers,
             version=version,
         )
         result = {
@@ -10603,6 +12999,7 @@ def main() -> int:
             "version": version,
             "assurance_profile": selected_profile,
             "assurance_profiles": list(selected_assurance_profiles),
+            "triggers": list(selected_triggers),
             "evidence_capabilities": list(
                 normalize_evidence_capabilities(
                     [

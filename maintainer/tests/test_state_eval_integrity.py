@@ -58,6 +58,267 @@ def write_png(path: Path, width: int, height: int) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def schema3_adapter() -> object:
+    """Load the shipped verifier used by Standard+ completion validation."""
+
+    initializer = load_initializer_module()
+    adapter, failure = initializer.load_schema3_render_review_adapter()
+    if adapter is None:
+        raise AssertionError(
+            "The state-eval fixture could not load the shipped schema-3 "
+            f"rendered-review adapter: {failure}"
+        )
+    return adapter
+
+
+def schema3_source_snapshot(
+    adapter: object,
+    files: dict[str, bytes],
+    *,
+    entry_path: str,
+) -> tuple[dict[str, object], str]:
+    """Build the immutable local-source shape checked by the shipped adapter."""
+
+    manifest_files = [
+        {
+            "path": path,
+            "bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+        }
+        for path, payload in sorted(files.items())
+    ]
+    manifest_sha256 = adapter.source_manifest_digest(manifest_files)
+    return (
+        {
+            "policy": "frozen-deny-by-default-public-root",
+            "root_kind": "explicit-build-root",
+            "entry_path": entry_path,
+            "drift_check": (
+                "passed-source-and-frozen-snapshot-before-report-and-commit"
+            ),
+            "manifest": {
+                "algorithm": "sha256",
+                "manifest_sha256": manifest_sha256,
+                "file_count": len(manifest_files),
+                "total_bytes": sum(
+                    entry["bytes"] for entry in manifest_files
+                ),
+                "files": manifest_files,
+                "excluded_counts": {
+                    "hidden_or_source_only_path": 0,
+                    "sensitive_or_source_config": 0,
+                    "extension_not_public_allowlist": 0,
+                },
+            },
+        },
+        manifest_sha256,
+    )
+
+
+def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
+    """Write a complete hash- and marker-bound Standard+ review fixture.
+
+    This intentionally uses the same narrow schema-3 verifier that production
+    completion invokes.  A hand-written JSON note with merely familiar fields
+    is not sufficient: the test golden path must include real wide/narrow PNGs,
+    an immutable source snapshot, a report-byte record, and the adjacent output
+    marker.
+    """
+
+    adapter = schema3_adapter()
+    review_dir = project / "evidence" / "render-review"
+    review_dir.mkdir(parents=True, exist_ok=True)
+    wide_path = review_dir / "wide.png"
+    narrow_path = review_dir / "narrow.png"
+    wide_digest = write_png(wide_path, 1280, 1600)
+    narrow_digest = write_png(narrow_path, 390, 1200)
+    contact_path = review_dir / "contact-sheet.html"
+    contact_payload = b"<!doctype html><title>Schema-3 review fixture</title>\n"
+    contact_path.write_bytes(contact_payload)
+    contact_digest = hashlib.sha256(contact_payload).hexdigest()
+
+    source_snapshot, source_digest = schema3_source_snapshot(
+        adapter,
+        {"index.html": b"<!doctype html><title>fixture build</title>\n"},
+        entry_path="index.html",
+    )
+    output_identity = {
+        "id": "a" * 64,
+        "path_sha256": adapter.rendered_output_path_sha256(review_dir),
+    }
+    report_path = review_dir / "render-review.json"
+    marker_path = review_dir / ".design-dna-render-review.json"
+
+    def capture(
+        capture_id: str,
+        screenshot_path: str,
+        screenshot_digest: str,
+        *,
+        viewport_width: int,
+        viewport_height: int,
+        pixel_width: int,
+        pixel_height: int,
+    ) -> dict[str, object]:
+        return {
+            "id": capture_id,
+            "route_id": "route-01",
+            "capture_status": "complete",
+            "final_url": "http://127.0.0.1/menu",
+            "viewport": {
+                "width": viewport_width,
+                "height": viewport_height,
+                "device_scale_factor": 1,
+            },
+            "interaction": {
+                "requested_steps": 0,
+                "completed_steps": 0,
+                "status": "not-requested",
+            },
+            "screenshot": {
+                "path": screenshot_path,
+                "sha256": screenshot_digest,
+                "media_type": "image/png",
+                "bytes": (review_dir / screenshot_path).stat().st_size,
+                "pixel_width": pixel_width,
+                "pixel_height": pixel_height,
+            },
+        }
+
+    report: dict[str, object] = {
+        "schema_version": 3,
+        "tool": {
+            "name": "design-dna-rendered-review",
+            "version": "3.0.0",
+            "report_schema": "render-review.schema.json",
+        },
+        "output_identity": output_identity,
+        "execution_ok": True,
+        "review_required": True,
+        "automatic_visual_quality_pass": False,
+        "quality_status": "manual-review-required",
+        "execution": {},
+        "privacy": {},
+        "build": {
+            "id": "build-42",
+            "target_input": "fixture",
+            "target_kind": "local-directory",
+        },
+        "source_snapshot": source_snapshot,
+        "capture_contract": {
+            "contract_mode": "capture-manifest-v1",
+            "profiles": [{"id": "wide"}, {"id": "narrow"}],
+            "scenarios": [{"id": "menu-default"}],
+        },
+        "routes": [
+            {
+                "id": "route-01",
+                "requested": "/menu",
+                "url": "http://127.0.0.1/menu",
+            }
+        ],
+        "captures": [
+            capture(
+                "menu-wide",
+                "wide.png",
+                wide_digest,
+                viewport_width=1280,
+                viewport_height=900,
+                pixel_width=1280,
+                pixel_height=1600,
+            ),
+            capture(
+                "menu-narrow",
+                "narrow.png",
+                narrow_digest,
+                viewport_width=390,
+                viewport_height=844,
+                pixel_width=390,
+                pixel_height=1200,
+            ),
+        ],
+        "artifacts": {
+            "contact_sheet": {
+                "path": "contact-sheet.html",
+                "sha256": contact_digest,
+                "media_type": "text/html",
+                "bytes": len(contact_payload),
+            },
+            "report": {"path": "render-review.json", "bytes": 0},
+            "marker": {
+                "path": ".design-dna-render-review.json",
+                "bytes": 0,
+            },
+            "capture_bytes": wide_path.stat().st_size + narrow_path.stat().st_size,
+            "total_bytes": 0,
+        },
+        "manual_review": {},
+    }
+
+    marker_bytes = 0
+    report_payload = b""
+    marker: dict[str, object] = {}
+    for _ in range(8):
+        artifacts = report["artifacts"]
+        assert isinstance(artifacts, dict)
+        artifacts["marker"] = {
+            "path": ".design-dna-render-review.json",
+            "bytes": marker_bytes,
+        }
+        report_payload = (json.dumps(report, indent=2) + "\n").encode("utf-8")
+        artifacts["report"] = {
+            "path": "render-review.json",
+            "bytes": len(report_payload),
+        }
+        report_payload = (json.dumps(report, indent=2) + "\n").encode("utf-8")
+        marker = {
+            "schema_version": 3,
+            "marker_type": "design-dna-render-review-output",
+            "tool": {
+                "name": "design-dna-rendered-review",
+                "version": "3.0.0",
+            },
+            "output_identity": output_identity,
+            "report": {
+                "path": "render-review.json",
+                "sha256": hashlib.sha256(report_payload).hexdigest(),
+                "bytes": len(report_payload),
+            },
+            "created_at": "2026-08-12T12:00:00+00:00",
+            "build_id_sha256": hashlib.sha256(b"build-42").hexdigest(),
+        }
+        marker_payload = (json.dumps(marker, indent=2) + "\n").encode("utf-8")
+        if len(marker_payload) == marker_bytes:
+            break
+        marker_bytes = len(marker_payload)
+    else:
+        raise AssertionError("schema-3 fixture marker byte count did not stabilize")
+
+    artifacts = report["artifacts"]
+    assert isinstance(artifacts, dict)
+    artifacts["marker"] = {
+        "path": ".design-dna-render-review.json",
+        "bytes": marker_bytes,
+    }
+    report_payload = (json.dumps(report, indent=2) + "\n").encode("utf-8")
+    marker["report"] = {
+        "path": "render-review.json",
+        "sha256": hashlib.sha256(report_payload).hexdigest(),
+        "bytes": len(report_payload),
+    }
+    marker_payload = (json.dumps(marker, indent=2) + "\n").encode("utf-8")
+    if len(marker_payload) != marker_bytes:
+        raise AssertionError("schema-3 fixture marker size changed after rebinding")
+    report_path.write_bytes(report_payload)
+    marker_path.write_bytes(marker_payload)
+    return {
+        "report_digest": hashlib.sha256(report_payload).hexdigest(),
+        "source_digest": source_digest,
+        "contact_digest": contact_digest,
+        "wide_digest": wide_digest,
+        "narrow_digest": narrow_digest,
+    }
+
+
 def complete_visual_review() -> str:
     template = (
         PLUGIN
@@ -295,7 +556,7 @@ def fill_substantive_template(record: str, text: str) -> str:
         "Candidate/build ID and reversible checkpoint": (
             "build-42; checkpoint=direction-proof-42"
         ),
-        "Decision": "proceed",
+        "Current decision": "proceed",
         "Comparison performed, partially performed, or not performed": (
             "performed; one project-specific candidate proof was reviewed"
         ),
@@ -437,93 +698,99 @@ def materialize_visual_review_evidence(
     *,
     include_extended: bool = True,
 ) -> str:
-    evidence = project / "evidence"
-    evidence.mkdir(exist_ok=True)
-    coverage = evidence / "menu-review.png"
-    coverage_digest = write_png(coverage, 390, 844)
-
-    review_dir = evidence / "render-review"
-    review_dir.mkdir(exist_ok=True)
-    contact = review_dir / "contact-sheet.html"
-    contact.write_text(
-        "<!doctype html><title>Review contact sheet</title>",
-        encoding="utf-8",
+    bound = write_bound_schema3_render_review(project)
+    report_reference = (
+        "evidence/render-review/render-review.json plus sha256:"
+        f"{bound['report_digest']}"
     )
-    contact_digest = hashlib.sha256(contact.read_bytes()).hexdigest()
-    source_digest = "b" * 64
-    report = {
-        "schema_version": 3,
-        "tool": {
-            "name": "design-dna-rendered-review",
-            "version": "3.0.0",
-            "report_schema": "render-review.schema.json",
-        },
-        "execution_ok": True,
-        "review_required": True,
-        "automatic_visual_quality_pass": False,
-        "quality_status": "manual-review-required",
-        "build": {
-            "id": "build-42",
-            "target_kind": "local-directory",
-        },
-        "source_snapshot": {
-            "manifest": {"manifest_sha256": source_digest}
-        },
-        "capture_contract": {
-            "contract_mode": "deterministic-default-v1",
-            "profiles": [{"id": "mobile-390"}, {"id": "desktop-1440"}],
-            "scenarios": [{"id": "menu-default"}],
-        },
-        "routes": [{"id": "route-01", "requested": "/menu"}],
-        "captures": [{"id": "capture-01", "status": "complete"}],
-        "artifacts": {
-            "contact_sheet": {
-                "path": "contact-sheet.html",
-                "sha256": contact_digest,
-            }
-        },
-    }
-    report_path = review_dir / "render-review.json"
-    report_path.write_text(
-        json.dumps(report, indent=2) + "\n",
-        encoding="utf-8",
+    contact_reference = (
+        "evidence/render-review/contact-sheet.html plus sha256:"
+        f"{bound['contact_digest']}"
     )
-    report_digest = hashlib.sha256(report_path.read_bytes()).hexdigest()
+    wide_reference = (
+        "evidence/render-review/wide.png plus sha256:"
+        f"{bound['wide_digest']}"
+    )
+    narrow_reference = (
+        "evidence/render-review/narrow.png plus sha256:"
+        f"{bound['narrow_digest']}"
+    )
     rendered = text.replace(
         "evidence/menu-review.png plus sha256:" + ("0" * 64),
-        "evidence/menu-review.png plus sha256:" + coverage_digest,
+        narrow_reference,
     )
+
+    scope_row = (
+        "| Recorded evidence for route/state or reviewed body. | "
+        "Recorded evidence for material review risk or not-applicable reason. | "
+        "Recorded evidence for wide capture id. | "
+        "Recorded evidence for narrow capture id. | "
+        "applicable / not-applicable / blocked |"
+    )
+    if scope_row not in rendered:
+        raise AssertionError("visual-review scope fixture row was not found")
     rendered = rendered.replace(
-        "evidence/render-review/contact-sheet.html plus sha256:"
-        + ("0" * 64),
-        "evidence/render-review/contact-sheet.html plus sha256:"
-        + contact_digest,
+        scope_row,
+        "| /menu; default | The primary action and compact navigation need "
+        "a real wide/narrow final encounter comparison. | menu-wide | "
+        "menu-narrow | applicable |",
     )
+    surface_row = (
+        "| First impression and surface fidelity | "
+        "applicable / not-applicable / blocked | "
+        f"{narrow_reference} | Recorded evidence for observation or limitation. |"
+    )
+    if surface_row not in rendered:
+        raise AssertionError("visual-review surface fixture row was not found")
     rendered = rendered.replace(
-        "evidence/render-review/render-review.json plus sha256:"
-        + ("0" * 64),
-        "evidence/render-review/render-review.json plus sha256:"
-        + report_digest,
+        surface_row,
+        "| First impression and surface fidelity | applicable | "
+        f"{wide_reference} | The opening hierarchy stays specific to the "
+        "reviewed visitor task without losing its first action. |",
     )
-    if (
-        include_extended
-        and "Rendered-review report path, hash, contract, and execution result"
-        not in rendered
-    ):
+    adversarial_row = (
+        "| Adversarial specificity review | applicable / not-applicable / blocked | "
+        f"{narrow_reference} | Recorded evidence for result or limitation. |"
+    )
+    preship_row = (
+        "| Preship gate | applicable / not-applicable / blocked | "
+        f"{narrow_reference} | Recorded evidence for result or limitation. |"
+    )
+    if adversarial_row not in rendered or preship_row not in rendered:
+        raise AssertionError("visual-review preship fixture rows were not found")
+    rendered = rendered.replace(
+        adversarial_row,
+        "| Adversarial specificity review | applicable | "
+        f"{narrow_reference} | The narrow capture keeps the task hierarchy "
+        "legible without template-like fallback composition. |",
+    ).replace(
+        preship_row,
+        "| Preship gate | applicable | "
+        f"{wide_reference} | The reviewed build has explicit evidence for "
+        "the final opening, hierarchy, and responsive surface. |",
+    )
+
+    evidence_block = (
+        "- Source/workspace identity and SHA-256: fixture source snapshot plus "
+        f"sha256:{bound['source_digest']}\n"
+        "- Rendered-review report path, hash, contract, and execution result: "
+        f"{report_reference}; build=build-42; source_snapshot_sha256="
+        f"{bound['source_digest']}; contract_mode=capture-manifest-v1; "
+        "execution_ok=true\n"
+        "- Coverage contact sheet or artifact index: "
+        f"{contact_reference}\n"
+    )
+    reviewer_anchor = "- Reviewer relationship: producer-self\n"
+    if reviewer_anchor not in rendered:
+        raise AssertionError("visual-review reviewer fixture anchor was not found")
+    rendered = rendered.replace(
+        reviewer_anchor,
+        reviewer_anchor + "\n" + evidence_block,
+        1,
+    )
+    if include_extended:
         rendered += (
-            "\n## Extended rendered-review evidence\n\n"
-            "- Build, commit, or artifact ID: build-42\n"
-            "- Source/workspace identity and SHA-256: project snapshot plus "
-            f"sha256:{source_digest}\n"
-            "- Rendered-review report path, hash, contract, and execution result: "
-            "evidence/render-review/render-review.json plus sha256:"
-            f"{report_digest}; build=build-42; source_snapshot_sha256="
-            f"{source_digest}; contract_mode=deterministic-default-v1; "
-            "execution_ok=true\n"
-            "- Coverage contact sheet or artifact index: "
-            "evidence/render-review/contact-sheet.html plus sha256:"
-            f"{contact_digest}\n"
-            "- Cross-build comparison identity, compatibility, changed captures, "
+            "\n- Cross-build comparison identity, compatibility, changed captures, "
             "reviewer, and result, or `not performed`: not performed; "
             "rationale=no accepted comparison baseline was designated for build-42\n"
             "- Cross-build decision: not performed; no accepted comparison "
@@ -844,7 +1111,7 @@ NEW_QUALITY_COMPLETION_LABELS = {
     "direction": (),
     "direction-proof": (
         "Reviewer relationship",
-        "Decision",
+        "Current decision",
     ),
     "visual-review": (
         "Build or artifact ID",

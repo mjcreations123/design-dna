@@ -40,6 +40,12 @@ sentence fragments or assuming English word order.
 - Use locale-aware APIs or libraries for dates, times, time zones, numbers,
   currency, units, relative time, plural categories, lists, and collation.
   Store underlying values separately from their localized presentation.
+- Choose the interface language from the user's declared language
+  preferences, never from IP geolocation; travelers, expatriates, and
+  shared networks make location a wrong proxy for language.
+- Mark brand names, product tokens, code, and identifiers as
+  not-to-be-translated (`translate="no"` or the equivalent), so browser
+  machine translation does not garble the words that must stay exact.
 - Confirm font coverage, fallback metrics, line breaking, hyphenation,
   diacritics, shaping, numerals, and punctuation for every shipped script.
 - Keep validation, status, empty, error, permission, and recovery messages in

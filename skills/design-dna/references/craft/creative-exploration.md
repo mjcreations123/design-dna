@@ -15,6 +15,7 @@ this method to impose a Design DNA house style.
 - [Establish the field without trend priming](#establish-the-field-without-trend-priming)
 - [Identify the consequential question](#identify-the-consequential-question)
 - [Develop materially different answers](#develop-materially-different-answers)
+- [Challenge a likely default without making a style wheel](#challenge-a-likely-default-without-making-a-style-wheel)
 - [Limit anchoring when capability allows](#limit-anchoring-when-capability-allows)
 - [Choose proof that matches the uncertainty](#choose-proof-that-matches-the-uncertainty)
 - [Review perception before rationale](#review-perception-before-rationale)
@@ -121,6 +122,28 @@ Use an observable decision ledger rather than mandatory taste fields:
 
 Candidate-specific aesthetic descriptions may be useful. None is a required
 field; do not invent one to make the record look complete.
+
+## Challenge a likely default without making a style wheel
+
+When Project Contrast is active, make the first plausible answer explicit
+before it hardens into code. Derive one alternate organizing answer from the
+same brief and approved source material. The alternate must change the public
+encounter or the content operation that carries the body; a different family,
+palette, photo treatment, decoration, or motion effect inside the same
+sequence is normally still the same answer.
+
+Keep the challenge proportional. It can be a content model, an annotated
+wireframe, a proof fragment, a low-fidelity route, or another artifact that
+makes the tradeoff observable. It is not a required concept count, a style
+roulette, or a demand that every project use a novel interface. Select for the
+brief's task, material, audience, and maintenance reality, then record why
+the losing answer lost.
+
+Only after this brief-native work is understood may an authorized closest
+sibling be consulted. Compare the organizing relationship, not a font name or
+color swatch. If the selected answer remains interchangeable after subject
+nouns, dominant media, accent, and motion are mentally removed, reopen the
+earliest shared decision.
 
 ## Limit anchoring when capability allows
 

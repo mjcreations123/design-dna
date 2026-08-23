@@ -132,6 +132,90 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("no universal richness or memorability device is required", freedom)
         self.assertIn("gradients, icons, and conventional components are neutral", policy)
 
+    def test_preheading_labels_need_independent_information_not_default_scaffolding(self) -> None:
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        parseable = " ".join(
+            read(SKILL / "references" / "quality" / "parseable-text.md")
+            .casefold()
+            .split()
+        )
+        content_ia = " ".join(
+            read(SKILL / "references" / "craft" / "content-ia.md")
+            .casefold()
+            .split()
+        )
+        watch = " ".join(
+            read(SKILL / "references" / "convergence-watch.md").casefold().split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md").casefold().split()
+        )
+
+        self.assertIn(
+            "do not add an eyebrow, kicker, overline, or micro-label merely",
+            skill,
+        )
+        self.assertIn(
+            "form labels, navigation, captions, credits, legends, and operational status",
+            skill,
+        )
+        self.assertIn(
+            "do not add an eyebrow, kicker, overline, mini-label, or compact all-caps line",
+            parseable,
+        )
+        self.assertIn("start heroes and sections with their actual heading", content_ia)
+        self.assertIn("if it only announces the subject, remove it", watch)
+        self.assertIn("does not acquire a small pre-heading merely", preship)
+        self.assertNotIn("never use an eyebrow", parseable)
+
+    def test_private_design_reasoning_does_not_become_public_copy(self) -> None:
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        parseable = " ".join(
+            read(SKILL / "references" / "quality" / "parseable-text.md")
+            .casefold()
+            .split()
+        )
+        content_ia = " ".join(
+            read(SKILL / "references" / "craft" / "content-ia.md")
+            .casefold()
+            .split()
+        )
+        microcopy = " ".join(
+            read(SKILL / "references" / "craft" / "microcopy.md").casefold().split()
+        )
+        direction = " ".join(
+            read(SKILL / "templates" / "direction-template.md").casefold().split()
+        )
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md").casefold().split()
+        )
+
+        self.assertIn(
+            "treat an owner's explanation of why a design choice fits as internal direction",
+            skill,
+        )
+        self.assertIn(
+            "keep rationale and internal taxonomy off the public surface",
+            parseable,
+        )
+        self.assertIn(
+            "do not promote internal working language into visitor-facing categories",
+            parseable,
+        )
+        self.assertIn(
+            "rather than an internal department, producer workstream, direction record",
+            content_ia,
+        )
+        self.assertIn(
+            "not by a raw implementation field, database value, internal workflow stage",
+            microcopy,
+        )
+        self.assertIn("this is internal working evidence", direction)
+        self.assertIn(
+            "do not narrate the producer's design rationale, workflow, project records",
+            preship,
+        )
+
     def test_discovery_metadata_does_not_prescribe_one_time_register(self) -> None:
         skill_header = read(SKILL / "SKILL.md").split("---", 2)[1].casefold()
         claude_manifest = read(
@@ -141,7 +225,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             PACKAGE_ROOT / ".codex-plugin" / "plugin.json"
         ).casefold()
         for artifact in (skill_header, claude_manifest, codex_manifest):
-            self.assertIn("time-appropriate", artifact)
+            self.assertIn("specific", artifact)
             self.assertNotIn("truthful, contemporary", artifact)
             self.assertNotIn("must feel specific, contemporary", artifact)
 
@@ -444,7 +528,11 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("separate distinct consequences", microcopy)
         self.assertIn("does not automatically need to be the loudest visual element", microcopy)
         self.assertIn("rather than counting disclosures", microcopy)
-        self.assertIn("repeated instances were compared by consequence", preship)
+        self.assertIn(
+            "context-free entry and each consequential claim or action",
+            preship,
+        )
+        self.assertIn("repeated generic caveats were consolidated", preship)
         self.assertIn("status that repeats, competes with the subject", router)
 
     def test_batch_masking_uses_neutral_labels_and_preserves_authorized_originals(self) -> None:
@@ -910,7 +998,10 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("does not choose a house style", skill)
         self.assertIn("for showcase work without an approved rendered direction", skill)
         self.assertIn("first-impression and surface-fidelity review", review)
-        self.assertIn("it is not a style catalog, an ai score", template)
+        self.assertIn(
+            "it is not a completed assessment, style catalog, ai score",
+            template,
+        )
 
         for forbidden_recipe in (
             "must use a display font",

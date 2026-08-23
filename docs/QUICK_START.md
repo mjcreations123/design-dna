@@ -16,10 +16,11 @@ In Claude Code with a direct personal skill:
 
 Design DNA chooses a proportional assurance profile from the task. A fresh
 public-facing site representing a business, product, organization, place,
-creator, or campaign normally selects Showcase unless the task is explicitly a
-bounded utility or an approved existing system. You can also request it
-explicitly for a portfolio piece, client sample, pitch, demo, or other
-high-visibility work:
+creator, or campaign begins at Standard, including full public rendered and
+engineering review. Add Showcase only when the brief expressly calls for
+premium, showcase, high-ambition work or direction recovery; public status,
+visibility, and route count alone do not select it. You can request Showcase
+explicitly when that higher-ambition answer is actually wanted:
 
 ```text
 $design-dna Use Showcase to build an exceptional, time-appropriate sample website for [business or product] using the supplied facts and assets.
@@ -59,15 +60,63 @@ is required.
 | --- | --- | --- |
 | **Quick** | A bounded, low-risk repair or established-system change. | Focused context inspection, changed-state implementation, and affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Direction framing, proportionate proof of consequential decisions, rendered review, and engineering verification. |
-| **Showcase** | Expressive, premium, highly visible, owner-sensitive work or a brief that rejects safe or generic output. | Project research and directly reviewable contrast sufficient to challenge the first default; full alternatives when uncertainty, stakes, or owner choice justify them; a recorded selection, deeper visual craft, and adversarial review. |
+| **Connected Public Experience** | The brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | An opt-in applicability marker, root-specific continuity model, truthful status crosswalk, and exact direct-entry/recovery rendered and functional evidence; no page-count, admin, backend, database, funnel, or live-integration quota. |
+| **Showcase** | The brief expressly asks for premium, showcase, or high-ambition work; a rejected direction needs recovery; or the owner explicitly asks for that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Project research and directly reviewable contrast sufficient to challenge the first default; full alternatives when uncertainty, stakes, or owner choice justify them; a recorded selection, deeper visual craft, and adversarial review. |
+| **Project Contrast** | An unrelated public build must feel materially unlike recent studio work, or the owner says sites feel alike. | A brief-native counter-answer before broad implementation, the smallest owner-authorized closest-sibling comparison when available, and a wide/narrow collision review. It does not rotate visual ingredients. |
+| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately asks for a high-ambition greenfield challenge. | Three or more incompatible brief-native roots before polished examples, two cross-root wide/narrow proof slices, a selected-versus-rejected rendered comparison, and an independent unprimed view. It is not a default concept quota. |
 | **Range Study** | A real multi-route site must demonstrate meaningful creative range. | Dependable truth, navigation, accessibility, and operations; an explicit route-family record; route proof chosen by uncertainty; real-path checks; and a matched route atlas. |
-| **Batch Study** | A controlled evaluation compares at least three unrelated website briefs; it is not the ordinary workflow for producing several client sites. | Frozen isolated briefs/builds, project-declared capture classes, renderer/public-manifest-bound captures, capture-set-bound site observations, a later neutral-label whole-system review, and contextual findings without ingredient bans. |
+| **Batch Study** | A controlled evaluation compares at least three unrelated website briefs; it is not the ordinary workflow for producing several client sites. | Frozen isolated briefs/builds, project-declared capture classes, renderer/public-manifest-bound captures, capture-set-bound site observations, a later neutral-label whole-system review, and a separate human contextual disposition. It does not produce an automatic aesthetic result. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Stronger task, state, content, specialist, recovery, and real-user evidence. |
 | **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Type-specific provenance, rights, privacy, factual, approval, delivery, accessibility, and generated-media gates. |
 
-Quick and Standard are proportional base presets. Showcase, Range Study,
-Batch Study, High-risk, and Asset-led can apply together. Adding a capability cannot
-silently remove a stronger one.
+Quick and Standard are proportional base presets. Showcase, Connected Public
+Experience, Project Contrast, Direction Challenge, Range Study, Batch Study,
+High-risk, and Asset-led can apply together. Adding a capability cannot silently
+remove a stronger one.
+
+High-visibility or owner-sensitive work still begins at Standard unless the
+brief expressly calls for premium, showcase, high-ambition work or direction
+recovery. Intensify Standard's rendered first-impression, surface-fidelity, and
+taste review for those stakes; do not silently select Showcase.
+
+For a detailed public experience whose content, decisions, or state must carry
+between routes, request CPE explicitly:
+
+```text
+<INVOKE> Use Connected Public Experience. Build [subject] with the supplied
+facts and assets. Record truthful delivery, content, and behavior statuses for
+the consequential public paths; prove direct entry and recovery or continuation
+against the exact build. Do not invent an admin, backend, database, funnel, or
+live integration merely to make the experience look substantial.
+```
+
+For a new unrelated client or sample that must not reuse the studio's last
+safe composition, request Project Contrast directly:
+
+```text
+<INVOKE> Use Project Contrast. Build [subject] as a genuine new
+public encounter, not a reskin of recent work. Before broad implementation,
+derive a brief-native counter-answer that changes the opening or content/body
+operation. Compare only the smallest owner-authorized closest-sibling evidence
+after that work exists. At review, test whether the result is still too close
+after subject nouns, dominant media, accent, and motion are mentally removed.
+If it is, reopen the earliest shared decision instead of swapping fonts,
+colors, shapes, or effects.
+```
+
+Use Direction Challenge only for the explicit recurrence escalation or a
+deliberately chosen high-ambition greenfield challenge. It pairs with Project
+Contrast for the recurrence case; it can stand alone when no cross-project
+comparison is authorized:
+
+```text
+<INVOKE> Use Showcase, Project Contrast, and Direction Challenge. Before
+polished examples or broad implementation, derive at least three incompatible
+brief-native roots. Bind wide and narrow proof slices from two different roots,
+select the chosen root against a rendered rejected root, and freeze an
+independent unprimed view. Do not treat changed fonts, colors, imagery, shapes,
+or effects inside one composition as different roots.
+```
 
 Activate Batch Study before building its cases with `--profile batch-study`,
 or create `.design-dna/batch-range.json` from the packaged template. The
@@ -77,6 +126,12 @@ template before revealing sibling work, then use the packaged neutral-label
 whole-system template to compare organizing logic, spatial and material
 relationships, type roles, media, interaction, copy, and responsive behavior
 in context. Those are review lenses, not ingredients every site must change.
+`comparison_ready` means only that the declared protocol is covered. After the
+whole-system review is frozen, a capture-set-bound human contextual disposition
+may make `human_contextual_ready` true by closing material findings.
+`final_ready` is their conjunction, and the audit still sets
+`automatic_aesthetic_pass` to `false`. Those study fields do not qualify a
+package for release or substitute for an owner judging a client-facing site.
 
 For a multi-route showcase:
 
@@ -204,7 +259,10 @@ genericity or authorship finding.
 ```
 
 An attractive first screenshot is not completion. The useful result is the
-implemented site plus an honest review of the exact build.
+implemented site plus an honest review of the exact build. That project-level
+evidence does not establish skill installation, host activation, or package
+release status; those require the separate current evidence in the release
+procedure.
 
 ## Avoid duplicate installations
 

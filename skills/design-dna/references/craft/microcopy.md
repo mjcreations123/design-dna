@@ -22,6 +22,7 @@ sentence order, word count, tone, or punctuation style applies.
 - [Label and explain inputs](#label-and-explain-inputs)
 - [Write progress, status, and success](#write-progress-status-and-success)
 - [Carry the project voice](#carry-the-project-voice)
+- [Audit strings for producer voice](#audit-strings-for-producer-voice)
 - [Verify in context](#verify-in-context)
 
 ## Bind the real state
@@ -39,21 +40,37 @@ Do not fill an unknown with reassuring prose. A fictional prototype may use
 representative strings when its demo boundary is visible and the state cannot
 be mistaken for a live fact.
 
+Name a public state by what the person can understand, do, or expect next—not
+by a raw implementation field, database value, internal workflow stage, or
+producer category. Do not surface an internal state simply because it is
+available in the model. Translate it only when the resulting visitor-facing
+fact and consequence are true.
+
 ## Distribute status and boundary copy
 
 Make a material fiction, demo, unavailable, generated-media, safety, or
 operating boundary findable where a person can act on the mistaken assumption.
-Then separate distinct consequences. A page-level model status, an image-level
-media fact, and a control-level unavailable state may all be necessary; the
-same consequence repeated in a banner, every module, captions, and the footer
-can instead compete with the subject and make the interface feel less credible.
+For a sparse, fictional, or internal concept, map the boundary from the
+approved fixture or claim ledger and actual route behavior: a clear orientation
+for context-free arrival, local status for each claim or action whose
+illustrative or unavailable state changes the decision, and duplicate
+placements that can be removed. A persistent site-level orientation may carry
+through linked routes when it remains visible; a route likely to be shared or
+opened directly needs its own intelligible context.
+
+Then separate distinct consequences. A page-level concept status, an
+image-level media fact, and a control-level unavailable state may all be
+necessary; certification, transaction, and integration claims need the same
+care. Do not use a generic `concept`, `demo`, or `internal` label as repeated
+decorative copy, and do not use a boundary label to make fictional proof,
+operations, or certifications appear real.
 
 Consolidate copy that says the same thing, while retaining claim-local facts
 whose consequence differs. Choose placement, persistence, and prominence from
 likelihood of misunderstanding, consequence, direct-entry context, and the
 surrounding task. Truthful status must not be hidden, but it does not
 automatically need to be the loudest visual element. Verify the rendered entry
-and the point of action rather than counting disclosures.
+and point of action against the boundary map rather than counting disclosures.
 
 ## Name actions and outcomes
 
@@ -66,6 +83,12 @@ space rather than a fixed word count.
 Keep terminology stable across the path unless the audience's mental model
 genuinely changes. If one control opens a differently named destination, the
 transition or destination should explain the relationship.
+
+Collapse duplicate intent. When several controls on one surface perform the
+same action under different names ("Get in touch", "Contact us", "Let's
+talk"), the variety reads as three offers and dilutes all of them; pick the
+one label the project's voice supports and repeat it. Repeating a true
+label is clarity, not monotony; distinct labels are for distinct actions.
 
 Distinguish the repeated unit of action from the completion condition. A turn,
 step, move, item, stage, and finished outcome can each be valid, but a concise
@@ -170,6 +193,28 @@ Write whole localizable messages rather than concatenated English fragments.
 Verify expansion, plural rules, gender or formality where applicable, script,
 directionality, truncation, and screen-reader output with the
 [localization guidance](../quality/localization.md).
+
+## Audit strings for producer voice
+
+Before delivery, re-read every rendered string as a stranger, aloud where
+that helps, and flag:
+
+- grammar that breaks mid-sentence or references an antecedent that never
+  appeared;
+- wordplay and evocative fragments that fail a second read: a phrase that
+  sounds thoughtful but does not parse is worse than a boring one, and
+  when unsure whether a string makes sense, replace it with a plain
+  functional sentence;
+- mock-humble or performative-craftsman phrasing standing in for real
+  category names and facts;
+- numbers wearing false precision: a decimal implies a measurement, so
+  every precise-looking figure is either real with a source, visibly a
+  scenario, or removed. Manufacturing "organic-looking" data is the same
+  fabrication as a round invented statistic.
+
+This audit is about truth and parseability, not banned words; route each
+hit through the [parseable text](../quality/parseable-text.md) gate and the
+project's claim records rather than a phrase blacklist.
 
 ## Verify in context
 

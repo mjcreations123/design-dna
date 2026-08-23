@@ -3,6 +3,14 @@
 Use this when planning assets, fonts, scripts, motion, embeds, rendering, or
 production readiness.
 
+## Contents
+
+- [Set an objective](#set-an-objective)
+- [Protect the critical path](#protect-the-critical-path)
+- [Account for environmental and lifecycle cost](#account-for-environmental-and-lifecycle-cost)
+- [Design resilient states](#design-resilient-states)
+- [Measure](#measure)
+
 ## Set an objective
 
 Use the project's measured baseline and contractual targets first. If none
@@ -37,8 +45,21 @@ without owner acceptance; it is not production evidence.
 - Reduce, defer, or remove unused JavaScript and third parties.
 - Reserve dimensions for media and dynamic regions.
 - Size and format images for actual rendering conditions.
-- Load fonts intentionally and avoid unused weights.
-- Lazy-load below-the-fold media without delaying likely next actions.
+- Load fonts intentionally and avoid unused weights; preconnect to any
+  origin that serves critical assets, preload only genuinely critical font
+  files, and subset by script coverage so unused alphabets never ship.
+- Lazy-load below-the-fold media without delaying likely next actions, and
+  mark the one critical above-the-fold image as high fetch priority.
+- Ship short ambient loops as compressed muted video, not animated GIF: a
+  video element with autoplay, muted, loop, and inline playback is a
+  fraction of the bytes, and its reduced-motion fallback is a poster frame.
+  Where a target browser needs it, a video source inside a picture-style
+  fallback with a still alternative covers the gap.
+- Virtualize or content-gate very long lists; hundreds of offscreen rows
+  cost layout and memory whether or not they are visible.
+- Batch reads and writes of layout so they do not interleave, and move long
+  computation off the main thread; an interaction budget dies in exactly
+  these two places.
 - Avoid render-blocking decoration, layout thrashing, and unbounded scroll work.
 - Cache immutable assets and respect content freshness.
 

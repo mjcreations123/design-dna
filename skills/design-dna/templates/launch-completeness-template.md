@@ -12,15 +12,20 @@ repair, retain the affected rows and note why the rest are inherited.
 - Reviewer and date:
 - Owner/operational authority:
 - Existing policy, analytics, map, or social-channel sources consulted:
+- Concept/demo boundary: context-free entry orientation, direct-entry routes
+  that need it, claim/action-local limitations, and whether any real
+  collection, payment, booking, delivery, or staffed channel exists:
 
 ## Decision record
 
 Use one status per row: **included**, **not applicable**, or **blocked**.
-For `included`, name the route, asset, configuration, and check. For `not
-applicable`, explain the project reason. For `blocked`, name the missing owner
-input and the claim or behavior that must remain unavailable.
+For `included`, record both (1) the actual visitor condition and check and (2)
+the factual, legal, operational, or owner authority that supports it. For `not
+applicable`, explain the project reason; a concept or demo with no real
+transaction may truthfully use it for transactional rows. For `blocked`, name
+the missing owner input and the claim or behavior that must remain unavailable.
 
-| # | Launch decision | Status | Exact implementation or reason | Evidence, source, owner input, and check |
+| # | Launch decision | Status | Visitor condition, exact implementation, and final check | Factual / operational authority, owner input, and retrieval or review date |
 | --- | --- | --- | --- | --- |
 | 1 | Primary above-fold action |  |  |  |
 | 2 | FAQ or decision-blocking questions |  |  |  |
@@ -42,6 +47,7 @@ input and the claim or behavior that must remain unavailable.
 
 - Unresolved blocked rows and their release impact:
 - Included rows rechecked after the final build:
+- Included rows missing either a visitor condition or factual/operational authority:
 - Inherited rows for a Quick repair, if any:
 - Checks not performed and why:
 

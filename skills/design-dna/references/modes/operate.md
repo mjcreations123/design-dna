@@ -5,6 +5,12 @@ monitor, transact, or recover real state. Typical surfaces include
 applications, dashboards, admin tools, configuration, checkout, booking, and
 multi-step workflows.
 
+When a requested staff/admin task is paired with a public experience, name the
+public/back-office boundary in the Connected Public Experience record. Use
+approved, sandbox, or clearly local fixture state with a non-empty meaningful
+case; do not manufacture an empty decorative admin just to imply operations.
+Keep public claims and staff permissions independently truthful.
+
 Mode describes the operational job, not a visual style. Familiar conventions
 often reduce risk, but expressive, branded, dense, sparse, novel, or highly
 visual treatment can be correct when the task and evidence support it.

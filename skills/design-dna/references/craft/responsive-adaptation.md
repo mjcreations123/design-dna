@@ -74,6 +74,36 @@ When localization or right-to-left support is real, use the
 [localization reference](../quality/localization.md). Visual mirroring alone is
 not sufficient.
 
+### Small-viewport mechanics that recur
+
+These are not aesthetics; each is a measurable behavior that repeatedly
+fails on real devices when unaddressed:
+
+- Full-height compositions use dynamic viewport units or an equivalent
+  strategy, because a fixed viewport-height unit ignores collapsing browser
+  chrome on phones and either clips or leaves a dead band.
+- Fixed and full-bleed elements clear the device safe areas (notches, home
+  indicators) via the safe-area environment insets; a docked action bar
+  that ignores them is partially unreachable on common phones.
+- Page zoom is never disabled and never capped; pinch zoom is an access
+  path, not a layout bug.
+- Text inputs render at a size that does not trigger the mobile browser's
+  compensating zoom on focus (roughly 16 CSS pixels on iOS); a form that
+  makes the page jump when tapped fails this.
+- Tap targets meet the accessibility floor (24 CSS pixels AA, near 44 for
+  important touch controls), and tap-delay removal via touch-action is
+  applied deliberately on interactive elements without disabling gestures
+  the page needs.
+- Scrollable overlays, drawers, and sheets contain their overscroll so the
+  page behind them does not scroll by accident, and the tap highlight is
+  styled deliberately rather than left as the platform flash.
+- History navigation restores scroll position and relevant state; Back is
+  part of the interface.
+- The support range's wide extreme is actually looked at: an ultra-wide
+  window is cheap to simulate by capturing the wide layout at a larger
+  virtual width, and unbounded containers, stretched media, and orphaned
+  rails show up there first.
+
 Art-direct media to preserve meaning, not merely dimensions. Provide an
 intentional strategy for tables, charts, comparisons, navigation, dialogs,
 sticky regions, and other structures that become difficult under pressure.

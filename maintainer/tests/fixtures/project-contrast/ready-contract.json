@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "created_with": "design-dna 5.2.0",
+  "record_status": "reviewed",
+  "classification": "internal",
+  "scope": {
+    "project_id": "copper-lab",
+    "surface_scope": ["/"],
+    "route_coverage": {
+      "mode": "representative",
+      "rationale": "This single-route repair-intake proof is the only public encounter in the reviewed artifact.",
+      "discovered_route_map": [
+        {
+          "route": "/",
+          "coverage": "captured",
+          "representative_route": null,
+          "equivalence_rationale": "The only discovered public route is directly reviewed at wide and narrow conditions."
+        }
+      ]
+    },
+    "trigger": ["owner-recurrence-requirement"],
+    "comparison_authority": {
+      "status": "authorized",
+      "basis": "The accountable studio owner authorized a minimized comparison with an accepted prior surface."
+    }
+  },
+  "source_to_encounter": {
+    "visitor_occasion": "A maker wants to understand whether an open studio can support a complex repair.",
+    "primary_job": "Orient the visitor to the repair method and invite an appropriate intake request.",
+    "subject_material": [
+      {
+        "kind": "repair sequence and material specimen",
+        "evidence": "Approved workshop process notes and supplied specimen photography.",
+        "design_consequence": "The body progresses through observed material states rather than generic service features."
+      }
+    ],
+    "content_operation": "Inspect a material sequence, then choose a repair-intake path.",
+    "nontransferable_constraints": ["No invented turnaround promises."]
+  },
+  "selected_direction": {
+    "organizing_answer": "A repair bench that lets material evidence lead before the service invitation.",
+    "opening_encounter": "A close material observation and a repair decision, not a marketing hero.",
+    "dominant_content_unit": "A sequence of repair states with concrete decision points.",
+    "body_progression": "Specimen to diagnosis to repair path to intake decision.",
+    "ending_or_next_state": "A visitor can begin a clearly scoped intake request.",
+    "observable_predictions": [
+      {
+        "id": "obs-001",
+        "decision": "The first screen makes a repair decision visible before a promotional claim.",
+        "project_basis": "The supplied process notes make material diagnosis the visitor's first useful question.",
+        "rendered_condition": "route=/; viewport=wide; state=default; capture=capture-wide",
+        "expected_observation": "The visitor can recognize a repair process before encountering the intake action.",
+        "status": "observed"
+      }
+    ]
+  },
+  "exploration": {
+    "first_answer_risk": "A generic services hero and feature grid would hide the evidence that makes this workshop credible.",
+    "challenge_method": "counter-model",
+    "challenging_answer": "A conventional service overview led by categories and proof modules.",
+    "selection_reason": "The repair-bench model better preserves the source material and visitor decision.",
+    "why_sufficient": "The two models changed the organizing answer before full implementation."
+  },
+  "design_signature": {
+    "selection_status": "selected",
+    "selection_basis": "The repair sequence needs both a diagnostic body operation and a visibly material register; neither follows from a studio recipe.",
+    "axes": [
+      {
+        "axis": "information-structure-content-operation",
+        "group": "encounter",
+        "status": "selected",
+        "project_basis": "Repair is a sequence of observed states rather than a category catalogue.",
+        "decision": "Organize the body around diagnosis and repair states.",
+        "observable_effect": "A visitor encounters material evidence and decision points before the intake action."
+      },
+      {
+        "axis": "type-role-behavior",
+        "group": "surface-language",
+        "status": "selected",
+        "project_basis": "The workshop needs precise annotations beside material observations.",
+        "decision": "Use the reading hierarchy to distinguish observation, diagnosis, and next action.",
+        "observable_effect": "Labels function as repair evidence rather than generic marketing texture."
+      }
+    ]
+  },
+  "comparison": {
+    "closest_sibling_selection": {
+      "status": "selected",
+      "source_kind": "owner-authorized-ledger-snapshot",
+      "evidence": {"path": "evidence/closest-sibling-selection.md", "sha256": "__CLOSEST_SIBLING_SELECTION_SHA256__"},
+      "comparator_ids": ["nearest-approved-surface"],
+      "owner_authorization": "The accountable studio owner authorized the minimized ledger snapshot for selecting the closest relevant prior public encounter.",
+      "selection_reason": "The snapshot identifies the nearest approved surface whose opening and public grammar could plausibly recur in this repair-intake project."
+    },
+    "comparators": [
+      {
+        "id": "nearest-approved-surface",
+        "relationship": "closest-sibling",
+        "evidence": {
+          "kind": "image",
+          "file": {"path": "evidence/comparator.png", "sha256": "__COMPARATOR_SHA256__"},
+          "access": "Owner-approved minimized screenshot retained for this comparison only.",
+          "retention": "Delete after the owner-approved review window closes.",
+          "purpose": "Compare the public encounter without importing the sibling's implementation.",
+          "image_source": {
+            "source_build": {
+              "id": "nearest-approved-build",
+              "file": {"path": "evidence/nearest-approved-build.txt", "sha256": "__NEAREST_APPROVED_BUILD_SHA256__"}
+            },
+            "route": "/",
+            "capture_state": "default",
+            "viewport": {"id": "nearest-wide", "width": 320, "height": 240, "viewport_class": "wide"},
+            "extent": {"mode": "full-page", "pixel_width": 320, "pixel_height": 480}
+          }
+        }
+      }
+    ],
+    "shared_decisions": [
+      {
+        "decision": "Keyboard-visible primary navigation",
+        "origin": "accessibility",
+        "why_shared": "Consistent navigation and focus behavior remain necessary across unrelated public surfaces.",
+        "status": "accepted"
+      }
+    ],
+    "shared_public_shell": {
+      "classification": "approved-public-system",
+      "technical_boundary": "The shared semantic landmark and keyboard focus mechanics are supplied by the approved studio foundation.",
+      "public_observation": "The public navigation remains deliberately restrained so repair evidence carries the encounter rather than generic campaign chrome.",
+      "source": "Owner-authorized closest-sibling comparison and the reviewed candidate capture.",
+      "evidence": {
+        "capture_ids": ["capture-wide", "capture-narrow"],
+        "comparator_ids": ["nearest-approved-surface"],
+        "note": "The bound wide capture and minimized comparator make the visible shell inspectable without importing implementation."
+      },
+      "approval": {
+        "status": "owner-approved",
+        "scope": "Visible navigation and identity chrome only; this approval does not pre-approve the current project's opening, body, media treatment, or action progression.",
+        "evidence": {"path": "evidence/public-system-approval.md", "sha256": "__PUBLIC_SYSTEM_APPROVAL_SHA256__"}
+      }
+    },
+    "contrast_claims": [
+      {
+        "id": "con-001",
+        "domain": "body progression",
+        "level": "body",
+        "candidate_observation": "The main body follows repair states and decision points.",
+        "comparator_observation": "The closest sibling is organized around a navigable catalogue of objects.",
+        "relationship": "different",
+        "subject_cause": "Repair evidence is temporal and diagnostic, while the comparator's content is comparative inventory.",
+        "evidence": {
+          "capture_ids": ["capture-wide", "capture-narrow"],
+          "comparator_ids": ["nearest-approved-surface"],
+          "note": "The exact wide and narrow candidate captures bind the body progression against the owner-authorized comparator artifact."
+        },
+        "status": "accepted"
+      }
+    ],
+    "surface_grammar_observations": [
+      {
+        "id": "surface-001",
+        "project_defined_label": "diagnostic annotation register",
+        "selected_signature_axis_refs": ["type-role-behavior"],
+        "candidate_observation": "Labels and notes operate as repair evidence beside observed material states.",
+        "comparator_observation": "The sibling uses type primarily to sort a public inventory browse.",
+        "relationship": "different",
+        "project_cause": "The workshop's source material asks visitors to read diagnosis before selecting intake.",
+        "source": "Wide candidate capture, owner-authorized comparator capture, and supplied workshop notes.",
+        "evidence": {
+          "capture_ids": ["capture-wide", "capture-narrow"],
+          "comparator_ids": ["nearest-approved-surface"],
+          "note": "Both candidate viewports and the authorized comparator are bound for a rendered reading-behavior review."
+        },
+        "status": "accepted"
+      }
+    ],
+    "contrast_prompt": {
+      "encounter_collision": "After removing the subject nouns and dominant image, can the repair-state journey still be mistaken for the sibling's inventory browse?",
+      "public_shell_collision": "Does the visible navigation and persistent public chrome become a second campaign recipe, or does it remain a restrained approved system with a project-specific body?",
+      "surface_grammar": "Does the type and annotation behavior make repair evidence legible without relying on a decorative novelty treatment?"
+    },
+    "counterfactual_swap_test": {
+      "method": "reasoned-review",
+      "removed_or_swapped": ["dominant image", "accent treatment"],
+      "remaining_identity": "The repair-state sequence and decision logic remain specific to the workshop process.",
+      "result": "not-interchangeable",
+      "follow_up": "No systemic contrast revision remains in the reviewed scope."
+    }
+  },
+  "evidence": {
+    "candidate_build": {
+      "id": "candidate-v1",
+      "file": {"path": "evidence/build.txt", "sha256": "__BUILD_SHA256__"}
+    },
+    "render_reviews": [
+      {
+        "id": "render-review-main",
+        "file": {"path": "evidence/render-review.json", "sha256": "__RENDER_REVIEW_SHA256__"}
+      }
+    ],
+    "captures": [
+      {
+        "id": "capture-wide",
+        "route": "/",
+        "viewport": {"id": "wide", "width": 320, "height": 240, "viewport_class": "wide"},
+        "capture_mode": "full-page",
+        "capture_state": "default",
+        "candidate_build_id": "candidate-v1",
+        "file": {"path": "evidence/wide.png", "sha256": "__WIDE_SHA256__"},
+        "render_review": {"report_id": "render-review-main", "capture_id": "home-wide"}
+      },
+      {
+        "id": "capture-narrow",
+        "route": "/",
+        "viewport": {"id": "narrow", "width": 240, "height": 320, "viewport_class": "narrow"},
+        "capture_mode": "full-page",
+        "capture_state": "default",
+        "candidate_build_id": "candidate-v1",
+        "file": {"path": "evidence/narrow.png", "sha256": "__NARROW_SHA256__"},
+        "render_review": {"report_id": "render-review-main", "capture_id": "home-narrow"}
+      }
+    ]
+  },
+  "review": {
+    "unprimed": {
+      "status": "complete",
+      "reviewer_id": "reviewer-a",
+      "relationship": "independent-human",
+      "exposure": "unprimed-candidate-captures-only",
+      "observed_at": "2026-08-11T12:00:00-04:00",
+      "frozen_at": "2026-08-11T12:10:00-04:00",
+      "evidence": {"path": "evidence/unprimed.md", "sha256": "__UNPRIMED_SHA256__"},
+      "reviewed_capture_ids": ["capture-wide", "capture-narrow"],
+      "reviewed_comparator_ids": [],
+      "first_observation": "The first encounter reads as a repair sequence and diagnostic invitation before any comparison material is introduced.",
+      "limitations": "One owner-authorized reviewer; no claim of universal taste agreement."
+    },
+    "paired": {
+      "status": "complete",
+      "reviewer_id": "reviewer-a",
+      "relationship": "independent-human",
+      "exposure": "paired-candidate-and-authorized-comparator-evidence",
+      "observed_at": "2026-08-11T12:15:00-04:00",
+      "frozen_at": "2026-08-11T12:20:00-04:00",
+      "evidence": {"path": "evidence/paired.md", "sha256": "__PAIRED_SHA256__"},
+      "reviewed_capture_ids": ["capture-wide", "capture-narrow"],
+      "reviewed_comparator_ids": ["nearest-approved-surface"],
+      "first_observation": null,
+      "limitations": "The comparison records relationship and rationale, not an automated uniqueness score."
+    },
+    "paired_outcome": {
+      "result": "not-interchangeable",
+      "basis": "Paired wide and narrow evidence supports a distinct repair-state encounter and public reading behavior against the selected closest sibling.",
+      "earliest_reopen_decision": "Not applicable after the reviewed comparison; reopen the selected opening or body operation if a later review finds a collision."
+    },
+    "disposition": "accepted",
+    "owner_review": {
+      "status": "accepted",
+      "reviewer_id": "owner-a",
+      "relationship": "accountable-owner",
+      "observed_at": "2026-08-11T12:25:00-04:00",
+      "evidence": {"path": "evidence/owner-review.md", "sha256": "__OWNER_REVIEW_SHA256__"},
+      "limitations": "Acceptance records the owner's review relationship, not universal taste agreement.",
+      "candidate_build_id": "candidate-v1",
+      "reviewed_capture_ids": ["capture-wide", "capture-narrow"]
+    }
+  }
+}

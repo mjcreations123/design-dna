@@ -30,7 +30,7 @@ from urllib.parse import unquote, urlsplit
 
 
 SCHEMA_VERSION = 1
-TOOL_VERSION = "1.1.0"
+TOOL_VERSION = "1.2.0"
 ARTIFACT_TYPE = "design-dna-batch-range-audit"
 DEFAULT_CONTRACT = ".design-dna/batch-range.json"
 DEFAULT_OUTPUT = ".design-dna/batch-range-audit.json"
@@ -60,6 +60,20 @@ DENIED_PUBLIC_FILENAMES = {
     "credentials.json", "package-lock.json", "package.json", "pnpm-lock.yaml",
     "pyproject.toml", "requirements.txt", "secrets.json", "tsconfig.json",
     "yarn.lock",
+}
+HUMAN_CONTEXTUAL_DISPOSITION_STATUSES = {
+    "pending",
+    "no-material-cluster-observed",
+    "revisions-required",
+    "accepted-contextual-risk",
+    "blocked",
+}
+CONTEXTUAL_FINDING_SEVERITIES = {"low", "medium", "high", "critical"}
+CONTEXTUAL_FINDING_IMPACTS = {
+    "informational",
+    "bounded",
+    "material",
+    "release-blocking",
 }
 
 
@@ -965,6 +979,343 @@ def optional_string(
     return require_string(value, label, minimum=minimum, maximum=maximum)
 
 
+def contextual_finding_is_material(finding: dict[str, object]) -> bool:
+    """Return the declared materiality without inferring aesthetic quality.
+
+    A finding becomes material when either the recorded severity is medium or
+    stronger, or its declared user/release impact is material or
+    release-blocking.  The test deliberately uses only the structured fields
+    the reviewer supplied; it never derives a taste score from screenshots,
+    prose, or repeated ingredients.
+    """
+
+    return (
+        finding.get("severity") in {"medium", "high", "critical"}
+        or finding.get("impact") in {"material", "release-blocking"}
+    )
+
+
+def validate_human_contextual_disposition(
+    value: object,
+    root: Path,
+    budget: EvidenceBudget,
+    *,
+    expected_capture_set_sha256: str,
+    study_frozen_at: datetime,
+    whole_review_frozen_at: str | None,
+    finding_records: list[dict[str, object]],
+    reserved_evidence_paths: set[str],
+    reserved_evidence_hashes: set[str],
+) -> dict[str, object] | None:
+    """Validate a separate capture-set-bound human decision record.
+
+    Absence is intentionally not a malformed contract: older or still-planned
+    studies need an honest pending state.  The readiness evaluator records
+    that absence as a human-decision gap without changing mechanically
+    verifiable protocol coverage.
+    """
+
+    if value is None:
+        return None
+
+    label = "human_contextual_disposition"
+    record = require_object(value, label)
+    reject_extra(
+        record,
+        {
+            "status",
+            "reviewer_id",
+            "decided_at",
+            "capture_set_sha256",
+            "evidence",
+            "rationale",
+            "finding_ids",
+        },
+        label,
+    )
+    status = require_string(record.get("status"), f"{label}.status", maximum=40)
+    if status not in HUMAN_CONTEXTUAL_DISPOSITION_STATUSES:
+        raise AuditError("invalid-contract", f"{label}.status is unsupported.")
+
+    reviewer = optional_string(record.get("reviewer_id"), f"{label}.reviewer_id", maximum=200)
+    decided_value = record.get("decided_at")
+    decided_at = (
+        None
+        if decided_value is None
+        else require_datetime(decided_value, f"{label}.decided_at")
+    )
+    capture_value = record.get("capture_set_sha256")
+    capture_set_sha256 = (
+        None
+        if capture_value is None
+        else require_string(capture_value, f"{label}.capture_set_sha256", maximum=64)
+    )
+    if capture_set_sha256 is not None and SHA256_PATTERN.fullmatch(capture_set_sha256) is None:
+        raise AuditError(
+            "invalid-contract",
+            f"{label}.capture_set_sha256 must be a lowercase SHA-256 digest.",
+        )
+    rationale = optional_string(record.get("rationale"), f"{label}.rationale", minimum=20)
+    finding_ids_raw = require_array(record.get("finding_ids"), f"{label}.finding_ids")
+    known_finding_ids = {str(finding["id"]) for finding in finding_records}
+    finding_ids: list[str] = []
+    for index, raw_id in enumerate(finding_ids_raw):
+        finding_id = require_id(raw_id, f"{label}.finding_ids[{index}]")
+        if finding_id not in known_finding_ids:
+            raise AuditError(
+                "unknown-human-disposition-finding",
+                f"{label}.finding_ids[{index}] does not name a contextual finding.",
+            )
+        if finding_id in finding_ids:
+            raise AuditError(
+                "invalid-contract",
+                f"{label}.finding_ids contains a duplicate.",
+            )
+        finding_ids.append(finding_id)
+
+    evidence_value = record.get("evidence")
+    if status == "pending":
+        if (
+            reviewer is not None
+            or decided_at is not None
+            or capture_set_sha256 is not None
+            or evidence_value is not None
+            or rationale is not None
+            or finding_ids
+        ):
+            raise AuditError(
+                "invalid-contract",
+                f"{label} must keep reviewer, time, capture binding, evidence, rationale, and finding IDs null or empty while pending.",
+            )
+        return {
+            "status": status,
+            "reviewer_id": None,
+            "decided_at": None,
+            "capture_set_sha256": None,
+            "evidence": None,
+            "rationale": None,
+            "finding_ids": [],
+        }
+
+    if (
+        reviewer is None
+        or decided_at is None
+        or capture_set_sha256 is None
+        or evidence_value is None
+        or rationale is None
+    ):
+        raise AuditError(
+            "invalid-contract",
+            f"{label} requires reviewer, decided_at, capture_set_sha256, evidence, and rationale once decided.",
+        )
+    if capture_set_sha256 != expected_capture_set_sha256:
+        raise AuditError(
+            "human-disposition-capture-set-mismatch",
+            f"{label}.capture_set_sha256 must bind the exact whole-study capture set.",
+        )
+    if whole_review_frozen_at is None:
+        raise AuditError(
+            "human-disposition-before-whole-review",
+            f"{label} cannot be finalized before the whole-system review is frozen.",
+        )
+    decided_instant = utc_datetime(decided_at)
+    whole_frozen_instant = utc_datetime(whole_review_frozen_at)
+    now_limit = datetime.now(timezone.utc) + timedelta(minutes=5)
+    if decided_instant > now_limit:
+        raise AuditError(
+            "human-disposition-in-future",
+            f"{label}.decided_at is beyond the allowed clock tolerance.",
+        )
+    if decided_instant < study_frozen_at or decided_instant < whole_frozen_instant:
+        raise AuditError(
+            "human-disposition-chronology-invalid",
+            f"{label}.decided_at must follow the study freeze and frozen whole-system observation.",
+        )
+    evidence, _, _, _ = verify_file_ref(
+        evidence_value,
+        root,
+        budget,
+        f"{label}.evidence",
+        require_non_empty=True,
+    )
+    evidence_path = portable_key(str(evidence["path"]))
+    evidence_sha256 = str(evidence["sha256"])
+    if (
+        evidence_path in reserved_evidence_paths
+        or evidence_sha256 in reserved_evidence_hashes
+    ):
+        raise AuditError(
+            "human-disposition-evidence-not-separate",
+            f"{label}.evidence must be a distinct frozen decision artifact, not a capture, review, finding, brief, source packet, render report, or blocker artifact already in the study.",
+        )
+    if status in {"revisions-required", "accepted-contextual-risk"} and not finding_ids:
+        raise AuditError(
+            "invalid-contract",
+            f"{label}.finding_ids must name the material finding(s) addressed by {status}.",
+        )
+    if status == "no-material-cluster-observed" and finding_ids:
+        raise AuditError(
+            "invalid-contract",
+            f"{label}.finding_ids must be empty for no-material-cluster-observed.",
+        )
+    return {
+        "status": status,
+        "reviewer_id": reviewer,
+        "decided_at": decided_at,
+        "capture_set_sha256": capture_set_sha256,
+        "evidence": evidence,
+        "rationale": rationale,
+        "finding_ids": finding_ids,
+    }
+
+
+def assess_human_contextual_readiness(
+    disposition: dict[str, object] | None,
+    finding_records: list[dict[str, object]],
+) -> tuple[bool, list[dict[str, str]]]:
+    """Separate declared human closure from protocol-coverage readiness."""
+
+    gaps: list[dict[str, str]] = []
+    material_findings = [
+        finding for finding in finding_records if contextual_finding_is_material(finding)
+    ]
+    open_material = [
+        finding for finding in material_findings if finding.get("disposition") == "open"
+    ]
+    accepted_material = [
+        finding
+        for finding in material_findings
+        if finding.get("disposition") == "accepted-contextual-risk"
+    ]
+    unresolved_release_blocking = [
+        finding
+        for finding in material_findings
+        if (
+            finding.get("impact") == "release-blocking"
+            and finding.get("disposition") != "resolved"
+        )
+    ]
+    if disposition is None:
+        gaps.append({
+            "code": "human-contextual-disposition-missing",
+            "scope": "study",
+            "message": "Record a capture-set-bound human contextual disposition after the whole-system review is frozen.",
+        })
+        return False, gaps
+
+    status = str(disposition["status"])
+    if status == "pending":
+        gaps.append({
+            "code": "human-contextual-disposition-pending",
+            "scope": "study",
+            "message": "The Batch Study has no finalized capture-set-bound human contextual disposition yet.",
+        })
+        return False, gaps
+    if status == "blocked":
+        gaps.append({
+            "code": "human-contextual-disposition-blocked",
+            "scope": "study",
+            "message": "The human contextual disposition is blocked; satisfy the recorded unblock condition before final readiness.",
+        })
+        return False, gaps
+    if status == "revisions-required":
+        gaps.append({
+            "code": "human-contextual-revisions-required",
+            "scope": "study",
+            "message": "The human contextual disposition requires revisions and a refreshed capture-set-bound decision.",
+        })
+        return False, gaps
+
+    if open_material:
+        identifiers = ", ".join(str(finding["id"]) for finding in open_material)
+        gaps.append({
+            "code": "material-contextual-findings-open",
+            "scope": "study",
+            "message": f"Material contextual finding(s) remain open: {identifiers}.",
+        })
+
+    if unresolved_release_blocking:
+        identifiers = ", ".join(
+            str(finding["id"]) for finding in unresolved_release_blocking
+        )
+        gaps.append({
+            "code": "release-blocking-contextual-findings-unresolved",
+            "scope": "study",
+            "message": f"Release-blocking contextual finding(s) cannot be closed as accepted risk: {identifiers}.",
+        })
+
+    accepted_ids = {str(finding["id"]) for finding in accepted_material}
+    recorded_ids = set(disposition["finding_ids"])
+    if status == "accepted-contextual-risk":
+        if not accepted_ids:
+            gaps.append({
+                "code": "accepted-contextual-risk-without-finding",
+                "scope": "study",
+                "message": "accepted-contextual-risk requires at least one material finding with the same disposition.",
+            })
+        if recorded_ids != accepted_ids:
+            gaps.append({
+                "code": "accepted-contextual-risk-finding-mismatch",
+                "scope": "study",
+                "message": "The human accepted-risk record must name exactly the material findings accepted as contextual risk.",
+            })
+    elif status == "no-material-cluster-observed" and accepted_ids:
+        gaps.append({
+            "code": "no-material-disposition-conflicts-with-accepted-risk",
+            "scope": "study",
+            "message": "A no-material-cluster disposition cannot close a capture set that still records accepted material contextual risk.",
+        })
+
+    return not gaps, gaps
+
+
+def batch_decision_status(
+    *,
+    comparison_ready: bool,
+    human_contextual_ready: bool,
+    disposition: dict[str, object] | None,
+) -> str:
+    """Name the current boundary without turning it into an aesthetic pass."""
+
+    if comparison_ready and human_contextual_ready:
+        return "final-human-contextual-disposition-recorded"
+    if not comparison_ready:
+        return "protocol-coverage-incomplete"
+    if disposition is None:
+        return "human-contextual-disposition-required"
+    status = str(disposition["status"])
+    if status == "pending":
+        return "human-contextual-disposition-pending"
+    if status in {"revisions-required", "blocked"}:
+        return status
+    return "human-contextual-disposition-incomplete"
+
+
+def batch_readiness_fields(
+    *,
+    comparison_ready: bool,
+    human_contextual_ready: bool,
+    disposition: dict[str, object] | None,
+) -> dict[str, object]:
+    """Build the explicit protocol/human readiness boundary in one place."""
+
+    return {
+        "coverage_status": "complete" if comparison_ready else "incomplete",
+        "comparison_ready": comparison_ready,
+        "human_contextual_ready": human_contextual_ready,
+        "final_ready": comparison_ready and human_contextual_ready,
+        # This remains false even after a human disposition: the artifact can
+        # bind a declared contextual decision, never manufacture an aesthetic
+        # verdict from bytes or fields.
+        "automatic_aesthetic_pass": False,
+        "decision_status": batch_decision_status(
+            comparison_ready=comparison_ready,
+            human_contextual_ready=human_contextual_ready,
+            disposition=disposition,
+        ),
+    }
+
+
 def require_date(value: object, label: str) -> str:
     text = require_string(value, label, maximum=10)
     try:
@@ -1457,7 +1808,16 @@ def validate_contract(
 ) -> tuple[dict[str, object], list[dict[str, object]]]:
     reject_extra(
         contract,
-        {"schema_version", "classification", "study", "data_handling", "sites", "whole_system_review", "contextual_findings"},
+        {
+            "schema_version",
+            "classification",
+            "study",
+            "data_handling",
+            "sites",
+            "whole_system_review",
+            "contextual_findings",
+            "human_contextual_disposition",
+        },
         "contract",
     )
     if contract.get("schema_version") != SCHEMA_VERSION:
@@ -1511,6 +1871,18 @@ def validate_contract(
     capture_paths: set[str] = set()
     review_paths: set[str] = set()
     review_hashes: set[str] = set()
+    # A contextual disposition is a new human decision record.  It may cite
+    # the frozen capture-set digest, but its evidence bytes must not be any
+    # previously-declared study artifact.  Keeping a single registry lets the
+    # final check reject a screenshot, review, finding attachment, brief,
+    # source packet, render report, or blocker file being relabelled as that
+    # decision.
+    disposition_reserved_paths: set[str] = set()
+    disposition_reserved_hashes: set[str] = set()
+
+    def reserve_disposition_evidence(evidence: dict[str, object]) -> None:
+        disposition_reserved_paths.add(portable_key(str(evidence["path"])))
+        disposition_reserved_hashes.add(str(evidence["sha256"]))
     build_roots: list[str] = []
     route_index: dict[str, set[str]] = {}
     built_sites: list[dict[str, object]] = []
@@ -1566,6 +1938,7 @@ def validate_contract(
                 f"{label}.independence_basis must explain substantive contextual differences, not only assert independence or repeat IDs.",
             )
         brief, _, _, _ = verify_file_ref(site.get("brief"), root, budget, f"{label}.brief")
+        reserve_disposition_evidence(brief)
         unique_or_error(portable_key(str(brief["path"])), brief_paths, "duplicate-brief-path", f"{label}.brief.path")
         unique_or_error(str(brief["sha256"]), brief_hashes, "duplicate-brief-bytes", f"{label}.brief.sha256")
         implementation_isolation, isolation_gaps = validate_implementation_isolation(
@@ -1575,6 +1948,12 @@ def validate_contract(
             f"{label}.implementation_isolation",
             site_status=status,
             study_frozen_at=frozen_instant,
+        )
+        reserve_disposition_evidence(
+            require_object(
+                implementation_isolation["source_packet"],
+                f"{label}.implementation_isolation.source_packet",
+            )
         )
         unique_or_error(
             portable_key(str(implementation_isolation["source_packet"]["path"])),
@@ -1649,6 +2028,7 @@ def validate_contract(
                 render_report["evidence"],
                 f"{label}.render_report.evidence",
             )
+            reserve_disposition_evidence(render_evidence)
             unique_or_error(
                 portable_key(str(render_evidence["path"])),
                 render_report_paths,
@@ -1728,6 +2108,7 @@ def validate_contract(
                     capture_label,
                     capture=True,
                 )
+                reserve_disposition_evidence(evidence)
                 unique_or_error(
                     portable_key(str(evidence["path"])),
                     capture_paths,
@@ -1971,6 +2352,7 @@ def validate_contract(
                 review["evidence"],
                 f"{label}.unprimed_review.evidence",
             )
+            reserve_disposition_evidence(review_evidence)
             unique_or_error(
                 portable_key(str(review_evidence["path"])),
                 review_paths,
@@ -2050,6 +2432,8 @@ def validate_contract(
                 verify_file_ref(item, root, budget, f"{label}.blocker.evidence[{index}]")[0]
                 for index, item in enumerate(blocker_evidence_raw)
             ]
+            for evidence in blocker_evidence:
+                reserve_disposition_evidence(evidence)
             blocked_sites.append({
                 "id": site_id,
                 "mask_label": mask_label,
@@ -2204,6 +2588,7 @@ def validate_contract(
             "whole_system_review.evidence",
             require_non_empty=True,
         )
+        reserve_disposition_evidence(whole_evidence)
         unique_or_error(
             portable_key(str(whole_evidence["path"])),
             review_paths,
@@ -2251,7 +2636,17 @@ def validate_contract(
         finding = require_object(raw_finding, label)
         reject_extra(
             finding,
-            {"id", "site_ids", "routes", "context", "observation", "evidence", "disposition"},
+            {
+                "id",
+                "site_ids",
+                "routes",
+                "context",
+                "observation",
+                "evidence",
+                "severity",
+                "impact",
+                "disposition",
+            },
             label,
         )
         finding_id = require_id(finding.get("id"), f"{label}.id")
@@ -2294,6 +2689,14 @@ def validate_contract(
             verify_file_ref(item, root, budget, f"{label}.evidence[{index}]")[0]
             for index, item in enumerate(evidence_raw)
         ]
+        for evidence_ref in evidence:
+            reserve_disposition_evidence(evidence_ref)
+        severity = require_string(finding.get("severity"), f"{label}.severity", maximum=20)
+        if severity not in CONTEXTUAL_FINDING_SEVERITIES:
+            raise AuditError("invalid-contract", f"{label}.severity is unsupported.")
+        impact = require_string(finding.get("impact"), f"{label}.impact", maximum=30)
+        if impact not in CONTEXTUAL_FINDING_IMPACTS:
+            raise AuditError("invalid-contract", f"{label}.impact is unsupported.")
         disposition = require_string(finding.get("disposition"), f"{label}.disposition", maximum=40)
         if disposition not in {"open", "resolved", "accepted-contextual-risk"}:
             raise AuditError("invalid-contract", f"{label}.disposition is unsupported.")
@@ -2304,10 +2707,32 @@ def validate_contract(
             "context": context,
             "observation": observation,
             "evidence": evidence,
+            "severity": severity,
+            "impact": impact,
             "disposition": disposition,
         })
 
     comparison_ready = not gaps
+    human_disposition = validate_human_contextual_disposition(
+        contract.get("human_contextual_disposition"),
+        root,
+        budget,
+        expected_capture_set_sha256=whole_capture_set_sha256,
+        study_frozen_at=frozen_instant,
+        whole_review_frozen_at=whole_frozen_at,
+        finding_records=finding_records,
+        reserved_evidence_paths=disposition_reserved_paths,
+        reserved_evidence_hashes=disposition_reserved_hashes,
+    )
+    human_contextual_ready, human_contextual_gaps = assess_human_contextual_readiness(
+        human_disposition,
+        finding_records,
+    )
+    readiness = batch_readiness_fields(
+        comparison_ready=comparison_ready,
+        human_contextual_ready=human_contextual_ready,
+        disposition=human_disposition,
+    )
     result = {
         "artifact_type": ARTIFACT_TYPE,
         "schema_version": SCHEMA_VERSION,
@@ -2318,10 +2743,7 @@ def validate_contract(
         "capture_set_sha256": whole_capture_set_sha256,
         "viewport_classes": viewport_classes,
         "data_handling": data_handling,
-        "coverage_status": "complete" if comparison_ready else "incomplete",
-        "comparison_ready": comparison_ready,
-        "automatic_aesthetic_pass": False,
-        "decision_status": "human-contextual-review-required",
+        **readiness,
         "summary": {
             "declared_site_count": len(sites_raw),
             "planned_site_count": len(planned_sites),
@@ -2334,13 +2756,24 @@ def validate_contract(
                 for page in site["pages"]
             ),
             "contextual_finding_count": len(finding_records),
+            "material_contextual_finding_count": sum(
+                1 for finding in finding_records if contextual_finding_is_material(finding)
+            ),
+            "open_material_contextual_finding_count": sum(
+                1
+                for finding in finding_records
+                if contextual_finding_is_material(finding)
+                and finding["disposition"] == "open"
+            ),
         },
         "built_sites": built_sites,
         "planned_sites": planned_sites,
         "correctly_blocked": blocked_sites,
         "whole_system_review": whole_record,
         "contextual_findings": finding_records,
+        "human_contextual_disposition": human_disposition,
         "gaps": gaps,
+        "human_contextual_gaps": human_contextual_gaps,
         "limitations": [
             "Hash and coverage verification cannot prove that briefs are substantively unrelated.",
             "Evidence hashes prove frozen bytes, not that the stated review protocol was honestly followed.",
@@ -2352,6 +2785,7 @@ def validate_contract(
             "Recorded crop, redaction, and exclusion transformations are declarations with coverage impact; this auditor does not inspect pixels or verify that redaction occurred.",
             "The tool does not detect AI use, score authorship, or approve aesthetic quality.",
             "Contextual findings require human interpretation before changing the skill or a site.",
+            "A capture-set-bound human disposition records a declared decision and evidence; it does not authenticate reviewer identity or prove substantive judgment.",
         ],
     }
     return result, atlas_inputs
@@ -2603,8 +3037,11 @@ def main(argv: list[str] | None = None) -> int:
                 }
             if gap["code"] not in {item["code"] for item in report["gaps"]}:
                 report["gaps"].append(gap)
-            report["coverage_status"] = "incomplete"
-            report["comparison_ready"] = False
+            report.update(batch_readiness_fields(
+                comparison_ready=False,
+                human_contextual_ready=bool(report["human_contextual_ready"]),
+                disposition=report["human_contextual_disposition"],
+            ))
             report["atlas"] = {
                 "requested": True,
                 "status": "authorization-unavailable",
@@ -2634,8 +3071,10 @@ def main(argv: list[str] | None = None) -> int:
             "execution_ok": True,
             "coverage_status": report["coverage_status"],
             "comparison_ready": report["comparison_ready"],
+            "human_contextual_ready": report["human_contextual_ready"],
+            "final_ready": report["final_ready"],
             "automatic_aesthetic_pass": False,
-            "decision_status": "human-contextual-review-required",
+            "decision_status": report["decision_status"],
             "report": {
                 "path": output_relative,
                 "sha256": sha256(payload),
@@ -2643,7 +3082,11 @@ def main(argv: list[str] | None = None) -> int:
             },
         }
         print(json.dumps(summary, separators=(",", ":")))
-        return 0 if report["comparison_ready"] else 1
+        # A process may inspect comparison coverage separately in the emitted
+        # JSON, but a successful command must never be mistaken for completed
+        # Batch readiness while the required human contextual disposition is
+        # absent, blocked, or contradicted by an open release boundary.
+        return 0 if report["final_ready"] else 1
     except (AuditError, FileNotFoundError, OSError) as exc:
         if isinstance(exc, AuditError):
             code = exc.code
@@ -2657,8 +3100,10 @@ def main(argv: list[str] | None = None) -> int:
         failure = {
             "execution_ok": False,
             "comparison_ready": False,
+            "human_contextual_ready": False,
+            "final_ready": False,
             "automatic_aesthetic_pass": False,
-            "decision_status": "human-contextual-review-required",
+            "decision_status": "audit-execution-failed",
             "error": {"code": code, "message": message},
         }
         print(json.dumps(failure, separators=(",", ":")), file=sys.stderr)

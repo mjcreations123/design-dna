@@ -11,6 +11,7 @@ score," ban ingredients, or tell the next project to use the opposite style.
 - [Diagnose aggregates, not ingredients](#diagnose-aggregates-not-ingredients)
 - [Review common convergence hypotheses](#review-common-convergence-hypotheses)
 - [Review typography without a font list](#review-typography-without-a-font-list)
+- [Reopen convergence at its source](#reopen-convergence-at-its-source)
 - [Separate builder residue from truthful implementation](#separate-builder-residue-from-truthful-implementation)
 - [Compare a batch of unrelated sites](#compare-a-batch-of-unrelated-sites)
 - [Maintain evidence without fossilizing taste](#maintain-evidence-without-fossilizing-taste)
@@ -55,6 +56,15 @@ These are non-exhaustive questions for a completed render. Preserve strong
 counterexamples and record `not observed` when the candidate does not support
 the hypothesis.
 
+When a hypothesis needs frequency evidence rather than a category question,
+consult the dated [observed default basins](quality/default-basins.md)
+record: it names the exact coordinates where unguided model output has been
+repeatedly seen to land (palettes, type postures, label furniture,
+component finishes), so "was this derived or defaulted" can be asked
+against specifics. It carries the same standing as every watch note here:
+post-render evidence with counterexamples preserved, never a generation
+constraint.
+
 ### Default substrate
 
 Does the component library or starter theme remain recognizable because the
@@ -84,8 +94,12 @@ visual category.
 
 Does every headline isolate a word in the same color, face, italic, gradient,
 or animation regardless of meaning? Does every section receive the same
-eyebrow or index? One treatment can be excellent. Repetition becomes a finding
-when it fragments reading, invents hierarchy, or exposes a producer habit.
+eyebrow or index? A pre-heading line is not neutral scaffolding: ask what
+visitor-useful fact it supplies that the heading does not. If it only announces
+the subject, remove it rather than using a small label to make the section feel
+designed. A treatment can be excellent when it has a real project role.
+Repetition becomes a finding when it fragments reading, invents hierarchy, or
+exposes a producer habit.
 
 ### Cardification and container grammar
 
@@ -144,6 +158,22 @@ or forbidden families. If dated research or an owner-authorized ledger notes
 a family, use it only to ask whether habit displaced project fit. A common
 family with a project-specific system can outperform a rare family chosen as
 camouflage.
+
+## Reopen convergence at its source
+
+When a rendered project remains too close to an unrelated sibling, do not make
+the fix an inverse prompt: no palette swap, cycling type choices, new shape, random
+asymmetry, or added effect merely to prove difference. Reopen the earliest
+shared decision that created the repeated encounter. That may be the visitor
+occasion, opening model, dominant content unit, body progression, media role,
+interaction purpose, or narrow-screen transformation.
+
+Use [Project Contrast](quality/project-contrast.md) when the owner has asked
+for cross-project distinction. It records a brief-native alternative before
+the nearest sibling is consulted, separates justified shared foundations from
+producer carryover, and binds wide and narrow evidence. The comparison produces
+human review prompts, not a uniqueness score, authorship claim, or automatic
+aesthetic pass.
 
 ## Separate builder residue from truthful implementation
 

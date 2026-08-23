@@ -10,7 +10,8 @@ Create `.design-dna/launch-completeness.md` from the
 equivalent maintained project record. For every item, record one of:
 
 - **included**: name the exact route, state, configuration, or asset and how
-  it was checked;
+  a visitor can encounter it, then bind it to the factual, legal, operational,
+  or owner authority that makes it truthful;
 - **not applicable**: state why the site's audience, delivery state, or
   product model does not call for it;
 - **blocked**: name the missing authority, source, integration, or decision.
@@ -20,6 +21,20 @@ equivalent maintained project record. For every item, record one of:
 permission to invent a policy, location, response promise, analytics ID, or
 promotion just to complete the record. A Quick repair can record only the
 affected rows; a new website must resolve all fifteen.
+
+An `included` row has two independent proof needs: the actual visitor
+condition (route, state, configuration, and check) and the factual or
+operational source (authority, retrieval/review date when material, and any
+owner boundary). A screenshot or a working link does not establish a delivery
+promise; an owner note does not establish that a visitor can find or use it.
+Keep both evidence types visible in the record.
+
+For a concept or demo with no real collection, payment, booking, delivery, or
+operating channel, mark the inapplicable transactional rows `not applicable`
+and state the truthful demo boundary. A visible demonstration may be included
+only when its unavailable or simulated condition is clear to the visitor; it
+must not impersonate a real completion, promise, order path, or staffed
+channel.
 
 ## Contents
 
@@ -63,6 +78,8 @@ For a request, quote, support, order, booking, or digital-delivery path,
 state the confirmed response or delivery expectation, or keep the promise
 unmade and record the missing owner input. A visible promise needs a source
 and an operational owner; it cannot be inferred from a typical business.
+Record the visitor condition where the promise appears and the source that
+supports its wording separately.
 
 ## 4. Success and thank-you state
 
@@ -71,6 +88,9 @@ honest completion state. It may be a distinct thank-you route, an in-place
 confirmation, a receipt, or an externally owned confirmation page. It must
 say what happened, what happens next, and any relevant recovery/contact path.
 A nonworking demo action must say that it is a demo rather than imply success.
+For a concept with no real submission or transaction, `not applicable` is
+usually more honest than a decorative thank-you route; if a demonstration
+exists, its simulated status must be visible before and after activation.
 
 When the completion state is also the measurement, follow-up, or autoresponder
 anchor, a distinct addressable route survives reload, back navigation, and an
@@ -248,6 +268,11 @@ wrong implementation:
   duplicate-event behavior included in the result;
 - retain the exact owner decision, source, or block for operational promises,
   addresses, promotions, legal material, and measurement configuration.
+
+For every included row, confirm both the live visitor condition and its
+factual/operational authority after the final build. Reopen a row whose route
+works but whose claim, channel, policy, or promise lacks support, and reopen a
+row whose source is valid but cannot be reached or understood by a visitor.
 
 The record proves that the launch decisions were confronted and checked; it
 does not prove legal compliance, campaign performance, search ranking, or

@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/direction-challenge.schema.json",
+  "title": "Design DNA Direction Challenge Record",
+  "description": "Evidence for a brief-native direction challenge. It does not score visual quality, identify authorship, prescribe a style, or require font, palette, geometry, or motif rotation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_with",
+    "record_status",
+    "classification",
+    "scope",
+    "reference_order",
+    "roots",
+    "challenge_matrix",
+    "proof_slices",
+    "selection",
+    "implementation_boundary",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "created_with": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": ".*\\S.*"},
+    "record_status": {"enum": ["draft", "roots-ready", "proof-ready", "reviewed"]},
+    "classification": {"enum": ["internal", "confidential"]},
+    "scope": {"$ref": "#/$defs/scope"},
+    "reference_order": {"$ref": "#/$defs/referenceOrder"},
+    "roots": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {"$ref": "#/$defs/root"}
+    },
+    "challenge_matrix": {
+      "type": "array",
+      "maxItems": 28,
+      "items": {"$ref": "#/$defs/matrixEntry"}
+    },
+    "proof_slices": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {"$ref": "#/$defs/proofSlice"}
+    },
+    "selection": {"$ref": "#/$defs/selection"},
+    "implementation_boundary": {"$ref": "#/$defs/implementationBoundary"},
+    "review": {"$ref": "#/$defs/review"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "record_status": {"enum": ["roots-ready", "proof-ready", "reviewed"]}
+        },
+        "required": ["record_status"]
+      },
+      "then": {
+        "properties": {
+          "selection": {"required": ["rationale_recorded_at"]},
+          "review": {
+            "properties": {
+              "unprimed": {"required": ["exposure", "frozen_at"]}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1, "maxLength": 8000, "pattern": ".*\\S.*"},
+    "draftableText": {"oneOf": [{"$ref": "#/$defs/nonEmptyString"}, {"type": "null"}]},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"},
+    "draftableId": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "fileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "surface_scope", "trigger", "activation_basis"],
+      "properties": {
+        "project_id": {"$ref": "#/$defs/draftableId"},
+        "surface_scope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonEmptyString"}
+        },
+        "trigger": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "activation_basis": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "referenceEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sequence", "kind", "source", "root_ids", "note"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "sequence": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "kind": {
+          "enum": [
+            "supplied-brand-material",
+            "supplied-source-material",
+            "root-recorded",
+            "polished-example",
+            "reference-decomposition",
+            "other"
+          ]
+        },
+        "source": {"$ref": "#/$defs/nonEmptyString"},
+        "root_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "note": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "referenceOrder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["events"],
+      "properties": {
+        "events": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {"$ref": "#/$defs/referenceEvent"}
+        }
+      }
+    },
+    "root": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "brief_anchor",
+        "organizing_logic",
+        "entry_encounter",
+        "content_operation",
+        "body_progression",
+        "visitor_agency",
+        "surface_consequence"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "brief_anchor": {"$ref": "#/$defs/nonEmptyString"},
+        "organizing_logic": {"$ref": "#/$defs/nonEmptyString"},
+        "entry_encounter": {"$ref": "#/$defs/nonEmptyString"},
+        "content_operation": {"$ref": "#/$defs/nonEmptyString"},
+        "body_progression": {"$ref": "#/$defs/nonEmptyString"},
+        "visitor_agency": {"$ref": "#/$defs/nonEmptyString"},
+        "surface_consequence": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "incompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "root_a_position", "root_b_position", "why_not_combined"],
+      "properties": {
+        "field": {
+          "enum": [
+            "organizing_logic",
+            "entry_encounter",
+            "content_operation",
+            "body_progression",
+            "visitor_agency"
+          ]
+        },
+        "root_a_position": {"$ref": "#/$defs/nonEmptyString"},
+        "root_b_position": {"$ref": "#/$defs/nonEmptyString"},
+        "why_not_combined": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "matrixEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root_a", "root_b", "incompatibilities"],
+      "properties": {
+        "root_a": {"$ref": "#/$defs/id"},
+        "root_b": {"$ref": "#/$defs/id"},
+        "incompatibilities": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {"$ref": "#/$defs/incompatibility"}
+        }
+      }
+    },
+    "projectRoute": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^/"
+    },
+    "renderCaptureId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,47}$"
+    },
+    "renderReviewReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file"],
+      "properties": {
+        "file": {"$ref": "#/$defs/fileRef"}
+      }
+    },
+    "proofSlice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "root_id", "build_id", "purpose", "render_review", "source_snapshot_manifest_sha256", "route", "wide_capture_id", "narrow_capture_id"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "root_id": {"$ref": "#/$defs/id"},
+        "build_id": {"$ref": "#/$defs/id"},
+        "purpose": {"$ref": "#/$defs/nonEmptyString"},
+        "render_review": {"$ref": "#/$defs/renderReviewReference"},
+        "source_snapshot_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "route": {"$ref": "#/$defs/projectRoute"},
+        "wide_capture_id": {"$ref": "#/$defs/renderCaptureId"},
+        "narrow_capture_id": {"$ref": "#/$defs/renderCaptureId"}
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chosen_root_id", "rejected_root_id", "selection_reason", "rejection_reason"],
+      "properties": {
+        "chosen_root_id": {"$ref": "#/$defs/draftableId"},
+        "rejected_root_id": {"$ref": "#/$defs/draftableId"},
+        "selection_reason": {"$ref": "#/$defs/draftableText"},
+        "rejection_reason": {"$ref": "#/$defs/draftableText"},
+        "rationale_recorded_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]}
+      }
+    },
+    "implementationBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": {"enum": ["roots-only", "proof-slices", "broad-implementation"]},
+        "evidence": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "unprimedReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer_id",
+        "relationship",
+        "observed_at",
+        "evidence",
+        "reviewed_proof_slices",
+        "first_observation",
+        "limitations"
+      ],
+      "properties": {
+        "status": {"enum": ["draft", "complete"]},
+        "reviewer_id": {"oneOf": [{"$ref": "#/$defs/nonEmptyString"}, {"type": "null"}]},
+        "relationship": {"oneOf": [{"enum": ["independent-human", "independent-agent", "owner-authorized-independent"]}, {"type": "null"}]},
+        "exposure": {"oneOf": [{"enum": ["unprimed-proof-slices-only"]}, {"type": "null"}]},
+        "observed_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+        "frozen_at": {"oneOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+        "evidence": {"oneOf": [{"$ref": "#/$defs/fileRef"}, {"type": "null"}]},
+        "reviewed_proof_slices": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "first_observation": {"$ref": "#/$defs/draftableText"},
+        "limitations": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unprimed"],
+      "properties": {
+        "unprimed": {"$ref": "#/$defs/unprimedReview"}
+      }
+    }
+  }
+}

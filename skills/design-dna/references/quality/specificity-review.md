@@ -44,6 +44,13 @@ authorized evidence exists, record `cross-project repetition not assessed`.
 Direct owner feedback comparing named artifacts authorizes that exact
 comparison; it does not authorize unrelated history mining.
 
+When the Project Contrast capability is active, bind the comparison to its
+brief-native counter-answer and exact rendered wide/narrow evidence. Review
+the selected candidate before loading the closest sibling. An unexplained
+match at the encounter, content-operation, body-progression, or responsive
+level reopens that earliest decision. A different font, palette, photograph,
+or effect alone is not evidence that the repeated relationship was resolved.
+
 ## Observe before diagnosing
 
 When possible, run a first-impression review before showing the reviewer the
@@ -256,8 +263,11 @@ perspective, material, and cultural details relevant to the subject.
 Review public source, comments, names, routes, states, metadata, favicons,
 links, assets, console, network, and demo content. Keep comments that explain
 non-obvious constraints, accessibility, algorithms, browser behavior, and
-maintenance. Move creative rationale and skill vocabulary into internal
-records.
+maintenance. Move creative rationale, producer workflow, project-record
+vocabulary, and internal system/data-model language into internal records.
+Do not let a public heading, category, caption, navigation item, or help panel
+repeat private reasoning merely because it makes the implementation easier to
+explain.
 
 Care is visible across the whole product: meaningful copy, working actions,
 real states, appropriate proof, media craft, accessibility, responsive

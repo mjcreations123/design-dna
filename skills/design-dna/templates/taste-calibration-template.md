@@ -2,14 +2,33 @@
 schema_version: 1
 created_with: "__DESIGN_DNA_VERSION__"
 classification: "internal"
+evidence_contract: "proportional-evidence-v1"
 ---
 
 # Taste calibration
 
-Use this optional project-local record for an open, high-visibility, owner-
-sensitive, or previously rejected direction. It preserves the actual visual
-decision; it is not a style catalog, an AI score, or a mandatory artifact for a
-bounded repair.
+Use this project-local record when taste calibration is activated for an open,
+high-visibility, owner-sensitive, or previously rejected direction. It
+preserves evidence for the actual visual decision; it is not a completed
+assessment, style catalog, AI score, or mandatory artifact for a bounded
+repair. Replace every applicable field with project evidence or explicitly
+state why it is unavailable.
+
+## Record lifecycle and evidence boundary
+
+- Current status: draft | proof-ready | reviewed | reopened | blocked
+- Activation basis and applicable scope:
+- Candidate/build under review:
+- Reviewer relationship and date:
+- Authoritative Project Contrast record path and current status, if active:
+- Authoritative Direction Challenge record path and current status, if active:
+- Recurrence-risk disposition: active / not-applicable / blocked, with the
+  project-specific reason and the Project Contrast record path when active:
+- Direct reviewable artifacts currently bound:
+- Missing evidence, explicit inability, and next decision:
+
+This record may explain the visual decision, but it cannot mark a Project
+Contrast or Direction Challenge record ready, reviewed, or owner-accepted.
 
 ## Public encounter and project read
 
@@ -31,11 +50,19 @@ convert this table into a moodboard average or a global preference list.
 
 ## Direction proof
 
-- Exact proof route/state/viewport and rendered artifact:
+- Selected-direction proof evidence: exact proof route/state/viewport and
+  project-relative direct-reviewable artifact plus SHA-256:
+- Counter-direction proof evidence: exact proof route/state/viewport and
+  project-relative direct-reviewable artifact plus SHA-256:
 - Project material used in the proof:
 - Organizing answer being tested:
 - Consequential observable decision(s):
 - What would make this direction lose:
+
+For an owner recurrence, rejected direction, or open Showcase, selected and
+counter proof artifacts are required unless an exact inability, its effect on
+the decision, and the next reviewable step are recorded above. Do not replace a
+counter artifact with a prose claim that an alternative was considered.
 
 ## First-impression and surface-fidelity response
 
@@ -48,7 +75,10 @@ convert this table into a moodboard average or a global preference list.
 
 ## Disposition
 
-- Keep, revise, reopen direction, reject, or blocked:
+- Current disposition: keep / revise / reopen direction / reject / blocked
 - Protected facts, tasks, and accepted decisions:
 - Root decision to change, if reopened:
 - Exact next render or owner review:
+
+Do not leave a default status as evidence. A `reviewed` or `keep` disposition
+must name the reviewer, artifact, limitation, and the decision it supports.

@@ -5,6 +5,149 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 5.3.0 - Unreleased candidate: field evidence and fidelity
+
+This candidate imports the durable findings of a structured review of five
+external resources (an interface-guideline corpus, two prompt-engineering
+skill collections, a brand token corpus, and the Playwright CLI), keeping
+the skill's evidence doctrine intact: everything aesthetic arrived as dated
+post-render evidence, everything mechanical arrived as measurable craft,
+and nothing arrived as a portable taste recipe.
+
+### Added
+
+- **Observed default basins**, a dated post-render evidence record of where
+  unguided model output repeatedly lands: generator hues, the
+  premium-consumer palette basin with observed hex centers, the
+  display-serif attractor, micro-label furniture, component finishes, and
+  copy signatures, each with source class and confidence, plus a
+  fetch-on-demand pointer to a public brand token corpus for token-level
+  clone comparison. Used by the convergence review to ask "derived or
+  defaulted"; never consulted during generation, and creating no bans.
+- **Supplied-artwork fidelity**, a mode for briefs where the client
+  provides the design itself: read the artwork as a specification, extract
+  a measured token sheet before building, resolve ambiguity up a recorded
+  ladder that ends in client questions rather than guesses, hold the line
+  against implementation drift, and prove fidelity with rendered
+  build-versus-reference comparison. Fidelity never waives the assurance
+  boundaries; conflicts are surfaced, not silently resolved.
+- **A redesign contract** for live sites: audit before touching, the
+  never-changes-silently list (URLs, navigation labels, form field names,
+  brand mark, legal copy, third-party contracts), search and inbound
+  continuity as a release-blocking defect class, intervention depth named
+  with the owner, and modernization levers applied in cost order.
+- **Feedback and waiting states**: honest indicator timing with show-delay
+  and minimum visible time, the submit lifecycle as a designed state
+  machine, truthful skeletons that mirror final content, optimistic UI
+  with visible rollback, undo with a reliable window, and a no-dead-ends
+  audit of the states nobody designed.
+- **A client-facing DESIGN.md handoff template** emitted from the accepted
+  build's own system (tokens, semantic roles, accent budget, substitute
+  mappings, do and do-not lists, known gaps) and shipped in the
+  transferred repository so the owner's future edits and AI assistants
+  stay on-system.
+- Interface mechanics distributed into their homes: input mechanics
+  (validate-after, submit not pre-disabled, Enter semantics, trimmed
+  whitespace, pasteable codes, idempotency keys), focus and anchor
+  mechanics (sticky surfaces never covering focus, scroll margin on
+  anchors), small-viewport mechanics (dynamic viewport units, safe areas,
+  zoom never disabled, input sizes that do not force focus zoom, contained
+  overscroll, restored history), platform theming plumbing (root color
+  scheme, theme-color, explicit native control colors), localization
+  mechanics (language from preferences never IP, machine-translation
+  protection for exact tokens), performance mechanics (preconnect,
+  script-coverage subsetting, video-not-GIF ambient loops, virtualized
+  long lists), typography mechanics (descender clearance, tabular
+  numerals, glued pairs, substitute mapping, additional legitimate font
+  sources), accent budgets and band-sequence pacing notation, grid
+  cell-content parity, concentric nested radii, URL-as-state, duplicate
+  CTA intent collapse, and a producer-voice string audit including false
+  precision.
+- A dated generated-video note in the imagery reference: official
+  publisher Spaces as the honest zero-cost path, a warning about
+  unaffiliated lookalike domains riding famous model names, and the craft
+  floor for ambient clips.
+- A dated free-tier operational defaults block beside production
+  readiness, scoped to the slots launch completeness forces, citing the
+  maintained public catalog for everything else.
+- Preship gate rows: capture identity (URL, title, HTTP status bound to
+  every observation so an error page cannot pass as green), measured
+  compact-condition mechanical floors, exercised in-between states, and
+  the supplied-artwork comparison when fidelity mode is active.
+
+### Changed
+
+- The render harness adopts the Playwright CLI as the standard interactive
+  capture and probe path, pinned, with the identity discipline recorded
+  and the raw devtools-protocol script demoted to a named fallback; the
+  bundled schema reviewer remains the sole source of the bound review
+  report. Adoption follows an end-to-end verification of every capture
+  primitive on the studio's own machine.
+- The convergence review gains the default-basins record as its frequency
+  evidence, keeping post-render standing.
+- Direction start routes supplied-artwork briefs to fidelity mode and live
+  redesigns to the redesign contract before direction work begins.
+
+## 5.2.0 - Unreleased candidate: direction contrast and proof binding
+
+This candidate responds to an owner-reported recurring public-shell problem:
+projects could be polished and non-generic in isolation yet still inherit the
+same entry, spatial rhythm, surface grammar, and interaction dialect. It adds
+procedural divergence evidence without turning aesthetic ingredients into a
+ban list, score, or automatic pass.
+
+### Added
+
+- **Project Contrast hardening**, an owner-triggered lifecycle that records a
+  brief-native direction, a materially different counter-answer, selected
+  encounter and surface-grammar observations, the permitted public shell, and
+  a minimized authorized closest-sibling comparison when recurrence is in
+  scope.
+- **Direction Challenge**, which keeps several incompatible organizing roots
+  reviewable before a polished build, binds selected and rejected wide/narrow
+  proof slices to schema-3 renderer packages, and records an unprimed
+  proof-slice-only review before selection rationale.
+- **Connected Public Experience (CPE)**, an optional selected-only capability
+  for a detailed, connected, customer-facing, app-like, or client-demonstration
+  public promise, or one whose content, decisions, or state carries between
+  routes. It records truthful applicability/status boundaries and exact
+  rendered/functional continuity evidence; it creates no page-count,
+  visual-style, admin, backend, database, funnel, or live-integration quota.
+- A Batch Study human-contextual closure record. `comparison_ready` now names
+  only protocol coverage; a later capture-set-bound human disposition can make
+  `human_contextual_ready` true by resolving every material contextual finding;
+  `final_ready` is their conjunction. The audit keeps
+  `automatic_aesthetic_pass` false for every status.
+- Hash-bound schema-3 capture, route, build, origin, viewport, local frozen
+  source-manifest, reviewer-coverage, timing, and closest-sibling bindings for
+  contrast claims. Literal pixel reuse, missing local source snapshots,
+  placeholder lifecycle records, and out-of-order reviews do not satisfy the
+  gates.
+
+### Changed
+
+- Recast reusable UI as dependable technical/brand foundations while requiring
+  a project-specific public shell and surface grammar to be rebuilt or
+  explicitly justified for unrelated work.
+- Kept every aesthetic result human-reviewed: capability readiness never
+  becomes an automatic quality, originality, authorship, or beauty claim.
+- Fresh public-facing business, product, organization, place, creator, or
+  campaign work begins at Standard with full public rendered and engineering
+  review. Add Showcase only for an expressly premium, showcase, high-ambition,
+  or direction-recovery brief.
+
+### Candidate evidence boundary
+
+- Candidate metadata and any regenerated SBOM or manifest identify only the
+  exact source tree they bind. They do not promote 5.2.0 to a release.
+  Current host, CI, route, install, independent package evaluation, signature,
+  and strict release evidence remain separate; retained 5.1 attestations are
+  historical and must not be read as current release qualification. Project
+  Contrast, Direction Challenge, Connected Public Experience, and Batch
+  records remain project-level evidence, not a substitute for that release
+  evidence. A CPE closure does not prove owner acceptance, target-user
+  validation, production readiness, real service operation, or visual quality.
+
 ## 5.1.0 - Creative freedom and batch proof
 
 This release repairs the restrictive aesthetic doctrine introduced during the
@@ -34,6 +177,16 @@ other aesthetic decisions to project evidence and rendered judgment.
 
 ### Added
 
+- **Project Contrast**, an owner-triggered capability for unrelated public
+  builds that appear to be repeating a studio's safe answer. It records a
+  brief-native encounter, a materially different counter-answer, the
+  authorized comparison boundary, justified shared foundations, hash-bound
+  wide/narrow evidence, and a human collision review. Its auditor can expose
+  incomplete or cosmetic-only contrast evidence but never calculates an AI,
+  beauty, uniqueness, font, palette, or novelty score.
+- A host-neutral owner-standard and lineage location (`~/.design-dna/`) so the
+  same recurrence protocol can be used by Codex and Claude without treating a
+  host-local legacy note as a portable house style.
 - `taste-calibration.md` and an optional project-local calibration record for
   high-visibility, owner-sensitive, open, or previously rejected directions.
   They use source-aware visual references, a rendered direction proof, and a
@@ -459,8 +612,10 @@ still pending; the entries below are not claims of a qualified outcome.
   like-for-like rendered proof slices are the normal expectation, while the
   gate judges meaningful directional coverage rather than a numeric quota.
 - Added proportional Quick, Standard, Showcase, and High-risk assurance
-  profiles. Showcase is the recommended path for portfolio, demo, pitch,
-  sample, and other high-visibility work.
+  profiles. That superseded candidate treated Showcase as suitable for
+  portfolio, demo, pitch, sample, and other high-visibility work. Its
+  historical selection guidance is superseded by the current 5.2
+  Standard-first rule unless the brief calls for Showcase.
 - Strengthened direction, proof, and review records so hero intent, system
   mapping, accepted-baseline drift, care, and visual regression evidence
   cannot disappear behind a passing scanner.

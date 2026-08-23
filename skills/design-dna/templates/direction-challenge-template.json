@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "created_with": "__DESIGN_DNA_VERSION__",
+  "record_status": "draft",
+  "classification": "internal",
+  "scope": {
+    "project_id": null,
+    "surface_scope": [],
+    "trigger": [],
+    "activation_basis": null
+  },
+  "reference_order": {
+    "events": []
+  },
+  "roots": [],
+  "challenge_matrix": [],
+  "proof_slices": [],
+  "selection": {
+    "chosen_root_id": null,
+    "rejected_root_id": null,
+    "selection_reason": null,
+    "rejection_reason": null,
+    "rationale_recorded_at": null
+  },
+  "implementation_boundary": {
+    "status": "roots-only",
+    "evidence": null
+  },
+  "review": {
+    "unprimed": {
+      "status": "draft",
+      "reviewer_id": null,
+      "relationship": null,
+      "exposure": null,
+      "observed_at": null,
+      "frozen_at": null,
+      "evidence": null,
+      "reviewed_proof_slices": [],
+      "first_observation": null,
+      "limitations": null
+    }
+  }
+}

@@ -62,9 +62,9 @@ color roles; media relationships; navigation; section transitions; interaction
 and motion grammar; responsive transformation; copy cadence; labels; proof;
 actions; and endings.
 
-| Cluster ID | Specimens/routes | Observed relationship | Rendered evidence | Project-derived explanation or missing derivation | User impact | Disposition and rerun |
+| Cluster ID | Specimens/routes | Observed relationship | Rendered evidence | Project-derived explanation or missing derivation | Severity / impact | Disposition and rerun |
 |---|---|---|---|---|---|---|
-| CL-001 |  |  |  |  |  |  |
+| CL-001 |  |  |  |  | low / medium / high / critical; informational / bounded / material / release-blocking |  |
 
 Different hues, fonts, photos, or effects do not by themselves resolve a
 shared scaffold. When a cluster lacks a defensible explanation, revise the
@@ -91,4 +91,8 @@ maintenance explanations.
 - Frozen review record path:
 
 After freezing, record this file's SHA-256 in the study contract or audit
-record that references it. Do not append a self-hash to this file.
+record that references it. Do not append a self-hash to this file. Then make a
+separate [Batch Study human contextual disposition](batch-human-contextual-disposition-template.md)
+for the same capture set after diagnostic material is eligible. The later
+disposition must not reuse this whole-system observation as its evidence, and
+it never turns the audit into an automatic aesthetic pass.

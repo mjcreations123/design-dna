@@ -61,6 +61,15 @@ When a manual choice exists:
 - update `color-scheme` and relevant native or embedded content;
 - define what happens when the system preference changes.
 
+Platform plumbing that each scheme must get right regardless of how it is
+chosen: declare `color-scheme` on the root so scrollbars, form controls,
+and system UI render in the scheme rather than clashing with it; keep the
+`theme-color` meta in step with each scheme's actual ground so the browser
+chrome matches the page; and give native select and input elements explicit
+background and text colors, because at least one major platform's dark mode
+renders them illegibly when they inherit. These are verifiable in the
+rendered check below, not assumptions.
+
 ## Verify each scheme as a real state
 
 Capture and inspect every materially different scheme at the project-relevant

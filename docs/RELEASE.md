@@ -33,7 +33,7 @@ evidence lives below `maintainer/attestations/skip-evidence/`. Supply an
 approved record only when a skip actually occurs:
 
 ```text
-python -B maintainer/scripts/attest_tests.py --plugin-root . --skip-waiver-file maintainer/attestations/skip-waivers/APPROVED.json --output maintainer/attestations/test-attestation.json
+python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --skip-waiver-file maintainer/attestations/skip-waivers/APPROVED.json --output maintainer/attestations/test-attestation.json
 ```
 
 An unwaived skip, stale extra waiver, environment mismatch, source change,
@@ -41,11 +41,56 @@ expired approval, or changed evidence is a strict release failure. Prefer
 making a feasible test run on the supported platform; a waiver is not a routine
 substitute.
 
+### Attestation startup integrity
+
+Run `attest_tests.py` exactly with `-I -S -B`. `-I` ignores inherited Python
+environment/path configuration, `-S` suppresses `site`, `sitecustomize`, and
+user-site startup, and the attester then restores only its canonical script
+directory plus interpreter-owned dependency directories. The child release
+runner uses the same flags and strips inherited Python controls before tests
+can launch further children. This is a local execution-integrity boundary; it
+does not prove that the selected Python executable, OS, or its trusted
+interpreter-owned dependency installation is uncompromised.
+
+The non-isolated main() refusal is a fail-closed guard against command drift,
+including a hook that imports the module and invokes its entry point. It is not
+evidence that a normal Python process was safe after arbitrary startup code
+already ran: use the external python -I -S -B invocation in CI and local
+release work.
+
 ## 3. Evaluate
 
 Execute the controlled host/model matrix and independent rendered reviews.
 Diagnostic builds cannot be promoted by changing their label. Every promoted
 result must satisfy the current schemas and evaluation contract.
+
+For the v5.2 anti-convergence workflow, evaluate the evidence meanings rather
+than a script's exit code as an aesthetic verdict:
+
+- A **Project Contrast** record documents the exact project's brief-native
+  counter-answer, authorized comparison boundary when applicable, and rendered
+  collision review. It cannot make an unauthorized sibling comparison or owner
+  response appear to exist.
+- A **Direction Challenge** record documents its deliberately activated roots,
+  proof slices, selected-versus-rejected boundary, and independent unprimed
+  review. It is not proof that every ordinary project received three concepts
+  or that the selected result is universally good.
+- A **Connected Public Experience** record exists only when selected. It binds
+  an exact project's public-model and continuity evidence, not an admin,
+  backend, page count, funnel, database, or live integration. It does not prove
+  owner acceptance, target-user validation, production readiness, real service
+  operation, or visual quality.
+- A **Batch Study** report keeps `comparison_ready` (declared protocol
+  coverage) separate from `human_contextual_ready` (a later, capture-set-bound
+  human disposition that closes material contextual findings). `final_ready`
+  is their conjunction and always retains `automatic_aesthetic_pass: false`.
+  None of these project-level records proves package release status, host
+  activation, customer acceptance, or aesthetic quality.
+
+Keep the exact evaluated source, build, capture, reviewer, and owner boundaries
+with each result. A local development evaluation may support a candidate only
+for the checks it actually ran; it cannot stand in for current CI, externally
+controlled host behavior, independent review, or release signing evidence.
 
 ## 4. Build, attest, and synchronize
 
@@ -54,7 +99,9 @@ After the final runtime, test, tooling, schema, requirement, and workflow edit:
 ### Prepare the reviewable candidate
 
 1. create the local test attestation;
-2. create and check the external Codex Plugin Creator validation attestation;
+2. create and check the Codex Plugin Creator validation attestation with the
+   separately supplied, pinned validator; this is a package-development check,
+   not host-activation evidence;
 3. create and check the isolated Codex/Claude installer-lifecycle attestation;
 4. synchronize each intended direct installation transactionally;
 5. verify the declared global filesystem discovery roots and installed hashes;
@@ -67,7 +114,23 @@ After the final runtime, test, tooling, schema, requirement, and workflow edit:
 
 The checked-in provisional SBOM and manifest are required before candidate CI
 because the CI development audit validates both. They establish a clean
-candidate input; they are not the final release identity.
+candidate input; they are not the final release identity or evidence that a
+host has loaded the package.
+
+### Status vocabulary
+
+- A **development candidate** is a frozen source tree with only the local
+  checks and provisional artifacts actually recorded for that exact tree.
+- A **release-qualified candidate** additionally has the current required CI,
+  host, route, installer, evaluation, compatibility, and signature evidence
+  bound by the strict audit.
+- A **published release** has also been distributed through an approved channel
+  and verified from a clean account as described in [Publish](#6-publish).
+
+Do not promote a candidate merely because a version string, SBOM, manifest,
+local attestation, screenshot, or project-level Design DNA record exists. Each
+claims only its own bound inputs and checks; regenerate a bound artifact after
+any relevant source or evidence edit.
 
 ### Promote evidence and finalize
 
@@ -118,7 +181,7 @@ npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm --prefix maintainer exec -- playwright install chromium
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json --check
-python -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
+python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json --check
 python -B maintainer/scripts/attest_install_lifecycle.py --plugin-root . --output maintainer/attestations/install-lifecycle.json

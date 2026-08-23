@@ -61,19 +61,14 @@
     },
     "command": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 5,
+      "maxItems": 5,
       "prefixItems": [
         {"const": "python-current-environment"},
+        {"const": "-I"},
+        {"const": "-S"},
         {"const": "-B"},
-        {"const": "-m"},
-        {"const": "unittest"},
-        {"const": "discover"},
-        {"const": "-s"},
-        {"const": "maintainer/tests"},
-        {"const": "-p"},
-        {"const": "test_*.py"},
-        {"const": "-v"}
+        {"const": "maintainer/scripts/run_release_tests.py"}
       ],
       "items": false
     },

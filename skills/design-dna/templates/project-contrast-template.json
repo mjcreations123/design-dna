@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "created_with": "__DESIGN_DNA_VERSION__",
+  "record_status": "draft",
+  "classification": "internal",
+  "scope": {
+    "project_id": null,
+    "surface_scope": [],
+    "route_coverage": {
+      "mode": "representative",
+      "rationale": null,
+      "discovered_route_map": []
+    },
+    "trigger": [],
+    "comparison_authority": {
+      "status": "not-authorized",
+      "basis": null
+    }
+  },
+  "source_to_encounter": {
+    "visitor_occasion": null,
+    "primary_job": null,
+    "subject_material": [],
+    "content_operation": null,
+    "nontransferable_constraints": []
+  },
+  "selected_direction": {
+    "organizing_answer": null,
+    "opening_encounter": null,
+    "dominant_content_unit": null,
+    "body_progression": null,
+    "ending_or_next_state": null,
+    "observable_predictions": []
+  },
+  "exploration": {
+    "first_answer_risk": null,
+    "challenge_method": null,
+    "challenging_answer": null,
+    "selection_reason": null,
+    "why_sufficient": null
+  },
+  "design_signature": {
+    "selection_status": "draft",
+    "selection_basis": null,
+    "axes": []
+  },
+  "comparison": {
+    "closest_sibling_selection": {
+      "status": "draft",
+      "source_kind": null,
+      "evidence": null,
+      "comparator_ids": [],
+      "owner_authorization": null,
+      "selection_reason": null
+    },
+    "comparators": [],
+    "shared_decisions": [],
+    "shared_public_shell": {
+      "classification": "technical-foundation",
+      "technical_boundary": null,
+      "public_observation": null,
+      "source": null,
+      "evidence": null,
+      "approval": null
+    },
+    "contrast_claims": [],
+    "surface_grammar_observations": [],
+    "contrast_prompt": {
+      "encounter_collision": null,
+      "public_shell_collision": null,
+      "surface_grammar": null
+    },
+    "counterfactual_swap_test": {
+      "method": null,
+      "removed_or_swapped": [],
+      "remaining_identity": null,
+      "result": null,
+      "follow_up": null
+    }
+  },
+  "evidence": {
+    "candidate_build": null,
+    "render_reviews": [],
+    "captures": []
+  },
+  "review": {
+    "unprimed": {
+      "status": "draft",
+      "reviewer_id": null,
+      "relationship": null,
+      "exposure": null,
+      "observed_at": null,
+      "frozen_at": null,
+      "evidence": null,
+      "reviewed_capture_ids": [],
+      "reviewed_comparator_ids": [],
+      "first_observation": null,
+      "limitations": null
+    },
+    "paired": {
+      "status": "draft",
+      "reviewer_id": null,
+      "relationship": null,
+      "exposure": null,
+      "observed_at": null,
+      "frozen_at": null,
+      "evidence": null,
+      "reviewed_capture_ids": [],
+      "reviewed_comparator_ids": [],
+      "first_observation": null,
+      "limitations": null
+    },
+    "paired_outcome": null,
+    "disposition": "draft",
+    "owner_review": {
+      "status": "draft",
+      "reviewer_id": null,
+      "relationship": null,
+      "observed_at": null,
+      "evidence": null,
+      "limitations": null,
+      "candidate_build_id": null,
+      "reviewed_capture_ids": []
+    }
+  }
+}

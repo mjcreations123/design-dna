@@ -483,7 +483,7 @@
         "project",
         "disclaimer",
         "audit_status",
-        "quality_passed",
+        "source_integrity_complete",
         "exit_code",
         "scan_scope",
         "completeness",
@@ -521,7 +521,7 @@
             "incomplete"
           ]
         },
-        "quality_passed": {"type": "boolean"},
+        "source_integrity_complete": {"type": "boolean"},
         "exit_code": {"enum": [0, 1]},
         "scan_scope": {
           "type": "object",
@@ -732,7 +732,7 @@
           "then": {
             "properties": {
               "ok": {"const": false},
-              "quality_passed": {"const": false},
+              "source_integrity_complete": {"const": false},
               "exit_code": {"const": 1},
               "completeness": {
                 "properties": {
@@ -745,7 +745,7 @@
           "else": {
             "properties": {
               "ok": {"const": true},
-              "quality_passed": {"const": true},
+              "source_integrity_complete": {"const": true},
               "exit_code": {"const": 0},
               "completeness": {
                 "properties": {
