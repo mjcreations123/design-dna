@@ -106,9 +106,11 @@ the following prompts to name observed causes:
 5. **State and route-family finish.** Do direct entry, navigation, key actions,
    compact widths, and materially different route bodies work without exposing
    a first draft, a dead end, or a repeated component failure?
-6. **Public copy integrity.** Does every high-attention line have a public job,
-   an approved voice or project anchor, and a rendered role that suits this
-   route? Remove generic brand theater instead of writing around it.
+6. **Public copy integrity.** Does the complete public corpus have a source-led
+   copy map? Does every high-attention line have a public job and an approved
+   voice or project anchor? Does each rendered paragraph-like block carry one
+   clear thought rather than fill space with generic brand theater? Remove or
+   recompose the writing model instead of rewriting around it.
 
 Record the disposition in the Enterprise Candidate section of
 `visual-review.md`. A producer may perform this review, but label it honestly

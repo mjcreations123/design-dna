@@ -59,6 +59,7 @@ CORE_EVIDENCE_CAPABILITIES = {
     "direction-challenge",
     "enterprise-candidate",
     "high-risk",
+    "public-copy-integrity",
     "project-contrast",
     "range-study",
 }
@@ -67,6 +68,7 @@ CAPABILITY_PROFILE_COMMANDS = {
     "direction-challenge": "--profile direction-challenge",
     "enterprise-candidate": "--profile enterprise-candidate",
     "high-risk": "--profile high-risk",
+    "public-copy-integrity": "--profile enterprise-candidate",
 }
 EVIDENCE_CAPABILITY_PATTERN = re.compile(
     r"[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?"
@@ -416,7 +418,7 @@ def inferred_evidence_capabilities(
     """Map assurance profiles to evidence gates without prescribing design."""
 
     observed = set(assurance_profiles)
-    return tuple(
+    capabilities = [
         capability
         for capability in (
             "project-contrast", "direction-challenge",
@@ -425,7 +427,10 @@ def inferred_evidence_capabilities(
             "high-risk", "asset-led",
         )
         if capability in observed
-    )
+    ]
+    if "enterprise-candidate" in observed:
+        capabilities.append("public-copy-integrity")
+    return tuple(capabilities)
 
 
 def normalize_evidence_capabilities(
@@ -448,6 +453,20 @@ def normalize_evidence_capabilities(
             "Invalid evidence capabilities: " + ", ".join(sorted(invalid)) + ".",
         )
     return normalized
+
+
+def expand_enterprise_copy_integrity(
+    capabilities: tuple[str, ...] | list[str] | set[str],
+) -> tuple[str, ...]:
+    """Keep the complete-corpus copy gate coupled to enterprise review."""
+
+    expanded = list(dict.fromkeys(capabilities))
+    if (
+        "enterprise-candidate" in expanded
+        and "public-copy-integrity" not in expanded
+    ):
+        expanded.append("public-copy-integrity")
+    return tuple(expanded)
 
 
 def missing_capability_records(
@@ -498,10 +517,10 @@ def evidence_contract_payload(
 ) -> dict[str, object]:
     canonical_profiles = normalize_assurance_profiles(assurance_profiles)
     capabilities = normalize_evidence_capabilities(
-        [
+        expand_enterprise_copy_integrity([
             *inferred_evidence_capabilities(canonical_profiles),
             *requested_capabilities,
-        ]
+        ])
     )
     require_capability_profile_consistency(capabilities, canonical_profiles)
     return {
@@ -566,6 +585,14 @@ def validate_evidence_contract(
             "applicable_capabilities must be a unique list.",
         )
     capabilities = normalize_evidence_capabilities(raw_capabilities)
+    if (
+        "enterprise-candidate" in capabilities
+        and "public-copy-integrity" not in capabilities
+    ):
+        raise StateError(
+            "invalid-evidence-contract",
+            "enterprise-candidate requires public-copy-integrity.",
+        )
     require_capability_profile_consistency(capabilities, assurance_profiles)
     implied = set(inferred_evidence_capabilities(assurance_profiles))
     if not implied.issubset(capabilities):
@@ -1230,6 +1257,11 @@ CAPABILITY_REQUIRED_SECTIONS = {
     "enterprise-candidate": {
         "visual-review": {"Enterprise Candidate closure (when selected)"},
     },
+    "public-copy-integrity": {
+        "visual-review": {
+            "Public copy integrity closure (required for public candidates)"
+        },
+    },
     "connected-public-experience": {
         "direction": {"Connected public experience (when selected)"},
         "visual-review": {
@@ -1259,6 +1291,7 @@ CAPABILITY_REQUIRED_SECTIONS = {
 }
 CAPABILITY_REQUIRED_RECORDS = {
     "enterprise-candidate": {"direction", "visual-review"},
+    "public-copy-integrity": {"direction", "visual-review"},
     "connected-public-experience": {"connected-public-experience"},
     "project-contrast": {"project-contrast"},
     "direction-challenge": {"direction-challenge"},

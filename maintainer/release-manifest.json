@@ -2,22 +2,22 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "6.0.0",
-  "distribution_sha256": "d8fa75f69b67e04e0ab0cb12a75f5bb25a4f1957f6e0b92d7a0f2f0adf396ed2",
-  "content_sha256": "4c5a8c139b2124343963ab5e97a1efe78f85ff2b53c1a529c82d5f2c02fbb0d1",
+  "distribution_sha256": "c22e24b43730cd82463554a0e2e73596987b3e7d0e2133df3876cdaca7f67d88",
+  "content_sha256": "8acb4c4a25786e78e439107aa19492f7bca1520b2f4a26b59a6a14f9ad18c5d8",
   "codex_plugin_manifest_sha256": "7555d5992d8e464e2b7448959d55be846cb58db38d5095ee34dd1cd36d611441",
   "claude_plugin_manifest_sha256": "a4e03e2a8bc8167e4f9d9fd227771abe0329f52d21d8c3a37273fa53250c2ee2",
-  "sbom_sha256": "105d7bf00a050f41f5645d00592adef15f525eef4b53860eb93303168278a3ca",
+  "sbom_sha256": "c3b38e498ce96160a4c8a7287fa47dcf80558510788492e7216b3cf87ff76e86",
   "compatibility_matrix_sha256": "e384aed309df69adde9efc66c1651cf7cb124f0e211f70952da86e45509d4661",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "d8fa75f69b67e04e0ab0cb12a75f5bb25a4f1957f6e0b92d7a0f2f0adf396ed2",
-    "runtime": "4c5a8c139b2124343963ab5e97a1efe78f85ff2b53c1a529c82d5f2c02fbb0d1",
+    "distribution_tree": "c22e24b43730cd82463554a0e2e73596987b3e7d0e2133df3876cdaca7f67d88",
+    "runtime": "8acb4c4a25786e78e439107aa19492f7bca1520b2f4a26b59a6a14f9ad18c5d8",
     "codex_plugin_manifest": "7555d5992d8e464e2b7448959d55be846cb58db38d5095ee34dd1cd36d611441",
     "claude_plugin_manifest": "a4e03e2a8bc8167e4f9d9fd227771abe0329f52d21d8c3a37273fa53250c2ee2",
-    "sbom": "105d7bf00a050f41f5645d00592adef15f525eef4b53860eb93303168278a3ca",
+    "sbom": "c3b38e498ce96160a4c8a7287fa47dcf80558510788492e7216b3cf87ff76e86",
     "compatibility_matrix": "e384aed309df69adde9efc66c1651cf7cb124f0e211f70952da86e45509d4661",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "e37b9cc3c0eab7c7027cbd4f53c7d8e85646bc8fcb4862e7e807ac2b3c3f4eb8",
+    "compatibility_verification": "a31662bfcea4e825562786f62bea1b93863d09fedbe0af5b2b438b79953d3b8a",
     "distribution_docs": "695676ca6f58bae90bf8c12a9b8f4432aceff8cd546232896ac8dd23d7d6c49f",
     "eval_contract": "35dbffc4bf98740714aa21f6c8cc5cca2426ada7aecd853f14a45132341a1d8c",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
@@ -26,14 +26,14 @@
     "schemas": "5d18b5aa5989a9c42f445b9362556dd5ca5e49951393e0c1314f77101e1878b6",
     "tests": "07033f602be5fb4f504569c84e3c20c388af906bb67c966a3f003f32d38da700"
   },
-  "release_sha256": "4ea20fe916447b98bc17fe16157b045d05be88a41c3e6c7b5c5dcf9d3e38ae94",
-  "generated_at": "2026-08-26T04:53:29.793907+00:00",
+  "release_sha256": "a99de7957f2cfa67c87eb70dd1d8a470c97d3ca3a3c2faec3fcaf20dfa7d4157",
+  "generated_at": "2026-08-26T16:05:16.265729+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 38776,
-      "sha256": "9d4a23ad1658bf267d5ea132e78d08daf831d854273793eec310e7281ba742ab"
+      "size": 38942,
+      "sha256": "ee992a30f00b14dd26ca5ed19b7fa4dc4d9b644e6a4fd0c74e7afdab6433bfa9"
     },
     {
       "path": "agents",
@@ -458,8 +458,8 @@
     {
       "path": "references/quality/enterprise-candidate.md",
       "type": "file",
-      "size": 7252,
-      "sha256": "f808f05d3b6431c78e61b47f17fc3fe732e16a79e6fdc83fa5c67567681383dc"
+      "size": 7404,
+      "sha256": "ce7818557386b636276d4e3e547e8b1f75f27299fd849b45627202841607e0a9"
     },
     {
       "path": "references/quality/evaluation.md",
@@ -536,8 +536,8 @@
     {
       "path": "references/quality/public-copy-integrity.md",
       "type": "file",
-      "size": 5573,
-      "sha256": "d35345c47342047413c23ebf189fed842455225898f9fd535644e7048329d82c"
+      "size": 8236,
+      "sha256": "8cc233f54533fef78cf174d1feae3d03c13e6fc78af355ec668c715c862ca7cb"
     },
     {
       "path": "references/quality/render-comparison.md",
@@ -746,8 +746,8 @@
     {
       "path": "scripts/init_project_state.py",
       "type": "file",
-      "size": 535713,
-      "sha256": "c1cf33014eb063d3e5de98681d5fc6d4df4b3679002e9eb04d4e6a901e162d37"
+      "size": 536879,
+      "sha256": "a701abd8932ffafc025ea1ca287e5b5629080c42993adac284ee3c14b7ce5f18"
     },
     {
       "path": "scripts/owner_pattern_audit.py",
@@ -986,8 +986,8 @@
     {
       "path": "templates/visual-review-template.md",
       "type": "file",
-      "size": 18159,
-      "sha256": "15416961147a422a902a3f1191a7852339389d9319aa175a80417cc806462033"
+      "size": 20093,
+      "sha256": "3f298b7a67239c85b57b77c97c561f6edf81fb46711becfd977932e9068bf720"
     },
     {
       "path": "tests",
@@ -1277,7 +1277,7 @@
       "path": "maintainer/attestations/test-attestation.json",
       "type": "file",
       "size": 155389,
-      "sha256": "4fadadf9b0ded64ef884751fe342adad7365297256ea4383203ea0fce74a6776"
+      "sha256": "747db8523d6076cb74b7703f60f82925d6ab92adea3e989066156a1ac2883683"
     },
     {
       "path": "maintainer/compatibility",
@@ -3335,7 +3335,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 38465,
-      "sha256": "105d7bf00a050f41f5645d00592adef15f525eef4b53860eb93303168278a3ca"
+      "sha256": "c3b38e498ce96160a4c8a7287fa47dcf80558510788492e7216b3cf87ff76e86"
     },
     {
       "path": "maintainer/schemas",
@@ -3958,8 +3958,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 38776,
-      "sha256": "9d4a23ad1658bf267d5ea132e78d08daf831d854273793eec310e7281ba742ab"
+      "size": 38942,
+      "sha256": "ee992a30f00b14dd26ca5ed19b7fa4dc4d9b644e6a4fd0c74e7afdab6433bfa9"
     },
     {
       "path": "skills/design-dna/agents",
@@ -4384,8 +4384,8 @@
     {
       "path": "skills/design-dna/references/quality/enterprise-candidate.md",
       "type": "file",
-      "size": 7252,
-      "sha256": "f808f05d3b6431c78e61b47f17fc3fe732e16a79e6fdc83fa5c67567681383dc"
+      "size": 7404,
+      "sha256": "ce7818557386b636276d4e3e547e8b1f75f27299fd849b45627202841607e0a9"
     },
     {
       "path": "skills/design-dna/references/quality/evaluation.md",
@@ -4462,8 +4462,8 @@
     {
       "path": "skills/design-dna/references/quality/public-copy-integrity.md",
       "type": "file",
-      "size": 5573,
-      "sha256": "d35345c47342047413c23ebf189fed842455225898f9fd535644e7048329d82c"
+      "size": 8236,
+      "sha256": "8cc233f54533fef78cf174d1feae3d03c13e6fc78af355ec668c715c862ca7cb"
     },
     {
       "path": "skills/design-dna/references/quality/render-comparison.md",
@@ -4672,8 +4672,8 @@
     {
       "path": "skills/design-dna/scripts/init_project_state.py",
       "type": "file",
-      "size": 535713,
-      "sha256": "c1cf33014eb063d3e5de98681d5fc6d4df4b3679002e9eb04d4e6a901e162d37"
+      "size": 536879,
+      "sha256": "a701abd8932ffafc025ea1ca287e5b5629080c42993adac284ee3c14b7ce5f18"
     },
     {
       "path": "skills/design-dna/scripts/owner_pattern_audit.py",
@@ -4912,8 +4912,8 @@
     {
       "path": "skills/design-dna/templates/visual-review-template.md",
       "type": "file",
-      "size": 18159,
-      "sha256": "15416961147a422a902a3f1191a7852339389d9319aa175a80417cc806462033"
+      "size": 20093,
+      "sha256": "3f298b7a67239c85b57b77c97c561f6edf81fb46711becfd977932e9068bf720"
     },
     {
       "path": "skills/design-dna/tests",

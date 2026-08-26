@@ -27,6 +27,21 @@ Do not compensate for missing source material by manufacturing a polished brand
 thesis. When a real voice is unavailable, a direct page title and useful
 supporting sentence are stronger than a fake signature line.
 
+## Build a copy map before prose fills the layout
+
+Before drafting the public candidate, make a private route-and-state copy map.
+For every visible copy unit, record its visitor job, the strongest permitted
+source or project anchor, the one point it must communicate, and the action or
+understanding that follows. Include navigation, headings, subheads, body copy,
+CTAs, cards, notices, forms, empty/error/success states, footer material,
+metadata, and alt text when present.
+
+The map is not customer-facing copy and does not need a fixed schema. It exists
+to prevent the common failure where a model writes a polished paragraph only
+because a hero, card, or split layout looks empty. If a layout has no genuine
+content for a text slot, remove or recompose the slot. Do not invent a brand
+belief, abstract promise, or explanatory paragraph to balance a composition.
+
 ## Give every prominent line an anchor
 
 A hero headline, subhead, section heading, CTA, banner, card title, empty
@@ -83,12 +98,41 @@ fragmentation, forced alliteration, a three-part abstract list, or deliberate
 awkwardness to simulate humanity. Let image, hierarchy, and pacing carry
 atmosphere when language has no useful additional work.
 
+## Control prose density in the rendered layout
+
+Do not use a paragraph as generic surface texture. Each visible block should
+advance one named thought with a clear relation to the adjacent heading, image,
+control, or decision. A block becomes a review failure when it tries to sell,
+explain a philosophy, reassure, summarize the category, and supply a CTA at
+once, or when several sentences repeat the same abstract point in different
+words.
+
+Review density in the actual render, not only in a text editor:
+
+- a hero or other first-screen support block should contain only the minimum
+  context needed to orient or move the visitor; it is not an about-page essay;
+- a card, collection, or product summary should expose the decision-relevant
+  distinction, not a miniature manifesto;
+- a body paragraph may be longer when the route is editorial, instructional,
+  legal, or support-oriented, but it still needs one coherent thought and a
+  readable measure;
+- when a block contains genuinely separate decisions, conditions, examples, or
+  steps, give those units a truthful structure such as separate paragraphs,
+  fields, a list, or linked detail—only when that structure reflects the
+  content; and
+- when the remaining text is only atmosphere or repetition, remove it rather
+  than chopping it into smaller blobs.
+
+There is no universal character, sentence, or paragraph-count limit. The test
+is whether a reader can name the point of the block, locate its consequence,
+and move on without feeling that the site is talking at them.
+
 ## Audit the actual rendered corpus
 
-Before preview, collect the final visible and accessible strings from the
-relevant routes and states. Review headings, subheads, CTAs, navigation,
-captions, card labels, notices, error/empty/success copy, metadata, and alt
-text in their rendered position. Check for:
+Before preview, collect the final visible and accessible strings from every
+public route and state in scope. Review headings, subheads, paragraphs, CTAs,
+navigation, captions, card labels, notices, error/empty/success copy, metadata,
+and alt text in their rendered position. Check for:
 
 - portable slogans, generic uplift, and abstract brand theater;
 - repeated rhetorical templates across unrelated route jobs;
@@ -99,15 +143,19 @@ text in their rendered position. Check for:
 - layout, wrapping, hierarchy, or label treatment that changes the copy's
   meaning or makes an ordinary line look like a slogan.
 
+For every paragraph-like block, record the one point it carries and whether its
+rendered density helps or hinders the route job. Do not declare a representative
+sample sufficient when the public site contains unreviewed text elsewhere.
+
 Fix the content model or writing cause, rerender every affected route/state,
 and repeat the three-line test. A copy rewrite on one page does not close a
 repeated brand-manifesto pattern across the route family.
 
 ## Closure
 
-Record the copy-integrity result in the Enterprise Candidate section of
-`visual-review.md`: source/voice basis, representative high-attention strings,
-three-line-test result, repeated-pattern result, rendered-corpus coverage,
+Record the copy-integrity result in the Public copy integrity closure of
+`visual-review.md`: source/voice basis, complete corpus coverage, high-attention
+three-line-test result, paragraph-density result, repeated-pattern result,
 changes made, remaining truth/approval limits, reviewer relationship, and
 disposition. Routine copy revision is autonomous; pause only when the next
 credible line depends on a missing factual, brand, cultural, legal, or owner

@@ -31,6 +31,7 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 - [First-impression and surface-fidelity review](#first-impression-and-surface-fidelity-review)
 - [Artifact credibility and cumulative-pattern review](#artifact-credibility-and-cumulative-pattern-review)
 - [Enterprise Candidate closure](#enterprise-candidate-closure-when-selected)
+- [Public copy integrity closure](#public-copy-integrity-closure-required-for-public-candidates)
 - [Connected public experience closure](#connected-public-experience-closure-when-selected)
 - [Preship and specificity closure](#preship-and-specificity-closure)
 - [Owner-pattern contract closure](#owner-pattern-contract-closure-when-selected)
@@ -149,6 +150,37 @@ actual candidate against the public reality the brief supports.
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Observation, root cause, and rerun result |
 | --- | --- | --- | --- |
 | Enterprise Candidate | applicable / not-applicable / blocked |  |  |
+
+## Public copy integrity closure (required for public candidates)
+
+Review the complete visible and accessible public corpus, not only a few hero
+lines. This is a source-led and rendered-density pass, not a phrase blacklist
+or a test of authorship. A small local site, a concept, and a global product
+surface may use different voices and lengths; each still needs wording that is
+truthful, visitor-useful, and proportionate to its route job.
+
+- Corpus coverage: every public route and relevant state; headings, subheads,
+  paragraphs, CTAs, navigation, captions, cards, notices, forms,
+  empty/error/success copy, metadata, and alt text accounted for.
+- Source and voice basis: approved language, factual anchor, category-native
+  context, or honestly provisional scenario boundary for each high-attention
+  unit.
+- High-attention copy: deletion, swap, and speaker result for every hero,
+  brand statement, prominent subhead, major CTA, and closing line.
+- Paragraph density: the one point carried by each paragraph-like block;
+  rendered line/measure result; any block removed, split, or recomposed because
+  it was filling layout space rather than helping the visitor.
+- Cross-route pattern: repeated slogan grammar, brand-manifesto cadence,
+  generic reassurance, over-explanation, or abstract filler result and the
+  shared content-model rewrite where needed.
+- Rendered validation: exact wide/narrow evidence showing wrapping, hierarchy,
+  salience, and the text-to-layout relationship after revision.
+- Public copy integrity disposition: keep / revise / reopen direction / reject /
+  blocked
+
+| Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Complete-corpus observation, root cause, and rerun result |
+| --- | --- | --- | --- |
+| Public copy integrity | applicable / not-applicable / blocked |  |  |
 
 ## Connected public experience closure (when selected)
 
