@@ -95,6 +95,7 @@
     "comparators": [
       {
         "id": "nearest-approved-surface",
+        "project_id": "nearest-approved-project",
         "relationship": "closest-sibling",
         "evidence": {
           "kind": "image",

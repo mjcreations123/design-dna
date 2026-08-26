@@ -1,6 +1,6 @@
 ---
 name: design-dna
-description: Builds, redesigns, polishes, and visually reviews websites and web UIs that must feel specific, time-appropriate, non-generic, and production-quality. Use for landing pages, multi-page range studies, place and community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, components, requests to avoid AI-looking, vibe-coded, templated, cookie-cutter, accidentally dated, or time-incongruent design, feedback that a result feels plain, boring, under-designed, too safe, or lacks visual energy, and complaints that fonts look bad, ugly, or unstyled, or that pages carry random decorative text, labels, or symbols that make no sense. Apply when art direction, design-system reasoning, content hierarchy, culturally central representation, responsive behavior, rendered visual quality, or typography materially matters; pair with specialist skills for deep security, SEO, legal, backend, deployment, or compliance work.
+description: Builds, redesigns, polishes, and visually reviews websites and web UIs that must feel specific, current, non-generic, and production-quality. Use for landing pages, multi-page sites, place and community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, and components; requests to avoid AI-looking, vibe-coded, templated, cookie-cutter, accidentally dated, or time-incongruent design; feedback that a result feels plain, boring, under-designed, too safe, or visually weak; complaints about ugly or unstyled typography; and public copy that sounds generic, robotic, over-explained, construction-facing, or littered with random decorative labels, micro-text, or symbols. Apply when art direction, visual systems, content hierarchy, culturally central representation, responsive behavior, rendered quality, copy voice, or typography materially matters. Pair with specialist skills for deep security, SEO, legal, backend, deployment, or compliance.
 ---
 
 # Design DNA
@@ -50,13 +50,31 @@ It closes only the ingredients it names, for that owner only; everything else
 stays open. If no such file exists, proceed without one and do not
 reconstruct its contents from memory.
 
+An owner record may reference the host-neutral machine contract at
+`~/.design-dna/owner-pattern-contract.json`. When that active contract applies,
+read it before direction selection and add the `owner-pattern-contract`
+initialization trigger beside any owner-required recurrence trigger. Its items
+must describe failed relationships rather than naked ingredients. Create and
+complete the project-local review through
+`scripts/owner_pattern_audit.py`; do not replace it with prose, a source scan,
+or an assurance that the result feels different. A contract-controlled failure
+must be dispositioned before broad implementation and proven absent against the
+exact final distinct wide and narrow full-page rendered evidence, with every
+capture bound to the same reviewed build. Missing, reused, pending, blocked, or
+contract-drifted evidence blocks the corresponding gate. This proves closure
+of the named owner failures only; it is not an AI detector or an authorship
+claim.
+
 ## Separate specificity from ambition
 
 One quality axis asks whether the work is project-specific rather than a
 reusable first draft. Another asks whether the chosen ambition is fully
-realized. A quiet information page can be more resolved than a cinematic
-showcase; a maximal composition can be more coherent than a minimal one.
-Neither richness nor restraint is the default.
+realized. A third asks whether the finished artifact is credible for the
+public reality it claims. A quiet information page can be more resolved than a
+cinematic showcase; a maximal composition can be more coherent than a minimal
+one. Neither richness nor restraint is the default, and distinctiveness does
+not compensate for theatricality, implausibility, or visitor-irrelevant design
+performance.
 
 Set energy, density, media, scale, motion, and surprise from the brief,
 audience, content, genre, owner preference, and production reality. Avoiding
@@ -102,19 +120,21 @@ Capability presets are cumulative; adding one cannot remove another:
 | Preset | Use when | Minimum |
 | --- | --- | --- |
 | Quick | Bounded repair in an established system, low risk. | Inspect context, preserve the system, implement changed states, run affected checks plus the preship gate on the touched surface. |
-| Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, full preship gate. |
+| Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, artifact-credibility review for a public proposition, full preship gate. |
+| Enterprise Candidate | Every fresh public website, unless the task is an explicitly bounded repair or non-public surface. | Standard plus category-appropriate public topology, intentional media/composition planning, fully considered key states, and a rendered wide/narrow review that must close obvious first-draft defects before preview. It does not claim a financial valuation, require an oversized scope, prescribe a style, or automatically select Showcase. |
 | Showcase | The brief expressly calls for premium, showcase, high-ambition work, or direction recovery after a rejected visual answer. | Research and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
 | Project Contrast | The owner says this work must differ from recent authorized work, says sites feel alike, or declares an owner-scoped recurrence requirement. | Before broad implementation, create a truthful `draft` record, settle it to `direction-ready` from grounded project evidence, challenge the first answer with an organizing alternative, and record why the selected encounter differs from the closest authorized comparator. Bind wide/narrow proof at `proof-ready`; only a reviewed record can support the comparison claim. This is not a font, color, or novelty quota. |
-| Direction Challenge | The owner explicitly activates a three-root recurrence escalation or expressly asks for a multi-root high-ambition greenfield concept challenge. A premium or high-ambition site alone remains Showcase. | Before broad implementation, record three or more incompatible brief-native roots before polished examples, bind two different roots to path-bound schema-3 wide/narrow rendered proof slices, choose one against an explicitly rendered rejected root, and freeze an independent unprimed view. The schema is review evidence, not a site architecture, style catalog, rotation schedule, or ingredient quota. |
+| Direction Challenge | The owner explicitly activates a three-root recurrence escalation or expressly asks for a multi-root high-ambition greenfield concept challenge. A premium or high-ambition site alone remains Showcase. | Before broad implementation, record three or more incompatible brief-native roots before polished examples, bind two different roots to path-bound schema-3 wide/narrow rendered proof slices, choose one against an explicitly rendered rejected root, freeze the independent unprimed view, advance the record to `reviewed`, and explicitly open its `broad-implementation` boundary. The schema is review evidence, not a site architecture, style catalog, rotation schedule, or ingredient quota. |
 | Range Study | A multi-route brief explicitly requiring meaningful creative range. | Shared foundations stay dependable; route-family record before scaling; proof routes chosen by uncertainty; matched route atlas review. |
 | Batch Study | A controlled evaluation of at least three unrelated website briefs. | Freeze independent briefs and source packets; record human-auditable implementation isolation; resolve capture and contact-sheet data handling for built cases; bind each capture to its rendered route, profile, exact public-build manifest, and capture mode; freeze capture-set-bound site observations before sibling output or diagnostics; record the neutral-label whole-system first observation only after those reviews are frozen; then record a later capture-set-bound human contextual disposition that closes material findings separately from protocol coverage; keep planned and correctly blocked cases separate. It is an evaluation method, not evidence that fictional specimens are a client-ready portfolio or a substitute for owner taste review. |
 | High-risk | Consequential transactions, identity, money, regulated claims. | Task, state, and specialist evidence first; visual ambition cannot waive a safety gate. |
-| Asset-led | Material imagery, fonts, media needing a durable record. | Per-asset provenance, rights, privacy, factual status, delivery, accessibility. |
+| Asset-led | Material imagery, fonts, or media need a durable record; also select it when a physical/sensory subject depends on recognizable material or the owner explicitly asks for photos or rich media. | Before broad implementation, bind at least one usable project-relevant asset and record its role, provenance, rights, factual status, privacy, responsive delivery, and accessibility. No global image count or genre is implied. |
 
 A fresh public-facing site that represents a business, product, organization,
-place, creator, or campaign normally begins at **Standard**, even when the
-brief says only "build a website." Complete Standard's full rendered and
-engineering review for the public candidate. Add **Showcase** only when the
+place, creator, or campaign begins at **Standard plus Enterprise Candidate**,
+even when the brief says only "build a website." Complete its full rendered,
+engineering, public-surface, and copy-integrity review for the candidate. Add
+**Showcase** only when the
 brief actually requests a premium, showcase, high-ambition answer or when a
 rejected visual direction needs recovery; public status or route count alone
 does not select it. This chooses process depth and does not choose a house
@@ -123,12 +143,29 @@ Showcase work without an approved rendered direction, load [taste
 calibration](references/craft/taste-calibration.md) before generating the
 first public surface.
 
+Read [Enterprise Candidate](references/quality/enterprise-candidate.md) before
+the first visual candidate. It is an execution-quality default for public work:
+derive the scale, content depth, media role, interaction coverage, and visual
+ambition from the actual brief. Do not turn it into a fake
+"enterprise" claim, a trillion-dollar fiction, a site-map quota, a one-size
+hero, or a brand/style recipe. Routine visual QA and root-cause refinement are
+part of the build, not approval checkpoints the owner must rediscover through
+repeated feedback.
+
 A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
 at least Standard plus [taste calibration](references/craft/taste-calibration.md),
 the convergence and specificity reviews. When the rejection reopens the visual
 premise, add Showcase as direction recovery; a contained defect that preserves
 the premise may remain Standard. A direct rejection of the visual answer
 reopens the direction before more pages or cosmetic polish are added.
+
+Bind a direct visual rejection to the exact candidate and record the scoped
+relationship cluster that failed: relevant type posture, CTA grammar, edge and
+container behavior, depth/effects, section rhythm, material/media absence, and
+public-copy behavior. Preserve facts, functions, integrations, and accepted
+decisions separately. Use that first-party rejection before generating the
+replacement; do not turn one failed cluster into a permanent global font,
+shape, shadow, color, or photography ban.
 
 Select **Project Contrast** when an owner says recent work feels alike, asks
 for this work to differ from recent authorized work, or has an owner-scoped
@@ -137,7 +174,12 @@ otherwise produces a reusable first draft: a brief-native anchor, an alternate
 organizing answer, an authorized nearest-sibling comparison when available,
 and a rendered collision test. It does not require every project to change
 every surface ingredient, and an inherited product or brand system may
-truthfully use the lighter exemption recorded in the contract.
+truthfully use the lighter exemption recorded in the contract. Read
+[visual-grammar variance](references/quality/visual-grammar-variance.md) when
+the complaint concerns the same hero, type posture, CTA treatment, containers,
+background panels, underlines, route rhythm, or mobile collapse. Compare the
+candidate with actual authorized output; whether the same layout could
+theoretically suit another industry is not the test.
 
 Escalate to **Direction Challenge** only when the owner explicitly activates
 the three-root recurrence escalation or expressly requests a multi-root
@@ -199,6 +241,14 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   generated concept media, data, objects, or type-led treatment actually
   conveys it. Missing supplied photography is an input gap to resolve, not an
   automatic instruction either to omit imagery or to manufacture a photo.
+  Standard-or-stronger work records that decision in the direction record's
+  `Material, media, and public-copy boundary`. Select Asset-led when the
+  physical/sensory subject requires recognizable material or the owner asks
+  for photos/rich media. Before broad implementation, `.design-dna/assets.yml`
+  must contain a usable bound asset; “no photos were supplied” cannot serve as
+  the project's media-light rationale. A physical/sensory media-light exception
+  must explain the specific visitor or truth benefit and record explicit
+  owner/client approval with an ISO date.
 - Every visible string passes the
   [parseable-text](references/quality/parseable-text.md) gate. Keep
   customer-facing copy relevant to the customer's subject or task. Do not
@@ -206,6 +256,13 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   system theater as visitor content. Truthful operational status, technical
   detail, or atmosphere remains valid when the audience needs it and its
   meaning is clear.
+- For Standard-or-stronger public builds, read
+  [Public copy integrity](references/quality/public-copy-integrity.md) before
+  drafting prominent public language and close it in the final Enterprise
+  Candidate review. A slogan, headline, or brand statement must earn its place
+  through an approved voice or a concrete project/category/visitor anchor;
+  do not manufacture a polished brand thesis merely because the draft needs a
+  line above an image.
 - Treat an owner's explanation of why a design choice fits as internal
   direction, not customer-facing copy. Do not turn a design rationale, producer
   note, project record, workflow stage, internal-only state, content-model or
@@ -225,14 +282,29 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   hierarchy and copy rule, not a ban on the treatment itself; use
   [parseable text](references/quality/parseable-text.md) and
   [content IA](references/craft/content-ia.md) to review the relationship.
-- For every new or materially redesigned website, resolve the fifteen
-  [launch-completeness](references/quality/launch-completeness.md) decisions
-  before delivery. Each one is included, intentionally not applicable, or
-  blocked with an owner action; do not manufacture a CTA, FAQ, promise,
-  location, policy, tracker, or promotion merely to fill a row.
+- When an actual public launch or delivery scope introduces discovery,
+  conversion, contact, transaction, location, policy, measurement, or promotion
+  decisions, load [launch completeness](references/quality/launch-completeness.md)
+  after the direction exists and record only the relevant families. Do not make
+  a fifteen-row marketing inventory the default input to every new design or
+  manufacture a CTA, FAQ, promise, location, policy, tracker, or promotion.
 - Size and prominence follow the intended encounter. The dominant element
   should support the visitor's first question, task, invitation, or deliberate
   point of tension; no universal type-size ordering applies.
+- Review visual intensity and repeated devices across the whole rendered route
+  and route family, not only one section at a time. A device may succeed once
+  and become an unsupported producer fingerprint when every section repeats
+  its scale, color field, border, numbering, card, crop, CTA, motion, or copy
+  cadence. Do not require quietness or ban expressive ingredients; revise the
+  cumulative relationship when the artifact makes every ordinary content job
+  perform as a showcase moment.
+- When an applicable active owner-pattern contract exists, treat every item as
+  the precisely defined failure state in that contract—not as a trend-list
+  ingredient or an invitation to build the opposite template. Record all
+  direction dispositions as `controlled` before scaling the route family and
+  all final dispositions as `absent` before completion. A meaningful instance
+  of an ingredient does not satisfy a failure definition; an agent's claim that
+  an unexplained instance is “intentional” does not clear it.
 - Verify by seeing: code inspection cannot establish rendered craft. Save and
   inspect project-relevant rendered evidence across the widths, states, and
   preferences that can change the conclusion - normally including wide and
@@ -258,7 +330,9 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   select a nonempty project-derived axis set that includes an encounter axis and
   a surface-language axis, then write a project-specific structural/encounter
   prompt and surface-language prompt. Neither is a list of ingredients that
-  must differ. If an authorized nearest sibling remains close after noun,
+  must differ. A same-project rejected candidate is useful rejection evidence,
+  but it cannot replace the authorized cross-project closest sibling required
+  to test recurrence among unrelated builds. If that nearest sibling remains close after noun,
   dominant-media, accent, and motion removal, reopen the earliest shared
   organizing decision rather than rotate a font, palette, effect, or shape.
 - When Direction Challenge is active, record three or more roots before
@@ -284,6 +358,27 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   cannot self-certify cultural acceptance.
 - Direct owner rejection or observed user confusion reopens the affected
   work until the revised result is rendered and reviewed again.
+- For a substantial public build, complete the
+  [artifact credibility and cumulative-pattern review](references/quality/artifact-credibility.md)
+  on final wide and narrow captures. Ask whether the site plausibly operates
+  for its claimed audience, whether business/category reality survives without
+  the maker's rationale, and whether media, copy, typography, and recurring
+  visual machinery feel specific rather than staged. When recurrence is in
+  scope, separately audit container/backplate logic and link/button/underline
+  affordance across the whole route; do not infer a pass from changed colors,
+  fonts, images, or industry nouns. Producer self-review may guide revision but
+  cannot be relabeled as independent review, target-user validation, owner
+  acceptance, or proof of authorship.
+- When Enterprise Candidate is active, record its closure in the final
+  visual-review record using the accompanying template section. Before any
+  user-facing readiness claim, inspect the exact wide and narrow rendered
+  candidate for public-surface credibility, first-screen composition,
+  media-to-slot fit, key interaction/state finish, public-copy integrity, and
+  the affected route family's shared geometry. An observed blank composition,
+  unintended crop, off-screen opening content, broken state, first-draft
+  residue, or generic brand-manifesto pattern reopens the source relationship
+  across that family; do not patch one screenshot or sentence and call the site
+  finished.
 
 ## Start direction progressively
 
@@ -307,14 +402,45 @@ implementation, rendered revision, user validation, or delivery. The workflow
 retains the detailed requirements for each phase and the project-local records
 that make a consequential decision reviewable.
 
+Before writing the full route family or propagating the selected visual system,
+run the executable phase gate:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_pattern_audit.py" "<PROJECT_ROOT>" --init-review
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
+```
+
+Run the first command only when an applicable owner-pattern contract exists,
+and run it once: it refuses to overwrite an existing review. Complete the
+generated direction lane before the prebuild check. When the
+`owner-pattern-contract` trigger is active, the prebuild gate invokes the audit
+and fails closed on a missing, incomplete, or drifted review.
+
+A nonzero result blocks broad implementation. The selected direction-stage
+Markdown records must be hash-bound and `complete`; capability-only state,
+untouched Range/Batch scaffolds, and draft records cannot pass. Close the cited
+direction, material/media, Project Contrast, Direction Challenge, and proof gaps; do not
+continue because the app compiles, a renderer emitted pixels, or the agent
+intends to complete the records later. Small proof slices needed to satisfy the
+gate remain allowed and must stay visibly separate from accepted public work.
+
 Selection never waives the later gates. Standard-or-stronger work still needs
 the final rendered and engineering review, the [adversarial specificity
-review](references/quality/specificity-review.md), and the applicable
+review](references/quality/specificity-review.md), the [artifact credibility
+review](references/quality/artifact-credibility.md) for a public proposition,
+and the applicable
 [preship gate](templates/preship-gate.md). Project Contrast and Direction
 Challenge still require their project-local records and final proof boundaries;
 Batch Study still reaches command success only at `final_ready`. Ask only
 high-leverage concept questions whose answers would materially change
 direction; otherwise decide and note the basis.
+
+Freeze an unprimed first impression before revealing the rationale; record the
+perceived category, stakes, and next action only as project-situated evidence.
+Then reconcile every concrete consequential direction commitment against an
+exact rendered or behavioral condition. Missing or partial consequential work
+reopens the affected completion claim; prose confidence and build success do
+not substitute for the artifact.
 
 ## Load guidance only for the decision now
 
@@ -329,81 +455,9 @@ prompt: the work starts being assembled to dodge a list instead of to answer
 the brief, which is the mechanism that produces something safe, generic, and
 already covered by [the two axes](#separate-specificity-from-ambition).
 
-| Decision or risk now | Load |
-| --- | --- |
-| Any build or revision nearing done | [Preship gate](templates/preship-gate.md); it is mandatory, not optional. |
-| Type selection, font loading, display emphasis, "fonts look bad" | [Typography](references/craft/typography.md), including project-derived selection, spacing, delivery, and the applicable rendered-font verification branch. |
-| A pre-heading label, eyebrow, kicker, HUD text, "random text," copy texture, a status/connection/live indicator, implementation or system detail on the page | [Parseable text](references/quality/parseable-text.md). A smaller line must contribute information the adjacent heading/content does not; do not add it as default scaffolding. |
-| A public heading, label, category, caption, navigation item, or explanation may expose the producer's rationale, workflow, project records, or internal system/data-model terms | [Parseable text](references/quality/parseable-text.md) and [Content and IA](references/craft/content-ia.md). Treat the private explanation as direction input, then publish only a real visitor-facing fact, task, consequence, or explicitly requested explanation. |
-| Fiction/demo/unavailable/generated-media status that repeats, competes with the subject, or dominates direct entry | [Microcopy](references/craft/microcopy.md) for an evidence-backed boundary map: clear context-free orientation plus only claim- or action-local status whose consequence differs, with [Content discovery](references/quality/content-discovery.md) for the underlying truth boundary. |
-| Authorized studio-history comparison; avoiding self-repetition | [Ledger](references/quality/ledger.md). Do not search or invent history when comparison is not authorized. |
-| "All sites feel the same," "make this unlike prior work," repeated studio grammar, or an owner-scoped recurrence requirement | [Project Contrast](references/quality/project-contrast.md) before direction selection; use [Direction Challenge](references/quality/direction-challenge.md) only when the owner explicitly escalates recurrence or requests a multi-root high-ambition greenfield concept challenge—not merely a premium or ambitious website. Then use [creative exploration](references/craft/creative-exploration.md) for the alternate organizing answer and the [convergence review](references/convergence-watch.md) only after an unprimed render exists. |
-| Controlled comparison of three or more unrelated sites | [Batch Study evaluation](references/quality/batch-range-evaluation.md); activate Batch Study before building the cases, freeze an [unprimed site observation](templates/batch-site-observation-template.md) for each, complete the [neutral-label whole-system review](templates/batch-whole-system-review-template.md), then record the separate [human contextual disposition](templates/batch-human-contextual-disposition-template.md). |
-| Missing, sparse, or contradictory project material; fictional, sample, demo, or prototype identity or scenario content | [Content discovery](references/quality/content-discovery.md), including the identity-to-fixture fit check even when the material appears plentiful. |
-| New direction, redesign, "generic," or "dated" | [Art direction](references/craft/art-direction.md); optionally [decision case studies](references/decision-case-studies.md). |
-| "Ugly," "bad taste," "this is not actually good," "looks like a design exercise," previous visual rejection, or an owner-sensitive public sample | [Taste calibration](references/craft/taste-calibration.md), then [art direction](references/craft/art-direction.md). This is a direction-recovery path, not a font, palette, or effect swap. |
-| Open brief, greenfield direction, materially different options | [Creative exploration](references/craft/creative-exploration.md), then [art direction](references/craft/art-direction.md). |
-| "Make it impressive," premium, showcase, "too plain," "boring" | [Creative freedom](references/creative-freedom.md), [creative exploration](references/craft/creative-exploration.md), [expression and energy](references/craft/expression-energy.md); revision verbs via [design tuning passes](references/craft/design-tuning-passes.md); [finish and polish](references/quality/finish-polish.md) after direction works. |
-| First complete render or observed durable defect | Unprimed observation ([specificity review, "Observe before diagnosing"](references/quality/specificity-review.md)), then the [risk rubric](references/risk-rubric.md). |
-| Explicit AI-looking, vibe-coded, templated, house-style concern | Direction from project evidence first; after a render, the [convergence review](references/convergence-watch.md) with the dated [observed default basins](references/quality/default-basins.md) as its frequency evidence; close with the [specificity review](references/quality/specificity-review.md). |
-| Client-supplied mockup, Figma export, screenshot, or artwork the build must reproduce | [Supplied-artwork fidelity](references/quality/artwork-fidelity.md): extraction before building, the anti-drift contract, and rendered build-versus-reference proof. Direction machinery stands down for the covered surface. |
-| Redesign of a live site with existing users, rankings, links, or integrations | [Redesign contract](references/flows/redesign.md): audit first, what never changes silently, search continuity, and the intervention-depth decision. |
-| Loading, submitting, saving, skeleton, optimistic, undo, empty, or other in-between states | [Feedback and waiting states](references/craft/feedback-states.md); [Microcopy](references/craft/microcopy.md) for the words. |
-| Palette, depth, composition | [Color and composition](references/craft/color-composition.md). |
-| Dark mode, a second colour scheme, a theme toggle | [Dual themes and dark mode](references/craft/theming-dark-mode.md): derive rather than invert, and both schemes are separate deliverables. |
-| Grid, grouping, rhythm, density | [Layout and density](references/craft/layout-density.md). |
-| Routes, navigation, headings, actions, content states | [Content and IA](references/craft/content-ia.md). |
-| Detailed, connected, customer-facing, app-like, or client-demonstration experience; linked public content/state | [Connected public experience](references/quality/connected-public-experience.md) before the first public encounter; select its explicit evidence capability and then load the smallest applicable category or flow reference. This is not an admin, backend, page-count, or fake-integration requirement. |
-| Requested staff/admin back office paired with a public experience | [Connected public experience](references/quality/connected-public-experience.md) for the public/back-office split, then [Operate mode](references/modes/operate.md) for the staff task. Use approved, sandbox, or clearly local non-empty fixture state; do not add an empty fake admin. |
-| Buttons, errors, empty states, confirmations, labels, any small functional string | [Microcopy](references/craft/microcopy.md). |
-| Public-site CTA, FAQ, response/delivery promise, success state, sticky compact action, metadata, robots, social card, directions, alternatives, policy, GA4, USP, or promotion | [Website launch completeness](references/quality/launch-completeness.md). |
-| Multi-route public build with routes whose jobs, material, or sequence may differ | [Route-family art direction](references/craft/route-family-art-direction.md) before templating bodies; activate Range Study only for an explicit anthology, expressive-range, or capability-range claim. |
-| Photography, generated media, illustration, external assets | [Imagery](references/craft/imagery-illustration.md) and [asset integrity](references/quality/asset-integrity.md). |
-| Icons or pictograms | [Iconography](references/craft/iconography.md). |
-| Motion, scrolling, transitions, direct interaction | [Motion and interaction](references/craft/motion-interaction.md). |
-| Multi-device or public surface | [Responsive adaptation](references/craft/responsive-adaptation.md). |
-| Components, tokens, themes, libraries, handoff | [Systems and components](references/craft/systems-components.md); [handoff record](templates/handoff-template.md) when maintained; a client-facing [DESIGN.md handoff record](templates/design-handoff-template.md) in the delivered repository so post-transfer edits stay on-system. |
-| Brand identity, campaign, recognition across surfaces | [Brand systems](references/craft/brand-systems.md). |
-| Proof drifting during implementation | [Proof-to-build fidelity](references/quality/proof-to-build-fidelity.md) and its [delta ledger](templates/proof-build-delta-template.md). |
-| Figma, Storybook, token pipelines, motion tooling | [Tooling adapters](references/quality/tooling-adapters.md); [design-context capsule](templates/design-context-capsule-template.md) for compiled evidence. |
-| Chart, map, metric, comparison, topology, process drawing, or other content-bearing explanatory diagram | [Data visualization](references/craft/data-visualization.md) with [responsive adaptation](references/craft/responsive-adaptation.md) when conditions change. |
-| Address, venue, directions, wayfinding | [Location and wayfinding](references/craft/location-wayfinding.md). |
-| Signup, auth, onboarding, account | [Identity and onboarding](references/flows/identity-account-onboarding.md). |
-| Plans, invoices, renewals, cancellations | [Subscription and billing](references/flows/subscription-billing.md). |
-| Inbox, chat, notifications | [Messaging and notifications](references/flows/messaging-notifications.md). |
-| Chat, assistant, copilot, generated-answer or streaming surface | [Conversational interfaces](references/flows/conversational-interfaces.md): the streaming contract, honest rendering of model output, provenance, and contextual failure modes. |
-| Receipt, reset, confirmation, digest, campaign: the deliverable is an email | [Email as a medium](references/craft/email-design.md). |
-| Multi-step forms, consequential transactions | [Complex forms](references/flows/forms-complex-transactions.md). |
-| Cross-channel journeys, service handoffs | [Service journeys](references/flows/service-journey-handoffs.md); [service blueprint](templates/service-blueprint-template.md) when complex. |
-| Support, complaints, disputes, appeals | [Support flows](references/flows/support-complaints-appeals.md). |
-| Consent, permissions, personal data | [Privacy and consent](references/flows/privacy-consent-permissions.md). |
-| Software or SaaS continuity | [Software products](references/verticals/software-product.md). |
-| Place- or service-based business | [Local business](references/verticals/local-business.md). |
-| Community or civic publication | [Place and community publications](references/verticals/place-community-publication.md); add [cultural-context review](references/quality/cultural-context-review.md) when identity is central. |
-| Catalog, cart, checkout | [Ecommerce](references/verticals/ecommerce.md). |
-| Publication or information product | [Editorial publishing](references/verticals/editorial-publishing.md) and [editorial art direction](references/craft/editorial-art-direction.md). |
-| Portfolio or case studies | [Portfolio](references/verticals/portfolio-case-studies.md). |
-| Marketplace or community | [Marketplace and community](references/verticals/marketplace-community.md). |
-| Travel, ticketing, reservations | [Travel and reservations](references/verticals/travel-reservations.md). |
-| Nonprofit, campaign, donations | [Nonprofit and fundraising](references/verticals/nonprofit-fundraising.md). |
-| Courses, schools, credentials | [Education](references/verticals/education.md). |
-| Writing or reviewing shipped HTML, CSS, and JavaScript | [Implementation integrity](references/quality/implementation-integrity.md), especially its silent-defeat list before trusting that any declaration applied. |
-| Public or interactive implementation | [Accessibility baseline](references/quality/accessibility-baseline.md). |
-| Runtime cost, media weight, third parties | [Performance](references/quality/performance.md). |
-| Locales, translation, RTL | [Localization](references/quality/localization.md). |
-| Research, analytics, user evidence | [Research and validation](references/quality/research-user-validation.md); [design-partner cadence](references/quality/design-partner-cadence.md) for durable products. |
-| Critique, heuristic or perception review | [Critique and expert review](references/quality/critique-and-expert-review.md); [expressive perception template](templates/expressive-perception-template.md). |
-| Private previews, screenshots, evaluation data | [Review data handling](references/quality/data-handling.md). |
-| Promoting, corroborating, or retiring a risk rule | [Evidence policy](references/evidence.md): source types, the corroboration bar, review intervals, and what never proves generated authorship. |
-| Classifying a review finding | [Review severity](references/quality/review-severity.md). |
-| Baseline-versus-candidate screenshot evidence | [Rendered comparison](references/quality/render-comparison.md). |
-| Capturing or probing a page for the gate | [Render harness](references/quality/render-harness.md): the shipped Playwright capture boundary, project-declared scenarios, capture limitations, and separate manual or specialist measurements. |
-| Scoped completion | [Engineering verification](references/quality/engineering-verification.md) and [evaluation](references/quality/evaluation.md). |
-| Production, launch, deployment claims | [Production readiness](references/quality/production-readiness.md) and every applicable specialist gate. |
-
-Load [Claude behavior](references/platform-claude.md) or
-[Codex behavior](references/platform-codex.md) only when host capability or
-installation is uncertain.
+Open the [decision router](references/router.md) when a concrete decision or
+risk arrives. Read the matching row and only the references it names; do not
+scan every row as a generation prompt. Return here after the decision closes.
 
 ## Coordinate specialists
 
@@ -428,41 +482,19 @@ claims, public indexing, and production operations require the applicable
 specialist review or an explicit `unverified` release block.
 
 Create only useful evidence records with `scripts/init_project_state.py`.
-Templates: [taste calibration](templates/taste-calibration-template.md),
-[exploration](templates/exploration-template.md),
-[direction](templates/direction-template.md),
-[project contrast](templates/project-contrast-template.json),
-[direction challenge](templates/direction-challenge-template.json),
-[connected public experience](templates/connected-public-experience-template.json),
-[route family](templates/route-family-template.json),
-[batch study](templates/batch-range-template.json),
-[batch site observation](templates/batch-site-observation-template.md),
-[batch whole-system review](templates/batch-whole-system-review-template.md),
-[batch human contextual disposition](templates/batch-human-contextual-disposition-template.md),
-[direction proof](templates/direction-proof-template.md),
-[visual review](templates/visual-review-template.md),
-[expressive perception](templates/expressive-perception-template.md),
-[proof-to-build delta](templates/proof-build-delta-template.md),
-[design-context capsule](templates/design-context-capsule-template.md),
-[motion asset contract](templates/motion-asset-contract-template.md),
-[state matrix](templates/state-matrix.example.yml),
-[service blueprint](templates/service-blueprint-template.md),
-[claims](templates/claim-ledger-template.md),
-[assets](templates/asset-manifest.yml) and
-[complete example](templates/asset-manifest.example.yml),
-[user validation](templates/user-validation-template.md),
-[handoff](templates/handoff-template.md),
-[client DESIGN.md handoff](templates/design-handoff-template.md),
-[launch completeness](templates/launch-completeness-template.md),
-[scan allowlist](templates/scan-allowlist.json),
-[placeholder register](templates/placeholder-register-template.md),
-[studio ledger](templates/ledger-template.md), and the
-[preship gate](templates/preship-gate.md). The
-[owner-policy example](templates/owner-policy.example.yml) is opt-in
-governance; follow [owner-policy onboarding](references/owner-policy.md).
-Keep mutable records project-local with their stated privacy
-classification; run the initializer's `--check-ready` gate before claiming
-records satisfy the selected capabilities.
+The relevant workflow phase names its project-local record and template;
+do not create the full catalog for every project. Keep mutable records
+project-local with their stated privacy classification, follow
+[owner-policy onboarding](references/owner-policy.md) only when that opt-in
+governance applies, and run the initializer's `--check-ready` gate before
+claiming records satisfy the selected capabilities. The
+[preship gate](templates/preship-gate.md) remains the final cross-project
+record.
+
+`--check-prebuild` and `--check-ready` answer different claims. Prebuild is the
+permission boundary before full-route implementation; readiness is the final
+evidence boundary after implementation and review. Passing either never supplies
+an automatic aesthetic judgment.
 
 For Showcase, complete `taste-calibration.md` as an evidence record, not a
 private moodboard: name a retrieval-dated reference dossier, hash-bind the
@@ -485,11 +517,32 @@ remain migratable and must be honestly reopened where new final-build evidence
 was never recorded. When a reviewed Direction Challenge proof build differs
 from the final reviewed build, bind the hash-checked proof-to-build delta ledger
 with the changed decisions before readiness can be claimed.
+The completed visual-review build is the canonical final identity: a completed
+Connected Public Experience closure, every verified final continuity capture,
+and any concrete Project Contrast candidate or verified capture set must name
+that exact build. `--check-ready` fails closed on cross-record drift even when
+each evidence lane is otherwise internally valid. Earlier user research may
+truthfully bind a prototype; do not relabel it as final-build validation.
+When the `owner-pattern-contract` trigger is active, readiness also requires
+the matching project-local owner-pattern review to bind that same visual-review
+build and a distinct wide plus narrow full-page PNG pair for every contract
+failure state.
 
-If Python 3.10+ or another capability is unavailable, perform the safe
-manual equivalent, name the checks not run, and do not broaden the result.
-The scanner supplies bounded source-review prompts; the rendered proofs in
-the preship gate are never replaced by it.
+When Enterprise Candidate is active, the same exact reviewed build must also
+close the Enterprise Candidate section of `visual-review.md`. A clean build,
+successful route status, or an agent's confidence cannot replace the required
+rendered observations. The owner need not approve ordinary polish iterations;
+ask only when a missing business, brand, cultural, truth, or delivery decision
+would materially change the candidate.
+
+If Python 3.10+ or another capability is unavailable, perform every safe
+manual equivalent that still answers the claim, name the checks not run, and
+do not broaden the result. A manual visual review may improve and accurately
+describe an agent-reviewed candidate; it does not fabricate the package's
+schema-3 renderer record or close a formal readiness gate that explicitly
+requires that record. Keep working through the remaining safe phases and label
+only the blocked proof. The scanner supplies bounded source-review prompts;
+the rendered proofs in the preship gate are never replaced by it.
 
 ## The gate, restated
 

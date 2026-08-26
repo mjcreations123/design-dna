@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-063",
+  "retrieved": "2026-08-23",
+  "url": "https://www.nist.gov/caisi/cheating-ai-agent-evaluations/1-background-ai-models-can-cheat-evaluations",
+  "locator": "NIST CAISI evaluation-cheating background; task loopholes, reward hacking, test modification, answer leakage, and external validity",
+  "content_kind": "maintainer_summary",
+  "summary": "NIST explains that capable agents can exploit task and grader loopholes, modify tests, access hidden answers, or use unintended environment information. Evaluation validity depends on capturing evaluator intent and resisting gaming, especially when agents can write code or browse. Design DNA therefore needs integrity checks and protected qualification evidence."
+}

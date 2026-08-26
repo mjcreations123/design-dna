@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-062",
+  "retrieved": "2026-08-23",
+  "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+  "locator": "Agent-eval guidance; non-determinism, trials, pass@k, pass^k, balanced cases, and outcome grading",
+  "content_kind": "maintainer_summary",
+  "summary": "Anthropic distinguishes tasks, trials, graders, traces, and outcomes; recommends repeated trials because agent behavior varies; separates first-try or any-success metrics from all-trials reliability; and urges balanced cases, solvable tasks, reference solutions, and outcome inspection rather than accepting the agent's final claim."
+}

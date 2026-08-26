@@ -1,7 +1,9 @@
 # Content, information architecture, and copy
 
 Use this when shaping navigation, page sequence, labels, calls to action, or
-user-facing language.
+user-facing language. Use [public copy and voice](public-copy.md) for longer
+headings and body copy that must preserve a project voice without falling into
+portable producer patterns.
 
 ## Contents
 
@@ -23,12 +25,16 @@ user-facing language.
 7. When a material entity, selection, or decision crosses routes, state what
    carries, what intentionally resets, what direct entry needs to reconstruct,
    and why that relationship helps the visitor.
-8. Put shareable state in the address: a filter, tab, page, variant, or
-   expanded view a visitor might bookmark, share, or return to belongs in
-   the URL, so the link reproduces what they were looking at. Navigation
-   uses real links (open-in-new-tab and middle-click must work), and
-   history back restores position and state; Back is part of the
-   interface, not an afterthought.
+8. Give stable, non-sensitive, permission-safe state a reproducible address
+   when deep linking genuinely helps: a public filter, tab, page, or variant
+   may belong in the URL, while transient interaction, private activity, and
+   access-controlled state may belong in history, session, or application
+   state instead. Never place a secret, token, personal datum, draft value, or
+   sensitive selection in a URL merely for convenience; addresses can persist
+   in history, logs, analytics, screenshots, and referrers. Navigation between
+   documents uses real links when their semantics fit (including open-in-new-
+   tab and middle-click), and Back restores the user-meaningful position and
+   state promised by the chosen navigation model.
 
 Do not invent history, metrics, testimonials, customers, availability, features,
 policies, locations, prices, or integrations. Label demo and placeholder
@@ -85,6 +91,8 @@ cycle distinct from the completion or success condition.
 Review promises, superlatives, rhetorical patterns, actions, and explanations
 as a system. Preserve intentional supplied voice; revise unsupported claims,
 ambiguity, or repeated producer grammar rather than banning a sentence shape.
+For a substantial public copy pass, apply [public copy and
+voice](public-copy.md) after the information model and facts are settled.
 
 ### Establish voice, tone, and terminology
 
@@ -150,8 +158,9 @@ navigation levels, calls to action, states, or reviewers that do not apply.
 - **Truth:** Trace every factual claim and item of proof to a source or explicit
   placeholder.
 - **Task:** Confirm each page answers the question implied by its entry point.
-- **Voice:** Mark repeated rhetorical constructions and remove copy that could
-  move unchanged to an unrelated site without adding fake roughness or errors.
+- **Voice:** Mark repeated rhetorical constructions, unsupported broad
+  reassurance, and copy that fails to reflect this project's facts, audience,
+  task, or approved voice. Do not add fake roughness or errors.
 - **Stress:** Test long, short, missing, translated, and user-generated content.
 - **Access:** Check descriptive link text, heading order, instructions, errors,
   and pronunciation-sensitive text.

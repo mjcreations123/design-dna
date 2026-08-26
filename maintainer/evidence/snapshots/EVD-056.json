@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-056",
+  "retrieved": "2026-08-23",
+  "url": "https://developer.mozilla.org/en-US/docs/Glossary/Baseline/Compatibility",
+  "locator": "MDN Baseline compatibility glossary, last modified 2026-08-17; MDN testing strategy consulted for project-specific support matrices",
+  "content_kind": "maintainer_summary",
+  "summary": "MDN describes Baseline as a current summary of web-feature availability across major desktop and mobile browsers and explicitly says it does not replace accessibility, usability, performance, security, older-device, web-view, or assistive-technology testing. Design DNA uses it for feature screening while requiring a project-specific browser, engine, OS, and real-device support contract."
+}

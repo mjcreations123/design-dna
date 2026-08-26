@@ -1263,6 +1263,23 @@ def atomic_write_json(path: Path, payload: object) -> None:
         raise
 
 
+def require_new_attestation_output(path: Path) -> None:
+    """Fail before test execution when an immutable record already exists."""
+
+    path = absolute(path)
+    assert_no_reparse_path(path)
+    assert_no_reparse_path(path.parent)
+    if path.exists():
+        raise ToolFailure(
+            "test-attestation-exists",
+            (
+                "Attestations are immutable; deliberately remove or archive "
+                "the superseded candidate record before generating a new one."
+            ),
+            path,
+        )
+
+
 def main() -> int:
     try:
         require_authoritative_isolation()
@@ -1305,6 +1322,7 @@ def main() -> int:
                 "The attestation output must be outside its hashed inputs.",
                 output,
             )
+        require_new_attestation_output(output)
         record = create_attestation(
             plugin_root,
             skip_waiver_path=args.skip_waiver_file,

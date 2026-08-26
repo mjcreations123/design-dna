@@ -1,8 +1,10 @@
 # Launch completeness record
 
-Use this for every new or materially redesigned website. Bind it to the exact
-candidate and resolve all fifteen rows before delivery. For a bounded Quick
-repair, retain the affected rows and note why the rest are inherited.
+Use this only when the project has an applicable public launch or delivery
+decision family. Bind it to the exact candidate, keep the relevant or changed
+rows, and delete untouched categories rather than manufacturing fifteen
+not-applicable answers. A bounded repair retains the affected and intentionally
+inherited rows.
 
 ## Scope
 
@@ -18,30 +20,22 @@ repair, retain the affected rows and note why the rest are inherited.
 
 ## Decision record
 
-Use one status per row: **included**, **not applicable**, or **blocked**.
+Delete rows that were never in scope. For each retained row, use one status:
+**included**, **not applicable**, or **blocked**.
 For `included`, record both (1) the actual visitor condition and check and (2)
 the factual, legal, operational, or owner authority that supports it. For `not
 applicable`, explain the project reason; a concept or demo with no real
 transaction may truthfully use it for transactional rows. For `blocked`, name
 the missing owner input and the claim or behavior that must remain unavailable.
 
-| # | Launch decision | Status | Visitor condition, exact implementation, and final check | Factual / operational authority, owner input, and retrieval or review date |
-| --- | --- | --- | --- | --- |
-| 1 | Primary above-fold action |  |  |  |
-| 2 | FAQ or decision-blocking questions |  |  |  |
-| 3 | Response or delivery expectation |  |  |  |
-| 4 | Success / thank-you state |  |  |  |
-| 5 | Sticky or persistent compact-screen action |  |  |  |
-| 6 | `robots.txt`, robots meta, sitemap/canonical policy |  |  |  |
-| 7 | Unique meta descriptions for indexable routes |  |  |  |
-| 8 | Unique page titles for direct-entry routes |  |  |  |
-| 9 | Social sharing image and metadata |  |  |  |
-| 10 | Map and directions |  |  |  |
-| 11 | Alt text and other text alternatives |  |  |  |
-| 12 | Privacy / policy pages and notices |  |  |  |
-| 13 | GA4 / analytics authorization and behavior |  |  |  |
-| 14 | USP, proof, or decision-cue treatment |  |  |  |
-| 15 | Approved DM / social bonus or promotion path |  |  |  |
+Consult the decision-family reference, then copy the row below only for a
+family that is actually applicable, changed, or deliberately inherited. The
+template does not enumerate the full library because its unused categories
+must not become a generation checklist.
+
+| Launch decision | Status | Visitor condition, exact implementation, and final check | Factual / operational authority, owner input, and retrieval or review date |
+| --- | --- | --- | --- |
+| Selected family and exact project decision | included / not applicable / blocked |  |  |
 
 ## Result
 

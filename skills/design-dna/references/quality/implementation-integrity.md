@@ -15,7 +15,8 @@ correct in source did nothing in the browser.
 - [Silent defeat](#silent-defeat-valid-code-that-does-nothing)
 - [Let structure carry the meaning](#let-structure-carry-the-meaning)
 - [The cascade is a contract](#the-cascade-is-a-contract)
-- [JavaScript enhances and never gates](#javascript-enhances-and-never-gates)
+- [Make script dependency intentional](#make-script-dependency-intentional)
+- [Preserve evidence through typed code](#preserve-evidence-through-typed-code)
 - [Remove the residue](#remove-the-residue)
 - [Comments that earn their line](#comments-that-earn-their-line)
 - [Before calling implementation done](#before-calling-implementation-done)
@@ -43,31 +44,40 @@ which announces itself. It is the declaration that parses, validates,
 survives every linter, and is inert. These are the observed cases; each
 one shipped or nearly shipped in real work.
 
-- **`aspect-ratio` defeated by a dimension attribute.** `width` and
-  `height` attributes on a replaced element are presentational hints that
-  create a definite size, and a definite size disables `aspect-ratio`
-  entirely. Keep the attributes, since they reserve layout space and
-  prevent shift, and add the explicit `height: auto` that hands control
-  back to the ratio.
+- **A ratio that never participates in sizing.** HTML `width` and `height`
+  attributes can provide dimensions and an intrinsic ratio; they do not by
+  themselves defeat CSS `aspect-ratio`. The ratio stops deciding a used size
+  when both axes are otherwise definite. Keep truthful intrinsic dimensions
+  where they reserve space, choose which axis may remain automatic for a fluid
+  treatment, and verify the computed and rendered box instead of assuming that
+  either the attributes or `aspect-ratio` won.
 - **`hidden` defeated by any component class.** The user-agent rule is a
   bare `[hidden] { display: none }`, so any class on the same element that
   sets `display` wins on specificity and the element stays visible.
-  Specificity juggling does not fix this reliably. Ship one global
-  `[hidden] { display: none !important }` and the attribute becomes
-  trustworthy everywhere.
+  Fix the component or add a narrow author rule only when the project needs
+  one. Do not ship a blanket `[hidden] { display: none !important }`: it also
+  overrides `hidden="until-found"`, whose content must remain discoverable by
+  find-in-page and fragment navigation. If an author rule is necessary, a
+  scoped form such as
+  `[hidden]:not([hidden="until-found"]) { display: none !important; }` keeps
+  that state outside the override. Verify ordinary hidden, until-found,
+  reveal, and accessibility behavior in the target browsers rather than
+  assuming the selector is sufficient.
 - **A section rule repainting a component.** A context selector such as a
   dark-band rule setting link color is one class more specific than the
   component's own modifier, so the component silently loses its color
   inside that section. This is a frequent source of contrast failures on
   an element that measures correctly in isolation. Scope context rules to
   exclude the components they must not touch, and measure the component
-  inside every section it appears in, not only on its default ground.
+  in the section and states that create the real risk, not only on an isolated
+  default ground.
 - **Scroll-driven and viewport-triggered reveals stuck at their start
   state.** An element animated from opacity zero stays at zero whenever
   the trigger never fires: a hidden tab, a paused timeline, a capture
   taken from the top of the document, or a browser without the feature.
-  The start state must be the visible state, with motion added on top, so
-  a trigger that never fires costs an animation rather than the content.
+  Keep required content visible in the base document and apply the hidden
+  start state only after the motion system and its trigger are known to be
+  active. A failed trigger must cost the enhancement rather than the content.
 - **Sticky positioning constrained by its own container.** A sticky child
   can never travel beyond its containing block, so a sticky element inside
   a short wrapper appears not to stick at all. Verify the scroll behavior
@@ -115,21 +125,30 @@ competing with that decision.
 - Keep specificity flat and let source order resolve the rest. An
   escalating specificity war is a sign that two rules both believe they
   own the same property.
-- Reserve `!important` for the narrow class of rules that must survive any
-  context, such as the `hidden` rule above. Using it to win a local fight
-  moves the fight rather than settling it.
+- Reserve `!important` for a documented boundary that genuinely must survive
+  its supported contexts. Using it to win a local fight moves the fight rather
+  than settling it.
 - When a component must look different inside a context, express that as a
   variant the component defines, not as a context rule reaching in.
 - State every property a state depends on. A rule that changes color on
   focus but inherits its outline from elsewhere will lose the outline the
   moment the elsewhere changes.
 
-## JavaScript enhances and never gates
+## Make script dependency intentional
 
-The page renders complete with scripts disabled or failed. Content,
-navigation, and the primary action exist in the markup; script improves
-them. A build whose first paint depends on script has traded its entire
-audience against a progressive-loading effect.
+Choose the failure contract from the surface. A public information or
+marketing route should normally keep its essential content, navigation, and
+primary destination available when optional script fails. A dashboard,
+editor, configurator, or other JavaScript application may legitimately depend
+on script for its task. It still needs an intelligible bootstrap, timeout,
+unsupported, authentication, and failure path instead of a blank page or a
+control that pretends to work.
+
+Do not turn `no JavaScript` into a universal release test. Select it when the
+project promises progressive enhancement, public crawlable content, a server-
+rendered route, or another script-independent path. For a script-dependent
+application, test slow boot, chunk or API failure, offline behavior where
+supported, and recovery against the declared application contract.
 
 - Bind behavior to elements that already work. A link with a real target
   gains an interception; it does not start as an inert element.
@@ -143,6 +162,31 @@ audience against a progressive-loading effect.
   on every frame.
 - Honor reduced-motion at the source of the motion, not by hiding the
   result.
+
+## Preserve evidence through typed code
+
+When the project uses TypeScript or another typed boundary, keep known evidence
+precise instead of widening it and asserting it back later:
+
+- parse untrusted network, storage, URL, form, and message values at their I/O
+  boundary, then pass named domain values inward;
+- retain useful inference with the project's ordinary tools, such as
+  `satisfies`, literal preservation, or a schema-derived type, when that makes
+  the contract clearer;
+- reject chained assertion laundering such as `value as unknown as User` and
+  a known value widened to a broad type only to be cast back at use;
+- keep `unknown`, broad objects, and catch-all dictionaries at genuine
+  boundaries rather than using them as the ordinary internal model;
+- when an assertion is truly necessary, name the concrete invariant, how it
+  was established, and the assertion's scope. A marker such as `SAFETY:` with
+  no explanation is not evidence.
+
+These are evidence-preservation checks, not a mandatory lint dialect. Module
+mocking, runtime type checks, framework conventions, Effect-specific rules,
+and identifier vocabulary remain project and stack decisions unless an
+established repository policy says otherwise. Merge a new checker into the
+existing toolchain only when the task authorizes that dependency and its rules
+fit the project.
 
 ## Remove the residue
 
@@ -161,11 +205,11 @@ derived from a measurement, a workaround bound to a specific browser
 behavior, an ordering that matters for a non-obvious reason, an owner
 decision that would otherwise look arbitrary.
 
-Do not narrate what the next line does, restate the selector in prose,
-mark a change as new or fixed, or explain the reasoning behind a choice to
-a reviewer who is no longer reading. Do not leave creative-brief language,
-process vocabulary, or direction notes in shipped source; public source is
-part of the delivered surface.
+Do not narrate what the next line does, restate the selector in prose, or mark
+a change as new or fixed. Preserve reasoning that a future maintainer needs to
+keep an invariant intact; move creative-brief narration, abandoned process
+notes, and direction experiments out of shipped source. Public source is part
+of the delivered surface.
 
 ## Before calling implementation done
 
@@ -173,12 +217,14 @@ Confirm in the rendered result, not the source:
 
 - every declaration from the silent-defeat list that the build actually
   uses resolved to its intended computed value;
-- the page renders complete with scripts disabled;
-- the console is clean and no request failed;
+- the declared script-failure path works for this surface: complete essential
+  public content where progressive enhancement is promised, or an honest and
+  recoverable application failure state where script is required;
+- no unexpected console error or request failure affects the reviewed task;
 - every interactive control is reachable and operable by keyboard, with a
   visible focus indicator that survives its section context;
-- each component was measured for contrast inside every ground it appears
-  on, not only its default one;
+- contrast was checked in the representative grounds and states that can
+  change the result, not only an isolated default;
 - no residue, starter metadata, or internal language remains in public
   source.
 

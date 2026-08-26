@@ -457,6 +457,39 @@ class ProjectContrastAuditTests(unittest.TestCase):
             self.assertIn("owner-acceptance-candidate-build-unbound", codes)
             self.assertIn("owner-acceptance-wide-narrow-exposure-incomplete", codes)
 
+    def test_pending_owner_review_is_separate_from_candidate_readiness(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            contract["review"]["owner_review"] = {
+                "status": "pending",
+                "reviewer_id": None,
+                "relationship": None,
+                "observed_at": None,
+                "evidence": None,
+                "limitations": "The candidate is ready for the owner's later decision.",
+                "candidate_build_id": None,
+                "reviewed_capture_ids": [],
+            }
+            report = AUDITOR.audit_payload(root, contract)
+            self.assertTrue(report["ready"], report)
+            self.assertEqual(report["owner_acceptance"]["status"], "pending")
+            self.assertFalse(report["owner_acceptance"]["complete"])
+            self.assertFalse(report["owner_acceptance"]["blocks_candidate_readiness"])
+
+    def test_owner_rejection_still_blocks_candidate_readiness(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            contract["review"]["owner_review"]["status"] = "rejected"
+            report = AUDITOR.audit_payload(root, contract)
+            self.assertFalse(report["ready"], report)
+            self.assertTrue(report["owner_acceptance"]["blocks_candidate_readiness"])
+            self.assertIn(
+                "owner-review-rejected",
+                {entry["code"] for entry in report["findings"]},
+            )
+
     def test_approved_public_system_needs_scoped_hash_bound_owner_approval(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -539,6 +572,47 @@ class ProjectContrastAuditTests(unittest.TestCase):
             self.assertIn("closest-sibling-structural-evidence-missing", gap_codes)
             self.assertIn("surface-grammar-evidence-missing", gap_codes)
             self.assertIn("closest-sibling-paired-review-missing", gap_codes)
+
+    def test_same_project_rejection_cannot_impersonate_cross_project_closest_sibling(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            contract["comparison"]["comparators"][0]["project_id"] = contract["scope"]["project_id"]
+            report = AUDITOR.audit_payload(root, contract)
+            self.assertFalse(report["ready"])
+            self.assertIn(
+                "closest-sibling-cross-project-missing",
+                {entry["code"] for entry in report["gaps"]},
+            )
+
+    def test_same_project_rejected_relationship_remains_valid_diagnostic_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            comparator = contract["comparison"]["comparators"][0]
+            comparator["project_id"] = contract["scope"]["project_id"]
+            comparator["relationship"] = "same-project-rejected"
+            errors, _ = AUDITOR.validate_contract_payload(contract)
+            self.assertNotIn(
+                "invalid-enum",
+                {entry["code"] for entry in errors},
+            )
+
+    def test_different_project_id_cannot_launder_the_same_comparator_artifact(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            alias = copy.deepcopy(contract["comparison"]["comparators"][0])
+            alias["id"] = "current-project-rejection"
+            alias["project_id"] = contract["scope"]["project_id"]
+            alias["relationship"] = "same-project-rejected"
+            contract["comparison"]["comparators"].append(alias)
+            report = AUDITOR.audit_payload(root, contract)
+            self.assertFalse(report["ready"])
+            self.assertIn(
+                "closest-sibling-artifact-identity-collision",
+                {entry["code"] for entry in report["findings"]},
+            )
 
     def test_owner_recurrence_requires_a_real_counter_answer(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

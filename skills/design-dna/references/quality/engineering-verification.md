@@ -31,6 +31,8 @@ Before implementation:
 - read repository instructions and relevant documentation;
 - inspect the framework, package manager, scripts, browser support, and
   deployment target;
+- resolve or provisionally declare the project-specific
+  [browser, engine, OS, and real-device support matrix](browser-support.md);
 - resolve every dependency, version, and API surface from the project's own
   manifest and the current registry rather than from a remembered value;
   adopt the established package manager instead of replacing it, and leave
@@ -106,7 +108,11 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PRO
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile range-study --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --record direction --record handoff --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile high-risk --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_pattern_audit.py" "PROJECT" --init-review --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_pattern_audit.py" "PROJECT" --phase prebuild --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_pattern_audit.py" "PROJECT" --phase ready --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-state --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-prebuild --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --check-ready --json
 ```
 
@@ -121,11 +127,27 @@ required convention. Browser user data and other disposable runtime state
 belong in a separately authorized temporary root, never in either tree.
 
 `--check-state` verifies structure and reports draft records as warnings.
+`--check-prebuild` is the broad-implementation permission gate. It requires a
+selected, hash-bound, complete direction record and consumes any selected
+exploration, calibration, proof, claims, Project Contrast, Direction Challenge,
+Range/Batch planning, and Asset-led records. It fails when those records remain
+draft or scaffold text; when Project Contrast is below
+`direction-ready`; when Direction Challenge lacks reviewed cross-root proof,
+its frozen independent observation, or an explicit `broad-implementation`
+boundary; or when an Asset-led direction lacks a usable material asset. It is
+not an aesthetic score and does not replace final review.
 `--check-ready` is the completion gate: it uses the cumulative
 `assurance_profiles` persisted in schema-2 `state.json` and fails until every
 listed record is complete and hash-bound. Assets receive their own semantic
 readiness checks. Record prose, a later capability request, or an explicitly
 added record cannot silently weaken or escape the persisted gates.
+
+The owner-pattern commands apply only when an accountable owner activates the
+host-neutral contract and the project selects `owner-pattern-contract`. The
+first command creates its project review once and refuses overwrite. The
+integrated state, prebuild, and readiness checks call the matching audit when
+the trigger is present; a missing or incomplete owner-pattern review therefore
+cannot be bypassed by skipping the standalone command.
 
 A standalone `--record` request intentionally selects only the named useful
 record. `claims` and `user-validation` are supplemental evidence records, not
@@ -239,6 +261,8 @@ Run the project-supported equivalents of:
 - unit and integration tests affected by the change;
 - production build;
 - route or runtime smoke test;
+- critical-path smoke tests in every materially different supported engine and
+  real-device condition selected by the browser-support matrix;
 - console and failed-network inspection;
 - rendered visual review;
 - accessibility baseline;
@@ -333,20 +357,26 @@ The scanner is deliberately bounded to evidence-bearing source concerns:
 literal filler, proof and claim provenance, content hidden by default,
 nonfunctional public controls, public leakage of internal methodology or
 unresolved production state, media truth/provenance/context, and incomplete
-source coverage. It does not warn on typography values, quantitative-claim
-density, styled text fragments,
-gradients, pills, fade or hover recipes, eyebrows, emoji, icon metaphors,
-generic labels or calls to action, component-library tokens, large spacing,
+source coverage. A non-gating pre-heading candidate check may point to exact
+heading- or section-leading-body relationships, including relationships through
+bounded static wrappers, for contextual review. Known and unknown class tokens,
+semantic-looking class or data names, text shape, and repetition are evidence
+hints only: a name alone neither exempts nor condemns a label, and none
+establishes AI authorship. The detector narrowly skips structurally strong
+public roles such as navigation, form labels bound to controls, legends, time
+elements, selected tabs, live status/progress semantics, and exact date or
+progress text. Real categories, dates, sources, sequence, status, taxonomy,
+breadcrumbs, filters, tabs, and legends can be necessary.
+
+The scanner does not fail typography values, quantitative-claim density,
+styled text fragments, gradients, pills, fade or hover recipes, emoji, icon
+metaphors, generic calls to action, component-library tokens, large spacing,
 technical vocabulary, diagrams, canvas/SVG, or any other aesthetic ingredient
-by name or count. Judge these choices from the rendered result and an explicit
+by name or count. Judge those choices from the rendered result and an explicit
 project concern, not from portable source heuristics. A consequential number
 still needs provenance because of what it claims, not because a page contains a
-particular count of figures.
-
-The scanner also cannot decide whether a pre-heading label merely repeats the
-heading beside it or was inserted by habit. That is a rendered
-[parseable-text](parseable-text.md) hierarchy review, not a source-level
-ingredient ban.
+particular count of figures. A pre-heading candidate is closed only by the
+rendered [parseable-text](parseable-text.md) hierarchy review.
 
 Use `--content-site` only when documentation and content sources are part of the
 reviewed surface. Add `--structured-content` to opt in JSON, YAML, and YML;
@@ -509,6 +539,8 @@ For a production-bound change, provide the next accountable person with:
   migrations, compatibility constraints, and affected consumers;
 - verified routes, viewports, themes, roles, content cases, interactions, and
   environments;
+- supported browser/engine/OS/device rows actually exercised, plus every
+  provisional, failing, or untested row;
 - visual and interaction baselines that were intentionally accepted;
 - known deviations, checks not run, specialist reviews still required, and
   owner decisions still open;

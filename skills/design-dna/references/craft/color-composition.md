@@ -45,17 +45,12 @@ review question is whether its use supports the declared creative logic and
 the rendered whole, not whether it is reserved for a prescribed number of
 accents or placed only on a primary action.
 
-Whatever the palette, write its budget down. The strongest recurring craft
-device in well-run brand systems is not a particular accent count but an
-explicit scarcity grammar: for each accent, where it may appear and where
-it must not. "The ceremony color appears only at the one ceremonial
-moment," "the sale color lives only on price rows," "the signature red is
-the ring mark and nothing else" are enforceable sentences; "use the accent
-tastefully" is not. Record the budget with the palette in the project
-system (and in the handoff record), so a later editor cannot dilute the
-accent into doing every job, which is how a considered color becomes a
-generic wash. The budget's values are the project's own; this is a
-recording discipline, not an allocation rule.
+When the system depends on a color being scarce or role-bound, document that
+relationship in enforceable project language. "The sale color belongs to
+price rows" is more durable than "use the accent tastefully." A monochrome,
+continuous, data-rich, ceremonial, or deliberately abundant system may need a
+different record or none at all. Do not manufacture an accent, scarcity budget,
+or allocation rule merely to complete documentation.
 
 Verify required foreground/background combinations and interactive states in
 the real rendered context, including text over media, overlays, focus, hover,

@@ -173,6 +173,79 @@ PUBLIC_META_COPY_MARKER = re.compile(
     r"route\s+study|truth\s+(?:list|before\s+theater))\b",
     re.I,
 )
+PREHEADING_ELEMENT = re.compile(
+    r"(?=(?P<element>"
+    r"<(?P<tag>p|span|small|div|aside|header|label|legend|time|strong|em|button)\b"
+    r"(?P<attrs>[^>]*)>(?P<body>.*?)</(?P=tag)\s*>))",
+    re.I | re.S,
+)
+PREHEADING_TARGET_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6", "p"}
+PREHEADING_WRAPPER_TAGS = {
+    "#fragment", "article", "div", "header", "main", "section",
+}
+PREHEADING_MAX_WRAPPER_DEPTH = 2
+CLASS_ATTRIBUTE = re.compile(
+    r"(?:\bclass(?:Name)?\s*=\s*(?:\{[^}]{0,400}\}|"
+    r"[\"'][^\"']{0,400}[\"']|[^\s>]{1,400})|"
+    r"(?:^|\s)class:[a-z][a-z0-9_-]{0,120})",
+    re.I | re.S,
+)
+CLASS_VALUE_ATTRIBUTE = re.compile(
+    r"\bclass(?:Name)?\s*=\s*(?:"
+    r"[\"'](?P<quoted>[^\"']{0,400})[\"']|"
+    r"\{(?P<expression>[^}]{0,400})\}|"
+    r"(?P<bare>[^\s>]{1,400}))",
+    re.I | re.S,
+)
+CLASS_DIRECTIVE = re.compile(
+    r"(?:^|\s)class:(?P<name>[a-z][a-z0-9_-]{0,120})",
+    re.I,
+)
+PREHEADING_STYLE_MARKER = re.compile(
+    r"(?:^|[^a-z0-9])(?P<name>eyebrow|kicker|overline|section[-_]?label)"
+    r"(?:$|[^a-z0-9])",
+    re.I,
+)
+PREHEADING_SEMANTIC_HINT_MARKER = re.compile(
+    r"(?:^|[^a-z0-9])(?P<name>breadcrumb|categor(?:y|ies)|credit|date|filter|legend|"
+    r"pagination|progress|published|source|state|status|step|tab|tag|taxonomy|"
+    r"topic|updated|byline)(?:$|[^a-z0-9])",
+    re.I,
+)
+PREHEADING_STRONG_SEMANTIC_ATTRIBUTE = re.compile(
+    r"(?:\brole\s*=\s*[\"'](?:status|progressbar|tab|tablist|navigation|"
+    r"listbox|option)[\"']|\baria-(?:current|selected|valuenow)\s*=|"
+    r"\bdatetime\s*=|"
+    r"\brel\s*=\s*[\"'][^\"']*\btag\b|"
+    r"\baria-label\s*=\s*[\"'][^\"']*\bbreadcrumb)",
+    re.I,
+)
+PREHEADING_FORM_LABEL_ATTRIBUTE = re.compile(
+    r"\b(?:for|htmlFor)\s*=",
+    re.I,
+)
+PREHEADING_SEMANTIC_HINT_ATTRIBUTE = re.compile(
+    r"\b(?P<name>data-(?:category|credit|date|filter|pagination|progress|"
+    r"published|source|state|status|step|tab|tag|taxonomy|topic|updated|byline)|"
+    r"itemprop)\s*=",
+    re.I,
+)
+PREHEADING_DATE_TEXT = re.compile(
+    r"^(?:\d{4}-\d{2}-\d{2}|"
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
+    r"Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|"
+    r"Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4})$",
+    re.I,
+)
+PREHEADING_PROGRESS_TEXT = re.compile(
+    r"^(?:step|page)\s+0*\d{1,4}\s+(?:of|/)\s+0*\d{1,4}$",
+    re.I,
+)
+PREHEADING_SEQUENCE_TEXT = re.compile(
+    r"^(?:(?:section|chapter|part|route|act|item)\s+"
+    r"(?:0*\d{1,3}|[ivxlcdm]+)\b|0*\d{1,3}\s*(?:[/.:\-–—]|$))",
+    re.I,
+)
 CSS_DECLARATION_BLOCK = re.compile(r"(?P<header>[^{}]*)\{(?P<body>[^{}]*)\}", re.S)
 
 
@@ -1477,6 +1550,370 @@ def public_meta_copy_candidates(
     return manual_review
 
 
+def static_literal_markup_text(value: str) -> str:
+    """Return only simple literal prose from a bounded markup fragment."""
+    without_expressions = re.sub(r"\{[^{}]*\}", " ", value, flags=re.S)
+    without_tags = re.sub(r"<[^>]+>", " ", without_expressions)
+    return " ".join(html.unescape(without_tags).split())
+
+
+def static_class_tokens(attrs: str) -> list[str]:
+    """Extract bounded class-token hints without evaluating expressions."""
+    tokens: set[str] = set()
+    for match in CLASS_VALUE_ATTRIBUTE.finditer(attrs):
+        raw = next(
+            (
+                value
+                for value in (
+                    match.group("quoted"),
+                    match.group("expression"),
+                    match.group("bare"),
+                )
+                if value is not None
+            ),
+            "",
+        )
+        for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{0,120}", raw):
+            tokens.add(token.casefold().replace("_", "-"))
+    for match in CLASS_DIRECTIVE.finditer(attrs):
+        tokens.add(match.group("name").casefold().replace("_", "-"))
+    return sorted(tokens)[:24]
+
+
+def skip_preheading_gap(text: str, start: int) -> int:
+    """Skip whitespace and comments that cannot render intervening content."""
+    index = start
+    while index < len(text):
+        whitespace = re.match(r"\s+", text[index:])
+        if whitespace:
+            index += whitespace.end()
+            continue
+        if text.startswith("<!--", index):
+            close = text.find("-->", index + 4)
+            return len(text) if close < 0 else skip_preheading_gap(text, close + 3)
+        jsx_comment = re.match(r"\{\s*/\*.*?\*/\s*\}", text[index:], re.S)
+        if jsx_comment:
+            index += jsx_comment.end()
+            continue
+        break
+    return index
+
+
+def following_preheading_target(
+    text: str,
+    start: int,
+) -> Optional[dict[str, object]]:
+    """Find a simple following heading/body target through bounded wrappers."""
+    index = skip_preheading_gap(text, start)
+    wrappers: list[str] = []
+    while True:
+        parsed = parse_markup_tag(text, index)
+        if parsed is None:
+            return None
+        open_end, kind, name, self_closing = parsed
+        if kind != "open" or self_closing:
+            return None
+        if name in PREHEADING_TARGET_TAGS:
+            close = re.search(
+                rf"</\s*{re.escape(name)}\s*>",
+                text[open_end:],
+                re.I,
+            )
+            if close is None:
+                return None
+            body_end = open_end + close.start()
+            return {
+                "tag": name,
+                "start": index,
+                "body_start": open_end,
+                "body_end": body_end,
+                "end": open_end + close.end(),
+                "body": text[open_end:body_end],
+                "wrappers": tuple(wrappers),
+            }
+        if (
+            name not in PREHEADING_WRAPPER_TAGS
+            or len(wrappers) >= PREHEADING_MAX_WRAPPER_DEPTH
+        ):
+            return None
+        wrappers.append(name)
+        index = skip_preheading_gap(text, open_end)
+
+
+def section_leading_text(
+    text: str,
+    position: int,
+    markup_records: list[tuple[int, int, tuple[str, ...]]],
+    section_ranges: list[tuple[int, int]],
+) -> bool:
+    """Return whether this is the first literal text in its nearest section."""
+    index = section_index(section_ranges, position)
+    if index is None:
+        return False
+    section_start, _section_end = section_ranges[index]
+    return not any(
+        section_start <= node_start < position
+        and static_literal_markup_text(text[node_start:node_end])
+        for node_start, node_end, _ancestors in markup_records
+    )
+
+
+def preheading_semantic_hints(
+    attrs: str,
+    class_tokens: list[str],
+) -> list[str]:
+    """Preserve semantic-looking source hints without treating them as proof."""
+    hints: set[str] = set()
+    for token in class_tokens:
+        for match in PREHEADING_SEMANTIC_HINT_MARKER.finditer(token):
+            hints.add(
+                "class-token:"
+                + match.group("name").casefold().replace("_", "-")
+            )
+    for match in PREHEADING_SEMANTIC_HINT_ATTRIBUTE.finditer(attrs):
+        hints.add(
+            "attribute:"
+            + match.group("name").casefold().replace("_", "-")
+        )
+    return sorted(hints)
+
+
+def preheading_public_purpose_candidates(
+    records: list[tuple[Path, str, str]],
+) -> list[dict[str, object]]:
+    """Prompt contextual review of short copy before headings or body content.
+
+    Class names, data attributes, placement, and copy shapes are candidate
+    generators only. They are not semantic proof, aesthetic failures, release
+    gates, or evidence of AI authorship.
+    """
+    manual_review: list[dict[str, object]] = []
+    for path, relative, text in records:
+        if path.suffix.lower() not in STATIC_MARKUP_SUFFIXES:
+            continue
+        markup_records = static_markup_text_records(text)
+        section_ranges = static_container_ranges(text, "section")
+        adjacent: list[dict[str, object]] = []
+        for match in PREHEADING_ELEMENT.finditer(text):
+            target = following_preheading_target(text, match.end("element"))
+            if target is None:
+                continue
+            raw_label_body = match.group("body")
+            if re.search(r"<\s*/?\s*[A-Za-z]", raw_label_body):
+                # Container markup is not itself a label. The zero-width
+                # lookahead still lets nested simple label elements be reviewed.
+                continue
+            label = static_literal_markup_text(raw_label_body)
+            target_text = static_literal_markup_text(str(target["body"]))
+            if (
+                not label
+                or len(label) > 120
+                or len(label.split()) > 16
+                or not target_text
+            ):
+                continue
+
+            attrs = match.group("attrs")
+            class_attributes = " ".join(
+                item.group(0)
+                for item in CLASS_ATTRIBUTE.finditer(attrs)
+            )
+            ancestors: tuple[str, ...] = ()
+            body_start = match.start("body")
+            body_end = match.end("body")
+            for node_start, node_end, node_ancestors in markup_records:
+                if body_start <= node_start and node_end <= body_end:
+                    ancestors = node_ancestors
+                    break
+            class_tokens = static_class_tokens(attrs)
+            semantic_hints = preheading_semantic_hints(attrs, class_tokens)
+            if (
+                match.group("tag").casefold() in {"legend", "time"}
+                or (
+                    match.group("tag").casefold() == "label"
+                    and (
+                        PREHEADING_FORM_LABEL_ATTRIBUTE.search(attrs)
+                        or re.search(
+                            r"<(?:input|select|textarea|button)\b",
+                            match.group("body"),
+                            re.I,
+                        )
+                    )
+                )
+                or "nav" in ancestors
+                or PREHEADING_STRONG_SEMANTIC_ATTRIBUTE.search(attrs)
+                or PREHEADING_DATE_TEXT.fullmatch(label)
+                or PREHEADING_PROGRESS_TEXT.fullmatch(label)
+            ):
+                continue
+
+            style_names = sorted({
+                item.group("name").casefold().replace("_", "-")
+                for item in PREHEADING_STYLE_MARKER.finditer(class_attributes)
+            })
+            sequenced = PREHEADING_SEQUENCE_TEXT.search(label) is not None
+            target_tag = str(target["tag"])
+            wrapper_tags = list(target["wrappers"])
+            first_section_text = section_leading_text(
+                text,
+                body_start,
+                markup_records,
+                section_ranges,
+            )
+            target_starts_section = "section" in wrapper_tags
+            if (
+                target_tag == "p"
+                and not style_names
+                and not first_section_text
+                and not target_starts_section
+            ):
+                continue
+
+            label_shaped = (
+                len(label) <= 80
+                and len(label.split()) <= 8
+                and re.search(r"[.!?][\"')\]]?$", label) is None
+            )
+            recognized_class_tokens = {
+                token
+                for token in class_tokens
+                if PREHEADING_STYLE_MARKER.search(token)
+                or PREHEADING_SEMANTIC_HINT_MARKER.search(token)
+            }
+            unknown_class_tokens = sorted(
+                set(class_tokens) - recognized_class_tokens
+            )
+            repetition_key = re.sub(
+                r"\b0*\d+\b",
+                "#",
+                label.casefold(),
+            )
+            repetition_key = " ".join(repetition_key.split())
+            if target_tag.startswith("h"):
+                relationship = (
+                    f"precedes-{target_tag}-through-static-wrapper"
+                    if wrapper_tags
+                    else f"immediately-precedes-{target_tag}"
+                )
+            elif first_section_text or target_starts_section:
+                relationship = (
+                    "section-leading-label-before-p-through-static-wrapper"
+                    if wrapper_tags
+                    else "section-leading-label-before-p"
+                )
+            else:
+                relationship = "immediately-precedes-p"
+            adjacent.append({
+                "path": relative,
+                "line": line_number(text, match.start("body")),
+                "text": label,
+                "label_element": match.group("tag").casefold(),
+                "target_line": line_number(text, int(target["body_start"])),
+                "target_element": target_tag,
+                "target_text": target_text[:160],
+                "heading_line": (
+                    line_number(text, int(target["body_start"]))
+                    if target_tag.startswith("h")
+                    else None
+                ),
+                "heading_level": target_tag if target_tag.startswith("h") else None,
+                "heading": target_text[:160] if target_tag.startswith("h") else None,
+                "relationship": relationship,
+                "wrapper_tags": wrapper_tags,
+                "section_leading": first_section_text or target_starts_section,
+                "class_tokens": class_tokens,
+                "semantic_hints": semantic_hints,
+                "style_names": style_names,
+                "unknown_class_tokens": unknown_class_tokens,
+                "label_shaped": label_shaped,
+                "sequenced": sequenced,
+                "repetition_key": repetition_key,
+            })
+
+        repetition_counts: dict[str, int] = {}
+        for candidate in adjacent:
+            key = str(candidate["repetition_key"])
+            repetition_counts[key] = repetition_counts.get(key, 0) + 1
+
+        selected: list[dict[str, object]] = []
+        for candidate in adjacent:
+            repeated_count = repetition_counts[str(candidate["repetition_key"])]
+            style_names = list(candidate.pop("style_names"))
+            unknown_class_tokens = list(candidate.pop("unknown_class_tokens"))
+            label_shaped = bool(candidate.pop("label_shaped"))
+            sequenced = bool(candidate.pop("sequenced"))
+            candidate.pop("repetition_key")
+            signals = [f"class:{name}" for name in style_names]
+            if candidate["semantic_hints"]:
+                signals.append("semantic-purpose-hint")
+            if unknown_class_tokens and label_shaped:
+                signals.append("class:unrecognized-preheading-token")
+            if (
+                label_shaped
+                and not candidate["class_tokens"]
+                and candidate["label_element"] in {"aside", "small"}
+            ):
+                # A classless short element still needs another structural signal;
+                # this marker never selects ordinary unclassed paragraphs alone.
+                if candidate["target_element"] != "p" or candidate["section_leading"]:
+                    signals.append(
+                        "element:" + str(candidate["label_element"])
+                    )
+            if sequenced:
+                signals.append("numbered-or-sequenced-label")
+            if repeated_count > 1:
+                signals.append("repeated-label-pattern")
+            if not signals:
+                continue
+            if (
+                candidate["target_element"] == "p"
+                and candidate["section_leading"]
+            ):
+                signals.append("section-leading-body-label")
+            candidate["signals"] = signals
+            candidate["repeated_count"] = repeated_count
+            selected.append(candidate)
+
+        if not selected:
+            continue
+        medium = any(
+            "numbered-or-sequenced-label" in item["signals"]
+            or "repeated-label-pattern" in item["signals"]
+            for item in selected
+        )
+        manual_review.append({
+            "file": relative,
+            "line": selected[0]["line"],
+            "check": "preheading-public-purpose",
+            "severity": "medium" if medium else "low",
+            "reason": (
+                "Short static copy appears before a heading or section-leading "
+                "body passage with a class, semantic-looking source hint, style "
+                "token, sequence marker, or repeated pattern. It may be a useful "
+                "category, source, date, state, or editorial convention, or it "
+                "may merely narrate adjacent content or expose construction. "
+                "Source shape alone cannot decide its public purpose and is not "
+                "evidence of AI authorship."
+            ),
+            "evidence": {
+                "candidate_count": len(selected),
+                "examples": selected[:16],
+            },
+            "suggestion": (
+                "For each cited relationship, keep the label when it gives the "
+                "visitor independent information such as a real category, source, "
+                "date, sequence, state, or established editorial convention. "
+                "Remove or rewrite it when it only foreshadows the heading, repeats "
+                "the body passage, repeats a section formula, or exposes design "
+                "rationale or an internal taxonomy. A class or data attribute is "
+                "only a semantic hint. Confirm the decision on the rendered page "
+                "in context; do not infer AI authorship from this candidate."
+            ),
+            "owner_policy": None,
+        })
+    return manual_review
+
+
 def nonfunctional_concept_affordance_candidates(
     records: list[tuple[Path, str, str]],
 ) -> list[dict[str, object]]:
@@ -1957,6 +2394,7 @@ def main() -> int:
         media_review = material_media_candidates(records)
         manual_review.extend(media_review)
         manual_review.extend(public_meta_copy_candidates(records))
+        manual_review.extend(preheading_public_purpose_candidates(records))
         manual_review.extend(
             nonfunctional_concept_affordance_candidates(records)
         )

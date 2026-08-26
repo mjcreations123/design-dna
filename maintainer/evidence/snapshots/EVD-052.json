@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-052",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/petergyang/no-ai-slop/tree/d30eddb9e04562234f2070b5ee63ca4649d9a05e",
+  "locator": "README, skill guidance, and MIT LICENSE at commit d30eddb9e04562234f2070b5ee63ca4649d9a05e",
+  "content_kind": "maintainer_summary",
+  "summary": "The MIT-licensed No AI Slop repository recommends preserving client voice and facts, making the minimum effective edit, avoiding fabricated claims, naming observable patterns instead of claiming AI detection, and testing whether copy could move unchanged to another company. Design DNA adapts those methods but rejects punctuation, word, and sentence-form policing as a universal authorship or quality test."
+}

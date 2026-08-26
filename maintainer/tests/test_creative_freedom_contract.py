@@ -132,8 +132,124 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("no universal richness or memorability device is required", freedom)
         self.assertIn("gradients, icons, and conventional components are neutral", policy)
 
+    def test_voids_nested_frames_and_isolated_headline_lines_remain_open(self) -> None:
+        layout = " ".join(
+            read(SKILL / "references" / "craft" / "layout-density.md")
+            .casefold()
+            .split()
+        )
+        typography = " ".join(
+            read(SKILL / "references" / "craft" / "typography.md")
+            .casefold()
+            .split()
+        )
+
+        for phrase in (
+            "diagnostic prompts rather than automatic defects",
+            "keep an intentional, accessible void",
+            "several frames may be the right composition",
+            "do not fill a void, remove a frame, or reshape a composition merely",
+        ):
+            with self.subTest(layout_phrase=phrase):
+                self.assertIn(phrase, layout)
+
+        for phrase in (
+            "a post-render diagnostic prompt rather than an automatic defect",
+            "keep it when the break creates intentional, convincing",
+            "do not apply `text-wrap: balance`",
+            "as an automatic repair",
+        ):
+            with self.subTest(typography_phrase=phrase):
+                self.assertIn(phrase, typography)
+
+        self.assertNotIn("a grid should have as many cells as it has content", layout)
+        self.assertNotIn("a wrapping defect the balancing text-wrap", typography)
+        self.assertIn("unconvincing hierarchy or pacing", layout)
+        self.assertIn("composition that does not fit the project", layout)
+        self.assertIn("proportional figures may better fit", typography)
+        self.assertIn("rather than gluing every pair", typography)
+        self.assertNotIn("compared figures need tabular", typography)
+        self.assertNotIn("are glued with a non-breaking space", typography)
+
+    def test_visual_grammar_variance_targets_actual_recurrence_without_an_inverse_template(self) -> None:
+        variance = " ".join(
+            read(
+                SKILL
+                / "references"
+                / "quality"
+                / "visual-grammar-variance.md"
+            )
+            .casefold()
+            .split()
+        )
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        preship = " ".join(
+            read(SKILL / "templates" / "preship-gate.md")
+            .casefold()
+            .split()
+        )
+
+        for phrase in (
+            "compare only against the smallest owner-authorized recent sibling",
+            "do not ask whether a pharmacy page could become a soda page",
+            "automatic cardification or panelification",
+            "every secondary action into the same underlined phrase",
+            "no novelty score, category-exclusivity requirement",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, variance)
+        self.assertIn("theoretically suit another industry is not the test", skill)
+        self.assertIn("actual owner-authorized output", preship)
+        self.assertIn("no container ingredient is prohibited by category", preship)
+        self.assertIn("without creating an inverse shape or underline rule", preship)
+
+    def test_platform_update_guidance_does_not_stop_maintenance_or_invent_approval(self) -> None:
+        codex = " ".join(
+            read(SKILL / "references" / "platform-codex.md").casefold().split()
+        )
+        claude = " ".join(
+            read(SKILL / "references" / "platform-claude.md").casefold().split()
+        )
+
+        for adapter in (codex, claude):
+            with self.subTest(adapter=adapter[:30]):
+                self.assertIn(
+                    "does not require abandoning the active maintenance",
+                    adapter,
+                )
+                self.assertIn(
+                    "finish source edits, static validation, packaging, and filesystem checks",
+                    adapter,
+                )
+                self.assertIn(
+                    "to test whether subsequent model behavior actually loaded",
+                    adapter,
+                )
+
+        self.assertIn("attribute owner decisions only when the owner made them", codex)
+        self.assertIn("may remain explicitly provisional", codex)
+        self.assertNotIn("records project-local and owner-approved", codex)
+
+    def test_preheading_scanner_contract_names_its_narrow_exemptions(self) -> None:
+        engineering = " ".join(
+            read(
+                SKILL
+                / "references"
+                / "quality"
+                / "engineering-verification.md"
+            )
+            .casefold()
+            .split()
+        )
+        self.assertIn("a name alone neither exempts nor condemns a label", engineering)
+        self.assertIn("form labels bound to controls", engineering)
+        self.assertIn("exact date or progress text", engineering)
+
     def test_preheading_labels_need_independent_information_not_default_scaffolding(self) -> None:
         skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
         parseable = " ".join(
             read(SKILL / "references" / "quality" / "parseable-text.md")
             .casefold()
@@ -159,6 +275,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             "form labels, navigation, captions, credits, legends, and operational status",
             skill,
         )
+        self.assertIn("do not add it as default scaffolding", router)
         self.assertIn(
             "do not add an eyebrow, kicker, overline, mini-label, or compact all-caps line",
             parseable,
@@ -416,7 +533,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
             SKILL / "references" / "quality" / "content-discovery.md"
         ).casefold()
         normalized_discovery = " ".join(discovery.split())
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
         workflow = " ".join(
             read(SKILL / "references" / "workflow.md").casefold().split()
         )
@@ -435,9 +554,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
         )
         self.assertIn(
             "fictional, sample, demo, or prototype identity or scenario content",
-            skill,
+            router,
         )
-        self.assertIn("even when the material appears plentiful", skill)
+        self.assertIn("even when the material appears plentiful", router)
         self.assertIn("even when the source packet appears plentiful", workflow)
         self.assertIn("no category checklist", preship)
 
@@ -489,7 +608,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
             .casefold()
             .split()
         )
-        router = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
 
         self.assertIn("first delivers meaningful subject content or a useful action", responsive)
         self.assertIn(
@@ -524,7 +645,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
             .casefold()
             .split()
         )
-        router = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
         self.assertIn("separate distinct consequences", microcopy)
         self.assertIn("does not automatically need to be the loudest visual element", microcopy)
         self.assertIn("rather than counting disclosures", microcopy)
@@ -710,20 +833,21 @@ class CreativeFreedomContractTests(unittest.TestCase):
 
     def test_direction_phase_does_not_preload_post_render_diagnostics(self) -> None:
         skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
         risk = " ".join(
             read(SKILL / "references" / "risk-rubric.md").casefold().split()
         )
-        self.assertIn(
-            '| new direction, redesign, "generic," or "dated" | [art direction]',
-            skill,
-        )
+        self.assertIn("| new direction, redesign", router)
         new_direction_row = next(
             row
-            for row in read(SKILL / "SKILL.md").casefold().splitlines()
-            if row.startswith('| new direction, redesign, "generic," or "dated"')
+            for row in read(SKILL / "references" / "router.md").casefold().splitlines()
+            if row.startswith("| new direction, redesign,")
         )
+        self.assertIn("[art direction](craft/art-direction.md)", new_direction_row)
         self.assertNotIn("risk-rubric", new_direction_row)
-        self.assertIn("first complete render or observed durable defect", skill)
+        self.assertIn("first complete render or observed durable defect", router)
         self.assertIn("use this after a candidate has been rendered", risk)
         self.assertIn("load in phases", skill)
         self.assertIn("direction references before the first candidate", skill)
@@ -967,6 +1091,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
             read(SKILL / "references" / "workflow.md").casefold().split()
         )
         skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        router = " ".join(
+            read(SKILL / "references" / "router.md").casefold().split()
+        )
         review = " ".join(
             read(SKILL / "templates" / "visual-review-template.md")
             .casefold()
@@ -992,8 +1119,8 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("credible public surface", art_direction)
         self.assertIn("batch study protocol silently turn it into a collection of abstract test specimens", workflow)
         self.assertIn("ugly, artificial, generic, or not actually good", workflow)
-        self.assertIn("previous visual rejection", skill)
-        self.assertIn("not a font, palette, or effect swap", skill)
+        self.assertIn("previous visual rejection", router)
+        self.assertIn("not a font, palette, or effect swap", router)
         self.assertIn("a fresh public-facing site", skill)
         self.assertIn("does not choose a house style", skill)
         self.assertIn("for showcase work without an approved rendered direction", skill)
@@ -1012,6 +1139,48 @@ class CreativeFreedomContractTests(unittest.TestCase):
         ):
             with self.subTest(forbidden_recipe=forbidden_recipe):
                 self.assertNotIn(forbidden_recipe, calibration)
+
+    def test_perception_hypothesis_and_commitment_reconciliation_are_artifact_bound(self) -> None:
+        direction_start = " ".join(
+            read(SKILL / "references" / "quality" / "direction-start.md")
+            .casefold()
+            .split()
+        )
+        direction_record = " ".join(
+            read(SKILL / "templates" / "direction-template.md")
+            .casefold()
+            .split()
+        )
+        specificity = " ".join(
+            read(SKILL / "references" / "quality" / "specificity-review.md")
+            .casefold()
+            .split()
+        )
+        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+
+        self.assertIn("provisional perception-and-stakes hypothesis", direction_start)
+        self.assertIn("what an unprimed visitor might mistake this for", direction_start)
+        self.assertIn("what wrong category or posture would betray the brief", direction_start)
+        self.assertIn("it is not public copy", direction_record)
+        self.assertIn("## implementation reconciliation", direction_record)
+        self.assertIn("realized`, `partial`, `missing`, and `superseded`", direction_record)
+        self.assertIn("exact artifact or behavior evidence", direction_record)
+        self.assertIn("what category does it seem to belong to", specificity)
+        self.assertIn("treat category recognition as situated evidence", specificity)
+        self.assertIn("reasoning-to-artifact fidelity check", specificity)
+        self.assertIn("freeze an unprimed first impression", skill)
+        self.assertIn("reconcile every concrete consequential direction commitment", skill)
+
+        combined = "\n".join((direction_start, direction_record, specificity, skill))
+        for forbidden_rule in (
+            "every site must look familiar",
+            "category recognition score",
+            "all websites must be low complexity",
+            "always maximize visual complexity",
+            "a fixed number of commitments",
+        ):
+            with self.subTest(forbidden_rule=forbidden_rule):
+                self.assertNotIn(forbidden_rule, combined)
 
 
 if __name__ == "__main__":

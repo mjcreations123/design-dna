@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/eval-qualification-summary.schema.json",
+  "title": "Design DNA evaluation qualification summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "qualification_id",
+    "suite",
+    "generated_at",
+    "qualified",
+    "comparison_claim",
+    "candidate_package_sha256",
+    "integrity",
+    "counts",
+    "partition_coverage",
+    "cases",
+    "families",
+    "overall",
+    "failures"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "record_type": {
+      "const": "design-dna-eval-qualification-summary"
+    },
+    "qualification_id": {
+      "$ref": "#/$defs/slug"
+    },
+    "suite": {
+      "$ref": "#/$defs/slug"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "qualified": {
+      "type": "boolean"
+    },
+    "comparison_claim": {
+      "enum": [
+        "controlled-skill-vs-baseline",
+        "none"
+      ]
+    },
+    "candidate_package_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "plan_sha256",
+        "result_set_sha256",
+        "report_sha256"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256-canonical-json-v1"
+        },
+        "plan_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "result_set_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "report_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declared_result_files",
+        "validated_result_files",
+        "planned_cases",
+        "prompt_families",
+        "trials",
+        "passing_trials",
+        "blocker_trials"
+      ],
+      "properties": {
+        "declared_result_files": {
+          "$ref": "#/$defs/count"
+        },
+        "validated_result_files": {
+          "$ref": "#/$defs/count"
+        },
+        "planned_cases": {
+          "$ref": "#/$defs/count"
+        },
+        "prompt_families": {
+          "$ref": "#/$defs/count"
+        },
+        "trials": {
+          "$ref": "#/$defs/count"
+        },
+        "passing_trials": {
+          "$ref": "#/$defs/count"
+        },
+        "blocker_trials": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    },
+    "partition_coverage": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/partition"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "$ref": "#/$defs/case_metric"
+      }
+    },
+    "families": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "$ref": "#/$defs/family_metric"
+      }
+    },
+    "overall": {
+      "$ref": "#/$defs/metrics"
+    },
+    "failures": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/failure"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/slug"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32768
+        }
+      }
+    },
+    "worst_trial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_result_sha256",
+        "run_id",
+        "case_id",
+        "host",
+        "run",
+        "passed",
+        "blocked",
+        "problem_count",
+        "problems"
+      ],
+      "properties": {
+        "source_result_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "case_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "host": {
+          "enum": [
+            "codex",
+            "claude_code"
+          ]
+        },
+        "run": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "problem_count": {
+          "$ref": "#/$defs/count"
+        },
+        "problems": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trial_count",
+        "passing_trials",
+        "blocker_trials",
+        "pass_at_1",
+        "all_trials_pass",
+        "pass_power_k_empirical",
+        "blocker_rate",
+        "worst_trial"
+      ],
+      "properties": {
+        "trial_count": {
+          "$ref": "#/$defs/count"
+        },
+        "passing_trials": {
+          "$ref": "#/$defs/count"
+        },
+        "blocker_trials": {
+          "$ref": "#/$defs/count"
+        },
+        "pass_at_1": {
+          "$ref": "#/$defs/rate"
+        },
+        "all_trials_pass": {
+          "type": "boolean"
+        },
+        "pass_power_k_empirical": {
+          "$ref": "#/$defs/rate"
+        },
+        "blocker_rate": {
+          "$ref": "#/$defs/rate"
+        },
+        "worst_trial": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/worst_trial"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "partition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "partition",
+        "required",
+        "covered",
+        "planned_cases",
+        "observed_cases",
+        "metrics"
+      ],
+      "properties": {
+        "partition": {
+          "enum": [
+            "dev",
+            "immutable-regression",
+            "promotion-holdout"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "covered": {
+          "type": "boolean"
+        },
+        "planned_cases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "observed_cases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "metrics": {
+          "$ref": "#/$defs/metrics"
+        }
+      }
+    },
+    "case_metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id",
+        "partition",
+        "prompt_family",
+        "prompt_variant",
+        "metamorphic_relation",
+        "expected_trials",
+        "metrics"
+      ],
+      "properties": {
+        "case_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "partition": {
+          "enum": [
+            "dev",
+            "immutable-regression",
+            "promotion-holdout"
+          ]
+        },
+        "prompt_family": {
+          "$ref": "#/$defs/slug"
+        },
+        "prompt_variant": {
+          "$ref": "#/$defs/slug"
+        },
+        "metamorphic_relation": {
+          "enum": [
+            "canonical",
+            "semantics-preserving",
+            "constraint-preserving",
+            "adversarial"
+          ]
+        },
+        "expected_trials": {
+          "$ref": "#/$defs/count"
+        },
+        "metrics": {
+          "$ref": "#/$defs/metrics"
+        }
+      }
+    },
+    "family_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id",
+        "variant_id",
+        "relation"
+      ],
+      "properties": {
+        "case_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "variant_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "relation": {
+          "enum": [
+            "canonical",
+            "semantics-preserving",
+            "constraint-preserving",
+            "adversarial"
+          ]
+        }
+      }
+    },
+    "family_metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prompt_family",
+        "case_ids",
+        "partitions",
+        "variants",
+        "metrics"
+      ],
+      "properties": {
+        "prompt_family": {
+          "$ref": "#/$defs/slug"
+        },
+        "case_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "partitions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "dev",
+              "immutable-regression",
+              "promotion-holdout"
+            ]
+          }
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/family_variant"
+          }
+        },
+        "metrics": {
+          "$ref": "#/$defs/metrics"
+        }
+      }
+    }
+  }
+}

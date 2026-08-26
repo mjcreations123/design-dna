@@ -1,13 +1,18 @@
 # Website launch completeness
 
-Use this reference for every new or materially redesigned website before
-delivery. It turns a familiar launch list into fifteen explicit project
-decisions. It does not turn every decision into the same visible section,
-claim, tracking script, or legal page.
+Use this after direction selection when a real public launch or delivery scope
+includes one or more of the decision families below. It is a library of fifteen
+possible launch decisions, not a standing requirement to expose every new
+website to the whole list. Core truth, access, working behavior, direct entry,
+and delivery honesty remain in the preship gate even when this module does not
+apply. It does not turn every decision into the same visible section, claim,
+tracking script, or legal page.
 
 Create `.design-dna/launch-completeness.md` from the
 [template](../../templates/launch-completeness-template.md), or use an
-equivalent maintained project record. For every item, record one of:
+equivalent maintained project record. Select only rows whose project conditions
+exist or whose inherited launch behavior changed. For each selected row, record
+one of:
 
 - **included**: name the exact route, state, configuration, or asset and how
   a visitor can encounter it, then bind it to the factual, legal, operational,
@@ -17,10 +22,13 @@ equivalent maintained project record. For every item, record one of:
 - **blocked**: name the missing authority, source, integration, or decision.
   Do not present the dependent behavior as live.
 
-`Not applicable` is a deliberate conclusion, not a blank. `Blocked` is not
+`Not applicable` is a deliberate conclusion for a selected or inherited
+question, not a reason to prepopulate every row. `Blocked` is not
 permission to invent a policy, location, response promise, analytics ID, or
-promotion just to complete the record. A Quick repair can record only the
-affected rows; a new website must resolve all fifteen.
+promotion just to complete the record. A new site may need only metadata and
+text-alternative rows, many transactional rows, or none of this optional module
+for a local proof with no launch scope. Content and operating facts determine
+the selection.
 
 An `included` row has two independent proof needs: the actual visitor
 condition (route, state, configuration, and check) and the factual or

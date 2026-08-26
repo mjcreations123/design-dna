@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-065",
+  "retrieved": "2026-08-23",
+  "url": "https://arxiv.org/abs/2603.13036",
+  "locator": "Interrogating Design Homogenization in Web Vibe Coding; lifecycle analysis and productive-friction mitigation",
+  "content_kind": "maintainer_summary",
+  "summary": "The paper argues that frictionless generative web workflows can amplify design homogenization and proposes productive friction across the creation lifecycle. Design DNA adapts brief-native alternatives, rendered counter-proofs, and revision checkpoints that challenge defaults without prescribing a replacement style or blocking ordinary implementation."
+}

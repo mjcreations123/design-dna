@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-049",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/Leonxlnx/taste-skill/tree/72e299530e2eb31ed8da06181bc19f6c18a00821",
+  "locator": "SKILL.md and skills/image-to-code-skill/SKILL.md at commit 72e299530e2eb31ed8da06181bc19f6c18a00821",
+  "content_kind": "maintainer_summary",
+  "summary": "Taste Skill is experimental MIT guidance covering audience inference, brand preservation, audit-first redesign, responsive behavior, UI states, and visual references. Design DNA deliberately did not adopt image-to-code as a formal proof branch. Any authorized concept image is reference only; facts, accessibility, rights, behavior, code, and browser evidence remain authoritative."
+}

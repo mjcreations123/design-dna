@@ -92,8 +92,8 @@ The package root is a Codex plugin because it contains
 through a supported plugin marketplace. Do not install that plugin on a machine
 that already uses the direct Codex route.
 
-Validate the package with the current Plugin Creator validator and the package's
-own development audit before distribution.
+Validate the package with the current Plugin Creator validator, its trust-pinned
+sibling import, and the package's own development audit before distribution.
 
 ## Packaged Claude Code distribution
 
@@ -126,12 +126,12 @@ Do not install the Claude plugin alongside the personal direct
 
 ## Updates
 
-Codex detects changes to direct skills automatically; restart only if the update
-does not appear. Claude Code watches existing skill directories and usually
-detects direct-skill edits in the current session. Reinvoke a skill whose
-earlier content is already in conversation context. For a development plugin,
-run `/reload-plugins` after component changes; installed marketplace plugins
-use the host's plugin update flow.
+After updating a direct skill, start a fresh task or conversation and reinvoke
+it so earlier instructions are not already fixed in the active context. If the
+updated behavior is not observed, restart the host and run `doctor`; filesystem
+route parity alone does not prove that a host loaded the new content. For a
+deliberately tested development plugin, run `/reload-plugins` after component
+changes; installed marketplace plugins use the host's plugin update flow.
 
 Run `doctor` after every update and use a fresh task or conversation for formal
 evaluation so the evaluated context is unambiguous.

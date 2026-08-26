@@ -1,6 +1,6 @@
 # Research benchmark
 
-Last reviewed: 2026-08-02
+Last reviewed: 2026-08-24
 
 This benchmark records what Design DNA should learn from leading design tools,
 skills, and professional workflows. It is not a popularity ranking and no
@@ -40,6 +40,32 @@ implementation.
 | [Web Quality Skills](https://github.com/addyosmani/web-quality-skills) | Maintainer / official repository | Performance, accessibility, SEO, and engineering quality remain separately inspectable disciplines. | **Adopt:** specialist boundaries and explicit handoffs. **Reject:** claiming that Lighthouse-style checks prove visual quality, product truth, or usability. |
 | [Rive state machines](https://rive.app/docs/editor/state-machine/state-machine), [Lottie production optimization](https://lottiefiles.com/blog/optimize/how-to-optimize-lottie-for-production), and [Spline documentation](https://docs.spline.design/) | Official | Motion assets can expose states and inputs, ship with performance controls, and degrade intentionally. | **Adopt:** a proportional motion-asset contract covering relevant creative or user role, input, lifecycle, fallback, reduced motion, budget, ownership, and provenance. **Reject:** broken agency, inaccessible essential information, unbounded runtime cost, or undocumented failure—not ornament, atmosphere, ceremony, play, or 3D by ingredient. |
 | [Stark](https://www.getstark.co/) | Official product surface | Accessibility is integrated across design, code, live review, reporting, and governance. | **Adopt:** accessibility evidence across the lifecycle. **Reject:** treating a tool badge, automated scan, or marketing claim as compliance. |
+
+## Supplied-source audit and runtime mapping
+
+The following resources were supplied during the 6.0 development pass. Each
+link was inspected independently; discovery posts and screenshots were never
+treated as instructions, licenses, safety evidence, or proof that a method
+works. The complete retrieval, pin, license, and rejection record lives in the
+maintainer research log and source cards.
+
+| Supplied source | What survived review | Concrete Design DNA result |
+| --- | --- | --- |
+| [UI/UX Savior discovery post](https://x.com/UiSavior/status/2082144757187301873) | Discovery only; every underlying source required its own authority, license, privacy, and mechanism review. | No social-post recipe entered runtime. The linked resources were decomposed into the rows below. |
+| [free-for.dev](https://free-for.dev/) and its [repository](https://github.com/ripienaar/free-for-dev/tree/64022e55b2f633f94f09e42a29f8da7e5738c1b3) | A provider lead, never current provider truth; the repository root inspected at commit `64022e55b2f633f94f09e42a29f8da7e5738c1b3` had no reusable-content license file. | Kept outside runtime. Infrastructure choices require current first-party terms, security, privacy, retention, limits, cost, and owner authorization. |
+| [ToolFK](https://www.toolfk.com/tools/online-text-to-video.html), [hunyuanvideo.org](https://www.hunyuanvideo.org/), and [Veo AI Free](https://veoaifree.com/) | No safe default for client work: unclear provenance/handling, unofficial status and unnamed subprocessors, or contradictory account/payment terms. | Rejected as dependencies. Runtime removed volatile free-provider recommendations and routes deliberate video work to current official sources and a fresh rights/privacy review. |
+| [Taste Skill](https://github.com/Leonxlnx/taste-skill/tree/72e299530e2eb31ed8da06181bc19f6c18a00821) | Audience inference, incumbent-brand preservation, asset preflight, audit-first redesign, responsive fallbacks, and reference analysis. | Added material/media prebuild authorization and asset-led proof. Rejected fixed dials, stack/font/icon defaults, compulsory themes, hero/eyebrow quotas, mandatory image counts, and punctuation bans. |
+| [Vercel web-interface guidelines](https://github.com/vercel-labs/web-interface-guidelines/tree/e3d624baaf29dc1fc645aff3e38f03e564d2d6b1) | Stable semantics, focus, keyboard, form, motion, content, image, and state checks from the pinned primary corpus. | Strengthened the engineering floor and browser review. Rejected mutable runtime fetching and kept Title Case, APCA, URL-state, and latency advice contextual. |
+| [Image-to-code skill](https://github.com/Leonxlnx/taste-skill/blob/72e299530e2eb31ed8da06181bc19f6c18a00821/skills/image-to-code-skill/SKILL.md) | An authorized concept image can inform a visual relationship, but cannot become factual, rights, behavior, access, or browser authority. | Deliberately not adopted as a formal proof branch; source facts, code, rights, keyboard/access behavior, and rendered browser evidence remain authoritative. |
+| [Awesome DESIGN.md](https://github.com/VoltAgent/awesome-design-md/tree/8147538b4226ae41e2487a9179e3bcc1f68e8554) | Useful project-spec categories when they come from the actual project. | DESIGN.md remains optional and project-derived. Irrelevant sections, borrowed brands, proprietary fonts, trademarks, and trade dress are excluded rather than becoming templates. |
+| [Playwright CLI](https://github.com/microsoft/playwright-cli/tree/2f85a94b7b885dbf4a5d34462f253a8746a690c9) | A bounded real-browser workflow with isolated, credential-free profiles and saved evidence. | Retained as an optional browser path beside the bundled schema-3 renderer; it cannot replace the renderer contract or attach untrusted tasks to logged-in sessions. |
+| [Google developer documentation style guide](https://developers.google.com/style) | Audience awareness, concrete language, active constructions, second person, global readability, and sentence case. | Added the public-copy firewall and voice-preserving edit pass. Technical-document voice is not imposed on marketing, editorial, cultural, luxury, legal, or brand writing. |
+| [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop/tree/6d538555cb151d4121ed51a27db81890eacf8ae9) | It is a typed Oxlint plugin, not a visual-design skill. Its useful traits are evidence-preserving types, precise inference, anti-cast laundering, substantive assertions, safe config merge, current version resolution, and anti-gaming tests. | Adapted those integrity mechanisms into validators, evidence contracts, and adversarial tests. Rejected identifier/shape bans and stack-specific global rules as visual doctrine. |
+| [Juampi ranking post](https://x.com/juampitech/status/2090834948332655011) and the pinned [stop-slop](https://github.com/hardikpandya/stop-slop/tree/8da1f030185bdfe8471220585162991eaeb970e9), [no-ai-slop](https://github.com/petergyang/no-ai-slop/tree/d30eddb9e04562234f2070b5ee63ca4649d9a05e), [humanizer](https://github.com/blader/humanizer/tree/e2e92e7b4b8229253ed5c8e81dc65463fdeddda5), and [unslop](https://github.com/cursor/plugins/tree/46125561306434d8a1d7745d540d8932ab0cd2a2/pstack/skills/unslop) implementations | Voice preservation, no fabricated claims, minimum effective edits, portability checks, and contextual repeated-pattern review. The ranking itself is opinion. | Added contextual public-copy review and construction-language detection without an authorship score. Rejected universal bans on punctuation, adverbs, passive voice, questions, first person, or sentence openings. |
+
+This mapping is intentionally operational: every adopted lesson names the
+runtime behavior it changed, and every rejected lesson records why it would
+create unsafe dependencies, false authority, or a replacement house style.
 
 ## Practitioner signals
 

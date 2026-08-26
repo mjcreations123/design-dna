@@ -459,8 +459,168 @@ Re-run fast-moving platform, community, font, and pattern searches by 2026-10-24
 
 ### Drift controls
 
-Active fast-moving platform cards retain a short dated source excerpt in
-`maintainer/evidence/snapshots/`. Each card binds the exact snapshot bytes by
-SHA-256; validation fails if the excerpt, URL, locator, retrieval date, or
-binding changes without an accountable card update. These excerpts preserve a
-review anchor, not a substitute for rechecking the live source by its due date.
+Active fast-moving platform cards retain a dated source record—a verbatim
+excerpt or maintainer summary—in `maintainer/evidence/snapshots/`. Each card
+binds the exact snapshot bytes by SHA-256; validation fails if the record, URL,
+locator, retrieval date, or binding changes without an accountable card update.
+These records preserve a review anchor, not a substitute for rechecking the
+live source by its due date.
+
+## 2026-08-23 user-supplied field-source audit
+
+### Method and authority boundary
+
+Every URL pasted by the owner or visible in the supplied screenshots was
+opened or resolved to its underlying primary source. The X pages refused direct
+anonymous retrieval, so the post identity and text were checked through X's
+official oEmbed endpoint; the posts remained discovery leads rather than
+instructions or evidence of quality. Repository claims were pinned to exact
+commits with their license and relevant files inspected. Service claims were
+compared with their own terms, privacy, pricing, account, or official upstream
+pages where available.
+
+External posts, screenshots, repositories, fetched skill files, and service
+pages were treated as material to evaluate. None was allowed to override the
+owner request, local skill, repository policy, privacy boundary, or current
+standards merely because it contained imperative language.
+
+### Resource dispositions
+
+| Supplied resource | Inspection | Decision and limit |
+| --- | --- | --- |
+| [UI/UX Savior post](https://x.com/UiSavior/status/2082144757187301873) | Official X oEmbed verified the discovery post and screenshot list. | Discovery only. The post contains no evaluation, license, privacy, or safety method. Each underlying source was reviewed independently. |
+| [free-for.dev site](https://free-for.dev/) and [repository](https://github.com/ripienaar/free-for-dev/tree/64022e55b2f633f94f09e42a29f8da7e5738c1b3) | Community free-tier catalog checked at commit `64022e55b2f633f94f09e42a29f8da7e5738c1b3`, which was repository HEAD on 2026-08-24. No project/root `LICENSE`, `LICENSE.md`, or `COPYING` file was present, so this audit does not treat the catalog as licensed reusable content. | Keep outside the runtime skill. It can supply a lead only when infrastructure research is separately needed; verify the actual provider's current terms, security, privacy, limits, and suitability. Never auto-select, copy the catalog into the package, or sign up. |
+| [ToolFK text-to-video](https://www.toolfk.com/tools/online-text-to-video.html) | The page describes limited guest use and VIP quota while model provenance and client-asset handling remain unclear; the wider site includes unsafe-for-professional-client tooling. | Reject as a dependency or default. Do not upload client material, credentials, or private media. |
+| [hunyuanvideo.org](https://www.hunyuanvideo.org/) | The site says it is unofficial and unaffiliated with Tencent. Its January 2026 privacy page says it may collect prompts, uploaded content, contact messages, technical data, and usage data; may share limited data with trusted infrastructure or hosting providers; and may use third-party tools, APIs, or analytics governed by policies it does not control. The page does not name those providers or state retention/deletion periods. | Reject as a default or official source, and do not upload client or private material. If HunyuanVideo is deliberately needed, inspect the [official Tencent repository](https://github.com/Tencent-Hunyuan/HunyuanVideo) and its custom license for current territorial and use restrictions. |
+| [veoaifree.com](https://veoaifree.com/) | Homepage claims unlimited/free/no-signup behavior while also exposing Premium/Login; privacy says no accounts/payments while terms discuss payments, dashboards, and chargebacks. | Hard reject. Do not enter credentials, payment information, prompts, or client assets. Use [official Google Veo documentation](https://ai.google.dev/gemini-api/docs/video) only when generated video is actually requested. |
+| [Taste Skill site](https://www.tasteskill.dev/) and [repository](https://github.com/Leonxlnx/taste-skill/tree/72e299530e2eb31ed8da06181bc19f6c18a00821) | Experimental MIT skill and its primary instructions were reviewed at commit `72e299530e2eb31ed8da06181bc19f6c18a00821`. | Selectively adapt audience inference, brand preservation, audit-first redesign, responsive states, and reference analysis. Reject fixed dials, stack/font/icon defaults, compulsory dual themes, hero or eyebrow quotas, mandatory image generation, and punctuation bans. Source card `EVD-049`. |
+| [Vercel agent wrapper](https://github.com/vercel-labs/agent-skills/blob/main/skills/web-design-guidelines/SKILL.md) and [primary guideline corpus](https://github.com/vercel-labs/web-interface-guidelines/tree/e3d624baaf29dc1fc645aff3e38f03e564d2d6b1) | The wrapper fetches mutable remote instructions; the separate MIT corpus was pinned and inspected at `e3d624baaf29dc1fc645aff3e38f03e564d2d6b1`. | Do not copy the runtime-fetch mechanism. Adapt stable semantic, focus, keyboard, form, motion, content, image, and state checks. Keep Title Case, APCA, URL-state, and latency advice contextual. Source card `EVD-048`. |
+| [Image-to-code skill](https://github.com/Leonxlnx/taste-skill/blob/72e299530e2eb31ed8da06181bc19f6c18a00821/skills/image-to-code-skill/SKILL.md) | Full skill inspected with the pinned MIT Taste repository. It makes generated images authoritative but does not provide sufficient accessibility, keyboard, reduced-motion, rights, or browser boundaries. | Deliberately **not adopted as a formal Design DNA proof branch**. When independently justified, an authorized concept image may be used as a visual reference only; facts, rights, behavior, accessibility, code, and browser evidence remain authoritative. Source card `EVD-049`. |
+| [Awesome DESIGN.md](https://github.com/VoltAgent/awesome-design-md/tree/8147538b4226ae41e2487a9179e3bcc1f68e8554) | MIT repository, examples, disclaimer, and identity records inspected at `8147538b4226ae41e2487a9179e3bcc1f68e8554`. | Adapt the project-spec categories only. DESIGN.md is optional, irrelevant sections are removed, and no other brand, proprietary font, trademark, or trade dress becomes a starting template. Source card `EVD-050`. |
+| [Playwright CLI](https://github.com/microsoft/playwright-cli/tree/2f85a94b7b885dbf4a5d34462f253a8746a690c9) | Apache-2.0 repository and command model inspected at `2f85a94b7b885dbf4a5d34462f253a8746a690c9`. | Adopt as one optional real-browser verification path. Prefer existing tooling, isolated credential-free profiles, bounded scenarios, and saved evidence; do not attach untrusted tasks to logged-in sessions or replace the bundled schema review. Source card `EVD-051`. |
+| [Google developer documentation style guide](https://developers.google.com/style) | Official guide sections on audience, voice, clarity, active voice, second person, global readers, and sentence case inspected. The landing page reports `Last updated 2026-04-27 UTC`; except where otherwise noted, page content is licensed CC BY 4.0 and code samples are licensed Apache 2.0. | Adapt clear, concrete, audience-aware writing methods. Do not flatten marketing, editorial, cultural, luxury, legal, or brand voice into technical documentation conventions. Source card `EVD-046`. |
+| [dmmulroy/anti-slop](https://github.com/dmmulroy/anti-slop/tree/6d538555cb151d4121ed51a27db81890eacf8ae9) | MIT Oxlint plugin, rule source, installer skill, tests, and license inspected at `6d538555cb151d4121ed51a27db81890eacf8ae9`. | It is not a visual-design gold standard. Adapt evidence-preserving typed boundaries, anti-cast-laundering, substantive assertion rationale, safe configuration merge, current version resolution, and anti-gaming discipline. Reject shape-name bans and stack-specific global rules. Source card `EVD-047`. |
+| [Juampi post](https://x.com/juampitech/status/2090834948332655011) | Official X oEmbed verified the personal ranking. The pinned underlying repositories and their licenses were inspected: MIT-licensed [stop-slop](https://github.com/hardikpandya/stop-slop/tree/8da1f030185bdfe8471220585162991eaeb970e9), MIT-licensed [no-ai-slop](https://github.com/petergyang/no-ai-slop/tree/d30eddb9e04562234f2070b5ee63ca4649d9a05e), MIT-licensed [humanizer](https://github.com/blader/humanizer/tree/e2e92e7b4b8229253ed5c8e81dc65463fdeddda5), and the MIT-licensed `pstack` [unslop](https://github.com/cursor/plugins/tree/46125561306434d8a1d7745d540d8932ab0cd2a2/pstack/skills/unslop) subproject. | The ranking is opinion, not a benchmark. Adapt voice preservation, no fabricated claims, minimum effective edits, the portability test, and contextual pattern review. Reject blanket bans on punctuation, adverbs, passive voice, questions, first-person choices, or sentence openings. Source card `EVD-052` records the strongest adapted method. |
+
+### Resulting runtime changes
+
+- Added a contextual public-copy and voice reference with a construction-
+  language firewall, fact and voice preservation, portability and producer-
+  pattern review, minimal edits, rendered copy checks, and no authorship or
+  punctuation detector.
+- Added evidence-preserving typed-boundary guidance without importing a
+  mandatory lint dialect.
+- Corrected `hidden="until-found"`, aspect-ratio, JavaScript dependency, form,
+  responsive, performance, and browser-profile overreach.
+- Replaced unsupported named color/font convergence claims with cause-based,
+  post-render prompts. No source reviewed establishes representative prevalence
+  for a portable named-ingredient blacklist.
+- Removed volatile provider names and quotas from runtime guidance; provider
+  research now occurs at the moment of an authorized task using current
+  first-party terms.
+
+### Retention and next review
+
+Pinned repository records and fast-moving service assessments should be
+rechecked by 2026-11-21 or sooner if a dependency is actually proposed. Google
+style and other durable official guidance should be rechecked by 2027-02-19.
+Rejected services remain rejected until a new, independently verified first-
+party provenance, privacy, rights, and terms review resolves the recorded
+problems.
+
+## 2026-08-23 additional world-class skill benchmark
+
+### Method
+
+The follow-up benchmark searched current primary repositories and inspected the
+actual skill instructions, supporting rules, fixtures, validators, and license
+at each pinned commit. Repository popularity, marketing language, and the word
+"premium" were not treated as evidence. Mechanisms were accepted only when they
+closed a demonstrated Design DNA gap without importing another product's house
+style. Upstream test assets were inspected but not executed.
+
+### Source-by-source disposition
+
+| Additional source | Pin and evidence inspected | Adapted | Rejected or already covered |
+| --- | --- | --- | --- |
+| [Impeccable](https://github.com/pbakaus/impeccable/tree/56f44523f76efdcec813e67b38ee550e49b16f48) | Apache-2.0, `56f44523f76efdcec813e67b38ee550e49b16f48`; skill, detector registry, critique reference, and positive/negative antipattern fixtures. | Exact candidate detection for heading-adjacent eyebrow/kicker/overline labels, numbered scaffolding, and repeated text, with source relationship evidence. Source card `EVD-053`. | Universal font, palette, kicker, spacing, motion, and named-style verdicts; scored taste; any AI-authorship inference. |
+| [mblode UI Design](https://github.com/mblode/agent-skills/tree/2e575d39f28acdc698ea22e4c62325801188e1b1/skills/ui-design) | MIT, `2e575d39f28acdc698ea22e4c62325801188e1b1`; skill, aesthetic direction, false-positive rule, and eval JSON. | Exact evidence, `unknown` rather than guessed failure, audit/redesign separation, rerun after correction, and a short examined-but-not-flagged record. Source card `EVD-054`. | React/Next/Tailwind assumptions, product house styles, fixed numerical defaults, and fragmented rule ceremony. |
+| [VS Code design philosophy](https://github.com/microsoft/vscode/blob/cac1904de606481e41cb7051a79c229e9a82517a/.github/skills/design-philosophy/SKILL.md) | MIT repository, `cac1904de606481e41cb7051a79c229e9a82517a`; philosophy skill and token instructions. | Observation to visitor effect to local principle to smallest correction, with explicit competing values. Source card `EVD-055`. | VS Code radii, weights, colors, icon sizes, casing, density, and product vocabulary. |
+| [Google Stitch skills](https://github.com/google-labs-code/stitch-skills/tree/0337446dadde6f8c94210444e2aa9d546126480f) | Apache-2.0, `0337446dadde6f8c94210444e2aa9d546126480f`; taste-design, design extraction, and validator. | Confirmed incumbent-system extraction, functional token roles, current-screen binding, and source-screen inspection already present in Design DNA. | Creativity scores; universal accent, black, font, breakpoint, dark-mode, motion, spring, interface, and page-invention rules; shallow validation as proof. |
+| [Humbleteam design review](https://github.com/humbleteam/design-review/tree/e2bc40583741d387a13b0be35a4f406adf3f62d2) | MIT, `e2bc40583741d387a13b0be35a4f406adf3f62d2`; skill, rubric, and packaging workflow. | Reinforced bounded issue counts, observable before, concrete after, grounded reason, and explicit review routing. | Forced scores, forced polish findings, arbitrary time estimates, citation floors, and packaging CI presented as behavior proof. |
+| [Anthropic frontend-design](https://github.com/anthropics/skills/blob/3b3fad96af16a10759d930941b4520ba0c40edae/skills/frontend-design/SKILL.md) | Skill-specific Apache-2.0, `3b3fad96af16a10759d930941b4520ba0c40edae`; primary skill and license. | Confirmed subject-derived direction, hero as a real thesis, real visitor copy, and labels only when they encode genuine information. | Mandatory aesthetic risk, palette/type-role counts, signatures, and named trend basins. No dedicated behavioral suite was found. |
+| [GitHub accessibility expert/runtime tester](https://github.com/github/awesome-copilot/tree/83561bd7d8a46fcda0581aedabdf8eac7cb196b6) | MIT, `83561bd7d8a46fcda0581aedabdf8eac7cb196b6`; both agent files and repository license. | Confirmed native HTML, keyboard/focus restoration, 400% zoom, forced colors, runtime-before-DOM claims, and evidence capture already covered. | Wildcard reduced-motion destruction, generic live-region recipes, and broad conformance claims without representative proof. |
+| [Addy Osmani frontend UI engineering](https://github.com/addyosmani/agent-skills/tree/5a5ea45e806f82273549fd85e60adb95d55f510d/skills/frontend-ui-engineering) | MIT, `5a5ea45e806f82273549fd85e60adb95d55f510d`; skill and behavioral eval case. | Confirmed clear responsibility, simplest adequate state, realistic content, complete states, and task-level evals already covered. | Universal component-line limits, no-raw-pixel doctrine, fixed breakpoints, mandatory skeletons, optimistic updates, and single-H1 rule. |
+| [Microsoft frontend design review](https://github.com/microsoft/skills/blob/cde32f9c7332b53de67faa7dadabb6873d02bb0c/.github/skills/frontend-design-review/SKILL.md) | MIT, `cde32f9c7332b53de67faa7dadabb6873d02bb0c`; primary skill. | Confirmed creation/review separation, incumbent/Storybook/Figma comparison, state/variant coverage, and severity routing. | Font bans, interaction/action-count limits, universal AI-content disclosure, and its weaker accessibility floor. |
+| [Microsoft Power CAT design guide](https://github.com/microsoft/power-cat-skills/blob/33bc38456abb83f27daad968b748c8085f2a78ef/plugins/powercat-code-apps/skills/design-guide/SKILL.md) | MIT, `33bc38456abb83f27daad968b748c8085f2a78ef`; primary skill and repository license. | Confirmed multi-format brand-source extraction, provenance, and separation of extracted guidance from scaffolding. | Guessed tokens, fixed templates and breakpoints, absolute no-raw-value rules, and automatic install, publish, or deploy coupling. |
+| [GitHub premium frontend UI](https://github.com/github/awesome-copilot/blob/83561bd7d8a46fcda0581aedabdf8eac7cb196b6/skills/premium-frontend-ui/SKILL.md) | Same MIT Awesome Copilot pin; used as a negative control. | Only compositor-aware motion and reduced-motion/coarse-pointer degradation, already covered. | Mandatory preloaders, custom cursors, scroll hijacking, full-viewport heroes, effect stacks, glass/noise, and "premium equals maximum effects." |
+
+Two otherwise relevant repositories were excluded from transferable guidance
+because the inspected commits did not contain a project-level license covering
+their skill prose: `Shopify/agent-skills` and
+`microsoft/GitHubCopilot_Customized`. Dependency licenses did not substitute for
+permission to reuse the repository's own instructions.
+
+### Additional official gap sources
+
+| Source | Adaptation and limit |
+| --- | --- |
+| [MDN Baseline compatibility](https://developer.mozilla.org/en-US/docs/Glossary/Baseline/Compatibility) and [testing strategy](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Testing/Testing_strategies) | Added a project-specific browser/engine/OS/device support contract. Baseline screens feature availability but never substitutes for runtime, access, performance, older-device, web-view, or assistive-technology tests. Source card `EVD-056`. |
+| [W3C ARIA APG introduction](https://www.w3.org/WAI/ARIA/apg/about/introduction/) and [Read Me First](https://www.w3.org/WAI/ARIA/apg/practices/read-me-first/) | Added concrete composite-widget routing for semantics, state, focus, and keyboard behavior. APG remains informative and illustrative, not production-ready copy-paste code. Source card `EVD-057`. |
+| [Core Web Vitals threshold methodology](https://web.dev/articles/defining-core-web-vitals-thresholds) | Added the current good thresholds as dated diagnostics only, distinct from lab proxies, field percentile evidence, and owner-approved budgets. Source card `EVD-058`. |
+| [Apple photo location metadata](https://support.apple.com/guide/personal-safety/manage-location-metadata-in-photos-ips0d7a5df82/web) | Added delivered-file location and metadata privacy review, balanced against intentional rights, orientation, color, and provenance fields. Source card `EVD-059`. |
+| [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html) | Added safe public filenames, bounded originals, risk-selected rewriting, output reinspection, and caution against leaking client files to external scanners. Full upload security still requires a specialist. Source card `EVD-060`. |
+
+### Result
+
+The benchmark changed runtime only where it found a demonstrated gap. Design
+DNA now has an executable but non-gating pre-heading candidate mechanism,
+evidence-bearing critique and false-positive discipline, explicit cross-engine
+and real-device scoping, visible-plus-embedded asset privacy review, current
+composite-widget routing, and dated performance diagnostics. The broader source
+set did not justify a new font, palette, component, motion, punctuation, style,
+or "premium" recipe.
+
+## 2026-08-23 reasoning fidelity and qualification reliability review
+
+### Method
+
+This pass tested a different failure mode: whether a polished rationale,
+single successful generation, or public regression suite could be mistaken for
+reliable design behavior. Primary research and official guidance were reviewed
+for reasoning-to-artifact fidelity, first impressions, design convergence,
+productive friction, repeated agent trials, contamination, evaluation gaming,
+and protected promotion evidence. Each transfer was constrained to the exact
+gap it could support; none was treated as a visual style source.
+
+### Source dispositions
+
+| Source | Adapted mechanism | Boundary retained |
+| --- | --- | --- |
+| [Design Theater](https://arxiv.org/html/2607.22928v2) | Reconcile concrete internal design commitments against exact rendered and behavioral evidence. Source card `EVD-061`. | One recent preprint and bounded benchmark cannot define beauty, authorship, or universal quality. |
+| [Anthropic agent-eval guidance](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) | Repeated trials, first-pass and all-trials views, worst-trial and blocker visibility, and outcome rather than claim grading. Source card `EVD-062`. | Open visual judgment still needs situated human review; empirical run rates are not theoretical probabilities. |
+| [NIST CAISI evaluation-cheating guidance](https://www.nist.gov/caisi/cheating-ai-agent-evaluations/1-background-ai-models-can-cheat-evaluations) | Bind harnesses and artifacts, fail closed on stale or mixed evidence, and keep protected promotion material out of the public package. Source card `EVD-063`. | Anti-tamper controls do not prove completeness or malicious intent. |
+| [LiveBench](https://github.com/LiveBench/LiveBench) | Separate public development and immutable regression cases from refreshed external promotion holdouts. Source card `EVD-064`. | Objective answer grading does not transfer to every aesthetic or cultural judgment. |
+| [Interrogating Design Homogenization in Web Vibe Coding](https://arxiv.org/abs/2603.13036) | Use productive friction to challenge the first safe organizing root with a materially different brief-native answer. Source card `EVD-065`. | Friction, novelty, and unfamiliarity are not quality goals by themselves. |
+| [Tuch et al. first-impression research](https://research.google/pubs/the-role-of-visual-complexity-and-prototypicality-regarding-first-impression-of-websites-working-towards-understanding-aesthetic-judgments/) | Freeze an unprimed category, stakes, and next-action read before exposing rationale. Source card `EVD-066`. | The 2012 screenshot study does not authorize universal low complexity or conventionality. |
+| [Material 3 Expressive research](https://design.google/library/expressive-material-design-google-research?pubDate=20250521) | Test whether project-derived expression directs attention while preserving task recognition, labels, access, and function. Source card `EVD-067`. | Google-reported product research is not permission to import Material's style, components, or expression tactics. |
+
+### Resulting runtime and maintainer changes
+
+- Direction grounding now includes a private, provisional perception-and-stakes
+  hypothesis: likely mistaken category, visitor stakes or uncertainty, and the
+  wrong posture that would betray the brief. It cannot become public labels or
+  a fixed visual slot.
+- Final review now reconciles every concrete consequential commitment as
+  realized, partial, missing, or superseded against an exact artifact or
+  behavior. Confident rationale and a successful build are not evidence.
+- Unprimed review now records perceived category, stakes, and next action, but
+  treats delayed or hybrid recognition as valid when it serves the project.
+- Qualification architecture separates development, regression, and protected
+  promotion evidence; reports first-pass consistency and the weakest trial;
+  and fails closed on empty, stale, mixed-build, or publicly exposed holdout
+  evidence.
+
+No reviewed source justified mandatory photos, a font family, a component
+shape, a complexity target, a style rotation, a universal page formula, or a
+beauty score. Those would replace one convergence basin with another.

@@ -143,7 +143,8 @@ Only after this brief-native work is understood may an authorized closest
 sibling be consulted. Compare the organizing relationship, not a font name or
 color swatch. If the selected answer remains interchangeable after subject
 nouns, dominant media, accent, and motion are mentally removed, reopen the
-earliest shared decision.
+earliest shared decision. This counterfactual applies to that actual authorized
+comparison; do not manufacture an unrelated-industry swap as a generic test.
 
 ## Limit anchoring when capability allows
 

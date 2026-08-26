@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-067",
+  "retrieved": "2026-08-23",
+  "url": "https://design.google/library/expressive-material-design-google-research?pubDate=20250521",
+  "locator": "Google Material 3 Expressive research; attention, preference, usability, accessibility, familiarity, and context limits",
+  "content_kind": "maintainer_summary",
+  "summary": "Google reports extensive research in which purposeful color, shape, size, motion, and containment improved attention and preference, while unfamiliar or unlabeled structures harmed usability. The transferable lesson is evidence-led expression balanced with recognizable interaction patterns and accessibility—not adoption of Material components or maximal styling."
+}

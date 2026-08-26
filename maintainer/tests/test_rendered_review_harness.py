@@ -20,6 +20,7 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 HARNESS = PACKAGE_ROOT / "skills" / "design-dna" / "scripts" / "rendered_review.mjs"
 SCHEMA = PACKAGE_ROOT / "maintainer" / "schemas" / "render-review.schema.json"
 NODE = shutil.which("node")
+ARTIFACT_METADATA_RESERVE_BYTES = 256 * 1024
 
 EXPECTED_PROFILE_IDS = [
     "mobile-320-text-spacing",
@@ -415,6 +416,47 @@ class RenderedReviewHarnessTests(unittest.TestCase):
         self.assertIn("--scroll-sweep", result.stdout)
         self.assertIn("ownership marker", result.stdout)
         self.assertIn("never emits an AI score", result.stdout)
+
+    def test_maximum_default_route_contact_sheet_fits_metadata_reserve(self) -> None:
+        module_dir, browser = self.require_browser()
+        with tempfile.TemporaryDirectory(
+            prefix="design-dna-render-multiroute-metadata-"
+        ) as root:
+            root_path = Path(root)
+            site = make_site(root_path)
+            for route_number in range(2, 9):
+                shutil.copyfile(
+                    site / "index.html",
+                    site / f"route-{route_number}.html",
+                )
+            output = root_path / "review-output"
+            routes = tuple(
+                value
+                for route_number in range(2, 9)
+                for value in ("--route", f"/route-{route_number}.html")
+            )
+            result = run_harness(
+                *browser_arguments(
+                    site,
+                    output,
+                    browser,
+                    "maximum-default-route-metadata",
+                    *routes,
+                ),
+                environment=browser_environment(module_dir),
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report, _ = validate_report(output)
+            self.assertEqual(len(report["routes"]), 8)
+            self.assertEqual(len(report["captures"]), 72)
+            contact_bytes = (output / "contact-sheet.html").stat().st_size
+            marker_bytes = (output / ".design-dna-render-review.json").stat().st_size
+            self.assertGreater(contact_bytes + marker_bytes, 64 * 1024)
+            self.assertLessEqual(
+                contact_bytes + marker_bytes,
+                ARTIFACT_METADATA_RESERVE_BYTES,
+            )
 
     def test_remote_scroll_sweep_is_rejected_before_browser_loading(self) -> None:
         with tempfile.TemporaryDirectory(
@@ -2056,7 +2098,10 @@ class RenderedReviewHarnessTests(unittest.TestCase):
                         "--max-report-bytes",
                         "1048576",
                         "--max-artifact-bytes",
-                        "1114112",
+                        str(
+                            1048576
+                            + (2 * ARTIFACT_METADATA_RESERVE_BYTES)
+                        ),
                         "--max-screenshot-bytes",
                         "1048576",
                     ),
@@ -2077,7 +2122,8 @@ class RenderedReviewHarnessTests(unittest.TestCase):
                     self.assertFalse(report["execution_ok"])
                     self.assertTrue(
                         any(
-                            capture["failure"]["code"] == expected_code
+                            capture["failure"] is not None
+                            and capture["failure"]["code"] == expected_code
                             for capture in report["captures"]
                         )
                     )

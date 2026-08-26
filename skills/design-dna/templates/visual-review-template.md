@@ -18,6 +18,7 @@ lifecycle. Never infer checks that were not performed.
 
 - Project Contrast record path and current status, if active:
 - Direction Challenge record path and current status, if active:
+- Owner-pattern review path, contract ID, and current status, if active:
 - Record/auditor result consulted, with date and limitation:
 
 This review may summarize evidence but does not advance, approve, or replace a
@@ -28,8 +29,11 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 - [Rendered review](#rendered-review)
 - [Review scope and capture rationale](#review-scope-and-capture-rationale)
 - [First-impression and surface-fidelity review](#first-impression-and-surface-fidelity-review)
+- [Artifact credibility and cumulative-pattern review](#artifact-credibility-and-cumulative-pattern-review)
+- [Enterprise Candidate closure](#enterprise-candidate-closure-when-selected)
 - [Connected public experience closure](#connected-public-experience-closure-when-selected)
 - [Preship and specificity closure](#preship-and-specificity-closure)
+- [Owner-pattern contract closure](#owner-pattern-contract-closure-when-selected)
 - [Project Contrast review context](#project-contrast-review-context)
 - [Direction Challenge review context](#direction-challenge-review-context-when-selected)
 - [Typography stress evidence](#typography-stress-evidence)
@@ -89,6 +93,63 @@ good.
 | --- | --- | --- | --- |
 | First impression and surface fidelity | applicable / not-applicable / blocked |  |  |
 
+## Artifact credibility and cumulative-pattern review
+
+Use for a substantial public proposition and whenever the owner has rejected
+an AI-looking, synthetic, overdesigned, or maker-facing result. Open the exact
+final wide and narrow captures before rereading the rationale. No ingredient
+fails by category; record the observed whole-artifact relationship.
+
+- Artifact-only reviewer relationship and prior exposure:
+- Credible public-surface result:
+- Dominant recurring device or relationship cluster:
+- Cumulative intensity and ordinary-work result:
+- Business/category completeness result:
+- Media credibility and synthetic-pattern result:
+- Portfolio/process-language result:
+- Cross-project visual-grammar result or no-comparator limitation:
+- Container/backplate result:
+- Link/button/underline affordance result:
+- Artifact credibility disposition: keep / revise / reopen direction / reject / blocked
+
+## Enterprise Candidate closure (when selected)
+
+Use when an applicable owner policy requires enterprise-grade public execution
+as the baseline for a new website. This is not a financial-valuation claim, an
+automatic release verdict, a generic enterprise checklist, or a reason to
+invent facts, geography, scale, inventory, staff, or integrations. Test the
+actual candidate against the public reality the brief supports.
+
+- Public-surface maturity: would the rendered candidate make sense as a mature
+  organization in this exact category without the maker's explanation?
+- First-screen composition: opening subject, primary heading, and useful next
+  step visible; no accidental blank field, intrinsic-media expansion, clipped
+  title, or dead decorative panel.
+- Media-to-slot result: every high-attention image has a deliberate source,
+  subject-safe crop or full-scene treatment, and wide/narrow behavior. Do not
+  trade an unintended crop for an empty visual pane.
+- Category topology: information, comparison, support, policy, discovery, or
+  other ordinary public depth present only where this visitor needs it; no fake
+  enterprise theater or generic page inventory.
+- Key paths and states: primary navigation, search/filter/selection, form,
+  commerce, support, or other promised interaction fully rendered and honestly
+  bounded when unavailable.
+- System finish: typography, spacing, hierarchy, controls, media, and ordinary
+  content maintain a purposeful local system without forcing every route or
+  section through one reusable spectacle.
+- Public-copy integrity: source/voice basis, representative high-attention
+  strings, deletion/swap/speaker result, repeated-pattern result,
+  rendered-corpus coverage, and remaining truth or approval limits.
+- Shared-cause rerun: identify the shared component/layout/media/content rule
+  behind every material defect and record the family-wide rerender after
+  revision.
+- Enterprise Candidate disposition: keep / revise / reopen direction / reject /
+  blocked
+
+| Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Observation, root cause, and rerun result |
+| --- | --- | --- | --- |
+| Enterprise Candidate | applicable / not-applicable / blocked |  |  |
+
 ## Connected public experience closure (when selected)
 
 Use only when the selected direction record names a detailed, connected,
@@ -127,7 +188,21 @@ automatic beauty or release verdict.
 | Closure | Applicability or disposition | Rendered PNG path and SHA-256 | Result or limitation |
 | --- | --- | --- | --- |
 | Adversarial specificity review | applicable / not-applicable / blocked |  |  |
+| Artifact credibility and cumulative pattern | applicable / not-applicable / blocked |  |  |
 | Preship gate | applicable / not-applicable / blocked |  |  |
+
+## Owner-pattern contract closure (when selected)
+
+Complete this only when the `owner-pattern-contract` trigger is active. The
+canonical `.design-dna/owner-pattern-review.json` owns the per-signal
+dispositions and evidence; do not certify them from this summary alone.
+
+- Contract ID and SHA-256:
+- Owner-pattern review path and SHA-256:
+- Matching final build ID:
+- Distinct wide and narrow full-page evidence scope and matching build ID:
+- `owner_pattern_audit.py --phase ready` result, date, and limitation:
+- Unresolved named failure states, or `none`:
 
 ## Project Contrast review context
 

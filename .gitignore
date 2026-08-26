@@ -21,3 +21,5 @@ maintainer/evals/results/*.partial
 maintainer/evals/artifacts/*.partial
 maintainer/evals/reviews/*.partial
 .playwright-browsers/
+/.design-dna/
+/.design-dna.lock

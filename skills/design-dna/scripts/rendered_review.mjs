@@ -42,6 +42,8 @@ const MAX_INTERACTIONS_PER_SCENARIO = 12;
 const MAX_INTERACTIONS_TOTAL = 60;
 const MAX_SELECTOR_LENGTH = 512;
 const MAX_INTERACTION_VALUE_LENGTH = 1000;
+const MAX_OWNERSHIP_MARKER_BYTES = 16 * 1024;
+const ARTIFACT_METADATA_RESERVE_BYTES = 256 * 1024;
 const DEFAULT_LIMITS = Object.freeze({
   source_files: 1000,
   source_bytes: 100 * 1024 * 1024,
@@ -613,15 +615,15 @@ function parseArgs(argv) {
   }
   if (
     options.limits.total_artifact_bytes <
-    options.limits.report_bytes + 64 * 1024
+    options.limits.report_bytes + ARTIFACT_METADATA_RESERVE_BYTES
   ) {
     throw new RenderReviewError(
       "invalid-limit-combination",
-      "--max-artifact-bytes must reserve at least 65536 bytes beyond --max-report-bytes for the contact sheet and marker.",
+      `--max-artifact-bytes must reserve at least ${ARTIFACT_METADATA_RESERVE_BYTES} bytes beyond --max-report-bytes for the contact sheet and marker.`,
       {
         artifact_bytes: options.limits.total_artifact_bytes,
         report_bytes: options.limits.report_bytes,
-        required_reserve_bytes: 64 * 1024,
+        required_reserve_bytes: ARTIFACT_METADATA_RESERVE_BYTES,
       },
     );
   }
@@ -1439,7 +1441,11 @@ async function verifyCaptureManifest(manifest) {
 
 async function validateOwnershipMarker(output) {
   const markerPath = path.join(output, ".design-dna-render-review.json");
-  const marker = await readBoundedJson(markerPath, 16 * 1024, "output-not-owned");
+  const marker = await readBoundedJson(
+    markerPath,
+    MAX_OWNERSHIP_MARKER_BYTES,
+    "output-not-owned",
+  );
   if (
     !hasExactKeys(marker, [
       "schema_version",
@@ -5286,13 +5292,17 @@ async function run(options) {
       mode: 0o600,
     });
     const contactInfo = await stat(contactSheetAbsolute);
-    if (contactInfo.size + 16 * 1024 > 64 * 1024) {
+    if (
+      contactInfo.size + MAX_OWNERSHIP_MARKER_BYTES >
+      ARTIFACT_METADATA_RESERVE_BYTES
+    ) {
       throw new RenderReviewError(
         "artifact-byte-limit-exceeded",
         "The contact sheet and maximum ownership marker exceed their reserved artifact budget.",
         {
           contact_sheet_bytes: contactInfo.size,
-          reserved_bytes: 64 * 1024,
+          maximum_marker_bytes: MAX_OWNERSHIP_MARKER_BYTES,
+          reserved_bytes: ARTIFACT_METADATA_RESERVE_BYTES,
         },
       );
     }

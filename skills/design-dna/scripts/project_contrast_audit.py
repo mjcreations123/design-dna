@@ -23,7 +23,7 @@ from urllib.parse import urlsplit
 
 
 SCHEMA_VERSION = 1
-TOOL_VERSION = "1.6.0"
+TOOL_VERSION = "1.7.0"
 ARTIFACT_TYPE = "design-dna-project-contrast-audit"
 DEFAULT_CONTRACT = ".design-dna/project-contrast.json"
 DEFAULT_OUTPUT = ".design-dna/project-contrast-audit.json"
@@ -56,7 +56,7 @@ CHALLENGE_METHODS = {
     "counter-model", "alternate-proof", "reference-decomposition", "not-needed",
 }
 COMPARATOR_RELATIONSHIPS = {
-    "closest-sibling", "approved-system", "known-template",
+    "closest-sibling", "same-project-rejected", "approved-system", "known-template",
 }
 SHARED_ORIGINS = {"brand", "task", "platform", "accessibility", "maintenance"}
 SHARED_STATUSES = {"accepted", "rebuild"}
@@ -1301,10 +1301,6 @@ def validate_lifecycle_stage(root: dict[str, Any], errors: list[dict[str, str]])
         if review.get("disposition") not in {"accepted", "rework", "blocked"}:
             errors.append(item("$.review.disposition", "lifecycle-review-missing", "reviewed requires an accepted, rework, or blocked disposition."))
         if recurrence_required:
-            owner_review = review.get("owner_review")
-            owner_status = owner_review.get("status") if isinstance(owner_review, dict) else None
-            if owner_status not in {"accepted", "rejected"}:
-                errors.append(item("$.review.owner_review.status", "lifecycle-owner-review-missing", "reviewed owner-recurrence work requires an accepted or rejected accountable-owner review state."))
             predictions = direction.get("observable_predictions") if isinstance(direction, dict) else None
             if isinstance(predictions, list) and not any(
                 isinstance(prediction, dict)
@@ -1535,7 +1531,13 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
         elif isinstance(comparators, list):
             for index, comparator in enumerate(comparators):
                 label = f"$.comparison.comparators[{index}]"
-                record = exact_object(errors, comparator, label, {"id", "relationship", "evidence"})
+                record = exact_object_with_optional(
+                    errors,
+                    comparator,
+                    label,
+                    {"id", "relationship", "evidence"},
+                    {"project_id"},
+                )
                 if record is None:
                     continue
                 identifier = record.get("id")
@@ -1543,6 +1545,8 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                     if identifier in seen_comparators:
                         errors.append(item(f"{label}.id", "duplicate-id", "Comparator IDs must be unique."))
                     seen_comparators.add(identifier)
+                if record.get("project_id") is not None:
+                    valid_draftable_id(errors, record.get("project_id"), f"{label}.project_id")
                 valid_enum(errors, record.get("relationship"), f"{label}.relationship", COMPARATOR_RELATIONSHIPS)
                 if record.get("evidence") is not None:
                     valid_comparator_evidence(errors, record.get("evidence"), f"{label}.evidence")
@@ -3114,6 +3118,7 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
     # similarity score: near matches still require the documented review.
     verified_comparator_results: dict[str, dict[str, object]] = {}
     comparator_image_source_ready: dict[str, bool] = {}
+    verified_comparator_source_build_hashes: dict[str, str] = {}
     for index, comparator in enumerate(comparators):
         comparator_evidence = comparator["evidence"]
         if comparator_evidence is not None:
@@ -3147,6 +3152,13 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
                                 f"comparison.comparators[{index}].evidence.image_source.source_build.file",
                             )
                             source_build_ok = source_result is not None
+                            if (
+                                source_result is not None
+                                and isinstance(source_result.get("sha256"), str)
+                            ):
+                                verified_comparator_source_build_hashes[
+                                    comparator["id"]
+                                ] = source_result["sha256"]
                         extent = image_source.get("extent")
                         viewport = image_source.get("viewport")
                         dimensions_match = (
@@ -3193,6 +3205,77 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
         if comparator["relationship"] == "closest-sibling"
     }
     verified_closest_sibling_ids = closest_sibling_ids & verified_comparator_ids
+    candidate_project_id = scope.get("project_id")
+    cross_project_closest_sibling_ids = {
+        comparator["id"]
+        for comparator in comparators
+        if comparator["relationship"] == "closest-sibling"
+        and isinstance(comparator.get("project_id"), str)
+        and comparator.get("project_id") != candidate_project_id
+    }
+    verified_cross_project_closest_sibling_ids = (
+        cross_project_closest_sibling_ids & verified_comparator_ids
+    )
+
+    # A different project_id is necessary but not sufficient evidence of a
+    # different prior build. Reject alias/fork laundering when a declared
+    # closest sibling reuses the exact bound comparator artifact or the exact
+    # bound source-build identity of a comparator attributed to another
+    # project. This is provenance integrity, not pixel-similarity scoring.
+    comparator_by_id = {
+        comparator["id"]: comparator
+        for comparator in comparators
+        if isinstance(comparator.get("id"), str)
+    }
+
+    def comparator_artifact_hash(comparator_id: str) -> str | None:
+        entry = verified_comparator_results.get(comparator_id)
+        result = entry.get("result") if isinstance(entry, dict) else None
+        value = result.get("sha256") if isinstance(result, dict) else None
+        return value if isinstance(value, str) else None
+
+    reported_identity_collisions: set[tuple[str, str]] = set()
+    for sibling_id in sorted(verified_cross_project_closest_sibling_ids):
+        sibling = comparator_by_id.get(sibling_id, {})
+        sibling_project = sibling.get("project_id")
+        sibling_artifact_hash = comparator_artifact_hash(sibling_id)
+        sibling_source_hash = verified_comparator_source_build_hashes.get(sibling_id)
+        for other_id in sorted(verified_comparator_ids - {sibling_id}):
+            other = comparator_by_id.get(other_id, {})
+            other_project = other.get("project_id")
+            if (
+                not isinstance(sibling_project, str)
+                or not isinstance(other_project, str)
+                or sibling_project == other_project
+            ):
+                continue
+            same_artifact = (
+                isinstance(sibling_artifact_hash, str)
+                and sibling_artifact_hash == comparator_artifact_hash(other_id)
+            )
+            same_source_build = (
+                isinstance(sibling_source_hash, str)
+                and sibling_source_hash
+                == verified_comparator_source_build_hashes.get(other_id)
+            )
+            if not (same_artifact or same_source_build):
+                continue
+            pair = tuple(sorted((sibling_id, other_id)))
+            if pair in reported_identity_collisions:
+                continue
+            reported_identity_collisions.add(pair)
+            collision_basis = (
+                "the exact comparator artifact and source build"
+                if same_artifact and same_source_build
+                else "the exact comparator artifact"
+                if same_artifact
+                else "the exact source build"
+            )
+            findings.append(finding(
+                "closest-sibling-artifact-identity-collision",
+                f"Closest sibling {sibling_id!r} and comparator {other_id!r} name different projects but reuse {collision_basis}; a renamed, forked, or aliased artifact cannot establish cross-project recurrence evidence.",
+                blocking=True,
+            ))
     closest_selection = comparison.get("closest_sibling_selection")
     closest_selection_complete = False
     selection_required = (
@@ -3417,13 +3500,20 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
 
         Owner recurrence is a claim about the nearest authorized prior answer,
         not merely any safely retained comparator. Other authorized comparators
-        may still enrich a review, but cannot substitute for that boundary.
+        may still enrich a review, but cannot substitute for that boundary. A
+        same-project rejected candidate is valuable rejection evidence, but it
+        cannot by itself test cross-project recurrence.
         """
 
+        required_ids = (
+            verified_cross_project_closest_sibling_ids
+            if recurrence_required
+            else verified_closest_sibling_ids
+        )
         return (
             isinstance(binding, dict)
             and isinstance(binding.get("comparator_ids"), list)
-            and bool(set(binding["comparator_ids"]) & verified_closest_sibling_ids)
+            and bool(set(binding["comparator_ids"]) & required_ids)
         )
 
     structural_against_closest_sibling = False
@@ -3826,7 +3916,13 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
             add_gap(gaps, "closest-sibling-missing", "owner-recurrence-requirement needs at least one authorized comparator.")
         elif not any(comparator["relationship"] == "closest-sibling" for comparator in comparators):
             add_gap(gaps, "closest-sibling-missing", "At least one comparator must be marked closest-sibling.")
-        elif not verified_closest_sibling_ids:
+        elif not cross_project_closest_sibling_ids:
+            add_gap(
+                gaps,
+                "closest-sibling-cross-project-missing",
+                "owner-recurrence-requirement is a cross-project claim: at least one closest-sibling comparator must name a different project_id. Keep same-project rejected candidates as separate diagnostic evidence.",
+            )
+        elif not verified_cross_project_closest_sibling_ids:
             add_gap(gaps, "closest-sibling-evidence-unverified", "owner-recurrence-requirement names a closest sibling whose authorized evidence did not verify.")
         if not accepted_structural_difference:
             add_gap(gaps, "structural-contrast-unproven", "owner-recurrence-requirement needs an accepted contrast claim at encounter, opening, body, or content-unit level.")
@@ -3849,9 +3945,9 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
         paired_comparator_ids = review["paired"].get("reviewed_comparator_ids")
         if (
             not isinstance(paired_comparator_ids, list)
-            or not (set(paired_comparator_ids) & verified_closest_sibling_ids)
+            or not (set(paired_comparator_ids) & verified_cross_project_closest_sibling_ids)
         ):
-            add_gap(gaps, "closest-sibling-paired-review-missing", "owner-recurrence-requirement needs the paired review to expose the verified closest-sibling comparator, not only another authorized comparator.")
+            add_gap(gaps, "closest-sibling-paired-review-missing", "owner-recurrence-requirement needs the paired review to expose the verified cross-project closest-sibling comparator, not only a same-project rejection or another authorized comparator.")
         if shell_classification == "candidate-public-shell":
             shell_collision_observed = False
             for claim_index, claim in enumerate(claims):
@@ -3895,10 +3991,43 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
                 "Owner acceptance must be observed after the paired review was frozen; equal or earlier timestamps do not establish informed acceptance.",
                 blocking=True,
             ))
-        if owner_status != "accepted" or not owner_complete:
-            add_gap(gaps, "owner-acceptance-missing", "owner-recurrence-requirement needs completed accountable-owner or owner-authorized-human acceptance.")
-        elif owner_relationship not in OWNER_ACCEPTANCE_RELATIONSHIPS:
-            add_gap(gaps, "owner-acceptance-relationship-missing", "owner-recurrence-requirement needs an accountable-owner or owner-authorized-human relationship.")
+
+    owner_timing_valid = (
+        not recurrence_required
+        or (
+            owner_observed is not None
+            and paired_frozen is not None
+            and owner_observed > paired_frozen
+        )
+    )
+    owner_acceptance_complete = (
+        owner_status == "accepted"
+        and owner_complete
+        and owner_relationship in OWNER_ACCEPTANCE_RELATIONSHIPS
+        and owner_timing_valid
+    )
+    unsettled_owner_evidence = (
+        owner_status not in {"accepted", "rejected"}
+        and owner_review.get("evidence") is not None
+    )
+    report["owner_acceptance"] = {
+        "status": owner_status,
+        "complete": owner_acceptance_complete,
+        "required_for": [
+            "owner-approved or owner-accepted claim",
+            "publication, portfolio, or release approval when project policy requires it",
+        ],
+        "blocks_candidate_readiness": (
+            owner_status == "rejected"
+            or (owner_status == "accepted" and not owner_acceptance_complete)
+            or unsettled_owner_evidence
+        ),
+        "meaning": (
+            "Owner acceptance is separate from candidate evidence readiness. "
+            "Pending or not-requested acceptance does not stop a validated "
+            "candidate; rejection or a malformed acceptance claim does."
+        ),
+    }
 
     report["evidence"] = {
         "verified": verified,
@@ -3919,6 +4048,8 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
         "comparator_ids": [comparator["id"] for comparator in comparators],
         "closest_sibling_ids": sorted(closest_sibling_ids),
         "verified_closest_sibling_ids": sorted(verified_closest_sibling_ids),
+        "cross_project_closest_sibling_ids": sorted(cross_project_closest_sibling_ids),
+        "verified_cross_project_closest_sibling_ids": sorted(verified_cross_project_closest_sibling_ids),
         "closest_sibling_selection_complete": closest_selection_complete,
         "comparator_evidence_kinds": [
             comparator["evidence"]["kind"]

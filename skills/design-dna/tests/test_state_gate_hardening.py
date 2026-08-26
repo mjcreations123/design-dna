@@ -6,6 +6,10 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
+import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -80,10 +84,24 @@ def minimal_final_review() -> str:
         "| --- | --- | --- | --- |",
         "| First impression and surface fidelity | applicable | evidence/raw.png plus sha256:" + ("0" * 64) + " | The evidence is deliberately raw for this negative test. |",
         "",
+        "## Artifact credibility and cumulative-pattern review",
+        "- Artifact-only reviewer relationship and prior exposure: producer-self; the reviewer created the fixture and cannot claim independence",
+        "- Credible public-surface result: the raw fixture cannot establish a credible public surface",
+        "- Dominant recurring device or relationship cluster: the raw fixture cannot establish a rendered relationship cluster",
+        "- Cumulative intensity and ordinary-work result: the raw fixture cannot establish whole-route intensity or ordinary content behavior",
+        "- Business/category completeness result: the raw fixture cannot establish public or category completeness",
+        "- Media credibility and synthetic-pattern result: the raw fixture cannot establish media credibility",
+        "- Portfolio/process-language result: the raw fixture cannot establish public-copy credibility",
+        "- Cross-project visual-grammar result or no-comparator limitation: no authorized comparator exists for the raw fixture",
+        "- Container/backplate result: the raw fixture cannot establish whole-route containment logic",
+        "- Link/button/underline affordance result: the raw fixture cannot establish whole-route action affordances",
+        "- Artifact credibility disposition: blocked",
+        "",
         "## Preship and specificity closure",
         "| Closure | Applicability or disposition | Rendered PNG path and SHA-256 | Result or limitation |",
         "| --- | --- | --- | --- |",
         "| Adversarial specificity review | applicable | evidence/raw.png plus sha256:" + ("0" * 64) + " | A raw image must not close the final review. |",
+        "| Artifact credibility and cumulative pattern | blocked | evidence/raw.png plus sha256:" + ("0" * 64) + " | A raw image cannot establish whole-artifact public credibility. |",
         "| Preship gate | applicable | evidence/raw.png plus sha256:" + ("0" * 64) + " | A raw image must not close the final review. |",
         "",
         "## Findings",
@@ -100,6 +118,382 @@ def minimal_final_review() -> str:
 
 
 class StateGateHardeningTests(unittest.TestCase):
+    def test_non_b_bundled_auditor_loading_creates_no_runtime_bytecode(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "design-dna"
+            shutil.copytree(SKILL, runtime)
+            script = runtime / "scripts" / "init_project_state.py"
+            probe = "\n".join((
+                "import runpy, sys",
+                "from pathlib import Path",
+                "assert not sys.dont_write_bytecode",
+                f"script = Path({str(script)!r})",
+                "namespace = runpy.run_path(str(script), run_name='_design_dna_non_b_probe')",
+                "loader = namespace['load_bundled_source_module']",
+                "for index, name in enumerate((",
+                "    'direction_challenge_audit.py',",
+                "    'connected_public_experience_audit.py',",
+                "    'owner_rejection_audit.py',",
+                ")):",
+                "    module = loader(f'_design_dna_non_b_{index}', script.with_name(name))",
+                "    nested = getattr(module, 'load_render_review_adapter', None)",
+                "    if nested is not None:",
+                "        nested()",
+            ))
+            environment = os.environ.copy()
+            environment.pop("PYTHONDONTWRITEBYTECODE", None)
+            result = subprocess.run(
+                [sys.executable, "-c", probe],
+                cwd=root,
+                env=environment,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            residue = sorted(
+                path.relative_to(runtime).as_posix()
+                for path in runtime.rglob("*")
+                if path.name == "__pycache__" or path.suffix.casefold() in {".pyc", ".pyo"}
+            )
+            self.assertEqual([], residue)
+
+    def material_boundary_body(
+        self,
+        *,
+        physical: str = "yes",
+        requested: str = "yes",
+        posture: str = "asset-led",
+        rationale: str = "Not applicable because bound photography carries the physical subject.",
+        basis: str = "Not applicable because no media-light exception is used.",
+        approval: str = "Not applicable because this direction is asset-led.",
+        evidence: str = "Not applicable because no media-light exception is used.",
+        rejection: str = "active; reopen the compressed type, square CTA, hard-rule, fake-package, and photo-free relationship cluster.",
+    ) -> str:
+        return "\n".join((
+            "## Material, media, and public-copy boundary",
+            f"- Physical or sensory subject: {physical}",
+            f"- Explicit owner request for photos or rich media: {requested}",
+            f"- Material and media posture: {posture}",
+            "- Project-specific basis: The brief sells a physical consumer product whose scale, use context, and package recognition matter.",
+            "- Media roles and truth boundary: Product still life establishes recognition and household photography supplies context without implying clinical efficacy.",
+            "- Asset manifest and readiness: .design-dna/assets.yml; selected local concept images are source-bound and crop-planned.",
+            f"- Deliberately media-light rationale: {rationale}",
+            f"- Media-light exception basis: {basis}",
+            f"- Media-light exception approval: {approval}",
+            f"- Media-light exception evidence: {evidence}",
+            f"- Owner-rejection disposition: {rejection}",
+            "- Protected facts and functions: Preserve safe label guidance, product distinctions, navigation, and basket behavior.",
+            "- Public-copy boundary: Keep design rationale, backend categories, workflow state, and builder labels out of visitor-facing strings.",
+            "",
+        ))
+
+    def test_photo_request_requires_asset_led_capability(self) -> None:
+        body = self.material_boundary_body()
+        failures = INITIALIZER.direction_material_boundary_failures(
+            body,
+            required_evidence_capabilities={"project-contrast"},
+        )
+        self.assertTrue(
+            any("asset-led evidence capability" in failure for failure in failures),
+            failures,
+        )
+        self.assertEqual(
+            [],
+            INITIALIZER.direction_material_boundary_failures(
+                body,
+                required_evidence_capabilities={"asset-led"},
+            ),
+        )
+
+    def test_missing_supplied_photos_cannot_justify_media_light_physical_work(self) -> None:
+        body = self.material_boundary_body(
+            requested="no",
+            posture="deliberately-media-light",
+            rationale=(
+                "No photos were supplied or available, so the build will use "
+                "typography instead."
+            ),
+            basis="visitor-task-fit",
+            approval="Not approved; this is only a producer convenience.",
+        )
+        failures = INITIALIZER.direction_material_boundary_failures(
+            body,
+            required_evidence_capabilities=set(),
+        )
+        self.assertTrue(
+            any("Missing supplied media" in failure for failure in failures),
+            failures,
+        )
+
+    def test_physical_media_light_exception_requires_specific_approved_authority(self) -> None:
+        body = self.material_boundary_body(
+            requested="no",
+            posture="deliberately-media-light",
+            rationale=(
+                "The project will use typography and diagrams because that is a "
+                "more restrained visual direction for this physical product, "
+                "and the team prefers not to introduce photography right now."
+            ),
+            basis="preference-only",
+            approval="Producer preference only.",
+        )
+        failures = INITIALIZER.direction_material_boundary_failures(
+            body,
+            required_evidence_capabilities=set(),
+        )
+        self.assertTrue(any("language-neutral values" in item for item in failures), failures)
+        self.assertTrue(any("beginning with 'approved'" in item for item in failures), failures)
+        self.assertTrue(any("ISO date" in item for item in failures), failures)
+
+    def test_active_nested_owner_rejection_blocks_media_light_reversal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            rejection_root = state / "rejections"
+            rejection_root.mkdir(parents=True)
+            (rejection_root / "owner.json").write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "classification": "internal",
+                    "status": "active-reopen",
+                    "replacement_constraints": {
+                        "asset_led_required": True,
+                    },
+                }),
+                encoding="utf-8",
+            )
+            evidence = state / "owner-media-light.txt"
+            approval = "approved by Motty 2026-08-23"
+            evidence.write_text(
+                "authority: owner\n"
+                "decision: approved\n"
+                f"{approval}\n",
+                encoding="utf-8",
+            )
+            record_path = state / "direction.md"
+            record_path.write_text("fixture\n", encoding="utf-8")
+            body = self.material_boundary_body(
+                requested="no",
+                posture="deliberately-media-light",
+                rationale="Photography would conflict with the approved visitor task for this particular concept.",
+                basis="visitor-task-fit",
+                approval=approval,
+                evidence=(
+                    ".design-dna/owner-media-light.txt plus sha256:"
+                    + sha256(evidence)
+                ),
+                rejection=(
+                    "active; reopen the prior type, CTA, edge, rhythm, and copy "
+                    "relationship while preserving verified facts."
+                ),
+            )
+            failures = INITIALIZER.direction_material_boundary_failures(
+                body,
+                required_evidence_capabilities=set(),
+                project=project,
+                record_path=record_path,
+            )
+            self.assertTrue(
+                any("structured active owner rejection" in item for item in failures),
+                failures,
+            )
+            inherited = self.material_boundary_body(
+                requested="no",
+                posture="inherited-system",
+                rejection=(
+                    "active; reopen the prior type, CTA, edge, rhythm, and copy "
+                    "relationship while preserving verified facts."
+                ),
+            )
+            inherited_failures = INITIALIZER.direction_material_boundary_failures(
+                inherited,
+                required_evidence_capabilities=set(),
+                project=project,
+                record_path=record_path,
+            )
+            self.assertTrue(
+                any("structured active owner rejection" in item for item in inherited_failures),
+                inherited_failures,
+            )
+
+    def test_standard_draft_direction_cannot_authorize_prebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            INITIALIZER.render_new_state(
+                SKILL,
+                state,
+                "test-fixture",
+                INITIALIZER.PROFILES["standard"],
+                ("standard",),
+            )
+            failures = INITIALIZER.prebuild_failures(project)
+            self.assertTrue(
+                any("direction.md remains draft" in item for item in failures),
+                failures,
+            )
+
+    def test_asset_led_only_state_cannot_authorize_prebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            INITIALIZER.render_new_state(
+                SKILL,
+                state,
+                "test-fixture",
+                ("assets",),
+                ("asset-led",),
+                ("asset-led",),
+            )
+            failures = INITIALIZER.prebuild_failures(project)
+            self.assertTrue(
+                any("always requires a selected direction.md" in item for item in failures),
+                failures,
+            )
+
+    def test_draft_connected_public_experience_cannot_authorize_prebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            INITIALIZER.render_new_state(
+                SKILL,
+                state,
+                "test-fixture",
+                INITIALIZER.PROFILES["connected-public-experience"],
+                ("standard", "connected-public-experience"),
+                ("connected-public-experience",),
+            )
+            failures = INITIALIZER.prebuild_failures(project)
+            self.assertTrue(
+                any(
+                    "Connected Public Experience has not authorized" in item
+                    and "record-not-direction-ready" in item
+                    for item in failures
+                ),
+                failures,
+            )
+
+    def test_range_template_cannot_authorize_prebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            INITIALIZER.render_new_state(
+                SKILL,
+                state,
+                "test-fixture",
+                INITIALIZER.PROFILES["range-study"],
+                ("standard", "range-study"),
+                ("range-study",),
+            )
+            failures = INITIALIZER.prebuild_failures(project)
+            self.assertTrue(
+                any("Route-family prebuild still contains" in item for item in failures),
+                failures,
+            )
+            self.assertTrue(
+                any("capture widths" in item for item in failures),
+                failures,
+            )
+
+    def test_partially_edited_route_family_cannot_leave_packaged_instructions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "route-family.json"
+            payload = json.loads(
+                (SKILL / "templates" / "route-family-template.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            payload["created_with"] = "design-dna test-fixture"
+            payload["study"].update({
+                "id": "medicine-routes",
+                "title": "Medicine route family",
+            })
+            for index, route in enumerate(payload["routes"]):
+                route.update({
+                    "title": f"Resolved route {index + 1}",
+                    "user_job": f"Complete the distinct visitor job for route {index + 1}.",
+                    "creative_logic": f"A project-specific route logic for body {index + 1}.",
+                    "responsive_result": f"Route {index + 1} preserves its task on narrow screens.",
+                    "deliberate_differences": [
+                        f"Route {index + 1} has a different body operation."
+                    ],
+                })
+                for viewport_index, viewport in enumerate(
+                    route["capture_requirements"]["viewports"]
+                ):
+                    viewport.update({
+                        "id": f"route-{index + 1}-viewport-{viewport_index + 1}",
+                        "width": 390 if viewport_index else 1366,
+                    })
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            failures = INITIALIZER.route_family_prebuild_failures(path)
+            self.assertTrue(
+                any("scaffold language" in item for item in failures),
+                failures,
+            )
+
+    def test_prebuild_blocks_template_inventory_before_full_site(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            records = (
+                "exploration",
+                "taste-calibration",
+                "direction",
+                "direction-proof",
+                "project-contrast",
+                "direction-challenge",
+            )
+            profiles = INITIALIZER.normalize_assurance_profiles((
+                "showcase",
+                "project-contrast",
+                "direction-challenge",
+            ))
+            INITIALIZER.render_new_state(
+                SKILL,
+                state,
+                "test-fixture",
+                records,
+                profiles,
+                ("project-contrast", "direction-challenge"),
+                (INITIALIZER.OWNER_RECURRENCE_TRIGGER,),
+            )
+            failures = INITIALIZER.prebuild_failures(project)
+            self.assertTrue(
+                any("Prebuild direction.md" in failure for failure in failures),
+                failures,
+            )
+            self.assertTrue(
+                any("Project Contrast must reach direction-ready" in failure for failure in failures),
+                failures,
+            )
+            self.assertTrue(
+                any("Direction Challenge must be reviewed" in failure for failure in failures),
+                failures,
+            )
+
+    def test_asset_led_prebuild_rejects_empty_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "assets.yml"
+            path.write_text(
+                "schema_version: 2\n"
+                "created_with: \"design-dna test-fixture\"\n"
+                "classification: \"internal\"\n"
+                "assets: []\n",
+                encoding="utf-8",
+            )
+            failures = INITIALIZER.asset_prebuild_failures(
+                path,
+                require_visual=True,
+            )
+            self.assertEqual(1, len(failures))
+            self.assertIn("nonempty assets.yml", failures[0])
+
     def test_supplemental_records_do_not_infer_high_risk(self) -> None:
         """Only an explicit profile may turn evidence into a risk declaration."""
 
@@ -290,10 +684,24 @@ class StateGateHardeningTests(unittest.TestCase):
                 "| --- | --- | --- | --- |",
                 "| First impression and surface fidelity | applicable | " + wide_path.relative_to(project).as_posix() + " plus sha256:" + sha256(wide_path) + " | The first encounter was observed before diagnostic language; producer-self remains the limitation. |",
                 "",
+                "## Artifact credibility and cumulative-pattern review",
+                "- Artifact-only reviewer relationship and prior exposure: producer-self; the reviewer built the fixture and recorded that limitation",
+                "- Credible public-surface result: the final public fixture reads as a coherent task surface within its bounded scenario",
+                "- Dominant recurring device or relationship cluster: the task hierarchy is the only recurring relationship and follows the fixture flow",
+                "- Cumulative intensity and ordinary-work result: ordinary instructions remain quieter than the primary task and evidence",
+                "- Business/category completeness result: the bounded fixture answers the declared task without inventing a broader business operation",
+                "- Media credibility and synthetic-pattern result: no illustrative or documentary media is present in this fixture",
+                "- Portfolio/process-language result: public copy describes only the task and contains no maker-facing process narration",
+                "- Cross-project visual-grammar result or no-comparator limitation: no authorized sibling comparator exists for this isolated fixture",
+                "- Container/backplate result: the fixture uses one task boundary for the single state and does not box unrelated content jobs",
+                "- Link/button/underline affordance result: the fixture action and navigation treatments follow their distinct semantics",
+                "- Artifact credibility disposition: keep",
+                "",
                 "## Preship and specificity closure",
                 "| Closure | Applicability or disposition | Rendered PNG path and SHA-256 | Result or limitation |",
                 "| --- | --- | --- | --- |",
                 "| Adversarial specificity review | applicable | " + wide_path.relative_to(project).as_posix() + " plus sha256:" + sha256(wide_path) + " | The bounded review records the project-specific encounter and remaining producer-self limitation. |",
+                "| Artifact credibility and cumulative pattern | applicable | " + wide_path.relative_to(project).as_posix() + " plus sha256:" + sha256(wide_path) + " | The artifact-only pass found no unexplained intensity or portfolio-facing machinery in this bounded fixture. |",
                 "| Preship gate | applicable | " + narrow_path.relative_to(project).as_posix() + " plus sha256:" + sha256(narrow_path) + " | The final narrow capture was reviewed at the selected responsive risk condition. |",
                 "",
                 "## Findings",
@@ -317,6 +725,49 @@ class StateGateHardeningTests(unittest.TestCase):
                 enforce_final_visual_binding=True,
             )
             self.assertEqual([], failures)
+
+            missing_credibility_row = "\n".join(
+                line
+                for line in body.splitlines()
+                if not line.startswith(
+                    "| Artifact credibility and cumulative pattern |"
+                )
+            )
+            failures = INITIALIZER.substantive_body_failures(
+                "visual-review",
+                missing_credibility_row,
+                project=project,
+                record_path=state / "visual-review.md",
+                required_assurance_profiles={"standard"},
+                evidence_contract=INITIALIZER.PROPORTIONAL_EVIDENCE_CONTRACT,
+                enforce_final_visual_binding=True,
+            )
+            self.assertTrue(
+                any(
+                    "artifact credibility and cumulative pattern" in failure
+                    for failure in failures
+                ),
+                failures,
+            )
+
+            missing_credibility_result = body.replace(
+                "- Credible public-surface result: the final public fixture "
+                "reads as a coherent task surface within its bounded scenario",
+                "- Credible public-surface result:",
+            )
+            failures = INITIALIZER.substantive_body_failures(
+                "visual-review",
+                missing_credibility_result,
+                project=project,
+                record_path=state / "visual-review.md",
+                required_assurance_profiles={"standard"},
+                evidence_contract=INITIALIZER.PROPORTIONAL_EVIDENCE_CONTRACT,
+                enforce_final_visual_binding=True,
+            )
+            self.assertTrue(
+                any("Credible public-surface result" in failure for failure in failures),
+                failures,
+            )
 
     def test_final_standard_review_rejects_raw_png_without_schema3_report(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -550,6 +1001,167 @@ class StateGateHardeningTests(unittest.TestCase):
             failures = INITIALIZER.readiness_failures(project)
             self.assertTrue(
                 any("proof-to-build delta" in failure for failure in failures),
+                failures,
+            )
+
+    def test_completed_cpe_must_match_the_final_visual_review_build(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            state.mkdir()
+            (state / "visual-review.md").write_text(
+                "---\nrecord_status: \"complete\"\n---\n"
+                "- Build or artifact ID: final-build-7\n",
+                encoding="utf-8",
+            )
+            connected = {
+                "record_status": "reviewed",
+                "final_closure": {
+                    "status": "complete",
+                    "reviewed_build_id": "stale-build-2",
+                },
+            }
+            (state / "connected-public-experience.json").write_text(
+                json.dumps(connected, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            failures = INITIALIZER.final_build_evidence_binding_failures(state)
+            self.assertEqual(1, len(failures), failures)
+            self.assertIn("Final-build evidence drift", failures[0])
+            self.assertIn("stale-build-2", failures[0])
+            self.assertIn("final-build-7", failures[0])
+
+            connected["final_closure"]["reviewed_build_id"] = "final-build-7"
+            (state / "connected-public-experience.json").write_text(
+                json.dumps(connected, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                [],
+                INITIALIZER.final_build_evidence_binding_failures(state),
+            )
+
+    def test_proof_ready_project_contrast_must_match_final_visual_review_build(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            state.mkdir()
+            (state / "visual-review.md").write_text(
+                "---\nrecord_status: \"complete\"\n---\n"
+                "- Build or artifact ID: final-build-7\n",
+                encoding="utf-8",
+            )
+            contrast = {
+                "record_status": "proof-ready",
+                "evidence": {"candidate_build": {"id": "stale-build-3"}},
+            }
+            (state / "project-contrast.json").write_text(
+                json.dumps(contrast, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            failures = INITIALIZER.final_build_evidence_binding_failures(state)
+            self.assertEqual(1, len(failures), failures)
+            self.assertIn("project-contrast.json", failures[0])
+            self.assertIn("stale-build-3", failures[0])
+
+            contrast["evidence"]["candidate_build"]["id"] = "final-build-7"
+            (state / "project-contrast.json").write_text(
+                json.dumps(contrast, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                [],
+                INITIALIZER.final_build_evidence_binding_failures(state),
+            )
+
+    def test_verified_audit_outputs_cannot_hide_final_build_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            state = Path(temporary) / ".design-dna"
+            state.mkdir()
+            (state / "visual-review.md").write_text(
+                "---\nrecord_status: \"complete\"\n---\n"
+                "- Build or artifact ID: final-build-7\n",
+                encoding="utf-8",
+            )
+            connected_report = {
+                "evidence": {
+                    "verified": [
+                        {"id": "home-narrow", "build_id": "stale-build-5"}
+                    ]
+                }
+            }
+            contrast_report = {
+                "evidence": {
+                    "capture_coverage": {
+                        "candidate_build_id": "stale-build-6"
+                    }
+                }
+            }
+            failures = INITIALIZER.final_build_evidence_binding_failures(
+                state,
+                project_contrast_report=contrast_report,
+                connected_public_experience_report=connected_report,
+            )
+            self.assertEqual(2, len(failures), failures)
+            self.assertTrue(
+                any("stale-build-5" in failure for failure in failures),
+                failures,
+            )
+            self.assertTrue(
+                any("stale-build-6" in failure for failure in failures),
+                failures,
+            )
+
+            connected_report["evidence"]["verified"][0]["build_id"] = (
+                "final-build-7"
+            )
+            contrast_report["evidence"]["capture_coverage"][
+                "candidate_build_id"
+            ] = "final-build-7"
+            self.assertEqual(
+                [],
+                INITIALIZER.final_build_evidence_binding_failures(
+                    state,
+                    project_contrast_report=contrast_report,
+                    connected_public_experience_report=connected_report,
+                ),
+            )
+
+    def test_readiness_wires_the_cross_record_final_build_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            state = project / ".design-dna"
+            state.mkdir()
+            (state / "visual-review.md").write_text(
+                "---\nrecord_status: \"complete\"\n---\n"
+                "- Build or artifact ID: final-build-7\n",
+                encoding="utf-8",
+            )
+            (state / "connected-public-experience.json").write_text(
+                json.dumps(
+                    {
+                        "record_status": "reviewed",
+                        "final_closure": {
+                            "status": "complete",
+                            "reviewed_build_id": "stale-build-4",
+                        },
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (state / "state.json").write_text(
+                INITIALIZER.state_manifest(
+                    "test-fixture",
+                    ("visual-review",),
+                    ("quick",),
+                ),
+                encoding="utf-8",
+            )
+            failures = INITIALIZER.readiness_failures(project)
+            self.assertTrue(
+                any("Final-build evidence drift" in failure for failure in failures),
                 failures,
             )
 

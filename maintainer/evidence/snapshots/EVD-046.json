@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-046",
+  "retrieved": "2026-08-23",
+  "url": "https://developers.google.com/style",
+  "locator": "About this guide (last updated 2026-04-27 UTC); Voice and tone; Write for a global audience; Active voice; Second person; Sentence case; page footer licenses",
+  "content_kind": "maintainer_summary",
+  "summary": "Google's official technical-documentation guide recommends clear, concise, audience-aware writing and contextual use of active voice, second person, and sentence case. Its landing page reports last updated 2026-04-27 UTC; except where otherwise noted, page content is CC BY 4.0 and code samples Apache 2.0. Design DNA adapts the methods without universalizing its documentation voice."
+}

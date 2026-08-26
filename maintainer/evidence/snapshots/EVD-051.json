@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-051",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/microsoft/playwright-cli/tree/2f85a94b7b885dbf4a5d34462f253a8746a690c9",
+  "locator": "README, commands, and LICENSE at commit 2f85a94b7b885dbf4a5d34462f253a8746a690c9",
+  "content_kind": "maintainer_summary",
+  "summary": "Microsoft's Apache-2.0 Playwright CLI supports real-browser navigation, screenshots, viewport changes, interaction, and console or network inspection. It is an optional verification path, not a reason to install globally when suitable tooling exists. Use isolated credential-free profiles and avoid attaching untrusted tasks to logged-in browsers, private files, uploads, or arbitrary evaluation."
+}

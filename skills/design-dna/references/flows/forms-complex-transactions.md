@@ -50,24 +50,35 @@ Beneath the flow sits a layer of input mechanics that decides whether the
 form fights its user. The accessibility baseline owns the conformance
 floor; these are the recurring behaviors above it:
 
-- Accept free text and validate after; do not block characters as they are
-  typed, block paste anywhere, or reformat while the user is mid-entry.
-- Let submission be attempted: pre-disabling the submit control to enforce
-  validity hides what is wrong; the attempt should surface the errors.
-  Disable re-entry only once the request is actually in flight, per the
-  [feedback-states lifecycle](../craft/feedback-states.md).
-- In a single-input context, Enter submits; in a multiline field, plain
-  Enter writes a newline and a modifier chord submits. Do not invert
-  either expectation.
-- Trim leading and trailing whitespace before validating; text expansion
-  and mobile autocorrect append spaces users cannot see, and a code or
-  email rejected for an invisible space reads as a broken form.
+- Accept free text and validate at a useful time. Do not block paste or
+  composition, and do not reformat mid-entry in a way that moves the caret or
+  corrupts the value. A constrained control may reject impossible input when
+  that behavior is expected, accessible, and still accepts real pasted and
+  localized formats.
+- Let submission be attempted when validation is what decides readiness:
+  pre-disabling the submit control to enforce ordinary field validity hides
+  what is wrong; the attempt should surface the errors. A genuinely unavailable
+  or unsafe action may remain unavailable while a prerequisite, permission,
+  required resource, or asynchronous setup is missing, but the reason and next
+  available step must be perceivable, programmatically associated where
+  applicable, and reachable without guessing. Disable re-entry once a request
+  is actually in flight, per the [feedback-states
+  lifecycle](../craft/feedback-states.md).
+- Preserve native and product conventions for Enter. Plain Enter normally
+  submits a single-line form and writes a newline in a multiline field. Add a
+  modifier shortcut only when the product and audience expect one, expose it
+  accessibly, and keep a visible submission control.
+- Normalize whitespace only where it is semantically irrelevant, such as the
+  accidental outer space around many emails or one-time codes. Preserve it in
+  passphrases, formatted text, names, and other values where changing the bytes
+  can change meaning; validate the normalized value the server will receive.
 - Disable spellcheck on emails, usernames, codes, and identifiers so the
   browser does not underline or "correct" them.
 - Codes and one-time passwords are pasteable, accept their delivered
-  formatting (spaces, hyphens), and work with password managers and
-  autofill; fields that should not wake a password manager mark
-  autocomplete off deliberately.
+  formatting (spaces, hyphens), and work with password managers and autofill.
+  Use the correct `autocomplete`, input-purpose, and one-time-code tokens.
+  Browsers and password managers may ignore `autocomplete="off"`; do not use
+  it as a security boundary or as a blanket way to suppress credential tools.
 - A placeholder, where used at all under the microcopy label rules, shows
   a real example of the expected pattern rather than restating the label.
 - Warn before navigation discards unsaved entries, and give consequential

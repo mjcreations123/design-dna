@@ -4,7 +4,8 @@ Use this for small functional strings: controls, labels, helper text, errors,
 empty or unavailable states, confirmations, progress, status, and recovery.
 [Parseable text](../quality/parseable-text.md) decides whether a string has a
 public job; this file helps write the strings that do. [Content and IA](content-ia.md)
-owns longer headings, body copy, and navigation structure.
+owns navigation structure; [public copy and voice](public-copy.md) owns longer
+headings and body copy.
 
 Microcopy is part of behavior. Its quality depends on whether the interface
 state is true, the intended audience understands the language, the next step

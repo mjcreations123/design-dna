@@ -56,11 +56,21 @@ understand, trust, feel, do, or continue into; what factual material gives the
 subject physical, cultural, or product reality; and what public voice belongs
 to that encounter.
 
+For a business, product, service, or organization, also establish the ordinary
+public reality the expressive direction must support: what is actually offered,
+how a visitor compares or decides, which trust and support questions arise,
+what operating limits matter, and which familiar category conventions reduce
+uncertainty. This is not a generic page checklist. It prevents the visual
+concept from becoming a portfolio set whose subject exists only as scenery.
+
 A site can be quiet, conventional, theatrical, spare, dense, type-led,
 photographic, or utility-led and still be excellent. The direction fails when
-the first view could belong to an unrelated subject after trivial noun and
-image swaps, or when it performs an authoring exercise that the visitor never
-asked to enter.
+the public encounter is unsupported by this project's material or when it
+performs an authoring exercise that the visitor never asked to enter. Do not
+fail a direction merely because another legitimate category could use a
+similar composition. When the owner reports repeated studio output, compare
+the rendered relationship grammar with actual authorized sibling evidence
+through [visual-grammar variance](../quality/visual-grammar-variance.md).
 
 Do not make a project feel specific by gratuitously turning it into a ledger,
 archive, field note, studio manifesto, experimental interface, fictional
@@ -121,7 +131,10 @@ propagating it: an opening, product encounter, reading passage, service action,
 visual sequence, mobile transformation, or another task-bearing moment. Use
 real approved copy and representative assets wherever available.
 
-The proof must be allowed to lose. Compare it with enough genuinely different
+The proof must be allowed to lose. Include enough of the ordinary body—not
+only a dramatic opening—to reveal whether the direction can support reading,
+comparison, action, support, evidence, and low-intensity content without making
+each one another showcase moment. Compare it with enough genuinely different
 evidence to expose a consequential choice when uncertainty warrants that
 contrast. A second direction is useful when it changes the proposed encounter,
 not when it merely swaps a font, palette, image, or ornament on unchanged
@@ -163,10 +176,18 @@ project:
   coherent impression instead of several competing borrowed languages?
 - Does the hierarchy make the intended subject, invitation, task, or tension
   legible at the right pace for this genre?
-- Could an unrelated business, product, or story occupy the same screen with
-  trivial substitutions? If so, identify the missing project relationship.
+- Which consequential relationships came from this project's material, task,
+  audience, brand, or operating reality? If cross-project recurrence is in
+  scope, which of them collide with the actual authorized comparator?
 - Does the narrow version preserve the public encounter rather than only
   squeezing the desktop composition into a smaller rectangle?
+- Across the whole visible sequence, does the direction preserve meaningful
+  differences between orientation, ordinary reading, comparison, evidence,
+  action, and expressive emphasis—or does every section use the same maximum-
+  intensity device?
+- Would this plausibly be operated by the represented organization if the
+  maker's rationale disappeared, or does it read primarily as a designer's
+  demonstration of a concept?
 
 An independent or accountable owner response is stronger evidence than
 producer self-review when available. Record its relationship and limits. Do not
@@ -190,6 +211,14 @@ implementation.
 Do not use artificial roughness, random asymmetry, gratuitous animation,
 unexplained decoration, or an allegedly uncommon font as a shortcut to taste.
 Those can be excellent inside a fitting answer and terrible inside a weak one.
+Likewise, do not replace familiar template slop with a portable anti-template
+recipe of giant type, saturated panels, numbered editorial devices, hard
+frames, or relentlessly dramatic sections. Those ingredients remain open;
+their repeated rendered relationship must earn its place from this project.
+
+After the replacement reaches a complete render, use the
+[artifact credibility and cumulative-pattern review](../quality/artifact-credibility.md)
+before declaring the direction recovered.
 
 ## Keep the boundary honest
 

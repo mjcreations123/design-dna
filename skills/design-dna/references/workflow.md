@@ -48,7 +48,9 @@ Before changing code:
    Study, Batch Study, High-risk, and Asset-led capability from `SKILL.md`.
    These capabilities may coexist; the state normalizes redundant lower
    presets, and later additions may strengthen but never silently downgrade the
-   persisted set.
+   persisted set. Select Asset-led when the owner explicitly requests photos or
+   rich media, or when a physical/sensory subject needs recognizable material;
+   lack of supplied assets is an unresolved dependency, not an exemption.
 8. Identify whether the output is concept, demo, staging, or production.
    Derive that state from the current request, repository, integrations, and
    accountable authority; do not downgrade an already authorized production
@@ -69,11 +71,11 @@ Before changing code:
 10. Identify applicable specialist skills and gates. Design DNA owns art
    direction and rendered coherence; the specialist owns its narrow domain
    contract, and repository plus user instructions outrank both.
-11. For every new or materially redesigned website, create a short launch
-    record from [launch completeness](quality/launch-completeness.md). Resolve
-    all fifteen decisions as included, not applicable, or blocked before
-    delivery. This is a product and operating-path review, not a requirement to
-    paste fifteen generic sections or integrations into every design.
+11. After direction selection, decide whether the actual public launch or
+    delivery scope needs [launch completeness](quality/launch-completeness.md).
+    If so, select and resolve only the relevant decision families. Do not create
+    the record as a generation prompt or paste generic marketing, policy,
+    analytics, location, or promotion furniture into every design.
 
 Do not replace the stack, design system, or working integration merely because
 another tool is more familiar.
@@ -117,6 +119,11 @@ encounter:
   Require accountable authorization for generation, publication, rights,
   privacy, consent, or documentary implications—not for an ordinary
   art-direction choice to work without photography;
+- the direction record's material/media posture, media roles and truth
+  boundary, asset-manifest status or project-specific media-light rationale
+  plus explicit owner/client approval and date for a physical/sensory exception,
+  active owner-rejection cluster, protected facts/functions, and internal-to-
+  public copy boundary;
 - accessibility, localization, performance, privacy, budget, schedule, and
   maintenance constraints;
 - production facts or integrations that still require owner confirmation.
@@ -153,6 +160,24 @@ the signature must contain a nonempty project-selected encounter-axis set and
 surface-language-axis set. Those evidence groups are not a style quota or a
 list of ingredients that must differ.
 
+When the owner identifies a producer house grammar, read [visual-grammar
+variance](quality/visual-grammar-variance.md) and include the named rendered
+relationships in the comparison prompts. Inspect actual authorized sibling
+output for recurrence in opening/hero composition, typography posture,
+container/backplate and section-separation logic, action/link/underline
+affordance, route progression, media role, and mobile transformation as
+applicable. Do not substitute a theoretical industry-swap question, and do not
+infer difference from a new palette, typeface, radius, photograph, or CTA
+wording.
+
+When the applicable owner record activates a machine-readable named-pattern
+contract, also read the [owner-pattern contract gate](quality/owner-pattern-gate.md).
+Initialize `owner-pattern-contract`, create the project review through its
+auditor, and control every contract-defined failure relationship before broad
+implementation. The contract lane is separate from Project Contrast: one
+closes named owner failures in this candidate, while the other challenges
+cross-project recurrence in the organizing answer.
+
 For an explicit three-root recurrence escalation or expressly requested
 multi-root high-ambition greenfield concept challenge, add
 `.design-dna/direction-challenge.json` through the same initializer and read
@@ -161,7 +186,9 @@ high-ambition website alone remains Showcase.
 Before polished examples or broad implementation, record three incompatible
 brief-native roots and an exact pairwise matrix; then render wide and narrow
 proof slices from two different roots. Select the direction against a rendered
-rejected root and freeze an independent unprimed observation. This is a
+rejected root, freeze an independent unprimed observation, advance the record
+to `reviewed`, and explicitly set its implementation boundary to
+`broad-implementation`. This is a
 deliberately scoped escalation, not a general instruction to produce three
 concepts, rotate visual ingredients, or adopt a shared design schema.
 
@@ -366,6 +393,11 @@ progression, ending or next state, and relevant narrow transformation. A route
 whose body intentionally reuses another's operation records the task, content,
 brand, platform, or maintenance reason. This is project direction evidence,
 not a mandatory page taxonomy or a demand that every route look different.
+When recurrence is active, the map must also expose whether every body depends
+on the same card stack, surrounding panel, alternating background band,
+underlined secondary action, generic filled CTA, or split opening. These
+patterns may remain where their relationship is supported; the map is not an
+instruction to choose their opposites.
 
 Full Range Study remains for an explicit anthology or expressive-range claim.
 Outside that claim, shared navigation, access, identity, and platform behavior
@@ -405,10 +437,11 @@ unavailable, disclose what was not compared.
 Use the [direction template](../templates/direction-template.md) for a
 consequential build or redesign. Standard and stronger new work records its
 organizing logic in project language plus at least one observable
-consequential decision. This is an evidence floor, not a style taxonomy: the
-logic and decision may use any structure or medium the project supports. A
-bounded Quick repair may inherit the established logic and omit those two
-anchors.
+consequential decision. It also records the material/media and public-copy
+boundary that applies before implementation. This is an evidence floor, not a
+style taxonomy: the logic and decision may use any structure or medium the
+project supports. A bounded Quick repair may inherit the established logic and
+omit those anchors.
 
 ## 5. Proof the system
 
@@ -432,8 +465,10 @@ For an owner-sensitive or previously rejected visual direction, include a
 surface-fidelity review in that proof. Open the render before reading diagnostic
 lists and judge whether its first encounter belongs to the public subject and
 audience, uses material intentionally, and preserves that encounter at a narrow
-condition. A green source, accessibility, or browser test result does not clear
-an ugly or unconvincing art-direction result.
+condition. Include enough ordinary body material to reveal whether the root can
+support reading, comparison, evidence, and action without making each content
+job another signature moment. A green source, accessibility, or browser test
+result does not clear an ugly or unconvincing art-direction result.
 
 For a Range Study, render the routes that best expose family repetition and
 the widest consequential differences at matched viewports, then inspect them
@@ -441,10 +476,28 @@ together. The number and character of those routes follows project risk, not a
 fixed early sample. Lock the route-family record before completing dependent
 routes.
 
+Before leaving proof for broad implementation, run:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_pattern_audit.py" "<PROJECT_ROOT>" --phase prebuild
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
+```
+
+The owner-pattern command applies only when its trigger and owner contract are
+active. The state gate calls the same audit in that case, so omitting the first
+line does not bypass an unresolved contract.
+
+A nonzero result blocks the full route family. The gate consumes hash-bound
+`complete` direction-stage records, current contrast/challenge lifecycle,
+resolved Range/Batch plans, and a usable asset plan; an initialized template,
+capability-only state, successful build, or renderer execution does not satisfy
+it. Continue only with the bounded proof work needed to close the cited gaps,
+then rerun the gate.
+
 ## 6. Implement
 
-Build the truthful user path and accepted creative logic at coherent depth
-before proliferating incidental variations.
+After `--check-prebuild` succeeds, build the truthful user path and accepted
+creative logic at coherent depth before proliferating incidental variations.
 
 - Centralize values and behavior when reuse, consistency, maintenance, or an
   established system makes that useful; keep deliberate scoped one-offs when
@@ -524,6 +577,23 @@ explicitly rejects an AI-looking, vibe-coded, templated, generic, or repeated
 house-style result, also use the deeper cross-route, aggregate copy,
 claim-provenance, evidence-to-polish, media-variance, residue, and
 cross-project-comparison lenses defined there.
+
+For a substantial public proposition, also run the
+[artifact credibility and cumulative-pattern review](quality/artifact-credibility.md)
+on the exact final wide and narrow captures. Review the entire route sequence
+and route family, not a favorite hero: public/business plausibility, cumulative
+intensity, dominant repeated machinery, ordinary content behavior, media
+credibility, and portfolio/process-language leakage. Bind it as a separate
+closure in `visual-review.md`. A producer-self pass can revise the work but
+cannot be relabeled as independent perception, target-user validation, or
+owner acceptance.
+
+When the owner-pattern contract is active, complete its final lane on that
+same build. Every contract failure state must be `absent`, carry a concrete
+rendered observation, and bind at least one qualifying wide and narrow PNG.
+Run `scripts/owner_pattern_audit.py <PROJECT_ROOT> --phase ready`; a pending,
+blocked, missing, reordered, contract-drifted, build-drifted, or byte-drifted
+item remains a release blocker.
 
 For a Batch Study, complete the per-site unprimed observations before loading
 those post-render lenses. After at least three sites are built, review the
@@ -629,17 +699,28 @@ Before delivery:
 - run the applicable [preship gate](../templates/preship-gate.md) on the
   rendered output; a violated assurance boundary blocks the corresponding
   completion or release claim;
+- when `owner-pattern-contract` is active, require its `--phase ready` audit to
+  pass on the same final build and rendered evidence; a clean preship narrative
+  cannot waive an unresolved named owner failure;
 - review the final diff or changed-file set;
 - run the supported build and test gates;
 - inspect final rendered routes and states;
-- complete the fifteen [launch-completeness](quality/launch-completeness.md)
-  decisions against the exact candidate. Exercise included actions and links;
-  retain an honest reason for every not-applicable or blocked row. A blocked
+- when the launch-completeness module applies, complete its selected
+  [decision families](quality/launch-completeness.md) against the exact
+  candidate. Exercise included actions and links; retain an honest reason for
+  every retained not-applicable or blocked row. A blocked
   operational, legal, location, tracking, or promotion decision blocks only
   the corresponding live claim or release, not a truthful demo;
 - complete metadata, asset, claim, placeholder, comment/meta-language, and
   console residue checks; the placeholder register must be empty or every
   open row owner-deferred before any live state;
+- for a substantial public proposition, close the artifact-credibility and
+  cumulative-pattern review against the final route family; do not deliver a
+  visually coherent concept exercise as a credible operating site merely
+  because its individual sections and mechanical checks pass. When recurrence
+  is in scope, record the cross-project visual-grammar result, the
+  container/backplate result, and the link/button/underline affordance result
+  separately;
 - append or update the [studio ledger](quality/ledger.md) only when its
   accountable owner authorized comparison and this build reached the stated
   ledger milestone;
@@ -651,15 +732,15 @@ Before delivery:
 - keep internal direction and evidence files out of commits unless the project
   permits them.
 
-When the repository itself transfers to the client, ship a client-facing
-DESIGN.md in the repository root, filled from the accepted system per the
-[client handoff template](../templates/design-handoff-template.md): the
-real tokens with their semantic roles, the accent budget, the type roles
-and any substitute mapping, component traits, media policy, motion policy,
-short do and do-not lists derived from actual decisions, and an honest
-known-gaps section. Its job begins after handoff, keeping the owner's
-future edits and AI assistants on-system; write it from the shipped build,
-never from another brand's record.
+When the repository itself transfers to a client, decide whether its future
+maintainers need a client-facing design record or whether an established source
+already fills that role. When useful, fill a `DESIGN.md` from the accepted
+system with only the relevant sections of the [client handoff
+template](../templates/design-handoff-template.md). Record real roles,
+components, media and motion behavior, consequential constraints, and known
+gaps; do not manufacture an accent budget, radius family, rule count, or house
+style to fill the template. Write from the shipped build, never from another
+brand's record.
 
 For a consequential product or maintained design system, leave a proportionate
 handoff packet beside the implementation: source-of-truth order, selected
@@ -704,16 +785,19 @@ Possible records:
   assets.yml
   user-validation.md
   handoff.md
-  launch-completeness.md      # launch decision record for new/redesigned sites
+  launch-completeness.md      # conditional public launch/delivery decisions
   placeholders.md             # optional register when unresolved material or behavior exists
   owner-policy.yml            # optional, owner-approved governance
+  owner-pattern-review.json   # required when the owner-pattern-contract trigger is active
   state.json
 ```
 
 The do-not-copy-templates-by-hand rule covers unresolved EVIDENCE templates
 (direction, exploration, visual-review). When needed, the placeholder register
 and preship gate are plain checklists copied by hand; the initializer does not
-create them.
+create them. The owner-pattern review is generated only by
+`owner_pattern_audit.py --init-review`, because it must bind the currently
+active external owner contract and enumerate its exact signal IDs.
 
 Use one classification vocabulary:
 

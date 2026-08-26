@@ -19,7 +19,7 @@
     "output"
   ],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
     "record_type": {
       "const": "design-dna-codex-plugin-validation-attestation"
     },
@@ -33,6 +33,7 @@
         "logical_id",
         "sha256",
         "bytes",
+        "support_files",
         "trust_policy_path",
         "trust_policy_sha256"
       ],
@@ -40,6 +41,31 @@
         "logical_id": {"const": "plugin-creator/validate_plugin.py"},
         "sha256": {"$ref": "#/$defs/sha256"},
         "bytes": {"type": "integer", "minimum": 1, "maximum": 16777216},
+        "support_files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["logical_id", "path_suffix", "sha256", "bytes"],
+            "properties": {
+              "logical_id": {
+                "const": "plugin-creator/identifier_validation.py"
+              },
+              "path_suffix": {
+                "const": "/skills/.system/plugin-creator/scripts/identifier_validation.py"
+              },
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16777216
+              }
+            }
+          }
+        },
         "trust_policy_path": {
           "const": "maintainer/trust/codex-plugin-validator.json"
         },
@@ -108,11 +134,12 @@
         {"const": "attested-validator-wrapper"},
         {"const": "external-plugin-creator-validator"},
         {"const": "plugin-root"},
-        {"const": "pinned-pyyaml-snapshot"}
+        {"const": "pinned-pyyaml-snapshot"},
+        {"const": "pinned-validator-support"}
       ],
       "items": false,
-      "minItems": 9,
-      "maxItems": 9
+      "minItems": 10,
+      "maxItems": 10
     },
     "inputs": {
       "type": "object",

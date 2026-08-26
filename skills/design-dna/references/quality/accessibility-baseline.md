@@ -12,6 +12,7 @@ jurisdiction.
 - [Exclusion and assisted access](#exclusion-and-assisted-access)
 - [Keyboard and focus](#keyboard-and-focus)
 - [Input and interaction](#input-and-interaction)
+- [Custom composite widgets](#custom-composite-widgets)
 - [Motion, time, and cognition](#motion-time-and-cognition)
 - [Required verification](#required-verification)
 - [Screen-reader smoke-test script](#screen-reader-smoke-test-script)
@@ -107,6 +108,25 @@ equivalent access that has not been confirmed.
   for important touch controls when density and context allow; document a
   smaller intentional target and verify spacing and error risk.
 - Announce status changes without moving focus unnecessarily (4.1.3).
+
+## Custom composite widgets
+
+Prefer a native element when it provides the needed semantics and behavior. If
+the product genuinely needs a custom dialog, combobox, tabs, listbox, menu,
+tree, grid, toolbar, slider, or another composite widget, map its purpose to the
+closest current WAI-ARIA Authoring Practices Guide pattern. Record and verify
+the promised role, accessible name, owned structure, states and properties,
+entry and exit, roving or active-descendant focus model, complete keyboard
+contract, pointer and touch behavior, announcements, dismissal, and return
+focus as applicable.
+
+APG is informative guidance, not a normative standard, comprehensive design
+system, or production-ready component library. Its examples are illustrative,
+can have browser and assistive-technology support gaps, and must not be copied
+without testing the actual implementation in the project's supported
+[browser and assistive-technology matrix](browser-support.md). Deviations need
+an equally complete, standards-conforming interaction contract and direct
+evidence; adding a role without its behavior breaks the promise.
 
 ### Forms and submissions
 

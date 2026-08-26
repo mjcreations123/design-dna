@@ -1,7 +1,8 @@
 # Proportional preship gate
 
 Copy the applicable lines into the project review record. Bind the gate to the
-exact build, routes, states, browser, widths, preferences, date, and reviewer.
+exact build, routes, states, browser/engine/OS/device condition, widths,
+preferences, date, and reviewer.
 Do not use this checklist to manufacture evidence records the project does not
 need.
 
@@ -16,6 +17,7 @@ ornament category fails by itself.
 - [A.1 Launch completeness](#a1-launch-completeness)
 - [B. Rendered implementation](#b-rendered-implementation)
 - [C. Project-specific quality](#c-project-specific-quality)
+- [C.1 Owner-pattern contract when applicable](#c1-owner-pattern-contract-when-applicable)
 - [D. Project Contrast, range, and batch checks when applicable](#d-project-contrast-range-and-batch-checks-when-applicable)
 - [E. Handoff and state](#e-handoff-and-state)
 
@@ -45,10 +47,11 @@ ornament category fails by itself.
 
 ## A.1 Launch completeness
 
-- [ ] For every new or materially redesigned website, the
-      [launch-completeness record](launch-completeness-template.md) resolves
-      all fifteen decisions as included, not applicable, or blocked. A bounded
-      Quick repair records the affected/inherited rows instead.
+- [ ] When public launch or delivery scope selected one or more conditional
+      [launch-completeness](launch-completeness-template.md) families, the
+      record resolves only those applicable, changed, or inherited decisions
+      as included, not applicable, or blocked. The record was not created or
+      expanded merely to seed marketing furniture.
 - [ ] Every included launch decision is bound to the exact route, state,
       configuration, asset, or external destination and was checked in the
       final candidate. Not-applicable rows give a project reason; blocked rows
@@ -66,17 +69,22 @@ ornament category fails by itself.
       pass, or their exact failures and impact are recorded. No gate was made
       to pass by lowering a threshold, narrowing what it measures, excluding
       the failing case, or suppressing the finding.
-- [ ] Declarations that can be silently defeated were confirmed in the
-      computed result rather than the source, for each mechanism this build
-      actually uses: intrinsic ratios against dimension attributes, the
-      `hidden` attribute against component display rules, component color
-      inside every section ground it appears on, reveal animations whose
-      trigger may never fire, sticky travel within its own container, form
-      fields arriving in the submitted payload, and overflow detection a
-      clipping container can suppress.
+- [ ] Applicable declarations that can be silently defeated were confirmed in
+      the computed or rendered result rather than the source. Select the checks
+      from the implementation actually present and record intentional not-
+      applicable cases. Examples include ratio sizing when both axes may become
+      definite; ordinary `hidden` versus `hidden="until-found"`; component
+      color in a changing ground; a reveal whose trigger may never fire; sticky
+      travel within its container; named form fields arriving in the payload;
+      and overflow detection that a clipping container can suppress.
 - [ ] Every independently addressable route in scope was checked for direct
       entry, reload, title, current-page state, links, history, and intended
       indexing or canonical behavior.
+- [ ] The supported browser/engine/OS/device matrix is explicit. Critical paths
+      were smoke-tested in each materially different supported engine and on
+      real hardware where emulation cannot establish the behavior; failing and
+      untested rows remain disclosed. Chromium capture is not claimed as Gecko,
+      WebKit, mobile-browser, or real-device proof.
 - [ ] Every capture and probe used as evidence carries the page's identity
       (URL, title, and any non-success HTTP status) bound with it, so an
       error page, blank document, or dead server cannot pass as a green
@@ -174,6 +182,11 @@ ornament category fails by itself.
       internal-only state, or implementation/data-model vocabulary. Any
       explanation or status has a real visitor-facing purpose and states the
       visitor consequence rather than the production story.
+- [ ] Longer public copy preserves approved facts and voice, and was reviewed
+      as a rendered system for portable filler, vague attribution, repeated
+      producer grammar, chatbot residue, and unsupported uplift. Revisions
+      address the contextual cause; no punctuation mark, sentence shape, or
+      word is treated as proof of authorship or failed by category alone.
 - [ ] The smallest ordinary-reading and interactive, caption, credit, legend,
       or utility roles were identified in the actual render. Their casing and
       tracking were inspected at a project-relevant narrow width and with text
@@ -187,6 +200,13 @@ ornament category fails by itself.
 - [ ] Media was inspected as a rendered set for subject accuracy, crop,
       quality, continuity, artifacts, rights, privacy, representation,
       attribution, alternatives, and performance.
+- [ ] Planned-public media was inspected for visible private information and
+      embedded EXIF/IPTC/XMP/GPS, device, author, thumbnail, filename, and
+      container metadata as applicable. Sensitive data was removed without
+      blindly destroying required orientation, color, rights, attribution, or
+      validated provenance; the rewritten public file was opened, reinspected,
+      and hash-bound while restricted originals stayed outside the deployable
+      root.
 - [ ] Reused media was reviewed against each adjacent claim or content job. A
       repeated source or alternate crop is not treated as distinct evidence
       unless the rendered pixels actually support that distinction; intentional
@@ -226,6 +246,10 @@ ornament category fails by itself.
       rendered evidence, and functional-path artifact or recorded result,
       including direct-entry and recovery/continuation proof. A justified
       not-applicable record names its reason; a blocked record remains blocked.
+- [ ] The completed visual review, completed Connected Public Experience
+      closure and verified final captures, and concrete Project Contrast
+      candidate/capture coverage all name one exact final build. Locally valid
+      records from different builds were not combined into a release claim.
 - [ ] When a staff/admin branch is requested, its public/back-office split,
       Operate-mode task, approved/sandbox/local non-empty fixture boundary, and
       relevant functional proof are recorded. No empty decorative admin was
@@ -239,10 +263,47 @@ ornament category fails by itself.
       as a credible public encounter for this subject and audience rather than
       a generic shell or maker-facing design exercise. A clean technical or
       accessibility result was not used as a substitute for this judgment.
+- [ ] For a substantial public proposition, the final wide and narrow route
+      family completed the [artifact-credibility and cumulative-pattern
+      review](../references/quality/artifact-credibility.md). The artifact was
+      first read without its rationale; public/business plausibility,
+      cumulative intensity, recurring visual machinery, ordinary content
+      behavior, media credibility, and portfolio/process-language leakage were
+      separately dispositioned.
+- [ ] The final sequence does not make materially different content jobs all
+      perform through one unexplained maximum-intensity cluster. Repeated
+      display scale, color fields, hard or soft containers, numbering, labels,
+      arrows, cards, effects, crops, CTA grammar, or rhetorical cadence are
+      retained only where the rendered relationship has a project, brand,
+      task, content-family, or maintenance reason. No ingredient was failed by
+      category alone.
+- [ ] The represented business, organization, product, service, publication,
+      or concept remains plausible without access to the maker's direction
+      rationale. The scope answers the ordinary visitor questions it actually
+      creates, or records an honest bounded limitation; visual theater was not
+      used as a substitute for offering, comparison, support, policy, contact,
+      evidence, or operating detail that this project needs.
+- [ ] Generated, stock, first-party, or commissioned media was reviewed for
+      the role it claims in the complete set. Polished sameness, anonymous
+      archetypes, implausible product detail, repeated camera language, or
+      documentary ambiguity were revised or explicitly bounded rather than
+      accepted because each image was technically clean.
 - [ ] The opening, body sequence, hierarchy, proof, action logic, and ending
-      do not remain interchangeable with an unrelated site after changing
-      nouns and images, unless a real convention or system requirement
-      explains the similarity.
+      are supported by the current project. The candidate was not failed merely
+      because another legitimate industry could use a similar composition.
+      When cross-project recurrence is in scope, the comparison uses actual
+      owner-authorized output and names justified shared foundations separately
+      from unexplained producer grammar.
+- [ ] Prominent cards, panels, borders, and background plates represent real
+      units, states, ownership, interaction, material, or context—or have
+      another recorded compositional reason. The whole route was checked for
+      automatic cardification, panelification, and alternating-background
+      section wallpaper; no container ingredient is prohibited by category.
+- [ ] Buttons perform actions and links navigate. Filled rectangles,
+      underlines, text links, icons, and other treatments follow task priority,
+      recognition, accessibility, and the selected direction. The whole action
+      set was checked for unexplained primary-button and underlined-secondary-
+      link monotony without creating an inverse shape or underline rule.
 - [ ] When Project Contrast is active, the selected direction, its
       brief-native counter-answer, the comparison authority or limitation, and
       the wide/narrow collision-test evidence are bound to the exact candidate.
@@ -256,6 +317,32 @@ ornament category fails by itself.
 - [ ] Direct owner rejection or user confusion has been treated as new
       evidence: related routes and system consumers were re-audited, the cause
       was revised, and the affected conditions were rerendered.
+
+## C.1 Owner-pattern contract when applicable
+
+- [ ] When the applicable owner record activates
+      `~/.design-dna/owner-pattern-contract.json`, the project state contains
+      the `owner-pattern-contract` trigger and the generated
+      `.design-dna/owner-pattern-review.json`; neither was replaced with a
+      prose assurance or a hand-written partial list.
+- [ ] The review binds the current contract ID and exact SHA-256, contains every
+      contract signal exactly once, and records every direction disposition as
+      `controlled`. Missing, reordered, pending, blocked, placeholder, or
+      contract-drifted entries remain release blockers.
+- [ ] Every final signal is `absent` under its precise failed-relationship
+      definition. A meaningful use of the underlying ingredient does not
+      satisfy the failure; an unexplained use cannot pass merely because the
+      producer calls it intentional.
+- [ ] The owner-pattern review names the same exact build as the completed
+      visual review and binds exactly one distinct wide and narrow full-page
+      PNG for every signal, with current byte-verified SHA-256, CSS width,
+      route or state, capture mode, and matching build ID. Evidence covers the
+      route family where the relationship could recur, not only a favorable
+      hero crop.
+- [ ] `scripts/owner_pattern_audit.py <PROJECT_ROOT> --phase ready` and the
+      integrated `init_project_state.py --check-ready` gate both pass. A source
+      scanner, build, lint, accessibility result, different palette, or
+      producer confidence cannot waive this owner contract.
 
 ## D. Project Contrast, range, and batch checks when applicable
 
@@ -288,6 +375,9 @@ ornament category fails by itself.
 - [ ] Owner visual acceptance, cultural acceptance, target-user validation,
       specialist audits, and production readiness are stated separately from
       producer self-review.
+- [ ] Producer self-review is labeled `self-reviewed candidate`; it does not
+      claim independent perception, target-user validation, owner acceptance,
+      immunity from AI suspicion, or universal aesthetic quality.
 - [ ] The final handoff identifies exact files or URLs, tested dimensions,
       known limits, reversible checkpoints, and the one next action required
       from the owner, if any.

@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-064",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/LiveBench/LiveBench",
+  "locator": "LiveBench README; contamination controls, refreshed questions, diverse tasks, and objective ground-truth grading",
+  "content_kind": "maintainer_summary",
+  "summary": "LiveBench limits benchmark contamination by refreshing questions and drawing from recent sources, while preferring verifiable objective answers over an LLM judge. Design evaluation cannot be fully objective, but protected rotating holdouts, immutable regression cases, and independent human review can reduce rehearsal and judge bias."
+}

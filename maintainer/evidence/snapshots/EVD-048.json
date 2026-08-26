@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-048",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/vercel-labs/web-interface-guidelines/tree/e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
+  "locator": "README and guideline source at commit e3d624baaf29dc1fc645aff3e38f03e564d2d6b1",
+  "content_kind": "maintainer_summary",
+  "summary": "Vercel's MIT-licensed interface guidelines provide useful implementation review prompts for semantics, labels, keyboard and focus behavior, forms, reduced motion, content resilience, images, safe areas, locale formatting, destructive actions, and interaction states. Design DNA adopts only context-stable mechanisms. Title Case, APCA preference, URL-state, and latency advice remain contextual and cannot replace project voice, normative WCAG requirements, or a declared application contract."
+}

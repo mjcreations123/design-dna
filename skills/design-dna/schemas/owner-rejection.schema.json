@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/owner-rejection.schema.json",
+  "title": "Design DNA Owner Rejection Record",
+  "description": "A fail-closed, candidate-scoped record of a first-party owner rejection. It binds an exact public tree and relationship cluster; it is not a global style-ban list.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_with",
+    "classification",
+    "status",
+    "recorded_at",
+    "accountable_owner",
+    "candidate",
+    "owner_evidence",
+    "rejected_relationship_cluster",
+    "protected_foundations",
+    "reopened_decisions",
+    "replacement_constraints",
+    "resolution"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "created_with": {"$ref": "#/$defs/nonEmptyShortString"},
+    "classification": {"enum": ["internal", "confidential"]},
+    "status": {"enum": ["draft", "active-reopen", "resolved"]},
+    "recorded_at": {"$ref": "#/$defs/draftableDate"},
+    "accountable_owner": {"$ref": "#/$defs/accountableOwner"},
+    "candidate": {"$ref": "#/$defs/candidate"},
+    "owner_evidence": {"$ref": "#/$defs/ownerEvidence"},
+    "rejected_relationship_cluster": {"$ref": "#/$defs/relationshipCluster"},
+    "protected_foundations": {"$ref": "#/$defs/decisionList"},
+    "reopened_decisions": {"$ref": "#/$defs/decisionList"},
+    "replacement_constraints": {"$ref": "#/$defs/replacementConstraints"},
+    "resolution": {"$ref": "#/$defs/resolution"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"enum": ["active-reopen", "resolved"]}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "recorded_at": {"$ref": "#/$defs/date"},
+          "accountable_owner": {"$ref": "#/$defs/activeAccountableOwner"},
+          "candidate": {"$ref": "#/$defs/activeCandidate"},
+          "owner_evidence": {"$ref": "#/$defs/activeRejectionEvidence"},
+          "rejected_relationship_cluster": {"$ref": "#/$defs/activeRelationshipCluster"},
+          "protected_foundations": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 128,
+            "uniqueItems": true,
+            "items": {"$ref": "#/$defs/nonEmptyString"}
+          },
+          "reopened_decisions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 128,
+            "uniqueItems": true,
+            "items": {"$ref": "#/$defs/nonEmptyString"}
+          },
+          "replacement_constraints": {"$ref": "#/$defs/activeReplacementConstraints"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"enum": ["draft", "active-reopen"]}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "resolution": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "resolved_at", "replacement_candidate_manifest_sha256", "owner_evidence"],
+            "properties": {
+              "status": {"const": "pending"},
+              "resolved_at": {"type": "null"},
+              "replacement_candidate_manifest_sha256": {"type": "null"},
+              "owner_evidence": {"type": "null"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "resolved"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "resolution": {"$ref": "#/$defs/confirmedResolution"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000,
+      "pattern": ".*\\S.*"
+    },
+    "nonEmptyShortString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": ".*\\S.*"
+    },
+    "portableId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*[\\u0000-\\u001f]).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[Tt]\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:[Zz]|[+-]\\d{2}:\\d{2}))?$"
+    },
+    "draftableDate": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/date"}
+      ]
+    },
+    "draftableText": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/nonEmptyString"}
+      ]
+    },
+    "draftableShortText": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/nonEmptyShortString"}
+      ]
+    },
+    "draftableId": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/portableId"}
+      ]
+    },
+    "draftableSha256": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/sha256"}
+      ]
+    },
+    "draftablePath": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/portablePath"}
+      ]
+    },
+    "fileReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/portablePath"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "accountableOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "authority_basis"],
+      "properties": {
+        "id": {"$ref": "#/$defs/draftableId"},
+        "display_name": {"$ref": "#/$defs/draftableShortText"},
+        "authority_basis": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "activeAccountableOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "authority_basis"],
+      "properties": {
+        "id": {"$ref": "#/$defs/portableId"},
+        "display_name": {"$ref": "#/$defs/nonEmptyShortString"},
+        "authority_basis": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "manifestEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/portablePath"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_relative_root", "manifest_algorithm", "manifest_sha256", "files"],
+      "properties": {
+        "project_relative_root": {"$ref": "#/$defs/draftablePath"},
+        "manifest_algorithm": {
+          "oneOf": [
+            {"type": "null"},
+            {"const": "sha256-tab-lf-v1"}
+          ]
+        },
+        "manifest_sha256": {"$ref": "#/$defs/draftableSha256"},
+        "files": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {"$ref": "#/$defs/manifestEntry"}
+        }
+      }
+    },
+    "activeCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_relative_root", "manifest_algorithm", "manifest_sha256", "files"],
+      "properties": {
+        "project_relative_root": {"$ref": "#/$defs/portablePath"},
+        "manifest_algorithm": {"const": "sha256-tab-lf-v1"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10000,
+          "items": {"$ref": "#/$defs/manifestEntry"}
+        }
+      }
+    },
+    "decisionAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accountable_owner_id", "relationship", "first_party", "decision_kind"],
+      "properties": {
+        "accountable_owner_id": {"$ref": "#/$defs/draftableId"},
+        "relationship": {
+          "oneOf": [
+            {"type": "null"},
+            {"const": "accountable-owner"}
+          ]
+        },
+        "first_party": {
+          "oneOf": [
+            {"type": "null"},
+            {"const": true}
+          ]
+        },
+        "decision_kind": {
+          "oneOf": [
+            {"type": "null"},
+            {"enum": ["candidate-rejection", "replacement-acceptance"]}
+          ]
+        }
+      }
+    },
+    "ownerEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "authority", "verbatim_excerpt", "scope", "acceptance_status"],
+      "properties": {
+        "file": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/fileReference"}
+          ]
+        },
+        "authority": {"$ref": "#/$defs/decisionAuthority"},
+        "verbatim_excerpt": {"$ref": "#/$defs/draftableText"},
+        "scope": {"$ref": "#/$defs/draftableText"},
+        "acceptance_status": {
+          "oneOf": [
+            {"type": "null"},
+            {"enum": ["rejected", "accepted-replacement"]}
+          ]
+        }
+      }
+    },
+    "activeRejectionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "authority", "verbatim_excerpt", "scope", "acceptance_status"],
+      "properties": {
+        "file": {"$ref": "#/$defs/fileReference"},
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["accountable_owner_id", "relationship", "first_party", "decision_kind"],
+          "properties": {
+            "accountable_owner_id": {"$ref": "#/$defs/portableId"},
+            "relationship": {"const": "accountable-owner"},
+            "first_party": {"const": true},
+            "decision_kind": {"const": "candidate-rejection"}
+          }
+        },
+        "verbatim_excerpt": {"$ref": "#/$defs/nonEmptyString"},
+        "scope": {"$ref": "#/$defs/nonEmptyString"},
+        "acceptance_status": {"const": "rejected"}
+      }
+    },
+    "activeAcceptanceEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "authority", "verbatim_excerpt", "scope", "acceptance_status"],
+      "properties": {
+        "file": {"$ref": "#/$defs/fileReference"},
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["accountable_owner_id", "relationship", "first_party", "decision_kind"],
+          "properties": {
+            "accountable_owner_id": {"$ref": "#/$defs/portableId"},
+            "relationship": {"const": "accountable-owner"},
+            "first_party": {"const": true},
+            "decision_kind": {"const": "replacement-acceptance"}
+          }
+        },
+        "verbatim_excerpt": {"$ref": "#/$defs/nonEmptyString"},
+        "scope": {"$ref": "#/$defs/nonEmptyString"},
+        "acceptance_status": {"const": "accepted-replacement"}
+      }
+    },
+    "relationshipObservations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type_posture": {"$ref": "#/$defs/nonEmptyString"},
+        "cta_grammar": {"$ref": "#/$defs/nonEmptyString"},
+        "edges_and_containers": {"$ref": "#/$defs/nonEmptyString"},
+        "depth_and_effects": {"$ref": "#/$defs/nonEmptyString"},
+        "section_rhythm": {"$ref": "#/$defs/nonEmptyString"},
+        "material_and_media": {"$ref": "#/$defs/nonEmptyString"},
+        "public_copy_behavior": {"$ref": "#/$defs/nonEmptyString"},
+        "interaction_grammar": {"$ref": "#/$defs/nonEmptyString"},
+        "responsive_behavior": {"$ref": "#/$defs/nonEmptyString"},
+        "project_defined": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "relationshipCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "applies_to_candidate_manifest_sha256", "observations"],
+      "properties": {
+        "scope": {"$ref": "#/$defs/draftableText"},
+        "applies_to_candidate_manifest_sha256": {"$ref": "#/$defs/draftableSha256"},
+        "observations": {"$ref": "#/$defs/relationshipObservations"}
+      }
+    },
+    "activeRelationshipCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "applies_to_candidate_manifest_sha256", "observations"],
+      "properties": {
+        "scope": {"$ref": "#/$defs/nonEmptyString"},
+        "applies_to_candidate_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "observations": {
+          "allOf": [
+            {"$ref": "#/$defs/relationshipObservations"},
+            {"minProperties": 2}
+          ]
+        }
+      }
+    },
+    "decisionList": {
+      "type": "array",
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonEmptyString"}
+    },
+    "replacementConstraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_led_required", "photo_free_exception_available", "minimum_evidence", "closure"],
+      "properties": {
+        "asset_led_required": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "boolean"}
+          ]
+        },
+        "photo_free_exception_available": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "boolean"}
+          ]
+        },
+        "minimum_evidence": {"$ref": "#/$defs/draftableText"},
+        "closure": {"$ref": "#/$defs/draftableText"}
+      }
+    },
+    "activeReplacementConstraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_led_required", "photo_free_exception_available", "minimum_evidence", "closure"],
+      "properties": {
+        "asset_led_required": {"type": "boolean"},
+        "photo_free_exception_available": {"type": "boolean"},
+        "minimum_evidence": {"$ref": "#/$defs/nonEmptyString"},
+        "closure": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "resolved_at", "replacement_candidate_manifest_sha256", "owner_evidence"],
+      "properties": {
+        "status": {"enum": ["pending", "owner-confirmed"]},
+        "resolved_at": {"$ref": "#/$defs/draftableDate"},
+        "replacement_candidate_manifest_sha256": {"$ref": "#/$defs/draftableSha256"},
+        "owner_evidence": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/ownerEvidence"}
+          ]
+        }
+      }
+    },
+    "confirmedResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "resolved_at", "replacement_candidate_manifest_sha256", "owner_evidence"],
+      "properties": {
+        "status": {"const": "owner-confirmed"},
+        "resolved_at": {"$ref": "#/$defs/date"},
+        "replacement_candidate_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "owner_evidence": {"$ref": "#/$defs/activeAcceptanceEvidence"}
+      }
+    }
+  }
+}

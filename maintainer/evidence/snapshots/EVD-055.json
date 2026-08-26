@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-055",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/microsoft/vscode/blob/cac1904de606481e41cb7051a79c229e9a82517a/.github/skills/design-philosophy/SKILL.md",
+  "locator": "MIT repository; VS Code design-philosophy skill at commit cac1904de606481e41cb7051a79c229e9a82517a",
+  "content_kind": "maintainer_summary",
+  "summary": "VS Code's design-philosophy skill connects observable relationships and visitor feeling to named product principles and concrete corrective moves, while explicitly reasoning through competing values. Design DNA adapts the critique chain but not VS Code's product-specific tokens, radii, type ramp, casing, density, or icon rules."
+}

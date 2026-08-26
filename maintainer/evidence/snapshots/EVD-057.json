@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-057",
+  "retrieved": "2026-08-23",
+  "url": "https://www.w3.org/WAI/ARIA/apg/about/introduction/",
+  "locator": "W3C WAI ARIA Authoring Practices Guide introduction and Read Me First",
+  "content_kind": "maintainer_summary",
+  "summary": "W3C's APG maps common composite widgets to semantics, state, focus, and keyboard patterns, while stating that APG is informative, examples are illustrative rather than prescriptive, the library is not a production-ready design system, and browser and assistive-technology interoperability testing remains essential."
+}

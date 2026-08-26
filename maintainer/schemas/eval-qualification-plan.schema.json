@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-dna.local/schemas/eval-qualification-plan.schema.json",
+  "title": "Design DNA evaluation qualification plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "plan",
+    "plan_sha256",
+    "result_files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "record_type": {
+      "const": "design-dna-eval-qualification-plan"
+    },
+    "plan": {
+      "$ref": "#/$defs/plan"
+    },
+    "plan_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "result_files": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/result_file"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32768,
+      "pattern": "^[^\\u0000]+$"
+    },
+    "expected_model_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model",
+        "model_version",
+        "reasoning_effort",
+        "generation_config"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]*$"
+        },
+        "model_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]*$",
+          "not": {
+            "enum": [
+              "latest",
+              "current",
+              "default",
+              "unknown",
+              "unreported"
+            ]
+          }
+        },
+        "reasoning_effort": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$"
+        },
+        "generation_config": {
+          "type": "object",
+          "maxProperties": 16,
+          "propertyNames": {
+            "enum": [
+              "temperature",
+              "top_p",
+              "top_k",
+              "seed",
+              "max_output_tokens",
+              "max_tokens",
+              "reasoning_budget",
+              "thinking_budget",
+              "response_format",
+              "tool_choice",
+              "parallel_tool_calls"
+            ]
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "boolean"
+            ],
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "prompt_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "relation",
+        "invariant"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "relation": {
+          "enum": [
+            "canonical",
+            "semantics-preserving",
+            "constraint-preserving",
+            "adversarial"
+          ]
+        },
+        "invariant": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 2000,
+          "pattern": "\\S"
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "partition",
+        "prompt_family",
+        "prompt_variant"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "partition": {
+          "enum": [
+            "dev",
+            "immutable-regression",
+            "promotion-holdout"
+          ]
+        },
+        "prompt_family": {
+          "$ref": "#/$defs/slug"
+        },
+        "prompt_variant": {
+          "$ref": "#/$defs/prompt_variant"
+        }
+      }
+    },
+    "batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "host",
+        "case_ids",
+        "runs_per_case",
+        "fixture_sha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "host": {
+          "enum": [
+            "codex",
+            "claude_code"
+          ]
+        },
+        "case_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/slug"
+          }
+        },
+        "runs_per_case": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "fixture_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qualification_id",
+        "suite",
+        "created_at",
+        "candidate_package_sha256",
+        "comparison_claim",
+        "minimum_trials_per_case",
+        "required_partitions",
+        "case_matrix",
+        "batches"
+      ],
+      "properties": {
+        "qualification_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "suite": {
+          "$ref": "#/$defs/slug"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "candidate_package_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "comparison_claim": {
+          "enum": [
+            "controlled-skill-vs-baseline",
+            "none"
+          ]
+        },
+        "expected_model_context": {
+          "$ref": "#/$defs/expected_model_context"
+        },
+        "minimum_trials_per_case": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 100
+        },
+        "required_partitions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "dev",
+              "immutable-regression",
+              "promotion-holdout"
+            ]
+          }
+        },
+        "case_matrix": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/case"
+          }
+        },
+        "batches": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/batch"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "comparison_claim"
+            ],
+            "properties": {
+              "comparison_claim": {
+                "const": "controlled-skill-vs-baseline"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "expected_model_context"
+            ]
+          }
+        }
+      ]
+    },
+    "result_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "batch_id",
+        "path",
+        "sha256",
+        "fixture_path"
+      ],
+      "properties": {
+        "batch_id": {
+          "$ref": "#/$defs/slug"
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "fixture_path": {
+          "$ref": "#/$defs/path"
+        }
+      }
+    }
+  }
+}

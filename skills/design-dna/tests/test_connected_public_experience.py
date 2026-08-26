@@ -468,6 +468,31 @@ def mark_not_applicable(contract: dict) -> dict:
     return contract
 
 
+def mark_direction_ready(contract: dict) -> dict:
+    """Keep the resolved plan while returning final closure to prebuild state."""
+
+    contract["record_status"] = "direction-ready"
+    for kind in ("rendered", "functional"):
+        for item in contract["selected_root_continuity"]["proof_plan"][kind]:
+            item["final_disposition"] = "planned"
+            item["superseded_reason"] = None
+    contract["final_closure"] = {
+        "status": "draft",
+        "reviewed_build_id": None,
+        "rendered_evidence": [],
+        "functional_path_evidence": [],
+        "proof_coverage": {
+            "direct_entry_evidence_ids": [],
+            "recovery_or_continuation_evidence_ids": [],
+        },
+        "conclusion": None,
+        "limitations": None,
+    }
+    if contract["staff_admin_split"].get("status") == "requested":
+        contract["staff_admin_split"]["final_evidence"] = None
+    return contract
+
+
 class ConnectedPublicExperienceTests(unittest.TestCase):
     def test_non_selected_standard_remains_non_connected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -552,6 +577,226 @@ class ConnectedPublicExperienceTests(unittest.TestCase):
             failures = INITIALIZER.readiness_failures(project)
             self.assertTrue(any("direct-entry-questions-missing" in item for item in failures), failures)
             self.assertTrue(any("final-closure-incomplete" in item for item in failures), failures)
+
+    def test_direction_ready_plan_passes_no_write_prebuild_but_not_final_readiness(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            contract = mark_direction_ready(ready_contract(project))
+            before = sorted(
+                str(path.relative_to(project)).replace("\\", "/")
+                for path in project.rglob("*")
+                if path.is_file()
+            )
+
+            prebuild = AUDITOR.audit_prebuild_payload(
+                project,
+                contract,
+                {"connected-public-experience"},
+            )
+
+            after = sorted(
+                str(path.relative_to(project)).replace("\\", "/")
+                for path in project.rglob("*")
+                if path.is_file()
+            )
+            self.assertTrue(prebuild["structural_valid"], prebuild)
+            self.assertTrue(prebuild["ready"], prebuild)
+            self.assertTrue(prebuild["implementation_authorized"], prebuild)
+            self.assertEqual("prebuild", prebuild["phase"])
+            self.assertEqual(before, after, "The exported prebuild helper must not write an audit artifact.")
+
+            final = AUDITOR.audit_payload(
+                project,
+                contract,
+                {"connected-public-experience"},
+            )
+            self.assertFalse(final["ready"], final)
+            final_codes = {entry["code"] for entry in final["gaps"]}
+            self.assertIn("record-not-reviewed", final_codes)
+            self.assertIn("final-closure-incomplete", final_codes)
+
+    def test_draft_or_blocked_lifecycle_cannot_bypass_prebuild(self) -> None:
+        for lifecycle, expected_code in (
+            ("draft", "record-not-direction-ready"),
+            ("blocked", "record-blocked"),
+        ):
+            with self.subTest(lifecycle=lifecycle):
+                with tempfile.TemporaryDirectory() as temporary:
+                    project = Path(temporary)
+                    contract = mark_direction_ready(ready_contract(project))
+                    contract["record_status"] = lifecycle
+                    report = AUDITOR.audit_prebuild_payload(
+                        project,
+                        contract,
+                        {"connected-public-experience"},
+                    )
+                    self.assertFalse(report["ready"], report)
+                    self.assertFalse(report["implementation_authorized"], report)
+                    self.assertIn(
+                        expected_code,
+                        {entry["code"] for entry in report["gaps"]},
+                    )
+
+    def test_prebuild_rejects_missing_continuity_parts_and_duplicate_proof_ids(self) -> None:
+        mutations = (
+            (
+                "direct entry questions",
+                lambda contract: contract["pre_direction_constraints"].update(
+                    {"direct_entry_questions": []}
+                ),
+                "direct-entry-questions-missing",
+            ),
+            (
+                "truth constraints",
+                lambda contract: contract["pre_direction_constraints"].update(
+                    {"truth_and_entity_constraints": []}
+                ),
+                "truth-entity-constraints-missing",
+            ),
+            (
+                "selected root continuity",
+                lambda contract: contract["selected_root_continuity"].update(
+                    {"selected_root_id": None, "continuity_model": None}
+                ),
+                "selected-root-model-missing",
+            ),
+            (
+                "handoff or reset",
+                lambda contract: contract["selected_root_continuity"].update(
+                    {"handoffs_or_resets": []}
+                ),
+                "handoff-reset-missing",
+            ),
+            (
+                "meaningful path",
+                lambda contract: contract["selected_root_continuity"][
+                    "meaningful_path"
+                ].update({"outcome": None}),
+                "meaningful-path-missing",
+            ),
+            (
+                "state authority crosswalk",
+                lambda contract: contract["selected_root_continuity"].update(
+                    {"state_authority_crosswalk": []}
+                ),
+                "status-crosswalk-missing",
+            ),
+            (
+                "rendered proof plan",
+                lambda contract: contract["selected_root_continuity"][
+                    "proof_plan"
+                ].update({"rendered": []}),
+                "proof-plan-missing",
+            ),
+            (
+                "functional proof plan",
+                lambda contract: contract["selected_root_continuity"][
+                    "proof_plan"
+                ].update({"functional": []}),
+                "proof-plan-missing",
+            ),
+            (
+                "ambiguous proof identity",
+                lambda contract: contract["selected_root_continuity"][
+                    "proof_plan"
+                ]["functional"][0].update({"id": "render-direct"}),
+                "duplicate-proof-plan-id",
+            ),
+        )
+        for name, mutate, expected_code in mutations:
+            with self.subTest(name=name):
+                with tempfile.TemporaryDirectory() as temporary:
+                    project = Path(temporary)
+                    contract = mark_direction_ready(ready_contract(project))
+                    mutate(contract)
+                    report = AUDITOR.audit_prebuild_payload(
+                        project,
+                        contract,
+                        {"connected-public-experience"},
+                    )
+                    self.assertFalse(report["ready"], report)
+                    self.assertIn(
+                        expected_code,
+                        {entry["code"] for entry in report["gaps"]},
+                    )
+
+    def test_prebuild_requires_resolved_applicability_and_honest_not_applicable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            blocked = mark_direction_ready(ready_contract(project))
+            blocked["applicability"] = {
+                "status": "blocked",
+                "reason": text("The named public-state authority has not resolved the service boundary"),
+                "blocking_dependency": text("Approved public-state and content authority"),
+                "next_action": text("Obtain the named authority before implementing the connected path"),
+            }
+            blocked_report = AUDITOR.audit_prebuild_payload(
+                project,
+                blocked,
+                {"connected-public-experience"},
+            )
+            self.assertFalse(blocked_report["ready"], blocked_report)
+            self.assertIn(
+                "connected-public-experience-blocked",
+                {entry["code"] for entry in blocked_report["gaps"]},
+            )
+
+            not_applicable = mark_direction_ready(ready_contract(project))
+            not_applicable["applicability"] = {
+                "status": "not-applicable",
+                "reason": text("This is one bounded editorial notice with no linked path or carried public state"),
+                "blocking_dependency": None,
+                "next_action": None,
+            }
+            not_applicable_report = AUDITOR.audit_prebuild_payload(
+                project,
+                not_applicable,
+                {"connected-public-experience"},
+            )
+            self.assertTrue(not_applicable_report["ready"], not_applicable_report)
+
+            not_applicable["applicability"]["blocking_dependency"] = text(
+                "The owner still needs to decide whether a connected path exists"
+            )
+            dishonest_report = AUDITOR.audit_prebuild_payload(
+                project,
+                not_applicable,
+                {"connected-public-experience"},
+            )
+            self.assertFalse(dishonest_report["ready"], dishonest_report)
+            self.assertIn(
+                "resolved-applicability-retains-blocker",
+                {entry["code"] for entry in dishonest_report["gaps"]},
+            )
+
+    def test_requested_staff_branch_cannot_bypass_prebuild_fixture_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            contract = mark_direction_ready(ready_contract(project, staff=True))
+            ready_report = AUDITOR.audit_prebuild_payload(
+                project,
+                contract,
+                {"connected-public-experience"},
+            )
+            self.assertTrue(ready_report["ready"], ready_report)
+
+            contract["staff_admin_split"]["fixture"] = {
+                "status": "none",
+                "authority": None,
+                "content_or_state": None,
+                "boundary": None,
+                "descriptor": None,
+            }
+            bypass = AUDITOR.audit_prebuild_payload(
+                project,
+                contract,
+                {"connected-public-experience"},
+            )
+            self.assertFalse(bypass["ready"], bypass)
+            self.assertIn(
+                "staff-admin-fixture-missing",
+                {entry["code"] for entry in bypass["gaps"]},
+            )
 
     def test_missing_direct_entry_recovery_or_functional_proof_fails(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -717,9 +962,9 @@ class ConnectedPublicExperienceTests(unittest.TestCase):
                 {"connected-public-experience", "project-contrast", "direction-challenge"},
             )
             self.assertTrue(report["ready"], report)
-            skill_text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+            router_text = (SKILL / "references" / "router.md").read_text(encoding="utf-8")
             reference_text = (SKILL / "references" / "quality" / "connected-public-experience.md").read_text(encoding="utf-8")
-            self.assertIn("Requested staff/admin back office", skill_text)
+            self.assertIn("Requested staff/admin back office", router_text)
             self.assertIn("Operate mode", reference_text)
 
     def test_final_rendering_rejects_hash_bound_arbitrary_non_png_bytes(self) -> None:

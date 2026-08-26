@@ -132,24 +132,21 @@ Review every generated set for:
 No generated-media prompt recipe or required shot trio applies globally.
 Create the images and variety this candidate needs.
 
-### Generated video, and where to get it honestly
+### Generated video and external media services
 
-Dated note, compiled 2026-08; re-verify before relying on it, because this
-landscape turns over in months. Short generated clips inherit every rule
-above: disclosed concept media under owner authority, never fake
-documentary, testimonial, or client footage, with the same asset-integrity
-record as a still.
+Short generated clips inherit every rule above: disclosed concept media under
+owner authority, never fake documentary, testimonial, or client footage, with
+the same asset-integrity record as a still.
 
-Where generated clips are authorized, the legitimate zero-cost paths as of
-this writing are the official model publishers' own Hugging Face Spaces,
-notably Lightricks' LTX line (text- and image-to-video, up to roughly
-fifteen seconds with generated audio, unwatermarked) and Tencent's official
-foley Space for adding sound to an existing clip; free GPU quota is a few
-clips per day on a logged-in account. Beware the surrounding ecosystem:
-famous video models attract unaffiliated lookalike domains that wrap or
-merely impersonate them behind login walls and impossible "free unlimited"
-claims. Use the publisher's own space or API, and treat any third-party
-domain named after a model as unverified until proven otherwise.
+Choose a service only when the project actually needs generated video. Verify
+the current first-party publisher, model provenance, terms, commercial rights,
+territorial or use restrictions, retention and training policy, account and
+payment requirements, output disclosure, watermark behavior, and deletion
+path. A directory, social post, model-named domain, or “free unlimited” claim
+is not verification. Never upload private client assets, faces, documents,
+logos, credentials, or unreleased work to an unverified service. Prefer an
+official publisher path when it satisfies the project, but still review its
+license and data boundary; “official” does not mean unrestricted.
 
 The craft floor for an ambient clip on a page: muted, inline playback,
 deliberate looping, a poster frame, reduced-motion falling back to that

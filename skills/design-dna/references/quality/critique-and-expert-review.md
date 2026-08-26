@@ -9,6 +9,7 @@ review, and owner acceptance into one vague approval.
 - [Name the review type](#name-the-review-type)
 - [Prepare the room](#prepare-the-room)
 - [Record perception first](#record-perception-first)
+- [Write an evidence-bearing finding](#write-an-evidence-bearing-finding)
 - [Turn feedback into decisions](#turn-feedback-into-decisions)
 
 ## Name the review type
@@ -56,6 +57,31 @@ Anchor actionable feedback to route, state, viewport, screenshot artifact, and
 region or bounding box. Separate observation, impact, possible cause, and
 suggested correction. A preference without rationale may still matter when it
 comes from the accountable owner, but label it accurately.
+
+## Write an evidence-bearing finding
+
+Use this chain:
+
+`observed relationship -> visitor consequence -> project or brief principle -> smallest corrective move -> rendered proof`
+
+Start with what is visible or operable, not a style verdict. Name the visitor
+effect without pretending to know prevalence or authorship. Trace the judgment
+to this project's intent, evidence, or applicable assurance boundary; when
+values compete, name the tradeoff instead of presenting taste as law. Propose
+the smallest move that can correct the cause while protecting the direction,
+then rerender and re-run the originating check.
+
+An audit does not silently become a redesign. Every source-backed finding
+includes the exact file and line when source evidence exists; every rendered
+finding includes the exact capture and region. If the available evidence cannot
+establish the relationship, record `unknown` or a review candidate instead of a
+failure. Do not retain a correction that does not clear the originating issue
+or improve the declared project principle.
+
+For a consequential audit, record a short set of plausible patterns examined
+but deliberately not flagged, together with the contextual guard that rejected
+each one. This is evidence that exemptions and project context were applied,
+not a quota or an invitation to fill the report with non-findings.
 
 ## Turn feedback into decisions
 

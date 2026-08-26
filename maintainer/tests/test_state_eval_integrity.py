@@ -530,6 +530,45 @@ def fill_substantive_template(record: str, text: str) -> str:
     explicit_values = {
         "Assurance profile and why it fits": "standard; proportionate to the build risk",
         "Assurance profile and rationale": "standard; proportionate to the build risk",
+        "Physical or sensory subject": "no",
+        "Explicit owner request for photos or rich media": "no",
+        "Material and media posture": "inherited-system",
+        "Project-specific basis": (
+            "The approved service system already defines identity and comparison "
+            "behavior for this bounded fixture."
+        ),
+        "Media roles and truth boundary": (
+            "Existing approved identity material may orient the visitor and must "
+            "not imply unapproved services or outcomes."
+        ),
+        "Asset manifest and readiness": (
+            "Not applicable because this inherited-system fixture introduces no "
+            "new material assets."
+        ),
+        "Deliberately media-light rationale": (
+            "Not applicable because the fixture preserves an inherited system "
+            "rather than selecting a media-light direction."
+        ),
+        "Media-light exception basis": (
+            "Not applicable because no physical or sensory media-light exception is used."
+        ),
+        "Media-light exception approval": (
+            "Not applicable because no physical or sensory media-light exception is used."
+        ),
+        "Media-light exception evidence": (
+            "Not applicable because no physical or sensory media-light exception is used."
+        ),
+        "Owner-rejection disposition": (
+            "not-applicable because no accountable owner has rejected this exact fixture candidate"
+        ),
+        "Protected facts and functions": (
+            "Approved service names, eligibility constraints, comparison behavior, "
+            "and keyboard access must survive."
+        ),
+        "Public-copy boundary": (
+            "Internal record labels, workflow stages, and evidence vocabulary "
+            "remain outside visitor-facing copy."
+        ),
         "Source/workspace identity and SHA-256": (
             "project snapshot plus sha256:" + ("b" * 64)
         ),
@@ -607,6 +646,16 @@ def fill_substantive_template(record: str, text: str) -> str:
         "Build or artifact ID": "build-42",
         "Final implementation reviewed": "yes",
         "Reviewer relationship": "producer-self",
+        "Cross-project visual-grammar result or no-comparator limitation": (
+            "no authorized sibling comparator exists for this isolated fixture"
+        ),
+        "Container/backplate result": (
+            "one task boundary represents the fixture state; unrelated content is not automatically boxed"
+        ),
+        "Link/button/underline affordance result": (
+            "actions and navigation use distinct semantic treatments in the reviewed fixture"
+        ),
+        "Artifact credibility disposition": "keep",
         "Owner disposition": "pending",
         "Release blockers": "none within the reviewed scope",
         "Status": "not-required",
@@ -752,17 +801,31 @@ def materialize_visual_review_evidence(
         "| Adversarial specificity review | applicable / not-applicable / blocked | "
         f"{narrow_reference} | Recorded evidence for result or limitation. |"
     )
+    credibility_row = (
+        "| Artifact credibility and cumulative pattern | "
+        "applicable / not-applicable / blocked | "
+        f"{narrow_reference} | Recorded evidence for result or limitation. |"
+    )
     preship_row = (
         "| Preship gate | applicable / not-applicable / blocked | "
         f"{narrow_reference} | Recorded evidence for result or limitation. |"
     )
-    if adversarial_row not in rendered or preship_row not in rendered:
+    if (
+        adversarial_row not in rendered
+        or credibility_row not in rendered
+        or preship_row not in rendered
+    ):
         raise AssertionError("visual-review preship fixture rows were not found")
     rendered = rendered.replace(
         adversarial_row,
         "| Adversarial specificity review | applicable | "
         f"{narrow_reference} | The narrow capture keeps the task hierarchy "
         "legible without template-like fallback composition. |",
+    ).replace(
+        credibility_row,
+        "| Artifact credibility and cumulative pattern | applicable | "
+        f"{wide_reference} | The artifact-only pass records whole-route "
+        "intensity, recurring machinery, and public-surface credibility. |",
     ).replace(
         preship_row,
         "| Preship gate | applicable | "
@@ -2889,6 +2952,8 @@ if failure is not None:
             record = lock_record(lock_path)
             self.assertEqual("released", record["status"])
             self.assertIsNotNone(record["released_at"])
+            self.assertNotIn("project", record)
+            self.assertNotIn(str(project), lock_path.read_text(encoding="utf-8"))
 
     def test_stale_owner_metadata_is_preserved_and_os_lock_is_reused(
         self,

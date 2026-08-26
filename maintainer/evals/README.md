@@ -5,6 +5,13 @@ neutral task in a fresh project and fake home, stages the exact selected runtime
 variant, and records attributable evidence for later review. It is a trusted-driver harness, not an
 operating-system security sandbox.
 
+Individual runner outputs are diagnostic records, not a release-reliability
+claim. Before promotion, use the separate [evaluation reliability
+qualification](QUALIFICATION.md) gate to predeclare the complete case, prompt-
+family, partition, model, package, and repeated-trial matrix; bind every result;
+and report first-pass, all-trials, blocker, and worst-trial evidence without
+selecting a best run.
+
 ## Run a suite
 
 ### Install the release-test dependencies

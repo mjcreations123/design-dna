@@ -20,7 +20,7 @@
   "properties": {
     "schema_version": {"const": 1},
     "created_with": {"$ref": "#/$defs/text"},
-    "record_status": {"enum": ["draft", "reviewed", "blocked"]},
+    "record_status": {"enum": ["draft", "direction-ready", "reviewed", "blocked"]},
     "classification": {"enum": ["internal", "confidential"]},
     "applicability": {"$ref": "#/$defs/applicability"},
     "pre_direction_constraints": {"$ref": "#/$defs/preDirection"},

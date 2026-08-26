@@ -592,10 +592,20 @@ def make_fake_codex_validator(base: Path) -> Path:
         / "validate_plugin.py"
     )
     path.parent.mkdir(parents=True)
+    (path.parent / "identifier_validation.py").write_text(
+        '"""release-proof validator support"""\n'
+        "def validate_plugin_identifier(value):\n"
+        "    if value != 'design-dna':\n"
+        "        raise ValueError('unexpected plugin identifier')\n",
+        encoding="utf-8",
+    )
     path.write_text(
         '"""plugin ingestion contract"""\n'
         "import sys\n"
         "from pathlib import Path\n"
+        "sys.path.insert(0, str(Path(__file__).resolve().parent))\n"
+        "from identifier_validation import validate_plugin_identifier\n"
+        "validate_plugin_identifier('design-dna')\n"
         "def validate_plugin(plugin_root): return []\n"
         "if __name__ == '__main__':\n"
         "    print(f'Plugin validation passed: {Path(sys.argv[1]).resolve()}')\n"
@@ -663,6 +673,8 @@ def make_codex_plugin_fixture(
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
     validator_data = validator_path.read_bytes()
+    support_path = validator_path.parent / "identifier_validation.py"
+    support_data = support_path.read_bytes()
     today = datetime.now(timezone.utc).date()
     reviewed_date = reviewed_at.date() if reviewed_at else today
     due_date = (
@@ -671,7 +683,7 @@ def make_codex_plugin_fixture(
         else today + timedelta(days=90)
     )
     trust = {
-        "schema_version": 1,
+        "schema_version": 2,
         "record_type": "design-dna-codex-validator-trust-pin",
         "logical_id": "plugin-creator/validate_plugin.py",
         "path_suffix": (
@@ -679,6 +691,15 @@ def make_codex_plugin_fixture(
         ),
         "sha256": hashlib.sha256(validator_data).hexdigest(),
         "bytes": len(validator_data),
+        "support_files": [{
+            "logical_id": "plugin-creator/identifier_validation.py",
+            "path_suffix": (
+                "/skills/.system/plugin-creator/scripts/"
+                "identifier_validation.py"
+            ),
+            "sha256": hashlib.sha256(support_data).hexdigest(),
+            "bytes": len(support_data),
+        }],
         "reviewed_at": reviewed_date.isoformat(),
         "review_due": due_date.isoformat(),
         "review_basis": (
@@ -705,7 +726,7 @@ def make_codex_plugin_fixture(
 class CandidateMetadataTests(unittest.TestCase):
     """Keep the unreleased candidate's public contract coherent with runtime."""
 
-    def test_v520_docs_and_manifests_describe_opt_in_cpe_standard_first(self) -> None:
+    def test_candidate_docs_and_manifests_describe_opt_in_cpe_standard_first(self) -> None:
         documents = {
             "CHANGELOG.md": PLUGIN / "CHANGELOG.md",
             "README.md": PLUGIN / "README.md",
@@ -776,8 +797,58 @@ class CandidateMetadataTests(unittest.TestCase):
             )
         )
 
+    def test_public_6_0_workflow_exposes_prebuild_and_opt_in_commands(self) -> None:
+        release_version = json.loads(
+            (PLUGIN / "skills" / "design-dna" / "release.json").read_text(
+                encoding="utf-8"
+            )
+        )["version"]
+        self.assertEqual("6.0.0", release_version)
+
+        readme = (PLUGIN / "README.md").read_text(encoding="utf-8")
+        quick_start = (PLUGIN / "docs" / "QUICK_START.md").read_text(
+            encoding="utf-8"
+        )
+        changelog = (PLUGIN / "CHANGELOG.md").read_text(encoding="utf-8")
+        self.assertIn("`6.0.0` is not a release", readme)
+        self.assertIn("## 6.0.0 - Development candidate", changelog)
+
+        required_surfaces = (
+            "--check-prebuild",
+            "--profile connected-public-experience",
+            "--profile direction-challenge",
+            "--profile showcase --trigger owner-recurrence-requirement",
+            "--record assets --evidence-capability asset-led",
+            "--print-asset-example",
+            "owner_rejection_audit.py",
+            "sha256-tab-lf-v1",
+            "candidate.manifest_sha256",
+        )
+        for document_name, content in (
+            ("README.md", readme),
+            ("docs/QUICK_START.md", quick_start),
+        ):
+            for required in required_surfaces:
+                with self.subTest(document=document_name, required=required):
+                    self.assertIn(required, content)
+
 
 class TestAttestationTests(unittest.TestCase):
+    def test_existing_attestation_is_immutable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "test-attestation.json"
+            original = '{"previous":"record"}\n'
+            output.write_text(original, encoding="utf-8")
+
+            with self.assertRaises(attest_tests.ToolFailure) as raised:
+                attest_tests.require_new_attestation_output(output)
+
+            self.assertEqual(
+                raised.exception.issue.code,
+                "test-attestation-exists",
+            )
+            self.assertEqual(output.read_text(encoding="utf-8"), original)
+
     def test_release_runner_emits_docstring_skip_on_one_parseable_line(
         self,
     ) -> None:
@@ -1950,12 +2021,38 @@ class TestAttestationTests(unittest.TestCase):
             ),
             [],
         )
+        self.assertEqual(
+            audit_package.distributed_record_local_path_failures(
+                {
+                    "validator": {
+                        "support_files": [{
+                            "path_suffix": (
+                                "/skills/.system/plugin-creator/scripts/"
+                                "identifier_validation.py"
+                            )
+                        }]
+                    }
+                },
+                "fixture.json",
+            ),
+            [],
+        )
         failures = audit_package.distributed_record_local_path_failures(
             {"captured": r"C:\Users\example\private.txt"},
             "fixture.json",
         )
         self.assertEqual(
             {item["code"] for item in failures},
+            {"release-attestation-local-path"},
+        )
+        suffix_failures = (
+            audit_package.distributed_record_local_path_failures(
+                {"path_suffix": "/Users/example/private.py"},
+                "fixture.json",
+            )
+        )
+        self.assertEqual(
+            {item["code"] for item in suffix_failures},
             {"release-attestation-local-path"},
         )
 
@@ -2196,7 +2293,7 @@ class CodexPluginValidationProofTests(unittest.TestCase):
                 with contextlib.redirect_stdout(captured):
                     status = audit_package.main()
 
-            self.assertEqual(status, 1)
+            self.assertEqual(status, 1, captured.getvalue())
             payload = json.loads(captured.getvalue())
             codes = {
                 finding["code"]
@@ -2231,6 +2328,7 @@ class CodexPluginValidationProofTests(unittest.TestCase):
             tampered["output"]["exact_success_line_observed"] = False
             tampered["inputs"]["skills_tree"]["sha256"] = "0" * 64
             tampered["validator"]["trust_policy_sha256"] = "0" * 64
+            tampered["validator"]["support_files"][0]["sha256"] = "f" * 64
             failures = audit_package.codex_plugin_attestation_failures(
                 tampered,
                 plugin,
@@ -2255,6 +2353,41 @@ class CodexPluginValidationProofTests(unittest.TestCase):
         )
         self.assertIn(
             "release-codex-plugin-attestation-live-drift",
+            codes,
+        )
+
+    def test_release_proof_rejects_only_support_file_identity_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            validator_path = make_fake_codex_validator(root / "external")
+            plugin = make_codex_plugin_fixture(root, validator_path)
+            record = attest_codex_plugin.create_attestation(
+                plugin,
+                validator_path,
+            )
+            manifest = {
+                "generated_at": after_timestamp(
+                    record["created_at"],
+                    seconds=1,
+                )
+            }
+            tampered = copy.deepcopy(record)
+            tampered["validator"]["support_files"][0]["sha256"] = "f" * 64
+            failures = audit_package.codex_plugin_attestation_failures(
+                tampered,
+                plugin,
+                SCHEMAS
+                / "codex-plugin-validation-attestation.schema.json",
+                manifest,
+                {"version": "3.0.0"},
+            )
+        codes = {item["code"] for item in failures}
+        self.assertIn(
+            "release-codex-plugin-attestation-trust-drift",
+            codes,
+        )
+        self.assertNotIn(
+            "release-codex-plugin-attestation-input-drift",
             codes,
         )
 

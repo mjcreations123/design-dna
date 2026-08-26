@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-054",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/mblode/agent-skills/tree/2e575d39f28acdc698ea22e4c62325801188e1b1/skills/ui-design",
+  "locator": "MIT repository; UI-design skill, slop-unverifiable-proof rule, and refine-ai-ui evaluation at commit 2e575d39f28acdc698ea22e4c62325801188e1b1",
+  "content_kind": "maintainer_summary",
+  "summary": "mblode's UI-design audit guidance requires exact source evidence, treats ambiguous shape evidence as unknown, documents false-positive exclusions, and reruns checks after correction. Design DNA adapts that evidence discipline and examined-but-not-flagged accounting without importing its React/Tailwind assumptions or universal style thresholds."
+}

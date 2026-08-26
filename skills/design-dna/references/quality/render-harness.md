@@ -9,7 +9,7 @@ for another.
 ## Contents
 
 - [Use the bundled reviewer truthfully](#use-the-bundled-reviewer-truthfully)
-- [Drive interactive capture with the Playwright CLI](#drive-interactive-capture-with-the-playwright-cli)
+- [Use an interactive browser path when it fits](#use-an-interactive-browser-path-when-it-fits)
 - [Bound host capture and browser state](#bound-host-capture-and-browser-state)
 - [Declare the scenarios that matter](#declare-the-scenarios-that-matter)
 - [Understand full-page capture](#understand-full-page-capture)
@@ -37,35 +37,32 @@ selection, screen-reader behavior, usability, aesthetic quality, or
 authorship. Keep every conclusion within the report's own limitations and the
 evidence actually collected.
 
+Its report is Chromium-family evidence only. It does not establish Gecko,
+WebKit, a mobile browser's chrome or virtual keyboard, real touch hardware, or
+another browser/assistive-technology pairing. Declare those conditions through
+the project-specific [browser support contract](browser-support.md), test the
+materially different supported paths separately, and disclose untested rows.
+
 Use the project's established browser or visual-regression system when it
 already provides the needed evidence. Do not add or replace tooling merely to
 match this reference.
 
-## Drive interactive capture with the Playwright CLI
+## Use an interactive browser path when it fits
 
-For the hands-on capture and probing between bundled-reviewer runs
-(state exploration, media-emulation checks, scroll-position slices,
-element crops, quick console and network reads), the standard tool is the
-Playwright CLI: the `@playwright/cli` npm package, a one-shot command
-interface over a per-workspace daemon that keeps the live browser, page
-state, and emulation between shell commands. Pin the installed version in
-the project record; it tracks a Playwright prerelease channel, so an
-unpinned install can change behavior between runs. On a machine with a
-real Chrome installed it uses that browser directly with no download.
+For hands-on state exploration between bundled-reviewer runs, use an existing
+project harness or available browser capability first. The Microsoft
+Playwright CLI (`@playwright/cli`) is one optional path for viewport changes,
+screenshots, accessibility snapshots, console and request inspection, and
+bounded evaluation. Do not install it merely to satisfy this reference. When
+it is selected, resolve and pin the current compatible version, read its
+current `--help` and official documentation rather than relying on remembered
+flags, and record which browser and emulation actually ran.
 
-The invocations that cover this reference's recurring needs: `open` and
-`resize` for viewport control, with `--device` or `--mobile` for true
-device emulation including pixel ratio; `screenshot` for viewport,
-`--full-page`, `--hires` (device pixels), or an element by selector;
-`snapshot --boxes` for an accessibility tree with geometry; `console` and
-`requests` for errors; `eval` for computed styles and font status; and
-`run-code` for anything needing the full API in one batch, including
-media emulation for reduced motion, color scheme, and forced colors,
-which then persists for subsequent commands. Sessions are scoped to the
-working directory, matching the one-session-per-project convention;
-`kill-all` clears zombie daemons, an environment variable unlocks
-`file://` targets when no server exists, and capture output should be
-directed outside cloud-synced trees.
+Use a credential-free isolated profile unless the real task explicitly needs
+an authorized session. Do not attach arbitrary evaluation, unrestricted file
+access, downloads, or uploads to an untrusted page; do not expose logged-in
+cookies or client files for convenience. Close the session and remove the
+task-owned profile and output when the data-handling contract requires it.
 
 Two disciplines make its evidence trustworthy. First, identity: every
 command response reports the page URL, title, and any non-success HTTP
@@ -77,11 +74,21 @@ the same composite-from-top capture as any other tool, so scroll-driven
 work is proven with real scrolling plus viewport captures, never with a
 full-page image alone.
 
-The raw devtools-protocol script remains a named fallback for
-environments where the CLI cannot install, with the same identity
-discipline; the bundled reviewer remains the only source of the
-schema-bound review report, which the CLI complements and never
-replaces.
+Any project browser, host browser control, Playwright CLI, or raw protocol path
+uses the same identity discipline. The bundled reviewer remains the only source
+of this package's schema-bound review report; interactive tools complement it
+and never replace that contract. When the bundled reviewer cannot run, continue
+with every safe claim-relevant project or manual check, improve the candidate,
+and record the exact missing report as a narrow formal-readiness block. Do not
+turn one unavailable capture adapter into a reason to stop unrelated work, and
+do not translate unbound screenshots into a fabricated schema pass.
+
+That package boundary is deliberate: this release has no audited importer for
+external evidence. An established project harness can supply valuable and even
+stronger project evidence, but it cannot be relabeled as schema 3. A future
+importer would need to validate exact build and source identity, page identity,
+route and state coverage, browser/version, image dimensions and hashes,
+capture provenance, and limitations before it could close this package gate.
 
 ## Bound host capture and browser state
 

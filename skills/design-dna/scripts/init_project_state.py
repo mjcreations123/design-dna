@@ -57,6 +57,7 @@ CORE_EVIDENCE_CAPABILITIES = {
     "connected-public-experience",
     "cultural-context",
     "direction-challenge",
+    "enterprise-candidate",
     "high-risk",
     "project-contrast",
     "range-study",
@@ -64,6 +65,7 @@ CORE_EVIDENCE_CAPABILITIES = {
 CAPABILITY_PROFILE_COMMANDS = {
     "project-contrast": "--profile project-contrast",
     "direction-challenge": "--profile direction-challenge",
+    "enterprise-candidate": "--profile enterprise-candidate",
     "high-risk": "--profile high-risk",
 }
 EVIDENCE_CAPABILITY_PATTERN = re.compile(
@@ -74,17 +76,26 @@ EVIDENCE_EXTENSION_ID_PATTERN = re.compile(
 )
 EVIDENCE_EXTENSION_STATUSES = {"draft", "complete", "not-applicable"}
 OWNER_RECURRENCE_TRIGGER = "owner-recurrence-requirement"
+OWNER_PATTERN_TRIGGER = "owner-pattern-contract"
 OWNER_RECURRENCE_RECORDS = ("project-contrast", "direction-challenge")
 OWNER_RECURRENCE_CAPABILITIES = frozenset(OWNER_RECURRENCE_RECORDS)
-INITIALIZATION_TRIGGERS = {OWNER_RECURRENCE_TRIGGER}
+INITIALIZATION_TRIGGERS = {OWNER_RECURRENCE_TRIGGER, OWNER_PATTERN_TRIGGER}
 TRIGGER_EVIDENCE_CAPABILITIES = {
     OWNER_RECURRENCE_TRIGGER: (
+        "project-contrast",
+        "direction-challenge",
+    ),
+    OWNER_PATTERN_TRIGGER: (
         "project-contrast",
         "direction-challenge",
     ),
 }
 TRIGGER_RECORDS = {
     OWNER_RECURRENCE_TRIGGER: (
+        "project-contrast",
+        "direction-challenge",
+    ),
+    OWNER_PATTERN_TRIGGER: (
         "project-contrast",
         "direction-challenge",
     ),
@@ -173,6 +184,7 @@ PROFILES = {
     "substantial": ("direction", "visual-review"),
     "greenfield": ("direction", "visual-review"),
     "standard": ("direction", "visual-review"),
+    "enterprise-candidate": ("direction", "visual-review"),
     "connected-public-experience": (
         "direction",
         "connected-public-experience",
@@ -223,6 +235,7 @@ PERSISTED_PROFILES = {*PROFILES, "custom"}
 CANONICAL_ASSURANCE_PROFILES = {
     "quick",
     "standard",
+    "enterprise-candidate",
     "showcase",
     "connected-public-experience",
     "direction-challenge",
@@ -235,6 +248,7 @@ CANONICAL_ASSURANCE_PROFILES = {
 ASSURANCE_PROFILE_ORDER = (
     "quick",
     "standard",
+    "enterprise-candidate",
     "showcase",
     "connected-public-experience",
     "direction-challenge",
@@ -248,6 +262,7 @@ REQUEST_PROFILE_ASSURANCE = {
     "quick": ("quick",),
     "substantial": ("standard",),
     "standard": ("standard",),
+    "enterprise-candidate": ("standard", "enterprise-candidate"),
     "greenfield": ("standard",),
     "showcase": ("showcase",),
     "connected-public-experience": (
@@ -263,7 +278,7 @@ REQUEST_PROFILE_ASSURANCE = {
     "validation": ("standard",),
     "asset-led": ("asset-led",),
     "full": (
-        "showcase", "connected-public-experience", "direction-challenge",
+        "showcase", "enterprise-candidate", "connected-public-experience", "direction-challenge",
         "project-contrast", "range-study", "batch-study", "high-risk",
         "asset-led",
     ),
@@ -405,6 +420,7 @@ def inferred_evidence_capabilities(
         capability
         for capability in (
             "project-contrast", "direction-challenge",
+            "enterprise-candidate",
             "connected-public-experience", "range-study", "batch-study",
             "high-risk", "asset-led",
         )
@@ -1127,6 +1143,7 @@ REQUIRED_RECORD_SECTIONS = {
 STANDARD_VISUAL_REVIEW_SECTIONS = {
     "Review scope and capture rationale",
     "First-impression and surface-fidelity review",
+    "Artifact credibility and cumulative-pattern review",
     "Preship and specificity closure",
 }
 REVIEW_SCOPE_CAPTURE_HEADERS = (
@@ -1148,6 +1165,19 @@ PRESHIP_SPECIFICITY_HEADERS = (
     "Rendered PNG path and SHA-256",
     "Result or limitation",
 )
+ARTIFACT_CREDIBILITY_LABELS = (
+    "Artifact-only reviewer relationship and prior exposure",
+    "Credible public-surface result",
+    "Dominant recurring device or relationship cluster",
+    "Cumulative intensity and ordinary-work result",
+    "Business/category completeness result",
+    "Media credibility and synthetic-pattern result",
+    "Portfolio/process-language result",
+    "Cross-project visual-grammar result or no-comparator limitation",
+    "Container/backplate result",
+    "Link/button/underline affordance result",
+    "Artifact credibility disposition",
+)
 REVIEW_CLOSURE_DISPOSITIONS = {
     "applicable",
     "not-applicable",
@@ -1156,7 +1186,15 @@ REVIEW_CLOSURE_DISPOSITIONS = {
 PROJECT_DERIVED_DIRECTION_SECTIONS = {
     "Project-derived organizing logic",
     "Observable consequential design decisions",
+    "Material, media, and public-copy boundary",
 }
+PREBUILD_SUBSTANTIVE_RECORDS = (
+    "exploration",
+    "taste-calibration",
+    "direction",
+    "direction-proof",
+    "claims",
+)
 REQUIRED_RECORD_LABELS = {
     "exploration": (),
     "taste-calibration": (),
@@ -1189,6 +1227,9 @@ REQUIRED_RECORD_LABELS = {
     ),
 }
 CAPABILITY_REQUIRED_SECTIONS = {
+    "enterprise-candidate": {
+        "visual-review": {"Enterprise Candidate closure (when selected)"},
+    },
     "connected-public-experience": {
         "direction": {"Connected public experience (when selected)"},
         "visual-review": {
@@ -1217,6 +1258,7 @@ CAPABILITY_REQUIRED_SECTIONS = {
     },
 }
 CAPABILITY_REQUIRED_RECORDS = {
+    "enterprise-candidate": {"direction", "visual-review"},
     "connected-public-experience": {"connected-public-experience"},
     "project-contrast": {"project-contrast"},
     "direction-challenge": {"direction-challenge"},
@@ -1567,7 +1609,6 @@ class ProjectMutationLock:
                 "status": "active",
                 "owner_token": self.owner_token,
                 "pid": os.getpid(),
-                "project": str(self.project),
                 "operation": self.operation,
                 "acquired_at": datetime.now(timezone.utc).isoformat(),
                 "released_at": None,
@@ -2216,6 +2257,54 @@ def read_json(path: Path) -> object:
         raise StateError("state-read-failed", str(exc), path=path) from exc
 
 
+_MISSING_BUNDLED_MODULE = object()
+
+
+def load_bundled_source_module(
+    module_name: str,
+    path: Path,
+    *,
+    retain: bool = False,
+) -> object:
+    """Execute one bundled Python source file without creating bytecode.
+
+    The state initializer is also imported by hosts and tests that do not use
+    Python's ``-B`` flag.  A normal file-loader import can therefore write an
+    executable ``__pycache__`` into the installed runtime; the release
+    preflight correctly refuses that residue.  Compile the already-selected
+    sibling source bytes directly, while still providing ordinary module
+    metadata and a temporary ``sys.modules`` entry for code that needs it.
+    """
+
+    source = path.read_bytes()
+    specification = importlib.util.spec_from_loader(
+        module_name,
+        loader=None,
+        origin=str(path),
+    )
+    if specification is None:
+        raise ImportError(f"Could not create a module specification for {path}.")
+    module = importlib.util.module_from_spec(specification)
+    module.__file__ = str(path)
+    previous = sys.modules.get(module_name, _MISSING_BUNDLED_MODULE)
+    sys.modules[module_name] = module
+    try:
+        code = compile(source, str(path), "exec", dont_inherit=True)
+        exec(code, module.__dict__)
+    except BaseException:
+        if previous is _MISSING_BUNDLED_MODULE:
+            sys.modules.pop(module_name, None)
+        else:
+            sys.modules[module_name] = previous
+        raise
+    if not retain:
+        if previous is _MISSING_BUNDLED_MODULE:
+            sys.modules.pop(module_name, None)
+        else:
+            sys.modules[module_name] = previous
+    return module
+
+
 def validate_route_family_record(
     path: Path,
 ) -> tuple[object, list[dict[str, str]]]:
@@ -2229,22 +2318,14 @@ def validate_route_family_record(
             "The bundled route-family validator is missing or redirected.",
             path=validator_path,
         )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_route_family_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "route-family-validator-load-failed",
-            "The bundled route-family validator could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_route_family_audit",
+            validator_path,
+        )
         validator = getattr(module, "validate_contract_payload")
         errors, _routes = validator(payload)
-    except (AttributeError, TypeError, ValueError) as exc:
+    except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
         raise StateError(
             "route-family-validator-failed",
             str(exc),
@@ -2650,19 +2731,11 @@ def run_batch_range_readiness_audit(path: Path, project: Path) -> dict[str, obje
             "The bundled batch-range auditor is missing or redirected.",
             path=validator_path,
         )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_batch_range_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "batch-range-validator-load-failed",
-            "The bundled batch-range auditor could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_batch_range_audit",
+            validator_path,
+        )
     except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
         raise StateError(
             "batch-range-validator-load-failed",
@@ -2728,22 +2801,14 @@ def validate_project_contrast_record(
             "The bundled Project Contrast validator is missing or redirected.",
             path=validator_path,
         )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_project_contrast_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "project-contrast-validator-load-failed",
-            "The bundled Project Contrast validator could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_project_contrast_audit",
+            validator_path,
+        )
         validator = getattr(module, "validate_contract_payload")
         errors, _contract = validator(payload)
-    except (AttributeError, TypeError, ValueError) as exc:
+    except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
         raise StateError(
             "project-contrast-validator-failed",
             str(exc),
@@ -2777,19 +2842,11 @@ def run_project_contrast_readiness_audit(
             path=path,
         )
     validator_path = Path(__file__).with_name("project_contrast_audit.py")
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_project_contrast_readiness_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "project-contrast-validator-load-failed",
-            "The bundled Project Contrast auditor could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_project_contrast_readiness_audit",
+            validator_path,
+        )
         audit = getattr(module, "audit_payload")
         report = audit(project.resolve(strict=True), payload)
     except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
@@ -2831,22 +2888,14 @@ def validate_direction_challenge_record(
             "The bundled Direction Challenge validator is missing or redirected.",
             path=validator_path,
         )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_direction_challenge_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "direction-challenge-validator-load-failed",
-            "The bundled Direction Challenge validator could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_direction_challenge_audit",
+            validator_path,
+        )
         validator = getattr(module, "validate_contract_payload")
         errors, _contract = validator(payload)
-    except (AttributeError, TypeError, ValueError) as exc:
+    except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
         raise StateError(
             "direction-challenge-validator-failed",
             str(exc),
@@ -2880,19 +2929,11 @@ def run_direction_challenge_readiness_audit(
             path=path,
         )
     validator_path = Path(__file__).with_name("direction_challenge_audit.py")
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_direction_challenge_readiness_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "direction-challenge-validator-load-failed",
-            "The bundled Direction Challenge auditor could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_direction_challenge_readiness_audit",
+            validator_path,
+        )
         audit = getattr(module, "audit_payload")
         report = audit(project.resolve(strict=True), payload)
     except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
@@ -2936,22 +2977,14 @@ def validate_connected_public_experience_record(
             "The bundled Connected Public Experience validator is missing or redirected.",
             path=validator_path,
         )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_connected_public_experience_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "connected-public-experience-validator-load-failed",
-            "The bundled Connected Public Experience validator could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_connected_public_experience_audit",
+            validator_path,
+        )
         validator = getattr(module, "validate_contract_payload")
         errors, _contract = validator(payload)
-    except (AttributeError, TypeError, ValueError) as exc:
+    except (AttributeError, ImportError, OSError, TypeError, ValueError) as exc:
         raise StateError(
             "connected-public-experience-validator-failed",
             str(exc),
@@ -2990,19 +3023,11 @@ def run_connected_public_experience_readiness_audit(
     validator_path = Path(__file__).with_name(
         "connected_public_experience_audit.py"
     )
-    specification = importlib.util.spec_from_file_location(
-        "_design_dna_connected_public_experience_readiness_audit",
-        validator_path,
-    )
-    if specification is None or specification.loader is None:
-        raise StateError(
-            "connected-public-experience-validator-load-failed",
-            "The bundled Connected Public Experience auditor could not be loaded.",
-            path=validator_path,
-        )
-    module = importlib.util.module_from_spec(specification)
     try:
-        specification.loader.exec_module(module)
+        module = load_bundled_source_module(
+            "_design_dna_connected_public_experience_readiness_audit",
+            validator_path,
+        )
         audit = getattr(module, "audit_payload")
         report = audit(
             project.resolve(strict=True),
@@ -3025,6 +3050,105 @@ def run_connected_public_experience_readiness_audit(
         raise StateError(
             "connected-public-experience-validator-invalid-output",
             "The bundled Connected Public Experience auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
+def run_connected_public_experience_prebuild_audit(
+    path: Path,
+    project: Path,
+    evidence_capabilities: tuple[str, ...] | list[str] | set[str],
+) -> dict[str, object]:
+    """Run the continuity direction-stage gate without demanding final closure."""
+
+    payload, structural_errors = validate_connected_public_experience_record(path)
+    if structural_errors:
+        raise StateError(
+            "connected-public-experience-validator-failed",
+            structural_errors[0]["message"],
+            path=path,
+        )
+    validator_path = Path(__file__).with_name(
+        "connected_public_experience_audit.py"
+    )
+    try:
+        module = load_bundled_source_module(
+            "_design_dna_connected_public_experience_prebuild_audit",
+            validator_path,
+        )
+        audit = getattr(module, "audit_prebuild_payload")
+        report = audit(
+            project.resolve(strict=True),
+            payload,
+            set(evidence_capabilities),
+            capability_context="state",
+        )
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "connected-public-experience-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if (
+        not isinstance(report, dict)
+        or report.get("automatic_aesthetic_pass") is not False
+        or report.get("phase") != "prebuild"
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("implementation_authorized"), bool)
+        or not isinstance(report.get("gaps"), list)
+        or not isinstance(report.get("findings"), list)
+    ):
+        raise StateError(
+            "connected-public-experience-validator-invalid-output",
+            "The bundled Connected Public Experience prebuild auditor returned an unsupported result.",
+            path=validator_path,
+        )
+    return report
+
+
+def run_owner_rejection_audit(path: Path, project: Path) -> dict[str, object]:
+    """Validate and byte-verify one optional scoped owner rejection record."""
+
+    try:
+        payload = read_json(path)
+    except StateError as exc:
+        raise StateError(
+            "owner-rejection-invalid",
+            str(exc),
+            path=path,
+        ) from exc
+    validator_path = Path(__file__).with_name("owner_rejection_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        raise StateError(
+            "owner-rejection-validator-missing",
+            "The bundled owner-rejection validator is missing or redirected.",
+            path=validator_path,
+        )
+    try:
+        module = load_bundled_source_module(
+            "_design_dna_owner_rejection_audit",
+            validator_path,
+        )
+        audit = getattr(module, "audit_payload")
+        report = audit(project.resolve(strict=True), payload)
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        raise StateError(
+            "owner-rejection-validator-failed",
+            str(exc),
+            path=validator_path,
+        ) from exc
+    if (
+        not isinstance(report, dict)
+        or not isinstance(report.get("structural_valid"), bool)
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("findings"), list)
+        or not isinstance(report.get("gaps"), list)
+        or not isinstance(report.get("lifecycle"), dict)
+    ):
+        raise StateError(
+            "owner-rejection-validator-invalid-output",
+            "The bundled owner-rejection auditor returned an unsupported result.",
             path=validator_path,
         )
     return report
@@ -5877,15 +6001,11 @@ def load_schema3_render_review_adapter() -> tuple[object | None, str | None]:
     adapter_path = Path(__file__).with_name("project_contrast_audit.py")
     module_name = "design_dna_schema3_render_review_adapter"
     try:
-        specification = importlib.util.spec_from_file_location(
+        module = load_bundled_source_module(
             module_name,
             adapter_path,
+            retain=True,
         )
-        if specification is None or specification.loader is None:
-            return None, "the packaged schema-3 rendered-review verifier is unavailable"
-        module = importlib.util.module_from_spec(specification)
-        sys.modules[module_name] = module
-        specification.loader.exec_module(module)
     except Exception as exc:  # pragma: no cover - defensive package boundary
         sys.modules.pop(module_name, None)
         return None, f"the packaged schema-3 rendered-review verifier could not load: {exc}"
@@ -6310,11 +6430,44 @@ def visual_review_schema3_capture_matrix_failures(
             {"first impression and surface fidelity"},
         )
     )
+    credibility_section = sections.get(
+        "Artifact credibility and cumulative-pattern review",
+        "",
+    )
+    for label in ARTIFACT_CREDIBILITY_LABELS:
+        value = markdown_label_value(credibility_section, label)
+        if value is None or not non_placeholder(value):
+            failures.append(
+                "Artifact credibility and cumulative-pattern review needs a "
+                f"substantive {label!r} value"
+            )
+    credibility_disposition = (
+        markdown_label_value(
+            credibility_section,
+            "Artifact credibility disposition",
+        )
+        or ""
+    ).strip().casefold()
+    if credibility_disposition not in {
+        "keep",
+        "revise",
+        "reopen direction",
+        "reject",
+        "blocked",
+    }:
+        failures.append(
+            "Artifact credibility disposition must be keep, revise, reopen "
+            "direction, reject, or blocked"
+        )
     failures.extend(
         closure_table_failures(
             "Preship and specificity closure",
             PRESHIP_SPECIFICITY_HEADERS,
-            {"adversarial specificity review", "preship gate"},
+            {
+                "adversarial specificity review",
+                "artifact credibility and cumulative pattern",
+                "preship gate",
+            },
         )
     )
     return failures
@@ -7011,6 +7164,240 @@ def render_comparison_body_failures(
     return failures
 
 
+def direction_material_boundary_failures(
+    body: str,
+    *,
+    required_evidence_capabilities: tuple[str, ...] | set[str] | None,
+    project: Path | None = None,
+    record_path: Path | None = None,
+) -> list[str]:
+    """Validate the prebuild material decision without prescribing a style.
+
+    This contract exists because a physical subject or an explicit request for
+    photography can otherwise disappear between the brief and implementation.
+    It deliberately records roles, truth, and a media-light exception instead
+    of imposing an image count, genre, palette, or layout.
+    """
+
+    failures: list[str] = []
+    labels = (
+        "Physical or sensory subject",
+        "Explicit owner request for photos or rich media",
+        "Material and media posture",
+        "Project-specific basis",
+        "Media roles and truth boundary",
+        "Asset manifest and readiness",
+        "Deliberately media-light rationale",
+        "Media-light exception basis",
+        "Media-light exception approval",
+        "Media-light exception evidence",
+        "Owner-rejection disposition",
+        "Protected facts and functions",
+        "Public-copy boundary",
+    )
+    values: dict[str, str] = {}
+    for label in labels:
+        value = (markdown_label_value(body, label) or "").strip()
+        values[label] = value
+        if not non_placeholder(value):
+            failures.append(
+                f"Material/media direction {label!r} is missing or still scaffold text"
+            )
+
+    physical = values["Physical or sensory subject"].casefold()
+    requested = values[
+        "Explicit owner request for photos or rich media"
+    ].casefold()
+    posture = values["Material and media posture"].casefold()
+    for label, value in (
+        ("Physical or sensory subject", physical),
+        ("Explicit owner request for photos or rich media", requested),
+    ):
+        if value not in {"yes", "no"}:
+            failures.append(f"Material/media direction {label!r} must be yes or no")
+    if posture not in {
+        "asset-led",
+        "deliberately-media-light",
+        "inherited-system",
+    }:
+        failures.append(
+            "Material and media posture must be asset-led, deliberately-media-light, "
+            "or inherited-system"
+        )
+
+    capabilities = set(required_evidence_capabilities or ())
+    if posture == "asset-led":
+        if "asset-led" not in capabilities:
+            failures.append(
+                "Asset-led material posture requires the asset-led evidence "
+                "capability and its assets.yml record before broad implementation"
+            )
+        manifest = values["Asset manifest and readiness"].replace("\\", "/")
+        if ".design-dna/assets.yml" not in manifest:
+            failures.append(
+                "Asset-led material posture must name .design-dna/assets.yml and "
+                "its honest current readiness"
+            )
+    if requested == "yes" and posture != "asset-led":
+        failures.append(
+            "An explicit owner request for photos or rich media requires an "
+            "asset-led direction; a media-light exception cannot override the brief"
+        )
+    if physical == "yes" and posture == "deliberately-media-light":
+        rationale = values["Deliberately media-light rationale"]
+        raw_basis = values["Media-light exception basis"]
+        approval = values["Media-light exception approval"]
+        evidence = values["Media-light exception evidence"]
+        if not non_placeholder(rationale):
+            failures.append(
+                "A physical or sensory subject may be deliberately media-light "
+                "only with a project-specific reason that explains the visitor "
+                "or truth benefit"
+            )
+        if re.search(
+            r"(?:no|without|missing).{0,32}(?:photos?|images?|assets?).{0,32}"
+            r"(?:supplied|provided|available)",
+            rationale,
+            re.I,
+        ):
+            failures.append(
+                "Missing supplied media is not a project-specific reason for a "
+                "photo-free physical or sensory direction"
+            )
+        allowed_bases = {
+            "truth-risk",
+            "rights-restriction",
+            "privacy-consent",
+            "accessibility-comprehension",
+            "visitor-task-fit",
+            "documentary-ethics",
+            "performance-budget",
+        }
+        bases = {
+            item.strip().casefold()
+            for item in re.split(r"[,;]", raw_basis)
+            if item.strip()
+        }
+        if not bases or not bases.issubset(allowed_bases):
+            failures.append(
+                "Media-light exception basis must use one or more language-neutral "
+                "values: truth-risk, rights-restriction, privacy-consent, "
+                "accessibility-comprehension, visitor-task-fit, documentary-ethics, "
+                "or performance-budget"
+            )
+        if not re.search(r"^approved\b", approval, re.I):
+            failures.append(
+                "A physical or sensory media-light exception requires explicit "
+                "owner/client approval beginning with 'approved'"
+            )
+        if not re.search(r"\bby\s+\S+", approval, re.I) or not re.search(
+            r"\b20[0-9]{2}-[01][0-9]-[0-3][0-9]\b",
+            approval,
+        ):
+            failures.append(
+                "A physical or sensory media-light exception approval must name "
+                "the approving owner/client and an ISO date"
+            )
+        if project is None or record_path is None:
+            failures.append(
+                "A physical or sensory media-light exception must be validated "
+                "with project-relative owner/client evidence"
+            )
+        else:
+            artifact, artifact_failures = bound_artifact(
+                evidence,
+                project=project,
+                record_path=record_path,
+                label="Media-light exception evidence",
+            )
+            failures.extend(artifact_failures)
+            if artifact is not None and not artifact_failures:
+                try:
+                    evidence_text = artifact.read_text(encoding="utf-8")
+                except (OSError, UnicodeError) as exc:
+                    failures.append(
+                        "Media-light exception evidence must be readable UTF-8 "
+                        f"owner/client decision text: {exc}"
+                    )
+                else:
+                    normalized_evidence = evidence_text.casefold()
+                    if (
+                        approval.casefold() not in normalized_evidence
+                        or "decision: approved" not in normalized_evidence
+                        or not re.search(
+                            r"(?m)^authority:\s*(?:owner|client)\b",
+                            normalized_evidence,
+                        )
+                    ):
+                        failures.append(
+                            "Media-light exception evidence must contain the exact "
+                            "approval line plus 'decision: approved' and an "
+                            "owner/client authority declaration"
+                        )
+
+    rejection = values["Owner-rejection disposition"]
+    normalized_rejection = rejection.casefold()
+    if normalized_rejection.startswith("active"):
+        rejection_reason = rejection[len("active"):].lstrip(" :;,-")
+    elif normalized_rejection.startswith("not-applicable"):
+        rejection_reason = rejection[len("not-applicable"):].lstrip(" :;,-")
+    else:
+        rejection_reason = ""
+        failures.append(
+            "Owner-rejection disposition must begin with active or not-applicable"
+        )
+    if len(rejection_reason) < 12:
+        failures.append(
+            "Owner-rejection disposition must record the scoped rejected cluster "
+            "or a project-specific not-applicable reason"
+        )
+    if (
+        posture == "deliberately-media-light"
+        and normalized_rejection.startswith("active")
+        and re.search(
+            r"photo[- ]free|no (?:photos?|photography)|media absence|"
+            r"without (?:photos?|photography)|asset[- ]free",
+            rejection_reason,
+            re.I,
+        )
+    ):
+        failures.append(
+            "A deliberately media-light direction contradicts the active owner "
+            "rejection of a photo-free or media-absent candidate"
+        )
+    if project is not None:
+        rejection_root = project / ".design-dna" / "rejections"
+        if rejection_root.is_dir():
+            for rejection_path in sorted(rejection_root.glob("*.json")):
+                try:
+                    rejection_payload = read_json(rejection_path)
+                except StateError as exc:
+                    failures.append(
+                        "Owner rejection evidence is invalid and therefore "
+                        f"fails closed: {exc}"
+                    )
+                    break
+                constraints = (
+                    rejection_payload.get("replacement_constraints")
+                    if isinstance(rejection_payload, dict)
+                    else None
+                )
+                if (
+                    isinstance(rejection_payload, dict)
+                    and rejection_payload.get("status") == "active-reopen"
+                    and isinstance(constraints, dict)
+                    and constraints.get("asset_led_required") is True
+                    and posture != "asset-led"
+                ):
+                    failures.append(
+                        "The selected non-asset-led direction contradicts the "
+                        "project's structured active owner rejection requiring an "
+                        f"asset-led rebuild: {rejection_path.relative_to(project).as_posix()}"
+                    )
+                    break
+    return failures
+
+
 def substantive_body_failures(
     record: str,
     body: str,
@@ -7130,6 +7517,14 @@ def substantive_body_failures(
                 "Project evidence and organizing logic cannot repeat the same "
                 "generic boilerplate"
             )
+        failures.extend(
+            direction_material_boundary_failures(
+                body,
+                required_evidence_capabilities=required_evidence_capabilities,
+                project=project,
+                record_path=record_path,
+            )
+        )
         decision_headers, decision_rows = markdown_first_table(
             sections.get("Observable consequential design decisions", "")
         )
@@ -9351,6 +9746,54 @@ def validate_state_root(
                     )
         except StateError as exc:
             failures.append(f"Invalid connected-public-experience.json: {exc}")
+    rejection_root = state_root / "rejections"
+    if rejection_root.exists() and not rejection_root.is_dir():
+        failures.append(
+            ".design-dna/rejections must be an ordinary directory when present."
+        )
+    elif rejection_root.is_dir():
+        for rejection_path in sorted(rejection_root.glob("*.json")):
+            try:
+                report = run_owner_rejection_audit(rejection_path, project)
+            except StateError as exc:
+                failures.append(
+                    f"Invalid owner rejection {rejection_path.name}: {exc}"
+                )
+                continue
+            lifecycle = report.get("lifecycle")
+            status = (
+                lifecycle.get("status") if isinstance(lifecycle, dict) else None
+            )
+            if report.get("structural_valid") is not True:
+                entries = report.get("findings")
+                details = " | ".join(
+                    f"{entry.get('code', 'unknown')}: {entry.get('message', '')}"
+                    for entry in entries
+                    if isinstance(entry, dict)
+                ) if isinstance(entries, list) else ""
+                failures.append(
+                    f"Invalid owner rejection {rejection_path.name}"
+                    + (f": {details}" if details else ".")
+                )
+            elif status == "draft":
+                warnings.append(
+                    f"Owner rejection {rejection_path.name} remains a truthful "
+                    "draft and cannot constrain implementation."
+                )
+            elif report.get("ready") is not True:
+                entries = [
+                    *(report.get("findings") if isinstance(report.get("findings"), list) else []),
+                    *(report.get("gaps") if isinstance(report.get("gaps"), list) else []),
+                ]
+                details = " | ".join(
+                    f"{entry.get('code', 'unknown')}: {entry.get('message', '')}"
+                    for entry in entries
+                    if isinstance(entry, dict)
+                )
+                failures.append(
+                    f"Owner rejection {rejection_path.name} fails closed"
+                    + (f": {details}" if details else ".")
+                )
     failures.extend(migration_report_failures(project, state_root))
     for legacy in LEGACY_RECORD_FILES:
         if (state_root / legacy).is_file() and not failures:
@@ -9527,6 +9970,99 @@ def owner_recurrence_integration_failures(
     return failures
 
 
+def owner_pattern_contract_failures(
+    project: Path,
+    *,
+    phase: str,
+) -> list[str]:
+    """Fail closed when the explicit owner-pattern trigger is unresolved.
+
+    The trigger is project-local and opt-in. This prevents a host owner's
+    contract from changing portable package tests or unrelated client work.
+    Once either paired recurrence record declares it, both records must carry
+    it and the external contract plus project review become binding.
+    """
+
+    if phase not in {"state", "prebuild", "ready"}:
+        return [f"Unsupported owner-pattern audit phase: {phase}"]
+    state_root = project / ".design-dna"
+    declaring: list[str] = []
+    missing_or_inconsistent: list[str] = []
+    for record in OWNER_RECURRENCE_RECORDS:
+        path = state_root / RECORD_TEMPLATES[record][0]
+        triggers: list[str] | None = None
+        if path.is_file():
+            try:
+                payload = read_json(path)
+            except StateError:
+                payload = None
+            scope = payload.get("scope") if isinstance(payload, dict) else None
+            raw = scope.get("trigger") if isinstance(scope, dict) else None
+            if isinstance(raw, list) and all(isinstance(item, str) for item in raw):
+                triggers = raw
+        if triggers is not None and OWNER_PATTERN_TRIGGER in triggers:
+            declaring.append(record)
+        else:
+            missing_or_inconsistent.append(record)
+
+    if not declaring:
+        return []
+    failures: list[str] = []
+    if missing_or_inconsistent:
+        failures.append(
+            "Active owner-pattern-contract has inconsistent paired triggers: "
+            "it must be declared in both project-contrast.json and "
+            "direction-challenge.json; missing from "
+            + ", ".join(
+                RECORD_TEMPLATES[record][0]
+                for record in missing_or_inconsistent
+            )
+            + "."
+        )
+        return failures
+
+    validator_path = Path(__file__).with_name("owner_pattern_audit.py")
+    if not validator_path.is_file() or is_reparse(validator_path):
+        return [
+            "Active owner-pattern-contract cannot be checked because the "
+            "bundled owner_pattern_audit.py is missing or redirected."
+        ]
+    try:
+        module = load_bundled_source_module(
+            "_design_dna_owner_pattern_audit",
+            validator_path,
+        )
+        audit = getattr(module, "audit_project")
+        report = audit(project.resolve(strict=True), phase=phase)
+    except (AttributeError, OSError, TypeError, UnicodeError, ValueError) as exc:
+        return [f"Owner-pattern contract audit failed to execute: {exc}"]
+    if (
+        not isinstance(report, dict)
+        or report.get("automatic_aesthetic_pass") is not False
+        or report.get("phase") != phase
+        or not isinstance(report.get("contract_active"), bool)
+        or not isinstance(report.get("structural_valid"), bool)
+        or not isinstance(report.get("ready"), bool)
+        or not isinstance(report.get("findings"), list)
+        or not isinstance(report.get("gaps"), list)
+    ):
+        return [
+            "The bundled owner-pattern auditor returned an unsupported result."
+        ]
+    if report.get("ready") is True:
+        return []
+    entries = [*report["findings"], *report["gaps"]]
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        code = str(entry.get("code", "unknown"))
+        message = str(entry.get("message", "Owner-pattern review is incomplete."))
+        failures.append(f"Owner-pattern {phase} gate {code}: {message}")
+    if not failures:
+        failures.append(f"Owner-pattern {phase} gate is not ready.")
+    return failures
+
+
 def direction_challenge_final_build_binding_failures(
     state_root: Path,
     project: Path,
@@ -9685,6 +10221,594 @@ def direction_challenge_final_build_binding_failures(
             "Direction Challenge proof-to-build delta contains an incomplete "
             "changed-decision row"
         )
+    return failures
+
+
+def final_build_evidence_binding_failures(
+    state_root: Path,
+    *,
+    project_contrast_report: dict[str, object] | None = None,
+    connected_public_experience_report: dict[str, object] | None = None,
+) -> list[str]:
+    """Require every final-evidence lane to name one reviewed build.
+
+    Each specialist auditor verifies its own files, captures, and attestations,
+    but those local checks are not enough if the records silently describe
+    different website builds. A completed visual review is the canonical
+    final-build identity. Completed Connected Public Experience closure and
+    any concrete Project Contrast candidate must bind that same identity,
+    including the build identities surfaced by their validated audit reports.
+
+    Direction Challenge proof builds are deliberately excluded: they precede
+    broad implementation and are reconciled through the separate
+    proof-to-build delta contract above. User validation can also describe an
+    earlier prototype, so it is not converted into an exact-build rule here.
+    """
+
+    review_path = state_root / "visual-review.md"
+    if not review_path.is_file():
+        return []
+    try:
+        review_meta, review_body = read_frontmatter_document(review_path)
+    except StateError as exc:
+        return [f"Final-build evidence binding is unreadable: {exc}"]
+    if review_meta.get("record_status") != "complete":
+        return []
+
+    canonical_build = (
+        markdown_label_value(review_body, "Build or artifact ID") or ""
+    ).strip()
+    observed: list[tuple[str, str]] = []
+
+    connected_path = state_root / "connected-public-experience.json"
+    if connected_path.is_file():
+        try:
+            connected = read_json(connected_path)
+        except StateError as exc:
+            return [f"Final-build Connected Public Experience binding is unreadable: {exc}"]
+        if isinstance(connected, dict):
+            closure = connected.get("final_closure")
+            if isinstance(closure, dict) and closure.get("status") == "complete":
+                reviewed_build = closure.get("reviewed_build_id")
+                if isinstance(reviewed_build, str) and reviewed_build.strip():
+                    observed.append(
+                        (
+                            "connected-public-experience.json "
+                            "final_closure.reviewed_build_id",
+                            reviewed_build.strip(),
+                        )
+                    )
+
+    if isinstance(connected_public_experience_report, dict):
+        report_evidence = connected_public_experience_report.get("evidence")
+        verified = (
+            report_evidence.get("verified")
+            if isinstance(report_evidence, dict)
+            else None
+        )
+        if isinstance(verified, list):
+            for entry in verified:
+                if not isinstance(entry, dict):
+                    continue
+                build_id = entry.get("build_id")
+                evidence_id = entry.get("id", "unknown")
+                if isinstance(build_id, str) and build_id.strip():
+                    observed.append(
+                        (
+                            "Connected Public Experience verified evidence "
+                            f"{evidence_id}",
+                            build_id.strip(),
+                        )
+                    )
+
+    contrast_path = state_root / "project-contrast.json"
+    if contrast_path.is_file():
+        try:
+            contrast = read_json(contrast_path)
+        except StateError as exc:
+            return [f"Final-build Project Contrast binding is unreadable: {exc}"]
+        if isinstance(contrast, dict):
+            evidence = contrast.get("evidence")
+            candidate = (
+                evidence.get("candidate_build")
+                if isinstance(evidence, dict)
+                else None
+            )
+            candidate_id = candidate.get("id") if isinstance(candidate, dict) else None
+            if isinstance(candidate_id, str) and candidate_id.strip():
+                observed.append(
+                    (
+                        "project-contrast.json evidence.candidate_build.id",
+                        candidate_id.strip(),
+                    )
+                )
+
+    if isinstance(project_contrast_report, dict):
+        report_evidence = project_contrast_report.get("evidence")
+        capture_coverage = (
+            report_evidence.get("capture_coverage")
+            if isinstance(report_evidence, dict)
+            else None
+        )
+        candidate_id = (
+            capture_coverage.get("candidate_build_id")
+            if isinstance(capture_coverage, dict)
+            else None
+        )
+        if isinstance(candidate_id, str) and candidate_id.strip():
+            observed.append(
+                (
+                    "Project Contrast verified capture coverage",
+                    candidate_id.strip(),
+                )
+            )
+
+    if not observed:
+        return []
+    if not non_placeholder(canonical_build):
+        return [
+            "Final-build evidence lanes are populated, but completed "
+            "visual-review.md has no canonical Build or artifact ID."
+        ]
+
+    failures: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for label, build_id in observed:
+        identity = (label, build_id)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        if build_id != canonical_build:
+            failures.append(
+                "Final-build evidence drift: "
+                f"{label} binds {build_id}, but completed visual-review.md "
+                f"binds {canonical_build}."
+            )
+    return failures
+
+
+def asset_prebuild_failures(
+    path: Path,
+    *,
+    require_visual: bool,
+) -> list[str]:
+    """Require at least one implementation-usable material asset.
+
+    Release approval remains a later gate.  This narrower phase check prevents
+    an asset-led direction from scaling while its manifest is still empty or
+    contains only unresolved placeholders.
+    """
+
+    try:
+        payload = parse_strict_yaml_subset(
+            path.read_text(encoding="utf-8"),
+            path=path,
+        )
+    except (OSError, UnicodeError, StateError) as exc:
+        return [f"Asset-led prebuild manifest is unreadable: {exc}"]
+    assets = payload.get("assets") if isinstance(payload, dict) else None
+    if not isinstance(assets, list) or not assets:
+        return [
+            "Asset-led prebuild requires a nonempty assets.yml; a physical or "
+            "explicitly photo-led brief cannot scale from an empty media plan."
+        ]
+
+    usable: list[dict[str, object]] = []
+    for asset in assets:
+        if not isinstance(asset, dict):
+            continue
+        asset_type = asset.get("asset_type")
+        if require_visual and asset_type not in {"image", "video"}:
+            continue
+        accessibility = asset.get("accessibility")
+        delivery = asset.get("delivery")
+        usage = asset.get("usage_locations")
+        has_source = non_placeholder(str(asset.get("source_path", ""))) or non_placeholder(
+            str(asset.get("source_url", ""))
+        )
+        rights_ready = (
+            asset.get("publication_status") not in {"planned-public", "public"}
+            or non_placeholder(str(asset.get("license_or_terms", "")))
+        )
+        if (
+            asset.get("publication_status") != "prohibited"
+            and asset.get("factual_status") != "placeholder"
+            and has_source
+            and rights_ready
+            and isinstance(usage, list)
+            and bool(usage)
+            and non_placeholder(str(asset.get("content_job", "")))
+            and isinstance(accessibility, dict)
+            and accessibility.get("treatment") != "pending"
+            and isinstance(delivery, dict)
+            and non_placeholder(str(delivery.get("responsive_behavior", "")))
+        ):
+            usable.append(asset)
+    if usable:
+        return []
+    kind = "image or video" if require_visual else "material"
+    return [
+        "Asset-led prebuild has no implementation-usable "
+        f"{kind} asset with a bound source, public-use rights when applicable, "
+        "content role, usage location, accessibility treatment, and responsive "
+        "behavior."
+    ]
+
+
+def prebuild_scaffold_text(value: object) -> bool:
+    """Recognize packaged planning prompts that must not authorize a build."""
+
+    if not isinstance(value, str):
+        return False
+    normalized = " ".join(value.strip().casefold().split())
+    return normalized.startswith(
+        (
+            "replace with",
+            "replace-with",
+            "replace this",
+            "describe ",
+            "explain ",
+            "record ",
+            "resolve ",
+            "keep destination labels",
+            "no implementation has started",
+            "this neutral template",
+        )
+    )
+
+
+def scaffold_json_paths(value: object, *, path: str = "$") -> list[str]:
+    paths: list[str] = []
+    if prebuild_scaffold_text(value):
+        paths.append(path)
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            paths.extend(scaffold_json_paths(item, path=f"{path}.{key}"))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            paths.extend(scaffold_json_paths(item, path=f"{path}[{index}]"))
+    return paths
+
+
+def route_family_prebuild_failures(path: Path) -> list[str]:
+    """Require a resolved route-family brief without demanding postbuild review."""
+
+    try:
+        payload, errors = validate_route_family_record(path)
+    except StateError as exc:
+        return [f"Route-family prebuild record is unreadable: {exc}"]
+    if not isinstance(payload, dict):
+        return ["Route-family prebuild record must contain an object."]
+    failures: list[str] = []
+    if errors:
+        failures.append("Route-family prebuild record is structurally invalid.")
+    scaffold_paths = scaffold_json_paths(payload)
+    if scaffold_paths:
+        preview = ", ".join(scaffold_paths[:12])
+        suffix = "" if len(scaffold_paths) <= 12 else ", ..."
+        failures.append(
+            "Route-family prebuild still contains packaged scaffold language at "
+            f"{preview}{suffix}."
+        )
+    routes = payload.get("routes")
+    if not isinstance(routes, list) or len(routes) < 2:
+        failures.append(
+            "Route-family prebuild needs at least two resolved routes for a "
+            "meaningful body-level comparison."
+        )
+        return failures
+    for index, route in enumerate(routes):
+        if not isinstance(route, dict):
+            continue
+        route_id = str(route.get("id", f"index-{index}"))
+        differences = route.get("deliberate_differences")
+        if (
+            not isinstance(differences, list)
+            or not differences
+            or any(not non_placeholder(str(item)) for item in differences)
+        ):
+            failures.append(
+                f"Route-family route {route_id!r} must name at least one "
+                "project-specific body-level difference before implementation."
+            )
+        capture = route.get("capture_requirements")
+        viewports = (
+            capture.get("viewports") if isinstance(capture, dict) else None
+        )
+        if (
+            not isinstance(viewports, list)
+            or len(viewports) < 2
+            or any(
+                not isinstance(viewport, dict)
+                or not isinstance(viewport.get("width"), int)
+                or isinstance(viewport.get("width"), bool)
+                or viewport["width"] <= 0
+                or prebuild_scaffold_text(viewport.get("id"))
+                for viewport in viewports
+            )
+        ):
+            failures.append(
+                f"Route-family route {route_id!r} needs at least two resolved, "
+                "project-derived positive capture widths before implementation."
+            )
+    return failures
+
+
+def batch_range_prebuild_failures(path: Path) -> list[str]:
+    """Reject an untouched Batch Study plan before unrelated builds begin."""
+
+    try:
+        payload, errors = validate_batch_range_record(path)
+    except StateError as exc:
+        return [f"Batch Study prebuild record is unreadable: {exc}"]
+    if not isinstance(payload, dict):
+        return ["Batch Study prebuild record must contain an object."]
+    failures: list[str] = []
+    if errors:
+        failures.append("Batch Study prebuild record is structurally invalid.")
+    scaffold_paths = scaffold_json_paths(payload)
+    if scaffold_paths:
+        preview = ", ".join(scaffold_paths[:12])
+        suffix = "" if len(scaffold_paths) <= 12 else ", ..."
+        failures.append(
+            "Batch Study prebuild still contains packaged scaffold language at "
+            f"{preview}{suffix}."
+        )
+    study = payload.get("study")
+    viewports = (
+        study.get("viewport_classes") if isinstance(study, dict) else None
+    )
+    if (
+        not isinstance(viewports, list)
+        or len(viewports) < 2
+        or any(
+            not isinstance(viewport, dict)
+            or not isinstance(viewport.get("width"), int)
+            or isinstance(viewport.get("width"), bool)
+            or viewport["width"] <= 0
+            or not isinstance(viewport.get("height"), int)
+            or isinstance(viewport.get("height"), bool)
+            or viewport["height"] <= 0
+            for viewport in viewports
+        )
+    ):
+        failures.append(
+            "Batch Study prebuild needs at least two resolved positive viewport "
+            "width/height pairs before implementation."
+        )
+    sites = payload.get("sites")
+    if isinstance(sites, list):
+        for index, site in enumerate(sites):
+            if not isinstance(site, dict):
+                continue
+            site_id = str(site.get("id", f"index-{index}"))
+            brief = site.get("brief")
+            isolation = site.get("implementation_isolation")
+            source_packet = (
+                isolation.get("source_packet")
+                if isinstance(isolation, dict)
+                else None
+            )
+            for label, binding in (
+                ("brief", brief),
+                ("source packet", source_packet),
+            ):
+                digest = binding.get("sha256") if isinstance(binding, dict) else None
+                bound_path = binding.get("path") if isinstance(binding, dict) else None
+                if (
+                    not non_placeholder(str(bound_path or ""))
+                    or prebuild_scaffold_text(bound_path)
+                    or not isinstance(digest, str)
+                    or re.fullmatch(r"[0]{64}", digest) is not None
+                ):
+                    failures.append(
+                        f"Batch Study site {site_id!r} needs a resolved {label} "
+                        "path and non-placeholder SHA-256 before implementation."
+                    )
+    return failures
+
+
+def prebuild_failures(project: Path) -> list[str]:
+    """Return phase gaps that must close before broad implementation.
+
+    Final readiness deliberately remains stricter.  This gate consumes the
+    direction records at the moment they matter so a valid template inventory
+    cannot be mistaken for permission to build a route family.
+    """
+
+    state_root = project / ".design-dna"
+    try:
+        state = read_json(state_root / "state.json")
+    except StateError as exc:
+        return [f"Prebuild state is unreadable: {exc}"]
+    if not isinstance(state, dict):
+        return ["Prebuild requires state.json to contain an object."]
+    raw_profiles = state.get("assurance_profiles")
+    raw_records = state.get("records")
+    if (
+        not isinstance(raw_profiles, list)
+        or not all(isinstance(item, str) for item in raw_profiles)
+        or not isinstance(raw_records, list)
+        or not all(isinstance(item, str) for item in raw_records)
+    ):
+        return [
+            "Prebuild requires valid assurance_profiles and records in state.json."
+        ]
+    try:
+        profiles = normalize_assurance_profiles(raw_profiles)
+        contract = state.get("evidence_contract")
+        if not isinstance(contract, dict):
+            raise StateError(
+                "prebuild-contract-missing",
+                "Prebuild requires the current evidence contract; run --migrate.",
+                path=state_root / "state.json",
+            )
+        capabilities, _extensions = validate_evidence_contract(contract, profiles)
+    except StateError as exc:
+        return [str(exc)]
+
+    records = set(raw_records)
+    capability_set = set(capabilities)
+    failures: list[str] = []
+    if "direction" not in records:
+        failures.append(
+            "Prebuild always requires a selected direction.md record; a "
+            "capability-only state cannot authorize broad implementation."
+        )
+    for record in PREBUILD_SUBSTANTIVE_RECORDS:
+        if record not in records:
+            continue
+        filename = RECORD_TEMPLATES[record][0]
+        path = state_root / filename
+        if not path.is_file():
+            failures.append(f"Prebuild record is missing: {filename}.")
+            continue
+        try:
+            metadata, body = read_frontmatter_document(path)
+        except StateError as exc:
+            failures.append(f"Prebuild record {filename} is unreadable: {exc}")
+            continue
+        if metadata.get("record_status") != "complete":
+            failures.append(
+                f"Prebuild {filename} remains draft; broad implementation "
+                "requires a hash-bound completed direction-stage record."
+            )
+            continue
+        record_failures = completed_record_failures(
+            project,
+            path,
+            record,
+            metadata,
+            body,
+            required_assurance_profiles=profiles,
+            required_evidence_capabilities=capabilities,
+        )
+        failures.extend(
+            f"Prebuild {filename}: {failure}" for failure in record_failures
+        )
+
+    if "route-family" in records:
+        failures.extend(
+            route_family_prebuild_failures(state_root / "route-family.json")
+        )
+    if "batch-range" in records:
+        failures.extend(
+            batch_range_prebuild_failures(state_root / "batch-range.json")
+        )
+
+    if "project-contrast" in capability_set:
+        path = state_root / "project-contrast.json"
+        try:
+            contrast = read_json(path)
+        except StateError as exc:
+            failures.append(f"Project Contrast prebuild record is unreadable: {exc}")
+        else:
+            status = contrast.get("record_status") if isinstance(contrast, dict) else None
+            if status not in {"direction-ready", "proof-ready", "reviewed"}:
+                failures.append(
+                    "Project Contrast must reach direction-ready before broad "
+                    "implementation; a draft cannot carry the owner's recurrence boundary."
+                )
+
+    if "direction-challenge" in capability_set:
+        path = state_root / "direction-challenge.json"
+        try:
+            challenge = read_json(path)
+        except StateError as exc:
+            failures.append(f"Direction Challenge prebuild record is unreadable: {exc}")
+        else:
+            status = challenge.get("record_status") if isinstance(challenge, dict) else None
+            if status != "reviewed":
+                failures.append(
+                    "Direction Challenge must be reviewed before broad implementation: "
+                    "two cross-root wide/narrow proofs, a selected-versus-rejected "
+                    "decision, and the frozen independent unprimed review are required."
+                )
+            boundary = (
+                challenge.get("implementation_boundary")
+                if isinstance(challenge, dict)
+                else None
+            )
+            if (
+                not isinstance(boundary, dict)
+                or boundary.get("status") != "broad-implementation"
+            ):
+                failures.append(
+                    "Direction Challenge implementation_boundary must explicitly "
+                    "advance to broad-implementation after its reviewed proof."
+                )
+
+    if "connected-public-experience" in capability_set:
+        path = state_root / "connected-public-experience.json"
+        try:
+            report = run_connected_public_experience_prebuild_audit(
+                path,
+                project,
+                capabilities,
+            )
+        except StateError as exc:
+            failures.append(
+                f"Connected Public Experience prebuild record is invalid: {exc}"
+            )
+        else:
+            if report.get("implementation_authorized") is not True:
+                entries = [
+                    *(
+                        report.get("gaps")
+                        if isinstance(report.get("gaps"), list)
+                        else []
+                    ),
+                    *(
+                        report.get("findings")
+                        if isinstance(report.get("findings"), list)
+                        else []
+                    ),
+                ]
+                messages = []
+                for entry in entries:
+                    if not isinstance(entry, dict):
+                        continue
+                    code = str(entry.get("code", "unknown"))
+                    message = str(entry.get("message", "No detail recorded."))
+                    messages.append(f"{code}: {message}")
+                failures.append(
+                    "Connected Public Experience has not authorized broad "
+                    "implementation"
+                    + (": " + " | ".join(messages) if messages else ".")
+                )
+
+    if "asset-led" in capability_set:
+        direction_path = state_root / "direction.md"
+        require_visual = False
+        if direction_path.is_file():
+            try:
+                _metadata, direction_body = read_frontmatter_document(direction_path)
+            except StateError:
+                direction_body = ""
+            physical = (
+                markdown_label_value(direction_body, "Physical or sensory subject")
+                or ""
+            ).strip().casefold()
+            requested = (
+                markdown_label_value(
+                    direction_body,
+                    "Explicit owner request for photos or rich media",
+                )
+                or ""
+            ).strip().casefold()
+            require_visual = physical == "yes" or requested == "yes"
+        assets_path = state_root / "assets.yml"
+        if not assets_path.is_file():
+            failures.append(
+                "Asset-led prebuild requires .design-dna/assets.yml before broad implementation."
+            )
+        else:
+            failures.extend(
+                asset_prebuild_failures(
+                    assets_path,
+                    require_visual=require_visual,
+                )
+            )
     return failures
 
 
@@ -9908,6 +11032,7 @@ def readiness_failures(project: Path) -> list[str]:
                     )
             except StateError as exc:
                 failures.append(f"Invalid Batch Study readiness evidence: {exc}")
+    project_contrast_report: dict[str, object] | None = None
     if "project-contrast" in required_records:
         project_contrast_path = state_root / "project-contrast.json"
         if project_contrast_path.is_file():
@@ -10007,6 +11132,7 @@ def readiness_failures(project: Path) -> list[str]:
                 failures.append(
                     f"Invalid Direction Challenge readiness evidence: {exc}"
                 )
+    connected_report: dict[str, object] | None = None
     if "connected-public-experience" in evidence_capabilities:
         connected_public_experience_path = (
             state_root / "connected-public-experience.json"
@@ -10059,6 +11185,13 @@ def readiness_failures(project: Path) -> list[str]:
                     "Invalid Connected Public Experience readiness evidence: "
                     f"{exc}"
                 )
+    failures.extend(
+        final_build_evidence_binding_failures(
+            state_root,
+            project_contrast_report=project_contrast_report,
+            connected_public_experience_report=connected_report,
+        )
+    )
     if "cultural-context" in evidence_capabilities:
         review_path = state_root / "visual-review.md"
         if review_path.is_file():
@@ -11783,7 +12916,7 @@ def add_recurrence_triggers(
     state_root: Path,
     triggers: tuple[str, ...],
 ) -> None:
-    """Add recurrence triggers to their paired evidence records.
+    """Add owner workflow triggers to their paired evidence records.
 
     The trigger is intentionally not a cosmetic preference. It requires both
     Project Contrast and Direction Challenge evidence records so a later
@@ -11793,7 +12926,7 @@ def add_recurrence_triggers(
     if not triggers or any(trigger not in INITIALIZATION_TRIGGERS for trigger in triggers):
         raise StateError(
             "invalid-recurrence-trigger",
-            "Only packaged recurrence triggers may be added.",
+            "Only packaged owner workflow triggers may be added.",
             path=state_root,
         )
     manifest_path = state_root / "state.json"
@@ -11803,7 +12936,7 @@ def add_recurrence_triggers(
     if not isinstance(records, list) or not required_records.issubset(records):
         raise StateError(
             "recurrence-records-required",
-            "--add-trigger only updates an already paired state. Use --profile showcase --trigger owner-recurrence-requirement to create or merge both Project Contrast and Direction Challenge records first.",
+            "--add-trigger only updates an already paired state. Use --profile showcase with the applicable owner trigger to create or merge both Project Contrast and Direction Challenge records first.",
             path=manifest_path,
         )
     for record in OWNER_RECURRENCE_RECORDS:
@@ -12544,6 +13677,14 @@ def main() -> int:
     operation = parser.add_mutually_exclusive_group()
     operation.add_argument("--check-state", action="store_true")
     operation.add_argument(
+        "--check-prebuild",
+        action="store_true",
+        help=(
+            "Require project-specific direction, material/media, active contrast, "
+            "and challenge proof/review evidence before broad implementation."
+        ),
+    )
+    operation.add_argument(
         "--check-ready",
         action="store_true",
         help=(
@@ -12589,7 +13730,7 @@ def main() -> int:
         choices=tuple(sorted(INITIALIZATION_TRIGGERS)),
         default=[],
         help=(
-            "Add a recurrence trigger to both already-initialized paired evidence "
+            "Add an owner workflow trigger to both already-initialized paired evidence "
             "records. It requires Project Contrast and Direction Challenge to be "
             "listed in state.json; it does not create a missing counterpart. "
             "Repeating a trigger is idempotent."
@@ -12628,9 +13769,10 @@ def main() -> int:
         default=[],
         help=(
             "During initialization or merge, declare an owner workflow trigger. "
-            "owner-recurrence-requirement selects both Project Contrast and "
-            "Direction Challenge records, their applicable capabilities, and the "
-            "same trigger in both records. It is available with --profile showcase, "
+            "Both packaged triggers select Project Contrast and Direction Challenge "
+            "records, their applicable capabilities, and the same trigger in both "
+            "records. owner-pattern-contract additionally activates the installed "
+            "owner-pattern audit. Triggers are available with --profile showcase, "
             "--profile project-contrast, --profile direction-challenge, or an "
             "explicit project-contrast or direction-challenge record."
         ),
@@ -12744,7 +13886,12 @@ def main() -> int:
                 "Completion metadata arguments are valid only with --mark-complete.",
                 path=project / ".design-dna",
             )
-        if (args.check_state or args.check_ready or mutation_selected) and (
+        if (
+            args.check_state
+            or args.check_prebuild
+            or args.check_ready
+            or mutation_selected
+        ) and (
             args.force or args.record or args.evidence_capability or args.trigger
         ):
             raise StateError(
@@ -12753,13 +13900,13 @@ def main() -> int:
                 "initialization.",
                 path=project,
             )
-        if (args.check_state or args.check_ready) and args.dry_run:
+        if (args.check_state or args.check_prebuild or args.check_ready) and args.dry_run:
             raise StateError(
                 "incompatible-arguments",
-                "--dry-run is not used with state or readiness checks.",
+                "--dry-run is not used with state, prebuild, or readiness checks.",
                 path=project,
             )
-        if args.check_state or args.check_ready:
+        if args.check_state or args.check_prebuild or args.check_ready:
             failures, warnings = validate_state(project, version)
             recurrence_failures = owner_recurrence_integration_failures(
                 project / ".design-dna",
@@ -12770,6 +13917,27 @@ def main() -> int:
                 for failure in recurrence_failures
                 if failure not in failures
             )
+            owner_pattern_phase = (
+                "ready"
+                if args.check_ready
+                else "prebuild"
+                if args.check_prebuild
+                else "state"
+            )
+            pattern_failures = owner_pattern_contract_failures(
+                project,
+                phase=owner_pattern_phase,
+            )
+            failures.extend(
+                failure
+                for failure in pattern_failures
+                if failure not in failures
+            )
+            if args.check_prebuild:
+                phase_failures = prebuild_failures(project)
+                failures.extend(
+                    failure for failure in phase_failures if failure not in failures
+                )
             if not failures and args.check_ready:
                 failures.extend(readiness_failures(project))
             result = {"ok": not failures, "project": str(project), "version": version, "failures": failures, "warnings": warnings}
@@ -12781,8 +13949,12 @@ def main() -> int:
                         "under the selected assurance capabilities."
                         if args.check_ready
                         else (
-                            "OK: Design DNA state schema "
-                            f"{STATE_SCHEMA_VERSION} is current."
+                            "OK: Design DNA prebuild evidence permits broad implementation."
+                            if args.check_prebuild
+                            else (
+                                "OK: Design DNA state schema "
+                                f"{STATE_SCHEMA_VERSION} is current."
+                            )
                         )
                     )
                 ]
@@ -12932,7 +14104,7 @@ def main() -> int:
         if selected_triggers and not (trigger_profile_allowed or trigger_record_allowed):
             raise StateError(
                 "trigger-profile-mismatch",
-                "owner-recurrence-requirement requires --profile showcase, --profile project-contrast, --profile direction-challenge, or an explicit recurrence record.",
+                "Owner workflow triggers require --profile showcase, --profile project-contrast, --profile direction-challenge, or an explicit recurrence record.",
                 path=project,
             )
         selected_evidence_capabilities = normalize_evidence_capabilities(

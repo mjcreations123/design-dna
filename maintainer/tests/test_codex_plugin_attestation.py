@@ -43,6 +43,7 @@ def fake_validator(
     extra_stdout: bool = False,
     stderr_on_success: bool = False,
     mutate_snapshot: bool = False,
+    mutate_support_snapshot: bool = False,
 ) -> Path:
     path = (
         base
@@ -53,12 +54,23 @@ def fake_validator(
         / "validate_plugin.py"
     )
     path.parent.mkdir(parents=True)
+    support_path = path.parent / "identifier_validation.py"
+    support_path.write_text(
+        '"""test-only pinned validator support"""\n'
+        "def validate_plugin_identifier(value):\n"
+        "    if value != 'design-dna':\n"
+        "        raise ValueError('unexpected plugin identifier')\n",
+        encoding="utf-8",
+    )
     source = [
         '"""test-only validator fixture"""',
         "import os",
         "import sys",
         "from pathlib import Path",
         "import yaml",
+        "sys.path.insert(0, str(Path(__file__).resolve().parent))",
+        "from identifier_validation import validate_plugin_identifier",
+        "validate_plugin_identifier('design-dna')",
         "if os.getenv('DESIGN_DNA_SECRET_SENTINEL'):",
         "    raise SystemExit('inherited secret')",
         "if yaml.safe_load('value: true') != {'value': True}:",
@@ -68,6 +80,11 @@ def fake_validator(
         source.extend([
             "target = Path(sys.argv[1]) / 'skills' / 'design-dna' / 'SKILL.md'",
             "target.write_text(target.read_text(encoding='utf-8') + '\\nmutation\\n', encoding='utf-8')",
+        ])
+    if mutate_support_snapshot:
+        source.extend([
+            "support = Path(__file__).resolve().parent / 'identifier_validation.py'",
+            "support.write_text(support.read_text(encoding='utf-8') + '\\nmutation\\n', encoding='utf-8')",
         ])
     if extra_stdout:
         source.append("print('unexpected additional output')")
@@ -96,10 +113,12 @@ def write_trust_policy(
     duplicate_key: bool = False,
 ) -> None:
     data = validator_path.read_bytes()
+    support_path = validator_path.parent / "identifier_validation.py"
+    support_data = support_path.read_bytes()
     reviewed = reviewed_at or date.today()
     due = review_due or (reviewed + timedelta(days=90))
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "record_type": "design-dna-codex-validator-trust-pin",
         "logical_id": "plugin-creator/validate_plugin.py",
         "path_suffix": (
@@ -107,6 +126,15 @@ def write_trust_policy(
         ),
         "sha256": hashlib.sha256(data).hexdigest(),
         "bytes": len(data),
+        "support_files": [{
+            "logical_id": "plugin-creator/identifier_validation.py",
+            "path_suffix": (
+                "/skills/.system/plugin-creator/scripts/"
+                "identifier_validation.py"
+            ),
+            "sha256": hashlib.sha256(support_data).hexdigest(),
+            "bytes": len(support_data),
+        }],
         "reviewed_at": reviewed.isoformat(),
         "review_due": due.isoformat(),
         "review_basis": (
@@ -126,8 +154,8 @@ def write_trust_policy(
     serialized = json.dumps(payload, indent=2)
     if duplicate_key:
         serialized = serialized.replace(
-            '"schema_version": 1,',
-            '"schema_version": 1,\n  "schema_version": 1,',
+            '"schema_version": 2,',
+            '"schema_version": 2,\n  "schema_version": 2,',
             1,
         )
     target.write_text(serialized + "\n", encoding="utf-8")
@@ -221,6 +249,8 @@ class CodexPluginAttestationTests(unittest.TestCase):
                 )
                 expected_inputs = ATTESTOR.input_records(plugin)
                 expected_dependencies = ATTESTOR.dependency_records()
+                support_path = validator_path.parent / "identifier_validation.py"
+                support_data = support_path.read_bytes()
             finally:
                 os.environ.pop("DESIGN_DNA_SECRET_SENTINEL", None)
         self.validator.validate(record)
@@ -232,6 +262,18 @@ class CodexPluginAttestationTests(unittest.TestCase):
         self.assertEqual(record["command"], ATTESTOR.ABSTRACT_COMMAND)
         self.assertEqual(record["inputs"], expected_inputs)
         self.assertEqual(record["dependencies"], expected_dependencies)
+        self.assertEqual(
+            record["validator"]["support_files"],
+            [{
+                "logical_id": "plugin-creator/identifier_validation.py",
+                "path_suffix": (
+                    "/skills/.system/plugin-creator/scripts/"
+                    "identifier_validation.py"
+                ),
+                "sha256": hashlib.sha256(support_data).hexdigest(),
+                "bytes": len(support_data),
+            }],
+        )
         self.assertEqual(
             record["output"],
             {
@@ -330,6 +372,35 @@ class CodexPluginAttestationTests(unittest.TestCase):
             record = ATTESTOR.create_attestation(plugin, validator_path)
         self.assertEqual(record["result"]["status"], "passed")
 
+    def test_original_validator_parent_shadow_is_not_imported(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            validator_path = fake_validator(root / "external")
+            (validator_path.parents[1] / "identifier_validation.py").write_text(
+                "raise RuntimeError('unpinned parent shadow imported')\n",
+                encoding="utf-8",
+            )
+            plugin = plugin_fixture(root, validator_path)
+            record = ATTESTOR.create_attestation(plugin, validator_path)
+        self.assertEqual(record["result"]["status"], "passed")
+
+    def test_one_byte_support_file_drift_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            validator_path = fake_validator(root / "external")
+            plugin = plugin_fixture(root, validator_path)
+            support_path = validator_path.parent / "identifier_validation.py"
+            support_path.write_text(
+                support_path.read_text(encoding="utf-8") + "# drift\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(ATTESTOR.ToolFailure) as raised:
+                ATTESTOR.create_attestation(plugin, validator_path)
+        self.assertEqual(
+            raised.exception.issue.code,
+            "codex-plugin-validator-support-trust-mismatch",
+        )
+
     def test_non_ascii_private_snapshot_path_uses_utf8_mode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -354,6 +425,21 @@ class CodexPluginAttestationTests(unittest.TestCase):
             validator_path = fake_validator(
                 root / "external",
                 mutate_snapshot=True,
+            )
+            plugin = plugin_fixture(root, validator_path)
+            with self.assertRaises(ATTESTOR.ToolFailure) as raised:
+                ATTESTOR.create_attestation(plugin, validator_path)
+        self.assertEqual(
+            raised.exception.issue.code,
+            "codex-plugin-attestation-snapshot-drift",
+        )
+
+    def test_validator_support_snapshot_mutation_cannot_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            validator_path = fake_validator(
+                root / "external",
+                mutate_support_snapshot=True,
             )
             plugin = plugin_fixture(root, validator_path)
             with self.assertRaises(ATTESTOR.ToolFailure) as raised:

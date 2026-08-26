@@ -25,6 +25,7 @@ import json
 import math
 import os
 import platform
+import posixpath
 import re
 import struct
 import sys
@@ -102,10 +103,54 @@ UNC_ABSOLUTE_PATH = re.compile(r"(?:^|[\s\"'(=])\\\\[^\\\s]+\\")
 EMBEDDED_POSIX_LOCAL_PATH = re.compile(
     r"(?:^|[\s\"'(=])/(?:Users|home|tmp|private|var/folders|workspace|workspaces|mnt|opt|usr)(?:/|$)"
 )
+PORTABLE_VALIDATOR_PATH_SUFFIXES = frozenset({
+    "/skills/.system/plugin-creator/scripts/identifier_validation.py",
+})
 
 
 def issue(code: str, path: str | Path, message: str) -> dict[str, str]:
     return {"code": code, "path": str(path), "message": message}
+
+
+def load_validate_evidence():
+    """Load the sibling evidence validator without relying on caller sys.path.
+
+    Maintainer tests and embedding tools may restore their temporary scripts
+    path before calling ``main``.  Execute the selected sibling source directly
+    so the late-bound validator remains available without writing bytecode.
+    """
+
+    import importlib.util
+
+    source = Path(__file__).resolve().parent / "validate_evidence.py"
+    module_name = "_design_dna_audit_validate_evidence"
+    specification = importlib.util.spec_from_loader(
+        module_name,
+        loader=None,
+        origin=str(source),
+    )
+    if specification is None:
+        raise ImportError("could not create the evidence-validator module")
+    module = importlib.util.module_from_spec(specification)
+    module.__file__ = str(source)
+    previous = sys.modules.get(module_name)
+    sys.modules[module_name] = module
+    try:
+        raw = source.read_bytes()
+        code = compile(raw, str(source), "exec", dont_inherit=True)
+        exec(code, module.__dict__)
+        validate = getattr(module, "validate")
+    except (AttributeError, ImportError, OSError, TypeError, ValueError):
+        if previous is None:
+            sys.modules.pop(module_name, None)
+        else:
+            sys.modules[module_name] = previous
+        raise
+    if previous is None:
+        sys.modules.pop(module_name, None)
+    else:
+        sys.modules[module_name] = previous
+    return validate
 
 
 def distributed_record_local_path_failures(
@@ -126,6 +171,11 @@ def distributed_record_local_path_failures(
                 inspect(item, f"{pointer}/{index}")
             return
         if not isinstance(value, str):
+            return
+        if (
+            pointer.endswith("/path_suffix")
+            and value in PORTABLE_VALIDATOR_PATH_SUFFIXES
+        ):
             return
         without_urls = HTTP_URL.sub("", value)
         local = (
@@ -574,20 +624,21 @@ def codex_plugin_attestation_failures(
             "The record does not identify the exact portable validator command.",
         ))
     validator_record = payload.get("validator")
+    expected_validator_record = {
+        "logical_id": trust_policy.get("logical_id"),
+        "sha256": trust_policy.get("sha256"),
+        "bytes": trust_policy.get("bytes"),
+        "support_files": trust_policy.get("support_files"),
+        "trust_policy_path": tool.TRUST_POLICY_RELATIVE,
+        "trust_policy_sha256": trust_policy_sha256,
+    }
     trust_input = (
         expected_inputs.get("files", {}).get("trust_policy")
         if isinstance(expected_inputs.get("files"), dict)
         else None
     )
     if (
-        not isinstance(validator_record, dict)
-        or validator_record.get("logical_id")
-        != trust_policy.get("logical_id")
-        or validator_record.get("sha256")
-        != trust_policy.get("sha256")
-        or validator_record.get("bytes") != trust_policy.get("bytes")
-        or validator_record.get("trust_policy_sha256")
-        != trust_policy_sha256
+        validator_record != expected_validator_record
         or not isinstance(trust_input, dict)
         or trust_input.get("sha256") != trust_policy_sha256
     ):
@@ -595,8 +646,8 @@ def codex_plugin_attestation_failures(
             "release-codex-plugin-attestation-trust-drift",
             label,
             (
-                "Validator identity and trust-policy hashes are not "
-                "semantically consistent with the bound current policy."
+                "Validator, sibling-import, and trust-policy identities are "
+                "not semantically consistent with the bound current policy."
             ),
         ))
     current_version = (
@@ -1121,24 +1172,57 @@ def runtime_reference_reachability_failures(
     *,
     label_root: Path | None = None,
 ) -> list[dict[str, str]]:
-    """Require every runtime reference to be directly reachable from SKILL.md."""
+    """Require every runtime reference to be reachable in one router hop."""
     label_root = label_root or skill
     skill_path = skill / "SKILL.md"
     try:
-        text = skill_path.read_text(encoding="utf-8")
+        skill_text = skill_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         return [issue(
             "runtime-reference-router-unreadable",
             skill_path,
             str(exc),
         )]
-    linked = {
-        PurePosixPath(match.group(1)).as_posix()
+
+    def linked_markdown(source: PurePosixPath, text: str) -> set[str]:
+        linked: set[str] = set()
         for match in re.finditer(
-            r"\]\((references/[^)#?\s]+\.md)(?:#[^)]*)?\)",
+            r"\]\(([^)#?\s]+\.md)(?:#[^)]*)?\)",
             text,
-        )
-    }
+        ):
+            target = match.group(1)
+            if "://" in target:
+                continue
+            resolved = posixpath.normpath(
+                posixpath.join(source.parent.as_posix(), target)
+            )
+            if resolved == "references" or resolved.startswith("references/"):
+                linked.add(resolved)
+        return linked
+
+    router_relative = "references/router.md"
+    entry_links = linked_markdown(PurePosixPath("SKILL.md"), skill_text)
+    if router_relative not in entry_links:
+        return [issue(
+            "runtime-reference-router-unreachable",
+            skill_path,
+            "SKILL.md must link directly to references/router.md.",
+        )]
+
+    router_path = skill / router_relative
+    try:
+        router_text = router_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return [issue(
+            "runtime-reference-router-unreadable",
+            router_path,
+            str(exc),
+        )]
+
+    linked = entry_links | linked_markdown(
+        PurePosixPath(router_relative),
+        router_text,
+    )
     failures: list[dict[str, str]] = []
     references_root = skill / "references"
     for path in sorted(references_root.rglob("*.md")):
@@ -1153,9 +1237,9 @@ def runtime_reference_reachability_failures(
             "runtime-reference-unreachable",
             label,
             (
-                "Every runtime reference must be linked directly from "
-                "SKILL.md so progressive disclosure never depends on "
-                "multi-hop reference discovery."
+                "Every runtime reference must be linked directly from SKILL.md "
+                "or its decision router so progressive disclosure takes at "
+                "most one routing hop."
             ),
         ))
     return failures
@@ -8241,8 +8325,8 @@ def main() -> int:
         })
         return 2
     try:
-        from validate_evidence import validate as validate_evidence
-    except ImportError as exc:
+        validate_evidence = load_validate_evidence()
+    except (ImportError, OSError, TypeError, ValueError) as exc:
         emit({
             "ok": False,
             "failures": [issue(

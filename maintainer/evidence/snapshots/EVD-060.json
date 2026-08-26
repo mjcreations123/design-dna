@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-060",
+  "retrieved": "2026-08-23",
+  "url": "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+  "locator": "OWASP File Upload Cheat Sheet; filename safety, content validation, image rewriting, public retrieval, and storage guidance",
+  "content_kind": "maintainer_summary",
+  "summary": "OWASP recommends defense in depth for files, including safe filenames, type and signature checks, content validation, image rewriting where appropriate, controlled public retrieval, storage outside the web root when possible, and caution about data leakage to external scanners. Design DNA adapts filename, rewriting, reinspection, and private-original boundaries for public assets while leaving upload security to a specialist."
+}

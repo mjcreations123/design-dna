@@ -1,7 +1,7 @@
 schema_version: 2
 owner: "Motty"
-last_reviewed: "2026-08-02"
-next_review: "2026-10-31"
+last_reviewed: "2026-08-23"
+next_review: "2026-11-21"
 
 risks:
   RISK-COMP-001:
@@ -15,40 +15,40 @@ risks:
     basis: "owner_policy"
   RISK-REVIEW-001:
     status: "active"
-    basis: "owner_policy"
+    evidence: ["EVD-062", "EVD-063", "EVD-064"]
   RISK-IA-001:
     status: "active"
     evidence: ["EVD-001", "EVD-002", "EVD-032", "EVD-035", "EVD-036"]
   RISK-SYS-001:
     status: "active"
-    evidence: ["EVD-001", "EVD-002", "EVD-031", "EVD-041", "EVD-042"]
+    evidence: ["EVD-001", "EVD-002", "EVD-031", "EVD-041", "EVD-042", "EVD-050"]
   RISK-HIER-001:
     status: "active"
-    evidence: ["EVD-019", "EVD-043", "EVD-044", "EVD-045"]
+    evidence: ["EVD-019", "EVD-043", "EVD-044", "EVD-045", "EVD-055", "EVD-066", "EVD-067"]
   RISK-AMBITION-001:
     status: "active"
     basis: "owner_policy"
   RISK-EXPLORE-001:
     status: "active"
-    evidence: ["EVD-001", "EVD-031", "EVD-032"]
+    evidence: ["EVD-001", "EVD-031", "EVD-032", "EVD-049", "EVD-065"]
   RISK-COPY-001:
     status: "active"
-    evidence: ["EVD-019", "EVD-034"]
+    evidence: ["EVD-019", "EVD-034", "EVD-046", "EVD-052"]
   RISK-TRUTH-001:
     status: "active"
     basis: "owner_policy"
   RISK-UX-001:
     status: "active"
-    evidence: ["EVD-004", "EVD-005", "EVD-018", "EVD-033", "EVD-035", "EVD-036", "EVD-037", "EVD-038", "EVD-043", "EVD-044", "EVD-045"]
+    evidence: ["EVD-004", "EVD-005", "EVD-018", "EVD-033", "EVD-035", "EVD-036", "EVD-037", "EVD-038", "EVD-043", "EVD-044", "EVD-045", "EVD-048", "EVD-051", "EVD-054", "EVD-055", "EVD-056", "EVD-057", "EVD-058", "EVD-061", "EVD-066", "EVD-067"]
   RISK-RESP-001:
     status: "active"
-    evidence: ["EVD-004", "EVD-016", "EVD-039"]
+    evidence: ["EVD-004", "EVD-016", "EVD-039", "EVD-048", "EVD-056"]
   RISK-CODE-001:
     status: "active"
-    basis: "owner_policy"
+    evidence: ["EVD-047", "EVD-048", "EVD-056", "EVD-058", "EVD-061"]
   RISK-ASSET-001:
     status: "active"
-    evidence: ["EVD-014", "EVD-017", "EVD-025", "EVD-028"]
+    evidence: ["EVD-014", "EVD-017", "EVD-025", "EVD-028", "EVD-059", "EVD-060"]
   RISK-MOTION-001:
     status: "active"
     basis: "owner_policy"
@@ -63,19 +63,19 @@ risks:
     evidence: ["EVD-020"]
   RISK-NOV-001:
     status: "active"
-    evidence: ["EVD-002", "EVD-003", "EVD-024", "EVD-025"]
+    evidence: ["EVD-002", "EVD-003", "EVD-024", "EVD-025", "EVD-067"]
   RISK-REPEAT-001:
     status: "active"
-    evidence: ["EVD-001", "EVD-002", "EVD-024", "EVD-041", "EVD-042", "EVD-043", "EVD-044", "EVD-045"]
+    evidence: ["EVD-001", "EVD-002", "EVD-024", "EVD-041", "EVD-042", "EVD-043", "EVD-044", "EVD-045", "EVD-049", "EVD-050", "EVD-061", "EVD-065"]
   RISK-RESIDUE-001:
     status: "active"
     basis: "owner_policy"
   RISK-SEC-001:
     status: "active"
-    evidence: ["EVD-029", "EVD-030"]
+    evidence: ["EVD-029", "EVD-030", "EVD-060"]
   RISK-FWK-001:
     status: "candidate"
-    evidence: ["EVD-001", "EVD-009", "EVD-027", "EVD-045"]
+    evidence: ["EVD-001", "EVD-009", "EVD-027", "EVD-045", "EVD-049"]
   RISK-VIS-001:
     status: "candidate"
     evidence: ["EVD-003", "EVD-008", "EVD-009", "EVD-011", "EVD-012", "EVD-043"]
@@ -105,10 +105,10 @@ risks:
     evidence: ["EVD-012", "EVD-013"]
   RISK-LABEL-001:
     status: "candidate"
-    evidence: ["EVD-013"]
+    evidence: ["EVD-013", "EVD-053"]
   RISK-COPYFORM-001:
     status: "candidate"
-    evidence: ["EVD-019", "EVD-013", "EVD-044"]
+    evidence: ["EVD-019", "EVD-013", "EVD-044", "EVD-046", "EVD-052", "EVD-053", "EVD-054"]
 
 rejected_hypotheses:
   mesh_or_aurora_as_strong_detector:

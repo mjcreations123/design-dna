@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Run and attest the external Codex Plugin Creator validator.
 
-The record binds the exact validator bytes, interpreter bytes, dependency
-version, plugin inputs, and sanitized output. It does not prove Codex host
-discovery or model behavior.
+The record binds the exact validator and declared sibling-import bytes,
+interpreter bytes, dependency version, plugin inputs, and sanitized output. It
+does not prove Codex host discovery or model behavior.
 """
 
 from __future__ import annotations
@@ -73,6 +73,7 @@ ABSTRACT_COMMAND = [
     VALIDATOR_TOKEN,
     PLUGIN_TOKEN,
     "pinned-pyyaml-snapshot",
+    "pinned-validator-support",
 ]
 VALIDATOR_WRAPPER = r"""
 import pathlib
@@ -80,6 +81,7 @@ import sys
 
 dependency_root = pathlib.Path(sys.argv[1]).resolve()
 plugin_root = pathlib.Path(sys.argv[2]).resolve()
+validator_root = pathlib.Path(sys.argv[3]).resolve()
 expected_yaml_root = (dependency_root / "yaml").resolve()
 sys.path.insert(0, str(dependency_root))
 sys.modules["_yaml"] = None
@@ -90,7 +92,7 @@ validator_source = sys.stdin.buffer.read()
 sys.argv = ["external-plugin-creator-validator", str(plugin_root)]
 namespace = {
     "__name__": "__main__",
-    "__file__": "external-plugin-creator-validator",
+    "__file__": str(validator_root / "validate_plugin.py"),
 }
 exec(
     compile(
@@ -427,7 +429,7 @@ def trusted_validator(
     validator_path: Path,
     trust_policy: dict[str, object],
     trust_policy_sha256: str,
-) -> tuple[dict[str, object], bytes]:
+) -> tuple[dict[str, object], bytes, dict[str, bytes]]:
     suffix = trust_policy.get("path_suffix")
     if not isinstance(suffix, str):
         raise ToolFailure(
@@ -467,15 +469,78 @@ def trusted_validator(
             ),
             validator_path,
         )
+    raw_support = trust_policy.get("support_files")
+    if not isinstance(raw_support, list):
+        raise ToolFailure(
+            "codex-plugin-validator-trust-invalid",
+            "The validator trust policy has no support-file inventory.",
+        )
+    support_records: list[dict[str, object]] = []
+    support_sources: dict[str, bytes] = {}
+    for item in raw_support:
+        if not isinstance(item, dict):
+            raise ToolFailure(
+                "codex-plugin-validator-trust-invalid",
+                "Every validator support-file pin must be an object.",
+            )
+        support_suffix = item.get("path_suffix")
+        logical_id = item.get("logical_id")
+        if not isinstance(support_suffix, str) or not isinstance(logical_id, str):
+            raise ToolFailure(
+                "codex-plugin-validator-trust-invalid",
+                "A validator support-file pin is missing its identity.",
+            )
+        support_name = Path(support_suffix).name
+        support_path = validator_path.parent / support_name
+        if (
+            not support_name.endswith(".py")
+            or support_name == validator_path.name
+            or support_name in support_sources
+            or not support_path.as_posix().casefold().endswith(
+                support_suffix.casefold()
+            )
+        ):
+            raise ToolFailure(
+                "codex-plugin-validator-support-route-invalid",
+                "Validator support files must be unique pinned Python siblings.",
+                support_path,
+            )
+        support_data, support_digest = stable_file(support_path)
+        try:
+            support_data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ToolFailure(
+                "codex-plugin-validator-support-source-invalid",
+                "Validator support files must be UTF-8 Python source.",
+                support_path,
+            ) from exc
+        if (
+            item.get("sha256") != support_digest
+            or item.get("bytes") != len(support_data)
+        ):
+            raise ToolFailure(
+                "codex-plugin-validator-support-trust-mismatch",
+                "A validator support file does not match its reviewed pin.",
+                support_path,
+            )
+        support_records.append({
+            "logical_id": logical_id,
+            "path_suffix": support_suffix,
+            "sha256": support_digest,
+            "bytes": len(support_data),
+        })
+        support_sources[support_name] = support_data
     return (
         {
             "logical_id": VALIDATOR_LOGICAL_ID,
             "sha256": digest,
             "bytes": len(data),
+            "support_files": support_records,
             "trust_policy_path": TRUST_POLICY_RELATIVE,
             "trust_policy_sha256": trust_policy_sha256,
         },
         data,
+        support_sources,
     )
 
 
@@ -484,7 +549,7 @@ def validator_record(
     trust_policy: dict[str, object],
     trust_policy_sha256: str,
 ) -> dict[str, object]:
-    record, _source = trusted_validator(
+    record, _source, _support = trusted_validator(
         validator_path,
         trust_policy,
         trust_policy_sha256,
@@ -496,6 +561,7 @@ def run_validator(
     plugin_root: Path,
     validator_path: Path,
     validator_source: bytes,
+    validator_support: dict[str, bytes],
     inputs: dict[str, object],
     dependencies: list[dict[str, object]],
 ) -> tuple[dict[str, object], dict[str, object]]:
@@ -513,8 +579,20 @@ def run_validator(
         snapshot_root = Path(temporary)
         snapshot_plugin = snapshot_root / "plugin"
         snapshot_dependency = snapshot_root / "dependencies"
+        snapshot_validator = snapshot_root / "validator"
         snapshot_plugin.mkdir()
         snapshot_dependency.mkdir()
+        snapshot_validator.mkdir()
+        validator_snapshot = {
+            "validate_plugin.py": validator_source,
+            **validator_support,
+        }
+        for name, source in validator_snapshot.items():
+            target = snapshot_validator / name
+            with target.open("xb") as stream:
+                stream.write(source)
+                stream.flush()
+                os.fsync(stream.fileno())
         assert_supported_validator_surface(plugin_root)
         snapshot_tree(
             plugin_root / ".codex-plugin",
@@ -554,6 +632,7 @@ def run_validator(
                     VALIDATOR_WRAPPER,
                     str(snapshot_dependency),
                     str(snapshot_plugin),
+                    str(snapshot_validator),
                 ],
                 cwd=snapshot_root,
                 env=environment,
@@ -579,6 +658,16 @@ def run_validator(
                 **source_tree_record(snapshot_dependency / "yaml"),
             }
             != dependencies[0]
+            or {
+                path.relative_to(snapshot_validator).as_posix(): stable_file(path)[0]
+                for path in sorted(snapshot_validator.rglob("*"))
+                if path.is_file()
+            }
+            != validator_snapshot
+            or any(
+                path.is_dir()
+                for path in snapshot_validator.rglob("*")
+            )
         ):
             raise ToolFailure(
                 "codex-plugin-attestation-snapshot-drift",
@@ -819,7 +908,7 @@ def create_attestation(
         require_current=require_current_trust,
     )
     before_inputs = input_records(plugin_root)
-    before_validator, validator_source = trusted_validator(
+    before_validator, validator_source, validator_support = trusted_validator(
         validator_path,
         trust_policy,
         trust_policy_sha256,
@@ -830,6 +919,7 @@ def create_attestation(
         plugin_root,
         validator_path,
         validator_source,
+        validator_support,
         before_inputs,
         before_dependencies,
     )
@@ -857,7 +947,7 @@ def create_attestation(
             "Plugin or validator inputs changed during validation.",
         )
     record = {
-        "schema_version": 1,
+        "schema_version": 2,
         "record_type": (
             "design-dna-codex-plugin-validation-attestation"
         ),

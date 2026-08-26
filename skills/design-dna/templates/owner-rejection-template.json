@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "created_with": "template-draft",
+  "classification": "internal",
+  "status": "draft",
+  "recorded_at": null,
+  "accountable_owner": {
+    "id": null,
+    "display_name": null,
+    "authority_basis": null
+  },
+  "candidate": {
+    "project_relative_root": null,
+    "manifest_algorithm": "sha256-tab-lf-v1",
+    "manifest_sha256": null,
+    "files": []
+  },
+  "owner_evidence": {
+    "file": null,
+    "authority": {
+      "accountable_owner_id": null,
+      "relationship": null,
+      "first_party": null,
+      "decision_kind": null
+    },
+    "verbatim_excerpt": null,
+    "scope": null,
+    "acceptance_status": null
+  },
+  "rejected_relationship_cluster": {
+    "scope": null,
+    "applies_to_candidate_manifest_sha256": null,
+    "observations": {}
+  },
+  "protected_foundations": [],
+  "reopened_decisions": [],
+  "replacement_constraints": {
+    "asset_led_required": null,
+    "photo_free_exception_available": null,
+    "minimum_evidence": null,
+    "closure": null
+  },
+  "resolution": {
+    "status": "pending",
+    "resolved_at": null,
+    "replacement_candidate_manifest_sha256": null,
+    "owner_evidence": null
+  }
+}

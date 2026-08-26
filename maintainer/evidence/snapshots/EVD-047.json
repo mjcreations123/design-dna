@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-047",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/dmmulroy/anti-slop/tree/6d538555cb151d4121ed51a27db81890eacf8ae9",
+  "locator": "README rules; src/rules; skills/install-anti-slop/SKILL.md; LICENSE at commit 6d538555cb151d4121ed51a27db81890eacf8ae9",
+  "content_kind": "maintainer_summary",
+  "summary": "The MIT-licensed anti-slop repository is a TypeScript and JavaScript Oxlint plugin. Transferable methods include boundary parsing, precise inference, anti-cast-laundering, substantive assertion justification, safe configuration merging, and never weakening checks to reach green. Identifier-shape bans and stack-specific Effect, mocking, typeof, or unknown-parameter rules are not universal website requirements."
+}

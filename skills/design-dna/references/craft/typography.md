@@ -123,12 +123,23 @@ Inspect:
   sits directly on a boundary. Audit every italic display word in the
   render and reserve the leading or padding the descenders actually need;
   the clip is measurable from glyph boxes and invisible in the source.
-- **Numerals and glued pairs:** compared figures need tabular fixed-width
-  numerals so digits align down a column; a value and its unit, a shortcut
-  and its key, or a two-word mark are glued with a non-breaking space so a
-  wrap never strands the second half. A headline wrap that leaves one
-  stranded word is a wrapping defect the balancing text-wrap behaviors can
-  often fix; verify the real headline, not the declaration.
+- **Numerals and protected pairs:** choose tabular figures when comparison or
+  column alignment benefits from equal-width digits; proportional figures may
+  better fit prose, display work, or the selected face. Protect a value and
+  unit, shortcut and key, or approved multi-word mark with a non-breaking space
+  or local no-wrap only when a rendered wrap damages meaning, recognition, or
+  use. Natural wrapping may be the safer choice at narrow widths or in expanded
+  translations, so test the actual content rather than gluing every pair. An
+  isolated final headline line, even a single word, is a post-render diagnostic
+  prompt rather than an automatic defect. Keep it when the break creates
+  intentional, convincing,
+  project-supported rhythm, emphasis, or voice and remains legible through
+  the relevant widths, languages, zoom, and text settings. Revise it only
+  when rendered evidence shows that it reads as accidental, breaks the
+  intended syntax or hierarchy, or fails under supported conditions. Do not
+  apply `text-wrap: balance`, hard breaks, non-breaking spaces, forced type
+  resizing, or container reshaping as an automatic repair; choose the
+  smallest content or composition change that the observed failure supports.
 
 Treat observed collisions, lost letterforms, exhausting density, unreadable
 small text, or hierarchy that fails under actual content and user settings as

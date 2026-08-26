@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-058",
+  "retrieved": "2026-08-23",
+  "url": "https://web.dev/articles/defining-core-web-vitals-thresholds",
+  "locator": "Google web.dev Core Web Vitals threshold methodology, last updated 2025-05-07",
+  "content_kind": "maintainer_summary",
+  "summary": "The current official Core Web Vitals guidance defines good field thresholds at the 75th percentile as LCP at or below 2.5 seconds, INP at or below 200 milliseconds, and CLS at or below 0.1. Design DNA uses these only as dated diagnostics when a project lacks targets and keeps lab observations distinct from field percentile evidence."
+}

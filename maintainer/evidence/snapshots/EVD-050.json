@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-050",
+  "retrieved": "2026-08-23",
+  "url": "https://github.com/VoltAgent/awesome-design-md/tree/8147538b4226ae41e2487a9179e3bcc1f68e8554",
+  "locator": "README, examples, and repository license at commit 8147538b4226ae41e2487a9179e3bcc1f68e8554",
+  "content_kind": "maintainer_summary",
+  "summary": "Awesome DESIGN.md demonstrates project-spec categories for atmosphere, semantic color, typography, states, layout, depth, and responsive behavior. Its named brand records are examples, not licenses to copy identity, fonts, trademarks, or trade dress. Design DNA keeps DESIGN.md optional and derives every retained section from the accepted project."
+}

@@ -1,15 +1,13 @@
 # DESIGN.md handoff record
 
-Copy this template to `DESIGN.md` in the project repository when the site
-is handed off, and fill it from the project's own accepted system. It is a
-client-facing deliverable, not internal evidence: after the repository
-transfers, the owner's future developers and AI assistants will edit the
-site, and this file is what keeps those edits on-system instead of
-drifting toward generic defaults. Write it from the accepted build's real
-tokens and decisions; never from another brand's record, and never with
-values the rendered site does not actually use.
+Use this template when a transferred or maintained repository benefits from a
+client-facing `DESIGN.md`. A small static handoff, an established design-system
+repository, or a client with another authoritative format may not need a new
+file. When used, fill only the relevant sections from the project's accepted
+system. Write from the shipped build's real tokens and decisions, never from
+another brand's record and never with values the rendered site does not use.
 
-Delete the guidance sentences in brackets when filling it in. Keep the
+Delete irrelevant sections and the guidance sentences in brackets when filling it in. Keep the
 file honest as the site evolves: a stale DESIGN.md misleads the next
 editor exactly the way stale documentation misleads the next developer.
 
@@ -38,21 +36,15 @@ change.
 
 ## Voice
 
-[Two or three sentences on how the site talks: register, person, what it
-never says. Include any owner language rules, e.g. punctuation or phrasing
-constraints, so copy edits inherit them.]
+[Describe the consequential voice, terminology, and audience decisions at the
+length this project needs. Include owner language rules only when they exist.]
 
 ## Color
 
-[List the real palette as semantic roles with exact values, one per line:
-ground, surface, ink, secondary ink, rules/borders, and each accent. Then
-state the accent budget explicitly; this is the single most protective
-line in the file.]
-
-- Where the accent MAY appear: [e.g. the italic kickers, primary action
-  hover, the one signature mark]
-- Where the accent must NOT appear: [e.g. body text, backgrounds, borders,
-  more than one element per section]
+[List the color roles and exact values that the project actually uses. When a
+color's scarcity or exclusivity is part of the accepted system, record where it
+belongs and where it does not. Omit accent guidance when the system has no such
+contract.]
 
 ## Typography
 
@@ -68,9 +60,9 @@ acceptable substitute.]
 
 ## Space and shape
 
-[The spacing rhythm (base unit, section padding behavior), the radius
-logic (one system: which elements are square, which rounded, and why),
-border and rule weights, and shadow/elevation policy if any.]
+[Record the spacing, shape, border, and depth relationships that a future edit
+must preserve. A project may have one radius family, several role-specific
+families, square geometry, or no tokenized shape rule.]
 
 ## Components
 
@@ -94,15 +86,15 @@ it.]
 
 ## Do
 
-[Five to ten short positive rules that capture this site's character,
-each derived from a real decision in the build.]
+[Add only the short positive rules a future editor needs, each derived from a
+real decision in the build. Omit this section if the earlier system record is
+already sufficient.]
 
 ## Do not
 
-[Five to ten short rules protecting the system from its likeliest
-drifts, each traceable to a real decision or owner constraint, e.g. "Do
-not introduce a second accent color", "Do not use [punctuation the owner
-excludes]", "Do not add stock photography; this site uses only X".]
+[Add only traceable rules that protect the system from likely drift. Do not
+invent punctuation, accent-count, photography, or other prohibitions merely to
+populate the list.]
 
 ## Known gaps
 

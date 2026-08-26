@@ -96,6 +96,14 @@ type behavior, task interaction, mobile transformation, and ending remain
 available to the current project. They may repeat only when the record states
 why that relationship is correct here.
 
+When the owner names repeated hero, CTA, card, panel, background, underline,
+font-pairing, or route-shell behavior, use [visual-grammar
+variance](visual-grammar-variance.md) to inspect the rendered relationships.
+The comparison is against actual owner-authorized output, not an imagined test
+of whether another industry could occupy the layout. A design can be
+transferable and still be project-derived; it fails contrast when the same
+producer grammar actually recurs without cause.
+
 ## Derive before comparing
 
 Start from the current project without viewing prior site output. Record only
@@ -139,8 +147,8 @@ Move the record forward only as its evidence exists:
   complete declared wide/narrow capture set, and records a structured
   `not-interchangeable`, `still-too-close`, or `inconclusive` result. A
   `still-too-close` result reopens work; it cannot be hidden behind an accepted
-  disposition. An owner recurrence requirement also has the required
-  owner-review state, bound to the exact candidate build and reviewed capture
+  disposition. Any completed owner review is recorded separately and bound to
+  the exact candidate build and reviewed capture
   IDs.
 
 The initializer may create a draft without pretending it is complete. Its
@@ -341,6 +349,22 @@ why they are nearest for this project, and the authorization boundary. A
 relationship label, a remembered previous site, or an unrelated comparison
 artifact is not enough to establish closest lineage.
 
+An owner-recurrence requirement is specifically a cross-project claim. Name
+the comparator's project identity and select at least one closest sibling from
+a different project. A rejected candidate from the current project remains
+valuable first-party evidence, but record it as `same-project-rejected`; it
+proves whether the revision escaped that candidate, not whether unrelated
+studio work has stopped converging. When both risks are active, retain both
+comparisons and do not let either stand in for the other.
+
+A different project identifier does not make identical evidence a different
+project. Bind each image comparator to its stable source build. The auditor
+blocks a closest sibling when a comparator attributed to another project
+reuses the exact artifact bytes or exact source-build identity; renaming,
+copying, or forking a current-project rejection cannot manufacture
+cross-project proof. This provenance check does not judge near matches or
+visual similarity, which remain part of the paired human review.
+
 When comparison is authorized but retaining a screenshot would be excessive,
 use a hash-bound structural abstract instead: describe the comparator's public
 encounter, access basis, purpose, retention/deletion boundary, and what is
@@ -466,8 +490,11 @@ collecting a clearly provisional diagnostic report.
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/project_contrast_audit.py" "<PROJECT_ROOT>" --contract ".design-dna/project-contrast.json" --output ".design-dna/project-contrast-audit.json" --require-ready
 ```
 
-This command's `ready` result is **local record readiness**: it verifies this
-Project Contrast contract and the exact artifacts it names. When
+This command's `ready` result is **candidate record readiness**: it verifies
+this Project Contrast contract and the exact artifacts it names. It does not
+mean owner-approved. A pending or not-requested owner review is reported
+separately and does not stop the agent from completing a validated candidate;
+an owner rejection or malformed acceptance record still blocks readiness. When
 `owner-recurrence-requirement` is active, the release-capability claim also
 requires `init_project_state.py --check-ready`, which verifies the paired
 Project Contrast/Direction Challenge state, capabilities, and trigger wiring.
@@ -479,6 +506,12 @@ binding, missing evidence, an unresolved `still-too-close` disposition, an
 unbound comparator, or a cosmetic-only contrast claim. It must never calculate
 an AI score, declare a site visually unique, or fail a project because it used
 a particular font, palette, shape, layout, image, animation, or component.
+
+For an owner-scoped visual-grammar complaint, ensure the selected qualitative
+axes cover the relationships the owner actually named. Container/backplate
+logic and action/link/underline affordance are legitimate owner-selected axes,
+alongside opening, type posture, body progression, media role, and mobile
+transformation. They are not permanent required fields for unrelated briefs.
 
 ## Handle related systems and routes
 
@@ -515,15 +548,17 @@ automatic aesthetic pass.
 
 ## Close honestly
 
-A Project Contrast record is ready only when its selected direction has a
+A Project Contrast candidate record is ready only when its selected direction has a
 project-derived cause, its counter-answer and selection rationale are present,
 comparison authority is honest, relevant wide/narrow evidence is bound, and a
 hash-bound review with a disclosed relationship has a clear disposition. An
 independent agent review may expose a blind spot but must not be described as a
-human review or owner acceptance. For an owner recurrence
-requirement, a producer's own review remains provisional: an accountable owner,
-owner-authorized human, or independently identified reviewer must record the
-acceptance relationship and evidence. A review file is hash-bound but its prose
+human review or owner acceptance. Owner acceptance is a separate claim. When it
+is needed for publication, portfolio use, release, or an explicit owner policy,
+an accountable owner or owner-authorized human must record the acceptance
+relationship and evidence before that claim is made. Its absence does not force
+an autonomous agent to leave an otherwise validated candidate unfinished. A
+review file is hash-bound but its prose
 is not automatically interpreted by the audit; the structured exposure IDs,
 timestamps, and first observation make the review boundary inspectable. A
 `still-too-close` result blocks the
@@ -531,5 +566,6 @@ Project Contrast claim until the design is reopened and rerendered; it does not
 prove a technical, accessibility, owner-acceptance, or production failure.
 
 The goal is a defensible difference in how unrelated projects are conceived
-and encountered. It cannot prove human authorship, guarantee originality in
-all possible references, or guarantee universal aesthetic approval.
+and encountered relative to the authorized evidence. It cannot prove human
+authorship, category exclusivity, universal uniqueness, originality in all
+possible references, or universal aesthetic approval.

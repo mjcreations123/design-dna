@@ -108,9 +108,12 @@ Select one root only after comparing it with a specific rendered rejected root.
 Record both the selection reason and why the rejected root fits the current
 brief less well. This keeps the choice project-led rather than novelty-led.
 
-Do not begin broad implementation while the record remains `roots-ready`.
-When a later render challenges the selection, return to the earliest root
-decision instead of applying cosmetic substitutions.
+Do not begin broad implementation at `roots-ready` or `proof-ready`. Freeze the
+independent unprimed review, advance the record to `reviewed`, and explicitly
+set `implementation_boundary.status` to `broad-implementation`; the packaged
+`--check-prebuild` command enforces that transition. When a later render
+challenges the selection, return to the earliest root decision instead of
+applying cosmetic substitutions.
 
 ## Review without leaking the answer
 

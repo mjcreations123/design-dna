@@ -20,6 +20,7 @@ AUDITOR = PACKAGE_ROOT / "skills" / "design-dna" / "scripts" / "batch_range_audi
 CONTRACT_SCHEMA = PACKAGE_ROOT / "maintainer" / "schemas" / "batch-range.schema.json"
 REPORT_SCHEMA = PACKAGE_ROOT / "maintainer" / "schemas" / "batch-range-audit.schema.json"
 SKILL = PACKAGE_ROOT / "skills" / "design-dna" / "SKILL.md"
+ROUTER = PACKAGE_ROOT / "skills" / "design-dna" / "references" / "router.md"
 WORKFLOW = PACKAGE_ROOT / "skills" / "design-dna" / "references" / "workflow.md"
 TEMPLATE = PACKAGE_ROOT / "skills" / "design-dna" / "templates" / "batch-range-template.json"
 BATCH_GUIDANCE = (
@@ -817,21 +818,25 @@ class BatchRangeAuditTests(unittest.TestCase):
 
     def test_runtime_router_and_workflow_expose_protocol_not_a_recipe(self) -> None:
         skill = SKILL.read_text(encoding="utf-8")
+        router = ROUTER.read_text(encoding="utf-8")
         workflow = WORKFLOW.read_text(encoding="utf-8")
         template = TEMPLATE.read_text(encoding="utf-8").casefold()
         self.assertIn("| Batch Study |", skill)
         self.assertIn(
-            "[Batch Study evaluation](references/quality/batch-range-evaluation.md)",
-            skill,
-        )
-        self.assertIn("[batch study](templates/batch-range-template.json)", skill)
-        self.assertIn(
-            "[batch site observation](templates/batch-site-observation-template.md)",
-            skill,
+            "[Batch Study evaluation](quality/batch-range-evaluation.md)",
+            router,
         )
         self.assertIn(
-            "[batch whole-system review](templates/batch-whole-system-review-template.md)",
-            skill,
+            "[batch-range template](../templates/batch-range-template.json)",
+            workflow,
+        )
+        self.assertIn(
+            "[unprimed site observation](../templates/batch-site-observation-template.md)",
+            router,
+        )
+        self.assertIn(
+            "[neutral-label whole-system review](../templates/batch-whole-system-review-template.md)",
+            router,
         )
         self.assertIn("For an explicit Batch Study", workflow)
         self.assertIn("mechanically verifiable evidence and timing fields only", workflow)

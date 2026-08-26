@@ -64,7 +64,7 @@ Execute the controlled host/model matrix and independent rendered reviews.
 Diagnostic builds cannot be promoted by changing their label. Every promoted
 result must satisfy the current schemas and evaluation contract.
 
-For the v5.2 anti-convergence workflow, evaluate the evidence meanings rather
+For the anti-convergence workflow, evaluate the evidence meanings rather
 than a script's exit code as an aesthetic verdict:
 
 - A **Project Contrast** record documents the exact project's brief-native
@@ -98,19 +98,20 @@ After the final runtime, test, tooling, schema, requirement, and workflow edit:
 
 ### Prepare the reviewable candidate
 
-1. create the local test attestation;
+1. generate and check the current SBOM;
 2. create and check the Codex Plugin Creator validation attestation with the
    separately supplied, pinned validator; this is a package-development check,
    not host-activation evidence;
 3. create and check the isolated Codex/Claude installer-lifecycle attestation;
 4. synchronize each intended direct installation transactionally;
 5. verify the declared global filesystem discovery roots and installed hashes;
-6. generate and check the current SBOM;
-7. generate and check a provisional current release manifest against the
+6. update the local compatibility record only from those completed proofs;
+7. create the final local test attestation after that compatibility edit;
+8. generate and check a provisional current release manifest against the
    actual previous release identity;
-8. run the development audit;
-9. commit that exact reviewable candidate;
-10. run the remote OS/Python matrix on the candidate commit.
+9. run the development audit;
+10. commit that exact reviewable candidate;
+11. run the remote OS/Python matrix on the candidate commit.
 
 The checked-in provisional SBOM and manifest are required before candidate CI
 because the CI development audit validates both. They establish a clean
@@ -136,10 +137,14 @@ any relevant source or evidence edit.
 
 1. import each authenticated successful matrix artifact as described below;
 2. update only the matching CI compatibility statuses and import timestamps;
-3. complete the controlled host/model evaluations and independent rendered
-   reviews required by the release contract;
+3. complete the controlled host/model evaluations, pass the predeclared
+   [evaluation reliability qualification](../maintainer/evals/QUALIFICATION.md)
+   gate with public development/regression evidence plus an external protected
+   promotion holdout, and complete the independent rendered reviews required by
+   the release contract;
 4. update host compatibility status only from current attributable records;
-5. rerun any local attestation whose bound input changed;
+5. archive or deliberately remove each superseded local attestation whose bound
+   input changed, then rerun it after all such inputs are final;
 6. regenerate or check the SBOM after any bound runtime, manifest, license, or
    dependency change;
 7. generate and check the **final** release manifest after all retained
@@ -181,7 +186,6 @@ npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm --prefix maintainer exec -- playwright install chromium
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json --check
-python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json
 python -B maintainer/scripts/attest_codex_plugin.py --plugin-root . --validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>" --output maintainer/attestations/codex-plugin-validation.json --check
 python -B maintainer/scripts/attest_install_lifecycle.py --plugin-root . --output maintainer/attestations/install-lifecycle.json
@@ -191,17 +195,27 @@ python -B maintainer/scripts/manage_install.py recover --host all
 python -B maintainer/scripts/manage_install.py sync --host all
 python -B maintainer/scripts/manage_install.py doctor --host all
 python -B maintainer/scripts/detect_routes.py --canonical skills/design-dna --home "<HOME>" --root "<HOME>/.agents/skills" --root "<HOME>/.claude/skills" --root "<HOME>/.claude/plugins/cache" --root "<HOME>/.codex/plugins/cache" --root "<HOME>/.codex/skills" --expected "<HOME>/.agents/skills/design-dna" --expected "<HOME>/.claude/skills/design-dna" --output maintainer/attestations/route-verification.json
+```
+
+Update the local compatibility record only from those completed proofs. Keep
+package, host activation, behavioral, rendered, and remote-matrix checks
+non-passed until their own qualifying evidence exists. The compatibility file
+is a test-attestation input, so make this edit **before** the final test run.
+Then run:
+
+```text
+python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json --check
 python -B maintainer/scripts/audit_package.py --plugin-root . --home "<HOME>" --codex-validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>"
 ```
 
 The SBOM is generated before the test attestation because release-identity
-tests fail closed when its runtime or version binding is stale. Promote the
-test attestation only after that exact run passes, then update the local
-compatibility record from the promoted evidence. Keep package, install, host,
-and remote-matrix checks pending until their own evidence exists. Build the
-manifest last because it binds those promoted artifacts and compatibility
+tests fail closed when its runtime or version binding is stale. Test
+attestations are immutable: deliberately remove or archive a superseded
+candidate record before the final run rather than asking the attester to
+overwrite it. Promote the new record only after that exact run passes. Build
+the manifest last because it binds those promoted artifacts and compatibility
 claims; rebuild it after any later proof changes.
 
 Commit this passing candidate, run the remote matrix, retain and import the
@@ -212,8 +226,13 @@ compatibility only from those records.
 
 After every promoted evidence and compatibility edit is complete:
 
+Archive the provisional test attestation outside the distributed package, or
+deliberately remove that exact superseded record after confirming its path.
+Do not retain it elsewhere inside the package as apparent current evidence.
+
 ```text
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json --check
+python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output maintainer/attestations/test-attestation.json
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json
 python -B maintainer/scripts/build_manifest.py --skill-root skills/design-dna --output maintainer/release-manifest.json --previous maintainer/releases/v3.3.0.manifest-identity.json --check
 python -B maintainer/scripts/audit_package.py --plugin-root . --home "<HOME>" --codex-validator "<ABSOLUTE_PLUGIN_CREATOR_VALIDATOR>"
@@ -232,26 +251,33 @@ both when creating and when rechecking that proof. The release audit rejects a
 machine-local absolute path in distributed attestation records.
 
 The Codex static proof runs the external validator from the Plugin Creator
-system-skill route only when its path, byte count, and SHA-256 match the
-publisher-reviewed pin in
+system-skill route only when its path, byte count, and SHA-256 and every
+declared sibling import match the publisher-reviewed pins in
 `maintainer/trust/codex-plugin-validator.json`. It executes the already-read
 validator bytes with Python `-I -B -X utf8` against private snapshots of the
-bound plugin surface and pure-Python PyYAML source. It records the validator, interpreter,
+bound plugin surface, `identifier_validation.py`, and pure-Python PyYAML
+source. It records the validator, sibling-import, interpreter,
 dependency-source, and input identities, but retains no stdout or stderr
-content or output hashes. Strict audit requires the same explicit validator and
-replays the exact success contract.
+content or output hashes. Strict audit requires the same explicit validator
+and replays the exact success contract.
 
 The trust pin is a Design DNA publisher review, not an OpenAI signature or
 vendor endorsement. A mismatch must never be “fixed” by copying the newly
 observed hash. Obtain the validator revision through the trusted Codex update
-route, diff and review the source, confirm its ingestion behavior, then
-deliberately update the hash, byte count, review dates, review basis, and trust
-boundary. Re-run every proof after that edit. New evidence requires a pin whose
+route, diff and review the validator and every imported support file, confirm
+their ingestion behavior, then deliberately update the complete support
+inventory, hashes, byte counts, review dates, review basis, and trust boundary.
+Re-run every proof after that edit. New evidence requires a pin whose
 review window includes the current date; an immutable historical release can
 still be replayed with `attest_codex_plugin.py --check` when its attestation
 timestamp fell inside the pin's original review window. That historical replay
 does not satisfy a current `audit_package.py` release gate: current package
 audits also require the pin review window to include today.
+
+This attestation binds the current Python executable and the copied pure-Python
+PyYAML source, but it does not bind `jsonschema`, every standard-library or
+runtime file, or provide an operating-system filesystem sandbox. Keep those
+limits explicit rather than broadening the static-validation claim.
 
 ## 5. Commit, tag, and package
 

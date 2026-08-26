@@ -16,10 +16,12 @@ or prohibit ingredients. Read the candidate before reading motif warnings.
 - [Compare systems, not isolated ingredients](#compare-systems-not-isolated-ingredients)
 - [Test comprehension and public meaning](#test-comprehension-and-public-meaning)
 - [Test the stated ambition](#test-the-stated-ambition)
+- [Reconcile commitments against the artifact](#reconcile-commitments-against-the-artifact)
 - [Audit copy and claims](#audit-copy-and-claims)
 - [Review typography without font policing](#review-typography-without-font-policing)
 - [Balance evidence, utility, and aesthetic autonomy](#balance-evidence-utility-and-aesthetic-autonomy)
 - [Review media as a set](#review-media-as-a-set)
+- [Audit artifact credibility and cumulative intensity](#audit-artifact-credibility-and-cumulative-intensity)
 - [Inspect care and implementation residue](#inspect-care-and-implementation-residue)
 - [Close with evidence](#close-with-evidence)
 
@@ -58,6 +60,8 @@ direction rationale, scanner findings, recurring-pattern vocabulary, or prior
 feedback. Ask in plain language:
 
 - What is this and what can someone do here?
+- What category does it seem to belong to, what appears to be at stake, and
+  what would you do next?
 - What did you notice first and next?
 - What does it feel like in this context?
 - What looks intentional, distinctive, confusing, unfinished, or wrong?
@@ -67,6 +71,10 @@ feedback. Ask in plain language:
 Use the project's success conditions rather than a universal emotional score.
 Anchor actionable observations to an exact artifact, region, and condition.
 Record disagreement and exposure instead of manufacturing consensus.
+Treat category recognition as situated evidence, not a target score. A delayed,
+hybrid, unfamiliar, or deliberately ambiguous encounter may be right; reopen
+the direction only when the observed misclassification or posture harms this
+project's intended understanding, trust, feeling, or action.
 
 ## Compare systems, not isolated ingredients
 
@@ -162,8 +170,9 @@ authorship indicators and no answer is individually required.
 - Which structural decisions came from this content, task, or audience?
 - Which conventions are preserved or changed, and why does that relationship
   serve the journey?
-- Does the page's sequence and rhythm fit the material, or could its modules
-  move unchanged to an unrelated site?
+- Does the page's sequence and rhythm fit the material? When an authorized
+  recurrence comparison exists, does that same relationship actually recur in
+  the sibling without a project or system reason?
 - Are interactions justified by a real task or intended experience?
 - Does the media set support the same factual and aesthetic world, including
   deliberate documentary variation?
@@ -171,6 +180,22 @@ authorship indicators and no answer is individually required.
   them, and which remain generic or unverified?
 - How do alignment, asymmetry, or symmetry direct attention in this
   composition?
+
+## Reconcile commitments against the artifact
+
+Return to the exact direction record only after the unprimed observation is
+frozen. Extract its concrete consequential decisions and any later concrete
+commitments that materially shaped implementation. For each one, record
+`realized`, `partial`, `missing`, or `superseded` and bind the result to an
+exact route, capture, state, interaction, or source condition. Check both what
+was promised and what the finished artifact actually does.
+
+Do not award credit for fluent rationale, intent, comments, a passing compile,
+or the presence of a design record. A missing or partial consequential
+commitment reopens the affected conclusion unless an accountable project
+decision explicitly superseded it. This is a reasoning-to-artifact fidelity
+check, not a beauty score, documentation quota, or requirement to preserve a
+bad early idea.
 
 ## Audit copy and claims
 
@@ -257,6 +282,26 @@ assets.
 For generated media, inspect the final pixels and set-level continuity for
 text, logos, anatomy, geometry, repetition, light, shadows, reflections,
 perspective, material, and cultural details relevant to the subject.
+
+## Audit artifact credibility and cumulative intensity
+
+For a public proposition, run the separate [artifact credibility and
+cumulative-pattern review](artifact-credibility.md) on the exact final wide and
+narrow captures. It asks a different question from specificity: not merely
+whether the work belongs to this project, but whether the whole artifact feels
+like something the represented organization would plausibly operate rather
+than a maker-facing demonstration of distinctiveness.
+
+Inspect the cumulative sequence, dominant recurring relationship cluster,
+business or category reality, media plausibility, portfolio/process-language
+leakage, and reviewer authority. A coherent system can still fail because
+every section performs at maximum intensity, one fashionable device consumes
+every content job, or polished illustrative media never establishes a
+believable operating world. Conversely, restraint is not an automatic repair;
+the revised intensity and ordinary content behavior must serve the project.
+
+Bind that review as its own closure row. Do not merge it into a generic
+“specificity passed” sentence or let a clean technical report close it.
 
 ## Inspect care and implementation residue
 

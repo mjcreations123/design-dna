@@ -59,6 +59,11 @@ ROOT_FIELDS = (
     "body_progression",
     "visitor_agency",
 )
+MATERIAL_POSTURES = {
+    "asset-led",
+    "deliberately-media-light",
+    "inherited-system",
+}
 LIFECYCLE = {"draft", "roots-ready", "proof-ready", "reviewed"}
 LIFECYCLE_ORDER = {
     "draft": 0,
@@ -130,13 +135,20 @@ def load_render_review_adapter() -> Any:
     adapter_path = Path(__file__).with_name("project_contrast_audit.py")
     if not adapter_path.is_file() or adapter_path.is_symlink():
         raise AuditError("The packaged schema-3 rendered-review verifier is unavailable.")
-    specification = importlib.util.spec_from_file_location(module_name, adapter_path)
-    if specification is None or specification.loader is None:
+    specification = importlib.util.spec_from_loader(
+        module_name,
+        loader=None,
+        origin=str(adapter_path),
+    )
+    if specification is None:
         raise AuditError("The packaged schema-3 rendered-review verifier could not be loaded.")
     module = importlib.util.module_from_spec(specification)
+    module.__file__ = str(adapter_path)
     sys.modules[module_name] = module
     try:
-        specification.loader.exec_module(module)
+        source = adapter_path.read_bytes()
+        code = compile(source, str(adapter_path), "exec", dont_inherit=True)
+        exec(code, module.__dict__)
     except (OSError, TypeError, ValueError, ImportError) as exc:
         sys.modules.pop(module_name, None)
         raise AuditError(f"The packaged schema-3 rendered-review verifier could not initialize: {exc}") from exc
@@ -430,7 +442,7 @@ def runtime_schema_errors() -> list[dict[str, str]]:
     expected_proof_fields = {
         "id", "root_id", "build_id", "purpose", "render_review",
         "source_snapshot_manifest_sha256", "route", "wide_capture_id",
-        "narrow_capture_id",
+        "narrow_capture_id", "material_evidence",
     }
     if (
         not isinstance(proof_slice, dict)
@@ -575,7 +587,10 @@ def validate_roots(errors: list[dict[str, str]], value: object) -> list[dict[str
         )
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
-    fields = {"id", "brief_anchor", *ROOT_FIELDS, "surface_consequence"}
+    fields = {
+        "id", "brief_anchor", *ROOT_FIELDS, "surface_consequence",
+        "responsive_transformation", "material",
+    }
     for index, raw in enumerate(value):
         path = f"$.roots[{index}]"
         root = exact_object(errors, raw, path, fields)
@@ -586,9 +601,32 @@ def validate_roots(errors: list[dict[str, str]], value: object) -> list[dict[str
             if root_id in seen:
                 errors.append(item(f"{path}.id", "duplicate-id", "Root IDs must be unique."))
             seen.add(root_id)
-        for field in ("brief_anchor", *ROOT_FIELDS, "surface_consequence"):
+        for field in (
+            "brief_anchor", *ROOT_FIELDS, "surface_consequence",
+            "responsive_transformation",
+        ):
             if not text_ok(root.get(field)):
                 errors.append(item(f"{path}.{field}", "invalid-text", "Root fields must use nonempty brief-native project language."))
+        material = exact_object(
+            errors,
+            root.get("material"),
+            f"{path}.material",
+            {"posture", "strategy", "truth_boundary"},
+        )
+        if material is not None:
+            if material.get("posture") not in MATERIAL_POSTURES:
+                errors.append(item(
+                    f"{path}.material.posture",
+                    "invalid-material-posture",
+                    "Use asset-led, deliberately-media-light, or inherited-system.",
+                ))
+            for field in ("strategy", "truth_boundary"):
+                if not text_ok(material.get(field)):
+                    errors.append(item(
+                        f"{path}.material.{field}",
+                        "invalid-text",
+                        "Material strategy and truth boundary must be substantive.",
+                    ))
         output.append(root)
     return output
 
@@ -703,7 +741,7 @@ def validate_proof_slices(errors: list[dict[str, str]], value: object) -> list[d
             {
                 "id", "root_id", "build_id", "purpose", "render_review",
                 "source_snapshot_manifest_sha256", "route", "wide_capture_id",
-                "narrow_capture_id",
+                "narrow_capture_id", "material_evidence",
             },
         )
         if proof is None:
@@ -728,6 +766,53 @@ def validate_proof_slices(errors: list[dict[str, str]], value: object) -> list[d
                 errors.append(item(f"{path}.{capture_field}", "invalid-render-capture-id", "Proof slices must name a schema-3 rendered-review capture ID."))
         if proof.get("wide_capture_id") == proof.get("narrow_capture_id"):
             errors.append(item(path, "proof-captures-not-distinct", "Wide and narrow proof references must name different schema-3 captures."))
+        material = exact_object(
+            errors,
+            proof.get("material_evidence"),
+            f"{path}.material_evidence",
+            {"posture", "assets", "implementation_sources", "rendered_observation"},
+        )
+        if material is not None:
+            posture = material.get("posture")
+            if posture not in MATERIAL_POSTURES:
+                errors.append(item(
+                    f"{path}.material_evidence.posture",
+                    "invalid-material-posture",
+                    "Use asset-led, deliberately-media-light, or inherited-system.",
+                ))
+            for field in ("assets", "implementation_sources"):
+                references = material.get(field)
+                if not isinstance(references, list):
+                    errors.append(item(
+                        f"{path}.material_evidence.{field}",
+                        "invalid-list",
+                        "Material evidence references must be a list.",
+                    ))
+                    continue
+                if field == "implementation_sources" and not references:
+                    errors.append(item(
+                        f"{path}.material_evidence.{field}",
+                        "material-source-missing",
+                        "Every proof must bind at least one implementation source.",
+                    ))
+                if field == "assets" and posture == "asset-led" and not references:
+                    errors.append(item(
+                        f"{path}.material_evidence.{field}",
+                        "asset-led-proof-asset-missing",
+                        "An asset-led root must bind at least one material asset.",
+                    ))
+                for reference_index, reference in enumerate(references):
+                    valid_file_ref(
+                        errors,
+                        reference,
+                        f"{path}.material_evidence.{field}[{reference_index}]",
+                    )
+            if not text_ok(material.get("rendered_observation")):
+                errors.append(item(
+                    f"{path}.material_evidence.rendered_observation",
+                    "invalid-text",
+                    "Record what material role is visible in both rendered proof widths.",
+                ))
         output.append(proof)
     return output
 
@@ -1011,6 +1096,24 @@ def validate_proof_lifecycle(
             errors.append(item(f"{path}.root_id", "proof-root-missing", "Every proof slice must belong to a declared root."))
         else:
             proof_roots.add(root_id)
+            root_material = roots_by_id[root_id].get("material")
+            proof_material = proof.get("material_evidence")
+            root_posture = (
+                root_material.get("posture")
+                if isinstance(root_material, dict)
+                else None
+            )
+            proof_posture = (
+                proof_material.get("posture")
+                if isinstance(proof_material, dict)
+                else None
+            )
+            if root_posture != proof_posture:
+                errors.append(item(
+                    f"{path}.material_evidence.posture",
+                    "proof-material-posture-mismatch",
+                    "The rendered proof material posture must exactly match its declared root.",
+                ))
         wide_capture_id = proof.get("wide_capture_id")
         narrow_capture_id = proof.get("narrow_capture_id")
         if wide_capture_id == narrow_capture_id:
@@ -1216,7 +1319,7 @@ def validate_source_snapshot(
     render_report: dict[str, Any],
     expected_manifest_sha256: object,
     label: str,
-) -> str:
+) -> tuple[str, list[dict[str, Any]]]:
     """Require an authentic local frozen-source boundary for a proof slice."""
 
     build = render_report.get("build")
@@ -1300,7 +1403,103 @@ def validate_source_snapshot(
         for value in excluded_counts.values()
     ):
         raise AuditError(f"{label} frozen-source exclusion counts are invalid.")
-    return manifest_digest
+    return manifest_digest, normalized_files
+
+
+def manifest_binds_project_reference(
+    files: list[dict[str, Any]],
+    relative_path: str,
+    digest: str,
+) -> bool:
+    normalized = PurePosixPath(relative_path).as_posix()
+    return any(
+        entry.get("sha256") == digest
+        and isinstance(entry.get("path"), str)
+        and (
+            entry["path"] == normalized
+            or normalized.endswith("/" + entry["path"])
+            or entry["path"].endswith("/" + normalized)
+        )
+        for entry in files
+    )
+
+
+def verify_material_evidence(
+    root: Path,
+    proof: dict[str, Any],
+    manifest_files: list[dict[str, Any]],
+    budget: list[int],
+) -> list[dict[str, Any]]:
+    """Bind declared material to the frozen source and an actual source use."""
+
+    proof_id = proof.get("id", "unknown")
+    label = f"proof slice {proof_id}.material_evidence"
+    material = proof.get("material_evidence")
+    if not isinstance(material, dict):
+        raise AuditError(f"{label} is missing.")
+    sources = material.get("implementation_sources")
+    assets = material.get("assets")
+    if not isinstance(sources, list) or not isinstance(assets, list):
+        raise AuditError(f"{label} must list assets and implementation sources.")
+    records: list[dict[str, Any]] = []
+    source_payloads: list[bytes] = []
+    for index, reference in enumerate(sources):
+        path, payload = verify_file_reference(
+            root,
+            reference,
+            f"{label}.implementation_sources[{index}]",
+            budget,
+        )
+        relative = path.relative_to(root).as_posix()
+        digest = hashlib.sha256(payload).hexdigest()
+        if not manifest_binds_project_reference(manifest_files, relative, digest):
+            raise AuditError(
+                f"{label} source {relative!r} is not present with the same hash "
+                "in the frozen schema-3 source snapshot."
+            )
+        source_payloads.append(payload)
+        records.append({
+            "kind": "proof-material-source",
+            "proof_slice_id": proof_id,
+            "path": relative,
+            "sha256": digest,
+        })
+    for index, reference in enumerate(assets):
+        path, payload = verify_file_reference(
+            root,
+            reference,
+            f"{label}.assets[{index}]",
+            budget,
+        )
+        relative = path.relative_to(root).as_posix()
+        digest = hashlib.sha256(payload).hexdigest()
+        if not manifest_binds_project_reference(manifest_files, relative, digest):
+            raise AuditError(
+                f"{label} asset {relative!r} is not present with the same hash "
+                "in the frozen schema-3 source snapshot."
+            )
+        suffixes = {
+            path.name.encode("utf-8"),
+            "/".join(PurePosixPath(relative).parts[-2:]).encode("utf-8"),
+            relative.encode("utf-8"),
+        }
+        if not any(
+            suffix in source_payload
+            for source_payload in source_payloads
+            for suffix in suffixes
+        ):
+            raise AuditError(
+                f"{label} asset {relative!r} is packaged but no bound "
+                "implementation source references it; listing an unused image "
+                "does not satisfy an asset-led proof."
+            )
+        records.append({
+            "kind": "proof-material-asset",
+            "proof_slice_id": proof_id,
+            "path": relative,
+            "sha256": digest,
+        })
+    return records
 
 
 def rendered_capture_path(render_adapter: Any, report_relative_path: object, screenshot_path: object, label: str) -> str:
@@ -1325,6 +1524,7 @@ def verify_proof_slice(
     cache: dict[tuple[str, str], dict[str, Any]],
     seen_capture_bindings: set[tuple[str, str]],
     capture_hash_roots: dict[str, set[str]],
+    material_budget: list[int],
 ) -> list[dict[str, Any]]:
     """Resolve a Direction Challenge slice to exact schema-3 pixels and source."""
 
@@ -1357,7 +1557,7 @@ def verify_proof_slice(
         raise AuditError(f"{label} cannot inspect its schema-3 rendered-review report.")
     if result.get("build_id") != proof.get("build_id"):
         raise AuditError(f"{label} build_id does not match the bound schema-3 rendered-review build.")
-    manifest_digest = validate_source_snapshot(
+    manifest_digest, manifest_files = validate_source_snapshot(
         report,
         proof.get("source_snapshot_manifest_sha256"),
         f"{label}.render_review.source_snapshot",
@@ -1367,6 +1567,14 @@ def verify_proof_slice(
         raise AuditError(f"{label} cannot inspect schema-3 rendered captures.")
     report_relative_path = result.get("report_relative_path")
     capture_records: list[dict[str, Any]] = []
+    capture_records.extend(
+        verify_material_evidence(
+            root,
+            proof,
+            manifest_files,
+            material_budget,
+        )
+    )
     width_by_class: dict[str, int] = {}
     hashes: set[str] = set()
     root_id = proof.get("root_id")
@@ -1540,6 +1748,7 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, Any]:
                     render_cache,
                     seen_capture_bindings,
                     capture_hash_roots,
+                    review_budget,
                 )
             )
         except AuditError as exc:

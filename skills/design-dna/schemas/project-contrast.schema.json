@@ -193,7 +193,11 @@
             "required": ["id", "relationship", "evidence"],
             "properties": {
               "id": {"$ref": "#/$defs/id"},
-              "relationship": {"enum": ["closest-sibling", "approved-system", "known-template"]},
+              "project_id": {
+                "description": "Project identity for the comparator. It is required by the auditor when an owner-recurrence claim needs a genuinely cross-project closest sibling.",
+                "$ref": "#/$defs/draftableId"
+              },
+              "relationship": {"enum": ["closest-sibling", "same-project-rejected", "approved-system", "known-template"]},
               "evidence": {"oneOf": [{"$ref": "#/$defs/comparatorEvidence"}, {"type": "null"}]}
             }
           }

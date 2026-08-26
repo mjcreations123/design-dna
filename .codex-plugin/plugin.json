@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
-  "version": "5.4.0",
-  "description": "Cross-host web-design direction for truthful project-specific interfaces, opt-in connected public continuity, Project Contrast, and Direction Challenge.",
+  "version": "6.0.0",
+  "description": "Cross-host web-design direction for truthful project-specific interfaces, visitor-serving copy, rendered verification, and opt-in Connected Public Experience.",
   "author": {
     "name": "Motty"
   },
@@ -23,7 +23,7 @@
   "interface": {
     "displayName": "Design DNA",
     "shortDescription": "Project-specific web design with truthful proof.",
-    "longDescription": "Build, redesign, or review project-specific websites with rendered verification, opt-in Connected Public Experience continuity, Project Contrast for recurrence concerns, and Direction Challenge for escalated high-ambition concepts.",
+    "longDescription": "Build, redesign, or review project-specific websites with visitor-serving copy, rendered verification, opt-in Connected Public Experience continuity, Project Contrast for recurrence concerns, and Direction Challenge for escalated high-ambition concepts.",
     "developerName": "Motty",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use $design-dna for a project-specific website; add Connected Public Experience only when public state spans routes."
+      "Use $design-dna for project-specific web design with visitor-facing copy, honest state, and rendered verification."
     ],
     "brandColor": "#164E63"
   }

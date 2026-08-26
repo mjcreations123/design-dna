@@ -13,7 +13,7 @@ def read(relative_path: str) -> str:
 
 
 class LaunchCompletenessContractTests(unittest.TestCase):
-    """Keep the fifteen launch decisions durable without creating a house style."""
+    """Keep conditional launch decisions available without seeding furniture."""
 
     def test_reference_covers_the_full_decision_set(self) -> None:
         reference = read("references/quality/launch-completeness.md")
@@ -52,16 +52,21 @@ class LaunchCompletenessContractTests(unittest.TestCase):
         self.assertIn("do not invent legal promises", reference)
         self.assertIn("do not insert a placeholder measurement id", reference)
         self.assertIn("never invent a bonus", reference)
+        self.assertIn("not a standing requirement", reference)
+        self.assertIn("select only rows", reference)
+        self.assertIn("delete rows that were never in scope", template)
+        self.assertIn("does not enumerate the full library", template)
+        self.assertNotIn("| 15 |", template)
 
     def test_router_workflow_and_preship_gate_make_the_record_actionable(self) -> None:
-        skill = read("SKILL.md")
+        router = read("references/router.md")
         workflow = read("references/workflow.md")
-        gate = read("templates/preship-gate.md")
-        self.assertIn("Website launch completeness", skill)
+        gate = " ".join(read("templates/preship-gate.md").split())
+        self.assertIn("Website launch completeness", router)
         self.assertIn("launch-completeness.md", workflow)
-        self.assertIn("all fifteen decisions", workflow)
+        self.assertIn("only the relevant decision families", workflow)
         self.assertIn("## A.1 Launch completeness", gate)
-        self.assertIn("all fifteen decisions", gate)
+        self.assertIn("was not created or expanded merely", gate)
 
 
 if __name__ == "__main__":

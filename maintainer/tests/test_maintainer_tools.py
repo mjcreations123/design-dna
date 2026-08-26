@@ -269,6 +269,30 @@ class ManifestTests(unittest.TestCase):
         self.assertLess(sync, doctor)
         self.assertLess(doctor, route_proof)
 
+    def test_post_ci_finalization_reattests_after_compatibility_edits(self) -> None:
+        release_guide = (PLUGIN / "docs" / "RELEASE.md").read_text(
+            encoding="utf-8"
+        )
+        post_ci = release_guide.index("### Exact post-CI finalization")
+        compatibility_final = release_guide.index(
+            "After every promoted evidence and compatibility edit is complete",
+            post_ci,
+        )
+        final_attestation = release_guide.index(
+            "attest_tests.py",
+            compatibility_final,
+        )
+        final_manifest = release_guide.index(
+            "build_manifest.py",
+            final_attestation,
+        )
+        self.assertLess(compatibility_final, final_attestation)
+        self.assertLess(final_attestation, final_manifest)
+        self.assertIn(
+            "superseded record after confirming its path",
+            release_guide[post_ci:final_attestation],
+        )
+
     def test_worktree_walk_can_prune_local_tool_environments(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -320,7 +344,10 @@ class ManifestTests(unittest.TestCase):
             self.assertNotEqual(content_manifest(one), content_manifest(two))
 
     def test_distribution_manifest_omits_untracked_empty_directories(self) -> None:
-        from build_manifest import distribution_manifest
+        from build_manifest import (
+            distribution_manifest,
+            identity_group_sha256,
+        )
 
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "plugin"
@@ -334,6 +361,81 @@ class ManifestTests(unittest.TestCase):
             self.assertIn("maintainer/evals/archive/proof.json", paths)
             self.assertIn("maintainer/evals/archive", paths)
             self.assertNotIn("maintainer/evals/results", paths)
+
+            with_empty = identity_group_sha256(
+                root,
+                ("maintainer/evals/results",),
+                include_generated=True,
+            )
+            (root / "maintainer" / "evals" / "results").rmdir()
+            without_empty = identity_group_sha256(
+                root,
+                ("maintainer/evals/results",),
+                include_generated=True,
+            )
+            self.assertEqual(with_empty, without_empty)
+
+    def test_release_rejects_project_state_at_plugin_root(self) -> None:
+        from build_manifest import reject_root_project_state_residue
+
+        for name, make_entry in (
+            (".design-dna", lambda path: path.mkdir()),
+            (".design-dna.lock", lambda path: path.write_text(
+                '{"private":"local process state"}\n', encoding="utf-8"
+            )),
+        ):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary) / "plugin"
+                root.mkdir()
+                target = root / name
+                make_entry(target)
+                with self.assertRaises(ToolFailure) as rejected:
+                    reject_root_project_state_residue(root)
+                self.assertEqual(
+                    rejected.exception.issue.code,
+                    "release-project-state-residue",
+                )
+                self.assertEqual(Path(rejected.exception.issue.path), target)
+
+    def test_package_identity_survives_file_only_clone_without_empty_eval_dirs(
+        self,
+    ) -> None:
+        from build_manifest import package_manifest
+
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_plugin = Path(temporary) / "plugin"
+            shutil.copytree(
+                PLUGIN,
+                copied_plugin,
+                ignore=shutil.ignore_patterns(
+                    ".git",
+                    ".venv",
+                    "__pycache__",
+                    "*.pyc",
+                    "*.pyo",
+                ),
+            )
+            empty_results = copied_plugin / "maintainer" / "evals" / "results"
+            empty_results.mkdir(parents=True, exist_ok=True)
+            with_empty = package_manifest(
+                copied_plugin / "skills" / "design-dna"
+            )
+            # copytree may preserve a Windows read-only directory attribute
+            # from a synchronized source; clear it before simulating a
+            # file-only clone that omits the empty results directory.
+            empty_results.chmod(0o700)
+            empty_results.rmdir()
+            file_only = package_manifest(
+                copied_plugin / "skills" / "design-dna"
+            )
+            self.assertEqual(
+                with_empty["components"]["eval_proof"],
+                file_only["components"]["eval_proof"],
+            )
+            self.assertEqual(
+                with_empty["release_sha256"],
+                file_only["release_sha256"],
+            )
 
     def test_compiled_residue_enumerator_reports_cache_once_and_loose_files(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -967,7 +1069,7 @@ class AuditMutationTests(unittest.TestCase):
                 failures[0]["message"],
             )
 
-    def test_runtime_references_are_directly_reachable_from_router(self) -> None:
+    def test_runtime_references_are_reachable_in_one_router_hop(self) -> None:
         from audit_package import runtime_reference_reachability_failures
 
         source_skill = PLUGIN / "skills" / "design-dna"
@@ -1420,6 +1522,57 @@ class AuditMutationTests(unittest.TestCase):
                     for item in changed["distribution_files"]
                     if item["type"] == "file"
                 },
+            )
+
+    def test_nested_design_dna_fixture_is_bound_but_root_state_is_rejected(
+        self,
+    ) -> None:
+        from build_manifest import distribution_manifest
+
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_plugin = Path(temporary) / "plugin"
+            shutil.copytree(PLUGIN, copied_plugin)
+            nested = (
+                copied_plugin
+                / "maintainer"
+                / "evals"
+                / "fixtures"
+                / "inputs"
+                / "distribution-state"
+                / ".design-dna"
+                / "state.json"
+            )
+            nested.parent.mkdir(parents=True)
+            nested.write_text('{"fixture": true}\n', encoding="utf-8")
+            nested_lock = nested.parents[1] / ".design-dna.lock"
+            nested_lock.write_text('{"fixture_lock": true}\n', encoding="utf-8")
+
+            distribution_files, _distribution_digest = distribution_manifest(
+                copied_plugin
+            )
+            distributed_paths = {
+                item["path"]
+                for item in distribution_files
+                if item["type"] == "file"
+            }
+            self.assertTrue(
+                {
+                    nested.relative_to(copied_plugin).as_posix(),
+                    nested_lock.relative_to(copied_plugin).as_posix(),
+                }.issubset(distributed_paths)
+            )
+
+            root_state = copied_plugin / ".design-dna"
+            root_state.mkdir()
+            (root_state / "private.json").write_text(
+                '{"private": true}\n',
+                encoding="utf-8",
+            )
+            with self.assertRaises(ToolFailure) as raised:
+                distribution_manifest(copied_plugin)
+            self.assertEqual(
+                raised.exception.issue.code,
+                "release-project-state-residue",
             )
 
     def test_trusted_adapter_registry_edit_invalidates_release_manifest(self) -> None:

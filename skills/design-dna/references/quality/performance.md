@@ -39,27 +39,41 @@ Do not silently leave objectives blank. Label provisional or proposed budgets
 as such, not as universal guarantees. A concept objective may guide learning
 without owner acceptance; it is not production evidence.
 
+When no project target exists, the current official Core Web Vitals "good"
+thresholds may be recorded as dated diagnostic references: LCP at or below 2.5
+seconds, INP at or below 200 milliseconds, and CLS at or below 0.1, evaluated at
+the field 75th percentile. Recheck the current first-party definitions before
+using them because metrics and thresholds can change. These references do not
+become an owner-approved budget, and a lab LCP/interaction/shift observation is
+not field percentile evidence. Project contracts, representative-user needs,
+and stricter risk-specific targets supersede the diagnostic reference.
+
 ## Protect the critical path
 
 - Render meaningful content without waiting for nonessential scripts.
 - Reduce, defer, or remove unused JavaScript and third parties.
 - Reserve dimensions for media and dynamic regions.
 - Size and format images for actual rendering conditions.
-- Load fonts intentionally and avoid unused weights; preconnect to any
-  origin that serves critical assets, preload only genuinely critical font
-  files, and subset by script coverage so unused alphabets never ship.
+- Load fonts intentionally and avoid unused weights. Preconnect only to an
+  origin whose critical cross-origin request is expected soon, preload only a
+  genuinely critical file, and subset only when the required scripts, names,
+  symbols, future content, and license are known; a smaller file is not a win
+  if it deletes glyphs the audience needs.
 - Lazy-load below-the-fold media without delaying likely next actions, and
-  mark the one critical above-the-fold image as high fetch priority.
+  raise fetch priority only for the image or images measurements show are
+  critical. Do not impose a one-image rule on compositions with a different
+  loading path.
 - Ship short ambient loops as compressed muted video, not animated GIF: a
   video element with autoplay, muted, loop, and inline playback is a
   fraction of the bytes, and its reduced-motion fallback is a poster frame.
-  Where a target browser needs it, a video source inside a picture-style
-  fallback with a still alternative covers the gap.
-- Virtualize or content-gate very long lists; hundreds of offscreen rows
-  cost layout and memory whether or not they are visible.
-- Batch reads and writes of layout so they do not interleave, and move long
-  computation off the main thread; an interaction budget dies in exactly
-  these two places.
+  Supply a poster and a useful still or textual alternative for unsupported,
+  failed, reduced-motion, or reduced-data conditions as the project requires.
+- For very long collections, choose pagination, incremental rendering,
+  `content-visibility`, virtualization, or another measured strategy. Preserve
+  keyboard reading, find-in-page, assistive-technology access, deep links, and
+  comparison needs; hiding rows from the DOM is not a free optimization.
+- Batch layout reads and writes where measurement finds thrashing, and move
+  suitable long computation off the main thread when it blocks interaction.
 - Avoid render-blocking decoration, layout thrashing, and unbounded scroll work.
 - Cache immutable assets and respect content freshness.
 

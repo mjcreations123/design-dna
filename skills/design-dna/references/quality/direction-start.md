@@ -36,6 +36,14 @@ materially distinct routes. If material information is unknown, keep the
 direction reversible and record the boundary rather than supplying plausible
 fiction.
 
+Privately form a provisional perception-and-stakes hypothesis before choosing
+the visual answer. Ask what an unprimed visitor might mistake this for, what
+practical or emotional stakes—or dominant uncertainty—will shape attention,
+and what wrong category or posture would betray the brief. Ground the answers
+in the project read and keep them revisable. They are not customer copy, fixed
+fields to display, a complexity target, or a command to make every experience
+immediately conventional.
+
 Start a hero or section with its actual heading/content by default. Do not add
 an eyebrow, kicker, overline, or small lead-in merely to announce the subject
 of the text below it. Retain one only when it conveys an independent,
@@ -98,15 +106,44 @@ use Operate mode; do not invent an empty admin surface.
 
 Choose Quick only for a bounded repair inside an established system. For a
 fresh public-facing business, product, organization, place, creator, or
-campaign site, begin at **Standard** and plan its full public rendered and
-engineering review. Public status, visibility, and route count do not by
-themselves select Showcase.
+campaign site, begin at **Standard plus Enterprise Candidate** and plan its
+full public rendered, engineering, media, interaction, and copy review. Public
+status, visibility, and route count do not by themselves select Showcase.
+
+Read [Enterprise Candidate](enterprise-candidate.md) now. This makes mature,
+category-credible execution the normal expectation before a first preview. It
+does not fabricate a global company, force a large route count, select an
+aesthetic, or override a truthful small-business, local, editorial, or concept
+scope. It does require the agent to plan the first-screen composition,
+media-to-slot relationship, key visitor paths, public-copy integrity, and final
+wide/narrow review without waiting for the owner to enumerate obvious polish
+failures after each attempt.
 
 Add **Showcase** only when the brief expressly calls for a premium, showcase,
 or high-ambition answer, or when a rejected visual premise needs direction
 recovery. Treat Showcase as deeper direction and review work, never as a
 preselected visual vocabulary. Select specialist, high-risk, asset, range, or
 batch capabilities only when their actual conditions apply.
+
+Select **Asset-led** when a physical or sensory subject depends on recognizable
+material, or whenever the owner explicitly requests photography or rich media.
+Record the decision in the direction record's material/media boundary and bind
+a usable asset before broad implementation. A project-specific type-led or
+media-light answer remains valid when it is deliberate; missing supplied media
+alone is not that reason. For a physical/sensory subject, the exception must
+name the visitor/truth benefit and the approving owner/client plus ISO date.
+When the direction is reopening after owner
+rejection, record the exact failed candidate and scoped relationship cluster
+separately from protected facts and functions.
+
+If the applicable owner record activates
+`~/.design-dna/owner-pattern-contract.json`, select the independent
+`owner-pattern-contract` trigger and read the
+[owner-pattern contract gate](owner-pattern-gate.md). This is not selected by
+generic AI-looking feedback alone: it applies only inside the owner contract's
+scope. Its project review must control every named failed relationship before
+broad implementation, regardless of whether Project Contrast or Direction
+Challenge is also active.
 
 ## Add recurrence discipline only when it is requested
 
@@ -117,6 +154,15 @@ different organizing answer, then consult the smallest authorized closest
 sibling only after the brief-native direction exists. Its comparison asks
 whether the encounter and surface language collide; it is not a requirement to
 rotate fonts, colors, shapes, or effects.
+
+If the complaint names a recurring producer grammar, record those exact
+relationship lenses before the first proof: for example opening/hero
+composition, typography posture, action and link affordances, container and
+backplate logic, section separation, route-body progression, media role, and
+mobile transformation. Load [visual-grammar
+variance](visual-grammar-variance.md). Do not replace this with a hypothetical
+question about whether an unrelated industry could reuse the design, and do
+not convert the owner's examples into permanent ingredient bans.
 
 A straightforward unlike-recent request can add Project Contrast to Standard.
 Reserve the named `owner-recurrence-requirement` initializer trigger for an

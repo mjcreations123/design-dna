@@ -76,11 +76,13 @@ observed mismatch.
 
 ### Swappable marketing formula
 
-Could the same opening, feature grouping, proof sequence, conversion section,
-and ending ship unchanged for an unrelated business after replacing nouns and
-photos? Familiar sections can be correct when content inventory and visitor
-questions produced them. The defect is interchangeability without evidence,
-not the existence of a hero, cards, testimonials, FAQ, or CTA.
+Does the same opening, feature grouping, proof sequence, conversion section,
+and ending actually recur in owner-authorized unrelated output without a
+project or system reason? Familiar sections can be correct when content
+inventory and visitor questions produced them. The defect is observed
+recurrence without evidence, not theoretical reuse by another industry or the
+existence of a hero, cards, testimonials, FAQ, or CTA. Use [visual-grammar
+variance](quality/visual-grammar-variance.md) for the comparison boundary.
 
 ### Decorative information costume
 

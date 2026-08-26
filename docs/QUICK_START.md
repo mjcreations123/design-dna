@@ -16,11 +16,12 @@ In Claude Code with a direct personal skill:
 
 Design DNA chooses a proportional assurance profile from the task. A fresh
 public-facing site representing a business, product, organization, place,
-creator, or campaign begins at Standard, including full public rendered and
-engineering review. Add Showcase only when the brief expressly calls for
-premium, showcase, high-ambition work or direction recovery; public status,
-visibility, and route count alone do not select it. You can request Showcase
-explicitly when that higher-ambition answer is actually wanted:
+creator, or campaign begins at Standard plus Enterprise Candidate, including
+full public rendered, engineering, media, interaction, and copy-integrity
+review. Add Showcase only when the brief expressly calls for premium,
+showcase, high-ambition work or direction recovery; public status,
+visibility, and route count alone do not select it. You can request Showcase explicitly
+when that higher-ambition answer is actually wanted:
 
 ```text
 $design-dna Use Showcase to build an exceptional, time-appropriate sample website for [business or product] using the supplied facts and assets.
@@ -60,19 +61,21 @@ is required.
 | --- | --- | --- |
 | **Quick** | A bounded, low-risk repair or established-system change. | Focused context inspection, changed-state implementation, and affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Direction framing, proportionate proof of consequential decisions, rendered review, and engineering verification. |
-| **Connected Public Experience** | The brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | An opt-in applicability marker, root-specific continuity model, truthful status crosswalk, and exact direct-entry/recovery rendered and functional evidence; no page-count, admin, backend, database, funnel, or live-integration quota. |
+| **Enterprise Candidate** | Every fresh public website unless the task is an explicitly bounded repair or non-public surface. | Category-credible public topology, deliberate media and first-screen composition, key-state finish, high-attention copy integrity, and rendered wide/narrow closure. It does not claim enterprise scale, prescribe a style, or require a large site map. |
+| **Connected Public Experience** | The brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | A direction-stage applicability decision, selected-root continuity model, truthful status crosswalk, meaningful path, handoffs, and rendered/functional proof plan before broad implementation; exact direct-entry/recovery evidence afterward. No page-count, admin, backend, database, funnel, or live-integration quota. |
 | **Showcase** | The brief expressly asks for premium, showcase, or high-ambition work; a rejected direction needs recovery; or the owner explicitly asks for that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Project research and directly reviewable contrast sufficient to challenge the first default; full alternatives when uncertainty, stakes, or owner choice justify them; a recorded selection, deeper visual craft, and adversarial review. |
 | **Project Contrast** | An unrelated public build must feel materially unlike recent studio work, or the owner says sites feel alike. | A brief-native counter-answer before broad implementation, the smallest owner-authorized closest-sibling comparison when available, and a wide/narrow collision review. It does not rotate visual ingredients. |
-| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately asks for a high-ambition greenfield challenge. | Three or more incompatible brief-native roots before polished examples, two cross-root wide/narrow proof slices, a selected-versus-rejected rendered comparison, and an independent unprimed view. It is not a default concept quota. |
+| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately asks for a high-ambition greenfield challenge. | Three or more incompatible brief-native roots before polished examples; two cross-root wide/narrow proof slices that bind material posture and actual asset use; a selected-versus-rejected rendered comparison; and an independent unprimed view. It must reach reviewed before broad implementation and is not a default concept quota. |
 | **Range Study** | A real multi-route site must demonstrate meaningful creative range. | Dependable truth, navigation, accessibility, and operations; an explicit route-family record; route proof chosen by uncertainty; real-path checks; and a matched route atlas. |
 | **Batch Study** | A controlled evaluation compares at least three unrelated website briefs; it is not the ordinary workflow for producing several client sites. | Frozen isolated briefs/builds, project-declared capture classes, renderer/public-manifest-bound captures, capture-set-bound site observations, a later neutral-label whole-system review, and a separate human contextual disposition. It does not produce an automatic aesthetic result. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Stronger task, state, content, specialist, recovery, and real-user evidence. |
-| **Asset-led** | Material imagery, video, audio, fonts, documents, maps, embeds, or generated media needs a durable record. | Type-specific provenance, rights, privacy, factual, approval, delivery, accessibility, and generated-media gates. |
+| **Asset-led** | Physical or sensory recognition materially depends on media, the owner asks for photography/rich media, or imagery, video, audio, fonts, documents, maps, embeds, or generated media otherwise needs a durable record. | A usable bound asset before broad implementation, followed by type-specific provenance, rights, privacy, factual, approval, delivery, accessibility, and generated-media gates. |
 
-Quick and Standard are proportional base presets. Showcase, Connected Public
-Experience, Project Contrast, Direction Challenge, Range Study, Batch Study,
-High-risk, and Asset-led can apply together. Adding a capability cannot silently
-remove a stronger one.
+Quick and Standard are proportional base presets. Enterprise Candidate applies
+to fresh public websites; Showcase, Connected Public Experience, Project
+Contrast, Direction Challenge, Range Study, Batch Study, High-risk, and
+Asset-led can apply together. Adding a capability cannot silently remove a
+stronger one.
 
 High-visibility or owner-sensitive work still begins at Standard unless the
 brief expressly calls for premium, showcase, high-ambition work or direction
@@ -152,6 +155,58 @@ central, request the cultural-context gate. The producing agent can verify
 sources, terminology, directionality, and rendering but cannot certify its own
 cultural acceptance or invent authority to waive review.
 
+## Pass the prebuild boundary before scaling
+
+The direction proof is allowed to be small. The full route family is not
+allowed to spread until the selected direction-stage evidence is substantive,
+complete, and bound to that proof.
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile enterprise-candidate
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --mark-complete direction --binding-kind artifact --binding-id "<PROOF_ID>" --binding-path "<PROJECT_RELATIVE_PROOF_PATH>" --completion-owner "<REVIEWER>" --limitations "<KNOWN_LIMITS_OR_NONE_WITHIN_SCOPE>"
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
+```
+
+Use only the opt-in initializer forms that match the brief:
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile connected-public-experience
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile direction-challenge
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile showcase --trigger owner-recurrence-requirement
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --record assets --evidence-capability asset-led
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --print-asset-example
+```
+
+For Asset-led work, initialize the applicable base profile first, then run the
+incremental `--record assets --evidence-capability asset-led` command. The
+printed manifest is a schema-valid, deliberately release-blocked example, not
+project evidence; replace it with the exact approved files and provenance.
+
+Close every failure the command reports. Do not treat a selected capability, a
+renderer run, or a plan to fill records later as permission to continue. In
+particular:
+
+- Standard or stronger work needs its selected `direction.md` complete and
+  hash-bound. Any selected exploration, taste-calibration, direction-proof, or
+  claims record must also be complete rather than decorative paperwork.
+- Asset-led work needs `.design-dna/assets.yml` and at least one usable bound
+  asset; “no photos were supplied” is an unresolved dependency, not an art
+  direction.
+- Direction Challenge must be `reviewed`, with two different roots proven at
+  wide and narrow conditions and its broad-implementation boundary explicitly
+  opened.
+- Applicable Connected Public Experience work must reach `direction-ready`
+  with its selected-root continuity, path, handoffs, truth/status model, and
+  proof plan resolved. Final rendered and functional evidence remains a later
+  requirement.
+- Selected Range and Batch records must replace their packaged scaffolds with
+  project-specific routes, viewports, and bound source material.
+
+After the real implementation and rendered revision, run `--check-ready` for
+the separate final evidence claim. Passing prebuild never supplies an
+automatic aesthetic, accessibility, owner-acceptance, production, or release
+judgment.
+
 ## Use an advanced prompt only when useful
 
 The short command is normally enough. Use this version when you want the
@@ -188,6 +243,33 @@ effects, preserve truth and working behavior, and show me the exact rerendered
 desktop and mobile candidate for review.
 ```
 
+When that response is an accountable owner's rejection, preserve the exact
+rejected public tree and create
+`.design-dna/rejections/<REJECTION_ID>.json` from the packaged
+`owner-rejection-template.json`. Bind the canonical tree manifest and the
+owner's first-party decision evidence, identify the affected relationship
+cluster, and list the facts and functions the replacement must protect. Then
+run:
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/owner_rejection_audit.py" "<PROJECT_ROOT>" --contract ".design-dna/rejections/<REJECTION_ID>.json" --stdout
+```
+
+Build `candidate.files` with the canonical `sha256-tab-lf-v1` algorithm:
+enumerate every regular, non-link file below the rejected public root, record
+its POSIX path relative to that root and the SHA-256 of its exact bytes, sort by
+path, and SHA-256 the UTF-8 stream of
+`<path><TAB><file-sha256><LF>` lines. Store that final digest in
+`candidate.manifest_sha256`. The auditor independently recomputes the file set,
+file hashes, and manifest digest; a listed-but-changed, missing, extra, linked,
+or unsafe file fails closed.
+
+The record is scoped to that exact candidate. It must not convert “these
+compressed headings, hard-shadow cards, and photo absence failed here” into a
+permanent ban on a typeface category, shape, shadow, media choice, or layout.
+An active record keeps the direction reopened; a resolved record requires a
+separate hash-bound owner acceptance decision.
+
 ## Supply useful material
 
 Give the agent whatever is approved and available:
@@ -213,6 +295,21 @@ integrations and present them as real. An explicitly fictional sample may use
 bounded, non-impersonating scenario worldbuilding when its premise and status
 remain unmistakable; it still cannot borrow real people, institutions,
 credentials, endorsements, or operating behavior to manufacture authority.
+
+For Standard or stronger work, make the material decision explicit in
+`direction.md`: whether the subject is physical or sensory, whether the owner
+asked for photography or rich media, the selected material posture, what each
+medium does, what it must not imply, and what internal rationale or backend
+taxonomy must stay off the public surface. A physical/sensory media-light
+exception is valid only for a project reason such as truth, rights, privacy,
+accessibility, visitor-task fit, documentary ethics, or a real performance
+budget, and it needs explicit owner/client approval with an ISO date plus a
+hash-bound first-party decision file. It is not a loophole for inconvenient
+asset work.
+
+For an asset-led Direction Challenge proof, listing an image in a package is
+not enough. The proof record binds the asset and the implementation source, and
+the auditor verifies that the source actually references the asset.
 
 ## Understand creative proof
 

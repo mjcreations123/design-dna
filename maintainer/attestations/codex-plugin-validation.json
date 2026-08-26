@@ -1,15 +1,23 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "record_type": "design-dna-codex-plugin-validation-attestation",
-  "created_at": "2026-08-13T07:49:10Z",
+  "created_at": "2026-08-25T01:52:57Z",
   "package": "design-dna",
-  "release_version": "5.2.0",
+  "release_version": "6.0.0",
   "validator": {
     "logical_id": "plugin-creator/validate_plugin.py",
-    "sha256": "4e84c911479e4d158d723ed8ccc881d3499e580fbf5650e60d379a1a25ac3186",
-    "bytes": 21809,
+    "sha256": "7a75b3339396402ad9a40ddc1e037e01c54e71a53a3bfb22a01b1ca235c50206",
+    "bytes": 22172,
+    "support_files": [
+      {
+        "logical_id": "plugin-creator/identifier_validation.py",
+        "path_suffix": "/skills/.system/plugin-creator/scripts/identifier_validation.py",
+        "sha256": "680ce5b775ee5410ecf808fad40350dc4df2cc4a7003363f4c4c7f9d7c0be918",
+        "bytes": 804
+      }
+    ],
     "trust_policy_path": "maintainer/trust/codex-plugin-validator.json",
-    "trust_policy_sha256": "6bdcae0ce646e0e83909c76b5ab72abd48029b89ad2e08e6f3c5f146185ba242"
+    "trust_policy_sha256": "2a86b7543f7dd3a31a40e77f3997487047351492fc08fa29ebea624d407dc834"
   },
   "python": {
     "implementation": "CPython",
@@ -37,28 +45,29 @@
     "attested-validator-wrapper",
     "external-plugin-creator-validator",
     "plugin-root",
-    "pinned-pyyaml-snapshot"
+    "pinned-pyyaml-snapshot",
+    "pinned-validator-support"
   ],
   "inputs": {
     "plugin_manifest_tree": {
       "path": ".codex-plugin",
-      "sha256": "77e044d323097825793055cdb3aa66989ef40c88bfd6af331477af859e694618",
+      "sha256": "98996029e0770e5bbad32f82e491a4a98b9d590a45ff275e2cb4304ef501e2e2",
       "entry_count": 1,
       "file_count": 1,
-      "byte_count": 1277
+      "byte_count": 1303
     },
     "skills_tree": {
       "path": "skills",
-      "sha256": "d7f242e6ce3c5c347e203fe4a025161b3ee6d5a26231f2f17ca95dc3f8918e95",
-      "entry_count": 153,
-      "file_count": 138,
-      "byte_count": 2670621
+      "sha256": "8389dcd4f0c76fc7469243c4d697aeb24df84cb73adeca902244674d42ce8dff",
+      "entry_count": 171,
+      "file_count": 156,
+      "byte_count": 3100075
     },
     "files": {
       "attestor": {
         "path": "maintainer/scripts/attest_codex_plugin.py",
-        "sha256": "0a0f096eb4bc2a2225d977a0a0c93d1a5e313fd616ee83697f63ecd3e346dd4f",
-        "bytes": 33641
+        "sha256": "463796ce5aef2a8ea63467c636f314f59b9ca6ec247463df35c6d7da680ea033",
+        "bytes": 37380
       },
       "cache_preflight": {
         "path": "maintainer/scripts/cache_preflight.py",
@@ -67,23 +76,23 @@
       },
       "common": {
         "path": "maintainer/scripts/common.py",
-        "sha256": "6a21a6bab45c576cd875fe80023f65ca6dd28992dec115a6f426b190591ca993",
-        "bytes": 16458
+        "sha256": "6b04e6b84b2297705cc270d6f4049053dd92e5ef2a652b36f938b754207cc15c",
+        "bytes": 16473
       },
       "attestation_schema": {
         "path": "maintainer/schemas/codex-plugin-validation-attestation.schema.json",
-        "sha256": "95a5d81b67d3233409784c9d713747202025506a1513b7da26a4d8e28978c7af",
-        "bytes": 7910
+        "sha256": "0463c2b7dcc4f20eed57c7c6f679187c2ed356405a22c107206e0bc4c893bc65",
+        "bytes": 8799
       },
       "trust_schema": {
         "path": "maintainer/schemas/codex-validator-trust.schema.json",
-        "sha256": "e8e33ae5f08b094f4b31fd7efff288a666d51183079ae20ab4bb12c578b28db6",
-        "bytes": 1187
+        "sha256": "b6f235e2c742af82a2bfb0d2b7e70746421f1c2ab8341298a5a63848e0002917",
+        "bytes": 1980
       },
       "trust_policy": {
         "path": "maintainer/trust/codex-plugin-validator.json",
-        "sha256": "6bdcae0ce646e0e83909c76b5ab72abd48029b89ad2e08e6f3c5f146185ba242",
-        "bytes": 630
+        "sha256": "2a86b7543f7dd3a31a40e77f3997487047351492fc08fa29ebea624d407dc834",
+        "bytes": 1234
       }
     }
   },

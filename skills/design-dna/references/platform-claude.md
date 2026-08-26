@@ -16,10 +16,13 @@ set.
   untrusted input.
 - Keep mutable direction and review state in the project, never in the installed
   skill.
-- Claude Code watches existing skill directories and normally picks up edits
-  during the current session. If an edited skill remains stale, start a new
-  conversation or restart Claude Code. Creating a new top-level skill directory
-  may require a restart before discovery.
+- A direct-skill update does not require abandoning the active maintenance
+  conversation: finish source edits, static validation, packaging, and
+  filesystem checks there. To test whether subsequent model behavior actually
+  loaded the new instructions, start a fresh conversation and reinvoke the
+  skill. If the updated behavior is not observed there, restart Claude Code and
+  verify the route; filesystem parity alone does not prove host activation or
+  reload behavior.
 - When testing a packaged development plugin, use `/reload-plugins` after
   editing its components. This does not replace the official strict package
   validation or a fresh conversation for formal evaluation.

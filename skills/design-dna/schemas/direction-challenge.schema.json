@@ -147,7 +147,9 @@
         "content_operation",
         "body_progression",
         "visitor_agency",
-        "surface_consequence"
+        "surface_consequence",
+        "responsive_transformation",
+        "material"
       ],
       "properties": {
         "id": {"$ref": "#/$defs/id"},
@@ -157,7 +159,22 @@
         "content_operation": {"$ref": "#/$defs/nonEmptyString"},
         "body_progression": {"$ref": "#/$defs/nonEmptyString"},
         "visitor_agency": {"$ref": "#/$defs/nonEmptyString"},
-        "surface_consequence": {"$ref": "#/$defs/nonEmptyString"}
+        "surface_consequence": {"$ref": "#/$defs/nonEmptyString"},
+        "responsive_transformation": {"$ref": "#/$defs/nonEmptyString"},
+        "material": {"$ref": "#/$defs/materialStrategy"}
+      }
+    },
+    "materialPosture": {
+      "enum": ["asset-led", "deliberately-media-light", "inherited-system"]
+    },
+    "materialStrategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["posture", "strategy", "truth_boundary"],
+      "properties": {
+        "posture": {"$ref": "#/$defs/materialPosture"},
+        "strategy": {"$ref": "#/$defs/nonEmptyString"},
+        "truth_boundary": {"$ref": "#/$defs/nonEmptyString"}
       }
     },
     "incompatibility": {
@@ -215,7 +232,7 @@
     "proofSlice": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "root_id", "build_id", "purpose", "render_review", "source_snapshot_manifest_sha256", "route", "wide_capture_id", "narrow_capture_id"],
+      "required": ["id", "root_id", "build_id", "purpose", "render_review", "source_snapshot_manifest_sha256", "route", "wide_capture_id", "narrow_capture_id", "material_evidence"],
       "properties": {
         "id": {"$ref": "#/$defs/id"},
         "root_id": {"$ref": "#/$defs/id"},
@@ -225,7 +242,28 @@
         "source_snapshot_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         "route": {"$ref": "#/$defs/projectRoute"},
         "wide_capture_id": {"$ref": "#/$defs/renderCaptureId"},
-        "narrow_capture_id": {"$ref": "#/$defs/renderCaptureId"}
+        "narrow_capture_id": {"$ref": "#/$defs/renderCaptureId"},
+        "material_evidence": {"$ref": "#/$defs/materialEvidence"}
+      }
+    },
+    "materialEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["posture", "assets", "implementation_sources", "rendered_observation"],
+      "properties": {
+        "posture": {"$ref": "#/$defs/materialPosture"},
+        "assets": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/fileRef"}
+        },
+        "implementation_sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": {"$ref": "#/$defs/fileRef"}
+        },
+        "rendered_observation": {"$ref": "#/$defs/nonEmptyString"}
       }
     },
     "selection": {

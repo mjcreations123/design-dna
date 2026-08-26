@@ -862,85 +862,332 @@ class ScannerScopeAndClassificationTests(unittest.TestCase):
                     self.assertNotIn(f"negative/page.{suffix}", by_file)
 
 
-class ScannerDecorativeSectionLabelTests(unittest.TestCase):
-    def label_findings(
+class ScannerPreheadingPublicPurposeTests(unittest.TestCase):
+    def preheading_reviews(
         self,
         result: subprocess.CompletedProcess[str],
     ) -> list[dict[str, object]]:
         return [
             item
-            for item in payload(result)["findings"]
-            if item["rule"] == "repeated-decorative-section-label"
+            for item in payload(result)["manual_review"]
+            if item["check"] == "preheading-public-purpose"
         ]
 
-    def test_decorative_section_labels_are_neutral_at_every_count(self) -> None:
+    def test_optical_study_is_a_contextual_manual_review_not_a_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main><section>
+<p className="eyebrow">The optical study</p>
+<h1>Light, where it earns its place.</h1>
+</section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            result_payload = payload(result)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            self.assertEqual(reviews[0]["file"], "page.tsx")
+            self.assertEqual(reviews[0]["line"], 2)
+            self.assertEqual(reviews[0]["severity"], "low")
+            self.assertIn("not evidence of AI", reviews[0]["reason"])
+            self.assertIn("rendered page", reviews[0]["suggestion"])
+            example = reviews[0]["evidence"]["examples"][0]
+            self.assertEqual(example["path"], "page.tsx")
+            self.assertEqual(example["line"], 2)
+            self.assertEqual(example["text"], "The optical study")
+            self.assertEqual(example["heading"], "Light, where it earns its place.")
+            self.assertEqual(example["relationship"], "immediately-precedes-h1")
+            self.assertIn("class:eyebrow", example["signals"])
+            self.assertTrue(result_payload["review_required"])
+            self.assertTrue(result_payload["source_gate_passed"])
+            self.assertEqual(sum(result_payload["gate_counts"].values()), 0)
+            self.assertNotIn(
+                "repeated-decorative-section-label",
+                {item["rule"] for item in result_payload["findings"]},
+            )
+
+    def test_supported_style_tokens_and_numbered_or_repeated_labels_surface(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main>
+<section><span class="hero-kicker">Materials</span><h2>Built to last</h2></section>
+<section><small className={'overline'}>Neighborhood</small><h2>Made here</h2></section>
+<section><div className={`section-label`}>What follows</div><h2>The work</h2></section>
+<section><p>01 / Context</p><h2>Where this begins</h2></section>
+<section><p>02 / Context</p><h2>Where this leads</h2></section>
+<section><p>Field note</p><h2>First observation</h2></section>
+<section><p>Field note</p><h2>Second observation</h2></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(
+                result.returncode,
+                0,
+                result.stdout + result.stderr,
+            )
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            self.assertEqual(reviews[0]["severity"], "medium")
+            examples = reviews[0]["evidence"]["examples"]
+            self.assertEqual(len(examples), 7)
+            by_text = {item["text"]: item for item in examples}
+            self.assertIn("class:kicker", by_text["Materials"]["signals"])
+            self.assertIn("class:overline", by_text["Neighborhood"]["signals"])
+            self.assertIn("class:section-label", by_text["What follows"]["signals"])
+            self.assertIn(
+                "numbered-or-sequenced-label",
+                by_text["01 / Context"]["signals"],
+            )
+            field_notes = [item for item in examples if item["text"] == "Field note"]
+            self.assertEqual(len(field_notes), 2)
+            self.assertTrue(
+                all(
+                    "repeated-label-pattern" in item["signals"]
+                    and item["repeated_count"] == 2
+                    for item in field_notes
+                )
+            )
+            self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
+
+    def test_backend_category_class_and_data_attribute_are_hints_not_exemptions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main><section><div className="hero-copy">
+<p className="category" data-category="optical">The optical study</p>
+<h2>Light, where it earns its place.</h2>
+</div></section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            example = reviews[0]["evidence"]["examples"][0]
+            self.assertEqual(example["text"], "The optical study")
+            self.assertEqual(example["class_tokens"], ["category"])
+            self.assertEqual(
+                example["semantic_hints"],
+                ["attribute:data-category", "class-token:category"],
+            )
+            self.assertIn("semantic-purpose-hint", example["signals"])
+            self.assertNotIn(
+                "class:unrecognized-preheading-token",
+                example["signals"],
+            )
+            self.assertIn("only a semantic hint", reviews[0]["suggestion"])
+            self.assertTrue(payload(result)["source_gate_passed"])
+            self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
+
+    def test_source_and_state_data_attributes_are_review_hints(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.html").write_text(
+                """\
+<main>
+  <section><p data-source="brief">The optical study</p><h2>Light bends here.</h2></section>
+  <section><span data-state="internal">Material study</span><h2>Water changes the path.</h2></section>
+</main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            examples = {
+                item["text"]: item for item in reviews[0]["evidence"]["examples"]
+            }
+            self.assertIn(
+                "attribute:data-source",
+                examples["The optical study"]["semantic_hints"],
+            )
+            self.assertIn(
+                "attribute:data-state",
+                examples["Material study"]["semantic_hints"],
+            )
+            self.assertTrue(
+                all(
+                    "semantic-purpose-hint" in item["signals"]
+                    for item in examples.values()
+                )
+            )
+            self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
+
+    def test_form_labels_bound_to_controls_are_not_preheading_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main><section>
+  <label class="field-label" for="email">Email address</label>
+  <p>We use this only for the requested reply.</p>
+  <label className="field-label" htmlFor="phone">Phone number</label>
+  <p>Include the area code.</p>
+  <label className="field-label">Preferred day <input name="day" /></label>
+  <p>Choose any weekday.</p>
+</section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(self.preheading_reviews(result), [])
+            self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
+
+    def test_unique_unknown_class_surfaces_without_a_known_style_token(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main><section>
+<span className="prelude">The optical study</span>
+<h2>Light, where it earns its place.</h2>
+</section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            example = reviews[0]["evidence"]["examples"][0]
+            self.assertEqual(example["class_tokens"], ["prelude"])
+            self.assertEqual(example["semantic_hints"], [])
+            self.assertIn(
+                "class:unrecognized-preheading-token",
+                example["signals"],
+            )
+            self.assertEqual(example["relationship"], "immediately-precedes-h2")
+
+    def test_section_leading_label_before_body_paragraph_surfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.html").write_text(
+                """\
+<main><section>
+<span class="prelude">Our approach</span>
+<p>We repair the exact part that failed.</p>
+</section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            example = reviews[0]["evidence"]["examples"][0]
+            self.assertEqual(example["target_element"], "p")
+            self.assertEqual(
+                example["relationship"],
+                "section-leading-label-before-p",
+            )
+            self.assertTrue(example["section_leading"])
+            self.assertIn("section-leading-body-label", example["signals"])
+
+    def test_simple_static_wrapper_between_label_and_heading_surfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            (project / "page.tsx").write_text(
+                """\
+<main><section>
+<span className="prelude">Materials</span>
+<div className="heading-frame"><header><h2>Built to last</h2></header></div>
+</section></main>
+""",
+                encoding="utf-8",
+            )
+            result = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            reviews = self.preheading_reviews(result)
+            self.assertEqual(len(reviews), 1)
+            example = reviews[0]["evidence"]["examples"][0]
+            self.assertEqual(example["wrapper_tags"], ["div", "header"])
+            self.assertEqual(
+                example["relationship"],
+                "precedes-h2-through-static-wrapper",
+            )
+            self.assertEqual(example["target_text"], "Built to last")
+
+    def test_built_output_html_is_reviewed_only_when_explicitly_included(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            built = project / "dist"
+            built.mkdir()
+            (project / "source.js").write_text("export const ready = true;\n", encoding="utf-8")
+            (built / "index.html").write_text(
+                '<main><section><small class="prelude">The optical study</small>'
+                '<h1>Light, where it earns its place.</h1></section></main>',
+                encoding="utf-8",
+            )
+
+            excluded = run_scan(project, "--json", "--fail-on", "low")
+            self.assertEqual(excluded.returncode, 0, excluded.stdout + excluded.stderr)
+            self.assertEqual(self.preheading_reviews(excluded), [])
+
+            included = run_scan(
+                project,
+                "--json",
+                "--fail-on",
+                "low",
+                "--built-output",
+            )
+            self.assertEqual(included.returncode, 0, included.stdout + included.stderr)
+            reviews = self.preheading_reviews(included)
+            self.assertEqual(len(reviews), 1)
+            self.assertEqual(reviews[0]["file"], "dist/index.html")
+            self.assertEqual(
+                reviews[0]["evidence"]["examples"][0]["text"],
+                "The optical study",
+            )
+
+    def test_label_without_a_following_public_content_relationship_does_not_surface(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
                 """\
 <section><p className="eyebrow">Our approach</p></section>
-<section><span class="hero-kicker">Materials</span></section>
+<section><span class="hero-kicker">Materials</span><figure><img alt="" /></figure></section>
 <section><small className={'overline'}>Neighborhood</small></section>
-<section><div className={`section-label`}>What follows</div></section>
 """,
                 encoding="utf-8",
             )
             result = run_scan(project, "--json", "--fail-on", "low")
-            self.assertEqual(
-                result.returncode,
-                0,
-                result.stdout + result.stderr,
-            )
-            findings = self.label_findings(result)
-            self.assertEqual(findings, [])
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(self.preheading_reviews(result), [])
             self.assertFalse(payload(result)["review_required"])
             self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
-    def test_label_threshold_is_scoped_per_renderable_route(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            project = Path(temporary)
-            for index in range(4):
-                (project / f"route-{index}.html").write_text(
-                    '<main><p class="eyebrow">One useful label</p></main>',
-                    encoding="utf-8",
-                )
-            result = run_scan(project, "--json", "--fail-on", "low")
-            self.assertEqual(
-                result.returncode,
-                0,
-                result.stdout + result.stderr,
-            )
-            self.assertEqual(self.label_findings(result), [])
-
-    def test_below_threshold_does_not_trigger(self) -> None:
-        for count in (1, 3):
-            with self.subTest(count=count), tempfile.TemporaryDirectory() as temporary:
-                project = Path(temporary)
-                (project / "page.tsx").write_text(
-                    "\n".join(
-                        f'<p className="eyebrow">Detail {index}</p>'
-                        for index in range(count)
-                    ),
-                    encoding="utf-8",
-                )
-                result = run_scan(project, "--json", "--fail-on", "low")
-                self.assertEqual(
-                    result.returncode,
-                    0,
-                    result.stdout + result.stderr,
-                )
-                self.assertEqual(self.label_findings(result), [])
-                self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
-
-    def test_obvious_semantic_labels_and_statuses_do_not_trigger(self) -> None:
+    def test_strong_structural_semantics_do_not_trigger(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             (project / "page.tsx").write_text(
                 """\
-<p className="status eyebrow" role="status">Open</p>
-<span className="priority-kicker">High</span>
-<div className="taxonomy overline">Topics</div>
-<p className="step section-label">Step 2 of 4</p>
+<main>
+<nav><span className="eyebrow">Home</span><h2>Breadcrumb target</h2></nav>
+<section><time className="eyebrow" dateTime="2026-08-23">August 23, 2026</time><h2>News</h2></section>
+<section><p className="date eyebrow">August 23, 2026</p><h2>News archive</h2></section>
+<section><p className="status eyebrow" role="status">Open</p><h2>Applications</h2></section>
+<section><button className="filter kicker" aria-selected="true">Recent</button><h2>Results</h2></section>
+<section><button className="overline" role="tab">Details</button><h2>Panel</h2></section>
+<section><p className="step eyebrow">Step 2 of 4</p><h2>Address</h2></section>
+<fieldset><legend className="overline">Contact details</legend><h2>Application</h2></fieldset>
+<section><p>Short introduction</p><p>The body continues here.</p></section>
+</main>
 """,
                 encoding="utf-8",
             )
@@ -950,7 +1197,8 @@ class ScannerDecorativeSectionLabelTests(unittest.TestCase):
                 0,
                 result.stdout + result.stderr,
             )
-            self.assertEqual(self.label_findings(result), [])
+            self.assertEqual(self.preheading_reviews(result), [])
+            self.assertFalse(payload(result)["review_required"])
             self.assertEqual(sum(payload(result)["gate_counts"].values()), 0)
 
 

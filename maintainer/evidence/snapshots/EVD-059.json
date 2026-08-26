@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-059",
+  "retrieved": "2026-08-23",
+  "url": "https://support.apple.com/guide/personal-safety/manage-location-metadata-in-photos-ips0d7a5df82/web",
+  "locator": "Apple Personal Safety User Guide, Manage location metadata in Photos, published October 2025",
+  "content_kind": "maintainer_summary",
+  "summary": "Apple documents that photos and videos can embed location coordinates and that recipients may be able to access that metadata. Design DNA therefore treats planned-public media privacy as both a visible-content and delivered-file review rather than assuming a visually safe image is metadata-safe."
+}

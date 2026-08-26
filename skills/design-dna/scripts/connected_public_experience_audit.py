@@ -23,7 +23,8 @@ from typing import Any
 
 
 ARTIFACT_TYPE = "design-dna-connected-public-experience-audit"
-TOOL_VERSION = "3"
+PREBUILD_ARTIFACT_TYPE = "design-dna-connected-public-experience-prebuild-audit"
+TOOL_VERSION = "4"
 DEFAULT_CONTRACT = ".design-dna/connected-public-experience.json"
 DEFAULT_OUTPUT = ".design-dna/evidence/connected-public-experience-audit.json"
 MAX_CONTRACT_BYTES = 2 * 1024 * 1024
@@ -34,7 +35,7 @@ CAPTURE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]{0,47}$")
 CAPABILITY_PATTERN = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 APPLICABILITY_STATUSES = {"applicable", "not-applicable", "blocked"}
-RECORD_STATUSES = {"draft", "reviewed", "blocked"}
+RECORD_STATUSES = {"draft", "direction-ready", "reviewed", "blocked"}
 ROOT_STRATEGIES = {"not-required", "each-root-model", "named-invariant"}
 STAFF_STATUSES = {"not-requested", "requested", "blocked"}
 OPERATE_MODES = {"not-required", "operate", "blocked"}
@@ -352,7 +353,12 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
     if not substantive(root["created_with"], 1):
         issue(errors, "invalid-created-with", "$.created_with", "Must name the creating Design DNA version.")
     if root["record_status"] not in RECORD_STATUSES:
-        issue(errors, "invalid-record-status", "$.record_status", "Must be draft, reviewed, or blocked.")
+        issue(
+            errors,
+            "invalid-record-status",
+            "$.record_status",
+            "Must be draft, direction-ready, reviewed, or blocked.",
+        )
     if root["classification"] not in {"internal", "confidential"}:
         issue(errors, "invalid-classification", "$.classification", "Must be internal or confidential.")
 
@@ -762,13 +768,20 @@ def load_render_review_adapter() -> Any:
     adapter_path = Path(__file__).with_name("project_contrast_audit.py")
     if not adapter_path.is_file() or adapter_path.is_symlink():
         raise AuditError("The packaged schema-3 rendered-review verifier is unavailable.")
-    specification = importlib.util.spec_from_file_location(module_name, adapter_path)
-    if specification is None or specification.loader is None:
+    specification = importlib.util.spec_from_loader(
+        module_name,
+        loader=None,
+        origin=str(adapter_path),
+    )
+    if specification is None:
         raise AuditError("The packaged schema-3 rendered-review verifier could not be loaded.")
     module = importlib.util.module_from_spec(specification)
+    module.__file__ = str(adapter_path)
     sys.modules[module_name] = module
     try:
-        specification.loader.exec_module(module)
+        source = adapter_path.read_bytes()
+        code = compile(source, str(adapter_path), "exec", dont_inherit=True)
+        exec(code, module.__dict__)
     except (OSError, TypeError, ValueError, ImportError) as exc:
         sys.modules.pop(module_name, None)
         raise AuditError(f"The packaged schema-3 rendered-review verifier could not initialize: {exc}") from exc
@@ -989,6 +1002,366 @@ def safe_output_path(project: Path, output: str) -> Path:
     except (OSError, ValueError) as exc:
         raise AuditError("Audit output parent escaped the project root during creation.") from exc
     return target
+
+
+def audit_prebuild_payload(
+    project: Path,
+    payload: object,
+    active_capabilities: set[str] | frozenset[str] | tuple[str, ...] = (),
+    *,
+    capability_context: str = "caller",
+) -> dict[str, object]:
+    """Return a no-write implementation gate for the connected experience plan.
+
+    This deliberately stops before final-closure evidence. A project can earn
+    ``direction-ready`` only after applicability and the selected public path
+    are resolved; final ``reviewed`` readiness still belongs to
+    :func:`audit_payload` after implementation and evidence capture.
+    """
+
+    errors, contract = validate_contract_payload(payload)
+    report: dict[str, object] = {
+        "artifact_type": PREBUILD_ARTIFACT_TYPE,
+        "tool_version": TOOL_VERSION,
+        "phase": "prebuild",
+        "automatic_aesthetic_pass": False,
+        "structural_valid": not errors,
+        "ready": False,
+        "implementation_authorized": False,
+        "findings": [],
+        "gaps": [],
+        "limitations": [
+            "This no-write gate checks whether connected public continuity is resolved enough to begin implementation; it does not approve visual quality, claims, security, live operation, or production release.",
+            "A prebuild pass does not satisfy final closure. Use the final Connected Public Experience readiness audit after rendering and functional verification.",
+        ],
+    }
+    findings: list[dict[str, object]] = report["findings"]  # type: ignore[assignment]
+    gaps: list[dict[str, str]] = report["gaps"]  # type: ignore[assignment]
+    if errors or contract is None:
+        findings.extend({**entry, "blocking": True} for entry in errors)
+        return report
+
+    capabilities = set(active_capabilities)
+    report["active_capabilities"] = sorted(capabilities)
+    report["capability_context"] = capability_context
+    if capability_context == "missing":
+        gap(
+            gaps,
+            "active-capability-context-missing",
+            "Prebuild auditing needs a safe state.json capability selection or an explicit active capability context.",
+        )
+    elif capability_context == "mismatch":
+        gap(
+            gaps,
+            "active-capability-context-mismatch",
+            "Explicit capabilities do not equal the safe state.json selection; implementation cannot use an overridden project context.",
+        )
+    elif capability_context == "invalid-state":
+        gap(
+            gaps,
+            "active-capability-context-invalid",
+            "state.json cannot safely provide the active capability selection; implementation cannot infer the missing project context.",
+        )
+    if "connected-public-experience" not in capabilities:
+        gap(
+            gaps,
+            "connected-capability-not-active",
+            "Connected Public Experience cannot authorize implementation unless it is explicitly active in the project capability context.",
+        )
+
+    record_status = contract["record_status"]
+    report["record_status"] = record_status
+    if record_status == "draft":
+        gap(
+            gaps,
+            "record-not-direction-ready",
+            "A draft Connected Public Experience record cannot authorize implementation; resolve it and mark it direction-ready.",
+        )
+    elif record_status == "blocked":
+        gap(
+            gaps,
+            "record-blocked",
+            "A blocked Connected Public Experience record cannot authorize implementation.",
+        )
+
+    applicability = contract["applicability"]
+    assert isinstance(applicability, dict)
+    status = applicability["status"]
+    report["applicability"] = status
+    if status == "blocked":
+        for field in ("reason", "blocking_dependency", "next_action"):
+            if not substantive(applicability[field]):
+                gap(
+                    gaps,
+                    f"blocked-{field}-missing",
+                    f"Blocked applicability needs a substantive {field.replace('_', ' ')}.",
+                )
+        gap(
+            gaps,
+            "connected-public-experience-blocked",
+            "Connected public applicability remains unresolved; do not begin implementation.",
+        )
+        return report
+
+    if not substantive(applicability["reason"]):
+        gap(
+            gaps,
+            (
+                "not-applicable-reason-missing"
+                if status == "not-applicable"
+                else "applicability-reason-missing"
+            ),
+            "Resolve applicability with a substantive, project-specific reason.",
+        )
+    if applicability["blocking_dependency"] is not None:
+        gap(
+            gaps,
+            "resolved-applicability-retains-blocker",
+            "Applicable or not-applicable status cannot retain a blocking dependency; use blocked until it is resolved.",
+        )
+    if applicability["next_action"] is not None:
+        gap(
+            gaps,
+            "resolved-applicability-retains-next-action",
+            "Applicable or not-applicable status cannot retain a blocker-resolution next action.",
+        )
+
+    if status == "not-applicable":
+        ready = not gaps
+        report["ready"] = ready
+        report["implementation_authorized"] = ready
+        return report
+
+    pre = contract["pre_direction_constraints"]
+    assert isinstance(pre, dict)
+    questions = pre["direct_entry_questions"]
+    if not isinstance(questions, list) or not questions or not all(
+        isinstance(item, dict)
+        and substantive(item.get("entry"))
+        and substantive(item.get("question"))
+        for item in questions
+    ):
+        gap(
+            gaps,
+            "direct-entry-questions-missing",
+            "Applicable continuity needs substantive direct-entry questions before direction implementation.",
+        )
+    constraints = pre["truth_and_entity_constraints"]
+    if not isinstance(constraints, list) or not constraints or not all(
+        isinstance(item, dict)
+        and substantive(item.get("subject"))
+        and substantive(item.get("constraint"))
+        and substantive(item.get("authority"))
+        for item in constraints
+    ):
+        gap(
+            gaps,
+            "truth-entity-constraints-missing",
+            "Applicable continuity needs substantive truth and entity constraints with named authority before implementation.",
+        )
+
+    selected = contract["selected_root_continuity"]
+    assert isinstance(selected, dict)
+    selected_root_id = selected["selected_root_id"]
+    if not valid_id(selected_root_id) or not substantive(selected["continuity_model"]):
+        gap(
+            gaps,
+            "selected-root-model-missing",
+            "Applicable continuity needs the selected root ID and a project-specific continuity model before implementation.",
+        )
+    handoffs = selected["handoffs_or_resets"]
+    if not isinstance(handoffs, list) or not handoffs or not all(
+        isinstance(item, dict)
+        and all(
+            substantive(item.get(field))
+            for field in ("from", "to", "carry_or_reset", "visitor_reason")
+        )
+        for item in handoffs
+    ):
+        gap(
+            gaps,
+            "handoff-reset-missing",
+            "Applicable continuity needs at least one named handoff or intentional reset with a visitor reason before implementation.",
+        )
+    meaningful_path = selected["meaningful_path"]
+    if not isinstance(meaningful_path, dict) or not all(
+        substantive(meaningful_path.get(field))
+        for field in (
+            "arrival",
+            "decision",
+            "action",
+            "outcome",
+            "recovery_or_continuation",
+        )
+    ):
+        gap(
+            gaps,
+            "meaningful-path-missing",
+            "Record arrival, decision, action, outcome, and recovery or continuation for the representative path before implementation.",
+        )
+    crosswalk = selected["state_authority_crosswalk"]
+    if not isinstance(crosswalk, list) or not crosswalk or not all(
+        isinstance(item, dict)
+        and substantive(item.get("subject"))
+        and substantive(item.get("authority"))
+        and item.get("delivery") in DELIVERY_STATUSES
+        and item.get("content") in CONTENT_STATUSES
+        and item.get("behavior") in BEHAVIOR_STATUSES
+        for item in crosswalk
+    ):
+        gap(
+            gaps,
+            "status-crosswalk-missing",
+            "Applicable continuity needs a nonempty delivery/content/behavior authority crosswalk before implementation.",
+        )
+
+    proof_plan = selected["proof_plan"]
+    plan_ids: list[str] = []
+    proof_plan_valid = isinstance(proof_plan, dict)
+    if proof_plan_valid:
+        for kind in ("rendered", "functional"):
+            items = proof_plan.get(kind)
+            if (
+                not isinstance(items, list)
+                or not items
+                or not all(
+                    isinstance(item, dict)
+                    and valid_id(item.get("id"))
+                    and substantive(item.get("purpose"))
+                    for item in items
+                )
+            ):
+                proof_plan_valid = False
+            elif isinstance(items, list):
+                plan_ids.extend(str(item["id"]) for item in items)
+    if not proof_plan_valid:
+        gap(
+            gaps,
+            "proof-plan-missing",
+            "Applicable continuity needs nonempty rendered and functional proof plans with stable IDs and substantive purposes before implementation.",
+        )
+    elif len(plan_ids) != len(set(plan_ids)):
+        gap(
+            gaps,
+            "duplicate-proof-plan-id",
+            "Rendered and functional prebuild proof-plan IDs must be unique so final evidence cannot bind ambiguously.",
+        )
+
+    if "direction-challenge" in capabilities:
+        try:
+            _expected_roots, chosen_root = direction_challenge_context(project)
+        except AuditError as exc:
+            gap(
+                gaps,
+                "direction-challenge-roots-unavailable",
+                f"Direction Challenge selection is unavailable for selected-root continuity: {exc}",
+            )
+        else:
+            if not valid_id(chosen_root):
+                gap(
+                    gaps,
+                    "direction-challenge-selected-root-unavailable",
+                    "Active Direction Challenge needs a chosen root before connected implementation.",
+                )
+            elif selected_root_id != chosen_root:
+                gap(
+                    gaps,
+                    "direction-challenge-selected-root-mismatch",
+                    "selected_root_continuity.selected_root_id must equal the active Direction Challenge chosen root before implementation.",
+                )
+
+    root_variation = contract["root_variation"]
+    assert isinstance(root_variation, dict)
+    mapping = root_variation.get("project_contrast_mapping")
+    if (
+        "project-contrast" in capabilities
+        and isinstance(mapping, dict)
+        and mapping.get("status") == "mapped"
+        and mapping.get("selected_root_id") != selected_root_id
+    ):
+        gap(
+            gaps,
+            "project-contrast-selected-root-mismatch",
+            "The Project Contrast selected-root mapping must equal selected_root_continuity.selected_root_id before implementation.",
+        )
+
+    staff = contract["staff_admin_split"]
+    assert isinstance(staff, dict)
+    if staff.get("status") == "blocked":
+        gap(
+            gaps,
+            "staff-admin-blocked",
+            "The connected staff/admin branch remains blocked and cannot be hidden by a direction-ready public path.",
+        )
+    elif staff.get("status") == "requested":
+        if not all(
+            substantive(staff.get(field))
+            for field in ("public_boundary", "back_office_boundary")
+        ):
+            gap(
+                gaps,
+                "staff-admin-boundary-missing",
+                "Requested staff/admin work needs explicit public and back-office boundaries before implementation.",
+            )
+        if staff.get("operate_mode") != "operate":
+            gap(
+                gaps,
+                "operate-mode-required",
+                "Requested staff/admin implementation must use the explicit Operate boundary.",
+            )
+        fixture = staff.get("fixture")
+        if not isinstance(fixture, dict) or fixture.get("status") not in {
+            "approved",
+            "sandbox",
+            "local-fixture",
+        }:
+            gap(
+                gaps,
+                "staff-admin-fixture-missing",
+                "Requested staff/admin implementation needs approved, sandbox, or clearly local nonempty fixture state before implementation.",
+            )
+        elif not all(
+            substantive(fixture.get(field))
+            for field in ("authority", "content_or_state", "boundary")
+        ):
+            gap(
+                gaps,
+                "staff-admin-fixture-empty",
+                "Requested staff/admin fixture planning needs authority, nonempty state, and a truthful boundary before implementation.",
+            )
+        else:
+            descriptor = fixture.get("descriptor")
+            if descriptor is None:
+                gap(
+                    gaps,
+                    "staff-admin-fixture-descriptor-missing",
+                    "Requested staff/admin implementation needs a hash-bound privacy-safe fixture descriptor before implementation.",
+                )
+            else:
+                try:
+                    validate_fixture_descriptor(
+                        project,
+                        descriptor,
+                        fixture,
+                        "staff/admin prebuild fixture descriptor",
+                    )
+                except FixtureDescriptorSemanticMismatch as exc:
+                    gap(
+                        gaps,
+                        "staff-admin-fixture-descriptor-semantic-mismatch",
+                        str(exc),
+                    )
+                except AuditError as exc:
+                    gap(
+                        gaps,
+                        "staff-admin-fixture-descriptor-invalid",
+                        str(exc),
+                    )
+
+    ready = not gaps
+    report["ready"] = ready
+    report["implementation_authorized"] = ready
+    return report
 
 
 def audit_payload(

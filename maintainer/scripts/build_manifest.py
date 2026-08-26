@@ -148,6 +148,23 @@ EXECUTABLE_MAINTAINER_TREES = (
 )
 
 
+def reject_root_project_state_residue(plugin_root: Path) -> None:
+    """Keep project-local Design DNA state out of the distributable package."""
+
+    for name in (".design-dna", ".design-dna.lock"):
+        path = plugin_root / name
+        if entry_exists(path):
+            raise ToolFailure(
+                "release-project-state-residue",
+                (
+                    "Project-local Design DNA state is forbidden at the plugin "
+                    "root because it can contain private paths, review material, "
+                    "process metadata, or ownership tokens."
+                ),
+                path,
+            )
+
+
 def reject_release_compiled_python_residue(
     plugin_root: Path,
     skill_root: Path,
@@ -196,6 +213,30 @@ def stable_bytes(path: Path, *, stop: Path) -> bytes:
     return first
 
 
+def repository_reproducible_records(
+    records: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Drop empty-directory state that Git archives cannot reproduce."""
+
+    required_directories: set[str] = set()
+    for record in records:
+        if record.get("type") != "file":
+            continue
+        parts = str(record["path"]).split("/")
+        for depth in range(1, len(parts)):
+            required_directories.add("/".join(parts[:depth]))
+    normalized = [
+        record
+        for record in records
+        if (
+            record.get("type") == "file"
+            or str(record.get("path")) in required_directories
+        )
+    ]
+    normalized.sort(key=lambda item: str(item["path"]))
+    return normalized
+
+
 def identity_group_sha256(
     plugin_root: Path,
     relative_paths: tuple[str, ...],
@@ -219,11 +260,25 @@ def identity_group_sha256(
                 stable_bytes(path, stop=plugin_root)
             ).hexdigest()
         elif path.is_dir():
-            kind = "directory"
             manifest_function = (
                 eval_content_manifest if include_generated else content_manifest
             )
-            _records, item_digest = manifest_function(path)
+            records, _unportable_digest = manifest_function(path)
+            records = repository_reproducible_records(records)
+            if not records:
+                # A tracked package cannot distinguish an absent directory
+                # from a directory that contains no files.
+                kind = "absent"
+                item_digest = ""
+            else:
+                kind = "directory"
+                item_digest = manifest_content_sha256(records)
+                if item_digest is None:
+                    raise ToolFailure(
+                        "release-identity-directory-invalid",
+                        "Directory identity records could not be hashed.",
+                        path,
+                    )
         elif entry_exists(path):
             raise ToolFailure(
                 "unsupported-release-identity-input",
@@ -257,6 +312,7 @@ def distribution_manifest(
     plugin_root: Path,
 ) -> tuple[list[dict[str, object]], str]:
     """Bind every distributable worktree entry except the circular manifest."""
+    reject_root_project_state_residue(plugin_root)
     excluded = {"maintainer/release-manifest.json"}
 
     def collect() -> list[dict[str, object]]:
@@ -270,25 +326,8 @@ def distribution_manifest(
         ]
         # Git cannot preserve an empty directory. Binding one into the
         # distributable identity makes a clean clone differ from the source
-        # worktree even though every tracked byte is identical. Keep files and
-        # only the directory records needed to parent those files.
-        required_directories: set[str] = set()
-        for record in raw_records:
-            if record.get("type") != "file":
-                continue
-            parts = str(record["path"]).split("/")
-            for depth in range(1, len(parts)):
-                required_directories.add("/".join(parts[:depth]))
-        records = [
-            record
-            for record in raw_records
-            if (
-                record.get("type") == "file"
-                or str(record.get("path")) in required_directories
-            )
-        ]
-        records.sort(key=lambda item: str(item["path"]))
-        return records
+        # worktree even though every tracked byte is identical.
+        return repository_reproducible_records(raw_records)
 
     records = collect()
     if records != collect():
@@ -592,6 +631,7 @@ def package_manifest(
     plugin_root = skill_root.parents[1]
     assert_no_reparse_path(skill_root, stop=plugin_root)
     assert_no_reparse_path(plugin_root)
+    reject_root_project_state_residue(plugin_root)
     if reject_compiled:
         reject_release_compiled_python_residue(plugin_root, skill_root)
     schemas = plugin_root / "maintainer" / "schemas"
@@ -822,6 +862,7 @@ def package_manifest(
         )
     if reject_compiled:
         reject_release_compiled_python_residue(plugin_root, skill_root)
+    reject_root_project_state_residue(plugin_root)
     return manifest
 
 

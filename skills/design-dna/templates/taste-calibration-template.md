@@ -35,6 +35,7 @@ Contrast or Direction Challenge record ready, reviewed, or owner-accepted.
 - Candidate/build and route or surface:
 - Audience situation and public purpose:
 - What should feel credible, desirable, useful, or worth continuing into:
+- Ordinary public/business/category reality this direction must support:
 - Concise project read:
 - Directional risk that a render must settle:
 
@@ -57,6 +58,9 @@ convert this table into a moodboard average or a global preference list.
 - Project material used in the proof:
 - Organizing answer being tested:
 - Consequential observable decision(s):
+- Ordinary body material included so the proof tests reading, comparison,
+  evidence, action, or support rather than only a dramatic opening:
+- Cumulative-intensity risk the full build must not amplify:
 - What would make this direction lose:
 
 For an owner recurrence, rejected direction, or open Showcase, selected and
@@ -70,6 +74,10 @@ counter artifact with a prose claim that an alternative was considered.
 - What the viewer understands, expects, or wants to do:
 - What feels public-facing and project-specific:
 - What feels generic, artificial, maker-facing, visually weak, or wrong:
+- Does the artifact remain plausible for the represented organization without
+  the maker's rationale? Evidence:
+- Dominant recurring device or relationship cluster and whether the full
+  sequence overuses it:
 - Does the narrow result preserve the encounter? Evidence:
 - Limitation or disagreement:
 

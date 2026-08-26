@@ -6,6 +6,7 @@ imagery, maps, screenshots, generated media, and third-party embeds.
 ## Contents
 
 - [Record provenance](#record-provenance)
+- [Inspect visible and embedded privacy](#inspect-visible-and-embedded-privacy)
 - [Generated and synthetic material](#generated-and-synthetic-material)
 - [Preserve truth](#preserve-truth)
 - [Direct and implement](#direct-and-implement)
@@ -87,6 +88,36 @@ embeds; record the type-relevant characteristic in the existing delivery
 field and say `not-applicable` only with a real reason.
 
 Do not treat a public URL as permission to reuse.
+
+## Inspect visible and embedded privacy
+
+For every planned-public or public asset whose source could contain personal,
+client, location, or operational information, inspect both what a visitor can
+see or hear and what the delivered file can disclose.
+
+- Inspect visible pixels, frames, audio, captions, and reflections for people
+  and minors, faces, names, badges, addresses, keys, plates, screens, documents,
+  messages, signatures, medical or financial details, unreleased work, and
+  other project-specific identifiers. Verify the applicable consent, release,
+  authority, or other valid publication basis; do not infer it from possession
+  of the file.
+- Inspect embedded and container metadata, including EXIF, IPTC, XMP, GPS,
+  capture time, device or software identifiers, comments, authors, embedded
+  thumbnails or previews, and the original filename. Treat an uploaded or
+  owner-supplied file as unreviewed until this inspection is complete.
+- Remove sensitive or unnecessary metadata and replace revealing public
+  filenames. Do not blindly destroy intentional orientation, ICC/color data,
+  copyright, attribution, licensing, accessibility, or validated provenance
+  credentials; decide and record what must be preserved, transformed, or
+  omitted.
+- Keep any sensitive original in its authorized private boundary, outside the
+  deployable root. Record the sanitizing or rewriting tool and version, then
+  inspect the output metadata again, open the rewritten pixels or frames, check
+  orientation and color, and hash-bind the exact public file.
+
+Scale the procedure to plausible risk; this is not a demand for speculative
+steganography analysis on every icon. A privacy status closes only the visible
+and embedded risks applicable to that asset.
 
 Rows migrated from asset-manifest schema 1 carry
 `migration_review.required: true` and remain readiness-blocked. Resolve each
@@ -183,6 +214,9 @@ proportionate and do not repeat it through ordinary marketing copy.
   places, interfaces, or events.
 - Do not present a concept render as a real feature or existing place.
 - Verify screenshot data and remove private or stale information.
+- Verify the public file's embedded metadata and filename as well as its visible
+  content; sanitizing the source without rechecking the delivered derivative is
+  not evidence.
 - Label demo data and generated imagery when viewers could mistake them for
   evidence.
 - Keep branded, legal, safety, dietary, allergen, and accessibility claims

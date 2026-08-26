@@ -5,7 +5,229 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
-## 5.3.0 - Unreleased candidate: field evidence and fidelity
+## 6.0.0 - Development candidate: prebuild authorization and material evidence
+
+This is a development candidate, not a release. It supersedes the unpromoted
+`5.5.0` candidate and keeps that candidate's public-copy, integrity, evidence,
+and creative-freedom repairs. The new major version identifies an intentionally
+breaking phase boundary: unresolved direction records can no longer authorize
+broad implementation. Version strings do not claim qualification,
+publication, or owner approval.
+
+### Breaking workflow changes
+
+- Added an executable `--check-prebuild` authorization boundary before broad
+  implementation. Standard-or-stronger direction-stage Markdown records must
+  be substantive, `complete`, and hash-bound to an exact proof artifact;
+  capability-only state, draft records, untouched Range/Batch scaffolds, and
+  an intent to finish evidence later fail closed.
+- Made the material/media/public-copy decision mandatory for non-Quick new work
+  and redesigns. Physical or sensory work and explicit owner requests for
+  photography/rich media select Asset-led unless a project-supported exception
+  is explicitly approved; missing supplied media is an unresolved dependency,
+  not a media-light rationale.
+- A physical/sensory media-light exception now requires a language-neutral
+  project basis, named owner/client approval with an ISO date, and a
+  project-relative, SHA-256-bound first-party decision file containing the
+  exact approval and authority.
+- Direction Challenge now records each root's responsive transformation and
+  material posture. Asset-led proof slices bind actual asset files and
+  implementation sources, and the auditor verifies that the frozen source
+  package contains both and that the source really references the asset.
+  The record must reach `reviewed` and explicitly open its broad-implementation
+  boundary before propagation.
+- Connected Public Experience now has a direction-stage prebuild audit. An
+  applicable record must resolve its selected-root continuity, meaningful
+  visitor path, handoffs, direct-entry and truth constraints, status crosswalk,
+  and rendered/functional proof plans before implementation; final evidence
+  remains a separate later gate.
+- Added a canonical owner-rejection lifecycle that binds first-party authority
+  to the exact rejected public tree, scopes the affected relationship cluster,
+  protects facts and functions, and keeps active reopen distinct from
+  hash-bound owner-confirmed resolution. One rejected candidate cannot create a
+  global style ban.
+
+### Added
+
+- An optional owner-scoped, machine-readable named-pattern contract and
+  fail-closed project audit. When explicitly activated, every owner-defined
+  failed relationship must be controlled before broad implementation and
+  proven absent on the same final build with distinct, fully decoded wide and
+  narrow full-page PNG evidence. Contract drift, signal omission, reordered or
+  placeholder records, capture reuse, build mismatch, and incomplete PNGs all
+  block; the result remains evidence closure, not an AI-authorship detector.
+- Added a visual-grammar variance contract for owner-reported house-style
+  recurrence. It compares actual authorized output rather than hypothetical
+  industry swaps, audits opening/type/action/container/background/route/mobile
+  relationships, and adds explicit whole-route cardification, panelification,
+  and button/link/underline affordance closure without banning any ingredient
+  or creating an inverse template.
+- A required post-render **artifact credibility and cumulative-pattern review**
+  that reads the public surface without producer rationale, tests whether a
+  real visitor would believe the business and category world, audits repeated
+  design machinery and total page intensity across the whole route, and keeps
+  its closure separate from generic specificity review. Producer self-review
+  must identify itself and cannot silently stand in for independent or owner
+  acceptance.
+- A fail-closed behavioral reliability qualification gate that consumes exact
+  schema-v3 runner results from a predeclared matrix, requires at least three
+  trials per case, reports pass-at-one, empirical all-trials probability,
+  exact all-trials pass, blocker rate, and the deterministic worst trial, and
+  refuses empty, partial, mixed-build, tampered, or cherry-picked evidence.
+- Separate `dev`, immutable `regression`, and externally protected
+  `promotion-holdout` partitions plus canonical, semantics-preserving,
+  constraint-preserving, and adversarial prompt-family metadata. Public
+  holdout fixtures or captured results fail closed rather than masquerading as
+  protected promotion evidence.
+- Private provisional perception-and-stakes grounding—likely mistaken
+  category, visitor stakes or dominant uncertainty, and the wrong posture that
+  would betray the brief—plus a final reasoning-to-artifact reconciliation for
+  every concrete consequential design commitment. Neither creates a public
+  label, style slot, complexity target, or beauty score.
+- Cross-project artifact-identity collision checks so a same-project rejection
+  cannot be renamed or forked under a different project ID and laundered into
+  closest-sibling recurrence proof.
+- A dependency-free canonical owner-rejection schema, truthful draft template,
+  exact-tree manifest algorithm, CLI auditor, initializer integration, and
+  adversarial lifecycle regressions.
+- A planning-safe Connected Public Experience `direction-ready` audit surface
+  that reports prebuild authorization without fabricating final rendered or
+  functional closure.
+- Prebuild regressions for draft direction, assets-only state, Range/Batch
+  scaffold leakage, unresolved CPE, material exceptions, nested owner
+  rejections, and asset-led proof packages that list but do not use an image.
+- A contextual **public copy and voice** reference for longer headings and body
+  copy: approved facts and project voice first, construction language kept
+  private, portability and producer-pattern review after the draft, minimum
+  effective edits, read-aloud and rendered checks, and no authorship or
+  punctuation detector.
+- An **Enterprise Candidate** review profile for owner-selected mature public
+  execution, plus a public-copy integrity pass that tests high-attention copy
+  for a public job, approved voice or project anchor, portability, plausible
+  speaker, rendered-corpus fit, and shared-cause revision. It rejects generic
+  brand-manifesto filler without turning slogans, metaphor, or sentence form
+  into a universal blacklist or making financial-scale claims.
+- Pinned, hash-bound source records for Google developer style, dmmulroy's
+  anti-slop repository, Vercel interface guidelines, Taste Skill, Awesome
+  DESIGN.md, Playwright CLI, and the strongest contextual copy-edit method from
+  the supplied anti-slop ranking. The research log records every supplied link
+  as adopt, adapt, discovery-only, or reject.
+- A second benchmark of eleven current frontend and design-review skills, with
+  source-by-source license, commit, mechanism, rejection, and test-evidence
+  notes. New hash-bound records cover the strongest incremental mechanisms from
+  Impeccable, mblode UI Design, and VS Code design philosophy, plus current MDN,
+  W3C APG, Core Web Vitals, Apple metadata-safety, and OWASP file guidance.
+- A non-gating pre-heading scanner candidate that records exact source
+  relationships for eyebrow, kicker, overline, numbered, and repeated labels;
+  protects real categories, dates, sources, status, progress, taxonomy,
+  breadcrumbs, filters, tabs, and legends; requires rendered confirmation; and
+  never infers AI authorship.
+- Project-specific browser/engine/OS/real-device support guidance, explicit
+  Chromium-only evidence scoping for the bundled reviewer, and critical-path
+  checks for materially different supported engines and hardware conditions.
+- Visible-plus-embedded asset privacy review, custom composite-widget routing
+  through the current WAI-ARIA APG with its non-production example boundary,
+  and an observation-to-visitor-effect-to-project-principle critique chain.
+- Release regressions that reject `.design-dna/` and `.design-dna.lock` at the
+  plugin root and normalize untracked empty directories out of reproducible
+  archive identity.
+- Candidate-versus-owner-acceptance reporting in Project Contrast, with pending
+  review allowed to remain honest and nonblocking while rejection and malformed
+  acceptance remain blocking.
+
+### Corrected
+
+- Added a fail-closed cross-record final-build identity gate. A completed
+  visual review now defines the canonical final build; completed Connected
+  Public Experience closure and verified evidence plus any concrete Project
+  Contrast candidate/capture coverage must bind the same build. Direction
+  Challenge proof builds retain their explicit proof-to-build delta, and
+  earlier user research is not falsely promoted to final-build validation.
+- Replaced runtime file-loader imports of bundled auditors with direct source
+  execution that cannot write executable bytecode into an installed skill.
+  Added a non-`-B` child-process regression covering Direction Challenge,
+  Connected Public Experience, owner-rejection, and their nested schema-3
+  adapter path.
+- Made the package auditor's late evidence-validator load independent of the
+  caller's `sys.path`, using the same direct-source, no-bytecode boundary so an
+  isolated or embedded audit cannot fail merely because its script directory
+  was removed after import.
+- Removed the tracked root lock that exposed a private absolute path, PID,
+  timestamps, operation, and owner token; project state is ignored and rejected
+  from distributable package identity.
+- Repaired the Codex Plugin Creator attestation for the validator's real sibling
+  import: the trust policy now pins `identifier_validation.py`, the private
+  execution snapshot supplies it, the release audit compares it, and regression
+  tests reject helper drift, shadowing, and in-snapshot mutation.
+- Replaced the global `[hidden] { display: none !important }` recommendation
+  with scoped guidance that preserves `hidden="until-found"`; corrected aspect-
+  ratio guidance to the used-axis mechanism; and made JavaScript failure
+  behavior depend on public-content versus application contracts.
+- Adapted anti-slop's useful typed-boundary discipline—parsing, precise
+  inference, anti-cast-laundering, substantive assertion evidence, and safe
+  checker integration—without its identifier vocabulary or stack-specific
+  global rules.
+- Made form normalization, submit shortcuts, autofill, viewport units, safe
+  areas, touch behavior, tap feedback, overscroll, font subsetting, media
+  priority, virtualization, and video fallback conditional on real content and
+  support contracts.
+- Narrowed the submit-availability rule for genuinely unsafe or unavailable
+  actions while keeping validation errors discoverable, and added current Core
+  Web Vitals thresholds as dated diagnostics rather than universal budgets or
+  fabricated field evidence.
+- Made client DESIGN.md handoff optional; removed fixed accent, radius, and rule
+  counts; and kept only project-derived sections.
+- Removed volatile free-tier and generated-video provider recommendations from
+  runtime. Current provider terms, rights, privacy, retention, training,
+  security, and cost are verified at the moment of an authorized task.
+- Replaced unsupported named hex and font “default basins” with cause-based,
+  post-render convergence prompts. Familiar ingredients remain neutral and
+  counterexamples remain valid.
+- Extracted the large decision table from the always-loaded entrypoint into a
+  progressively loaded router and removed its duplicate template catalog.
+- Closed the pre-heading scanner's backend-taxonomy loophole: category,
+  taxonomy, status, and similar source names remain contextual evidence rather
+  than exemptions. The manual-only review now also covers bounded wrapper-
+  separated headings, section-leading body copy, unknown label classes, and
+  included built HTML without becoming an authorship detector or release gate.
+- Extended that review to classless `data-source`, `data-state`, and related
+  semantic-looking attributes while exempting real form labels bound to their
+  controls. The written contract now names its narrow structural, date, and
+  progress exemptions instead of implying that no exemption exists.
+- Recast empty grid cells, nested framing, and isolated one-word headline lines
+  as post-render diagnostic prompts. Intentional, convincing, accessible,
+  project-supported composition is preserved; no automatic balancing, filling,
+  flattening, or reshaping rule replaces it.
+- Made tabular figures, protected text pairs, and grid reshaping conditional on
+  rendered need rather than universal recipes. Direct-skill updates may finish
+  maintenance and packaging in the current task; only subsequent behavioral
+  activation testing requires a fresh task, and provisional producer evidence
+  cannot be mislabeled as owner approval.
+- Made test-attestation immutability fail closed, corrected the documented
+  compatibility-before-final-attestation sequence, and removed unsupported
+  claims that an active Codex or Claude session automatically reloads a changed
+  direct skill.
+- Aligned release identity with the Git-ref archive: root project state remains
+  rejected, while tracked nested `.design-dna` test fixtures are no longer
+  silently omitted from the distributable manifest. Root ignore rules are now
+  anchored.
+- Refreshed the MDN Baseline source record to the page's current modification
+  date and corrected evidence documentation to distinguish verbatim excerpts
+  from maintainer summaries.
+
+### Qualification status
+
+- Local structural, unit, evidence, link, and archive-reproducibility checks
+  must be regenerated against the exact candidate. Installed-route parity and
+  host activation remain pending until their own authorized sync and current
+  route evidence exist; a passing temporary installer replay does not satisfy
+  either claim.
+- Remote CI imports, formal controlled Codex and Claude host evaluations,
+  independent rendered reviews, signatures, tag, publication, and promoted
+  release identity remain separate gates. Their absence must remain visible in
+  the compatibility matrix and strict audit.
+
+## 5.3.0 - Superseded unreleased candidate: field evidence and fidelity
 
 This candidate imports the durable findings of a structured review of five
 external resources (an interface-guideline corpus, two prompt-engineering

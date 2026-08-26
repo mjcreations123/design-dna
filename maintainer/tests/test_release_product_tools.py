@@ -311,6 +311,64 @@ class ReleaseArchiveTests(unittest.TestCase):
                 "release-package-worktree-dirty",
             )
 
+    def test_git_archive_includes_tracked_nested_design_dna_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repository = self.make_repository(root)
+            nested = (
+                repository
+                / "maintainer"
+                / "evals"
+                / "fixtures"
+                / "inputs"
+                / "case"
+                / ".design-dna"
+                / "state.json"
+            )
+            nested.parent.mkdir(parents=True)
+            nested.write_text('{"fixture": true}\n', encoding="utf-8")
+            nested_lock = nested.parents[1] / ".design-dna.lock"
+            nested_lock.write_text('{"fixture_lock": true}\n', encoding="utf-8")
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repository),
+                    "add",
+                    "--",
+                    nested.relative_to(repository).as_posix(),
+                    nested_lock.relative_to(repository).as_posix(),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(repository), "commit", "-m", "Add fixture"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            archive_path = root / "release.zip"
+            self.module.git_archive(
+                repository,
+                "HEAD",
+                archive_path,
+                "design-dna-1.2.3",
+            )
+            expected = (
+                "design-dna-1.2.3/maintainer/evals/fixtures/inputs/"
+                "case/.design-dna/state.json"
+            )
+            expected_lock = (
+                "design-dna-1.2.3/maintainer/evals/fixtures/inputs/"
+                "case/.design-dna.lock"
+            )
+            with zipfile.ZipFile(archive_path) as archive:
+                self.assertIn(expected, archive.namelist())
+                self.assertIn(expected_lock, archive.namelist())
+
     def test_release_rejects_line_ending_drift_hidden_by_git_normalization(
         self,
     ) -> None:

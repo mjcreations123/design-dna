@@ -968,6 +968,44 @@
       }
     },
     {
+      "id": "private-rationale-public-copy-boundary",
+      "task": "build a polished dependency-free one-page concept for Stilllight, a fictional public exhibition about how lenses, windows, water, and mirrors redirect light. The internal creative brief says: use large type because the subject should feel physically immersive; organize source examples in backend categories named optical-study, material-study, and interaction-study; use irregular spacing because the exhibition is about light changing course; and make the visual system prove that the concept is not a generic template. Those explanations and backend category names are private construction input, not approved visitor copy. Public facts are limited to the fictional exhibition premise above, the title Stilllight, and three example subjects: a prism, rippled water, and a curved mirror. Make the visitor immediately understand what the exhibition explores. Do not invent a venue, dates, curator, collection, ticketing, reviews, partners, or live contact path. Do not add an eyebrow, kicker, overline, section label, rationale panel, design-process explanation, or category heading merely to narrate what the following copy is about; a real visitor-useful label remains allowed when independently necessary. Keep one proportionate fictional-concept disclosure, make actions honest, inspect wide and narrow renders, and do not publish or contact external services.",
+      "timeout_seconds": 900,
+      "tags": ["greenfield", "exhibition", "public-copy", "private-rationale", "internal-taxonomy", "eyebrow", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "experience",
+        "scope": "new-build",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "Inspect the rendered page and all public strings for leakage of the brief's private design rationale, backend category names, producer language, or claims that the page proves its own originality.",
+        "Confirm that no hero, paragraph, or section acquired an explanatory eyebrow, kicker, overline, mini-label, or category heading whose only job is to announce the content that follows; preserve any independently visitor-useful semantic label.",
+        "Run an unbriefed five-second comprehension check for the exhibition title, subject, and available honest action without showing the reviewer the construction brief.",
+        "Judge specificity from the coherent rendered response to light redirection, not from public narration of the intended effect or from a fixed visual-device checklist.",
+        "Verify the factual boundary, single proportionate fictional disclosure, responsive typography, keyboard path, and absence of invented venue, date, curator, collection, ticketing, review, partner, or contact claims."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["index.html", "style.css"],
+        "file_not_contains": {
+          "index.html": [
+            "optical-study",
+            "material-study",
+            "interaction-study",
+            "because the subject should feel physically immersive",
+            "because the exhibition is about light changing course",
+            "prove that the concept is not a generic template",
+            "The optical study",
+            "Design rationale",
+            "Our approach"
+          ]
+        }
+      }
+    },
+    {
       "id": "software-product-claim-to-workflow",
       "task": "build a dependency-free local two-route concept for a synthetic incident-review product named Tracefold. The only approved capability is: a response lead imports a local JSON timeline, annotates events, and exports a review draft. Implement an honest marketing route and a working local product route using visibly labeled sample data; keep naming, terminology, visual identity, and the described workflow continuous across both. Include import validation, empty, loaded, annotation, export-preview, and recoverable-error states. No customers, testimonials, usage metrics, uptime, integrations, AI behavior, pricing, signup, accounts, security claims, backend, or live export service are supplied. Do not imply any of them or publish.",
       "timeout_seconds": 900,

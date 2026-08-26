@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "evidence_id": "EVD-061",
+  "retrieved": "2026-08-23",
+  "url": "https://arxiv.org/html/2607.22928v2",
+  "locator": "Design Theater v2; abstract, benchmark method, Thinking Fidelity, Principle Adherence, and Design Homogeneity results",
+  "content_kind": "maintainer_summary",
+  "summary": "Across 120 interfaces from five generative UI tools, the study reports substantial gaps between stated design reasoning and implementation, especially for functional requirements, weak recognition of implicit UX principles, and convergence in visual appearance and layout. It validates checking concrete commitments against actual artifacts rather than trusting rationale."
+}

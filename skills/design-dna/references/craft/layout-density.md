@@ -4,6 +4,14 @@ Use this when spatial relationships, rhythm, density, or adaptive structure
 materially affect the experience. It does not prescribe a grid, spacing scale,
 container set, breakpoint count, section sequence, or amount of whitespace.
 
+## Contents
+
+- [Derive the spatial logic](#derive-the-spatial-logic)
+- [Make density fit the situation](#make-density-fit-the-situation)
+- [Adapt when relationships change](#adapt-when-relationships-change)
+- [Stress the real layout](#stress-the-real-layout)
+- [Review without enforcing a house silhouette](#review-without-enforcing-a-house-silhouette)
+
 ## Derive the spatial logic
 
 Classify non-negotiable, inherited, negotiated, and open constraints. Then map
@@ -22,15 +30,22 @@ but they are tools rather than aesthetic obligations. Choose their scope from
 the actual content and maintenance needs. A justified one-off does not have to
 be normalized into a reusable recipe.
 
-Two structural checks that repeatedly catch a layout chosen before its
-content: a grid should have as many cells as it has content, so an empty
-tile pasted in to complete a pleasing shape means the shape was decided
-first and the grid should be reshaped to the real inventory; and
-containers nested inside containers inside containers usually mean the
-composition began from components rather than relationships, so ask what
-each frame is for and keep the one framing move that earns its place.
-Neither is a ban on grids or cards; both are questions about derivation
-that the render answers.
+After a render exists, use empty grid cells and nested frames as diagnostic
+prompts rather than automatic defects. For an empty cell or deliberate void,
+ask whether it creates project-supported pacing, hierarchy, contrast,
+interaction, or form, and whether that role remains convincing as content,
+viewport, and user settings change. Keep an intentional, accessible void;
+reshape the grid only when the render shows an observed failure such as a
+leftover slot from a preselected shape, unconvincing hierarchy or pacing,
+composition that does not fit the project, or a concrete usability problem.
+
+For nested framing, ask whether each layer expresses a distinct boundary,
+context, interaction, or material relationship. Several frames may be the
+right composition when those roles are perceivable, convincing, accessible,
+and supported by the project. Simplify only when the rendered layers are
+redundant, obscure the relationships, consume needed working space, or cause
+another observed failure. Do not fill a void, remove a frame, or reshape a
+composition merely because the pattern exists.
 
 ## Make density fit the situation
 

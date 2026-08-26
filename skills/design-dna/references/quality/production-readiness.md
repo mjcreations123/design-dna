@@ -21,9 +21,12 @@ visual impression or a blanket claim.
 | Staging | Production-like build and configuration tested without exposing real users, secrets, payments, or destructive operations. |
 | Production candidate | Approved facts, assets, integrations, disclosures, operational ownership, and release gates for the intended environment. |
 
-State which routes, roles, locales, devices, integrations, and failure modes
-were assessed. Never call the whole product production-ready from one route,
-screenshot, build, scan, or synthetic score.
+State which routes, roles, locales, integrations, and failure modes were
+assessed. Bind the candidate to a project-specific
+[browser/engine/OS/device support matrix](browser-support.md), including its
+real-versus-emulated conditions and untested rows. Never call the whole product
+production-ready from one route, browser engine, screenshot, build, scan, or
+synthetic score.
 
 ## Complete public discoverability
 
@@ -66,6 +69,8 @@ Confirm ownership and recovery for:
   third parties;
 - reproducible build artifact, configuration, migrations, seed data, and
   compatibility;
+- browser, engine, operating-system, real-device, and assistive-technology
+  support ownership, including fallback and retirement policy;
 - caching, invalidation, redirects, scheduled work, and background jobs;
 - health signals, logs, alerts, analytics governance, and support escalation;
 - backup, restore, rollback, incident, maintenance, and decommission paths;
@@ -75,31 +80,27 @@ Document the expected release sequence, verification signals, rollback
 threshold, and named decision owner. Test production-like behavior through the
 safest available environment.
 
-### Free-tier operational defaults, dated 2026-08
+### Select external services at the time of need
 
-For the operational slots the launch-completeness record forces a decision
-on, these free tiers were verified against their own published limits in
-August 2026. Confirm the vendor's current pricing page at launch; free
-tiers shrink without notice, and the studio's settled stack decisions
-outrank this list. For anything not listed, look it up in the maintained
-free-for.dev catalog rather than trusting memory.
+Provider directories and social lists are discovery leads, not an approved
+stack. Pricing, free tiers, quotas, product ownership, data handling, commercial
+rights, and service quality change too quickly to ship as Design DNA defaults.
+For every form, email, analytics, monitoring, redirect, media, or hosting
+service the project actually needs:
 
-- Forms: Formspree free is 50 submissions per form per month; when a demo
-  outgrows it, Web3Forms and Formspark offer about 250 per month, and
-  FormSubmit is a registration-free plain POST endpoint.
-- Transactional email: Resend free is 3,000 per month with a 100-per-day
-  cap and one custom domain.
-- Address forwarding: ImprovMX or Cloudflare's bundled forwarding route
-  info@ addresses to a real inbox; verify SPF, DKIM, and DMARC with a
-  free mail tester on launch day before declaring email done.
-- Analytics: the host platform's native analytics first; cookieless free
-  tiers (Umami and Seline class) run to a few thousand events per month.
-  Non-commercial-only tools are not usable on client sites.
-- Uptime: UptimeRobot free watches 50 monitors at five-minute intervals.
-- Errors: Sentry free is around 5,000 events per month; a log drain into
-  the host platform covers server-side visibility.
-- Redirect service: a free HTTPS redirect host covers old-domain to
-  new-domain forwarding at handoff when the old host cannot 301 itself.
+- prefer an established project or owner-approved provider when it fits;
+- verify the current first-party product, pricing, terms, privacy, retention,
+  security, region, commercial-use, accessibility, export, and shutdown path;
+- distinguish a genuinely official publisher service from an unaffiliated
+  domain named after a model or product;
+- never create an account, accept terms, upload client material, enter a secret
+  or payment method, or connect production without the required authority;
+- record the verified date, plan limits relevant to the project, accountable
+  owner, fallback, and migration risk.
+
+Escalate vendor selection to the relevant hosting, security, privacy, legal,
+backend, or deployment specialist. A listing in a maintained catalog and a
+label such as “free” or “unlimited” do not establish suitability.
 
 ## Record the release evidence
 

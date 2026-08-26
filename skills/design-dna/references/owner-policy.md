@@ -42,3 +42,11 @@ grammars, media counts, and concept counts belong in an approved project or
 brand scope when the owner genuinely wants them. The bundled policy may ask
 for investigation of a rendered pattern; it must not turn that pattern into a
 universal prohibition or preferred substitute.
+
+An accountable owner may separately maintain
+`~/.design-dna/owner-pattern-contract.json` when they explicitly adopt named
+visual failure relationships across their own work. That contract is not an
+ingredient denylist and does not belong in the portable publisher defaults.
+When active, use the [owner-pattern contract gate](quality/owner-pattern-gate.md)
+and its project-local, contract-hash-bound review. Do not copy those owner
+rules into another installation or client scope.

@@ -79,24 +79,26 @@ not sufficient.
 These are not aesthetics; each is a measurable behavior that repeatedly
 fails on real devices when unaddressed:
 
-- Full-height compositions use dynamic viewport units or an equivalent
-  strategy, because a fixed viewport-height unit ignores collapsing browser
-  chrome on phones and either clips or leaves a dead band.
-- Fixed and full-bleed elements clear the device safe areas (notches, home
-  indicators) via the safe-area environment insets; a docked action bar
-  that ignores them is partially unreachable on common phones.
+- Full-height compositions account for changing mobile browser chrome with
+  dynamic or small viewport units, measured JavaScript, content-driven minimum
+  height, or another tested strategy. Do not replace a working layout with a
+  viewport-unit recipe merely because the unit exists.
+- Fixed and full-bleed elements account for safe areas when the supported
+  devices and display mode expose them; verify the fallback when environment
+  insets are unavailable.
 - Page zoom is never disabled and never capped; pinch zoom is an access
   path, not a layout bug.
-- Text inputs render at a size that does not trigger the mobile browser's
-  compensating zoom on focus (roughly 16 CSS pixels on iOS); a form that
-  makes the page jump when tapped fails this.
-- Tap targets meet the accessibility floor (24 CSS pixels AA, near 44 for
-  important touch controls), and tap-delay removal via touch-action is
-  applied deliberately on interactive elements without disabling gestures
-  the page needs.
-- Scrollable overlays, drawers, and sheets contain their overscroll so the
-  page behind them does not scroll by accident, and the tap highlight is
-  styled deliberately rather than left as the platform flash.
+- Text inputs avoid unwanted focus zoom in the supported mobile browsers.
+  About 16 CSS pixels is a useful iOS diagnostic, not a universal type rule;
+  verify the actual device behavior and preserve user zoom.
+- Tap targets satisfy the applicable accessibility baseline, including its
+  spacing and equivalent-control exceptions. Larger touch areas may be useful
+  for frequent or consequential controls. Use `touch-action` only for a known
+  gesture contract and never disable gestures the page needs.
+- Scrollable overlays, drawers, and sheets contain overscroll when background
+  scrolling would break the task. Preserve a visible platform tap indication
+  or provide an equally clear project-specific response; removing it is not a
+  polish requirement.
 - History navigation restores scroll position and relevant state; Back is
   part of the interface.
 - The support range's wide extreme is actually looked at: an ultra-wide

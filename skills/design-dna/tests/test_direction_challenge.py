@@ -73,6 +73,24 @@ def write_schema3_render_review(
     # Each root gets distinct fixture pixels. The audit must reject a later
     # attempt to relabel one root's proof image as another root's evidence.
     seed = sum(prefix.encode("ascii"))
+    project_root = evidence.parents[1]
+    proof_source = project_root / "proofs" / prefix
+    proof_assets = proof_source / "assets"
+    proof_assets.mkdir(parents=True, exist_ok=True)
+    material_payload = png(
+        32,
+        32,
+        (40 + seed % 160, 70 + seed % 130, 90 + seed % 120, 255),
+    )
+    material_name = f"{prefix}-material.png"
+    material_path = proof_assets / material_name
+    material_path.write_bytes(material_payload)
+    source_payload = (
+        "<!doctype html><title>proof</title>"
+        f"<img src=\"assets/{material_name}\" alt=\"Material proof\">\n"
+    ).encode("utf-8")
+    source_path = proof_source / "index.html"
+    source_path.write_bytes(source_payload)
     wide_payload = png(320, 480, (80 + seed % 140, 40 + seed % 120, 35 + seed % 100, 255))
     narrow_payload = png(240, 640, (25 + seed % 100, 85 + seed % 140, 70 + seed % 120, 255))
     wide_name = f"{prefix}-wide.png"
@@ -81,8 +99,11 @@ def write_schema3_render_review(
     (screenshots_dir / narrow_name).write_bytes(narrow_payload)
     contact_sheet_payload = b"<!doctype html><title>Schema-3 proof fixture</title>\n"
     (evidence / "contact-sheet.html").write_bytes(contact_sheet_payload)
-    source_file = {"path": "index.html", "bytes": 31, "sha256": digest(b"<!doctype html><title>proof</title>\n")}
-    manifest_digest = AUDITOR.source_manifest_digest([source_file])
+    source_files = [
+        {"path": "index.html", "bytes": len(source_payload), "sha256": digest(source_payload)},
+        {"path": f"assets/{material_name}", "bytes": len(material_payload), "sha256": digest(material_payload)},
+    ]
+    manifest_digest = AUDITOR.source_manifest_digest(source_files)
     output_identity = {
         "id": "a" * 64,
         "path_sha256": RENDER_AUDITOR.rendered_output_path_sha256(evidence),
@@ -143,9 +164,9 @@ def write_schema3_render_review(
             "manifest": {
                 "algorithm": "sha256",
                 "manifest_sha256": manifest_digest,
-                "file_count": 1,
-                "total_bytes": source_file["bytes"],
-                "files": [source_file],
+                "file_count": len(source_files),
+                "total_bytes": sum(item["bytes"] for item in source_files),
+                "files": source_files,
                 "excluded_counts": {
                     "hidden_or_source_only_path": 0,
                     "sensitive_or_source_config": 0,
@@ -212,6 +233,18 @@ def write_schema3_render_review(
         "source_snapshot_manifest_sha256": manifest_digest,
         "wide_capture_id": f"{prefix}-wide",
         "narrow_capture_id": f"{prefix}-narrow",
+        "material_evidence": {
+            "posture": "asset-led",
+            "assets": [{
+                "path": material_path.relative_to(project_root).as_posix(),
+                "sha256": digest(material_payload),
+            }],
+            "implementation_sources": [{
+                "path": source_path.relative_to(project_root).as_posix(),
+                "sha256": digest(source_payload),
+            }],
+            "rendered_observation": "The bound material image is present in the frozen source and visible as the proof's primary object at both widths.",
+        },
     }
 
 
@@ -255,6 +288,12 @@ def root(root_id: str, *, logic: str, entry: str, operation: str, body: str, age
         "body_progression": body,
         "visitor_agency": agency,
         "surface_consequence": surface,
+        "responsive_transformation": "The wide composition becomes a vertical sequence while the primary encounter and visitor operation remain intact.",
+        "material": {
+            "posture": "asset-led",
+            "strategy": "A project-specific material image carries the opening recognition task rather than decorating a text shell.",
+            "truth_boundary": "The image may establish material context but may not invent provenance, endorsement, performance, or business facts.",
+        },
     }
 
 
@@ -376,6 +415,7 @@ def prepared_contract(root_path: Path) -> dict:
                 "route": "/artifact/",
                 "wide_capture_id": artifact_render["wide_capture_id"],
                 "narrow_capture_id": artifact_render["narrow_capture_id"],
+                "material_evidence": artifact_render["material_evidence"],
             },
             {
                 "id": "menu-slice",
@@ -387,6 +427,7 @@ def prepared_contract(root_path: Path) -> dict:
                 "route": "/menu/",
                 "wide_capture_id": menu_render["wide_capture_id"],
                 "narrow_capture_id": menu_render["narrow_capture_id"],
+                "material_evidence": menu_render["material_evidence"],
             },
         ],
         "selection": {
@@ -559,10 +600,46 @@ class DirectionChallengeAuditTests(unittest.TestCase):
             second["route"] = first["route"]
             second["wide_capture_id"] = first["wide_capture_id"]
             second["narrow_capture_id"] = first["narrow_capture_id"]
+            second["material_evidence"] = copy.deepcopy(first["material_evidence"])
             report = AUDITOR.audit_payload(project, contract)
             self.assertFalse(report["ready"])
             messages = " ".join(entry["message"] for entry in report["findings"])
             self.assertIn("reuses schema-3 capture", messages)
+
+    def test_asset_led_proof_rejects_packaged_but_unused_image(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(project))
+            proof = contract["proof_slices"][0]
+            source_reference = proof["material_evidence"]["implementation_sources"][0]
+            source_path = project / source_reference["path"]
+            source_payload = b"<!doctype html><title>proof without material</title>\n"
+            source_path.write_bytes(source_payload)
+            source_reference["sha256"] = digest(source_payload)
+
+            report_path = project / proof["render_review"]["file"]["path"]
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            files = report["source_snapshot"]["manifest"]["files"]
+            source_entry = next(item for item in files if item["path"] == "index.html")
+            source_entry.update({
+                "bytes": len(source_payload),
+                "sha256": digest(source_payload),
+            })
+            manifest = report["source_snapshot"]["manifest"]
+            manifest["total_bytes"] = sum(item["bytes"] for item in files)
+            manifest["manifest_sha256"] = AUDITOR.source_manifest_digest(files)
+            proof["source_snapshot_manifest_sha256"] = manifest["manifest_sha256"]
+            proof["render_review"]["file"]["sha256"] = rebind_schema3_report(
+                report_path,
+                report,
+            )
+
+            result = AUDITOR.audit_payload(project, contract)
+            self.assertFalse(result["ready"])
+            self.assertIn(
+                "listing an unused image does not satisfy",
+                " ".join(item["message"] for item in result["findings"]),
+            )
 
     def test_two_roots_cannot_relabel_identical_proof_pixels(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -729,7 +806,7 @@ class DirectionChallengeAuditTests(unittest.TestCase):
             {
                 "id", "root_id", "build_id", "purpose", "render_review",
                 "source_snapshot_manifest_sha256", "route", "wide_capture_id",
-                "narrow_capture_id",
+                "narrow_capture_id", "material_evidence",
             },
             set(schema["$defs"]["proofSlice"]["required"]),
         )
