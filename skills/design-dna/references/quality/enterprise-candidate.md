@@ -33,7 +33,8 @@ still offering a coherent and convincingly designed visitor journey.
 
 Read [Public copy integrity](public-copy-integrity.md) before drafting
 prominent headlines, subheads, brand statements, and actions. A strong visual
-direction does not justify unsupported manifesto copy.
+direction does not justify unsupported manifesto copy, automatic “X reasons”
+framing, or decorative `01 / 02 / 03` rhythm.
 
 Initialize the evidence lane before broad implementation. For an ordinary new
 public build, use the Enterprise Candidate profile:
@@ -111,6 +112,10 @@ the following prompts to name observed causes:
    voice or project anchor? Does each rendered paragraph-like block carry one
    clear thought rather than fill space with generic brand theater? Remove or
    recompose the writing model instead of rewriting around it.
+7. **Numeric rhetoric.** Does every count, ordinal, or step label convey a
+   factual quantity, real comparison, or decision-relevant sequence? Remove
+   invented “X reasons,” “Y steps,” and decorative counters rather than merely
+   changing `01` to `1` or spelling the number out.
 
 Record the disposition in the Enterprise Candidate section of
 `visual-review.md`. A producer may perform this review, but label it honestly

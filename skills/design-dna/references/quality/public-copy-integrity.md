@@ -6,6 +6,11 @@ or a demand that every line become utilitarian. It is a requirement that
 prominent public copy have a real role, a credible source of specificity, and a
 relationship to this visitor's actual encounter.
 
+Natural public writing is not a performance of informality or a word blacklist.
+It is language an accountable person could use for this exact subject, reader,
+and moment: direct enough to understand, specific enough to trust, and quiet
+enough to let real information, imagery, and interaction do their work.
+
 Read [Public copy and voice](../craft/public-copy.md) for the broader writing
 process, [Content and IA](../craft/content-ia.md) for information ownership,
 and [Parseable text](parseable-text.md) for whether visible language belongs on
@@ -35,6 +40,11 @@ source or project anchor, the one point it must communicate, and the action or
 understanding that follows. Include navigation, headings, subheads, body copy,
 CTAs, cards, notices, forms, empty/error/success states, footer material,
 metadata, and alt text when present.
+
+For a count, date, metric, ordinal, or apparent sequence, also record what it
+truthfully denotes and why the visitor needs that quantity or order. A number is
+not a substitute for a content model, hierarchy, or a reason to divide a page
+into modules.
 
 The map is not customer-facing copy and does not need a fixed schema. It exists
 to prevent the common failure where a model writes a polished paragraph only
@@ -80,6 +90,34 @@ or whose real language it is. A sentence such as “OMNIFORM starts with pieces�
 narrates a maker's concept rather than a visitor consequence. These examples
 are review evidence from this owner, not a phrase blacklist: a genuine brand
 line can remain if it has source authority and a real public role.
+
+## Treat numbers as information, not copy scaffolding
+
+Numbers are ordinary, useful public language when they carry real information:
+a price, date, duration, size, quantity, comparison, compatibility rule,
+version, citation, availability boundary, factual evidence, or a task whose
+order changes what the visitor should do. Keep an actual sequence when a reader
+would make a mistake, lose context, or miss a prerequisite without its order.
+
+Do not invent a count because a layout appears to need a device. “Four reasons,”
+“six easy steps,” “three pillars,” `01 / 02 / 03`, a numbered hero, and a row of
+numbered cards are the same failure when the number supplies only campaign
+cadence, visual rhythm, or the appearance of structure. Written-out counts are
+not an exception. A visitor who could delete the number, reorder the items, or
+read the headings without losing a real distinction does not need a numbered
+frame.
+
+When order genuinely matters, use the clearest ordinary treatment that matches
+the task. Plain `1, 2, 3` is often appropriate for instructions; zero padding,
+editorial ordinals, or decorative counters need a real source-owned convention
+such as a formal reference, named edition, date/time format, or an approved
+brand system. A real collection can have a factual item count without making
+every section of the route announce a count.
+
+This is not a ban on lists, quantities, or numbered instructions. It prevents a
+model from writing the page as a generic listicle. If an ordered or counted
+structure does not improve a visitor decision, name the real subject directly,
+group the content by its relationship, or remove the unsupported module.
 
 ## Draft by route job, not by a brand-manifesto template
 
@@ -136,6 +174,8 @@ and alt text in their rendered position. Check for:
 
 - portable slogans, generic uplift, and abstract brand theater;
 - repeated rhetorical templates across unrelated route jobs;
+- invented counts, numbered-listicle framing, and decorative ordinals that do
+  not alter a visitor decision or action order;
 - internal rationale, workflow language, or back-end taxonomy leaking to the
   visitor;
 - a mismatch between the tone of a line and the category, audience, or action;
@@ -156,7 +196,7 @@ repeated brand-manifesto pattern across the route family.
 Record the copy-integrity result in the Public copy integrity closure of
 `visual-review.md`: source/voice basis, complete corpus coverage, high-attention
 three-line-test result, paragraph-density result, repeated-pattern result,
-changes made, remaining truth/approval limits, reviewer relationship, and
-disposition. Routine copy revision is autonomous; pause only when the next
-credible line depends on a missing factual, brand, cultural, legal, or owner
-decision.
+numeric-rhetoric result, changes made, remaining truth/approval limits,
+reviewer relationship, and disposition. Routine copy revision is autonomous;
+pause only when the next credible line depends on a missing factual, brand,
+cultural, legal, or owner decision.

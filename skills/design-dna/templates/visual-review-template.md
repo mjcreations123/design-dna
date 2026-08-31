@@ -32,6 +32,7 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 - [Artifact credibility and cumulative-pattern review](#artifact-credibility-and-cumulative-pattern-review)
 - [Enterprise Candidate closure](#enterprise-candidate-closure-when-selected)
 - [Public copy integrity closure](#public-copy-integrity-closure-required-for-public-candidates)
+- [Numeric rhetoric integrity closure](#numeric-rhetoric-integrity-closure-required-for-public-candidates)
 - [Connected public experience closure](#connected-public-experience-closure-when-selected)
 - [Preship and specificity closure](#preship-and-specificity-closure)
 - [Owner-pattern contract closure](#owner-pattern-contract-closure-when-selected)
@@ -140,7 +141,8 @@ actual candidate against the public reality the brief supports.
   section through one reusable spectacle.
 - Public-copy integrity: source/voice basis, representative high-attention
   strings, deletion/swap/speaker result, repeated-pattern result,
-  rendered-corpus coverage, and remaining truth or approval limits.
+  rendered-corpus coverage, numeric-rhetoric result, and remaining truth or
+  approval limits.
 - Shared-cause rerun: identify the shared component/layout/media/content rule
   behind every material defect and record the family-wide rerender after
   revision.
@@ -181,6 +183,40 @@ truthful, visitor-useful, and proportionate to its route job.
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Complete-corpus observation, root cause, and rerun result |
 | --- | --- | --- | --- |
 | Public copy integrity | applicable / not-applicable / blocked |  |  |
+
+## Numeric rhetoric integrity closure (required for public candidates)
+
+Review every public count, ordinal, sequence label, numbered heading, and
+count-led claim in the final rendered corpus. This is not a ban on quantities,
+lists, or ordinary instructions. It checks whether numbers inform a visitor or
+are merely holding the composition together.
+
+- Coverage: hero and section language, cards, process treatments, navigation,
+  CTAs, promotional bands, footers, forms, status, metadata, and accessible
+  text reviewed across all public routes and relevant states.
+- Semantic purpose: for each retained number or ordered group, name its source
+  and the visitor consequence of knowing the quantity or order. Prices, dates,
+  measurements, factual evidence, references, availability, and genuine task
+  sequences may remain.
+- Listicle framing: remove invented “X reasons,” “Y steps,” “Z pillars,”
+  numbered heroes, and count-led card rows when the count creates only visual
+  rhythm, campaign cadence, or fake structure. Written-out numbers are not an
+  exception.
+- Sequence treatment: use ordinary ordered labels only when order changes the
+  task. Zero-padded labels, editorial ordinals, and decorative counters need a
+  documented source-owned convention; changing `01` to `1` does not close an
+  unsupported sequence.
+- Whole-corpus writing result: confirm that count language does not turn the
+  route family into a generic listicle or replace direct, source-led writing
+  with formulaic promises.
+- Rendered validation: exact wide/narrow evidence after the content-model or
+  writing-rule correction, including any affected sibling routes or states.
+- Numeric rhetoric integrity disposition: keep / revise / reopen direction /
+  reject / blocked
+
+| Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Complete-corpus observation, root cause, and rerun result |
+| --- | --- | --- | --- |
+| Numeric rhetoric integrity | applicable / not-applicable / blocked |  |  |
 
 ## Connected public experience closure (when selected)
 

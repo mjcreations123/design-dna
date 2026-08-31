@@ -79,6 +79,11 @@ proof-shaped authority.
   compositional desire alone is not enough.
   Avoid reusing a domain symbol, token, state letter, or measurement mark as
   decoration when that reuse can imply a real selection or value.
+- Treat counts, ordinals, and “X reasons” or “Y steps” framing as information
+  design, not a default writing pattern. Use them only when the quantity or
+  order changes a visitor's understanding or action. A real procedure may use
+  a plain ordered list; an invented count, zero-padded series, or numbered hero
+  should become a direct subject heading, a truthful grouping, or no module.
 
 When a briefing, tutorial, schematic, worked example, or simplified preview
 teaches a real interface, compare the teaching model with the operable model.

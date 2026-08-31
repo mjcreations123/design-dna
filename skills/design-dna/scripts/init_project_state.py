@@ -59,6 +59,7 @@ CORE_EVIDENCE_CAPABILITIES = {
     "direction-challenge",
     "enterprise-candidate",
     "high-risk",
+    "numeric-rhetoric-integrity",
     "public-copy-integrity",
     "project-contrast",
     "range-study",
@@ -68,6 +69,7 @@ CAPABILITY_PROFILE_COMMANDS = {
     "direction-challenge": "--profile direction-challenge",
     "enterprise-candidate": "--profile enterprise-candidate",
     "high-risk": "--profile high-risk",
+    "numeric-rhetoric-integrity": "--profile enterprise-candidate",
     "public-copy-integrity": "--profile enterprise-candidate",
 }
 EVIDENCE_CAPABILITY_PATTERN = re.compile(
@@ -430,6 +432,7 @@ def inferred_evidence_capabilities(
     ]
     if "enterprise-candidate" in observed:
         capabilities.append("public-copy-integrity")
+        capabilities.append("numeric-rhetoric-integrity")
     return tuple(capabilities)
 
 
@@ -455,17 +458,16 @@ def normalize_evidence_capabilities(
     return normalized
 
 
-def expand_enterprise_copy_integrity(
+def expand_enterprise_public_language_integrity(
     capabilities: tuple[str, ...] | list[str] | set[str],
 ) -> tuple[str, ...]:
-    """Keep the complete-corpus copy gate coupled to enterprise review."""
+    """Keep whole-corpus copy and numeric-rhetoric gates coupled to enterprise review."""
 
     expanded = list(dict.fromkeys(capabilities))
-    if (
-        "enterprise-candidate" in expanded
-        and "public-copy-integrity" not in expanded
-    ):
-        expanded.append("public-copy-integrity")
+    if "enterprise-candidate" in expanded:
+        for capability in ("public-copy-integrity", "numeric-rhetoric-integrity"):
+            if capability not in expanded:
+                expanded.append(capability)
     return tuple(expanded)
 
 
@@ -517,7 +519,7 @@ def evidence_contract_payload(
 ) -> dict[str, object]:
     canonical_profiles = normalize_assurance_profiles(assurance_profiles)
     capabilities = normalize_evidence_capabilities(
-        expand_enterprise_copy_integrity([
+        expand_enterprise_public_language_integrity([
             *inferred_evidence_capabilities(canonical_profiles),
             *requested_capabilities,
         ])
@@ -592,6 +594,14 @@ def validate_evidence_contract(
         raise StateError(
             "invalid-evidence-contract",
             "enterprise-candidate requires public-copy-integrity.",
+        )
+    if (
+        "enterprise-candidate" in capabilities
+        and "numeric-rhetoric-integrity" not in capabilities
+    ):
+        raise StateError(
+            "invalid-evidence-contract",
+            "enterprise-candidate requires numeric-rhetoric-integrity.",
         )
     require_capability_profile_consistency(capabilities, assurance_profiles)
     implied = set(inferred_evidence_capabilities(assurance_profiles))
@@ -1262,6 +1272,11 @@ CAPABILITY_REQUIRED_SECTIONS = {
             "Public copy integrity closure (required for public candidates)"
         },
     },
+    "numeric-rhetoric-integrity": {
+        "visual-review": {
+            "Numeric rhetoric integrity closure (required for public candidates)"
+        },
+    },
     "connected-public-experience": {
         "direction": {"Connected public experience (when selected)"},
         "visual-review": {
@@ -1291,6 +1306,7 @@ CAPABILITY_REQUIRED_SECTIONS = {
 }
 CAPABILITY_REQUIRED_RECORDS = {
     "enterprise-candidate": {"direction", "visual-review"},
+    "numeric-rhetoric-integrity": {"direction", "visual-review"},
     "public-copy-integrity": {"direction", "visual-review"},
     "connected-public-experience": {"connected-public-experience"},
     "project-contrast": {"project-contrast"},

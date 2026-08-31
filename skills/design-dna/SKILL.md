@@ -262,9 +262,13 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   Candidate review. A slogan, headline, or brand statement must earn its place
   through an approved voice or a concrete project/category/visitor anchor;
   do not manufacture a polished brand thesis merely because the draft needs a
-  line above an image. Review the complete visible and accessible public corpus
-  before preview, including rendered paragraph density; do not use text to fill
-  an otherwise empty layout.
+  line above an image. Treat every count, ordinal, and step label as public
+  information: retain it only when a visitor needs a real fact, quantity,
+  comparison, deadline, reference, or action order. Do not manufacture “four
+  reasons,” “six easy steps,” `01 / 02 / 03`, or a numbered hero merely to give
+  the page a cadence. Review the complete visible and accessible public corpus
+  before preview, including rendered paragraph density and numeric/listicle
+  framing; do not use text to fill an otherwise empty layout.
 - Treat an owner's explanation of why a design choice fits as internal
   direction, not customer-facing copy. Do not turn a design rationale, producer
   note, project record, workflow stage, internal-only state, content-model or

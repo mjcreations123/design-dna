@@ -553,6 +553,45 @@ class StateGateHardeningTests(unittest.TestCase):
             ),
         )
 
+    def test_enterprise_contract_couples_copy_and_numeric_rhetoric_review(self) -> None:
+        """Public-candidate review cannot drop the listicle-framing closure."""
+
+        contract = INITIALIZER.evidence_contract_payload(("enterprise-candidate",))
+        self.assertEqual(
+            [
+                "enterprise-candidate",
+                "public-copy-integrity",
+                "numeric-rhetoric-integrity",
+            ],
+            contract["applicable_capabilities"],
+        )
+        self.assertEqual(
+            {"direction", "visual-review"},
+            INITIALIZER.CAPABILITY_REQUIRED_RECORDS["numeric-rhetoric-integrity"],
+        )
+        self.assertEqual(
+            {
+                "Numeric rhetoric integrity closure (required for public candidates)"
+            },
+            INITIALIZER.CAPABILITY_REQUIRED_SECTIONS[
+                "numeric-rhetoric-integrity"
+            ]["visual-review"],
+        )
+
+        malformed = dict(contract)
+        malformed["applicable_capabilities"] = [
+            "enterprise-candidate",
+            "public-copy-integrity",
+        ]
+        with self.assertRaisesRegex(
+            INITIALIZER.StateError,
+            "requires numeric-rhetoric-integrity",
+        ):
+            INITIALIZER.validate_evidence_contract(
+                malformed,
+                ("standard", "enterprise-candidate"),
+            )
+
     def test_migration_preserves_incomplete_persisted_high_risk_profile(self) -> None:
         """Migration reopens evidence instead of guessing a weaker risk level."""
 

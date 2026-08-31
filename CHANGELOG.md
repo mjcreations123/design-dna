@@ -49,6 +49,12 @@ publication, or owner approval.
 
 ### Added
 
+- A required **numeric rhetoric integrity** closure for Enterprise Candidate
+  public work. It distinguishes factual quantities and true task sequences
+  from invented “X reasons,” “Y steps,” zero-padded counters, numbered heroes,
+  and other listicle framing used only as visual or campaign scaffolding.
+  The closure reviews the complete public corpus and requires a shared-cause
+  rewrite rather than a cosmetic `01`-to-`1` substitution.
 - An optional owner-scoped, machine-readable named-pattern contract and
   fail-closed project audit. When explicitly activated, every owner-defined
   failed relationship must be controlled before broad implementation and
