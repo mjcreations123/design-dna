@@ -16,6 +16,7 @@ evidence_contract: "proportional-evidence-v1"
 [behavior](#responsive-accessible-and-functional-behavior) |
 [release](#owner-and-release-state) |
 [logic](#project-derived-organizing-logic) |
+[references](#reference-led-direction-required-for-public-candidates) |
 [decisions](#observable-consequential-design-decisions) |
 [reconciliation](#implementation-reconciliation) |
 [continuity](#connected-public-experience-when-selected) |
@@ -143,6 +144,22 @@ This is internal working evidence. Do not copy its organizing logic, project
 reason, record terms, or implementation vocabulary into public headings,
 labels, categories, captions, or help merely because the record makes the
 decision legible. Public copy needs its own visitor-facing job.
+
+## Reference-led direction (required for public candidates)
+
+Use the completed project-local `reference-dossier.md` record before selecting
+this public direction. The dossier supplies positive and negative evidence; it
+does not turn gallery membership into a design recipe or a customer-facing
+story.
+
+- Reference dossier path and completion status:
+- Selected positive ranks and decision coverage:
+- Project-specific synthesis drawn from the selected references:
+- Negative-counterevidence result and relationship to avoid:
+
+References may guide composition, hierarchy, pacing, media, typography, and
+interaction. Adapt them to the actual project rather than copying a page,
+brand, asset, or treatment section-for-section. Keep this reasoning internal.
 
 ## Observable consequential design decisions
 

@@ -33,6 +33,7 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 - [Enterprise Candidate closure](#enterprise-candidate-closure-when-selected)
 - [Public copy integrity closure](#public-copy-integrity-closure-required-for-public-candidates)
 - [Numeric rhetoric integrity closure](#numeric-rhetoric-integrity-closure-required-for-public-candidates)
+- [Reference-led direction closure](#reference-led-direction-closure-required-for-public-candidates)
 - [Connected public experience closure](#connected-public-experience-closure-when-selected)
 - [Preship and specificity closure](#preship-and-specificity-closure)
 - [Owner-pattern contract closure](#owner-pattern-contract-closure-when-selected)
@@ -143,6 +144,9 @@ actual candidate against the public reality the brief supports.
   strings, deletion/swap/speaker result, repeated-pattern result,
   rendered-corpus coverage, numeric-rhetoric result, and remaining truth or
   approval limits.
+- Reference-led direction: completed project dossier, selected positive subset,
+  negative-counterevidence result, and the project-specific synthesis carried
+  into the final candidate.
 - Shared-cause rerun: identify the shared component/layout/media/content rule
   behind every material defect and record the family-wide rerender after
   revision.
@@ -217,6 +221,31 @@ are merely holding the composition together.
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Complete-corpus observation, root cause, and rerun result |
 | --- | --- | --- | --- |
 | Numeric rhetoric integrity | applicable / not-applicable / blocked |  |  |
+
+## Reference-led direction closure (required for public candidates)
+
+Review the final candidate against the completed `reference-dossier.md` record.
+This is not a claim that a gallery entry is objectively good or that the final
+site should resemble it wholesale. It confirms that public research produced a
+coherent project direction rather than a generic template or a collage of
+borrowed devices.
+
+- Dossier result: path, completion state, active-source access boundary, and
+  selected positive ranks.
+- Positive synthesis: named visitor-facing decisions that arose from the
+  selected references and their project-specific adaptation.
+- Negative counterevidence: the observed weak relationships and final result
+  for the project-specific failure they were meant to prevent.
+- Non-copying boundary: result for brand identifiers, public copy, media,
+  illustration, code, and distinctive whole-page reproduction.
+- Rendered result: wide/narrow review of the selected synthesis after all
+  affected route bodies and states were rerendered.
+- Reference-led direction disposition: keep / revise / reopen direction /
+  reject / blocked
+
+| Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Reference synthesis, counterevidence, and rendered result |
+| --- | --- | --- | --- |
+| Reference-led direction | applicable / not-applicable / blocked |  |  |
 
 ## Connected public experience closure (when selected)
 

@@ -44,6 +44,12 @@ EVIDENCE_CONTRACT_VERSION = 2
 PROPORTIONAL_EVIDENCE_CONTRACT = "proportional-evidence-v1"
 DIRECTION_CONTRACT_PROJECT_DERIVED = "project-derived-organizing-logic-v1"
 DIRECTION_CONTRACT_QUICK_EXEMPT = "quick-repair-exempt"
+REFERENCE_SOURCE_REGISTRY_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "references"
+    / "quality"
+    / "public-reference-sources.json"
+)
 UNIVERSAL_EVIDENCE_ANCHORS = (
     "identity-intent",
     "truth-provenance",
@@ -63,6 +69,7 @@ CORE_EVIDENCE_CAPABILITIES = {
     "public-copy-integrity",
     "project-contrast",
     "range-study",
+    "reference-led-direction",
 }
 CAPABILITY_PROFILE_COMMANDS = {
     "project-contrast": "--profile project-contrast",
@@ -71,6 +78,7 @@ CAPABILITY_PROFILE_COMMANDS = {
     "high-risk": "--profile high-risk",
     "numeric-rhetoric-integrity": "--profile enterprise-candidate",
     "public-copy-integrity": "--profile enterprise-candidate",
+    "reference-led-direction": "--profile enterprise-candidate",
 }
 EVIDENCE_CAPABILITY_PATTERN = re.compile(
     r"[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?"
@@ -163,6 +171,9 @@ RECORD_TEMPLATES = {
     "taste-calibration": (
         "taste-calibration.md", "taste-calibration-template.md",
     ),
+    "reference-dossier": (
+        "reference-dossier.md", "reference-dossier-template.md",
+    ),
     "direction": ("direction.md", "direction-template.md"),
     "direction-proof": ("direction-proof.md", "direction-proof-template.md"),
     "route-family": ("route-family.json", "route-family-template.json"),
@@ -188,7 +199,9 @@ PROFILES = {
     "substantial": ("direction", "visual-review"),
     "greenfield": ("direction", "visual-review"),
     "standard": ("direction", "visual-review"),
-    "enterprise-candidate": ("direction", "visual-review"),
+    "enterprise-candidate": (
+        "direction", "reference-dossier", "visual-review",
+    ),
     "connected-public-experience": (
         "direction",
         "connected-public-experience",
@@ -433,6 +446,7 @@ def inferred_evidence_capabilities(
     if "enterprise-candidate" in observed:
         capabilities.append("public-copy-integrity")
         capabilities.append("numeric-rhetoric-integrity")
+        capabilities.append("reference-led-direction")
     return tuple(capabilities)
 
 
@@ -458,14 +472,18 @@ def normalize_evidence_capabilities(
     return normalized
 
 
-def expand_enterprise_public_language_integrity(
+def expand_enterprise_candidate_requirements(
     capabilities: tuple[str, ...] | list[str] | set[str],
 ) -> tuple[str, ...]:
-    """Keep whole-corpus copy and numeric-rhetoric gates coupled to enterprise review."""
+    """Keep public candidate evidence gates coupled to enterprise review."""
 
     expanded = list(dict.fromkeys(capabilities))
     if "enterprise-candidate" in expanded:
-        for capability in ("public-copy-integrity", "numeric-rhetoric-integrity"):
+        for capability in (
+            "public-copy-integrity",
+            "numeric-rhetoric-integrity",
+            "reference-led-direction",
+        ):
             if capability not in expanded:
                 expanded.append(capability)
     return tuple(expanded)
@@ -519,7 +537,7 @@ def evidence_contract_payload(
 ) -> dict[str, object]:
     canonical_profiles = normalize_assurance_profiles(assurance_profiles)
     capabilities = normalize_evidence_capabilities(
-        expand_enterprise_public_language_integrity([
+        expand_enterprise_candidate_requirements([
             *inferred_evidence_capabilities(canonical_profiles),
             *requested_capabilities,
         ])
@@ -602,6 +620,14 @@ def validate_evidence_contract(
         raise StateError(
             "invalid-evidence-contract",
             "enterprise-candidate requires numeric-rhetoric-integrity.",
+        )
+    if (
+        "enterprise-candidate" in capabilities
+        and "reference-led-direction" not in capabilities
+    ):
+        raise StateError(
+            "invalid-evidence-contract",
+            "enterprise-candidate requires reference-led-direction.",
         )
     require_capability_profile_consistency(capabilities, assurance_profiles)
     implied = set(inferred_evidence_capabilities(assurance_profiles))
@@ -739,12 +765,13 @@ def migrate_evidence_contract(
     return validate_evidence_contract(upgraded, assurance_profiles)
 FRONTMATTER_FILES = {
     "claims.md", "direction.md", "direction-proof.md", "exploration.md",
-    "taste-calibration.md",
+    "taste-calibration.md", "reference-dossier.md",
     "visual-review.md", "user-validation.md", "handoff.md",
 }
 SUBSTANTIVE_RECORDS = {
     "exploration.md": "exploration",
     "taste-calibration.md": "taste-calibration",
+    "reference-dossier.md": "reference-dossier",
     "claims.md": "claims",
     "direction.md": "direction",
     "direction-proof.md": "direction-proof",
@@ -755,6 +782,7 @@ SUBSTANTIVE_RECORDS = {
 SUBSTANTIVE_TEMPLATE_FILES = {
     "exploration-template.md",
     "taste-calibration-template.md",
+    "reference-dossier-template.md",
     "claim-ledger-template.md",
     "direction-template.md",
     "direction-proof-template.md",
@@ -802,6 +830,12 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
         "Direction proof",
         "First-impression and surface-fidelity response",
         "Disposition",
+    },
+    "reference-dossier": {
+        "Research frame",
+        "Ten strong references",
+        "Negative counterexamples",
+        "Selected synthesis",
     },
     "direction": {
         "Identity and outcome",
@@ -897,6 +931,7 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         "Fatal assumption, unresolved owner decision, or release block",
     ),
     "taste-calibration": (),
+    "reference-dossier": (),
     "direction": (
         "Project, candidate/build, and date",
         "Accountable owner and decision scope",
@@ -1145,6 +1180,12 @@ REQUIRED_RECORD_SECTIONS = {
         "First-impression and surface-fidelity response",
         "Disposition",
     },
+    "reference-dossier": {
+        "Research frame",
+        "Ten strong references",
+        "Negative counterexamples",
+        "Selected synthesis",
+    },
     "direction": {
         "Identity and intent",
         "Truth and provenance",
@@ -1202,6 +1243,12 @@ PRESHIP_SPECIFICITY_HEADERS = (
     "Rendered PNG path and SHA-256",
     "Result or limitation",
 )
+REFERENCE_LED_DIRECTION_CLOSURE_HEADERS = (
+    "Review focus",
+    "Applicability or disposition",
+    "Rendered PNG path and SHA-256",
+    "Reference synthesis, counterevidence, and rendered result",
+)
 ARTIFACT_CREDIBILITY_LABELS = (
     "Artifact-only reviewer relationship and prior exposure",
     "Credible public-surface result",
@@ -1228,6 +1275,7 @@ PROJECT_DERIVED_DIRECTION_SECTIONS = {
 PREBUILD_SUBSTANTIVE_RECORDS = (
     "exploration",
     "taste-calibration",
+    "reference-dossier",
     "direction",
     "direction-proof",
     "claims",
@@ -1235,6 +1283,7 @@ PREBUILD_SUBSTANTIVE_RECORDS = (
 REQUIRED_RECORD_LABELS = {
     "exploration": (),
     "taste-calibration": (),
+    "reference-dossier": (),
     "direction": (),
     "direction-proof": (
         "Reviewer relationship",
@@ -1277,6 +1326,14 @@ CAPABILITY_REQUIRED_SECTIONS = {
             "Numeric rhetoric integrity closure (required for public candidates)"
         },
     },
+    "reference-led-direction": {
+        "direction": {
+            "Reference-led direction (required for public candidates)"
+        },
+        "visual-review": {
+            "Reference-led direction closure (required for public candidates)"
+        },
+    },
     "connected-public-experience": {
         "direction": {"Connected public experience (when selected)"},
         "visual-review": {
@@ -1308,6 +1365,9 @@ CAPABILITY_REQUIRED_RECORDS = {
     "enterprise-candidate": {"direction", "visual-review"},
     "numeric-rhetoric-integrity": {"direction", "visual-review"},
     "public-copy-integrity": {"direction", "visual-review"},
+    "reference-led-direction": {
+        "direction", "reference-dossier", "visual-review"
+    },
     "connected-public-experience": {"connected-public-experience"},
     "project-contrast": {"project-contrast"},
     "direction-challenge": {"direction-challenge"},
@@ -5577,6 +5637,322 @@ def non_placeholder(value: str | None) -> bool:
     return bool(normalized)
 
 
+REFERENCE_SOURCE_REQUIRED_KEYS = {
+    "id",
+    "name",
+    "url",
+    "status",
+    "access",
+    "scope",
+    "notes",
+}
+REFERENCE_SOURCE_STATUSES = {"active", "inactive"}
+ACTIVE_REFERENCE_SOURCE_ACCESS = {"public", "public-limited"}
+REFERENCE_ENTRY_ACCESS = {
+    "public-live",
+    "public-gallery-entry",
+    "authorized-account",
+}
+REFERENCE_DOSSIER_STRONG_HEADERS = (
+    "Rank",
+    "Reference title or visible entry",
+    "Public URL or gallery-entry URL",
+    "Discovery source",
+    "Retrieval date",
+    "Access status",
+    "Brief relevance",
+    "Transferable relationship",
+    "Non-copying boundary",
+)
+REFERENCE_DOSSIER_NEGATIVE_HEADERS = (
+    "Reference title or visible entry",
+    "Public URL or gallery-entry URL",
+    "Discovery source",
+    "Retrieval date",
+    "Access status",
+    "Observed mismatch or weak relationship",
+    "What this project must avoid",
+)
+REFERENCE_DOSSIER_SYNTHESIS_HEADERS = (
+    "Selected rank(s)",
+    "Decision role",
+    "Project-specific adaptation",
+    "Boundary or verification",
+)
+
+
+def reference_source_registry_failures(payload: object) -> list[str]:
+    """Validate the maintained public-only inspiration source registry."""
+
+    failures: list[str] = []
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema_version", "audited_on", "policy", "sources"
+    }:
+        return ["Reference source registry must use the versioned public-source shape."]
+    if payload.get("schema_version") != 1:
+        failures.append("Reference source registry has an unsupported schema version.")
+    audited_on = payload.get("audited_on")
+    if not isinstance(audited_on, str):
+        failures.append("Reference source registry must declare an ISO audit date.")
+    else:
+        try:
+            if date.fromisoformat(audited_on) > datetime.now(timezone.utc).date():
+                failures.append("Reference source registry audit date may not be in the future.")
+        except ValueError:
+            failures.append("Reference source registry audit date must be ISO YYYY-MM-DD.")
+    if not non_placeholder(str(payload.get("policy", ""))):
+        failures.append("Reference source registry needs a substantive access policy.")
+    sources = payload.get("sources")
+    if not isinstance(sources, list) or not sources:
+        return [*failures, "Reference source registry needs a nonempty source list."]
+    seen_ids: set[str] = set()
+    active_count = 0
+    for index, source in enumerate(sources, start=1):
+        label = f"Reference source registry row {index}"
+        if not isinstance(source, dict) or set(source) != REFERENCE_SOURCE_REQUIRED_KEYS:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        source_id = source.get("id")
+        if (
+            not isinstance(source_id, str)
+            or not EVIDENCE_CAPABILITY_PATTERN.fullmatch(source_id)
+            or source_id in seen_ids
+        ):
+            failures.append(f"{label} needs a unique lowercase source id.")
+        else:
+            seen_ids.add(source_id)
+        for key in ("name", "scope", "notes"):
+            if not isinstance(source.get(key), str) or not non_placeholder(source[key]):
+                failures.append(f"{label} needs a substantive {key!r} value.")
+        raw_url = source.get("url")
+        parsed = urlsplit(raw_url) if isinstance(raw_url, str) else None
+        if (
+            parsed is None
+            or parsed.scheme != "https"
+            or not parsed.netloc
+        ):
+            failures.append(f"{label} needs an absolute HTTPS source URL.")
+        status = source.get("status")
+        access = source.get("access")
+        if status not in REFERENCE_SOURCE_STATUSES:
+            failures.append(f"{label} must be active or inactive.")
+        if not isinstance(access, str) or not non_placeholder(access):
+            failures.append(f"{label} needs an access disposition.")
+        if status == "active":
+            active_count += 1
+            if access not in ACTIVE_REFERENCE_SOURCE_ACCESS:
+                failures.append(
+                    f"{label} is active but does not have usable public access."
+                )
+    if not active_count:
+        failures.append("Reference source registry needs at least one active public source.")
+    return failures
+
+
+def load_reference_source_registry() -> tuple[dict[str, object], set[str], list[str]]:
+    """Load the bundled source registry and return active discovery IDs."""
+
+    try:
+        payload = json.loads(REFERENCE_SOURCE_REGISTRY_PATH.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return {}, set(), [f"Reference source registry is unreadable: {exc}"]
+    failures = reference_source_registry_failures(payload)
+    if not isinstance(payload, dict):
+        return {}, set(), failures
+    sources = payload.get("sources")
+    active_ids = {
+        source["id"]
+        for source in sources
+        if (
+            isinstance(source, dict)
+            and source.get("status") == "active"
+            and source.get("access") in ACTIVE_REFERENCE_SOURCE_ACCESS
+            and isinstance(source.get("id"), str)
+        )
+    } if isinstance(sources, list) else set()
+    return payload, active_ids, failures
+
+
+def reference_dossier_date_failures(value: str, label: str) -> list[str]:
+    dates = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", value)
+    if not dates:
+        return [f"{label} must include a retrieval date (YYYY-MM-DD)."]
+    try:
+        if date.fromisoformat(dates[-1]) > datetime.now(timezone.utc).date():
+            return [f"{label} retrieval date may not be in the future."]
+    except ValueError:
+        return [f"{label} has an invalid retrieval date."]
+    return []
+
+
+def reference_entry_url_failures(value: str, label: str) -> list[str]:
+    match = re.search(r"https://[^\s)]+", value)
+    if match is None:
+        return [f"{label} needs a public HTTPS URL or gallery-entry URL."]
+    parsed = urlsplit(match.group(0))
+    if not parsed.netloc:
+        return [f"{label} has an invalid HTTPS URL."]
+    return []
+
+
+def reference_entry_access_failures(
+    value: str,
+    label: str,
+    authorized_basis: str | None,
+) -> list[str]:
+    access = value.split(";", 1)[0].strip().casefold()
+    if access not in REFERENCE_ENTRY_ACCESS:
+        return [
+            f"{label} must be public-live, public-gallery-entry, or "
+            "authorized-account; blocked or paywalled entries cannot qualify."
+        ]
+    if access == "authorized-account" and (
+        authorized_basis is None
+        or len(authorized_basis.strip()) < 18
+        or authorized_basis.strip().casefold() == "none"
+    ):
+        return [
+            f"{label} uses authorized-account and needs a non-sensitive "
+            "authorized-account basis."
+        ]
+    return []
+
+
+def reference_rank_values(value: str) -> set[int] | None:
+    values = [item.strip() for item in value.split(",") if item.strip()]
+    if not values or any(not item.isdigit() for item in values):
+        return None
+    ranks = {int(item) for item in values}
+    if len(ranks) != len(values) or any(rank < 1 or rank > 10 for rank in ranks):
+        return None
+    return ranks
+
+
+def reference_dossier_failures(body: str) -> list[str]:
+    """Validate required positive and negative reference research evidence."""
+
+    failures: list[str] = []
+    _registry, active_source_ids, registry_failures = load_reference_source_registry()
+    failures.extend(registry_failures)
+    sections = markdown_sections(body)
+    frame = sections.get("Research frame", "")
+    for label in (
+        "Brief and priority-source rationale",
+        "Current active registry audit date and limitations",
+        "Public-access disposition for blocked or unavailable sources",
+    ):
+        if not non_placeholder(markdown_label_value(frame, label)):
+            failures.append(f"Reference dossier {label!r} is missing or still scaffold text.")
+    authorized_basis = markdown_label_value(frame, "Authorized-account basis")
+    if authorized_basis is None:
+        failures.append("Reference dossier needs an authorized-account basis or `none`.")
+
+    strong_headers, strong_rows = markdown_first_table(
+        sections.get("Ten strong references", "")
+    )
+    if strong_headers != REFERENCE_DOSSIER_STRONG_HEADERS or len(strong_rows) != 10:
+        failures.append(
+            "Reference dossier needs exactly ten strong-reference rows using "
+            "the public-reference table contract."
+        )
+    else:
+        ranks: list[int] = []
+        for row_number, row in enumerate(strong_rows, start=1):
+            label = f"Reference dossier strong row {row_number}"
+            if len(row) != len(REFERENCE_DOSSIER_STRONG_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{label} is incomplete.")
+                continue
+            if not row[0].isdigit():
+                failures.append(f"{label} rank must be an integer from 1 through 10.")
+            else:
+                ranks.append(int(row[0]))
+            failures.extend(reference_entry_url_failures(row[2], f"{label} URL"))
+            if row[3].casefold() not in active_source_ids:
+                failures.append(
+                    f"{label} discovery source must be an active public source ID."
+                )
+            failures.extend(reference_dossier_date_failures(row[4], label))
+            failures.extend(
+                reference_entry_access_failures(row[5], label, authorized_basis)
+            )
+        if sorted(ranks) != list(range(1, 11)):
+            failures.append(
+                "Reference dossier strong rows must contain each rank from 1 through 10 exactly once."
+            )
+
+    negative_headers, negative_rows = markdown_first_table(
+        sections.get("Negative counterexamples", "")
+    )
+    if negative_headers != REFERENCE_DOSSIER_NEGATIVE_HEADERS or len(negative_rows) < 3:
+        failures.append(
+            "Reference dossier needs at least three negative counterexample rows "
+            "using the public-reference table contract."
+        )
+    else:
+        for row_number, row in enumerate(negative_rows, start=1):
+            label = f"Reference dossier negative row {row_number}"
+            if len(row) != len(REFERENCE_DOSSIER_NEGATIVE_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{label} is incomplete.")
+                continue
+            failures.extend(reference_entry_url_failures(row[1], f"{label} URL"))
+            if row[2].casefold() not in active_source_ids:
+                failures.append(
+                    f"{label} discovery source must be an active public source ID."
+                )
+            failures.extend(reference_dossier_date_failures(row[3], label))
+            failures.extend(
+                reference_entry_access_failures(row[4], label, authorized_basis)
+            )
+
+    synthesis = sections.get("Selected synthesis", "")
+    selected_value = markdown_label_value(synthesis, "Selected positive ranks")
+    selected_ranks = reference_rank_values(selected_value or "")
+    if selected_ranks is None or not 5 <= len(selected_ranks) <= 10:
+        failures.append(
+            "Reference dossier must select five through ten distinct positive ranks."
+        )
+        selected_ranks = set()
+    for label in (
+        "Project-specific organizing synthesis",
+        "Negative-counterevidence result",
+        "Direction record path and status",
+    ):
+        if not non_placeholder(markdown_label_value(synthesis, label)):
+            failures.append(f"Reference dossier {label!r} is missing or still scaffold text.")
+    synthesis_headers, synthesis_rows = markdown_first_table(synthesis)
+    if synthesis_headers != REFERENCE_DOSSIER_SYNTHESIS_HEADERS or not synthesis_rows:
+        failures.append(
+            "Reference dossier needs a selected-synthesis decision map using the exact table contract."
+        )
+    else:
+        mapped_ranks: set[int] = set()
+        for row_number, row in enumerate(synthesis_rows, start=1):
+            label = f"Reference dossier synthesis row {row_number}"
+            if len(row) != len(REFERENCE_DOSSIER_SYNTHESIS_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{label} is incomplete.")
+                continue
+            row_ranks = reference_rank_values(row[0])
+            if row_ranks is None or not row_ranks.issubset(selected_ranks):
+                failures.append(
+                    f"{label} must name only selected positive ranks."
+                )
+            else:
+                mapped_ranks.update(row_ranks)
+        missing_mapped = sorted(selected_ranks - mapped_ranks)
+        if missing_mapped:
+            failures.append(
+                "Reference dossier selected ranks need a mapped project decision: "
+                + ", ".join(str(rank) for rank in missing_mapped)
+            )
+    return failures
+
+
 ASSURANCE_PROFILE_ALIASES = {
     "quick": "quick",
     "standard": "standard",
@@ -6258,6 +6634,7 @@ def visual_review_schema3_capture_matrix_failures(
     project: Path,
     record_path: Path,
     context: dict[str, object],
+    required_evidence_capabilities: tuple[str, ...] | set[str] = (),
 ) -> list[str]:
     """Bind final review coverage to real schema-3 wide/narrow captures."""
 
@@ -6519,6 +6896,14 @@ def visual_review_schema3_capture_matrix_failures(
             },
         )
     )
+    if "reference-led-direction" in set(required_evidence_capabilities):
+        failures.extend(
+            closure_table_failures(
+                "Reference-led direction closure (required for public candidates)",
+                REFERENCE_LED_DIRECTION_CLOSURE_HEADERS,
+                {"reference-led direction"},
+            )
+        )
     return failures
 
 
@@ -7535,6 +7920,9 @@ def substantive_body_failures(
             )
         )
 
+    if record == "reference-dossier":
+        failures.extend(reference_dossier_failures(body))
+
     if (
         record == "direction"
         and proportional
@@ -8091,6 +8479,7 @@ def substantive_body_failures(
                             project=project,
                             record_path=record_path,
                             context=schema3_context,
+                            required_evidence_capabilities=capabilities,
                         )
                     )
         elif markdown_label_value(
@@ -11426,10 +11815,10 @@ def render_new_state(
 ) -> None:
     template_root = skill_root / "templates"
     effective_capabilities = normalize_evidence_capabilities(
-        [
+        expand_enterprise_candidate_requirements([
             *inferred_evidence_capabilities(assurance_profiles),
             *evidence_capabilities,
-        ]
+        ])
     )
     contents: dict[str, str] = {}
     for record in records:
@@ -11661,11 +12050,11 @@ def merge_existing(
         merged_records,
     )
     effective_capabilities = normalize_evidence_capabilities(
-        [
+        expand_enterprise_candidate_requirements([
             *inferred_evidence_capabilities(effective_profiles),
             *previous_capabilities,
             *evidence_capabilities,
-        ]
+        ])
     )
     manifest_path.write_text(
         state_manifest(
@@ -12394,6 +12783,11 @@ def migrate_staged_state(state_root: Path, current_version: str) -> list[str]:
         and "taste-calibration" not in migrated_records
     ):
         migrated_records.append("taste-calibration")
+    if (
+        "enterprise-candidate" in cumulative_profiles
+        and "reference-dossier" not in migrated_records
+    ):
+        migrated_records.append("reference-dossier")
     if source_contract is None:
         migrated_capabilities = inferred_evidence_capabilities(
             cumulative_profiles
@@ -14178,6 +14572,14 @@ def main() -> int:
                 for capability in selected_evidence_capabilities
                 if capability == "connected-public-experience"
             ),
+            *(
+                "reference-dossier"
+                for capability in selected_evidence_capabilities
+                if capability in {
+                    "enterprise-candidate",
+                    "reference-led-direction",
+                }
+            ),
         ]))
         require_capability_record_selection(
             selected_evidence_capabilities,
@@ -14223,12 +14625,12 @@ def main() -> int:
             "triggers": list(selected_triggers),
             "evidence_capabilities": list(
                 normalize_evidence_capabilities(
-                    [
+                    expand_enterprise_candidate_requirements([
                         *inferred_evidence_capabilities(
                             selected_assurance_profiles
                         ),
                         *selected_evidence_capabilities,
-                    ]
+                    ])
                 )
             ),
             "records": selected,

@@ -152,6 +152,16 @@ hero, or a brand/style recipe. Routine visual QA and root-cause refinement are
 part of the build, not approval checkpoints the owner must rediscover through
 repeated feedback.
 
+For every fresh Enterprise Candidate public website, read
+[Reference-led direction](references/quality/reference-led-direction.md) before
+the first visual candidate. Start from the maintained public source registry,
+weight eligible sources by this brief, record ten strong individual references
+and at least three project-specific counterexamples, then map a selected subset
+of five through ten references into one internal direction. A public gallery
+entry can qualify even when no live website exists. Do not use inaccessible
+material, treat a gallery listing as proof of quality, turn the result into a
+generic collage, or expose the research process on the customer-facing site.
+
 A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
 at least Standard plus [taste calibration](references/craft/taste-calibration.md),
 the convergence and specificity reviews. When the rejection reopens the visual
@@ -269,6 +279,15 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   the page a cadence. Review the complete visible and accessible public corpus
   before preview, including rendered paragraph density and numeric/listicle
   framing; do not use text to fill an otherwise empty layout.
+- For Enterprise Candidate public builds, complete the project-local
+  `reference-dossier.md` before broad implementation. It must bind the active
+  public source context, ten strong individual references, at least three
+  weak/mismatched counterexamples, and a selected five-through-ten-reference
+  project synthesis. Reference material is a decision input, not a visual
+  parts bin: transfer only project-relevant relationships and retain explicit
+  non-copying boundaries for brands, copy, assets, code, and distinctive whole
+  pages. The final rendered review must close the resulting direction against
+  its positive and negative evidence.
 - Treat an owner's explanation of why a design choice fits as internal
   direction, not customer-facing copy. Do not turn a design rationale, producer
   note, project record, workflow stage, internal-only state, content-model or

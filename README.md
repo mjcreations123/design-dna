@@ -21,6 +21,11 @@ Five things make it different from a prompt that says "make it look nice":
   dossier, a rendered direction proof, and a first-impression surface-fidelity
   review. A clean technical build is not treated as proof that the result is
   beautiful, credible, or ready to show a client.
+- **It starts fresh public sites with positive visual evidence.** Enterprise
+  Candidate work creates a brief-weighted public-reference dossier with ten
+  strong individual sources, at least three concrete counterexamples, a named
+  synthesis, and a final rendered closure. Public gallery entries may qualify;
+  restricted, paywalled, security-blocked, or unavailable material does not.
 - **It stops an unresolved direction from becoming the site.** A separate
   prebuild check runs before full-route propagation. Draft narrative records,
   untouched Range or Batch scaffolds, capability names without evidence, and

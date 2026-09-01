@@ -562,6 +562,7 @@ class StateGateHardeningTests(unittest.TestCase):
                 "enterprise-candidate",
                 "public-copy-integrity",
                 "numeric-rhetoric-integrity",
+                "reference-led-direction",
             ],
             contract["applicable_capabilities"],
         )
@@ -577,15 +578,32 @@ class StateGateHardeningTests(unittest.TestCase):
                 "numeric-rhetoric-integrity"
             ]["visual-review"],
         )
+        self.assertEqual(
+            {"direction", "reference-dossier", "visual-review"},
+            INITIALIZER.CAPABILITY_REQUIRED_RECORDS["reference-led-direction"],
+        )
+        self.assertEqual(
+            {"Reference-led direction (required for public candidates)"},
+            INITIALIZER.CAPABILITY_REQUIRED_SECTIONS[
+                "reference-led-direction"
+            ]["direction"],
+        )
+        self.assertEqual(
+            {"Reference-led direction closure (required for public candidates)"},
+            INITIALIZER.CAPABILITY_REQUIRED_SECTIONS[
+                "reference-led-direction"
+            ]["visual-review"],
+        )
 
         malformed = dict(contract)
         malformed["applicable_capabilities"] = [
             "enterprise-candidate",
             "public-copy-integrity",
+            "numeric-rhetoric-integrity",
         ]
         with self.assertRaisesRegex(
             INITIALIZER.StateError,
-            "requires numeric-rhetoric-integrity",
+            "requires reference-led-direction",
         ):
             INITIALIZER.validate_evidence_contract(
                 malformed,

@@ -49,6 +49,12 @@ publication, or owner approval.
 
 ### Added
 
+- A required **reference-led direction** capability for every Enterprise
+  Candidate public website. It starts with a maintained public-source registry,
+  ten strong individual references, at least three concrete counterexamples,
+  a named five-through-ten-reference synthesis, and a final rendered closure.
+  Login-gated, paywalled, security-blocked, or currently unavailable sources
+  are not eligible for the active registry or project dossier.
 - A required **numeric rhetoric integrity** closure for Enterprise Candidate
   public work. It distinguishes factual quantities and true task sequences
   from invented “X reasons,” “Y steps,” zero-padded counters, numbered heroes,

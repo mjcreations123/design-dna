@@ -19,7 +19,9 @@ public-facing site representing a business, product, organization, place,
 creator, or campaign begins at Standard plus Enterprise Candidate, including
 full public rendered, engineering, media, interaction, and whole-corpus
 copy-integrity review, including rendered density and numeric-rhetoric review.
-Add Showcase only when the brief expressly calls for premium,
+It also begins with a required public-reference dossier: ten strong individual
+references, at least three visible counterexamples, and a selected project
+synthesis. Add Showcase only when the brief expressly calls for premium,
 showcase, high-ambition work or direction recovery; public status,
 visibility, and route count alone do not select it. You can request Showcase explicitly
 when that higher-ambition answer is actually wanted:
@@ -62,7 +64,7 @@ is required.
 | --- | --- | --- |
 | **Quick** | A bounded, low-risk repair or established-system change. | Focused context inspection, changed-state implementation, and affected checks. |
 | **Standard** | A new route, meaningful feature, or ordinary redesign. | Direction framing, proportionate proof of consequential decisions, rendered review, and engineering verification. |
-| **Enterprise Candidate** | Every fresh public website unless the task is an explicitly bounded repair or non-public surface. | Category-credible public topology, deliberate media and first-screen composition, key-state finish, whole-corpus natural copy and numeric-rhetoric integrity, and rendered wide/narrow closure. It does not claim enterprise scale, prescribe a style, or require a large site map. |
+| **Enterprise Candidate** | Every fresh public website unless the task is an explicitly bounded repair or non-public surface. | Brief-weighted public-reference direction, category-credible topology, deliberate media and first-screen composition, key-state finish, whole-corpus natural copy and numeric-rhetoric integrity, and rendered wide/narrow closure. It does not claim enterprise scale, prescribe a style, or require a large site map. |
 | **Connected Public Experience** | The brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | A direction-stage applicability decision, selected-root continuity model, truthful status crosswalk, meaningful path, handoffs, and rendered/functional proof plan before broad implementation; exact direct-entry/recovery evidence afterward. No page-count, admin, backend, database, funnel, or live-integration quota. |
 | **Showcase** | The brief expressly asks for premium, showcase, or high-ambition work; a rejected direction needs recovery; or the owner explicitly asks for that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Project research and directly reviewable contrast sufficient to challenge the first default; full alternatives when uncertainty, stakes, or owner choice justify them; a recorded selection, deeper visual craft, and adversarial review. |
 | **Project Contrast** | An unrelated public build must feel materially unlike recent studio work, or the owner says sites feel alike. | A brief-native counter-answer before broad implementation, the smallest owner-authorized closest-sibling comparison when available, and a wide/narrow collision review. It does not rotate visual ingredients. |

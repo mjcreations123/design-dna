@@ -36,6 +36,14 @@ prominent headlines, subheads, brand statements, and actions. A strong visual
 direction does not justify unsupported manifesto copy, automatic “X reasons”
 framing, or decorative `01 / 02 / 03` rhythm.
 
+Read [Reference-led direction](reference-led-direction.md) before choosing the
+first public visual candidate. Complete the project-local `reference-dossier.md`
+with ten strong public references, at least three brief-specific counterexamples,
+and a named selected subset of five through ten sources. A publicly visible
+gallery entry is eligible even when no live URL works; a restricted entry is
+not. The research should produce one project-derived direction, not a collage
+or a reproduced brand page.
+
 Initialize the evidence lane before broad implementation. For an ordinary new
 public build, use the Enterprise Candidate profile:
 
@@ -116,6 +124,11 @@ the following prompts to name observed causes:
    factual quantity, real comparison, or decision-relevant sequence? Remove
    invented “X reasons,” “Y steps,” and decorative counters rather than merely
    changing `01` to `1` or spelling the number out.
+8. **Reference-led direction.** Is the completed dossier built from eligible
+   public evidence, ten strong individual references, and at least three
+   observed counterexamples? Does the final candidate express a coherent
+   project-specific synthesis rather than a generic template, visual collage,
+   or copied brand surface?
 
 Record the disposition in the Enterprise Candidate section of
 `visual-review.md`. A producer may perform this review, but label it honestly
