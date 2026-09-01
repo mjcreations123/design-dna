@@ -723,7 +723,8 @@ Before delivery:
   separately;
 - append or update the [studio ledger](quality/ledger.md) only when its
   accountable owner authorized comparison and this build reached the stated
-  ledger milestone;
+  ledger milestone, filling its references-used column from the dossier's
+  selected rows as project-safe hosts or gallery-entry ids;
 - confirm externally acting integrations and public claims with the owner;
 - confirm culturally central terminology, representation, and media against the
   exact candidate with an owner-authorized cultural reviewer, or keep public

@@ -19,9 +19,9 @@ public-facing site representing a business, product, organization, place,
 creator, or campaign begins at Standard plus Enterprise Candidate, including
 full public rendered, engineering, media, interaction, and whole-corpus
 copy-integrity review, including rendered density and numeric-rhetoric review.
-It also begins with a required public-reference dossier: ten strong individual
-references, at least three visible counterexamples, and a selected project
-synthesis. Add Showcase only when the brief expressly calls for premium,
+It also begins with a required public-reference dossier: at least six captured
+references from at least three sources, at least three visible counterexamples,
+and a selected project synthesis with an elevation beyond the set. Add Showcase only when the brief expressly calls for premium,
 showcase, high-ambition work or direction recovery; public status,
 visibility, and route count alone do not select it. You can request Showcase explicitly
 when that higher-ambition answer is actually wanted:
@@ -80,7 +80,7 @@ Contrast, Direction Challenge, Range Study, Batch Study, High-risk, and
 Asset-led can apply together. Adding a capability cannot silently remove a
 stronger one.
 
-High-visibility or owner-sensitive work still begins at Standard unless the
+High-visibility or owner-sensitive work still begins at Standard plus Enterprise Candidate unless the
 brief expressly calls for premium, showcase, high-ambition work or direction
 recovery. Intensify Standard's rendered first-impression, surface-fidelity, and
 taste review for those stakes; do not silently select Showcase.

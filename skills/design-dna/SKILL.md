@@ -110,7 +110,7 @@ unresolved choice would materially change the result.
 
 | Scope | Required process |
 | --- | --- |
-| New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. A fresh public-facing representation starts at Standard with the full public rendered-review rigor; add Showcase only when its brief calls for it. For multiple independently addressable routes, name each route's body job before one page recipe spreads across them. |
+| New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. A fresh public-facing representation starts at Standard plus Enterprise Candidate with the full public rendered-review rigor, including the captured reference dossier; add Showcase only when its brief calls for it. For multiple independently addressable routes, name each route's body job before one page recipe spreads across them. |
 | Component or meaningful visual change | Inherit the system, define the component's job and states, test changed behavior. |
 | Visual or UX review | Inspect rendered and source evidence; report observed causes and unperformed checks. |
 | Mechanical or purely functional change | Preserve the visual system, verify proportionately. |
@@ -154,11 +154,16 @@ repeated feedback.
 
 For every fresh Enterprise Candidate public website, read
 [Reference-led direction](references/quality/reference-led-direction.md) before
-the first visual candidate. Start from the maintained public source registry,
-weight eligible sources by this brief, record ten strong individual references
-and at least three project-specific counterexamples, then map a selected subset
-of five through ten references into one internal direction. A public gallery
-entry can qualify even when no live website exists. Do not use inaccessible
+the first visual candidate, and initialize the project with
+`--profile enterprise-candidate` so the prebuild gate can hold it. Start from
+the maintained public source registry, weight eligible sources by this brief,
+and record at least six strong individual references drawn from at least
+three sources, each bound to a capture you actually looked at, plus at least
+three project-specific counterexamples. The floor exists so that no single
+site becomes the template; it is not a target. Then map a selected subset of
+at least four references into one internal direction and name at least one
+decision where the build goes beyond every reference. A public gallery entry
+can qualify even when no live website exists. Do not use inaccessible
 material, treat a gallery listing as proof of quality, turn the result into a
 generic collage, or expose the research process on the customer-facing site.
 
@@ -281,9 +286,10 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   framing; do not use text to fill an otherwise empty layout.
 - For Enterprise Candidate public builds, complete the project-local
   `reference-dossier.md` before broad implementation. It must bind the active
-  public source context, ten strong individual references, at least three
-  weak/mismatched counterexamples, and a selected five-through-ten-reference
-  project synthesis. Reference material is a decision input, not a visual
+  public source context, at least six captured strong references from at
+  least three sources, at least three weak/mismatched counterexamples, a
+  selected synthesis of at least four references, and one elevation beyond
+  them. Reference material is a decision input, not a visual
   parts bin: transfer only project-relevant relationships and retain explicit
   non-copying boundaries for brands, copy, assets, code, and distinctive whole
   pages. The final rendered review must close the resulting direction against

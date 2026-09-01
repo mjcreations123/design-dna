@@ -30,6 +30,8 @@ Record only axes useful to later comparison:
 - component, label, icon, border, radius, and decorative grammar when salient;
 - motion, transition, hover, and direct-interaction behavior;
 - responsive transformation and one project-specific decision;
+- the reference set used, as project-safe hosts or gallery-entry ids, so a
+  later unrelated project can see when it is reaching for the same sites;
 - evidence status, reviewer relationship, and unresolved limitation.
 
 Omit axes that are irrelevant. The template is in
@@ -51,6 +53,8 @@ work; then inspect the smallest relevant closest-sibling sample. Ask:
   different?
 - Is the supposed difference only another family name, palette, photograph,
   or decorative effect over the same encounter?
+- Does the current reference set repeat sites used by recent unrelated
+  work? Reuse needs a brief-specific reason recorded in the dossier.
 
 No family, category, layout, or device is disqualified by appearing in a
 fixed number of recent rows. Repetition raises a hypothesis; the rendered

@@ -797,20 +797,32 @@ class CandidateMetadataTests(unittest.TestCase):
             )
         )
 
-    def test_public_6_0_workflow_exposes_prebuild_and_opt_in_commands(self) -> None:
+    def test_public_candidate_workflow_exposes_prebuild_and_opt_in_commands(self) -> None:
         release_version = json.loads(
             (PLUGIN / "skills" / "design-dna" / "release.json").read_text(
                 encoding="utf-8"
             )
         )["version"]
-        self.assertEqual("6.0.0", release_version)
+        # The current candidate is whatever release.json says. The docs must
+        # describe that exact version as unreleased and the changelog must
+        # carry its candidate section; a hardcoded version here would fail
+        # every bump instead of catching a stale document.
+        parts = release_version.split(".")
+        self.assertTrue(
+            len(parts) == 3 and all(part.isdigit() for part in parts),
+            release_version,
+        )
 
         readme = (PLUGIN / "README.md").read_text(encoding="utf-8")
         quick_start = (PLUGIN / "docs" / "QUICK_START.md").read_text(
             encoding="utf-8"
         )
         changelog = (PLUGIN / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertIn("`6.0.0` is not a release", readme)
+        self.assertIn(f"`{release_version}` is not a release", readme)
+        self.assertIn(
+            f"## {release_version} - Development candidate", changelog
+        )
+        # The 6.0.0 phase boundary stays documented as history.
         self.assertIn("## 6.0.0 - Development candidate", changelog)
 
         required_surfaces = (

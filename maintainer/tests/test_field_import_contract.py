@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
 
@@ -347,6 +348,101 @@ class PublicCopyContractTests(unittest.TestCase):
         self.assertIn("em dashes", copy)
         self.assertIn("can all be right", copy)
         self.assertNotIn("never use an em dash", copy)
+
+
+class ReferenceEvidenceContractTests(unittest.TestCase):
+    """Keep the 6.1.0 reference-evidence contract durable.
+
+    The reference step is research only when it is provable: captured rows,
+    a floor tied to source spread instead of a quota, and a synthesis that
+    goes beyond its set.
+    """
+
+    def test_reference_count_is_a_floor_with_its_reason(self) -> None:
+        for relative in (
+            "SKILL.md",
+            "references/quality/reference-led-direction.md",
+            "references/quality/enterprise-candidate.md",
+            "references/quality/direction-start.md",
+            "templates/reference-dossier-template.md",
+        ):
+            text = " ".join(read(relative).casefold().split())
+            with self.subTest(file=relative):
+                self.assertIn("at least six", text)
+                self.assertIn("at least three", text)
+                self.assertNotIn("exactly ten", text)
+                self.assertNotIn("five through ten", text)
+        led = " ".join(
+            read("references/quality/reference-led-direction.md").casefold().split()
+        )
+        self.assertIn("no single site becomes the template", led)
+        self.assertIn("not a target", led)
+
+    def test_every_reference_row_binds_a_capture(self) -> None:
+        template = read("templates/reference-dossier-template.md")
+        self.assertEqual(2, template.count("Capture path and SHA-256"))
+        self.assertIn(".design-dna/references/", template)
+        led = read("references/quality/reference-led-direction.md")
+        self.assertIn("## Capture what you looked at", led)
+        self.assertIn("plus sha256:", led)
+
+    def test_registry_declares_measured_retrieval_modes(self) -> None:
+        payload = json.loads(read("references/quality/public-reference-sources.json"))
+        modes = {source["id"]: source["retrieval"] for source in payload["sources"]}
+        self.assertEqual("fetch", modes["awwwards"])
+        self.assertEqual("browser", modes["godly"])
+        self.assertEqual("browser", modes["siteinspire"])
+        self.assertEqual("none", modes["land-book"])
+        for source in payload["sources"]:
+            with self.subTest(source=source["id"]):
+                if source["status"] == "active":
+                    self.assertIn(source["retrieval"], {"fetch", "browser"})
+        led = " ".join(
+            read("references/quality/reference-led-direction.md").casefold().split()
+        )
+        self.assertIn("## retrieve the way each source allows", led)
+        self.assertIn("not evidence that the source is unavailable", led)
+
+    def test_synthesis_must_spread_and_elevate(self) -> None:
+        template = read("templates/reference-dossier-template.md")
+        self.assertIn("Elevation beyond the references", template)
+        self.assertIn("Ledger check", template)
+        self.assertIn("at least four distinct", template)
+        self.assertIn(
+            "Elevation beyond the references", read("templates/direction-template.md")
+        )
+        self.assertIn("Elevation result", read("templates/visual-review-template.md"))
+        led = read("references/quality/reference-led-direction.md")
+        self.assertIn("## Improve beyond the set", led)
+        self.assertIn("## Check the ledger before selecting", led)
+
+    def test_ledger_records_references_used(self) -> None:
+        template = read("templates/ledger-template.md")
+        self.assertIn("References used (project-safe)", template)
+        rows = [line for line in template.splitlines() if line.startswith("| ")]
+        self.assertEqual(1, len({line.count("|") for line in rows}), rows)
+        ledger = read("references/quality/ledger.md")
+        self.assertIn("reference set used", ledger)
+        self.assertIn("repeat sites used by recent unrelated", ledger)
+
+    def test_capture_evidence_is_wired_through_workflow_router_and_closure(self) -> None:
+        led = read("references/quality/reference-led-direction.md")
+        self.assertIn("playwright-cli screenshot --filename", led)
+        self.assertIn("hashlib.sha256", led)
+        workflow = " ".join(read("references/workflow.md").casefold().split())
+        self.assertIn("filling its references-used column from the dossier", workflow)
+        router = read("references/router.md")
+        self.assertIn("capture every reference you weigh", router)
+        self.assertIn("elevation beyond the set", router)
+        visual = read("templates/visual-review-template.md")
+        self.assertIn("- Elevation result: __REPLACE_WITH_", visual)
+        self.assertIn("def reference_led_closure_label_failures", read("scripts/init_project_state.py"))
+
+    def test_fresh_public_builds_initialize_the_enterprise_profile(self) -> None:
+        skill = " ".join(read("SKILL.md").casefold().split())
+        self.assertIn("--profile enterprise-candidate", skill)
+        self.assertIn("starts at standard plus enterprise candidate", skill)
+        self.assertIn("def prebuild_warnings", read("scripts/init_project_state.py"))
 
 
 if __name__ == "__main__":

@@ -34,8 +34,9 @@ the limitation and use reversible decisions.
 
 For every fresh Enterprise Candidate public website, use the stricter
 [Reference-led direction](reference-led-direction.md) workflow instead. It
-requires a brief-weighted public-source dossier with ten strong individual
-references, at least three counterexamples, and a selected synthesis before
+requires a brief-weighted public-source dossier with at least six captured
+references from at least three sources, at least three counterexamples, and
+a selected synthesis with an elevation beyond the set before
 broad implementation. A gallery is discovery material, not proof of usability,
 truth, or permission to copy another brand.
 

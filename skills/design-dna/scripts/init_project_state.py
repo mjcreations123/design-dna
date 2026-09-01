@@ -833,7 +833,7 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
     },
     "reference-dossier": {
         "Research frame",
-        "Ten strong references",
+        "Strong references",
         "Negative counterexamples",
         "Selected synthesis",
     },
@@ -1182,7 +1182,7 @@ REQUIRED_RECORD_SECTIONS = {
     },
     "reference-dossier": {
         "Research frame",
-        "Ten strong references",
+        "Strong references",
         "Negative counterexamples",
         "Selected synthesis",
     },
@@ -5643,16 +5643,27 @@ REFERENCE_SOURCE_REQUIRED_KEYS = {
     "url",
     "status",
     "access",
+    "retrieval",
     "scope",
     "notes",
 }
 REFERENCE_SOURCE_STATUSES = {"active", "inactive"}
+REFERENCE_SOURCE_RETRIEVAL = {"fetch", "browser", "none"}
+ACTIVE_REFERENCE_SOURCE_RETRIEVAL = {"fetch", "browser"}
 ACTIVE_REFERENCE_SOURCE_ACCESS = {"public", "public-limited"}
 REFERENCE_ENTRY_ACCESS = {
     "public-live",
     "public-gallery-entry",
     "authorized-account",
 }
+# The reference count is a floor with a reason, not a quota: enough
+# independent sources that no single site becomes the template.
+REFERENCE_MINIMUM_STRONG = 6
+REFERENCE_MINIMUM_SOURCES = 3
+REFERENCE_MINIMUM_NEGATIVE = 3
+REFERENCE_MINIMUM_SELECTED = 4
+REFERENCE_MINIMUM_SELECTED_SOURCES = 2
+REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Rank",
     "Reference title or visible entry",
@@ -5660,6 +5671,7 @@ REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Discovery source",
     "Retrieval date",
     "Access status",
+    "Capture path and SHA-256",
     "Brief relevance",
     "Transferable relationship",
     "Non-copying boundary",
@@ -5670,6 +5682,7 @@ REFERENCE_DOSSIER_NEGATIVE_HEADERS = (
     "Discovery source",
     "Retrieval date",
     "Access status",
+    "Capture path and SHA-256",
     "Observed mismatch or weak relationship",
     "What this project must avoid",
 )
@@ -5744,6 +5757,16 @@ def reference_source_registry_failures(payload: object) -> list[str]:
                 failures.append(
                     f"{label} is active but does not have usable public access."
                 )
+        retrieval = source.get("retrieval")
+        if retrieval not in REFERENCE_SOURCE_RETRIEVAL:
+            failures.append(
+                f"{label} needs a retrieval mode of fetch, browser, or none."
+            )
+        elif status == "active" and retrieval not in ACTIVE_REFERENCE_SOURCE_RETRIEVAL:
+            failures.append(
+                f"{label} is active but declares no usable retrieval mode; "
+                "an active source must be fetch or browser."
+            )
     if not active_count:
         failures.append("Reference source registry needs at least one active public source.")
     return failures
@@ -5818,18 +5841,35 @@ def reference_entry_access_failures(
     return []
 
 
-def reference_rank_values(value: str) -> set[int] | None:
+def reference_rank_values(
+    value: str,
+    *,
+    maximum: int = REFERENCE_MINIMUM_STRONG,
+) -> set[int] | None:
     values = [item.strip() for item in value.split(",") if item.strip()]
     if not values or any(not item.isdigit() for item in values):
         return None
     ranks = {int(item) for item in values}
-    if len(ranks) != len(values) or any(rank < 1 or rank > 10 for rank in ranks):
+    if len(ranks) != len(values) or any(
+        rank < 1 or rank > maximum for rank in ranks
+    ):
         return None
     return ranks
 
 
-def reference_dossier_failures(body: str) -> list[str]:
-    """Validate required positive and negative reference research evidence."""
+def reference_dossier_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> list[str]:
+    """Validate captured, source-spread, and elevated reference research.
+
+    The count is a floor tied to source spread, not a quota: enough
+    independent sites that none becomes the template. Every row binds a
+    capture the producer looked at, because a reference nobody opened is a
+    plausible name, not research.
+    """
 
     failures: list[str] = []
     _registry, active_source_ids, registry_failures = load_reference_source_registry()
@@ -5840,6 +5880,7 @@ def reference_dossier_failures(body: str) -> list[str]:
         "Brief and priority-source rationale",
         "Current active registry audit date and limitations",
         "Public-access disposition for blocked or unavailable sources",
+        "Ledger check",
     ):
         if not non_placeholder(markdown_label_value(frame, label)):
             failures.append(f"Reference dossier {label!r} is missing or still scaffold text.")
@@ -5847,16 +5888,48 @@ def reference_dossier_failures(body: str) -> list[str]:
     if authorized_basis is None:
         failures.append("Reference dossier needs an authorized-account basis or `none`.")
 
+    def capture_failures(cell: str, label: str) -> list[str]:
+        capture_label = f"{label} capture"
+        match = ARTIFACT_BINDING_PATTERN.fullmatch(cell.strip())
+        if match is not None and not match.group(1).strip().startswith(
+            REFERENCE_CAPTURE_PREFIX
+        ):
+            return [
+                f"{capture_label} must live under {REFERENCE_CAPTURE_PREFIX} "
+                "so research evidence stays out of the public root."
+            ]
+        artifact, artifact_failures = bound_artifact(
+            cell,
+            project=project,
+            record_path=record_path,
+            label=capture_label,
+        )
+        if artifact_failures or artifact is None:
+            return artifact_failures
+        try:
+            verify_png_artifact(artifact)
+        except StateError as exc:
+            return [f"{capture_label} is not usable evidence: {exc}"]
+        return []
+
     strong_headers, strong_rows = markdown_first_table(
-        sections.get("Ten strong references", "")
+        sections.get("Strong references", "")
     )
-    if strong_headers != REFERENCE_DOSSIER_STRONG_HEADERS or len(strong_rows) != 10:
+    source_by_rank: dict[int, str] = {}
+    strong_count = max(len(strong_rows), REFERENCE_MINIMUM_STRONG)
+    if (
+        strong_headers != REFERENCE_DOSSIER_STRONG_HEADERS
+        or len(strong_rows) < REFERENCE_MINIMUM_STRONG
+    ):
         failures.append(
-            "Reference dossier needs exactly ten strong-reference rows using "
-            "the public-reference table contract."
+            "Reference dossier needs at least six strong-reference rows using "
+            "the public-reference table contract; the floor keeps any single "
+            "site from becoming the template."
         )
     else:
         ranks: list[int] = []
+        sources: list[str] = []
+        live_hosts: dict[str, int] = {}
         for row_number, row in enumerate(strong_rows, start=1):
             label = f"Reference dossier strong row {row_number}"
             if len(row) != len(REFERENCE_DOSSIER_STRONG_HEADERS) or any(
@@ -5864,12 +5937,18 @@ def reference_dossier_failures(body: str) -> list[str]:
             ):
                 failures.append(f"{label} is incomplete.")
                 continue
+            source_id = row[3].casefold()
+            sources.append(source_id)
             if not row[0].isdigit():
-                failures.append(f"{label} rank must be an integer from 1 through 10.")
+                failures.append(
+                    f"{label} rank must be an integer from 1 through {len(strong_rows)}."
+                )
             else:
-                ranks.append(int(row[0]))
+                rank = int(row[0])
+                ranks.append(rank)
+                source_by_rank[rank] = source_id
             failures.extend(reference_entry_url_failures(row[2], f"{label} URL"))
-            if row[3].casefold() not in active_source_ids:
+            if source_id not in active_source_ids:
                 failures.append(
                     f"{label} discovery source must be an active public source ID."
                 )
@@ -5877,15 +5956,48 @@ def reference_dossier_failures(body: str) -> list[str]:
             failures.extend(
                 reference_entry_access_failures(row[5], label, authorized_basis)
             )
-        if sorted(ranks) != list(range(1, 11)):
+            failures.extend(capture_failures(row[6], label))
+            access = row[5].split(";", 1)[0].strip().casefold()
+            url_match = re.search(r"https://[^\s)]+", row[2])
+            if access == "public-live" and url_match is not None:
+                host = urlsplit(url_match.group(0)).netloc.casefold()
+                if host in live_hosts:
+                    failures.append(
+                        f"{label} points at the same host as strong row "
+                        f"{live_hosts[host]}; one live site cannot fill "
+                        "several rows."
+                    )
+                else:
+                    live_hosts[host] = row_number
+        if sorted(ranks) != list(range(1, len(strong_rows) + 1)):
             failures.append(
-                "Reference dossier strong rows must contain each rank from 1 through 10 exactly once."
+                "Reference dossier strong rows must contain each rank from 1 "
+                f"through {len(strong_rows)} exactly once."
             )
+        active_used = {source for source in sources if source in active_source_ids}
+        if len(active_used) < REFERENCE_MINIMUM_SOURCES:
+            failures.append(
+                "Reference dossier strong rows must come from at least three "
+                "distinct active public sources."
+            )
+        counts: dict[str, int] = {}
+        for source in sources:
+            counts[source] = counts.get(source, 0) + 1
+        for source, count in counts.items():
+            if count * 2 > len(strong_rows):
+                failures.append(
+                    f"Reference dossier source {source!r} supplies more than "
+                    "half of the strong rows; spread the set so no single "
+                    "source is the template."
+                )
 
     negative_headers, negative_rows = markdown_first_table(
         sections.get("Negative counterexamples", "")
     )
-    if negative_headers != REFERENCE_DOSSIER_NEGATIVE_HEADERS or len(negative_rows) < 3:
+    if (
+        negative_headers != REFERENCE_DOSSIER_NEGATIVE_HEADERS
+        or len(negative_rows) < REFERENCE_MINIMUM_NEGATIVE
+    ):
         failures.append(
             "Reference dossier needs at least three negative counterexample rows "
             "using the public-reference table contract."
@@ -5907,18 +6019,32 @@ def reference_dossier_failures(body: str) -> list[str]:
             failures.extend(
                 reference_entry_access_failures(row[4], label, authorized_basis)
             )
+            failures.extend(capture_failures(row[5], label))
 
     synthesis = sections.get("Selected synthesis", "")
     selected_value = markdown_label_value(synthesis, "Selected positive ranks")
-    selected_ranks = reference_rank_values(selected_value or "")
-    if selected_ranks is None or not 5 <= len(selected_ranks) <= 10:
+    selected_ranks = reference_rank_values(
+        selected_value or "", maximum=strong_count
+    )
+    if selected_ranks is None or len(selected_ranks) < REFERENCE_MINIMUM_SELECTED:
         failures.append(
-            "Reference dossier must select five through ten distinct positive ranks."
+            "Reference dossier must select at least four distinct positive ranks "
+            "so the synthesis merges several sites rather than copying one."
         )
         selected_ranks = set()
+    elif source_by_rank:
+        selected_sources = {
+            source_by_rank[rank] for rank in selected_ranks if rank in source_by_rank
+        }
+        if len(selected_sources) < REFERENCE_MINIMUM_SELECTED_SOURCES:
+            failures.append(
+                "Reference dossier selected references must come from at least "
+                "two distinct sources."
+            )
     for label in (
         "Project-specific organizing synthesis",
         "Negative-counterevidence result",
+        "Elevation beyond the references",
         "Direction record path and status",
     ):
         if not non_placeholder(markdown_label_value(synthesis, label)):
@@ -5937,7 +6063,7 @@ def reference_dossier_failures(body: str) -> list[str]:
             ):
                 failures.append(f"{label} is incomplete.")
                 continue
-            row_ranks = reference_rank_values(row[0])
+            row_ranks = reference_rank_values(row[0], maximum=strong_count)
             if row_ranks is None or not row_ranks.issubset(selected_ranks):
                 failures.append(
                     f"{label} must name only selected positive ranks."
@@ -5951,7 +6077,6 @@ def reference_dossier_failures(body: str) -> list[str]:
                 + ", ".join(str(rank) for rank in missing_mapped)
             )
     return failures
-
 
 ASSURANCE_PROFILE_ALIASES = {
     "quick": "quick",
@@ -6897,12 +7022,57 @@ def visual_review_schema3_capture_matrix_failures(
         )
     )
     if "reference-led-direction" in set(required_evidence_capabilities):
+        closure_section = sections.get(
+            "Reference-led direction closure (required for public candidates)",
+            "",
+        )
+        failures.extend(reference_led_closure_label_failures(closure_section))
         failures.extend(
             closure_table_failures(
                 "Reference-led direction closure (required for public candidates)",
                 REFERENCE_LED_DIRECTION_CLOSURE_HEADERS,
                 {"reference-led direction"},
             )
+        )
+    return failures
+
+
+REFERENCE_LED_CLOSURE_LABELS = (
+    "Dossier result",
+    "Positive synthesis",
+    "Negative counterevidence",
+    "Non-copying boundary",
+    "Rendered result",
+    "Elevation result",
+)
+REFERENCE_LED_CLOSURE_DISPOSITIONS = {
+    "keep",
+    "revise",
+    "reopen direction",
+    "reject",
+    "blocked",
+}
+
+
+def reference_led_closure_label_failures(section: str) -> list[str]:
+    """Require the closure to say what the render showed, including the
+    elevation beyond the reference set, and to declare one disposition."""
+
+    failures: list[str] = []
+    for label in REFERENCE_LED_CLOSURE_LABELS:
+        value = markdown_label_value(section, label)
+        if value is None or not non_placeholder(value) or len(value.strip()) < 24:
+            failures.append(
+                "Reference-led direction closure needs a substantive "
+                f"{label!r} value"
+            )
+    disposition = (
+        markdown_label_value(section, "Reference-led direction disposition") or ""
+    ).strip().casefold()
+    if disposition not in REFERENCE_LED_CLOSURE_DISPOSITIONS:
+        failures.append(
+            "Reference-led direction disposition must be keep, revise, reopen "
+            "direction, reject, or blocked"
         )
     return failures
 
@@ -7921,7 +8091,13 @@ def substantive_body_failures(
         )
 
     if record == "reference-dossier":
-        failures.extend(reference_dossier_failures(body))
+        failures.extend(
+            reference_dossier_failures(
+                body,
+                project=project,
+                record_path=record_path,
+            )
+        )
 
     if (
         record == "direction"
@@ -11044,6 +11220,40 @@ def batch_range_prebuild_failures(path: Path) -> list[str]:
                         "path and non-placeholder SHA-256 before implementation."
                     )
     return failures
+
+
+def prebuild_warnings(project: Path) -> list[str]:
+    """Name omissions that do not block but usually mean a gate was skipped.
+
+    A standard-or-stronger state with no reference-dossier record is almost
+    always a fresh public build that was initialized without the Enterprise
+    Candidate profile. That is not an error for a bounded repair or a
+    non-public surface, so it warns and names the remedy instead of failing.
+    """
+
+    state_root = project / ".design-dna"
+    try:
+        state = read_json(state_root / "state.json")
+    except StateError:
+        return []
+    if not isinstance(state, dict):
+        return []
+    profiles = state.get("assurance_profiles")
+    records = state.get("records")
+    if not isinstance(profiles, list) or not isinstance(records, list):
+        return []
+    if "reference-dossier" in records:
+        return []
+    named = {item for item in profiles if isinstance(item, str)}
+    if not named or named <= {"quick"}:
+        return []
+    return [
+        "No reference-dossier record is selected. A fresh public website "
+        "initializes with --profile enterprise-candidate (or adds "
+        "--evidence-capability enterprise-candidate to its existing profile) "
+        "so the reference-led direction gate can hold it; a bounded repair or "
+        "non-public surface may disregard this warning."
+    ]
 
 
 def prebuild_failures(project: Path) -> list[str]:
@@ -14380,6 +14590,11 @@ def main() -> int:
                 phase_failures = prebuild_failures(project)
                 failures.extend(
                     failure for failure in phase_failures if failure not in failures
+                )
+                warnings.extend(
+                    warning
+                    for warning in prebuild_warnings(project)
+                    if warning not in warnings
                 )
             if not failures and args.check_ready:
                 failures.extend(readiness_failures(project))

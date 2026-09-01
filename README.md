@@ -22,9 +22,10 @@ Five things make it different from a prompt that says "make it look nice":
   review. A clean technical build is not treated as proof that the result is
   beautiful, credible, or ready to show a client.
 - **It starts fresh public sites with positive visual evidence.** Enterprise
-  Candidate work creates a brief-weighted public-reference dossier with ten
-  strong individual sources, at least three concrete counterexamples, a named
-  synthesis, and a final rendered closure. Public gallery entries may qualify;
+  Candidate work creates a brief-weighted public-reference dossier with at
+  least six captured references from at least three sources, at least three
+  concrete counterexamples, a named synthesis with an elevation beyond the
+  set, and a final rendered closure. Public gallery entries may qualify;
   restricted, paywalled, security-blocked, or unavailable material does not.
 - **It stops an unresolved direction from becoming the site.** A separate
   prebuild check runs before full-route propagation. Draft narrative records,
@@ -56,7 +57,7 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Candidate status:** `6.0.0` is not a release. Candidate source and package
+> **Candidate status:** `6.1.0` is not a release. Candidate source and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
@@ -238,7 +239,7 @@ normalized away rather than retained as misleading extra assurances.
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Prioritize task, state, content, specialist, and real-user evidence; visual ambition cannot waive a safety or production gate. |
 | **Asset-led** | Physical or sensory recognition materially depends on media, the owner asks for photography/rich media, or imagery, video, audio, fonts, documents, maps, embeds, or generated media otherwise needs a durable record. | Before broad implementation, bind at least one usable asset in `.design-dna/assets.yml`; gate listed assets on type-specific provenance, rights, privacy, factual status, approval, delivery, accessibility, and generated-media evidence. |
 
-**A fresh public-facing site begins at Standard**, including full public
+**A fresh public-facing site begins at Standard plus Enterprise Candidate**, including full public
 rendered and engineering review. Public status, visibility, and route count do
 not themselves select Showcase. Add Showcase when the brief expressly calls for
 a premium, showcase, high-ambition answer or direction recovery; it can also be

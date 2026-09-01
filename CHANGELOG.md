@@ -5,6 +5,43 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.1.0 - Development candidate: reference evidence, source spread, elevation
+
+This candidate keeps 6.0.0's prebuild boundary and makes the reference-led
+direction step provable instead of describable.
+
+### Changed
+
+- Every strong and negative reference row now binds a PNG capture under
+  `.design-dna/references/` as `path plus sha256:<hex>`. The gate verifies
+  the file exists, decodes as a PNG, and matches its hash. A dossier of
+  invented references previously passed the validator; it no longer can.
+- The reference count is a floor with its reason recorded, not a quota:
+  at least six strong references from at least three active sources, no
+  source supplying more than half, no two live rows on one host, and a
+  selected synthesis of at least four references from at least two
+  sources. The floor exists so no single site becomes the template.
+- The source registry declares a `retrieval` mode per source (`fetch`,
+  `browser`, or `none`), measured by a plain-fetch audit, so a script shell
+  or rate-limit response is not mistaken for an unavailable source. The
+  reference-led reference cites the interactive browser path for `browser`
+  sources.
+- The dossier records a ledger check, and the ledger contract and template
+  gain a references-used column so an unrelated later project can see when
+  it is reaching for the same sites.
+- The dossier, direction record, and rendered closure carry an elevation
+  line: at least one consequential decision where the build goes beyond
+  every selected reference.
+- `--check-prebuild` warns when a standard-or-stronger state on a fresh
+  build carries no reference-dossier record, naming the exact remedy.
+- The rendered closure for reference-led direction now validates its
+  dossier, synthesis, counterevidence, non-copying, rendered, and elevation
+  values and requires an explicit disposition; the template's bullets
+  became replaceable tokens so untouched scaffold cannot pass.
+- The reference-led reference carries a worked capture sequence, the
+  workflow's ledger step fills the references-used column from the
+  dossier, and the router row names the capture obligation.
+
 ## 6.0.0 - Development candidate: prebuild authorization and material evidence
 
 This is a development candidate, not a release. It supersedes the unpromoted

@@ -156,6 +156,8 @@ story.
 - Selected positive ranks and decision coverage:
 - Project-specific synthesis drawn from the selected references:
 - Negative-counterevidence result and relationship to avoid:
+- Ledger check result (prior references reused, or none):
+- Elevation beyond the references (what this build does that none of them do):
 
 References may guide composition, hierarchy, pacing, media, typography, and
 interaction. Adapt them to the actual project rather than copying a page,

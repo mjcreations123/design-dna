@@ -12,6 +12,15 @@ brief supports. A concise local-service site, concept site, publication, or
 campaign may meet this bar differently from a global retailer. The standard is
 the quality of the public encounter, not the size of the fictional organization.
 
+## Contents
+
+- [Before direction: establish the public reality](#before-direction-establish-the-public-reality)
+- [Plan the composition and media before the route family spreads](#plan-the-composition-and-media-before-the-route-family-spreads)
+- [Build mature public behavior, not visual theater](#build-mature-public-behavior-not-visual-theater)
+- [Enterprise Candidate review before preview](#enterprise-candidate-review-before-preview)
+- [Repair shared causes, not screenshots](#repair-shared-causes-not-screenshots)
+- [What can be claimed](#what-can-be-claimed)
+
 ## Before direction: establish the public reality
 
 Start with the minimum truthful model that changes design decisions:
@@ -38,8 +47,9 @@ framing, or decorative `01 / 02 / 03` rhythm.
 
 Read [Reference-led direction](reference-led-direction.md) before choosing the
 first public visual candidate. Complete the project-local `reference-dossier.md`
-with ten strong public references, at least three brief-specific counterexamples,
-and a named selected subset of five through ten sources. A publicly visible
+with at least six captured strong references from at least three sources, at
+least three brief-specific counterexamples, a selected synthesis of at least
+four references, and one elevation beyond them. A publicly visible
 gallery entry is eligible even when no live URL works; a restricted entry is
 not. The research should produce one project-derived direction, not a collage
 or a reproduced brand page.
@@ -125,7 +135,8 @@ the following prompts to name observed causes:
    invented “X reasons,” “Y steps,” and decorative counters rather than merely
    changing `01` to `1` or spelling the number out.
 8. **Reference-led direction.** Is the completed dossier built from eligible
-   public evidence, ten strong individual references, and at least three
+   public evidence, at least six captured references from at least three
+   sources, and at least three
    observed counterexamples? Does the final candidate express a coherent
    project-specific synthesis rather than a generic template, visual collage,
    or copied brand surface?

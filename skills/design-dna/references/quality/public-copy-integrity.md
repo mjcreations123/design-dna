@@ -16,6 +16,18 @@ process, [Content and IA](../craft/content-ia.md) for information ownership,
 and [Parseable text](parseable-text.md) for whether visible language belongs on
 the surface at all.
 
+## Contents
+
+- [Establish the source of the voice](#establish-the-source-of-the-voice)
+- [Build a copy map before prose fills the layout](#build-a-copy-map-before-prose-fills-the-layout)
+- [Give every prominent line an anchor](#give-every-prominent-line-an-anchor)
+- [Run the three-line test](#run-the-three-line-test)
+- [Treat numbers as information, not copy scaffolding](#treat-numbers-as-information-not-copy-scaffolding)
+- [Draft by route job, not by a brand-manifesto template](#draft-by-route-job-not-by-a-brand-manifesto-template)
+- [Control prose density in the rendered layout](#control-prose-density-in-the-rendered-layout)
+- [Audit the actual rendered corpus](#audit-the-actual-rendered-corpus)
+- [Closure](#closure)
+
 ## Establish the source of the voice
 
 Before inventing a headline, establish the strongest truthful source available:

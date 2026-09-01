@@ -123,9 +123,11 @@ For a fresh Enterprise Candidate public website, also read
 [Reference-led direction](reference-led-direction.md) and complete the
 project-local `reference-dossier.md` before broad implementation. Use the
 maintained public-source registry adaptively for this brief, not as a fixed
-gallery order. The dossier must establish ten strong individual references,
-at least three visible counterexamples, and a named five-through-ten-reference
-project synthesis. This required research is a direction input for fresh public
+gallery order. The dossier must establish at least six captured strong
+references from at least three sources, at least three visible
+counterexamples, a selected synthesis of at least four references, and one
+elevation beyond them. The floor keeps any single site from becoming the
+template. This required research is a direction input for fresh public
 work, not a generic search ritual for repairs or non-public surfaces.
 
 Add **Showcase** only when the brief expressly calls for a premium, showcase,

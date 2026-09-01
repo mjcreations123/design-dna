@@ -214,7 +214,7 @@ necessary records manually and disclose that helper validation did not run.
 Use `showcase` only when the brief expressly calls for a premium, showcase, or
 high-ambition answer, or when a rejected visual direction needs recovery; it
 initializes exploration, direction, direction proof, and visual review. A
-fresh public-facing site begins at Standard unless one of those Showcase
+fresh public-facing site begins at Standard plus Enterprise Candidate unless one of those Showcase
 conditions is actually present.
 Use `range-study` when independently addressable routes need deliberately
 different creative worlds. It persists Standard plus Range Study capabilities

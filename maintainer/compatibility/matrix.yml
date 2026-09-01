@@ -1,6 +1,6 @@
 schema_version: 3
 last_updated: "2026-08-24"
-package_version: "6.0.0"
+package_version: "6.1.0"
 
 discovery_roots:
   - "~/.agents/skills"
