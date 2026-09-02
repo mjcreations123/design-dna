@@ -17,9 +17,9 @@ Every reference row binds a capture you actually looked at. Save captures
 under `.design-dna/references/` and bind each one as
 `path plus sha256:<64 lowercase hex>`. A row without a capture is a row the
 prebuild gate rejects; the capture is the evidence that the research happened.
-For a strong reference the capture comes from a scroll sequence the producer
-watched, because a single full-page still can only show what does not move
-and will always miss the reason the site is good.
+A strong reference binds full-page wide and narrow stills, which is how
+composition and rhythm are read, plus a scroll sequence the producer watched,
+because a still alone can only show what does not move.
 
 ## Research frame
 
@@ -47,14 +47,19 @@ reference that earns its place. Number ranks 1 through N without gaps.
 
 The rank reflects fit for this exact brief, not a universal quality score.
 Every row's `Signature` cell answers one question first: if a stranger were
-shown this site, what would they say they noticed about its design? That is
-almost always something the page does rather than something that sits there,
-and it is written from a scroll sequence the producer watched, never from a
-single still. The `Design to copy` cell then names the good parts taken from
-that reference in concrete terms, behavior first (what the page does as it
-scrolls, its interaction and transitions, its signature moment, then media
-treatment, composition, how its color behaves, its type posture and scale,
-shapes and surfaces), and then names the parts left behind and why. A part
+shown this site, what would they say they noticed about its design? Most
+often that is something the page does rather than something that sits there,
+so it is written from a scroll sequence the producer watched and not from a
+single still; but a signature can equally be a typographic composition, a
+photographic treatment, an editorial grid, or a color relationship, and a
+site that barely moves qualifies when its signature is strong. The `Design to copy` cell then names all the good parts taken from
+that reference in concrete terms, behavior first and then the rest (what the
+page does as it scrolls, its interaction and transitions, its signature
+moment, then media treatment, composition, how its color behaves, its type
+posture and scale, shapes and surfaces), and then names the parts left behind
+and why. Behavior leads the order because it is what gets forgotten, not
+because the rest matters less; a row that records only motion is as
+incomplete as one that records only margins. A part
 that a thousand strangers would not have noticed is not the takeaway and
 does not belong in the cell. The
 build uses the brand's own palette and typefaces chosen for beauty; the

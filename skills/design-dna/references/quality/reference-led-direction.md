@@ -119,11 +119,19 @@ reference: if you showed this site to a stranger and asked what they noticed
 about its design, what would they say? That answer is the site's signature,
 and it is the first thing the row records.
 
-Almost always the signature is something that happens rather than something
+Most often the signature is something that happens rather than something
 that sits there: how the page moves as you scroll, what enters and when and
 how fast, a material or texture that behaves, a transition between pages, a
 cursor that does something, one moment of scale or contrast or surprise.
-Sites reach these galleries for what they do, not for their margins.
+That is why behavior is read first and captured first, and it is the part a
+still image structurally cannot deliver.
+
+It is not the only kind of signature. Some of the best sites barely move, and
+what a stranger names is a typographic composition, a photographic treatment,
+an editorial grid, a color relationship, or the sheer scale of one element.
+Those are signatures too, they are read from stills, and a site with no motion
+is a strong reference when its signature is strong. The test is never whether
+a part moves. The test is whether a stranger would name it.
 
 Then test every part you plan to take against the same question. If a
 thousand strangers would not name it, it is not the takeaway. A warm
@@ -153,9 +161,12 @@ parts left behind, named too. A reference's most distinctive ingredient is
 not automatically a good one, and an ugly, dated, or brand-foreign part is
 left behind however distinctive it is. Judge, in this order: is it beautiful;
 does it fit this brand and audience; does it serve the route's job. Only a
-part that passes all three is taken. Read these things, in this order,
-because the order is what keeps the signature from being lost under the
-furniture:
+part that passes all three is taken. Read all of these things, in this order.
+The order exists because the signature is what gets lost when a producer
+starts with the furniture, not because the later items matter less: a site's
+composition, color behavior, type scale, and shapes are most of what actually
+gets rebuilt, and a row that records only motion is as incomplete as one that
+records only margins.
 
 - what the page does as it is scrolled: what enters and how, what tracks the
   scroll, what pins or sticks and for how long, what scales, masks, splits,
@@ -199,44 +210,56 @@ a PNG saved under `.design-dna/references/`, recorded in the row as
 decodes as a PNG, and matches its hash. A row without a capture is rejected,
 because a reference nobody looked at is not research; it is a plausible name.
 
-For a strong reference the evidence is a scroll sequence, not one still. A
-single full-page screenshot never qualifies a strong reference on its own: a
-full-page composite is stitched from a page that was never watched moving,
-and it is precisely the artifact that produced a set of sidewalk observations
-on 2026-09-02. Do this instead:
+A strong reference needs both kinds of evidence, because each shows what the
+other cannot. Take all of it:
 
-- scroll the page from top to bottom in a real browser and capture the
-  viewport at each step, closely enough that what enters, moves, pins, or
-  transforms is visible between consecutive frames;
-- watch the sequence back before writing the row, and write what moved into
-  the `Signature` cell in words, because no still carries it;
-- capture what a still cannot reach at all: hover and press states on the
-  interactive parts, a page transition, and the phone version scrolled the
-  same way;
-- keep the frames beside the row under the same rank name
-  (`strong-3-scroll-01.png`, `strong-3-narrow.png`), and bind in the row the
-  one frame that shows the signature.
+- a full-page wide capture and a full-page narrow capture. These are how
+  composition, section rhythm, proportion, measure, and the distribution of
+  color across a whole page are read, and none of that is legible in a
+  sequence of viewports. Keep taking them.
+- a scroll sequence: scroll the page from top to bottom in a real browser and
+  capture the viewport at each step, closely enough that what enters, moves,
+  pins, or transforms is visible between consecutive frames. Watch it back
+  before writing the row.
+- what neither still can reach: hover and press states on the interactive
+  parts, a page transition, and the phone version scrolled the same way.
+
+Keep every frame beside the row under the same rank name (`strong-3.png`,
+`strong-3-narrow.png`, `strong-3-scroll-01.png`), and bind in the row the one
+capture that shows the signature, whether that is a scroll frame or the
+full-page still.
+
+What changed is the sufficiency, not the value, of the full-page still. A
+single full-page screenshot no longer qualifies a strong reference on its
+own, because a full-page composite is stitched from a page nobody watched
+moving, and a producer holding only that artifact will describe margins and
+background colors every time. It remains required, and it remains the right
+evidence for everything static.
 
 When motion genuinely cannot be observed, because the site is gone, the entry
 is a gallery still, or scripting fails, say so in the row instead of
-describing motion nobody watched.
+describing motion nobody watched. Such a reference is still eligible; it is
+judged on what can be seen.
 
 A minimal sequence with the Playwright CLI, run from the project root:
 
 ```text
 playwright-cli open "https://example.test/entry"
 playwright-cli resize 1440 900
+playwright-cli screenshot --full-page --filename ".design-dna/references/strong-3.png"
 playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-01.png"
 playwright-cli scroll --delta-y 700
 playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-02.png"
 playwright-cli scroll --delta-y 700
 playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-03.png"
+playwright-cli resize 375 812
+playwright-cli screenshot --full-page --filename ".design-dna/references/strong-3-narrow.png"
 playwright-cli close
 python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" ".design-dna/references/strong-3-scroll-02.png"
 ```
 
 Repeat the scroll and screenshot pair to the foot of the page, then bind the
-frame that shows the signature:
+capture that shows the signature:
 `.design-dna/references/strong-3-scroll-02.png plus sha256:<the printed digest>`.
 Name captures by role and rank (`strong-3.png`, `weak-1.png`) so a reviewer
 can match them to rows without opening the record.

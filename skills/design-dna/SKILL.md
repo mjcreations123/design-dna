@@ -166,18 +166,25 @@ eyes first and drop a thin, dated, or ugly site on sight, because a listing
 means someone submitted it, not that it is good.
 
 The references are where the site's front-end design comes from, and every
-project gets new research. Watch each one rather than screenshotting it: a
-strong row is evidenced by a scroll sequence the producer actually scrolled,
-with hover, transition, and phone passes beside it, because a still can only
-show what does not move and a producer working from stills will extract the
-static parts and miss the reason the site is good. Answer one question before
+project gets new research. Watch each one as well as screenshotting it: a
+strong row is evidenced by full-page wide and narrow stills, which is how
+composition, rhythm, and color distribution are read, plus a scroll sequence
+the producer actually scrolled and hover, transition, and phone passes. The
+still is required and no longer sufficient on its own, because a producer
+holding only that artifact will describe margins and background colors and
+miss the reason the site is good. Answer one question before
 any structural note, and record it in the row's `Signature` cell: if a
 stranger were shown this site, what would they say they noticed about its
 design? Then hold every part you plan to take to the same test. If a thousand
-strangers would not name it, it is not the takeaway. Record the good parts to
-take, behavior first (what the page does as it scrolls, its interaction and
-transitions, its signature moment, then media treatment, composition, how its
-color behaves, type posture and scale, shapes) and the parts to leave.
+strangers would not name it, it is not the takeaway. Most often that answer is
+something the page does, which is why behavior is read and captured first,
+but a signature can equally be a typographic composition, a photographic
+treatment, or a color relationship, and a site that barely moves is a strong
+reference when its signature is strong. Record all the good parts to take,
+behavior first and then the rest (what the page does as it scrolls, its
+interaction and transitions, its signature moment, then media treatment,
+composition, how its color behaves, type posture and scale, shapes) and the
+parts to leave.
 
 Map a selected subset of at least four references into a design transfer map
 and design the site as one thing: the brand's own palette, at most two

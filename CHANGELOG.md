@@ -5,6 +5,27 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.4.1
+
+Behavior leads the reference read; it does not replace it. 6.4.0 corrected a
+real failure and overshot in three places, which the owner caught the same
+day.
+
+- Full-page wide and narrow stills are required again, alongside the scroll
+  sequence. They are how composition, section rhythm, proportion, measure,
+  and color distribution across a whole page are read, and none of that is
+  legible in a series of viewport frames. What changed in 6.4.0 was the
+  sufficiency of the full-page still, never its value.
+- A signature may be static. A typographic composition, a photographic
+  treatment, an editorial grid, or a color relationship is a signature, and a
+  site that barely moves is a strong reference when its signature is strong.
+  The test was never whether a part moves; it is whether a stranger would
+  name it.
+- Behavior-first is stated as a priority order, not an exclusion. The
+  ordering exists because the signature is what gets lost when a producer
+  starts with the furniture. A row that records only motion is as incomplete
+  as one that records only margins.
+
 ## 6.4.0
 
 Look at what a reference is actually known for, not at what a still image can
