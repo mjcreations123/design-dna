@@ -5,6 +5,48 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.5.0
+
+Keeps the corrections from an outside editing pass and removes its
+duplication. The pass added three real improvements and four regressions in
+the same edit, none of it committed.
+
+Kept, because they are genuine corrections:
+
+- Fresh research is required every project, but a reference may legitimately
+  recur when current independent research surfaces it again and the new brief
+  gives it a fresh role. Repetition was never the failure; carrying forward a
+  convenient shortlist is. This replaces a stricter and wrong rule from 6.3.0.
+- A source's filters, sorts, tags, and search are research instruments for the
+  current brief, not a default feed to accept. Site of the Day and award tier
+  are discovery routes, never evidence that a source fits this project. The
+  dossier now records the controls used and the alternate paths considered,
+  and the prebuild gate rejects a record that leaves that line blank.
+- The waterfall test: hide the transfer map, put the candidate beside the
+  source sequence, and ask what extraordinary thing was actually carried over.
+  A transfer that takes only a palette value, a font category, a background,
+  or one generic animation fails even though it names a source.
+
+Removed, because they made the package worse:
+
+- Owner-specific policy had been written directly into SKILL.md, twice opening
+  "For this owner". The skill is distributed, and it already reads a
+  host-neutral owner record at `~/.design-dna/owner-standards.md` for exactly
+  this. Every one of those rules was already recorded there, so nothing was
+  lost by taking them out of the shared router.
+- A `reference-fidelity` record type shipped as 491 lines across a guidance
+  doc, a template, and an audit script, with zero references anywhere in
+  `init_project_state.py`. It could not be initialized, completed, or checked
+  by any gate, and had no tests, while its own text claimed a nonzero result
+  would block broad implementation. A document describing a gate is not a
+  gate.
+- Two of the appended SKILL.md paragraphs restated rules already written in
+  `reference-led-direction.md`. The router grew from 625 to 683 lines and its
+  real instructions got harder to find.
+- Bytecode residue left in `scripts/`, which fails the packaged
+  no-residue test, plus em dashes and curly quotes against the owner's
+  recorded copy voice.
+
 ## 6.4.1
 
 Behavior leads the reference read; it does not replace it. 6.4.0 corrected a

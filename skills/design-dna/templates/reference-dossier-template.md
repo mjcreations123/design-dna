@@ -27,6 +27,8 @@ because a still alone can only show what does not move.
 - Current active registry audit date and limitations:
 - Authorized-account basis, if any; otherwise `none`:
 - Public-access disposition for blocked or unavailable sources:
+- Source-specific filters, sorts, categories, tags, and queries used with brief reason:
+- Plausible alternate discovery paths checked alongside any status-based route:
 - Ledger check (prior references reused, with reason, or `none`):
 
 ## Strong references

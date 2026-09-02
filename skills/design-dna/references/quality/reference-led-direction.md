@@ -70,10 +70,14 @@ a wide and a narrow width before it earns a row.
 
 ## Check the ledger before selecting
 
-Every project gets new research. Do not reuse a reference that a prior
-project in the ledger already used unless the owner asks for it by name; a
-reference set carried from one project to the next is how sites start to
-look alike, and the owner rejected exactly that on 2026-09-02.
+Every project begins with fresh research. Do not begin from a prior project's
+reference set, shortlist, or transfer map. Search the active sources again for
+this brief, record the current discovery paths and retrieval date, and judge
+the visible work again before it earns a row. A reference may appear in more
+than one project when current independent research genuinely surfaces it and
+the new brief gives it a fresh project role; record that reuse and its current
+discovery basis. Repetition is not the failure. Carrying forward the same five
+sites because they are convenient is the failure.
 
 When an authorized cross-project [ledger](ledger.md) exists, read its
 "references used" column for recent unrelated work before choosing this set.
@@ -91,6 +95,17 @@ gallery order for every project. Pick references from any genre for the
 design relationship, never by the client's industry: a baby-crib brand may
 take its design from an art museum, a software manual, a brand-guidelines
 site, or an architecture studio.
+
+When an active source has filters, sorting, categories, tags, or search, use
+those controls to test the current brief's specific experience and content
+questions. Record the controls and the reason they fit the brief, including
+alternative plausible discovery paths considered; the dossier's
+`Source-specific filters` line is required and the prebuild gate rejects a
+record that leaves it blank. A Site of the Day, award
+tier, rank, chronology, or popularity route may be useful for fresh discovery,
+but it is not evidence that a source will serve this project. Keep it as one
+documented route alongside other brief-relevant search paths, never as a
+mandatory gate, the whole candidate pool, or a substitute for source study.
 
 Record at least six strong individual references, drawn from at least three
 active sources, with no single source supplying more than half of the rows.
@@ -154,6 +169,46 @@ Two causes make a producer write down the sidewalk, and both are avoidable:
   chosen is that it was easy to rebuild, it is the wrong part.
 
 ## Read the whole front end, behavior first
+
+### Transfer what made the reference worth opening
+
+A selected reference contributes its memorable whole, not a convenient scrap.
+The producer must be able to state, before implementation, the experience that
+made the page excellent: the main event a visitor would mention after
+exploring it. "It has a dark background", "the type is big", "there is a
+gradient", "the cards have a nice radius", and "it has a hover" are surface
+observations, not a reference takeaway. They describe sidewalk cracks, not the
+waterfall.
+
+For every selected row, begin `Design to copy` with that main event and bind a
+project adaptation that preserves it. Then name the supporting relationships
+that make it work in the source, choosing every applicable layer rather than
+cherry-picking the easiest one:
+
+- the scroll or scene sequence and the pace that creates the experience;
+- the opening and body composition, including what occupies the visitor's
+  attention at each turn;
+- its object, image, illustration, information, or typographic treatment;
+- the color, ground, depth, shape, and scale relationships that give the
+  visual world its identity;
+- hover, press, cursor, navigation, or other visitor-caused behavior; and
+- its narrow-screen recomposition.
+
+The selected project must carry the reference's main event and at least the
+supporting relationships necessary for that event to remain recognizable in
+the new brief. A line that takes only a font posture, palette value, background
+color, one generic animation, or a decorative detail fails this transfer
+standard even if it technically names a source. If the main event is not
+project-appropriate, drop the reference rather than taking its furniture.
+
+Before the candidate is considered direction-ready, apply the **waterfall
+test** to every selected reference: hide the design-transfer map and show the
+candidate beside the source sequence. Can a viewer identify what extraordinary
+experience was carried over, beyond an ingredient list? If the honest answer
+is only that it borrowed a color, type, or layout detail, reopen the source reading and
+the build. The goal is neither a wholesale clone nor a collage; it is an
+adaptation of the strongest whole ideas from several sites into one coherent
+front end.
 
 Every reference has parts worth taking and parts to leave, and the `Design to
 copy` cell records both: the good parts, named in concrete terms, and the

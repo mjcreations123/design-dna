@@ -5881,6 +5881,7 @@ def reference_dossier_failures(
         "Brief and priority-source rationale",
         "Current active registry audit date and limitations",
         "Public-access disposition for blocked or unavailable sources",
+        "Source-specific filters",
         "Ledger check",
     ):
         if not non_placeholder(markdown_label_value(frame, label)):

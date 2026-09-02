@@ -184,6 +184,14 @@ class DossierProject:
             "- Authorized-account basis, if any; otherwise `none`: none",
             "- Public-access disposition for blocked or unavailable sources: Those "
             "sources were excluded from the selected reference set.",
+            "- Source-specific filters, sorts, categories, tags, and queries used "
+            "with brief reason: Filtered each gallery by ecommerce and product "
+            "categories and by recent entries, because the brief turns on a "
+            "product-decision encounter; the default feed was not accepted.",
+            "- Plausible alternate discovery paths checked alongside any "
+            "status-based route: Typography and editorial tags were searched "
+            "beside the award-tier listing so a status filter could not discard "
+            "a better-fitting source.",
             f"- Ledger check (prior references reused, with the brief-specific reason, or `none`): {ledger_check}",
             "",
             "## Strong references",

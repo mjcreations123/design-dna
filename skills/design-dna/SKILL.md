@@ -176,7 +176,10 @@ miss the reason the site is good. Answer one question before
 any structural note, and record it in the row's `Signature` cell: if a
 stranger were shown this site, what would they say they noticed about its
 design? Then hold every part you plan to take to the same test. If a thousand
-strangers would not name it, it is not the takeaway. Most often that answer is
+strangers would not name it, it is not the takeaway. A reference contributes its memorable whole and not a convenient
+scrap: the build must carry that named signature, and a transfer that takes
+only a palette value, a font category, a background, or one generic animation
+fails the standard even though it names a source. Most often that answer is
 something the page does, which is why behavior is read and captured first,
 but a signature can equally be a typographic composition, a photographic
 treatment, or a color relationship, and a site that barely moves is a strong
