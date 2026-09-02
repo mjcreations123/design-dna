@@ -166,16 +166,20 @@ eyes first and drop a thin, dated, or ugly site on sight, because a listing
 means someone submitted it, not that it is good.
 
 The references are where the site's front-end design comes from, and every
-project gets new research. Watch each one as well as screenshotting it: a
-strong row is evidenced by full-page wide and narrow stills, which is how
-composition, rhythm, and color distribution are read, plus a scroll sequence
-the producer actually scrolled and hover, transition, and phone passes. The
-still is required and no longer sufficient on its own, because a producer
-holding only that artifact will describe margins and background colors and
-miss the reason the site is good. Answer one question before
-any structural note, and record it in the row's `Signature` cell: if a
-stranger were shown this site, what would they say they noticed about its
-design? Then hold every part you plan to take to the same test. If a thousand
+project gets new research. Watch each one with the packaged harness
+(`scripts/observe_reference.mjs`, schema 2): it drives the page with real
+wheel gestures, reads every element against the viewport rather than against
+the scroll position, and records the site's mechanisms as numbers: what holds
+in the viewport and for how many pixels, what travels through it, what swaps,
+what reveals, what parallaxes at what rate, what follows the pointer, how long
+a hover takes. A still is kept for composition and is never evidence of what
+a site does. The harness also scores the site, and the gate drops a thin one
+on its own: fewer than three distinct mechanisms, or scroll choreography on
+less than half of its depth, is not a reference. Answer one question before
+any structural note, and record it in the row's `Signature` cell as what the
+site does, with a verb: if a stranger were shown this site, what would they
+say they noticed? A cell that names a subject, a palette or a mood is refused.
+Then hold every part you plan to take to the same test. If a thousand
 strangers would not name it, it is not the takeaway. A reference contributes its memorable whole and not a convenient
 scrap: the build must carry that named signature, and a transfer that takes
 only a palette value, a font category, a background, or one generic animation
@@ -189,14 +193,23 @@ interaction and transitions, its signature moment, then media treatment,
 composition, how its color behaves, type posture and scale, shapes) and the
 parts to leave.
 
-Map a selected subset of at least four references into a design transfer map
-and design the site as one thing: the brand's own palette, at most two
-typefaces chosen for beauty and brand fit (never a mono, pixel, or novelty
-face as a workaround for a reference's font), one rhythm where each section
-flows into the next, and one designed motion language carrying at least one
-selected reference's actual behavior into a named route. Sections that fade
-up on scroll are not a motion language; that is the default every generated
-site ships. Render the first screen at wide and narrow width and put it in
+Map a selected subset of at least four references, at least three of them
+motion rows, into a design transfer map and design the site as one thing: the
+brand's own palette, at most two typefaces chosen for beauty and brand fit
+(never a mono, pixel, or novelty face as a workaround for a reference's font),
+one rhythm where each section flows into the next, and one designed motion
+language carrying the selected references' recorded mechanisms into named
+routes. Every component that ships has a source line in the dossier's
+`Component sources` table with the recorded values it reproduces: navigation,
+opening, buttons, rows and lists, footer, scroll behavior, hover behavior,
+type scale, and anything else on the page. A component with no source is the
+producer's own design, and that ships only with the owner's permission in the
+owner's quoted words. Sections that fade up on scroll are not a motion
+language; that is the default every generated site ships. When the build is
+finished, `scripts/compare_mechanisms.mjs` reads it with the same harness as
+its references; the visual review binds that record, and a build that lost
+the references' mechanisms, leans on one device, or is a skeleton under its
+styling does not pass. Render the first screen at wide and narrow width and put it in
 front of the owner before any other route exists. Name at least one decision
 where the build goes beyond every reference. Before any review chain or gate,
 scroll the candidate, place its renders beside the selected captures, and
@@ -329,9 +342,11 @@ aesthetic rule that did not come from the project or its assurance boundaries.
 - For Enterprise Candidate public builds, complete the project-local
   `reference-dossier.md` before broad implementation. It must bind the active
   public source context, at least six captured strong references from at
-  least three sources, at least three weak/mismatched counterexamples, a
-  selected synthesis of at least four references, and one elevation beyond
-  them. Reference material is a decision input, not a visual
+  least three sources, each bound to a schema-2 observation with a mechanism
+  sheet that passes the thin-site score, at least three weak/mismatched
+  counterexamples, a selected synthesis of at least four references of which
+  three recorded motion, a component-sources table covering every shipping
+  part, and one elevation beyond them. Reference material is a decision input, not a visual
   parts bin: transfer only project-relevant relationships and retain explicit
   non-copying boundaries for brands, copy, assets, code, and distinctive whole
   pages. The final rendered review must close the resulting direction against

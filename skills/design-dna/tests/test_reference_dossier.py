@@ -55,6 +55,15 @@ SYNTHESIS_HEADER = (
     "| Boundary or verification |"
 )
 SYNTHESIS_SEPARATOR = "| --- | --- | --- | --- |"
+COMPONENT_HEADER = (
+    "| Component | Source rank or owner approval | Recorded values reproduced "
+    "| Where it is used |"
+)
+COMPONENT_SEPARATOR = "| --- | --- | --- | --- |"
+REQUIRED_COMPONENTS = (
+    "navigation", "opening", "buttons", "rows or lists", "footer",
+    "scroll behavior", "hover behavior", "type scale",
+)
 
 # Six references spread over three sources so the default body satisfies the
 # spread floor while no source supplies more than half of the rows.
@@ -121,11 +130,26 @@ class DossierProject:
         holds: int = 3,
         hovers: int = 2,
         tool: str = "observe_reference.mjs",
+        schema: int = 2,
+        distinct: int | None = None,
+        coverage: float | None = None,
+        sheet: bool = True,
     ) -> str:
         path = self.captures / f"{name}-observation.json"
         path.parent.mkdir(parents=True, exist_ok=True)
+        mechanisms = (
+            [
+                {"type": "pinned", "tag": "section", "cls": "stage", "held_px": 2400,
+                 "swaps_while_held": 3, "detail": "held while its content changed"},
+                {"type": "parallax", "tag": "img", "cls": "", "rate": 0.4},
+                {"type": "reveal", "tag": "h2", "cls": "", "opacity_from": 0, "opacity_to": 1},
+                {"type": "hover-transition", "ms": 450},
+            ]
+            if motion
+            else []
+        )
         payload = {
-            "schema_version": 1,
+            "schema_version": schema,
             "tool": tool,
             "id": name,
             "url": url,
@@ -139,6 +163,21 @@ class DossierProject:
                 "on_transition": motion,
             },
         }
+        if sheet:
+            payload["mechanisms"] = mechanisms
+            payload["score"] = {
+                "distinct_mechanisms": (
+                    distinct if distinct is not None else (4 if motion else 0)
+                ),
+                "scroll_coverage": (
+                    coverage if coverage is not None else (0.8 if motion else 0.0)
+                ),
+                "scroll_windows_active": 8,
+                "scroll_windows": 10,
+                "elements_with_mechanism": 3,
+                "document_scrolls": True,
+                "scroller": "document",
+            }
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return (
             f"{kind}; .design-dna/references/{name}-observation.json "
@@ -161,6 +200,10 @@ class DossierProject:
         host: str | None = None,
         capture: str | None = None,
         observation: str | None = None,
+        signature: str = (
+            "The product images slide sideways under a pinned heading as the "
+            "page is scrolled, which is what anyone would describe first."
+        ),
     ) -> str:
         url_host = host or f"reference-{rank}.example.test"
         observed = observation or self.observation_cell(
@@ -170,8 +213,7 @@ class DossierProject:
             f"| {rank} | Reference {rank} | https://{url_host}/entry | {source} | "
             f"2026-09-01 | {access} | {capture or self.capture_cell(f'strong-{rank}')} | "
             f"{observed} | "
-            "The product images slide sideways under a pinned heading as the "
-            "page is scrolled, which is what anyone would describe first. | "
+            f"{signature} | "
             "Supports the visitor decision and category story for this exact "
             "project. | A clear hierarchy, media relationship, and direct entry "
             "condition. | Do not reproduce its brand assets, writing, source code, "
@@ -199,7 +241,14 @@ class DossierProject:
             "Real product photography at full-bleed scale on every route, which "
             "none of the selected references attempt; the brief supplies the assets."
         ),
+        component_rows: list[str] | None = None,
     ) -> str:
+        if component_rows is None:
+            component_rows = [
+                f"| {name} | 1 | pinned stage held for 2400px while its content "
+                "swapped three times, hover transition 450ms | the primary route |"
+                for name in REQUIRED_COMPONENTS
+            ]
         if strong_rows is None:
             strong_rows = [
                 self.strong_row(rank, source=DEFAULT_SOURCES[rank - 1])
@@ -260,6 +309,11 @@ class DossierProject:
             SYNTHESIS_HEADER,
             SYNTHESIS_SEPARATOR,
             *synthesis_rows,
+            "",
+            "## Component sources",
+            COMPONENT_HEADER,
+            COMPONENT_SEPARATOR,
+            *component_rows,
         ))
 
 
@@ -725,6 +779,7 @@ class ReferenceLedClosureTests(unittest.TestCase):
             "Lineage result": "Wide and narrow renders beside the selected captures show the lineage in the first screen, type scale, and media treatment.",
             "Rendered result": "Wide and narrow renders confirm the synthesis on every affected route.",
             "Elevation result": "Full-bleed real product photography at a scale no selected reference attempts.",
+            "Mechanism diff": ".design-dna/evidence/mechanism-diff.json plus sha256:" + "0" * 64,
             "Reference-led direction disposition": "keep",
         }
         values.update(overrides)
@@ -860,6 +915,193 @@ class ObservationGateTests(unittest.TestCase):
             any("must begin with the signature kind" in item for item in failures),
             failures,
         )
+
+
+class MechanismGateTests(unittest.TestCase):
+    """6.7.0. Each case is a build the owner rejected, in the form it took."""
+
+    def rows_with_first(self, project, **first):
+        rows = []
+        for rank in range(1, 7):
+            host = f"reference-{rank}.example.test"
+            kwargs = dict(first) if rank == 1 else {}
+            signature = kwargs.pop("signature", None)
+            cell = project.observation_cell(
+                f"strong-{rank}", url=kwargs.pop("url", f"https://{host}/entry"), **kwargs
+            )
+            extra = {"signature": signature} if signature else {}
+            rows.append(project.strong_row(
+                rank, source=DEFAULT_SOURCES[rank - 1], observation=cell, **extra
+            ))
+        return rows
+
+    def run_with(self, **first):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            return project.failures(project.body(strong_rows=self.rows_with_first(project, **first)))
+
+    def test_rich_site_passes(self) -> None:
+        self.assertEqual([], self.run_with())
+
+    def test_schema_one_session_is_rejected(self) -> None:
+        failures = self.run_with(schema=1)
+        self.assertTrue(any("schema_version 2" in item for item in failures), failures)
+
+    def test_session_without_mechanism_sheet_is_rejected(self) -> None:
+        failures = self.run_with(sheet=False)
+        self.assertTrue(any("mechanism sheet" in item for item in failures), failures)
+
+    def test_thin_site_with_one_mechanism_is_rejected(self) -> None:
+        # bodeyco.com: one picture at a time and a clock; the owner called it crap on sight
+        failures = self.run_with(distinct=1)
+        self.assertTrue(any("thin site" in item and "distinct" in item for item in failures), failures)
+
+    def test_one_animated_hero_over_a_static_page_is_rejected(self) -> None:
+        failures = self.run_with(coverage=0.2)
+        self.assertTrue(any("thin site" in item and "depth" in item for item in failures), failures)
+
+    def test_signature_that_names_a_subject_is_rejected(self) -> None:
+        # the sidewalk crack, verbatim from the rejected dossiers
+        for sidewalk in (
+            "Warm domestic object people buy for their home, photography led.",
+            "Pure black page with a large opening paragraph.",
+            "Stark white, product alone, hairline sans.",
+        ):
+            with self.subTest(signature=sidewalk):
+                failures = self.run_with(signature=sidewalk)
+                self.assertTrue(
+                    any("not a mechanism" in item for item in failures), failures
+                )
+
+    def test_signature_that_names_a_mechanism_passes(self) -> None:
+        self.assertEqual([], self.run_with(
+            signature="Content holds in the center of the screen while the next thing travels into it."
+        ))
+
+    def test_selected_set_must_mostly_move(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = []
+            for rank in range(1, 7):
+                host = f"reference-{rank}.example.test"
+                still = rank <= 4
+                cell = project.observation_cell(
+                    f"strong-{rank}", url=f"https://{host}/entry",
+                    kind="static" if still else "motion", motion=not still,
+                )
+                rows.append(project.strong_row(
+                    rank, source=DEFAULT_SOURCES[rank - 1], observation=cell,
+                    signature="A typographic composition that holds one line at full width.",
+                ))
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(any("recorded motion" in item for item in failures), failures)
+
+    def test_component_table_is_required(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body().split("## Component sources", 1)[0]
+            failures = project.failures(body)
+        self.assertTrue(any("Component sources" in item for item in failures), failures)
+
+    def test_every_shipping_component_needs_a_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                "| navigation | 1 | 16px, weight 400, sentence case, hover border .45s | rail |",
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("must cover" in item and "buttons" in item for item in failures), failures)
+
+    def test_component_from_an_unselected_rank_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 6 | pinned stage held for 2400px while its content swapped | route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("selected reference rank" in item for item in failures), failures)
+
+    def test_paraphrased_values_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [f"| {name} | 1 | big type | route |" for name in REQUIRED_COMPONENTS]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("recorded values" in item for item in failures), failures)
+
+    def test_owner_approved_own_design_passes_with_quoted_words(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 1 | pinned stage held for 2400px while its content swapped | route |"
+                for name in REQUIRED_COMPONENTS if name != "footer"
+            ] + [
+                "| footer | owner-approved: \"do the footer your own way, keep it plain\" | "
+                "owner's words above; three columns, 16px, no rules | every route |",
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertEqual([], failures)
+
+    def test_owner_approval_without_words_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | owner-approved: yes | some values reproduced here for the row | route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("owner's actual words" in item for item in failures), failures)
+
+
+class MechanismDiffTests(unittest.TestCase):
+    """The finished build is read by the same harness as its references."""
+
+    def diff(self, temporary: str, payload: dict) -> tuple[Path, Path, str]:
+        project = Path(temporary)
+        state = project / ".design-dna"
+        (state / "evidence").mkdir(parents=True)
+        record = state / "visual-review.md"
+        record.write_text("placeholder\n", encoding="utf-8")
+        artifact = state / "evidence" / "mechanism-diff.json"
+        artifact.write_text(json.dumps(payload), encoding="utf-8")
+        cell = f".design-dna/evidence/mechanism-diff.json plus sha256:{sha256_of(artifact)}"
+        return project, record, f"- Mechanism diff: {cell}\n"
+
+    def test_passing_diff_is_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.diff(temporary, {
+                "tool": "compare_mechanisms.mjs", "pass": True, "verdict": "carried",
+            })
+            failures = INITIALIZER.mechanism_diff_failures(
+                section, project=project, record_path=record
+            )
+        self.assertEqual([], failures)
+
+    def test_skeleton_build_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.diff(temporary, {
+                "tool": "compare_mechanisms.mjs", "pass": False,
+                "verdict": "the references carry scroll choreography and the build carries none",
+            })
+            failures = INITIALIZER.mechanism_diff_failures(
+                section, project=project, record_path=record
+            )
+        self.assertTrue(any("carries none" in item for item in failures), failures)
+
+    def test_hand_written_diff_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.diff(temporary, {"tool": "mine", "pass": True})
+            failures = INITIALIZER.mechanism_diff_failures(
+                section, project=project, record_path=record
+            )
+        self.assertTrue(any("compare_mechanisms.mjs" in item for item in failures), failures)
+
+    def test_missing_binding_is_rejected(self) -> None:
+        failures = INITIALIZER.mechanism_diff_failures(
+            "- Mechanism diff: __REPLACE_WITH_THE_DIFF__\n",
+            project=Path("."), record_path=Path("visual-review.md"),
+        )
+        self.assertTrue(any("must bind" in item for item in failures), failures)
 
 
 if __name__ == "__main__":

@@ -28,8 +28,13 @@ node "<DESIGN_DNA_SKILL_ROOT>/scripts/observe_reference.mjs" \
 ```
 
 The `Observed evidence` cell then reads `motion; .design-dna/references/strong-1-observation.json plus sha256:<hex>`
-for a site the session saw move, or `static; ...` for one it did not. The gate
-rejects a motion claim that the session does not support.
+for a site the session saw move, or `static; ...` for one it did not. The
+session is schema 2: it carries a mechanism sheet (what held, travelled,
+swapped, revealed, parallaxed, followed the pointer, and how long a hover
+takes) and a score. The gate rejects a motion claim the session does not
+support, and it rejects a motion row on its own numbers when the site is thin:
+fewer than three distinct mechanisms, or scroll choreography on less than half
+of its depth. Nobody vets the list; the harness does.
 
 ## Research frame
 
@@ -59,12 +64,15 @@ reference that earns its place. Number ranks 1 through N without gaps.
 
 The rank reflects fit for this exact brief, not a universal quality score.
 Every row's `Signature` cell answers one question first: if a stranger were
-shown this site, what would they say they noticed about its design? Most
-often that is something the page does rather than something that sits there,
-so it is written from a scroll sequence the producer watched and not from a
-single still; but a signature can equally be a typographic composition, a
-photographic treatment, an editorial grid, or a color relationship, and a
-site that barely moves qualifies when its signature is strong. The `Design to copy` cell then names all the good parts taken from
+shown this site, what would they say they noticed about its design? Write it
+as what the site does, with a verb: what holds, travels, swaps, reveals,
+follows, transitions. The gate refuses a cell without one, because "warm
+domestic object, photography led", "pure black page", "stark white, product
+alone" and "one image at a time" were each recorded as a signature by this
+skill's producer and each build was rejected: they name the subject, the
+palette or the mood, which is the sidewalk and not the falls. A static
+signature (a typographic composition, an editorial grid) is still written as
+what it does to the reader as they move through it. The `Design to copy` cell then names all the good parts taken from
 that reference in concrete terms, behavior first and then the rest (what the
 page does as it scrolls, its interaction and transitions, its signature
 moment, then media treatment, composition, how its color behaves, its type
@@ -108,7 +116,8 @@ style bans.
 This table is the design transfer map. Each row names which reference's
 front-end design is copied and which route, section, or system role of this
 project receives it (first screen, comparison route, product hero, type
-system, palette, motion language, phone recomposition). At least one row
+system, palette, motion language, phone recomposition). At least three of the
+selected ranks must be `motion` rows. At least one row
 carries behavior, not only static composition: the `Behavior copied and where
 it is rendered` line above names it and the route whose rendered scroll
 sequence proves it. Different routes may
@@ -118,3 +127,29 @@ one rhythm where each section flows into the next; sections from different
 references that change voice at every screen fail the record. The references are the floor for this
 project, not its ceiling: the elevation line names where the build goes
 further than any of them.
+
+## Component sources
+
+Every part that ships has a source line, or it is the producer's own design,
+which needs the owner's permission in the owner's words. This is where the
+rejected builds came from: the references supplied one scroll effect and the
+producer supplied the nav, the buttons, the list rows and the footer from
+memory, and memory is the generic skeleton every time.
+
+| Component | Source rank or owner approval | Recorded values reproduced | Where it is used |
+| --- | --- | --- | --- |
+| navigation |  |  |  |
+| opening |  |  |  |
+| buttons |  |  |  |
+| rows or lists |  |  |  |
+| footer |  |  |  |
+| scroll behavior |  |  |  |
+| hover behavior |  |  |  |
+| type scale |  |  |  |
+
+`Source rank or owner approval` is a selected rank, or
+`owner-approved: "<the owner's actual words>"`. `Recorded values reproduced`
+carries the numbers taken from the source's mechanism sheet and measured
+styles (held distances, swap counts, durations, easings, sizes, weights,
+tracking), never a paraphrase such as "big type" or "a nice hover". Add rows
+for every further component the build has; the eight above are the floor.

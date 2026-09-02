@@ -1185,6 +1185,7 @@ REQUIRED_RECORD_SECTIONS = {
         "Strong references",
         "Negative counterexamples",
         "Selected synthesis",
+        "Component sources",
     },
     "direction": {
         "Identity and intent",
@@ -5667,6 +5668,45 @@ REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 # Two held scroll positions is the floor at which a producer can tell an
 # animated arrival from a static one; one hold proves nothing.
 REFERENCE_OBSERVATION_MIN_HOLDS = 2
+REFERENCE_OBSERVATION_SCHEMA = 2
+# A site earns a motion row on its own numbers: at least three distinct
+# mechanisms, with scroll choreography active on at least half of its depth.
+# Below that it is a thin site, and a thin reference teaches a thin design.
+REFERENCE_MECHANISM_MIN_DISTINCT = 3
+REFERENCE_MECHANISM_MIN_COVERAGE = 0.5
+# Most of the selected set has to do something; a build cannot take its
+# behavior from references that have none.
+REFERENCE_MINIMUM_SELECTED_MOTION = 3
+# A signature is what a site does. A cell with none of these is describing a
+# subject, a palette or a mood, which is the sidewalk and not the falls.
+REFERENCE_SIGNATURE_VERBS = re.compile(
+    r"\b(hold|holds|held|pin|pins|pinned|stick|sticks|stuck|travel|travels|"
+    r"swap|swaps|crossfade|crossfades|fade|fades|reveal|reveals|slide|slides|"
+    r"scroll|scrolls|parallax|follow|follows|track|tracks|morph|morphs|"
+    r"expand|expands|grow|grows|shrink|shrinks|snap|snaps|animate|animates|"
+    r"transition|transitions|wipe|wipes|mask|masks|split|splits|assemble|"
+    r"assembles|write|writes|light|lights|move|moves|moving|enter|enters|"
+    r"arrive|arrives|drift|drifts|plays|loop|loops|respond|responds|react|reacts)\b",
+    re.IGNORECASE,
+)
+REFERENCE_DOSSIER_COMPONENT_HEADERS = (
+    "Component",
+    "Source rank or owner approval",
+    "Recorded values reproduced",
+    "Where it is used",
+)
+# Every one of these ships on a public site; every one needs a source line
+# or it is the producer's own design, which needs the owner's permission.
+REFERENCE_DOSSIER_REQUIRED_COMPONENTS = (
+    "navigation",
+    "opening",
+    "buttons",
+    "rows or lists",
+    "footer",
+    "scroll behavior",
+    "hover behavior",
+    "type scale",
+)
 REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Rank",
     "Reference title or visible entry",
@@ -5967,8 +6007,12 @@ def reference_dossier_failures(
                 "observe_reference.mjs harness; a hand-written or ad-hoc "
                 "capture cannot establish what was watched."
             )
-        if payload.get("schema_version") != 1:
-            problems.append(f"{observation_label} must use observation schema_version 1.")
+        if payload.get("schema_version") != REFERENCE_OBSERVATION_SCHEMA:
+            problems.append(
+                f"{observation_label} must use observation schema_version "
+                f"{REFERENCE_OBSERVATION_SCHEMA}; an older session has no mechanism "
+                "sheet and cannot say what the site does."
+            )
         observed_url = payload.get("url")
         if not isinstance(observed_url, str) or not observed_url:
             problems.append(f"{observation_label} must record the observed URL.")
@@ -6012,12 +6056,59 @@ def reference_dossier_failures(
                 "transition. Record what was actually seen instead of the motion "
                 "the site was assumed to have."
             )
+        mechanisms = payload.get("mechanisms")
+        score = payload.get("score")
+        if not isinstance(mechanisms, list) or not isinstance(score, dict):
+            problems.append(
+                f"{observation_label} must carry a mechanism sheet and a score; "
+                "a session without them only proves that something moved."
+            )
+        elif kind == "motion":
+            distinct = score.get("distinct_mechanisms")
+            coverage = score.get("scroll_coverage")
+            if not isinstance(distinct, int) or distinct < REFERENCE_MECHANISM_MIN_DISTINCT:
+                problems.append(
+                    f"{label} is a thin site: its session recorded "
+                    f"{distinct if isinstance(distinct, int) else 0} distinct "
+                    f"mechanism(s) and the floor is {REFERENCE_MECHANISM_MIN_DISTINCT}. "
+                    "A site that does one thing, or nothing, is not a reference "
+                    "for behavior; drop it and keep looking."
+                )
+            if (
+                not isinstance(coverage, (int, float))
+                or coverage < REFERENCE_MECHANISM_MIN_COVERAGE
+            ):
+                problems.append(
+                    f"{label} is a thin site: scroll choreography was active on "
+                    f"{coverage if isinstance(coverage, (int, float)) else 0} of "
+                    f"its depth and the floor is {REFERENCE_MECHANISM_MIN_COVERAGE}. "
+                    "One animated hero over a static page is the generic shape."
+                )
         return problems
+
+    def signature_failures(cell: str, label: str) -> list[str]:
+        """A signature names what the site does, in a verb.
+
+        'Black page', 'warm cream', 'one image at a time', 'domestic object,
+        photography led' are all true and all sidewalk cracks. The producer
+        who wrote this gate reported each of them as a signature, and the
+        owner rejected each build. A cell without a mechanism verb is refused
+        before anyone spends an hour building from it.
+        """
+        if REFERENCE_SIGNATURE_VERBS.search(cell) is None:
+            return [
+                f"{label} signature describes a subject, palette or mood, not a "
+                "mechanism. Say what the site does as it is scrolled, hovered or "
+                "entered (what holds, travels, swaps, reveals, follows, "
+                "transitions), because that is what a stranger would name."
+            ]
+        return []
 
     strong_headers, strong_rows = markdown_first_table(
         sections.get("Strong references", "")
     )
     source_by_rank: dict[int, str] = {}
+    kind_by_rank: dict[str, str] = {}
     strong_count = max(len(strong_rows), REFERENCE_MINIMUM_STRONG)
     if (
         strong_headers != REFERENCE_DOSSIER_STRONG_HEADERS
@@ -6060,6 +6151,8 @@ def reference_dossier_failures(
             )
             failures.extend(capture_failures(row[6], label))
             failures.extend(observation_failures(row[7], label, row[2]))
+            failures.extend(signature_failures(row[8], label))
+            kind_by_rank[row[0]] = row[7].split(";", 1)[0].strip().casefold()
             access = row[5].split(";", 1)[0].strip().casefold()
             url_match = re.search(r"https://[^\s)]+", row[2])
             if access == "public-live" and url_match is not None:
@@ -6144,6 +6237,16 @@ def reference_dossier_failures(
                 "Reference dossier selected references must come from at least "
                 "two distinct sources."
             )
+        moving = sum(
+            1 for rank in selected_ranks if kind_by_rank.get(str(rank)) == "motion"
+        )
+        if moving < REFERENCE_MINIMUM_SELECTED_MOTION:
+            failures.append(
+                "Reference dossier must select at least "
+                f"{REFERENCE_MINIMUM_SELECTED_MOTION} references whose sessions "
+                "recorded motion; a build cannot take its behavior from sites "
+                "that have none."
+            )
     for label in (
         "Project-specific organizing synthesis",
         "Behavior copied and where it is rendered",
@@ -6179,6 +6282,58 @@ def reference_dossier_failures(
             failures.append(
                 "Reference dossier selected ranks need a mapped project decision: "
                 + ", ".join(str(rank) for rank in missing_mapped)
+            )
+
+    # Every component that ships has a source line. A component with none is
+    # the producer's own design, and that needs the owner's words, quoted.
+    component_section = sections.get("Component sources", "")
+    component_headers, component_rows = markdown_first_table(component_section)
+    if component_headers != REFERENCE_DOSSIER_COMPONENT_HEADERS or not component_rows:
+        failures.append(
+            "Reference dossier needs a Component sources table using the exact "
+            "contract; a build whose parts have no source is the producer's own "
+            "design."
+        )
+    else:
+        covered: set[str] = set()
+        for row_number, row in enumerate(component_rows, start=1):
+            label = f"Reference dossier component row {row_number}"
+            if len(row) != len(REFERENCE_DOSSIER_COMPONENT_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{label} is incomplete.")
+                continue
+            component = row[0].strip().casefold()
+            covered.add(component)
+            source = row[1].strip()
+            if source.casefold().startswith("owner-approved:"):
+                quote = source.split(":", 1)[1].strip()
+                if len(quote) < 12:
+                    failures.append(
+                        f"{label} owner approval must quote the owner's actual "
+                        "words granting the producer's own design for this part."
+                    )
+            else:
+                row_ranks = reference_rank_values(source, maximum=strong_count)
+                if row_ranks is None or not row_ranks.issubset(selected_ranks):
+                    failures.append(
+                        f"{label} must name a selected reference rank as its "
+                        "source, or `owner-approved: <the owner's words>`."
+                    )
+            if len(row[2].strip()) < 24:
+                failures.append(
+                    f"{label} must reproduce the recorded values it takes "
+                    "(sizes, distances, durations, easings, counts), not a "
+                    "paraphrase of the reference."
+                )
+        missing_components = [
+            name for name in REFERENCE_DOSSIER_REQUIRED_COMPONENTS if name not in covered
+        ]
+        if missing_components:
+            failures.append(
+                "Reference dossier Component sources must cover: "
+                + ", ".join(missing_components)
+                + ". A part with no source line does not ship."
             )
     return failures
 
@@ -7132,6 +7287,11 @@ def visual_review_schema3_capture_matrix_failures(
         )
         failures.extend(reference_led_closure_label_failures(closure_section))
         failures.extend(
+            mechanism_diff_failures(
+                closure_section, project=project, record_path=record_path
+            )
+        )
+        failures.extend(
             closure_table_failures(
                 "Reference-led direction closure (required for public candidates)",
                 REFERENCE_LED_DIRECTION_CLOSURE_HEADERS,
@@ -7149,6 +7309,7 @@ REFERENCE_LED_CLOSURE_LABELS = (
     "Lineage result",
     "Rendered result",
     "Elevation result",
+    "Mechanism diff",
 )
 REFERENCE_LED_CLOSURE_DISPOSITIONS = {
     "keep",
@@ -7157,6 +7318,41 @@ REFERENCE_LED_CLOSURE_DISPOSITIONS = {
     "reject",
     "blocked",
 }
+
+
+def mechanism_diff_failures(
+    section: str, *, project: Path, record_path: Path
+) -> list[str]:
+    """The finished build is read by the same harness as its references.
+
+    The closure binds the compare_mechanisms.mjs record for the final build,
+    and it must pass: the references' scroll and pointer mechanisms arrived,
+    no single device is overused, and the page is not a skeleton. A build
+    reviewed only by eye passes on color and type every time; this is the
+    check that asks whether the falls came with it.
+    """
+    label = "Reference-led direction closure Mechanism diff"
+    value = (markdown_label_value(section, "Mechanism diff") or "").strip()
+    if not non_placeholder(value) or value.startswith("__REPLACE_WITH"):
+        return [f"{label} must bind the compare_mechanisms.mjs record for the final build."]
+    artifact, artifact_failures = bound_artifact(
+        value, project=project, record_path=record_path, label=label
+    )
+    if artifact_failures or artifact is None:
+        return artifact_failures
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"{label} is not readable JSON: {exc}"]
+    if not isinstance(payload, dict) or payload.get("tool") != "compare_mechanisms.mjs":
+        return [f"{label} must be emitted by the packaged compare_mechanisms.mjs."]
+    if payload.get("pass") is not True:
+        return [
+            f"{label} did not pass: "
+            + str(payload.get("verdict") or "the build does not carry the references' mechanisms")
+            + ". Return to the transfer map; a build that lost the mechanisms is a skeleton."
+        ]
+    return []
 
 
 def reference_led_closure_label_failures(section: str) -> list[str]:

@@ -5,6 +5,46 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.7.0
+
+The mechanism gate. 6.6.0 proved that a producer had watched a site move. It
+could not say what the site did, so the producer went on to measure font
+sizes, padding and radii off four references, build from those, and describe
+one of them as "a warm domestic object, photography led". The owner looked at
+the same four and called three of them crap on sight; the fourth's signature,
+content that holds in the center of the screen while the next thing travels
+into it, had never been recorded because the site's document never scrolls
+and every instrument read scrollY. Nine builds of one brief were rejected in
+one day. Every fix in between was prose. This release is four checks.
+
+- `scripts/observe_reference.mjs` is schema 2. It drives the page with real
+  wheel gestures large enough to move a snapping reel, reads every element
+  against the viewport, and finds the scroller that actually consumed the
+  input, document or inner. It emits a mechanism sheet: what held and for how
+  many pixels, what travelled through the held frame, what swapped, what
+  revealed, what parallaxed at what rate, what followed the pointer, how long
+  a hover takes, whether the next page arrives animated. On samara.com it now
+  reports a stage held for 69,300px of scroll with slides travelling through
+  it; the previous version reported nothing.
+- The harness scores each site, and the dossier gate refuses a thin one on
+  its own: fewer than three distinct mechanisms, or scroll choreography on
+  less than half of its depth. No owner vets a list. At least three of the
+  selected references must have recorded motion.
+- A `Signature` cell must contain a verb of what the site does. "Warm domestic
+  object", "pure black page", "stark white, product alone" and "one image at a
+  time" are refused; each was recorded as a signature and each build failed.
+- The dossier gains a required `Component sources` table. Every shipping
+  part (navigation, opening, buttons, rows and lists, footer, scroll behavior,
+  hover behavior, type scale) names a selected rank and the recorded values it
+  reproduces, or `owner-approved:` with the owner's quoted words. A part with
+  no source does not ship.
+- New `scripts/compare_mechanisms.mjs` reads the finished build with the same
+  mechanism pass and diffs its sheet against the selected references. The
+  visual review's reference-led closure binds that record, and it must pass:
+  the references' scroll and pointer mechanisms carried, no single device used
+  more than twice as often as any source used it, and never a page with no
+  scroll choreography under references that have it.
+
 ## 6.6.0
 
 The observation gate. 6.4.0 told the producer to watch each reference scroll

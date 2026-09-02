@@ -21,9 +21,11 @@ public build is an omission the gate will flag.
 - [Name what the site is known for](#name-what-the-site-is-known-for)
 - [Read the whole front end, behavior first](#read-the-whole-front-end-behavior-first)
 - [Capture what you looked at](#capture-what-you-looked-at)
-- [Take the good parts into one design](#take-the-good-parts-into-one-design) |
-[Approve the first screen](#approve-the-first-screen) |
-[Check beauty, lineage, and flow before any gate](#check-beauty-lineage-and-flow-before-any-gate)
+- [Take the good parts into one design](#take-the-good-parts-into-one-design)
+- [Give every component a source](#give-every-component-a-source)
+- [Approve the first screen](#approve-the-first-screen)
+- [Diff the finished build against its references](#diff-the-finished-build-against-its-references)
+- [Check beauty, lineage, and flow before any gate](#check-beauty-lineage-and-flow-before-any-gate)
 - [Improve beyond the set](#improve-beyond-the-set)
 - [Continue autonomously](#continue-autonomously)
 
@@ -122,10 +124,19 @@ own eyes whether it is beautiful and whether you would be proud to have made
 it. A thin, dated, or ugly site is dropped on sight however it was listed and
 however neatly it would have filled a source-spread requirement.
 
-If the set cannot be filled with sites the producer honestly finds beautiful,
-keep looking. Padding to reach the floor is worse than searching longer,
-because a mediocre reference teaches a mediocre design. The floor exists to
-stop one site becoming the template; it is not a quota to be met at any cost.
+The producer's eye alone has not been enough. Asked which sites a rejected
+build came from, the producer named four; the owner opened them and called
+three crap on sight. So the harness scores every candidate and the gate drops
+a thin one without anyone having to look: a site with fewer than three
+distinct mechanisms, or with scroll choreography active on less than half of
+its depth, cannot hold a `motion` row. One animated hero over an otherwise
+static page is the generic shape, and it scores as one.
+
+The score is a floor, not the judgment. A site can clear it and still be ugly,
+and that is the producer's call to make before the row is written. If the set
+cannot be filled with sites the producer honestly finds beautiful, keep
+looking. Padding to reach the floor is worse than searching longer, because a
+mediocre reference teaches a mediocre design.
 
 ## Name what the site is known for
 
@@ -147,6 +158,15 @@ an editorial grid, a color relationship, or the sheer scale of one element.
 Those are signatures too, they are read from stills, and a site with no motion
 is a strong reference when its signature is strong. The test is never whether
 a part moves. The test is whether a stranger would name it.
+
+Write the signature as a verb. The gate refuses a `Signature` cell with no
+word for what the site does, because every rejected build in this skill's
+history recorded a noun. "Warm domestic object people buy for their home,
+photography led" was written about a site whose actual signature was content
+holding in the center of the screen while the next thing travelled into it.
+"Pure black page with a large opening paragraph", "stark white, product
+alone", "one image at a time with a running clock" were the others. Each is
+true. Each is a subject, a palette or a mood. Each produced a rejected build.
 
 Then test every part you plan to take against the same question. If a
 thousand strangers would not name it, it is not the takeaway. A warm
@@ -266,25 +286,42 @@ decodes as a PNG, and matches its hash. A row without a capture is rejected,
 because a reference nobody looked at is not research; it is a plausible name.
 
 Watch the site with the packaged harness before writing anything about it.
-`scripts/observe_reference.mjs` opens the page, holds it still at a series of
-scroll positions and screenshots each arrival twice, hovers real interactive
-elements, and follows a link so the transition is seen. It compares the frames
-and records whether anything actually moved. Run it once per strong reference:
+`scripts/observe_reference.mjs` drives the page with real wheel gestures,
+reads every element's geometry against the viewport, finds whichever scroller
+actually consumed the input, and records the site's mechanisms as numbers:
+what held in the viewport and for how many pixels, what travelled through the
+held frame, what swapped while it held, what revealed, what parallaxed and at
+what rate, what followed the pointer, how long a hover takes, and whether the
+next page arrives animated. Run it once per strong reference:
 
 ```text
 node "<DESIGN_DNA_SKILL_ROOT>/scripts/observe_reference.mjs" \
   --url "https://example.test/" --id strong-1 --out .design-dna/references
 ```
 
-Do not substitute a hand-rolled capture script. The failure this replaces is
-specific and was committed by the producer who wrote this paragraph: told to
-watch a site scroll, the producer jumped the scroll position with
+Do not substitute a hand-rolled capture script, and do not measure a site with
+a script of your own. Two failures are being replaced here, both committed by
+the producer who wrote this paragraph.
+
+The first: told to watch a site scroll, it jumped the scroll position with
 `window.scrollTo`, screenshotted the resting state at each stop, and called a
 sequence of stills a scroll sequence. A resting frame cannot show a reveal, a
-parallax, a hover, or a transition, so every takeaway came back as something a
-photograph can hold: a background color, a wordmark placement, a mask shape.
-The gate now binds the session and refuses a motion claim the session does not
-support, so this cannot be reported around.
+parallax, a hover or a transition, so every takeaway came back as something a
+photograph can hold.
+
+The second, after that was fixed: told to copy the design rather than
+paraphrase it, it wrote a measuring script that read computed styles, font
+sizes, padding, radii and colors, and built from those. Every one of those is
+a property of a still. The tool could not see a pinned stage, so the producer
+could not report one, and the build it produced was rejected for the same
+reason as all the others. On one of those four references the document never
+scrolls at all: the page is 900px tall and moves its content by transform
+inside an inner scroller. Every instrument that watched `window.scrollY` saw
+a site that does nothing. The harness now finds that scroller and reports the
+stage held for 69,300px of scroll with the slides travelling through it.
+
+The mechanism sheet is what a build reproduces. Not "big type" or "a nice
+fade": the held distance, the swap count, the rate, the duration, the easing.
 
 A strong reference needs both kinds of evidence, because each shows what the
 other cannot. Take all of it:
@@ -395,6 +432,28 @@ Keep the dossier and synthesis internal. They should guide the work, never
 leak onto the customer-facing website as process labels, design rationale, or
 back-end taxonomy.
 
+## Give every component a source
+
+The rejected builds all had the same shape underneath. The references
+supplied one scroll effect, and the producer supplied the navigation, the
+buttons, the list rows, the section headings and the footer from memory.
+Memory produces the generic skeleton every time, so the result was the
+skeleton with one borrowed effect painted on it, and the owner named exactly
+that: "the call to action buttons, the shapes, the sizes, the colors, and
+everything about that looks vibe coded."
+
+The dossier's `Component sources` table closes it. Every part that ships on
+the site names either a selected reference rank and the recorded values it
+reproduces, or `owner-approved:` with the owner's own words permitting the
+producer's design for that part. The gate requires at least navigation,
+opening, buttons, rows or lists, footer, scroll behavior, hover behavior, and
+type scale, and refuses a values cell that paraphrases instead of reproducing.
+A component with no source line does not ship.
+
+This is not a licence to assemble a collage. The parts still have to become
+one design, by the rules in the section above: one palette, one type system,
+one rhythm, one motion language.
+
 ## Approve the first screen
 
 Build and render the first screen of the primary route before any other
@@ -404,6 +463,30 @@ the reference captures) as a checkpoint. It must already carry the palette,
 the type system, the media treatment, and the first motion of the whole
 site. Building eight routes on an unapproved first screen was how the two
 rejected builds of 2026-09-01 and 2026-09-02 lost their time.
+
+## Diff the finished build against its references
+
+When the build runs, read it with the same harness that read the references
+and compare the sheets:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_mechanisms.mjs" \
+  --url "http://127.0.0.1:4880/" \
+  --source .design-dna/references/strong-1-observation.json \
+  --source .design-dna/references/strong-2-observation.json \
+  --out .design-dna/evidence/mechanism-diff.json
+```
+
+It fails in three ways, and each one is a build this skill has already
+shipped. The references carry scroll choreography and the build carries none,
+which is the skeleton under the styling. The build carries fewer than half of
+the mechanism types the references rely on, which is the takeaway that got
+lost. Or one device appears more than twice as often in the build as in any
+source, which is the fade on every section: the default every generated site
+ships, and the tell the owner names first.
+
+The visual review's reference-led closure binds this record and it must pass.
+A build reviewed only by eye passes on color and type every time.
 
 ## Check beauty, lineage, and flow before any gate
 

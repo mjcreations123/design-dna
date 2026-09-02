@@ -239,8 +239,11 @@ illustration, and code; the lineage result from placing the wide and narrow
 renders beside the selected reference captures; the wide and
 narrow review of the synthesis after every affected route body and state
 was rerendered; and the named decision that goes beyond every selected
-reference, as actually observed in the render. Each value below is required
-when this closure applies.
+reference, as actually observed in the render; and the mechanism diff, the
+`compare_mechanisms.mjs` record that read the final build with the same
+harness as its references and found their mechanisms present, no device
+overused, and no skeleton. Each value below is required when this closure
+applies.
 
 - Dossier result: __REPLACE_WITH_DOSSIER_PATH_STATE_ACCESS_BOUNDARY_AND_SELECTED_RANKS__
 - Positive synthesis: __REPLACE_WITH_THE_VISITOR_FACING_DECISIONS_DRAWN_FROM_THE_SELECTED_REFERENCES__
@@ -249,6 +252,7 @@ when this closure applies.
 - Lineage result: __REPLACE_WITH_WHETHER_A_DESIGNER_WOULD_SEE_THE_SITE_CAME_FROM_THE_SELECTED_SET_AND_WHERE__
 - Rendered result: __REPLACE_WITH_THE_WIDE_AND_NARROW_REVIEW_OF_THE_SYNTHESIS__
 - Elevation result: __REPLACE_WITH_THE_DECISION_THAT_GOES_BEYOND_EVERY_REFERENCE_AS_OBSERVED__
+- Mechanism diff: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_MECHANISM_DIFF_JSON_PLUS_SHA256__
 - Reference-led direction disposition: __REPLACE_WITH_KEEP_REVISE_REOPEN_DIRECTION_REJECT_OR_BLOCKED__
 
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Reference synthesis, counterevidence, and rendered result |
