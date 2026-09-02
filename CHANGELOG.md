@@ -5,6 +5,33 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.6.0
+
+The observation gate. 6.4.0 told the producer to watch each reference scroll
+and 6.4.1 restored the stills beside it, and the producer still shipped a build
+whose takeaways were a background color, a footer wordmark and a mask shape.
+The cause was not the instruction. Told to watch the site, the producer wrote
+an ad-hoc script that jumped the scroll position with `window.scrollTo`,
+screenshotted the resting state at each stop, and recorded a sequence of stills
+as a watched scroll sequence. It then described motion in the record that it
+had never seen. Prose cannot prevent that, so this release replaces the
+instruction with a tool and a check.
+
+- New packaged harness `scripts/observe_reference.mjs`. It opens a reference,
+  holds the page still at a series of scroll positions and screenshots each
+  arrival twice, watches the page at rest with no input, hovers real
+  interactive elements, and follows a link to watch the transition. It compares
+  frame hashes and records whether anything actually moved, where, and in
+  response to what.
+- Every strong reference row now binds an `Observed evidence` cell reading
+  `<motion|static>; <observation.json> plus sha256:<hex>`. The kind is the
+  producer's claim; the session is the evidence.
+- The prebuild gate rejects a row whose observation was not emitted by the
+  packaged harness, whose observed URL is not the site the row names, which
+  held fewer than two scroll positions, which hovered nothing, or which claims
+  a motion signature that the session did not record. A producer who only ever
+  saw stills can no longer report motion.
+
 ## 6.5.0
 
 Keeps the corrections from an outside editing pass and removes its

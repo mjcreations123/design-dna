@@ -18,8 +18,18 @@ under `.design-dna/references/` and bind each one as
 `path plus sha256:<64 lowercase hex>`. A row without a capture is a row the
 prebuild gate rejects; the capture is the evidence that the research happened.
 A strong reference binds full-page wide and narrow stills, which is how
-composition and rhythm are read, plus a scroll sequence the producer watched,
-because a still alone can only show what does not move.
+composition and rhythm are read, plus an observation session emitted by the
+packaged `observe_reference.mjs` harness, which is the only evidence that
+establishes what the site actually does. Run it before writing the row:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/observe_reference.mjs" \
+  --url "https://example.test/" --id strong-1 --out .design-dna/references
+```
+
+The `Observed evidence` cell then reads `motion; .design-dna/references/strong-1-observation.json plus sha256:<hex>`
+for a site the session saw move, or `static; ...` for one it did not. The gate
+rejects a motion claim that the session does not support.
 
 ## Research frame
 
@@ -38,14 +48,14 @@ no single source supplying more than half of the rows. The floor exists so
 that no one site becomes the template; it is not a target. Add rows for every
 reference that earns its place. Number ranks 1 through N without gaps.
 
-| Rank | Reference title or visible entry | Public URL or gallery-entry URL | Discovery source | Retrieval date | Access status | Capture path and SHA-256 | Signature (what a stranger would name) | Brief relevance | Design to copy | Rights boundary |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
-| 2 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
-| 3 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
-| 4 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
-| 5 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
-| 6 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |  |  |
+| Rank | Reference title or visible entry | Public URL or gallery-entry URL | Discovery source | Retrieval date | Access status | Capture path and SHA-256 | Observed evidence | Signature (what a stranger would name) | Brief relevance | Design to copy | Rights boundary |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| 2 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| 3 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| 4 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| 5 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| 6 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
 
 The rank reflects fit for this exact brief, not a universal quality score.
 Every row's `Signature` cell answers one question first: if a stranger were

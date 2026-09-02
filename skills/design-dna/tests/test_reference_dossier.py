@@ -38,11 +38,11 @@ INITIALIZER = load_initializer()
 STRONG_HEADER = (
     "| Rank | Reference title or visible entry | Public URL or gallery-entry URL "
     "| Discovery source | Retrieval date | Access status | Capture path and SHA-256 "
-    "| Signature (what a stranger would name) | Brief relevance | Design to copy "
-    "| Rights boundary |"
+    "| Observed evidence | Signature (what a stranger would name) "
+    "| Brief relevance | Design to copy | Rights boundary |"
 )
 STRONG_SEPARATOR = (
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
 )
 NEGATIVE_HEADER = (
     "| Reference title or visible entry | Public URL or gallery-entry URL "
@@ -111,6 +111,40 @@ class DossierProject:
             write_png(path)
         return f".design-dna/references/{name}.png plus sha256:{sha256_of(path)}"
 
+    def observation_cell(
+        self,
+        name: str,
+        *,
+        kind: str = "motion",
+        url: str = "https://reference.example.test/entry",
+        motion: bool = True,
+        holds: int = 3,
+        hovers: int = 2,
+        tool: str = "observe_reference.mjs",
+    ) -> str:
+        path = self.captures / f"{name}-observation.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "schema_version": 1,
+            "tool": tool,
+            "id": name,
+            "url": url,
+            "observed_at": "2026-09-02T00:00:00Z",
+            "coverage": {"rest": True, "scroll_holds": holds, "hovers": hovers, "transition": True},
+            "motion": {
+                "observed": motion,
+                "at_rest": False,
+                "on_scroll_holds": holds if motion else 0,
+                "on_hover": hovers if motion else 0,
+                "on_transition": motion,
+            },
+        }
+        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        return (
+            f"{kind}; .design-dna/references/{name}-observation.json "
+            f"plus sha256:{sha256_of(path)}"
+        )
+
     def failures(self, body: str) -> list[str]:
         return INITIALIZER.reference_dossier_failures(
             body,
@@ -126,11 +160,16 @@ class DossierProject:
         access: str = "public-gallery-entry",
         host: str | None = None,
         capture: str | None = None,
+        observation: str | None = None,
     ) -> str:
         url_host = host or f"reference-{rank}.example.test"
+        observed = observation or self.observation_cell(
+            f"strong-{rank}", url=f"https://{url_host}/entry"
+        )
         return (
             f"| {rank} | Reference {rank} | https://{url_host}/entry | {source} | "
             f"2026-09-01 | {access} | {capture or self.capture_cell(f'strong-{rank}')} | "
+            f"{observed} | "
             "The product images slide sideways under a pinned heading as the "
             "page is scrolled, which is what anyone would describe first. | "
             "Supports the visitor decision and category story for this exact "
@@ -741,6 +780,86 @@ class ReferenceLedClosureTests(unittest.TestCase):
                         self.closure(**{"Reference-led direction disposition": value})
                     ),
                 )
+
+
+class ObservationGateTests(unittest.TestCase):
+    """The observation gate exists because prose did not bind the producer.
+
+    Told to watch a reference scroll, a producer teleported the scroll
+    position, screenshotted the resting state and reported motion it had never
+    seen. Each case below is that failure in one of its forms.
+    """
+
+    def run_with(self, **observation):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = []
+            for rank in range(1, 7):
+                kwargs = dict(observation) if rank == 1 else {}
+                host = f"reference-{rank}.example.test"
+                cell = project.observation_cell(
+                    f"strong-{rank}",
+                    url=kwargs.pop("url", f"https://{host}/entry"),
+                    **kwargs,
+                )
+                rows.append(
+                    project.strong_row(
+                        rank, source=DEFAULT_SOURCES[rank - 1], observation=cell
+                    )
+                )
+            return project.failures(project.body(strong_rows=rows))
+
+    def test_watched_motion_passes(self) -> None:
+        self.assertEqual([], self.run_with())
+
+    def test_static_signature_without_motion_passes(self) -> None:
+        self.assertEqual([], self.run_with(kind="static", motion=False))
+
+    def test_motion_claim_without_observed_motion_is_rejected(self) -> None:
+        failures = self.run_with(kind="motion", motion=False)
+        self.assertTrue(
+            any("claims a motion signature" in item for item in failures), failures
+        )
+
+    def test_ad_hoc_capture_script_is_rejected(self) -> None:
+        failures = self.run_with(tool="my-own-capture.js")
+        self.assertTrue(
+            any("packaged" in item and "observe_reference.mjs" in item for item in failures),
+            failures,
+        )
+
+    def test_teleported_single_hold_is_rejected(self) -> None:
+        failures = self.run_with(holds=1)
+        self.assertTrue(
+            any("scroll positions" in item for item in failures), failures
+        )
+
+    def test_session_without_hover_is_rejected(self) -> None:
+        failures = self.run_with(hovers=0)
+        self.assertTrue(any("hover" in item for item in failures), failures)
+
+    def test_observation_of_a_different_site_is_rejected(self) -> None:
+        failures = self.run_with(url="https://somewhere-else.example.test/")
+        self.assertTrue(
+            any("is not the site this row names" in item for item in failures), failures
+        )
+
+    def test_missing_kind_prefix_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            cell = project.observation_cell("strong-1")
+            bare = cell.split("; ", 1)[1]
+            rows = [
+                project.strong_row(1, source=DEFAULT_SOURCES[0], observation=bare)
+            ] + [
+                project.strong_row(rank, source=DEFAULT_SOURCES[rank - 1])
+                for rank in range(2, 7)
+            ]
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(
+            any("must begin with the signature kind" in item for item in failures),
+            failures,
+        )
 
 
 if __name__ == "__main__":

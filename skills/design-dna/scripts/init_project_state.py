@@ -5664,6 +5664,9 @@ REFERENCE_MINIMUM_NEGATIVE = 3
 REFERENCE_MINIMUM_SELECTED = 4
 REFERENCE_MINIMUM_SELECTED_SOURCES = 2
 REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
+# Two held scroll positions is the floor at which a producer can tell an
+# animated arrival from a static one; one hold proves nothing.
+REFERENCE_OBSERVATION_MIN_HOLDS = 2
 REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Rank",
     "Reference title or visible entry",
@@ -5672,6 +5675,7 @@ REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Retrieval date",
     "Access status",
     "Capture path and SHA-256",
+    "Observed evidence",
     "Signature (what a stranger would name)",
     "Brief relevance",
     "Design to copy",
@@ -5914,6 +5918,102 @@ def reference_dossier_failures(
             return [f"{capture_label} is not usable evidence: {exc}"]
         return []
 
+    def observation_failures(cell: str, label: str, row_url: str) -> list[str]:
+        """A strong row binds a session emitted by observe_reference.mjs.
+
+        The cell reads `<motion|static>; <path> plus sha256:<hex>`. The kind is
+        the producer's claim about the signature; the session is the evidence.
+        A motion claim without observed motion is the exact failure this gate
+        exists to stop: a producer who only ever saw stills cannot know whether
+        a site moves, and will report the parts that survive a photograph.
+        """
+        observation_label = f"{label} observed evidence"
+        raw = cell.strip()
+        kind, separator, binding = raw.partition(";")
+        kind = kind.strip().casefold()
+        if not separator or kind not in {"motion", "static"}:
+            return [
+                f"{observation_label} must begin with the signature kind "
+                "`motion` or `static`, then `; ` and the bound observation "
+                "session, e.g. `motion; .design-dna/references/strong-1-observation.json plus sha256:<hex>`."
+            ]
+        binding = binding.strip()
+        match = ARTIFACT_BINDING_PATTERN.fullmatch(binding)
+        if match is not None and not match.group(1).strip().startswith(
+            REFERENCE_CAPTURE_PREFIX
+        ):
+            return [
+                f"{observation_label} must live under {REFERENCE_CAPTURE_PREFIX} "
+                "so research evidence stays out of the public root."
+            ]
+        artifact, artifact_failures = bound_artifact(
+            binding,
+            project=project,
+            record_path=record_path,
+            label=observation_label,
+        )
+        if artifact_failures or artifact is None:
+            return artifact_failures
+        try:
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            return [f"{observation_label} is not readable JSON: {exc}"]
+        if not isinstance(payload, dict):
+            return [f"{observation_label} must be an observation object."]
+        problems: list[str] = []
+        if payload.get("tool") != "observe_reference.mjs":
+            problems.append(
+                f"{observation_label} must be emitted by the packaged "
+                "observe_reference.mjs harness; a hand-written or ad-hoc "
+                "capture cannot establish what was watched."
+            )
+        if payload.get("schema_version") != 1:
+            problems.append(f"{observation_label} must use observation schema_version 1.")
+        observed_url = payload.get("url")
+        if not isinstance(observed_url, str) or not observed_url:
+            problems.append(f"{observation_label} must record the observed URL.")
+        else:
+            row_host = urlsplit(row_url.strip()).netloc.casefold().removeprefix("www.")
+            obs_host = urlsplit(observed_url).netloc.casefold().removeprefix("www.")
+            search = re.search(r"https?://[^\s)]+", row_url)
+            if not row_host and search is not None:
+                row_host = urlsplit(search.group(0)).netloc.casefold().removeprefix("www.")
+            if row_host and obs_host and row_host != obs_host:
+                problems.append(
+                    f"{observation_label} observed {obs_host}, which is not the "
+                    "site this row names."
+                )
+        coverage = payload.get("coverage")
+        if not isinstance(coverage, dict):
+            problems.append(f"{observation_label} must record what the session covered.")
+        else:
+            if not coverage.get("rest"):
+                problems.append(f"{observation_label} must include an at-rest observation.")
+            holds = coverage.get("scroll_holds")
+            if not isinstance(holds, int) or holds < REFERENCE_OBSERVATION_MIN_HOLDS:
+                problems.append(
+                    f"{observation_label} must hold the page still at at least "
+                    f"{REFERENCE_OBSERVATION_MIN_HOLDS} scroll positions; a teleported "
+                    "screenshot cannot show what animates into place."
+                )
+            hovers = coverage.get("hovers")
+            if not isinstance(hovers, int) or hovers < 1:
+                problems.append(
+                    f"{observation_label} must hover at least one interactive "
+                    "element; hover state is invisible in a still."
+                )
+        motion = payload.get("motion")
+        if not isinstance(motion, dict) or not isinstance(motion.get("observed"), bool):
+            problems.append(f"{observation_label} must record whether motion was observed.")
+        elif kind == "motion" and not motion.get("observed"):
+            problems.append(
+                f"{label} claims a motion signature, but its observation session "
+                "recorded no motion at rest, on any scroll hold, on hover, or on "
+                "transition. Record what was actually seen instead of the motion "
+                "the site was assumed to have."
+            )
+        return problems
+
     strong_headers, strong_rows = markdown_first_table(
         sections.get("Strong references", "")
     )
@@ -5959,6 +6059,7 @@ def reference_dossier_failures(
                 reference_entry_access_failures(row[5], label, authorized_basis)
             )
             failures.extend(capture_failures(row[6], label))
+            failures.extend(observation_failures(row[7], label, row[2]))
             access = row[5].split(";", 1)[0].strip().casefold()
             url_match = re.search(r"https://[^\s)]+", row[2])
             if access == "public-live" and url_match is not None:

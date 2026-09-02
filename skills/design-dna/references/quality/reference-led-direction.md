@@ -265,6 +265,27 @@ a PNG saved under `.design-dna/references/`, recorded in the row as
 decodes as a PNG, and matches its hash. A row without a capture is rejected,
 because a reference nobody looked at is not research; it is a plausible name.
 
+Watch the site with the packaged harness before writing anything about it.
+`scripts/observe_reference.mjs` opens the page, holds it still at a series of
+scroll positions and screenshots each arrival twice, hovers real interactive
+elements, and follows a link so the transition is seen. It compares the frames
+and records whether anything actually moved. Run it once per strong reference:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/observe_reference.mjs" \
+  --url "https://example.test/" --id strong-1 --out .design-dna/references
+```
+
+Do not substitute a hand-rolled capture script. The failure this replaces is
+specific and was committed by the producer who wrote this paragraph: told to
+watch a site scroll, the producer jumped the scroll position with
+`window.scrollTo`, screenshotted the resting state at each stop, and called a
+sequence of stills a scroll sequence. A resting frame cannot show a reveal, a
+parallax, a hover, or a transition, so every takeaway came back as something a
+photograph can hold: a background color, a wordmark placement, a mask shape.
+The gate now binds the session and refuses a motion claim the session does not
+support, so this cannot be reported around.
+
 A strong reference needs both kinds of evidence, because each shows what the
 other cannot. Take all of it:
 
