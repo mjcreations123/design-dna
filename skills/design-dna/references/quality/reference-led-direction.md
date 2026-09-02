@@ -17,8 +17,13 @@ public build is an omission the gate will flag.
 - [Retrieve the way each source allows](#retrieve-the-way-each-source-allows)
 - [Check the ledger before selecting](#check-the-ledger-before-selecting)
 - [Build a brief-weighted reference set](#build-a-brief-weighted-reference-set)
+- [Judge the site yourself before it enters the list](#judge-the-site-yourself-before-it-enters-the-list)
+- [Name what the site is known for](#name-what-the-site-is-known-for)
+- [Read the whole front end, behavior first](#read-the-whole-front-end-behavior-first)
 - [Capture what you looked at](#capture-what-you-looked-at)
-- [Synthesize; do not collage or reproduce](#synthesize-do-not-collage-or-reproduce)
+- [Take the good parts into one design](#take-the-good-parts-into-one-design) |
+[Approve the first screen](#approve-the-first-screen) |
+[Check beauty, lineage, and flow before any gate](#check-beauty-lineage-and-flow-before-any-gate)
 - [Improve beyond the set](#improve-beyond-the-set)
 - [Continue autonomously](#continue-autonomously)
 
@@ -65,6 +70,11 @@ a wide and a narrow width before it earns a row.
 
 ## Check the ledger before selecting
 
+Every project gets new research. Do not reuse a reference that a prior
+project in the ledger already used unless the owner asks for it by name; a
+reference set carried from one project to the next is how sites start to
+look alike, and the owner rejected exactly that on 2026-09-02.
+
 When an authorized cross-project [ledger](ledger.md) exists, read its
 "references used" column for recent unrelated work before choosing this set.
 Reaching for the same sites project after project is how a studio grows a
@@ -77,31 +87,103 @@ continue.
 
 Start with the visitor, category, content, material/media need, task, and
 project risk. Weight the active sources accordingly rather than using the same
-gallery order for every project. A baby-crib brand may learn from furniture,
-children's products, premium retail, editorial photography, or trust-heavy
-commerce; it is not limited to crib websites.
+gallery order for every project. Pick references from any genre for the
+design relationship, never by the client's industry: a baby-crib brand may
+take its design from an art museum, a software manual, a brand-guidelines
+site, or an architecture studio.
 
 Record at least six strong individual references, drawn from at least three
 active sources, with no single source supplying more than half of the rows.
-Among live sites, no two rows may point at the same host. The floor exists
-for one reason: so that no single site becomes the template. It is not a
-target and not a score; add a row for every reference that earns its place,
-and stop when the set has enough independent answers to the brief's real
-decisions. Gallery homepages do not count as references. A public gallery
-entry counts even when the linked site no longer works. For each candidate,
-inspect the visible work itself and ask whether it offers a concrete,
-transferable relationship for this brief:
+Among live sites, no two rows may point at the same host. The floor exists so
+that no single site becomes the template; it is not a target. Gallery
+homepages do not count as references. A public gallery entry counts even when
+the linked site no longer works.
 
-- visitor orientation, information hierarchy, or navigation;
-- product, service, editorial, or category storytelling;
-- material/media casting, typography, or composition;
-- comparison, selection, transaction, support, or other real interaction; or
-- route progression, direct-entry clarity, and mobile behavior.
+## Judge the site yourself before it enters the list
 
-Gallery membership, an award, a large audience, an animation, or a fashionable
-surface is not proof that the work fits this project. Reject a candidate when
-its visible craft, content depth, route behavior, accessibility, or visitor
-logic would weaken the intended encounter.
+A source registry tells you that someone submitted a site. It does not tell
+you the site is good. Open every candidate, scroll it, and decide with your
+own eyes whether it is beautiful and whether you would be proud to have made
+it. A thin, dated, or ugly site is dropped on sight however it was listed and
+however neatly it would have filled a source-spread requirement.
+
+If the set cannot be filled with sites the producer honestly finds beautiful,
+keep looking. Padding to reach the floor is worse than searching longer,
+because a mediocre reference teaches a mediocre design. The floor exists to
+stop one site becoming the template; it is not a quota to be met at any cost.
+
+## Name what the site is known for
+
+Before recording a single structural note, answer one question about each
+reference: if you showed this site to a stranger and asked what they noticed
+about its design, what would they say? That answer is the site's signature,
+and it is the first thing the row records.
+
+Almost always the signature is something that happens rather than something
+that sits there: how the page moves as you scroll, what enters and when and
+how fast, a material or texture that behaves, a transition between pages, a
+cursor that does something, one moment of scale or contrast or surprise.
+Sites reach these galleries for what they do, not for their margins.
+
+Then test every part you plan to take against the same question. If a
+thousand strangers would not name it, it is not the takeaway. A warm
+background, a card with a price beneath it, a wordmark at the top of the
+screen are all true observations that no visitor has ever remembered, and a
+design assembled from observations like those will be exactly as
+unmemorable as they are. Someone taken to a waterfall does not come back
+describing a crack in the sidewalk.
+
+Two causes make a producer write down the sidewalk, and both are avoidable:
+
+- Evidence. A still image can only show what does not move, so a producer
+  working from stills will extract the static parts every time and miss the
+  reason the site is good. The capture method decides the finding before the
+  finding is written, which is why the section below requires behavior to be
+  captured first.
+- Convenience. Layout, color, and type are the easiest things to rebuild, so
+  they are what a producer reaches for. The reference sets the ambition; the
+  producer's implementation comfort does not. If the honest reason a part was
+  chosen is that it was easy to rebuild, it is the wrong part.
+
+## Read the whole front end, behavior first
+
+Every reference has parts worth taking and parts to leave, and the `Design to
+copy` cell records both: the good parts, named in concrete terms, and the
+parts left behind, named too. A reference's most distinctive ingredient is
+not automatically a good one, and an ugly, dated, or brand-foreign part is
+left behind however distinctive it is. Judge, in this order: is it beautiful;
+does it fit this brand and audience; does it serve the route's job. Only a
+part that passes all three is taken. Read these things, in this order,
+because the order is what keeps the signature from being lost under the
+furniture:
+
+- what the page does as it is scrolled: what enters and how, what tracks the
+  scroll, what pins or sticks and for how long, what scales, masks, splits,
+  or reorders itself, and the pace of the whole sequence from top to bottom;
+- interaction: hover and press states, the cursor, controls that respond,
+  transitions between pages or views, sound, anything the visitor causes;
+- the signature moment: the one thing the site would be described by, and
+  where in the page it happens;
+- media treatment: image sizes, crops, bleeds, strips, staggering, overlap,
+  captions, and whether media or type carries the page;
+- composition: column structure, section composition, margins, how the first
+  screen is built, what sits where;
+- color as behavior: how the ground carries the page, how a fade or a
+  contrast relationship works, how much color there is and where it lands;
+  the values themselves stay with the reference, because the build uses the
+  brand's own palette;
+- type as posture and scale: the sizes as a scale, weights, case, measure,
+  the relationship between display and text; not the family names, because
+  the build's families are chosen for beauty and brand fit, never because a
+  reference used them;
+- shapes and surfaces: radii, borders, rules, cards, pills, frames, shadows
+  or their absence;
+- the phone version: what the same page does at narrow width, scrolled the
+  same way.
+
+A reference that offers no good, transferable front-end part for this brief
+is not a reference. Gallery membership, an award, or a large audience is not
+the reason to select it; the parts on the screen are.
 
 Also collect at least three weak or mismatched public examples. Describe the
 specific observed relationship that fails this brief, such as empty spectacle,
@@ -117,60 +199,143 @@ a PNG saved under `.design-dna/references/`, recorded in the row as
 decodes as a PNG, and matches its hash. A row without a capture is rejected,
 because a reference nobody looked at is not research; it is a plausible name.
 
+For a strong reference the evidence is a scroll sequence, not one still. A
+single full-page screenshot never qualifies a strong reference on its own: a
+full-page composite is stitched from a page that was never watched moving,
+and it is precisely the artifact that produced a set of sidewalk observations
+on 2026-09-02. Do this instead:
+
+- scroll the page from top to bottom in a real browser and capture the
+  viewport at each step, closely enough that what enters, moves, pins, or
+  transforms is visible between consecutive frames;
+- watch the sequence back before writing the row, and write what moved into
+  the `Signature` cell in words, because no still carries it;
+- capture what a still cannot reach at all: hover and press states on the
+  interactive parts, a page transition, and the phone version scrolled the
+  same way;
+- keep the frames beside the row under the same rank name
+  (`strong-3-scroll-01.png`, `strong-3-narrow.png`), and bind in the row the
+  one frame that shows the signature.
+
+When motion genuinely cannot be observed, because the site is gone, the entry
+is a gallery still, or scripting fails, say so in the row instead of
+describing motion nobody watched.
+
 A minimal sequence with the Playwright CLI, run from the project root:
 
 ```text
 playwright-cli open "https://example.test/entry"
 playwright-cli resize 1440 900
-playwright-cli screenshot --filename ".design-dna/references/strong-3.png"
+playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-01.png"
+playwright-cli scroll --delta-y 700
+playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-02.png"
+playwright-cli scroll --delta-y 700
+playwright-cli screenshot --filename ".design-dna/references/strong-3-scroll-03.png"
 playwright-cli close
-python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" ".design-dna/references/strong-3.png"
+python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" ".design-dna/references/strong-3-scroll-02.png"
 ```
 
-The row's capture cell is then
-`.design-dna/references/strong-3.png plus sha256:<the printed digest>`.
+Repeat the scroll and screenshot pair to the foot of the page, then bind the
+frame that shows the signature:
+`.design-dna/references/strong-3-scroll-02.png plus sha256:<the printed digest>`.
 Name captures by role and rank (`strong-3.png`, `weak-1.png`) so a reviewer
-can match them to rows without opening the record. Capture the work at
-the width you evaluated it at; a narrow capture may accompany the wide one
-but does not replace it.
+can match them to rows without opening the record.
 
 Captures are internal evidence. They stay inside `.design-dna/`, which the
 deployable public root already excludes, and they are never shown to the
 visitor or presented as the project's own work.
 
-## Synthesize; do not collage or reproduce
+## Take the good parts into one design
 
-Select a named subset of at least four strong references, drawn from at least
-two sources, and map each to a real project decision. Multiple references may
-inform different decisions, but the resulting website needs one project-derived
-organizing logic. Do not make a Frankenstein page that assigns every section to
-a different borrowed visual trick.
+The selected references are where the site's front-end design comes from,
+and the site is still one design. Select a named subset of at least four
+strong references, drawn from at least two sources, and record in the design
+transfer map which good part of each goes where: this one's first-screen
+composition, that one's way of fading a warm ground, another's image strip,
+another's scroll reveal. Multiple references exist so that the result is a
+clone of none of them. Then design the site as one thing before any route is
+built beyond the first screen:
 
-Public work can inform composition, hierarchy, pacing, interaction patterns,
-and general visual relationships. It does not authorize copied trademarks,
-logos, names, copy, photography, illustration, code, or a distinctive whole
-brand page recreated as a substitute. Adapt the relevant relationship to the
-actual project facts, audience, assets, and route job.
+- One palette, the brand's own. If the brand has colors, they are the
+  palette; a reference contributes how color behaves (a fade that looks good,
+  a soft ground, one accent used sparingly), never its literal values. If
+  the brand has no colors yet, derive one palette from the product, the
+  material, and the audience, and hold it across every route.
+- One type system, chosen for beauty and brand fit: two families at most,
+  each one the producer would defend on its own with no reference to justify
+  it. Never a monospace, pixel, novelty, or display face as a workaround for
+  a reference's licensed font; never a face because a reference used
+  something like it. A reference's paid font is answered by a beautiful free
+  face of the same quality, a license, or dropping the element.
+- One rhythm. Each section leads into the next: shared margins, a consistent
+  scale, transitions of ground that feel like one page turning, not a new
+  site starting. A page whose sections come from different references and
+  change voice at every screen has failed this step.
+- One motion language, and it is designed. At least one selected reference's
+  actual behavior lands in this build, rebuilt for this content, named in the
+  transfer map with the route that receives it, and confirmed in the rendered
+  scroll sequence. Sections that fade up as they enter are not a motion
+  language: that is the default every generated site ships, and shipping it
+  is the tell. Decide what moves, why it moves, what it does to the reader,
+  how fast, and what happens on the phone and under reduced motion.
+
+Copying a part is not pasting a page. Adapt each taken part to the actual
+content, route job, and media of this project. The rights boundary is the
+only legal limit: do not reuse a reference's logo, name, wordmark, copy,
+photographs, illustrations, or code verbatim. A composition, a color
+behavior, a type scale, a scroll behavior, and a shape language are not
+protected, and this record exists to take them.
+
+Ambition is set by the references, not by the seriousness of the subject. A
+safety subject, a small business, or a demo does not license a quiet
+information page when the selected references are not quiet. The anti-tell
+rules elsewhere in this skill are a floor under the design, never the design
+itself.
 
 Keep the dossier and synthesis internal. They should guide the work, never
 leak onto the customer-facing website as process labels, design rationale, or
 back-end taxonomy.
 
+## Approve the first screen
+
+Build and render the first screen of the primary route before any other
+route exists, at wide and narrow width, and put it in front of the owner (or,
+when the owner is not in the loop, in front of the producer's own eyes beside
+the reference captures) as a checkpoint. It must already carry the palette,
+the type system, the media treatment, and the first motion of the whole
+site. Building eight routes on an unapproved first screen was how the two
+rejected builds of 2026-09-01 and 2026-09-02 lost their time.
+
+## Check beauty, lineage, and flow before any gate
+
+Before the rendered review, the records, or any audit, scroll the candidate
+in a real browser, put its wide and narrow renders beside the captures of the
+selected references, and answer four questions: is this beautiful; would a
+designer see that it came from that set; does each section flow into the next
+as one design; and, scrolling it the way a stranger would, what would that
+stranger name? If the honest answer to the last question is nothing, or only
+a color, the build has no signature and the direction is not finished however
+clean the render is. If any answer is no, the direction is wrong; return to
+the design transfer map and rebuild the affected routes. Do not proceed to the
+review chain, the contrast record, or the readiness gate with a candidate
+that fails this check, because those gates prove honesty and difference, not
+that the site is good. Record the answers in the visual review's
+reference-led closure as the `Lineage result`.
+
 ## Improve beyond the set
 
-The selected references are the floor for this project, not its ceiling. The
+The taken parts are the floor for this project, not its ceiling. The
 dossier's elevation line names at least one consequential decision where the
 build goes further than every reference in the set: larger and more specific
 real media, a category depth the references skip, a signature interaction none
 of them has, a first screen that answers the visitor's question faster, or a
 mobile encounter that is designed rather than collapsed. Name the decision,
 say why this brief earns it, and carry it into the direction record so the
-rendered closure can confirm it is visible. A build that merely matches its
-references has reproduced the average of the gallery.
+rendered closure can confirm it is visible.
 
 ## Continue autonomously
 
-Once the dossier and direction synthesis are complete, build and review the
-site without waiting for a separate research approval. Pause only when a
+Once the dossier and the design transfer map are complete, build and review
+the site without waiting for a separate research approval. Pause only when a
 missing fact, brand decision, rights question, cultural authority, or delivery
 constraint would materially change the result.

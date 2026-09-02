@@ -923,7 +923,7 @@ class StateGateHardeningTests(unittest.TestCase):
                 "The public surface helps a visitor understand the product concept and choose a real next path.",
                 "",
                 "## Reference dossier",
-                "| Source and retrieval date | Viewer-facing problem or role | Transferable relationship | Non-copying boundary |",
+                "| Source and retrieval date | Viewer-facing problem or role | Design to copy | Rights boundary |",
                 "| --- | --- | --- | --- |",
                 "| Project material, 2026-08-12 | Explain the concept without invented claims. | Keep the task next to its honest limit. | Do not copy another brand, layout, or identity. |",
                 "",

@@ -38,9 +38,12 @@ INITIALIZER = load_initializer()
 STRONG_HEADER = (
     "| Rank | Reference title or visible entry | Public URL or gallery-entry URL "
     "| Discovery source | Retrieval date | Access status | Capture path and SHA-256 "
-    "| Brief relevance | Transferable relationship | Non-copying boundary |"
+    "| Signature (what a stranger would name) | Brief relevance | Design to copy "
+    "| Rights boundary |"
 )
-STRONG_SEPARATOR = "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+STRONG_SEPARATOR = (
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+)
 NEGATIVE_HEADER = (
     "| Reference title or visible entry | Public URL or gallery-entry URL "
     "| Discovery source | Retrieval date | Access status | Capture path and SHA-256 "
@@ -48,7 +51,7 @@ NEGATIVE_HEADER = (
 )
 NEGATIVE_SEPARATOR = "| --- | --- | --- | --- | --- | --- | --- | --- |"
 SYNTHESIS_HEADER = (
-    "| Selected rank(s) | Decision role | Project-specific adaptation "
+    "| Selected rank(s) | Design copied and destination | Project-specific adaptation "
     "| Boundary or verification |"
 )
 SYNTHESIS_SEPARATOR = "| --- | --- | --- | --- |"
@@ -128,6 +131,8 @@ class DossierProject:
         return (
             f"| {rank} | Reference {rank} | https://{url_host}/entry | {source} | "
             f"2026-09-01 | {access} | {capture or self.capture_cell(f'strong-{rank}')} | "
+            "The product images slide sideways under a pinned heading as the "
+            "page is scrolled, which is what anyone would describe first. | "
             "Supports the visitor decision and category story for this exact "
             "project. | A clear hierarchy, media relationship, and direct entry "
             "condition. | Do not reproduce its brand assets, writing, source code, "
@@ -196,6 +201,9 @@ class DossierProject:
             "- Project-specific organizing synthesis: The selected direction makes "
             "the product, evidence, and next decision visible in one coherent retail "
             "encounter rather than rotating unrelated treatments.",
+            "- Behavior copied and where it is rendered: The pinned heading with a "
+            "sideways product rail from rank 1, rebuilt on the comparison route and "
+            "confirmed in its rendered scroll sequence.",
             "- Negative-counterevidence result: The final direction retains visible "
             "task hierarchy and product specificity instead of decorative spectacle.",
             f"- Elevation beyond the references (what this build does that none of them do): {elevation}",
@@ -666,7 +674,8 @@ class ReferenceLedClosureTests(unittest.TestCase):
             "Dossier result": ".design-dna/reference-dossier.md complete; public-gallery entries only; ranks 1, 2, 4, 6",
             "Positive synthesis": "One product-led opening and a comparison rail adapted from ranks 1, 2, and 6.",
             "Negative counterevidence": "The spectacle-first openings named in the counterexamples were avoided.",
-            "Non-copying boundary": "No brand identifiers, copy, media, code, or whole pages were reproduced.",
+            "Rights boundary": "No brand identifiers, copy, media, code, or whole pages were reproduced.",
+            "Lineage result": "Wide and narrow renders beside the selected captures show the lineage in the first screen, type scale, and media treatment.",
             "Rendered result": "Wide and narrow renders confirm the synthesis on every affected route.",
             "Elevation result": "Full-bleed real product photography at a scale no selected reference attempts.",
             "Reference-led direction disposition": "keep",

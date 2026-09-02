@@ -224,18 +224,19 @@ are merely holding the composition together.
 
 ## Reference-led direction closure (required for public candidates)
 
-Review the final candidate against the completed `reference-dossier.md` record.
-This is not a claim that a gallery entry is objectively good or that the final
-site should resemble it wholesale. It confirms that public research produced a
-coherent project direction rather than a generic template or a collage of
-borrowed devices.
+Review the final candidate against the completed `reference-dossier.md` record
+and its design transfer map. The candidate's front-end design is copied from
+the selected references; this closure confirms that the copy is visible in the
+render, that it holds together as one system, and that the rights boundary was
+kept.
 
 Record the dossier path, completion state, active-source access boundary,
 and selected positive ranks; the visitor-facing decisions that arose from
 the selected references and their project-specific adaptation; the observed
 weak relationships and the final result for the failure they were meant to
-prevent; the non-copying result for brand identifiers, public copy, media,
-illustration, code, and distinctive whole-page reproduction; the wide and
+prevent; the rights-boundary result for the reference's logo, name, copy, media,
+illustration, and code; the lineage result from placing the wide and narrow
+renders beside the selected reference captures; the wide and
 narrow review of the synthesis after every affected route body and state
 was rerendered; and the named decision that goes beyond every selected
 reference, as actually observed in the render. Each value below is required
@@ -244,7 +245,8 @@ when this closure applies.
 - Dossier result: __REPLACE_WITH_DOSSIER_PATH_STATE_ACCESS_BOUNDARY_AND_SELECTED_RANKS__
 - Positive synthesis: __REPLACE_WITH_THE_VISITOR_FACING_DECISIONS_DRAWN_FROM_THE_SELECTED_REFERENCES__
 - Negative counterevidence: __REPLACE_WITH_THE_OBSERVED_WEAK_RELATIONSHIPS_AND_THE_FINAL_RESULT__
-- Non-copying boundary: __REPLACE_WITH_THE_BRAND_COPY_MEDIA_CODE_AND_WHOLE_PAGE_RESULT__
+- Rights boundary: __REPLACE_WITH_THE_LOGO_NAME_COPY_MEDIA_AND_CODE_RESULT__
+- Lineage result: __REPLACE_WITH_WHETHER_A_DESIGNER_WOULD_SEE_THE_SITE_CAME_FROM_THE_SELECTED_SET_AND_WHERE__
 - Rendered result: __REPLACE_WITH_THE_WIDE_AND_NARROW_REVIEW_OF_THE_SYNTHESIS__
 - Elevation result: __REPLACE_WITH_THE_DECISION_THAT_GOES_BEYOND_EVERY_REFERENCE_AS_OBSERVED__
 - Reference-led direction disposition: __REPLACE_WITH_KEEP_REVISE_REOPEN_DIRECTION_REJECT_OR_BLOCKED__

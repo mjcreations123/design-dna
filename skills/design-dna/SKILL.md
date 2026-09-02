@@ -157,15 +157,47 @@ For every fresh Enterprise Candidate public website, read
 the first visual candidate, and initialize the project with
 `--profile enterprise-candidate` so the prebuild gate can hold it. Start from
 the maintained public source registry, weight eligible sources by this brief,
-and record at least six strong individual references drawn from at least
-three sources, each bound to a capture you actually looked at, plus at least
-three project-specific counterexamples. The floor exists so that no single
-site becomes the template; it is not a target. Then map a selected subset of
-at least four references into one internal direction and name at least one
-decision where the build goes beyond every reference. A public gallery entry
+pick references from any genre for their design and never by the client's
+industry, and record at least six strong individual references drawn from at
+least three sources, plus at least three project-specific counterexamples.
+The floor exists so that no single site becomes the template; it is not a
+target, and it is never met by padding: judge every candidate with your own
+eyes first and drop a thin, dated, or ugly site on sight, because a listing
+means someone submitted it, not that it is good.
+
+The references are where the site's front-end design comes from, and every
+project gets new research. Watch each one rather than screenshotting it: a
+strong row is evidenced by a scroll sequence the producer actually scrolled,
+with hover, transition, and phone passes beside it, because a still can only
+show what does not move and a producer working from stills will extract the
+static parts and miss the reason the site is good. Answer one question before
+any structural note, and record it in the row's `Signature` cell: if a
+stranger were shown this site, what would they say they noticed about its
+design? Then hold every part you plan to take to the same test. If a thousand
+strangers would not name it, it is not the takeaway. Record the good parts to
+take, behavior first (what the page does as it scrolls, its interaction and
+transitions, its signature moment, then media treatment, composition, how its
+color behaves, type posture and scale, shapes) and the parts to leave.
+
+Map a selected subset of at least four references into a design transfer map
+and design the site as one thing: the brand's own palette, at most two
+typefaces chosen for beauty and brand fit (never a mono, pixel, or novelty
+face as a workaround for a reference's font), one rhythm where each section
+flows into the next, and one designed motion language carrying at least one
+selected reference's actual behavior into a named route. Sections that fade
+up on scroll are not a motion language; that is the default every generated
+site ships. Render the first screen at wide and narrow width and put it in
+front of the owner before any other route exists. Name at least one decision
+where the build goes beyond every reference. Before any review chain or gate,
+scroll the candidate, place its renders beside the selected captures, and
+confirm it is beautiful, shows its lineage, flows as one design, and would
+give a stranger something to name; a candidate that fails returns to the
+transfer map.
+The rights boundary is the only limit on copying: never reuse a reference's
+logo, name, copy, photographs, illustrations, or code. A public gallery entry
 can qualify even when no live website exists. Do not use inaccessible
-material, treat a gallery listing as proof of quality, turn the result into a
-generic collage, or expose the research process on the customer-facing site.
+material, treat a gallery listing as proof of quality, or expose the research
+process on the customer-facing site.
 
 A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
 at least Standard plus [taste calibration](references/craft/taste-calibration.md),

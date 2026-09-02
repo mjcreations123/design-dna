@@ -12,7 +12,8 @@ The failure is an unexamined or poorly executed system, not a family name.
 
 ## Contents
 
-- [Start from the reading situation](#start-from-the-reading-situation)
+- [Choose type for beauty and brand fit](#choose-type-for-beauty-and-brand-fit) |
+[Start from the reading situation](#start-from-the-reading-situation)
 - [Choose roles, not a recipe](#choose-roles-not-a-recipe)
 - [Compare enough to make a real decision](#compare-enough-to-make-a-real-decision)
 - [Tune spacing and hierarchy in the render](#tune-spacing-and-hierarchy-in-the-render)
@@ -21,6 +22,19 @@ The failure is an unexamined or poorly executed system, not a family name.
 - [Proof real language and mixed direction](#proof-real-language-and-mixed-direction)
 - [Audit delivery and provenance](#audit-delivery-and-provenance)
 - [Verify the delivered type system](#verify-the-delivered-type-system)
+
+## Choose type for beauty and brand fit
+
+A typeface earns its place on a public site for two reasons only: it is
+beautiful in the render, and it fits this brand and audience. Two families at
+most, and the producer must be able to defend each one on its own, with no
+reference to justify it. Never choose a face because a reference site used
+something like it, and never answer a reference's licensed font with a
+monospace, pixel, novelty, or display face as a substitute; the answer is a
+free face of the same quality, a license, or dropping the element. The
+studio's own tell records apply before any reference does. This is the owner's
+law of 2026-09-02, after a rebuild shipped a pixel title and a monospace
+label face copied from a manual-style reference.
 
 ## Start from the reading situation
 

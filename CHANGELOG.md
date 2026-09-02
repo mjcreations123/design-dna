@@ -5,6 +5,74 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.4.0
+
+Look at what a reference is actually known for, not at what a still image can
+show. A producer working from one full-page screenshot can only extract the
+parts that do not move, so the research kept returning palettes, card
+layouts, and wordmark placement while the reason each site was worth studying
+went unrecorded. The owner named the failure on 2026-09-02: shown a site
+famous for how it moves, the record described its background color.
+
+- Strong reference rows carry a new `Signature (what a stranger would name)`
+  column, answered before any structural note. A part a thousand strangers
+  would not have noticed is not the takeaway.
+- The front-end read is reordered to behavior first: what the page does as it
+  scrolls, its interaction and transitions, and its signature moment come
+  before media, composition, color, type, and shape.
+- A strong reference is now evidenced by a scroll sequence the producer
+  watched, with hover, transition, and phone passes beside it. A single
+  full-page still no longer qualifies one on its own.
+- Producers judge a candidate with their own eyes before it enters the list.
+  A gallery listing means someone submitted the site, not that it is good;
+  ugly or thin sites are dropped on sight, and the set is never padded to
+  reach the floor.
+- The synthesis requires a `Behavior copied and where it is rendered` line,
+  and the design transfer map must carry at least one behavior, not only
+  static composition. Sections that fade up on scroll are named for what they
+  are: the default every generated site ships.
+- The pre-gate check adds a fourth question, asked while scrolling the
+  finished candidate: what would a stranger name? If the answer is nothing,
+  or only a color, the build has no signature and is not done.
+
+## 6.3.0 - Development candidate: the good parts, one flowing design
+
+Owner law recorded 2026-09-02 after a second rejected build that stacked six
+references and shipped a pixel title and a monospace label face.
+
+- `references/quality/reference-led-direction.md`: each reference is judged
+  part by part (beautiful, brand fit, route job) and the row records the good
+  parts taken and the parts left; color is read as behavior and built in the
+  brand's own palette; type is chosen for beauty and brand fit (two families
+  at most, never a mono, pixel, or novelty face as a workaround for a
+  reference's font); the site is designed as one thing with one rhythm; every
+  project gets new research; the first screen is rendered and put in front
+  of the owner before any other route; the pre-gate check asks beauty,
+  lineage, and flow.
+- `references/craft/typography.md`: new opening section, "Choose type for
+  beauty and brand fit".
+- Dossier template wording and the SKILL.md Enterprise Candidate paragraph
+  updated to match. Validator labels unchanged from 6.2.0.
+
+## 6.2.0 - Development candidate: references are copied as front-end design
+
+Owner law recorded 2026-09-01 after a rejected build: the reference dossier
+exists so the site copies the front-end design of the selected references.
+
+- `references/quality/reference-led-direction.md`: the reference set is chosen
+  by design from any genre; each strong row records the layout, color and
+  shades, type scale, shapes, media treatment, and scroll motion to copy;
+  captures are full-page wide and narrow plus mid-scroll states; the synthesis
+  is a design transfer map; a lineage check against the reference captures
+  runs before any gate; the rights boundary (logo, name, copy, photographs,
+  illustrations, code) is the only limit on copying.
+- Dossier columns `Transferable relationship` and `Non-copying boundary`
+  become `Design to copy` and `Rights boundary`; the synthesis column
+  `Decision role` becomes `Design copied and destination`.
+- Visual review reference-led closure gains a required `Lineage result` and
+  renames `Non-copying boundary` to `Rights boundary`.
+- SKILL.md Enterprise Candidate paragraph rewritten to match.
+
 ## 6.1.0 - Development candidate: reference evidence, source spread, elevation
 
 This candidate keeps 6.0.0's prebuild boundary and makes the reference-led

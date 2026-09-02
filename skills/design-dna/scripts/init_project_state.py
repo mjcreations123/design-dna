@@ -5672,9 +5672,10 @@ REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Retrieval date",
     "Access status",
     "Capture path and SHA-256",
+    "Signature (what a stranger would name)",
     "Brief relevance",
-    "Transferable relationship",
-    "Non-copying boundary",
+    "Design to copy",
+    "Rights boundary",
 )
 REFERENCE_DOSSIER_NEGATIVE_HEADERS = (
     "Reference title or visible entry",
@@ -5688,7 +5689,7 @@ REFERENCE_DOSSIER_NEGATIVE_HEADERS = (
 )
 REFERENCE_DOSSIER_SYNTHESIS_HEADERS = (
     "Selected rank(s)",
-    "Decision role",
+    "Design copied and destination",
     "Project-specific adaptation",
     "Boundary or verification",
 )
@@ -6043,6 +6044,7 @@ def reference_dossier_failures(
             )
     for label in (
         "Project-specific organizing synthesis",
+        "Behavior copied and where it is rendered",
         "Negative-counterevidence result",
         "Elevation beyond the references",
         "Direction record path and status",
@@ -7041,7 +7043,8 @@ REFERENCE_LED_CLOSURE_LABELS = (
     "Dossier result",
     "Positive synthesis",
     "Negative counterevidence",
-    "Non-copying boundary",
+    "Rights boundary",
+    "Lineage result",
     "Rendered result",
     "Elevation result",
 )
@@ -7124,8 +7127,8 @@ def showcase_taste_calibration_failures(
     expected_reference_headers = (
         "Source and retrieval date",
         "Viewer-facing problem or role",
-        "Transferable relationship",
-        "Non-copying boundary",
+        "Design to copy",
+        "Rights boundary",
     )
     if reference_headers != expected_reference_headers or not reference_rows:
         failures.append(
