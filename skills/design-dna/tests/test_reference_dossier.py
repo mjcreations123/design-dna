@@ -56,13 +56,22 @@ SYNTHESIS_HEADER = (
 )
 SYNTHESIS_SEPARATOR = "| --- | --- | --- | --- |"
 COMPONENT_HEADER = (
-    "| Component | Source rank or owner approval | Recorded values reproduced "
-    "| Where it is used |"
+    "| Component | Source rank or owner approval | Structure taken "
+    "| Recorded values reproduced | Where it is used |"
 )
-COMPONENT_SEPARATOR = "| --- | --- | --- | --- |"
+COMPONENT_SEPARATOR = "| --- | --- | --- | --- | --- |"
 REQUIRED_COMPONENTS = (
-    "navigation", "opening", "buttons", "rows or lists", "footer",
-    "scroll behavior", "hover behavior", "type scale",
+    "first screen", "layout grid", "display typeface", "text typeface",
+    "color behavior", "section rhythm", "navigation", "buttons",
+    "rows or lists", "footer", "scroll behavior", "hover behavior",
+)
+STRUCTURE_CELL = (
+    "a full-bleed photograph fills the first screen with the wordmark broken "
+    "into the four corners"
+)
+VALUES_CELL = (
+    "pinned stage held for 2400px while its content swapped three times, hover "
+    "transition 450ms"
 )
 
 # Six references spread over three sources so the default body satisfies the
@@ -130,7 +139,8 @@ class DossierProject:
         holds: int = 3,
         hovers: int = 2,
         tool: str = "observe_reference.mjs",
-        schema: int = 2,
+        schema: int = 3,
+        structure: bool = True,
         distinct: int | None = None,
         coverage: float | None = None,
         sheet: bool = True,
@@ -163,6 +173,24 @@ class DossierProject:
                 "on_transition": motion,
             },
         }
+        if structure:
+            payload["first_screen"] = {
+                "viewport": {"w": 1440, "h": 900},
+                "grid": [[2] * 24 for _ in range(16)],
+                "shares": {"media": 0.8, "text": 0.1, "box": 0.0, "empty": 0.1},
+                "dominant": {"tag": "img", "kind": "media", "area_share": 0.82, "cls": "hero"},
+                "edges": {"top": ["text"], "right": ["text"], "bottom": ["text"], "left": ["text"]},
+                "corners": [1, 1, 1, 1],
+                "type": {
+                    "display": {"family": "Dia", "size": 40, "weight": "400",
+                                "tracking": "normal", "transform": "uppercase",
+                                "leading": 1.1, "x_ratio": 0.72, "advance": 7.4},
+                    "body": {"family": "Dia", "size": 16, "weight": "400",
+                             "leading": 1.4, "x_ratio": 0.72, "advance": 7.4},
+                    "scale": 2.5,
+                    "families": ["Dia"],
+                },
+            }
         if sheet:
             payload["mechanisms"] = mechanisms
             payload["score"] = {
@@ -245,8 +273,7 @@ class DossierProject:
     ) -> str:
         if component_rows is None:
             component_rows = [
-                f"| {name} | 1 | pinned stage held for 2400px while its content "
-                "swapped three times, hover transition 450ms | the primary route |"
+                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |"
                 for name in REQUIRED_COMPONENTS
             ]
         if strong_rows is None:
@@ -780,6 +807,7 @@ class ReferenceLedClosureTests(unittest.TestCase):
             "Rendered result": "Wide and narrow renders confirm the synthesis on every affected route.",
             "Elevation result": "Full-bleed real product photography at a scale no selected reference attempts.",
             "Mechanism diff": ".design-dna/evidence/mechanism-diff.json plus sha256:" + "0" * 64,
+            "Structure diff": ".design-dna/evidence/structure-diff.json plus sha256:" + "0" * 64,
             "Reference-led direction disposition": "keep",
         }
         values.update(overrides)
@@ -943,9 +971,9 @@ class MechanismGateTests(unittest.TestCase):
     def test_rich_site_passes(self) -> None:
         self.assertEqual([], self.run_with())
 
-    def test_schema_one_session_is_rejected(self) -> None:
-        failures = self.run_with(schema=1)
-        self.assertTrue(any("schema_version 2" in item for item in failures), failures)
+    def test_an_older_schema_session_is_rejected(self) -> None:
+        failures = self.run_with(schema=2)
+        self.assertTrue(any("schema_version 3" in item for item in failures), failures)
 
     def test_session_without_mechanism_sheet_is_rejected(self) -> None:
         failures = self.run_with(sheet=False)
@@ -1007,7 +1035,8 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                "| navigation | 1 | 16px, weight 400, sentence case, hover border .45s | rail |",
+                f"| navigation | 1 | {STRUCTURE_CELL} | 16px, weight 400, sentence "
+                "case, hover border .45s | rail |",
             ]
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("must cover" in item and "buttons" in item for item in failures), failures)
@@ -1016,7 +1045,7 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 6 | pinned stage held for 2400px while its content swapped | route |"
+                f"| {name} | 6 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
                 for name in REQUIRED_COMPONENTS
             ]
             failures = project.failures(project.body(component_rows=rows))
@@ -1025,18 +1054,24 @@ class MechanismGateTests(unittest.TestCase):
     def test_paraphrased_values_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
-            rows = [f"| {name} | 1 | big type | route |" for name in REQUIRED_COMPONENTS]
+            rows = [
+                f"| {name} | 1 | {STRUCTURE_CELL} | big type | route |"
+                for name in REQUIRED_COMPONENTS
+            ]
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("recorded values" in item for item in failures), failures)
 
     def test_owner_approved_own_design_passes_with_quoted_words(self) -> None:
+        # the footer may be the producer's own with the owner's words; a
+        # typeface may not, which StructureGateTests proves separately
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 1 | pinned stage held for 2400px while its content swapped | route |"
+                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
                 for name in REQUIRED_COMPONENTS if name != "footer"
             ] + [
                 "| footer | owner-approved: \"do the footer your own way, keep it plain\" | "
+                "three columns stacked against the bottom edge | "
                 "owner's words above; three columns, 16px, no rules | every route |",
             ]
             failures = project.failures(project.body(component_rows=rows))
@@ -1046,8 +1081,10 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | owner-approved: yes | some values reproduced here for the row | route |"
+                f"| {name} | owner-approved: yes | {STRUCTURE_CELL} | some values "
+                "reproduced here for the row | route |"
                 for name in REQUIRED_COMPONENTS
+                if name not in ("display typeface", "text typeface")
             ]
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("owner's actual words" in item for item in failures), failures)
@@ -1102,6 +1139,130 @@ class MechanismDiffTests(unittest.TestCase):
             project=Path("."), record_path=Path("visual-review.md"),
         )
         self.assertTrue(any("must bind" in item for item in failures), failures)
+
+class StructureGateTests(unittest.TestCase):
+    """6.8.0. The build that researched six sites and shipped one button."""
+
+    def rows_with_first(self, project, **first):
+        rows = []
+        for rank in range(1, 7):
+            host = f"reference-{rank}.example.test"
+            kwargs = dict(first) if rank == 1 else {}
+            cell = project.observation_cell(
+                f"strong-{rank}", url=f"https://{host}/entry", **kwargs
+            )
+            rows.append(project.strong_row(
+                rank, source=DEFAULT_SOURCES[rank - 1], observation=cell
+            ))
+        return rows
+
+    def test_observation_without_first_screen_structure_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(
+                strong_rows=self.rows_with_first(project, structure=False)))
+        self.assertTrue(
+            any("first-screen structure" in i for i in failures), failures
+        )
+
+    def test_a_property_in_the_structure_column_is_rejected(self) -> None:
+        # exactly what the failing build recorded: sizes, not arrangement
+        for propertyish in (
+            "48px display at 1.0 line height",
+            "13px weight 700 at 3px tracking",
+            "115 by 115, radius 100, 1px border",
+        ):
+            with self.subTest(cell=propertyish):
+                with tempfile.TemporaryDirectory() as temporary:
+                    project = DossierProject(temporary)
+                    rows = [
+                        f"| {name} | 1 | {propertyish} | {VALUES_CELL} | route |"
+                        for name in REQUIRED_COMPONENTS
+                    ]
+                    failures = project.failures(project.body(component_rows=rows))
+                self.assertTrue(
+                    any("how the part is arranged" in i for i in failures), failures
+                )
+
+    def test_layout_and_first_screen_now_need_a_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                for name in REQUIRED_COMPONENTS
+                if name not in ("first screen", "layout grid")
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        joined = " ".join(failures)
+        self.assertIn("first screen", joined)
+        self.assertIn("layout grid", joined)
+
+    def test_a_typeface_chosen_by_the_producer_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = []
+            for name in REQUIRED_COMPONENTS:
+                if name in ("display typeface", "text typeface"):
+                    rows.append(
+                        f'| {name} | owner-approved: "use whatever looks good" | '
+                        f"{STRUCTURE_CELL} | {VALUES_CELL} | every route |"
+                    )
+                else:
+                    rows.append(
+                        f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |")
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(
+            any("comes from a selected reference" in i for i in failures), failures
+        )
+
+
+class StructureDiffTests(unittest.TestCase):
+    """The finished first screen is compared to the reference it names."""
+
+    def bind(self, temporary, payload):
+        project = Path(temporary)
+        state = project / ".design-dna"
+        (state / "evidence").mkdir(parents=True)
+        record = state / "visual-review.md"
+        record.write_text("placeholder\n", encoding="utf-8")
+        artifact = state / "evidence" / "structure-diff.json"
+        artifact.write_text(json.dumps(payload), encoding="utf-8")
+        cell = (".design-dna/evidence/structure-diff.json plus sha256:"
+                + sha256_of(artifact))
+        return project, record, f"- Structure diff: {cell}\n"
+
+    def test_resembling_build_is_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.bind(temporary, {
+                "tool": "compare_structure.mjs", "pass": True,
+                "verdict": "The first screen is built like strong-1 (4 of 4).",
+            })
+            self.assertEqual([], INITIALIZER.structure_diff_failures(
+                section, project=project, record_path=record))
+
+    def test_own_layout_with_borrowed_sizes_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.bind(temporary, {
+                "tool": "compare_structure.mjs", "pass": False,
+                "verdict": ("the largest thing on the first screen is text "
+                            "(<h1>), the reference's is media (<img>)"),
+            })
+            failures = INITIALIZER.structure_diff_failures(
+                section, project=project, record_path=record)
+        self.assertTrue(any("largest thing" in i for i in failures), failures)
+
+    def test_hand_written_diff_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.bind(temporary, {"tool": "by-hand", "pass": True})
+            failures = INITIALIZER.structure_diff_failures(
+                section, project=project, record_path=record)
+        self.assertTrue(any("compare_structure.mjs" in i for i in failures), failures)
+
+    def test_unbound_diff_is_rejected(self) -> None:
+        failures = INITIALIZER.structure_diff_failures(
+            "- Structure diff: __REPLACE_WITH_THE_DIFF__\n",
+            project=Path("."), record_path=Path("visual-review.md"))
+        self.assertTrue(any("must bind" in i for i in failures), failures)
 
 
 if __name__ == "__main__":

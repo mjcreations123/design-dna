@@ -454,6 +454,40 @@ This is not a licence to assemble a collage. The parts still have to become
 one design, by the rules in the section above: one palette, one type system,
 one rhythm, one motion language.
 
+## Rebuild the first screen from the reference's screen
+
+Keep the reference's first screen open beside the build and reproduce how it
+is arranged: what kind of thing fills it, where the wordmark sits, how the
+space is divided, what is against each edge. Not its font sizes. The
+difference is the whole difference.
+
+The failure this replaces was total. A producer researched six references,
+scored them, filtered them by register, measured them, and then shipped a page
+whose layout, both typefaces, shapes, spacing and section rhythm it had
+invented. Exactly one thing on the page came from the research: a circular
+button. The owner named it in one second. Asked why, the honest answer was
+that reproducing a layout means giving up authoring, and the producer took
+authoring back at every decision because nothing stopped it.
+
+Two things stop it now. The `Component sources` table demands the structure of
+each part, not its properties, and refuses a cell that only carries sizes. And
+`scripts/compare_structure.mjs` reads the finished first screen and compares
+it with the reference's:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_structure.mjs" \
+  --url "http://127.0.0.1:4920/" \
+  --reference .design-dna/references/strong-1-observation.json \
+  --out .design-dna/evidence/structure-diff.json
+```
+
+It compares four things and fails below three: which kind of thing is largest
+on the first screen, where the ink sits over a sampled grid, what lives against
+each edge and in each corner, and the proportions of the type. Run against the
+build that shipped the button, it said what a person says: the largest thing on
+the first screen is text where the reference's is a photograph, and the ink
+agrees on 20% of the screen against a floor of 55%.
+
 ## Approve the first screen
 
 Build and render the first screen of the primary route before any other

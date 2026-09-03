@@ -242,8 +242,10 @@ was rerendered; and the named decision that goes beyond every selected
 reference, as actually observed in the render; and the mechanism diff, the
 `compare_mechanisms.mjs` record that read the final build with the same
 harness as its references and found their mechanisms present, no device
-overused, and no skeleton. Each value below is required when this closure
-applies.
+overused, and no skeleton; and the structure diff, the
+`compare_structure.mjs` record that compared the finished first screen with
+the first screen of the reference it names and found that it is built the same
+way. Each value below is required when this closure applies.
 
 - Dossier result: __REPLACE_WITH_DOSSIER_PATH_STATE_ACCESS_BOUNDARY_AND_SELECTED_RANKS__
 - Positive synthesis: __REPLACE_WITH_THE_VISITOR_FACING_DECISIONS_DRAWN_FROM_THE_SELECTED_REFERENCES__
@@ -253,6 +255,7 @@ applies.
 - Rendered result: __REPLACE_WITH_THE_WIDE_AND_NARROW_REVIEW_OF_THE_SYNTHESIS__
 - Elevation result: __REPLACE_WITH_THE_DECISION_THAT_GOES_BEYOND_EVERY_REFERENCE_AS_OBSERVED__
 - Mechanism diff: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_MECHANISM_DIFF_JSON_PLUS_SHA256__
+- Structure diff: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_STRUCTURE_DIFF_JSON_PLUS_SHA256__
 - Reference-led direction disposition: __REPLACE_WITH_KEEP_REVISE_REOPEN_DIRECTION_REJECT_OR_BLOCKED__
 
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Reference synthesis, counterevidence, and rendered result |

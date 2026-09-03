@@ -5,6 +5,49 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 6.8.0
+
+Resemblance. Every gate through 6.7.0 proved the producer had LOOKED at its
+references. None asked whether what it built resembled one, and it never did.
+
+The build that forced this release researched six sites: scored them on
+mechanism richness, filtered them by the register the brief needed, measured
+their type and controls. Then it shipped a page whose layout, both typefaces,
+shapes, spacing and section rhythm were its own invention. One thing on the
+whole page came from the research: a circular button, 115 by 115. The owner
+saw it immediately and asked the obvious question, which is whether anyone
+would build a fourteen-gallery research pipeline in order to source a button
+radius.
+
+The cause was the instruments. A measuring pass can read a font size; it
+cannot read "the first screen is a full-bleed photograph with the wordmark
+broken into the four corners", which is what one of those references actually
+is. Properties were the only thing the tools could see, so properties were the
+only thing that came back, and everything the tools could not see the producer
+invented.
+
+- New `scripts/structure_probe.mjs` reads the structure of a first screen:
+  which kind of thing is largest, where the ink sits over a 24x16 sampled grid,
+  what lives against each edge and in each corner, and the proportions of the
+  type, including x-height ratio and width, which a face chosen by taste
+  cannot fake.
+- `observe_reference.mjs` is schema 3 and records that structure for every
+  reference alongside its mechanism sheet.
+- New `scripts/compare_structure.mjs` reads the finished build's first screen
+  and diffs it against the reference it names, on four independent tests. Fewer
+  than three is a fail. The visual review binds the record and it must pass.
+- The `Component sources` table gains a `Structure taken` column that must say
+  how a part is ARRANGED, and rejects a cell carrying only sizes. Its required
+  rows now include the first screen, the layout grid, and both typefaces, which
+  are precisely the decisions the failing build made for itself.
+- A typeface may no longer be owner-approved. It comes from a selected
+  reference, or the build does not ship.
+
+242 tests pass, 8 of them new. The structure diff was run against the failing
+build and reported what a person reports: the largest thing on its first
+screen is text where the reference's is a photograph, and the ink agrees on
+20% of the screen against a floor of 55%.
+
 ## 6.7.0
 
 The mechanism gate. 6.6.0 proved that a producer had watched a site move. It

@@ -35,8 +35,9 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import process from "node:process";
+import { STRUCTURE_SCRIPT } from "./structure_probe.mjs";
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const REST_SETTLE_MS = 700;
 const HOLD_MS = 900;
 const SCROLL_STEP_RATIO = 0.62;
@@ -450,6 +451,11 @@ async function main() {
       detail: restMoved ? "The page changed with no input, so something autoplays or loops." : "The page was still with no input.",
     });
 
+    // --- the structure of the first screen, before anything is scrolled.
+    // A property reader can see a font size; only this can see that the first
+    // screen is a photograph with the wordmark pushed into the corners.
+    const firstScreen = await page.evaluate(STRUCTURE_SCRIPT);
+
     // --- the mechanism pass
     const mech = await mechanismPass(page);
 
@@ -578,6 +584,7 @@ async function main() {
         on_hover: hoverMoved,
         on_transition: transition.moved === true,
       },
+      first_screen: firstScreen,
       mechanisms: mech.mechanisms,
       score: { ...mech.score, distinct_mechanisms: distinct },
       notes,
@@ -592,6 +599,9 @@ async function main() {
           frames: frames.length,
           motion_observed: motionObserved,
           distinct_mechanisms: distinct,
+          first_screen: firstScreen.dominant
+            ? `${firstScreen.dominant.kind} <${firstScreen.dominant.tag}> fills ${Math.round(firstScreen.dominant.area_share * 100)}%`
+            : 'empty',
           scroll_coverage: record.score.scroll_coverage,
           document_scrolls: record.score.document_scrolls,
           mechanisms: mech.mechanisms.map((m) => m.type + (m.held_px ? `(${m.held_px}px)` : "")),

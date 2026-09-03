@@ -29,9 +29,11 @@ node "<DESIGN_DNA_SKILL_ROOT>/scripts/observe_reference.mjs" \
 
 The `Observed evidence` cell then reads `motion; .design-dna/references/strong-1-observation.json plus sha256:<hex>`
 for a site the session saw move, or `static; ...` for one it did not. The
-session is schema 2: it carries a mechanism sheet (what held, travelled,
+session is schema 3: it carries a mechanism sheet (what held, travelled,
 swapped, revealed, parallaxed, followed the pointer, and how long a hover
-takes) and a score. The gate rejects a motion claim the session does not
+takes), a score, and the structure of the reference's first screen (what kind
+of thing fills it, where the ink sits, what is against each edge and in each
+corner, and the proportions of its type). The gate rejects a motion claim the session does not
 support, and it rejects a motion row on its own numbers when the site is thin:
 fewer than three distinct mechanisms, or scroll choreography on less than half
 of its depth. Nobody vets the list; the harness does.
@@ -136,20 +138,37 @@ rejected builds came from: the references supplied one scroll effect and the
 producer supplied the nav, the buttons, the list rows and the footer from
 memory, and memory is the generic skeleton every time.
 
-| Component | Source rank or owner approval | Recorded values reproduced | Where it is used |
-| --- | --- | --- | --- |
-| navigation |  |  |  |
-| opening |  |  |  |
-| buttons |  |  |  |
-| rows or lists |  |  |  |
-| footer |  |  |  |
-| scroll behavior |  |  |  |
-| hover behavior |  |  |  |
-| type scale |  |  |  |
+| Component | Source rank or owner approval | Structure taken | Recorded values reproduced | Where it is used |
+| --- | --- | --- | --- | --- |
+| first screen |  |  |  |  |
+| layout grid |  |  |  |  |
+| display typeface |  |  |  |  |
+| text typeface |  |  |  |  |
+| color behavior |  |  |  |  |
+| section rhythm |  |  |  |  |
+| navigation |  |  |  |  |
+| buttons |  |  |  |  |
+| rows or lists |  |  |  |  |
+| footer |  |  |  |  |
+| scroll behavior |  |  |  |  |
+| hover behavior |  |  |  |  |
 
 `Source rank or owner approval` is a selected rank, or
-`owner-approved: "<the owner's actual words>"`. `Recorded values reproduced`
-carries the numbers taken from the source's mechanism sheet and measured
-styles (held distances, swap counts, durations, easings, sizes, weights,
-tracking), never a paraphrase such as "big type" or "a nice hover". Add rows
-for every further component the build has; the eight above are the floor.
+`owner-approved: "<the owner's actual words>"`. The two typeface rows may not
+be owner-approved: a typeface comes from a selected reference, either the same
+face where it is freely licensed or one matched to that reference's measured
+proportions, because a face chosen by taste is how a build ends up sharing
+nothing with any site it researched.
+
+`Structure taken` says how the part is ARRANGED: what fills the first screen,
+what sits at which edge, how the space is divided, what is beside what. The
+gate rejects a cell that only carries sizes. This column exists because a
+producer can reproduce every font size on a reference and still ship its own
+layout, and that is exactly what happened: six references researched, and the
+only thing that reached the page was one circular button.
+
+`Recorded values reproduced` carries the numbers taken from the source's
+mechanism sheet and measured styles (held distances, swap counts, durations,
+easings, sizes, weights, tracking), never a paraphrase such as "big type" or
+"a nice hover". Add rows for every further component the build has; the twelve
+above are the floor.

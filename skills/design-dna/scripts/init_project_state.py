@@ -5668,7 +5668,7 @@ REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 # Two held scroll positions is the floor at which a producer can tell an
 # animated arrival from a static one; one hold proves nothing.
 REFERENCE_OBSERVATION_MIN_HOLDS = 2
-REFERENCE_OBSERVATION_SCHEMA = 2
+REFERENCE_OBSERVATION_SCHEMA = 3
 # A site earns a motion row on its own numbers: at least three distinct
 # mechanisms, with scroll choreography active on at least half of its depth.
 # Below that it is a thin site, and a thin reference teaches a thin design.
@@ -5692,21 +5692,44 @@ REFERENCE_SIGNATURE_VERBS = re.compile(
 REFERENCE_DOSSIER_COMPONENT_HEADERS = (
     "Component",
     "Source rank or owner approval",
+    "Structure taken",
     "Recorded values reproduced",
     "Where it is used",
 )
-# Every one of these ships on a public site; every one needs a source line
-# or it is the producer's own design, which needs the owner's permission.
+# A property is a font size. A structure is where the thing sits, what it is
+# next to, and what fills the screen. The producer that shipped its own layout
+# with borrowed font sizes could satisfy a property column every time, so the
+# structure column has to carry a word about arrangement.
+COMPONENT_STRUCTURE_WORDS = re.compile(
+    r"\b(full[- ]?bleed|edge|edges|corner|corners|column|columns|grid|split|half|"
+    r"third|quarter|centre|center|centred|centered|left|right|top|bottom|"
+    r"stack|stacked|beside|above|below|behind|over|under|inset|margin|"
+    r"span|spans|fills|occupies|holds|pinned|sticky|offset|overlap|"
+    r"row|rows|band|panel|frame|stage|first screen|viewport)\b",
+    re.IGNORECASE,
+)
+# The parts of a page that decide what it looks like. Every one needs a
+# source; a build whose layout, first screen and typefaces are the producer's
+# own is the producer's design however many references it researched.
 REFERENCE_DOSSIER_REQUIRED_COMPONENTS = (
+    "first screen",
+    "layout grid",
+    "display typeface",
+    "text typeface",
+    "color behavior",
+    "section rhythm",
     "navigation",
-    "opening",
     "buttons",
     "rows or lists",
     "footer",
     "scroll behavior",
     "hover behavior",
-    "type scale",
 )
+# A typeface is taken from a reference or it is the producer's taste. Taste is
+# how nine builds got Newsreader and Instrument Sans when not one reference
+# used anything like them.
+TYPEFACE_COMPONENTS = ("display typeface", "text typeface")
+
 REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Rank",
     "Reference title or visible entry",
@@ -6056,6 +6079,16 @@ def reference_dossier_failures(
                 "transition. Record what was actually seen instead of the motion "
                 "the site was assumed to have."
             )
+        first_screen = payload.get("first_screen")
+        if not isinstance(first_screen, dict) or not isinstance(
+            first_screen.get("grid"), list
+        ):
+            problems.append(
+                f"{observation_label} must carry the reference's first-screen "
+                "structure; without it a build can only be compared on font "
+                "sizes, and a build compared on font sizes is the producer's "
+                "own layout with borrowed numbers."
+            )
         mechanisms = payload.get("mechanisms")
         score = payload.get("score")
         if not isinstance(mechanisms, list) or not isinstance(score, dict):
@@ -6306,6 +6339,15 @@ def reference_dossier_failures(
             component = row[0].strip().casefold()
             covered.add(component)
             source = row[1].strip()
+            structure = row[2].strip()
+            if COMPONENT_STRUCTURE_WORDS.search(structure) is None:
+                failures.append(
+                    f"{label} structure column must say how the part is "
+                    "arranged (what fills the screen, what sits at which edge, "
+                    "how the space is divided), not what size it is. A build "
+                    "can reproduce every font size and still be the producer's "
+                    "own layout."
+                )
             if source.casefold().startswith("owner-approved:"):
                 quote = source.split(":", 1)[1].strip()
                 if len(quote) < 12:
@@ -6320,11 +6362,21 @@ def reference_dossier_failures(
                         f"{label} must name a selected reference rank as its "
                         "source, or `owner-approved: <the owner's words>`."
                     )
-            if len(row[2].strip()) < 24:
+            if len(row[3].strip()) < 24:
                 failures.append(
                     f"{label} must reproduce the recorded values it takes "
                     "(sizes, distances, durations, easings, counts), not a "
                     "paraphrase of the reference."
+                )
+            if component in TYPEFACE_COMPONENTS and source.casefold().startswith(
+                "owner-approved:"
+            ):
+                failures.append(
+                    f"{label} names a typeface the producer chose. A typeface "
+                    "comes from a selected reference: the same face where it is "
+                    "freely licensed, otherwise one matched to that reference's "
+                    "measured proportions. Chosen by taste is how a build ends "
+                    "up sharing no face with any site it researched."
                 )
         missing_components = [
             name for name in REFERENCE_DOSSIER_REQUIRED_COMPONENTS if name not in covered
@@ -7292,6 +7344,11 @@ def visual_review_schema3_capture_matrix_failures(
             )
         )
         failures.extend(
+            structure_diff_failures(
+                closure_section, project=project, record_path=record_path
+            )
+        )
+        failures.extend(
             closure_table_failures(
                 "Reference-led direction closure (required for public candidates)",
                 REFERENCE_LED_DIRECTION_CLOSURE_HEADERS,
@@ -7310,6 +7367,7 @@ REFERENCE_LED_CLOSURE_LABELS = (
     "Rendered result",
     "Elevation result",
     "Mechanism diff",
+    "Structure diff",
 )
 REFERENCE_LED_CLOSURE_DISPOSITIONS = {
     "keep",
@@ -7351,6 +7409,46 @@ def mechanism_diff_failures(
             f"{label} did not pass: "
             + str(payload.get("verdict") or "the build does not carry the references' mechanisms")
             + ". Return to the transfer map; a build that lost the mechanisms is a skeleton."
+        ]
+    return []
+
+
+def structure_diff_failures(
+    section: str, *, project: Path, record_path: Path
+) -> list[str]:
+    """Does the finished first screen look like the reference it names?
+
+    Every other gate proves the producer looked. This one compares what it
+    built to what it looked at: which kind of thing fills the first screen,
+    where the ink sits, what is against the edges and in the corners, and the
+    proportions of the type. It is the check that would have caught a build
+    whose research produced six references and whose page reproduced one
+    button.
+    """
+    label = "Reference-led direction closure Structure diff"
+    value = (markdown_label_value(section, "Structure diff") or "").strip()
+    if not non_placeholder(value) or value.startswith("__REPLACE_WITH"):
+        return [
+            f"{label} must bind the compare_structure.mjs record for the final "
+            "build's first screen."
+        ]
+    artifact, artifact_failures = bound_artifact(
+        value, project=project, record_path=record_path, label=label
+    )
+    if artifact_failures or artifact is None:
+        return artifact_failures
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"{label} is not readable JSON: {exc}"]
+    if not isinstance(payload, dict) or payload.get("tool") != "compare_structure.mjs":
+        return [f"{label} must be emitted by the packaged compare_structure.mjs."]
+    if payload.get("pass") is not True:
+        return [
+            f"{label} did not pass: "
+            + str(payload.get("verdict") or "the first screen does not resemble any selected reference")
+            + ". Rebuild the first screen from the reference's own screen, not "
+            "from a description of it."
         ]
     return []
 

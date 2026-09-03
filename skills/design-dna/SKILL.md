@@ -167,13 +167,15 @@ means someone submitted it, not that it is good.
 
 The references are where the site's front-end design comes from, and every
 project gets new research. Watch each one with the packaged harness
-(`scripts/observe_reference.mjs`, schema 2): it drives the page with real
+(`scripts/observe_reference.mjs`, schema 3): it drives the page with real
 wheel gestures, reads every element against the viewport rather than against
 the scroll position, and records the site's mechanisms as numbers: what holds
 in the viewport and for how many pixels, what travels through it, what swaps,
 what reveals, what parallaxes at what rate, what follows the pointer, how long
-a hover takes. A still is kept for composition and is never evidence of what
-a site does. The harness also scores the site, and the gate drops a thin one
+a hover takes. It also records the STRUCTURE of the reference's first screen:
+which kind of thing fills it, where the ink sits over a sampled grid, what is
+against each edge and in each corner, and the proportions of its type. A still
+is kept for composition and is never evidence of what a site does. The harness also scores the site, and the gate drops a thin one
 on its own: fewer than three distinct mechanisms, or scroll choreography on
 less than half of its depth, is not a reference. Answer one question before
 any structural note, and record it in the row's `Signature` cell as what the
@@ -200,16 +202,26 @@ brand's own palette, at most two typefaces chosen for beauty and brand fit
 one rhythm where each section flows into the next, and one designed motion
 language carrying the selected references' recorded mechanisms into named
 routes. Every component that ships has a source line in the dossier's
-`Component sources` table with the recorded values it reproduces: navigation,
-opening, buttons, rows and lists, footer, scroll behavior, hover behavior,
-type scale, and anything else on the page. A component with no source is the
-producer's own design, and that ships only with the owner's permission in the
-owner's quoted words. Sections that fade up on scroll are not a motion
+`Component sources` table naming both the STRUCTURE it takes and the recorded
+values it reproduces: first screen, layout grid, display typeface, text
+typeface, color behavior, section rhythm, navigation, buttons, rows and lists,
+footer, scroll behavior, hover behavior, and anything else on the page. The
+structure column must say how the part is arranged, not what size it is,
+because a build can reproduce every font size on a reference and still be the
+producer's own layout. The two typefaces come from a reference and may not be
+owner-approved: chosen by taste is how a build shares no face with any site it
+researched. Any other component with no source is the producer's own design,
+and that ships only with the owner's permission in the owner's quoted words. Sections that fade up on scroll are not a motion
 language; that is the default every generated site ships. When the build is
-finished, `scripts/compare_mechanisms.mjs` reads it with the same harness as
-its references; the visual review binds that record, and a build that lost
-the references' mechanisms, leans on one device, or is a skeleton under its
-styling does not pass. Render the first screen at wide and narrow width and put it in
+finished, two packaged checks read it with the same eyes as its references and
+the visual review binds both. `scripts/compare_mechanisms.mjs` asks whether the
+references' mechanisms arrived; a build that lost them, leans on one device, or
+is a skeleton under its styling does not pass. `scripts/compare_structure.mjs`
+asks whether the first screen is built the way the reference it names is built,
+comparing which kind of thing fills the screen, where the ink sits, what is
+against the edges and corners, and the proportions of the type. Every gate
+before these proved the producer had looked at a reference; these are the only
+ones that ask whether the result resembles it. Render the first screen at wide and narrow width and put it in
 front of the owner before any other route exists. Name at least one decision
 where the build goes beyond every reference. Before any review chain or gate,
 scroll the candidate, place its renders beside the selected captures, and
