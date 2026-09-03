@@ -5,6 +5,213 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 9.1.1
+
+- FIXED `scripts/check_signature_transfer.mjs`: only a SELECTED rank owes the build
+  a component row. The dossier lists at least six strong rows so that no one site
+  is the template and selects four or more of them; the check read every listed
+  row as owed a part and failed a dossier the state gate had just passed. It now
+  reads `Selected positive ranks` and marks the rest `listed, not selected`.
+
+## 9.1.0
+
+The per-sheet read of 9.0.0 worked and cost an afternoon per site: three
+hundred contact sheets, nearly all of them showing nothing changing. The
+owner: "I need some quicker way, in between creating thousands of frames and
+going through each one individually, and I also don't want just a screenshot."
+
+- CHANGED `scripts/record_reference.mjs` (recording schema 2). It still drives
+  a real cursor and records video; now it also differences the video frame by
+  frame and keeps only the moments where the screen changed, as EVENTS: one
+  four-frame sheet (before, during, after, settled) per hover, click or
+  scroll step that changed something, one per run of quiet travel, and one
+  per change the page made on its own, each with the percent of the screen
+  that changed, where, and the time to settle. Quiet hovers are listed, not
+  tiled. It writes `<id>-events.md`, the skeleton of the behaviour inventory.
+  Full frames stay in `<id>-frames/` for spot checks.
+- CHANGED the sequence-read validator: a schema-2 recording counts events and
+  the read carries a line per event (`- e001 (`); `- Signature events:`
+  names event ids; behaviour components may cite an event sheet
+  (`strong-N-events/eNNN-kind.png`). Schema-1 sheet recordings and reads are
+  still accepted.
+- ADDED `--substitute FROM=TO` to `scripts/check_style_provenance.mjs`: a
+  paid face measured on a selected reference may be replaced by a free face
+  matched to it, declared and recorded, instead of failing as untraceable.
+- Tests: 5 new in `test_reference_dossier.py`.
+
+## 9.0.0
+
+The owner screen-recorded himself using the reference the 8.0.0 build claimed
+to copy. Walked at ten frames a second it held nineteen behaviours the build
+had never seen. The producer had read the harness's mechanism numbers, opened
+one rest frame of forty-one, and built a photograph inside a dotted line.
+
+- ADDED `scripts/record_reference.mjs`. It records the reference with a real
+  cursor (a dwell on every interactive thing on the first screen, small
+  scroll steps hovering what arrives, one internal link so the transition and
+  an inner page are on tape), then cuts the video into ten-frames-a-second
+  contact sheets and writes `<id>-recording.json` binding them.
+- ADDED the dossier's `Sequence reads` section and its validator. Per selected
+  reference: the recording and a hand-written read are bound; the read must
+  carry a line for EVERY sheet (counted), each long enough to have said
+  something, most of them describing change; it must end in a
+  `Behaviour inventory` of at least eight rows; and the signature must be
+  located on sheets that exist. The `first screen`, `navigation`, `buttons`,
+  `scroll behavior` and `hover behavior` component rows must cite a recording
+  sheet, because a rest frame cannot show what they do.
+- The harness is kept as a cross-check on the reading, never a substitute.
+- Rule text in SKILL.md, the dossier template and reference-led-direction.md
+  now says what the nineteen behaviours were, so the next producer knows what
+  a still cannot carry.
+- Tests: 10 new in `test_reference_dossier.py`.
+
+## 8.0.0
+
+The owner rejected a build that had passed every gate in 7.1.0, saying it was
+still the producer's design and still took the crack in the sidewalk. It was
+measured, and he was right on both counts.
+
+- ADDED `scripts/check_style_provenance.mjs`. It reads the finished build with
+  the same extractor that read the references and asks of every color,
+  typeface, size, radius and transition: which reference did this come from?
+  It fails on a typeface no selected reference uses, on a LOUD color no
+  reference computes (one filling a control, a section ground, or a
+  measurable share of the screen), and on a traced share below 85% once at
+  least 20 values have been measured. Against the rejected build it names
+  Cormorant Garamond, which was on none of its five references and had been
+  picked by matching an x-height ratio, and rgb(232, 183, 29), which filled
+  every control and a whole band at a distance of 122 from the nearest color
+  any reference computes.
+- CHANGED the ordering, which is the real fix. `compare_structure.mjs` already
+  existed, was already correct, and already said the rejected build's first
+  screen agreed with the reference it cited on 3% of the screen. It had never
+  run, because the gates were scheduled for the end of the build. The
+  comparators now run on the FIRST SCREEN and the second section may not be
+  written until they pass. A gate at the end of a build produces a better
+  dossier, not a better site.
+- REMOVED the two instructions that were producing the producer's own design.
+  `reference-led-direction.md` told the producer to take a reference's color
+  behavior "never its literal values" and, for a client with no brand colors,
+  to "derive one palette from the product, the material, and the audience";
+  and to choose typefaces "for beauty and brand fit, never because a reference
+  used them". A copying skill was instructing the producer to bring its own
+  palette and its own typeface. Both are inverted: the hues and the families
+  now come from what the extractor measured, a client's recorded brand colors
+  still win where they exist, and a substitute for an unlicensable family
+  needs the owner's permission in the owner's quoted words.
+- The Enterprise Candidate invariant now binds a passing provenance record and
+  a passing first-screen structure record DATED BEFORE the second section was
+  written.
+- Removed a paragraph that had been duplicated verbatim in SKILL.md since
+  7.0.0.
+- 285 tests pass, 12 of them new.
+
+## 7.1.0
+
+The owner accepted the 7.0.0 build and named what was still wrong: "some of the
+websites you took from you still took the crack in the sidewalk instead of the
+waterfall." Two of that build's six references reached the page as a background
+colour and a set of control dimensions, and both cleared every gate, because a
+source line records that a reference was used and never which part of it was
+meant. A producer takes the part it is most comfortable rebuilding.
+
+**The signature has to be the loudest thing the site does.** New
+`scripts/check_signature_transfer.mjs` reads each reference's mechanisms in the
+order the harness ranked them and refuses a `Signature` cell that names
+anything but the top of that list. A site's buttons really do fill with their
+own colour under the pointer; writing that down is a small true thing recorded
+in place of the large one, after which the reference contributes a small true
+thing. Run it before the transfer rows are written.
+
+**Every selected reference has to survive the deletion test.** The dossier
+gains a `Signature transfer` section, one row per selected reference, asking
+what a stranger would notice was gone if that reference were cut. The signature
+is copied from the strong row and checked against it, so it cannot be refitted
+on the way down the record. The loss must name a component the build actually
+renders, because a loss nobody can point at is not a loss, and it must name an
+arrangement or a behaviour, because a ground, a radius, a size and a control
+dimension are exactly what survive when a reference was sampled instead of
+copied. The component's own name does not count as the arrangement.
+
+This is the first gate in the package that asks WHICH PART of a reference
+arrived. It does not judge taste and does not claim to: the objective half is
+the harness's own ranking, and the other half is a written judgment made hard
+to fake rather than made automatic.
+
+## 7.0.0
+
+The owner named three things after rejecting the 6.9.0 build. All three are now
+mechanical.
+
+**Never build off a screenshot.** New `scripts/extract_reference_styles.mjs`
+drives the live reference and reads its design system out of the computed CSS:
+type settings, colours with coverage, control geometry, transitions, radii,
+borders, section grounds, spacing. Each strong row binds that record, and every
+number a component row claims to reproduce is checked against the numbers that
+reference actually computes. A cell carrying fewer than three measured values
+is refused as a paraphrase of a picture. Given only a still, a producer reports
+what a still carries and invents the rest while believing it is copying.
+
+**Never add your own design.** The dossier carried a field reading "Elevation
+beyond the references (what this build does that none of them do)". That is an
+instruction to design. The producer followed it, invented a panel nobody asked
+for, and presented the invention to the owner as the best thing on the page.
+The field is now "Combination of references": which reference supplies which
+part, and why no single one of them is this build. Language that describes an
+invention is refused, and the field must name at least two selected references.
+
+**Never take shortcuts.** The registry gains a `curation` tier on every source:
+`award`, `curated`, or `submission`. A selected reference must come from an
+award or curated source and must record what it won or why an editor chose it.
+The rejected set was pulled from a submission feed's bulk tag listing and then
+filtered by register, which is how it ended up as six faithful copies of
+forgettable sites. Quality is the first filter; register is the second.
+
+Also fixed: `compare_mechanisms.mjs` still demanded observation schema 2 after
+6.8.0 moved the harness to schema 3, so that gate could not read the harness's
+own output at all.
+
+264 tests pass, 10 of them new.
+
+## 6.9.0
+
+6.8.0 made the producer prove its first screen resembled a reference. It then
+copied that screen faithfully and invented everything the check could not see:
+two entire inner pages, a form, a footer, a photo plate, a numbered list, and
+the connective parts of the home page. Twenty-five components shipped. The
+sources table had twelve rows.
+
+Two holes, both structural, both closed here.
+
+A source line was prose. The table demanded a source for every component, and
+the producer could always supply the shape of one, so it wrote
+`footer <- index-space.org: a plain block, no rules` for a footer it had never
+opened. A gate whose evidence the producer authors is not a gate.
+
+- The `Component sources` table gains a `Frame that shows it` column naming
+  the capture that shows the part, relative to the reference captures. The
+  validator opens the file, and checks it belongs to the reference the row
+  names. A part nobody looked at cannot be cited, because the picture of it
+  does not exist. An owner-approved row writes `owner-approved` instead.
+
+The required rows were a fixed list, so a build could satisfy all twelve and
+still ship a dozen parts that came from nowhere.
+
+- New `scripts/scan_build_components.mjs` loads every route and counts the
+  class stem of every painted element, plus unclassed forms, footers, navs and
+  controls. The dossier binds the record and every component it found needs a
+  row.
+- `scripts/compare_structure.mjs` now compares EVERY route, and takes its
+  route list from that census (`--census`), so the producer cannot check the
+  screen it copied and skip the pages it invented. The visual review refuses a
+  structure diff whose routes the producer chose.
+- siteinspire is removed from the public source registry at the owner's
+  instruction: its entries are not good enough to research from.
+- The dossier must observe at least two INNER pages across its selected
+  references. Every real site has more than one page, and a producer holding
+  only home-page captures will design every inner page it builds while
+  believing it is still copying.
+
 ## 6.8.0
 
 Resemblance. Every gate through 6.7.0 proved the producer had LOOKED at its

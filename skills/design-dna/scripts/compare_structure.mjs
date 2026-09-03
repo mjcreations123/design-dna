@@ -24,11 +24,26 @@
  *
  * Fewer than three of four is a fail.
  *
+ * EVERY route is compared, not only the home page. Pass --url once per
+ * route. A producer that copied one first screen faithfully and then
+ * invented two whole inner pages passed this check when it read one
+ * screen; it does not pass when it reads all of them. Each route has to
+ * resemble some reference PAGE, which means an inner route needs an
+ * observation of a reference's inner page to be compared against: a home
+ * page capture cannot tell you how that site builds its second screen.
+ *
  * Usage:
- *   node compare_structure.mjs --url http://127.0.0.1:4920/ \
+ *   node compare_structure.mjs \
+ *     --census .design-dna/evidence/component-census.json \
  *     --reference .design-dna/references/strong-1-observation.json \
+ *     --reference .design-dna/references/strong-1-inner-observation.json \
  *     --out .design-dna/evidence/structure-diff.json [--browser-executable FILE]
+ *
+ * --census takes the route list from scan_build_components.mjs, which is
+ * the only way this check covers the routes a producer would rather not
+ * compare.
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -43,19 +58,40 @@ function fail(code, message) {
 }
 
 function parseArgs(argv) {
-  const out = { url: null, references: [], outFile: null, browserExecutable: null, route: "/" };
+  const out = { urls: [], references: [], outFile: null, browserExecutable: null, census: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
-    if (a === "--url") out.url = argv[++i];
+    if (a === "--url") out.urls.push(argv[++i]);
     else if (a === "--reference") out.references.push(argv[++i]);
     else if (a === "--out") out.outFile = argv[++i];
+    else if (a === "--census") out.census = argv[++i];
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
     else if (a === "--help" || a === "-h") {
-      process.stdout.write("compare_structure.mjs --url URL --reference OBS.json [--reference ...] --out FILE\n");
+      process.stdout.write("compare_structure.mjs --url URL [--url URL ...] --reference OBS.json [--reference ...] --out FILE\n");
       process.exit(0);
     } else fail("unknown-argument", `Unrecognized argument: ${a}`);
   }
-  if (!out.url || !/^https?:\/\//i.test(out.url)) fail("invalid-url", "--url must be the built site's http(s) URL.");
+  // The route list comes from the census of what the build actually renders,
+  // so a producer cannot structure-check the one screen it copied and leave
+  // the pages it invented uncompared.
+  if (out.census) {
+    let payload;
+    try { payload = JSON.parse(fs.readFileSync(out.census, "utf8")); } catch (e) {
+      fail("census-unreadable", `${out.census}: ${String(e).slice(0, 120)}`);
+    }
+    if (payload.tool !== "scan_build_components.mjs" || !Array.isArray(payload.routes)) {
+      fail("census-invalid", `${out.census} is not a scan_build_components.mjs record.`);
+    }
+    out.censusSha = createHash("sha256").update(fs.readFileSync(out.census)).digest("hex");
+    for (const route of payload.routes) {
+      if (route && typeof route.url === "string" && out.urls.indexOf(route.url) < 0) {
+        out.urls.push(route.url);
+      }
+    }
+  }
+  if (!out.urls.length || out.urls.some((u) => !/^https?:\/\//i.test(u))) {
+    fail("invalid-url", "--url must be the built site's http(s) URL, once per route, or --census must name the component census.");
+  }
   if (!out.references.length) fail("no-reference", "At least one --reference observation is required.");
   if (!out.outFile) fail("invalid-out", "--out must name the diff file to write.");
   return out;
@@ -95,39 +131,61 @@ async function main() {
   const browser = await pw.chromium.launch(args.browserExecutable ? { executablePath: args.browserExecutable } : {});
   try {
     const ref0 = refs[0].structure.viewport || { w: 1440, h: 900 };
-    const page = await (await browser.newContext({
+    const context = await browser.newContext({
       viewport: { width: ref0.w || 1440, height: ref0.h || 900 },
       deviceScaleFactor: 1,
-    })).newPage();
-    await page.goto(args.url, { waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForTimeout(2600);
-    const build = await page.evaluate(STRUCTURE_SCRIPT);
+    });
 
-    // The build is compared against every reference it might have been built
-    // from; the best match is the one it actually resembles, and it has to
-    // resemble at least one of them.
-    const results = refs.map((r) => ({ reference: r.file, id: r.id, url: r.url, ...diffStructure(build, r.structure) }));
-    results.sort((a, b) => b.passed - a.passed);
-    const best = results[0];
+    // Every route is read, and each is compared against every reference page
+    // it might have been built from. A route that resembles nothing is a page
+    // the producer designed.
+    const routes = [];
+    for (const url of args.urls) {
+      const page = await context.newPage();
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.waitForTimeout(2600);
+      const build = await page.evaluate(STRUCTURE_SCRIPT);
+      await page.close();
+      const results = refs.map((r) => ({ reference: r.file, id: r.id, url: r.url, ...diffStructure(build, r.structure) }));
+      results.sort((a, b) => b.passed - a.passed);
+      const best = results[0];
+      routes.push({
+        url,
+        pass: best.pass,
+        best_match: best.reference,
+        verdict: best.pass
+          ? `Built like ${best.id} (${best.passed} of ${best.of} structural tests).`
+          : best.verdict,
+        build_first_screen: build,
+        results,
+      });
+    }
+
+    const failed = routes.filter((r) => !r.pass);
     const record = {
       schema_version: SCHEMA_VERSION,
       tool: "compare_structure.mjs",
-      url: args.url,
+      urls: args.urls,
+      url: args.urls[0],
+      census_file: args.census || null,
+      census_sha256: args.censusSha || null,
       compared_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
-      pass: best.pass,
-      best_match: best.reference,
-      verdict: best.pass
-        ? `The first screen is built like ${best.id} (${best.passed} of ${best.of} structural tests).`
-        : best.verdict,
-      build_first_screen: build,
-      results,
+      pass: failed.length === 0,
+      routes_compared: routes.length,
+      best_match: routes[0] ? routes[0].best_match : null,
+      verdict: failed.length === 0
+        ? `All ${routes.length} route(s) are built like a reference page.`
+        : `${failed.length} of ${routes.length} route(s) resemble no reference page. ` +
+          failed.map((r) => `${r.url}: ${r.verdict}`).join(" | "),
+      routes,
     };
     fs.mkdirSync(path.dirname(args.outFile), { recursive: true });
     fs.writeFileSync(args.outFile, JSON.stringify(record, null, 2) + "\n", "utf8");
     process.stdout.write(JSON.stringify({
-      ok: true, diff: args.outFile, pass: record.pass, best_match: best.reference,
+      ok: true, diff: args.outFile, pass: record.pass,
+      routes_compared: record.routes_compared,
       verdict: record.verdict,
-      scores: results.map((r) => `${r.id}:${r.passed}/${r.of}`),
+      per_route: routes.map((r) => `${r.url} -> ${r.best_match || "nothing"} ${r.pass ? "pass" : "FAIL"}`),
     }, null, 2) + "\n");
   } catch (error) {
     fail("comparison-failed", String(error).slice(0, 400));

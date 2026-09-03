@@ -156,6 +156,24 @@ For every fresh Enterprise Candidate public website, read
 [Reference-led direction](references/quality/reference-led-direction.md) before
 the first visual candidate, and initialize the project with
 `--profile enterprise-candidate` so the prebuild gate can hold it. Start from
+Selection is QUALITY FIRST and register second. Take candidates only from
+sources whose entries are there because a jury or an editor chose them, which
+the registry marks `award` or `curated`; an open submission feed may be browsed
+but cannot supply a selected reference. A listing on a submission feed means
+somebody sent it in, not that it is good, and filtering a bulk feed by register
+produces register-matched mediocrity: six faithful copies of forgettable sites
+make a forgettable site. Record what each selected site won, or why that
+source's editor chose it.
+
+Selection is QUALITY FIRST and register second. Take candidates only from
+sources whose entries are there because a jury or an editor chose them, which
+the registry marks `award` or `curated`; an open submission feed may be browsed
+but cannot supply a selected reference. A listing on a submission feed means
+somebody sent it in, not that it is good, and filtering a bulk feed by register
+produces register-matched mediocrity: six faithful copies of forgettable sites
+make a forgettable site. Record what each selected site won, or why that
+source's editor chose it.
+
 the maintained public source registry, weight eligible sources by this brief,
 pick references from any genre for their design and never by the client's
 industry, and record at least six strong individual references drawn from at
@@ -185,7 +203,20 @@ Then hold every part you plan to take to the same test. If a thousand
 strangers would not name it, it is not the takeaway. A reference contributes its memorable whole and not a convenient
 scrap: the build must carry that named signature, and a transfer that takes
 only a palette value, a font category, a background, or one generic animation
-fails the standard even though it names a source. Most often that answer is
+fails the standard even though it names a source. Two mechanisms hold that,
+because prose about signatures did not. `scripts/check_signature_transfer.mjs`
+reads each reference's mechanisms in the order the harness ranked them and
+refuses a `Signature` cell that names anything but the loudest thing that site
+does; a site's buttons really do fill with colour under the pointer, and
+writing that down is a small true thing recorded in place of the large one,
+after which the reference contributes a small true thing. Then the dossier's
+`Signature transfer` table applies the deletion test, one row per selected
+reference: cover its row and name what a stranger would notice is gone. The
+answer must name a component the build ships and an arrangement or a behaviour,
+because a ground, a radius, a size or a control dimension is exactly what
+survives when a reference was sampled instead of copied. If the honest answer
+is that nothing anyone would name would go, that reference was not selected,
+it was listed; cut it, or go back and take its signature properly. Most often that answer is
 something the page does, which is why behavior is read and captured first,
 but a signature can equally be a typographic composition, a photographic
 treatment, or a color relationship, and a site that barely moves is a strong
@@ -197,13 +228,61 @@ parts to leave.
 
 Map a selected subset of at least four references, at least three of them
 motion rows, into a design transfer map and design the site as one thing: the
-brand's own palette, at most two typefaces chosen for beauty and brand fit
-(never a mono, pixel, or novelty face as a workaround for a reference's font),
-one rhythm where each section flows into the next, and one designed motion
+palette and at most two typefaces TAKEN FROM THE MEASURED REFERENCES, one
+rhythm where each section flows into the next, and one designed motion
 language carrying the selected references' recorded mechanisms into named
-routes. Every component that ships has a source line in the dossier's
-`Component sources` table naming both the STRUCTURE it takes and the recorded
-values it reproduces: first screen, layout grid, display typeface, text
+routes. The hues are not the producer's to pick. Where the client has recorded
+brand colors, those are the brand's; where the client has none, which is every
+demo and every spec build, the hues come from the colors the extractor
+measured on the selected references, and "the brand's palette" is not a
+licence to invent one. The typefaces are families the extractor measured on a
+selected reference. A face chosen for its proportions is a face chosen by
+taste with arithmetic written down as the reason: one build picked Cormorant
+Garamond by matching an x-height ratio to a reference set in Louize, and it
+was the producer's own face on every headline. When a reference's family
+cannot be licensed, the substitute needs the owner's permission in the owner's
+quoted words, not a ratio. Observe inner pages, not only home pages. Every real site has more than one,
+and a producer holding only home-page captures can only copy a home page; it
+will design every inner page it builds while believing it is still copying.
+The gate requires at least two observed inner pages across the selected
+references.
+
+RECORD IT, THEN NARRATE EVERY EVENT. Before a strong row is written, run
+`scripts/record_reference.mjs` on the reference: it drives a real cursor over
+every interactive thing on the first screen with a dwell on each, scrolls in
+steps hovering what arrives, follows one internal link so the page
+transition and an inner page are on tape, differences the video frame by
+frame, and keeps only the moments where the screen changed: one event per
+hover, click or scroll step that changed something, one per run of quiet
+travel, and one per change the page made on its own, each as a sheet of
+four frames (before, during, after, settled) with the percent of the screen
+that changed, where, and how long it took to settle. Then write the
+sequence read by hand: one line per event, saying what the cursor did, what
+scrolled, what changed, and an inventory of what the site DOES with
+magnitudes. The dossier's `Sequence reads` section binds both and the
+validator counts the lines against the events. Thirty events cost minutes;
+three hundred contact sheets cost the afternoon the owner refused to pay for,
+and most of them showed nothing changing. The
+harness's mechanism numbers are a cross-check on that reading, never a
+substitute for it: a producer given only the numbers read them, opened one
+rest frame of forty-one, and built a photograph inside a dotted line while
+the site it cited was growing its navigation to half the viewport under the
+pointer, decoding labels beside the cursor, assembling a quote word by word,
+and zooming its whole sheet out to a card between pages. The owner's own
+sixty-second recording held nineteen behaviours the build had never seen.
+
+Never build from a picture. Alongside the behavior harness, run
+`scripts/extract_reference_styles.mjs` on every selected reference: it drives
+the live page and reads its actual computed type, color, control geometry,
+transitions, radii, borders, section grounds and spacing out of the CSS. The
+dossier binds that record and every number a component row claims to reproduce
+is checked against it, so a value nobody measured cannot be written down. Given
+only a screenshot a producer reports what a screenshot carries, guesses the
+rest, and believes the whole time that it is copying.
+
+Every component that ships has a source line in the dossier's
+`Component sources` table naming the capture FRAME that shows it, the
+STRUCTURE it takes, and the recorded values it reproduces: first screen, layout grid, display typeface, text
 typeface, color behavior, section rhythm, navigation, buttons, rows and lists,
 footer, scroll behavior, hover behavior, and anything else on the page. The
 structure column must say how the part is arranged, not what size it is,
@@ -211,19 +290,47 @@ because a build can reproduce every font size on a reference and still be the
 producer's own layout. The two typefaces come from a reference and may not be
 owner-approved: chosen by taste is how a build shares no face with any site it
 researched. Any other component with no source is the producer's own design,
-and that ships only with the owner's permission in the owner's quoted words. Sections that fade up on scroll are not a motion
+and that ships only with the owner's permission in the owner's quoted words.
+The frame column is opened by the validator, because a source line is prose
+and prose is free: one build cited a footer to a site whose footer it had
+never looked at. And the required rows are a floor, not the list. The dossier
+binds `scripts/scan_build_components.mjs`, which counts every component the
+finished build actually renders, and a component with no row does not ship. Sections that fade up on scroll are not a motion
 language; that is the default every generated site ships. When the build is
 finished, two packaged checks read it with the same eyes as its references and
 the visual review binds both. `scripts/compare_mechanisms.mjs` asks whether the
 references' mechanisms arrived; a build that lost them, leans on one device, or
 is a skeleton under its styling does not pass. `scripts/compare_structure.mjs`
-asks whether the first screen is built the way the reference it names is built,
+asks whether each route is built the way the reference page it names is built,
 comparing which kind of thing fills the screen, where the ink sits, what is
-against the edges and corners, and the proportions of the type. Every gate
-before these proved the producer had looked at a reference; these are the only
-ones that ask whether the result resembles it. Render the first screen at wide and narrow width and put it in
-front of the owner before any other route exists. Name at least one decision
-where the build goes beyond every reference. Before any review chain or gate,
+against the edges and corners, and the proportions of the type. It takes its
+route list from the census, so a producer cannot compare the one screen it
+copied and leave the pages it invented unread.
+`scripts/check_style_provenance.mjs` reads the build's own computed system
+with the same extractor the references were read with and asks of every color,
+typeface, size, radius and transition in it: which reference did this come
+from? An untraceable typeface, an untraceable LOUD color, or a traced share
+below the floor is a fail, and the finding names the value and where it sits.
+Every gate before these proved the producer had looked at a reference; these
+are the only ones that ask whether the result resembles it.
+
+RUN THEM ON THE FIRST SCREEN, BEFORE A SECOND SECTION EXISTS. This is the
+order, not a preference. Run `compare_structure.mjs` and
+`check_style_provenance.mjs` against the first screen the moment it renders,
+and do not write a second section until both pass. A gate at the end of a
+build is a gate that arrives after the design has been made, defended and
+documented, and what it produces then is a better dossier rather than a better
+site. One build reached its final review with a first screen whose ink agreed
+with the reference it cited on 3% of the screen, having cited a full-bleed
+video and built a typographic layout on a flat ground; the comparator was
+packaged, correct, and scheduled to run after everything was already built.
+Render the first screen at wide and narrow width and put it in
+front of the owner before any other route exists. Name the COMBINATION: which
+reference supplies which part, and why no single one of them is this build. Do
+not name a decision of your own. What makes a build its own is the combination
+of what several strong references already do, never a new idea the producer
+had; the field that used to ask for one got one, and the owner had to point out
+that it was the producer designing again. Before any review chain or gate,
 scroll the candidate, place its renders beside the selected captures, and
 confirm it is beautiful, shows its lineage, flows as one design, and would
 give a stranger something to name; a candidate that fails returns to the
@@ -358,7 +465,14 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   sheet that passes the thin-site score, at least three weak/mismatched
   counterexamples, a selected synthesis of at least four references of which
   three recorded motion, a component-sources table covering every shipping
-  part, and one elevation beyond them. Reference material is a decision input, not a visual
+  part, a signature-transfer row per selected reference that survives the
+  deletion test, a sequence read per selected reference with a line for
+  every event of its recording, and the combination that makes it its own. It must also bind
+  a passing `check_style_provenance.mjs` record and a passing
+  `compare_structure.mjs` record for the FIRST SCREEN, both dated before the
+  second section was written, and again for every route at completion. A
+  dossier whose comparator records are all dated at the end of the build is a
+  dossier written to justify a finished design. Reference material is a decision input, not a visual
   parts bin: transfer only project-relevant relationships and retain explicit
   non-copying boundaries for brands, copy, assets, code, and distinctive whole
   pages. The final rendered review must close the resulting direction against

@@ -138,8 +138,11 @@ async function main() {
   const sources = args.sources.map((file) => {
     let payload;
     try { payload = JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) { fail("source-unreadable", `${file}: ${String(e).slice(0, 120)}`); }
-    if (payload.tool !== "observe_reference.mjs" || payload.schema_version !== 2) {
-      fail("source-not-observation", `${file} is not a schema-2 observe_reference.mjs record.`);
+    // Schema 2 carried the mechanism sheet; schema 3 added the first-screen
+    // structure beside it. Both answer the question this check asks, and
+    // pinning to 2 made this gate unrunnable against the harness's own output.
+    if (payload.tool !== "observe_reference.mjs" || !(payload.schema_version >= 2)) {
+      fail("source-not-observation", `${file} is not a schema-2 or later observe_reference.mjs record.`);
     }
     return payload;
   });

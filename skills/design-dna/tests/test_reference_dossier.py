@@ -37,12 +37,12 @@ INITIALIZER = load_initializer()
 
 STRONG_HEADER = (
     "| Rank | Reference title or visible entry | Public URL or gallery-entry URL "
-    "| Discovery source | Retrieval date | Access status | Capture path and SHA-256 "
-    "| Observed evidence | Signature (what a stranger would name) "
+    "| Discovery source and accolade | Retrieval date | Access status | Capture path and SHA-256 "
+    "| Observed evidence | Measured styles | Signature (what a stranger would name) "
     "| Brief relevance | Design to copy | Rights boundary |"
 )
 STRONG_SEPARATOR = (
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"
 )
 NEGATIVE_HEADER = (
     "| Reference title or visible entry | Public URL or gallery-entry URL "
@@ -56,10 +56,46 @@ SYNTHESIS_HEADER = (
 )
 SYNTHESIS_SEPARATOR = "| --- | --- | --- | --- |"
 COMPONENT_HEADER = (
-    "| Component | Source rank or owner approval | Structure taken "
-    "| Recorded values reproduced | Where it is used |"
+    "| Component | Source rank or owner approval | Frame that shows it "
+    "| Structure taken | Recorded values reproduced | Where it is used |"
 )
-COMPONENT_SEPARATOR = "| --- | --- | --- | --- | --- |"
+COMPONENT_SEPARATOR = "| --- | --- | --- | --- | --- | --- |"
+TRANSFER_HEADER = (
+    "| Rank | Signature, copied from the strong row "
+    "| The build part that carries it | Recorded proof "
+    "| What a stranger would lose if this reference were cut |"
+)
+TRANSFER_SEPARATOR = "| --- | --- | --- | --- | --- |"
+# a verbatim slice of the fixture signature, long enough to clear the floor
+TRANSFER_SIGNATURE = (
+    "The product images slide sideways under a pinned heading as the "
+    "page is scrolled"
+)
+TRANSFER_LOSS = (
+    "the first screen would stop holding its heading while the product rail "
+    "travels through it, and that arrangement would go with it"
+)
+FRAME_CELL = "strong-1-frames/strong-1-001-rest.png"
+# a rest frame cannot show a first screen arriving, a nav responding, a button
+# under the pointer, a scroll or a hover; those rows cite a recording sheet
+SHEET_FRAME_CELL = "strong-1-sheets/s004.png"
+EVENT_FRAME_CELL = "strong-1-events/e004-hover-work.png"
+BEHAVIOUR_COMPONENTS = (
+    "first screen", "navigation", "buttons", "scroll behavior", "hover behavior",
+)
+SEQUENCE_LINE = (
+    "the cursor lands on the top-left photograph and the cell grows to half "
+    "the viewport while a label decodes beside the pointer"
+)
+INVENTORY_ROW = (
+    "| hover a nav cell | the cell | grows to half the viewport and pushes its "
+    "neighbours | 5x over 0.6s | s004, s005 |"
+)
+
+def frame_for(name: str) -> str:
+    """A rest frame cannot show what a behaviour-bearing component does."""
+    return SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else FRAME_CELL
+
 REQUIRED_COMPONENTS = (
     "first screen", "layout grid", "display typeface", "text typeface",
     "color behavior", "section rhythm", "navigation", "buttons",
@@ -70,19 +106,27 @@ STRUCTURE_CELL = (
     "into the four corners"
 )
 VALUES_CELL = (
-    "pinned stage held for 2400px while its content swapped three times, hover "
+    "pinned stage held for 2400px while its content swapped 3 times, hover "
     "transition 450ms"
 )
+# The numbers the fixture's measured-style records contain, so the default body
+# passes the value cross-check.
+MEASURED_NUMBERS = [
+    1, 1.1, 1.25, 1.4, 2, 3, 12, 14, 16, 20, 24, 26, 30, 36, 40, 44, 48, 60,
+    100, 108, 120, 122, 240, 300, 400, 450, 500, 650, 900, 999, 2400, 3014,
+]
 
 # Six references spread over three sources so the default body satisfies the
 # spread floor while no source supplies more than half of the rows.
+# Every default source is award or curated; a submission feed cannot supply a
+# selected reference in 7.0.0.
 DEFAULT_SOURCES = (
-    "awwwards",
-    "awwwards",
-    "siteinspire",
-    "siteinspire",
-    "lapa-ninja",
-    "typewolf",
+    "awwwards; Site of the Day 2026-08-14",
+    "awwwards; Site of the Month, July 2026",
+    "godly; editor's pick, 2026-08-02",
+    "godly; editor's pick, 2026-07-19",
+    "typewolf; Site of the Day 2026-06-30",
+    "site-of-sites; editor's pick, 2026-05-11",
 )
 
 
@@ -122,6 +166,53 @@ class DossierProject:
         self.record_path = self.state / "reference-dossier.md"
         self.record_path.write_text("placeholder\n", encoding="utf-8")
         self.captures = self.state / "references"
+        # Real frames on disk, because the frame column is checked by opening it.
+        for rank in range(1, 7):
+            write_png(self.captures / f"strong-{rank}-frames" / f"strong-{rank}-001-rest.png")
+
+    def styles_cell(self, name: str, *, numbers=None, tool: str = "extract_reference_styles.mjs") -> str:
+        """A machine extraction of the reference's live CSS."""
+        path = self.captures / f"{name}-styles.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "tool": tool,
+            "schema_version": 1,
+            "id": name,
+            "url": f"https://{name}.example.test/",
+            "numbers": MEASURED_NUMBERS if numbers is None else numbers,
+            "type": [], "controls": [], "transitions": [], "colors": [],
+        }), encoding="utf-8")
+        return (f".design-dna/references/{name}-styles.json plus sha256:"
+                + sha256_of(path))
+
+    def census_cell(self, names: list[str] | None = None) -> str:
+        """A scan_build_components.mjs record naming what the build renders."""
+        if names is None:
+            names = list(REQUIRED_COMPONENTS)
+        path = self.state / "evidence" / "component-census.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "tool": "scan_build_components.mjs",
+            "schema_version": 1,
+            "routes": [{"url": "http://127.0.0.1:4960/", "components": []}],
+            "names": sorted(names),
+            "census": [{"name": n, "count": 1, "area": 0.1} for n in sorted(names)],
+        }), encoding="utf-8")
+        return (".design-dna/evidence/component-census.json plus sha256:"
+                + sha256_of(path))
+
+    def proof_cell(self) -> str:
+        """A check_signature_transfer.mjs record for the transfer rows to bind."""
+        path = self.state / "evidence" / "signature-transfer.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "tool": "check_signature_transfer.mjs",
+            "schema_version": 1,
+            "pass": True,
+            "verdicts": [],
+        }), encoding="utf-8")
+        return (".design-dna/evidence/signature-transfer.json plus sha256:"
+                + sha256_of(path))
 
     def capture_cell(self, name: str) -> str:
         path = self.captures / f"{name}.png"
@@ -212,6 +303,156 @@ class DossierProject:
             f"plus sha256:{sha256_of(path)}"
         )
 
+    def sequence_block(
+        self,
+        rank: int,
+        *,
+        sheets: int = 24,
+        duration: float = 62.0,
+        tool: str = "record_reference.mjs",
+        omit: tuple[int, ...] = (),
+        short: tuple[int, ...] = (),
+        static_all: bool = False,
+        inventory_rows: int = 8,
+        signature_sheets: str = "s004, s005",
+        schema: int = 1,
+        events: int = 24,
+        signature_events: str = "e004, e005",
+    ) -> str:
+        """Write a recording record, its sheets or events, and a sequence read."""
+        name = f"strong-{rank}"
+        if schema == 2:
+            return self._event_block(
+                rank, events=events, duration=duration, tool=tool, omit=omit,
+                short=short, static_all=static_all, inventory_rows=inventory_rows,
+                signature_events=signature_events,
+            )
+        # the validator counts sheets against the read; it does not open every
+        # sheet, and writing 96 PNGs per body() made the suite take ten minutes
+        recording = {
+            "tool": tool,
+            "schema_version": 1,
+            "id": name,
+            "url": f"https://reference-{rank}.example.test/entry",
+            "duration_s": duration,
+            "fps": 10,
+            "frames": sheets * 4,
+            "frames_per_sheet": 4,
+            "sheet_seconds": 0.4,
+            "sheets": sheets,
+            "sheet_files": [
+                {"id": f"s{n:03d}", "file": f"{name}-sheets/s{n:03d}.png"}
+                for n in range(1, sheets + 1)
+            ],
+            "video": {"file": f"{name}-recording.webm", "sha256": "0" * 64},
+            "pages_visited": [f"https://reference-{rank}.example.test/entry"],
+            "cursor_path": [],
+        }
+        recording_path = self.project / ".design-dna" / "references" / f"{name}-recording.json"
+        recording_path.write_text(json.dumps(recording, indent=1), encoding="utf-8")
+        lines = []
+        for n in range(1, sheets + 1):
+            if n in omit:
+                continue
+            if n in short:
+                lines.append(f"- s{n:03d} (x): idle.")
+            elif static_all:
+                lines.append(f"- s{n:03d} ({(n - 1) * 0.4:.1f}): static, nothing changes, the cursor is still.")
+            else:
+                lines.append(f"- s{n:03d} ({(n - 1) * 0.4:.1f}): {SEQUENCE_LINE}.")
+        inventory = [
+            "## Behaviour inventory",
+            "",
+            "| # | Trigger | Element | Effect | Magnitude | Sheets |",
+            "| --- | --- | --- | --- | --- | --- |",
+            *[f"| {i} " + INVENTORY_ROW for i in range(1, inventory_rows + 1)],
+        ]
+        read_path = self.project / ".design-dna" / "references" / f"{name}-sequence-read.md"
+        read_path.write_text(
+            "\n".join([f"# Sequence read: {name}", "", "## Sheets", "", *lines, "", *inventory, ""]),
+            encoding="utf-8",
+        )
+        return "\n".join((
+            f"### {name}",
+            f"- Recording: .design-dna/references/{name}-recording.json plus sha256:{sha256_of(recording_path)}",
+            f"- Read: .design-dna/references/{name}-sequence-read.md plus sha256:{sha256_of(read_path)}",
+            f"- Signature sheets: {signature_sheets}",
+        ))
+
+    def _event_block(
+        self,
+        rank: int,
+        *,
+        events: int,
+        duration: float,
+        tool: str,
+        omit: tuple[int, ...],
+        short: tuple[int, ...],
+        static_all: bool,
+        inventory_rows: int,
+        signature_events: str,
+    ) -> str:
+        """9.1.0: a schema-2 recording counts events, and the read has a line per event."""
+        name = f"strong-{rank}"
+        kinds = ("load", "hover", "scroll", "travel", "click", "spontaneous")
+        recording = {
+            "tool": tool,
+            "schema_version": 2,
+            "id": name,
+            "url": f"https://reference-{rank}.example.test/entry",
+            "duration_s": duration,
+            "fps": 10,
+            "frames": int(duration * 10),
+            "frames_dir": f"{name}-frames",
+            "events": events,
+            "event_files": [
+                {
+                    "id": f"e{n:03d}",
+                    "file": f"{name}-events/e{n:03d}-{kinds[n % len(kinds)]}.png",
+                    "kind": kinds[n % len(kinds)],
+                    "t": round(n * 2.1, 1),
+                    "magnitude_pct": 4.2,
+                    "region": "a large area at top left (31% of pixels)",
+                    "settle_s": 0.6,
+                }
+                for n in range(1, events + 1)
+            ],
+            "quiet": [],
+            "video": {"file": f"{name}-recording.webm", "sha256": "0" * 64},
+            "pages_visited": [f"https://reference-{rank}.example.test/entry"],
+            "cursor_path": [],
+        }
+        recording_path = self.project / ".design-dna" / "references" / f"{name}-recording.json"
+        recording_path.write_text(json.dumps(recording, indent=1), encoding="utf-8")
+        lines = []
+        for n in range(1, events + 1):
+            if n in omit:
+                continue
+            if n in short:
+                lines.append(f"- e{n:03d} (x): idle.")
+            elif static_all:
+                lines.append(f"- e{n:03d} ({n * 2.1:.1f}s, hover): static, nothing changes, the cursor is still.")
+            else:
+                lines.append(f"- e{n:03d} ({n * 2.1:.1f}s, hover): {SEQUENCE_LINE}.")
+        inventory = [
+            "## Behaviour inventory",
+            "",
+            "| # | Trigger | Element | Effect | Magnitude | Events |",
+            "| --- | --- | --- | --- | --- | --- |",
+            *[f"| {i} " + INVENTORY_ROW.replace("s004, s005", "e004, e005") for i in range(1, inventory_rows + 1)],
+        ]
+        read_path = self.project / ".design-dna" / "references" / f"{name}-sequence-read.md"
+        read_path.write_text(
+            "\n".join([f"# Sequence read: {name}", "", "## Events", "", *lines, "", *inventory, ""]),
+            encoding="utf-8",
+        )
+        return "\n".join((
+            f"### {name}",
+            f"- Recording: .design-dna/references/{name}-recording.json plus sha256:{sha256_of(recording_path)}",
+            f"- Read: .design-dna/references/{name}-sequence-read.md plus sha256:{sha256_of(read_path)}",
+            f"- Signature events: {signature_events}",
+        ))
+
     def failures(self, body: str) -> list[str]:
         return INITIALIZER.reference_dossier_failures(
             body,
@@ -232,6 +473,7 @@ class DossierProject:
             "The product images slide sideways under a pinned heading as the "
             "page is scrolled, which is what anyone would describe first."
         ),
+        styles: str | None = None,
     ) -> str:
         url_host = host or f"reference-{rank}.example.test"
         observed = observation or self.observation_cell(
@@ -241,6 +483,7 @@ class DossierProject:
             f"| {rank} | Reference {rank} | https://{url_host}/entry | {source} | "
             f"2026-09-01 | {access} | {capture or self.capture_cell(f'strong-{rank}')} | "
             f"{observed} | "
+            f"{styles or self.styles_cell(f'strong-{rank}')} | "
             f"{signature} | "
             "Supports the visitor decision and category story for this exact "
             "project. | A clear hierarchy, media relationship, and direct entry "
@@ -248,7 +491,7 @@ class DossierProject:
             "or full page. |"
         )
 
-    def negative_row(self, index: int, *, source: str = "siteinspire") -> str:
+    def negative_row(self, index: int, *, source: str = "httpster") -> str:
         return (
             f"| Weak example {index} | https://weak-{index}.example.test/ | {source} | "
             f"2026-09-01 | public-gallery-entry | {self.capture_cell(f'weak-{index}')} | "
@@ -266,16 +509,45 @@ class DossierProject:
         synthesis_rows: list[str] | None = None,
         ledger_check: str = "none",
         elevation: str = (
-            "Real product photography at full-bleed scale on every route, which "
-            "none of the selected references attempt; the brief supplies the assets."
+            "strong-2 supplies the held screen and its type scale, strong-5 "
+            "supplies the staggered index and its captions, and strong-1 "
+            "supplies the control geometry; no single one of them carries all "
+            "three, which is what makes this build its own."
         ),
         component_rows: list[str] | None = None,
+        census: str | None = None,
+        transfer_rows: list[str] | None = None,
+        transfer_signatures: dict[int, str] | None = None,
+        sequence_blocks: list[str] | None = None,
     ) -> str:
+        claimed = transfer_signatures or {}
+        selected_list = [
+            int(part.strip()) for part in selected.split(",") if part.strip().isdigit()
+        ]
+        if sequence_blocks is None:
+            sequence_blocks = [self.sequence_block(rank) for rank in selected_list]
+        if transfer_rows is None:
+            proof = self.proof_cell()
+            transfer_rows = [
+                f"| {rank} | {claimed.get(rank, TRANSFER_SIGNATURE)} | the first "
+                f"screen on the primary route | {proof} | {TRANSFER_LOSS} |"
+                for rank in [
+                    int(part.strip()) for part in selected.split(",")
+                    if part.strip().isdigit()
+                ]
+            ]
+        # the sheet the behaviour rows cite has to exist for every body
+        write_png(self.project / ".design-dna" / "references" / SHEET_FRAME_CELL)
         if component_rows is None:
             component_rows = [
-                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |"
+                f"| {name} | 1 | "
+                f"{SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else FRAME_CELL} "
+                f"| {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |"
                 for name in REQUIRED_COMPONENTS
             ]
+
+        if census is None:
+            census = self.census_cell()
         if strong_rows is None:
             strong_rows = [
                 self.strong_row(rank, source=DEFAULT_SOURCES[rank - 1])
@@ -329,7 +601,7 @@ class DossierProject:
             "confirmed in its rendered scroll sequence.",
             "- Negative-counterevidence result: The final direction retains visible "
             "task hierarchy and product specificity instead of decorative spectacle.",
-            f"- Elevation beyond the references (what this build does that none of them do): {elevation}",
+            f"- Combination of references (which reference supplies which part, and why no single one of them is this build): {elevation}",
             "- Direction record path and status: .design-dna/direction.md; draft "
             "selection is ready to bind before broad implementation.",
             "",
@@ -337,7 +609,17 @@ class DossierProject:
             SYNTHESIS_SEPARATOR,
             *synthesis_rows,
             "",
+            "## Sequence reads",
+            *sequence_blocks,
+            "",
+            "## Signature transfer",
+            TRANSFER_HEADER,
+            TRANSFER_SEPARATOR,
+            *transfer_rows,
+            "",
             "## Component sources",
+            f"- Component census: {census}",
+            "",
             COMPONENT_HEADER,
             COMPONENT_SEPARATOR,
             *component_rows,
@@ -354,6 +636,8 @@ def registry_source(**overrides: object) -> dict[str, object]:
         "retrieval": "fetch",
         "scope": "Design examples.",
         "notes": "Public examples are visible without an account.",
+        "curation": "curated",
+        "curation_note": "Every entry is chosen by a named editor.",
     }
     source.update(overrides)
     return source
@@ -520,7 +804,8 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-            eight_sources = (*DEFAULT_SOURCES, "css-nectar", "websitevice")
+            eight_sources = (*DEFAULT_SOURCES, "site-of-sites; editor's pick, 2026-04-02",
+                             "typewolf; Site of the Day 2026-03-11")
             eight = [
                 fixture.strong_row(rank, source=eight_sources[rank - 1])
                 for rank in range(1, 9)
@@ -546,7 +831,8 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-            lopsided_sources = ("awwwards",) * 4 + ("siteinspire", "typewolf")
+            lopsided_sources = ("awwwards; Site of the Day 2026-08-14",) * 4 + (
+                "godly; editor's pick, 2026-08-02", "typewolf; Site of the Day 2026-06-30")
             lopsided = [
                 fixture.strong_row(rank, source=lopsided_sources[rank - 1])
                 for rank in range(1, 7)
@@ -614,9 +900,10 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-            # Ranks 1, 2, 5, 6 span awwwards, lapa-ninja, and typewolf; ranks 1-4
+            # Ranks 1, 2, 5, 6 span awwwards, godly, and typewolf; ranks 1-4
             # under a two-source layout collapse to one source.
-            single_source_sources = ("awwwards",) * 3 + ("siteinspire",) * 2 + ("typewolf",)
+            single_source_sources = ("awwwards; Site of the Day 2026-08-14",) * 3 + (
+                "godly; editor's pick, 2026-08-02",) * 2 + ("typewolf; Site of the Day 2026-06-30",)
             rows = [
                 fixture.strong_row(rank, source=single_source_sources[rank - 1])
                 for rank in range(1, 7)
@@ -624,14 +911,19 @@ class ReferenceDossierTests(unittest.TestCase):
             failures = fixture.failures(
                 fixture.body(strong_rows=rows, selected="1, 2, 3, 4")
             )
-            # 1, 2, 3 are awwwards and 4 is siteinspire: two sources, so this passes.
+            # 1, 2, 3 are awwwards and 4 is godly: two sources, so this passes.
             self.assertEqual([], failures)
 
             only_awwwards = [
-                fixture.strong_row(rank, source=("awwwards",) * 3 + ("siteinspire", "lapa-ninja", "typewolf"))
+                fixture.strong_row(rank, source=("awwwards; Site of the Day 2026-08-14",) * 3 + (
+                    "godly; editor's pick, 2026-08-02", "site-of-sites; editor's pick, 2026-05-11",
+                    "typewolf; Site of the Day 2026-06-30"))
                 if False else fixture.strong_row(
                     rank,
-                    source=(("awwwards",) * 3 + ("siteinspire", "lapa-ninja", "typewolf"))[rank - 1],
+                    source=(("awwwards; Site of the Day 2026-08-14",) * 3 + (
+                        "godly; editor's pick, 2026-08-02",
+                        "site-of-sites; editor's pick, 2026-05-11",
+                        "typewolf; Site of the Day 2026-06-30"))[rank - 1],
                 )
                 for rank in range(1, 7)
             ]
@@ -658,12 +950,12 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-    def test_elevation_and_ledger_check_are_required(self) -> None:
+    def test_combination_and_ledger_check_are_required(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)
             failures = fixture.failures(fixture.body(elevation=""))
             self.assertTrue(
-                any("Elevation beyond the references" in item for item in failures),
+                any("Combination of references" in item for item in failures),
                 failures,
             )
             failures = fixture.failures(fixture.body(ledger_check=""))
@@ -694,19 +986,19 @@ class ReferenceDossierGateTests(unittest.TestCase):
             dossier = (state / "reference-dossier.md").read_text(encoding="utf-8")
             self.assertIn("## Strong references", dossier)
             self.assertIn("Capture path and SHA-256", dossier)
-            self.assertIn("Elevation beyond the references", dossier)
+            self.assertIn("Combination of references", dossier)
             direction = (state / "direction.md").read_text(encoding="utf-8")
             visual = (state / "visual-review.md").read_text(encoding="utf-8")
             self.assertIn(
                 "## Reference-led direction (required for public candidates)",
                 direction,
             )
-            self.assertIn("Elevation beyond the references", direction)
+            self.assertIn("Combination of references", direction)
             self.assertIn(
                 "## Reference-led direction closure (required for public candidates)",
                 visual,
             )
-            self.assertIn("Elevation result", visual)
+            self.assertIn("Combination result", visual)
 
     def test_prebuild_blocks_an_enterprise_candidate_with_a_draft_dossier(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -805,7 +1097,7 @@ class ReferenceLedClosureTests(unittest.TestCase):
             "Rights boundary": "No brand identifiers, copy, media, code, or whole pages were reproduced.",
             "Lineage result": "Wide and narrow renders beside the selected captures show the lineage in the first screen, type scale, and media treatment.",
             "Rendered result": "Wide and narrow renders confirm the synthesis on every affected route.",
-            "Elevation result": "Full-bleed real product photography at a scale no selected reference attempts.",
+            "Combination result": "Full-bleed real product photography at a scale no selected reference attempts.",
             "Mechanism diff": ".design-dna/evidence/mechanism-diff.json plus sha256:" + "0" * 64,
             "Structure diff": ".design-dna/evidence/structure-diff.json plus sha256:" + "0" * 64,
             "Reference-led direction disposition": "keep",
@@ -818,14 +1110,14 @@ class ReferenceLedClosureTests(unittest.TestCase):
             [], INITIALIZER.reference_led_closure_label_failures(self.closure())
         )
 
-    def test_elevation_result_is_required(self) -> None:
+    def test_combination_result_is_required(self) -> None:
         for value in ("", "n/a", "see above"):
             with self.subTest(value=value):
                 failures = INITIALIZER.reference_led_closure_label_failures(
-                    self.closure(**{"Elevation result": value})
+                    self.closure(**{"Combination result": value})
                 )
                 self.assertTrue(
-                    any("'Elevation result'" in item for item in failures),
+                    any("'Combination result'" in item for item in failures),
                     failures,
                 )
 
@@ -966,7 +1258,12 @@ class MechanismGateTests(unittest.TestCase):
     def run_with(self, **first):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
-            return project.failures(project.body(strong_rows=self.rows_with_first(project, **first)))
+            # the transfer row copies the signature, so an overridden signature
+            # has to travel with it
+            return project.failures(project.body(
+                strong_rows=self.rows_with_first(project, **first),
+                transfer_signatures={1: first["signature"]} if "signature" in first else None,
+            ))
 
     def test_rich_site_passes(self) -> None:
         self.assertEqual([], self.run_with())
@@ -1035,8 +1332,8 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| navigation | 1 | {STRUCTURE_CELL} | 16px, weight 400, sentence "
-                "case, hover border .45s | rail |",
+                f"| navigation | 1 | {SHEET_FRAME_CELL} | {STRUCTURE_CELL} | 16px, weight "
+                "400, sentence case, hover border .45s | rail |",
             ]
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("must cover" in item and "buttons" in item for item in failures), failures)
@@ -1045,7 +1342,8 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 6 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                f"| {name} | 6 | strong-6-frames/strong-6-001-rest.png | "
+                f"{STRUCTURE_CELL} | {VALUES_CELL} | route |"
                 for name in REQUIRED_COMPONENTS
             ]
             failures = project.failures(project.body(component_rows=rows))
@@ -1055,7 +1353,7 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 1 | {STRUCTURE_CELL} | big type | route |"
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | big type | route |"
                 for name in REQUIRED_COMPONENTS
             ]
             failures = project.failures(project.body(component_rows=rows))
@@ -1067,11 +1365,11 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
                 for name in REQUIRED_COMPONENTS if name != "footer"
             ] + [
-                "| footer | owner-approved: \"do the footer your own way, keep it plain\" | "
-                "three columns stacked against the bottom edge | "
+                "| footer | owner-approved: \"do the footer your own way, keep it plain\" "
+                "| owner-approved | three columns stacked against the bottom edge | "
                 "owner's words above; three columns, 16px, no rules | every route |",
             ]
             failures = project.failures(project.body(component_rows=rows))
@@ -1081,8 +1379,8 @@ class MechanismGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | owner-approved: yes | {STRUCTURE_CELL} | some values "
-                "reproduced here for the row | route |"
+                f"| {name} | owner-approved: yes | owner-approved | {STRUCTURE_CELL} "
+                "| some values reproduced here for the row | route |"
                 for name in REQUIRED_COMPONENTS
                 if name not in ("display typeface", "text typeface")
             ]
@@ -1176,7 +1474,7 @@ class StructureGateTests(unittest.TestCase):
                 with tempfile.TemporaryDirectory() as temporary:
                     project = DossierProject(temporary)
                     rows = [
-                        f"| {name} | 1 | {propertyish} | {VALUES_CELL} | route |"
+                        f"| {name} | 1 | {frame_for(name)} | {propertyish} | {VALUES_CELL} | route |"
                         for name in REQUIRED_COMPONENTS
                     ]
                     failures = project.failures(project.body(component_rows=rows))
@@ -1188,7 +1486,7 @@ class StructureGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
-                f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
                 for name in REQUIRED_COMPONENTS
                 if name not in ("first screen", "layout grid")
             ]
@@ -1205,11 +1503,12 @@ class StructureGateTests(unittest.TestCase):
                 if name in ("display typeface", "text typeface"):
                     rows.append(
                         f'| {name} | owner-approved: "use whatever looks good" | '
-                        f"{STRUCTURE_CELL} | {VALUES_CELL} | every route |"
+                        f"owner-approved | {STRUCTURE_CELL} | {VALUES_CELL} | every route |"
                     )
                 else:
                     rows.append(
-                        f"| {name} | 1 | {STRUCTURE_CELL} | {VALUES_CELL} | route |")
+                        f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | "
+                        f"{VALUES_CELL} | route |")
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(
             any("comes from a selected reference" in i for i in failures), failures
@@ -1235,7 +1534,8 @@ class StructureDiffTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project, record, section = self.bind(temporary, {
                 "tool": "compare_structure.mjs", "pass": True,
-                "verdict": "The first screen is built like strong-1 (4 of 4).",
+                "census_sha256": "b" * 64, "routes_compared": 2,
+                "verdict": "All 2 route(s) are built like a reference page.",
             })
             self.assertEqual([], INITIALIZER.structure_diff_failures(
                 section, project=project, record_path=record))
@@ -1244,6 +1544,7 @@ class StructureDiffTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             project, record, section = self.bind(temporary, {
                 "tool": "compare_structure.mjs", "pass": False,
+                "census_sha256": "b" * 64, "routes_compared": 2,
                 "verdict": ("the largest thing on the first screen is text "
                             "(<h1>), the reference's is media (<img>)"),
             })
@@ -1263,6 +1564,571 @@ class StructureDiffTests(unittest.TestCase):
             "- Structure diff: __REPLACE_WITH_THE_DIFF__\n",
             project=Path("."), record_path=Path("visual-review.md"))
         self.assertTrue(any("must bind" in i for i in failures), failures)
+
+class SourceLineEvidenceTests(unittest.TestCase):
+    """6.9.0. The build that cited a footer it had never opened."""
+
+    def rows(self, frame=FRAME_CELL, source="1"):
+        return [
+            f"| {name} | {source} | {frame_for(name) if frame == FRAME_CELL else frame} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+            for name in REQUIRED_COMPONENTS
+        ]
+
+    def test_a_frame_that_does_not_exist_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = self.rows(frame="strong-1-frames/strong-1-999-footer.png")
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("does not exist" in i for i in failures), failures)
+
+    def test_a_frame_belonging_to_another_reference_is_rejected(self) -> None:
+        # the row cites reference 1 and shows a frame of reference 3
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = self.rows(frame="strong-3-frames/strong-3-001-rest.png", source="1")
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(
+            any("does not belong to the reference" in i for i in failures), failures
+        )
+
+    def test_an_empty_frame_column_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 1 |  | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("incomplete" in i or "SHOWS" in i for i in failures), failures)
+
+    def test_an_owner_approved_row_writes_owner_approved(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                for name in REQUIRED_COMPONENTS if name != "footer"
+            ] + [
+                '| footer | owner-approved: "do the footer plain, your call" | '
+                f"{FRAME_CELL} | three columns at the bottom edge | 16px, no rules "
+                "| every route |"
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(any("owner-approved`" in i for i in failures), failures)
+
+    def test_a_sourced_row_with_a_real_frame_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(component_rows=self.rows()))
+        self.assertEqual([], [i for i in failures if "frame" in i.casefold()], failures)
+
+
+class ComponentCensusTests(unittest.TestCase):
+    """The twelve required rows were a floor, and the build shipped twenty-five."""
+
+    def test_a_component_the_build_renders_with_no_row_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            # exactly what the failing build rendered and never listed
+            census = project.census_cell(
+                list(REQUIRED_COMPONENTS) + ["lede", "plate", "steps", "ask", "form"]
+            )
+            failures = project.failures(project.body(census=census))
+        joined = " ".join(failures)
+        self.assertIn("no source row", joined)
+        for invented in ("lede", "plate", "steps", "ask", "form"):
+            self.assertIn(invented, joined)
+
+    def test_a_row_naming_the_component_satisfies_the_census(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            census = project.census_cell(list(REQUIRED_COMPONENTS) + ["lede"])
+            rows = [
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                for name in REQUIRED_COMPONENTS
+            ] + [
+                f"| lede | 1 | {FRAME_CELL} | a statement block at one third down "
+                f"the screen beside a hairline rule | {VALUES_CELL} | inner routes |"
+            ]
+            failures = project.failures(
+                project.body(component_rows=rows, census=census))
+        self.assertEqual(
+            [], [i for i in failures if "no source row" in i], failures
+        )
+
+    def test_an_unbound_census_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(
+                project.body(census="__REPLACE_WITH_THE_CENSUS__"))
+        self.assertTrue(any("scan_build_components.mjs" in i for i in failures), failures)
+
+
+class InnerPageObservationTests(unittest.TestCase):
+    """A producer holding only home-page captures invents every inner page."""
+
+    def home_only_rows(self, project):
+        rows = []
+        for rank in range(1, 7):
+            cell = project.observation_cell(
+                f"strong-{rank}", url=f"https://reference-{rank}.example.test/"
+            )
+            rows.append(project.strong_row(
+                rank, source=DEFAULT_SOURCES[rank - 1], observation=cell,
+            ))
+        return rows
+
+    def test_home_pages_only_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(
+                strong_rows=self.home_only_rows(project)))
+        self.assertTrue(any("INNER pages" in i for i in failures), failures)
+
+    def test_observing_inner_pages_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body())
+        self.assertEqual([], [i for i in failures if "INNER pages" in i], failures)
+
+
+class StructureDiffRouteCoverageTests(unittest.TestCase):
+    """The diff's routes come from the census, not from the producer."""
+
+    def bind(self, temporary, payload):
+        project = Path(temporary)
+        state = project / ".design-dna"
+        (state / "evidence").mkdir(parents=True)
+        record = state / "visual-review.md"
+        record.write_text("placeholder\n", encoding="utf-8")
+        artifact = state / "evidence" / "structure-diff.json"
+        artifact.write_text(json.dumps(payload), encoding="utf-8")
+        cell = (".design-dna/evidence/structure-diff.json plus sha256:"
+                + sha256_of(artifact))
+        return project, record, f"- Structure diff: {cell}\n"
+
+    def test_a_diff_whose_routes_the_producer_chose_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.bind(temporary, {
+                "tool": "compare_structure.mjs", "pass": True,
+                "routes_compared": 1, "census_sha256": None,
+                "verdict": "All 1 route(s) are built like a reference page.",
+            })
+            failures = INITIALIZER.structure_diff_failures(
+                section, project=project, record_path=record)
+        self.assertTrue(any("component census" in i for i in failures), failures)
+
+    def test_a_census_driven_diff_is_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project, record, section = self.bind(temporary, {
+                "tool": "compare_structure.mjs", "pass": True,
+                "routes_compared": 3, "census_sha256": "a" * 64,
+                "verdict": "All 3 route(s) are built like a reference page.",
+            })
+            self.assertEqual([], INITIALIZER.structure_diff_failures(
+                section, project=project, record_path=record))
+
+class MeasuredValueTests(unittest.TestCase):
+    """7.0.0. Never build off a screenshot."""
+
+    def rows_with_values(self, values):
+        return [
+            f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {values} | route |"
+            for name in REQUIRED_COMPONENTS
+        ]
+
+    def test_a_value_the_reference_does_not_compute_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            invented = "held for 7777px, radius 4321, transition 8888ms, tracking 6.66em"
+            failures = project.failures(
+                project.body(component_rows=self.rows_with_values(invented)))
+        self.assertTrue(
+            any("does not compute" in i for i in failures), failures
+        )
+
+    def test_values_read_off_the_live_page_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            real = "held 2400px, 450ms, 36px display at leading 1.25, radius 999"
+            failures = project.failures(
+                project.body(component_rows=self.rows_with_values(real)))
+        self.assertEqual(
+            [], [i for i in failures if "does not compute" in i], failures
+        )
+
+    def test_a_row_carrying_no_numbers_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            prose = "a generous serif at a comfortable size with a soft easing"
+            failures = project.failures(
+                project.body(component_rows=self.rows_with_values(prose)))
+        self.assertTrue(
+            any("paraphrase of a picture" in i for i in failures), failures
+        )
+
+    def test_styles_read_off_a_picture_instead_of_the_page_are_rejected(self) -> None:
+        # the honest description of what the rejected build actually did
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                project.strong_row(
+                    rank, source=DEFAULT_SOURCES[rank - 1],
+                    styles="measured by eye from the capture at 1440 by 900")
+                for rank in range(1, 7)
+            ]
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(
+            any("plus sha256" in i for i in failures),
+            failures,
+        )
+
+    def test_a_hand_written_style_record_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                project.strong_row(
+                    rank, source=DEFAULT_SOURCES[rank - 1],
+                    styles=project.styles_cell(f"strong-{rank}", tool="by-hand"))
+                for rank in range(1, 7)
+            ]
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(
+            any("must be emitted by extract_reference_styles.mjs" in i for i in failures),
+            failures,
+        )
+
+
+class CuratedSourceTests(unittest.TestCase):
+    """7.0.0. Never take the lazy pool."""
+
+    def test_a_submission_feed_cannot_supply_a_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            sources = list(DEFAULT_SOURCES)
+            sources[5] = "httpster; it was on the photographic tag"
+            rows = [
+                project.strong_row(rank, source=sources[rank - 1])
+                for rank in range(1, 7)
+            ]
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(
+            any("open submission feed" in i for i in failures), failures
+        )
+
+    def test_a_reference_without_an_accolade_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            sources = list(DEFAULT_SOURCES)
+            sources[0] = "awwwards"
+            rows = [
+                project.strong_row(rank, source=sources[rank - 1])
+                for rank in range(1, 7)
+            ]
+            failures = project.failures(project.body(strong_rows=rows))
+        self.assertTrue(
+            any("what this site won" in i for i in failures), failures
+        )
+
+
+class CombinationTests(unittest.TestCase):
+    """7.0.0. Never add your own design."""
+
+    def test_an_invented_decision_is_rejected(self) -> None:
+        # the exact shape of the sentence the producer wrote about its own idea
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(elevation=(
+                "The first screen gives half its width to the upkeep instead of "
+                "the building, which none of them attempt; it is our own "
+                "decision and the strongest thing here."
+            )))
+        self.assertTrue(
+            any("something the producer invented" in i for i in failures), failures
+        )
+
+    def test_a_combination_naming_two_references_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body())
+        self.assertEqual(
+            [], [i for i in failures if "Combination of references" in i], failures
+        )
+
+    def test_a_combination_naming_no_reference_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(elevation=(
+                "The build combines a held screen, a staggered index and a "
+                "control set into one coherent whole across four routes."
+            )))
+        self.assertTrue(
+            any("must name at least two selected references" in i for i in failures),
+            failures,
+        )
+
+
+class SignatureTransferTests(unittest.TestCase):
+    """7.1.0. Which PART of the reference arrived.
+
+    Six references were researched, watched, measured and cited for one build,
+    every gate passed, and two of them reached the page as a background colour
+    and a set of control dimensions. The owner: "you still took the crack in
+    the sidewalk instead of the waterfall." Nothing in the record asked which
+    part arrived, so nothing refused the smallest possible answer.
+    """
+
+    def rows(self, project, **overrides):
+        proof = overrides.pop("proof", None) or project.proof_cell()
+        signature = overrides.pop("signature", TRANSFER_SIGNATURE)
+        carrier = overrides.pop("carrier", "the first screen on the primary route")
+        loss = overrides.pop("loss", TRANSFER_LOSS)
+        ranks = overrides.pop("ranks", [1, 2, 3, 4])
+        return [
+            f"| {rank} | {signature} | {carrier} | {proof} | {loss} |"
+            for rank in ranks
+        ]
+
+    def test_a_missing_transfer_table_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body().replace("## Signature transfer", "## Notes")
+            failures = project.failures(body)
+        self.assertTrue(
+            any("Signature transfer needs a table" in item for item in failures),
+            failures,
+        )
+
+    def test_a_rewritten_signature_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project,
+                signature=(
+                    "The controls fill with their own colour when the pointer "
+                    "crosses them, which is a real thing it does."
+                ),
+            )))
+        self.assertTrue(
+            any("is not the one strong row" in item for item in failures),
+            failures,
+        )
+
+    def test_a_summary_of_the_signature_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project, signature="It slides.",
+            )))
+        self.assertTrue(
+            any("characters of the" in item for item in failures), failures
+        )
+
+    def test_a_loss_that_is_only_a_surface_property_is_rejected(self) -> None:
+        """The exact cell the failed build would have written."""
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project,
+                loss=(
+                    "the first screen would lose its warm ground, its 12px "
+                    "corners and the 130 by 40 control size"
+                ),
+            )))
+        self.assertTrue(
+            any("surface property" in item for item in failures), failures
+        )
+
+    def test_a_loss_naming_no_shipped_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project,
+                loss="something would travel differently and the page would settle less well",
+            )))
+        self.assertTrue(
+            any("would be GONE" in item for item in failures), failures
+        )
+
+    def test_a_carrier_naming_no_shipped_component_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project, carrier="somewhere near the top of the page",
+            )))
+        self.assertTrue(
+            any("part that carries this signature" in item for item in failures),
+            failures,
+        )
+
+    def test_a_selected_rank_with_no_row_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(
+                transfer_rows=self.rows(project, ranks=[1, 2, 3])
+            ))
+        self.assertTrue(
+            any("no row for selected rank" in item for item in failures), failures
+        )
+
+    def test_an_unbound_proof_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            failures = project.failures(project.body(transfer_rows=self.rows(
+                project, proof="we checked it and it is there",
+            )))
+        self.assertTrue(
+            any("recorded proof" in item for item in failures), failures
+        )
+
+    def test_a_complete_transfer_table_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            self.assertEqual([], project.failures(
+                project.body(transfer_rows=self.rows(project))
+            ))
+
+
+
+
+
+class SequenceReadTests(unittest.TestCase):
+    """9.0.0: the watching is enforced by count."""
+
+    def test_default_body_passes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            self.assertEqual(project.failures(project.body()), [])
+
+    def test_missing_section_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body().replace("## Sequence reads", "## Notes")
+            failures = project.failures(body)
+        self.assertTrue(any("Sequence reads is missing" in f for f in failures), failures)
+
+    def test_a_sheet_without_a_line_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, omit=(7, 19))] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("no line for s007, s019" in f for f in failures), failures)
+
+    def test_a_line_that_says_nothing_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, short=(3,))] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("under 40 characters" in f and "s003" in f for f in failures), failures)
+
+    def test_a_read_that_calls_everything_static_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, static_all=True)] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("sheets static" in f for f in failures), failures)
+
+    def test_a_thin_inventory_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, inventory_rows=3)] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("Behaviour inventory" in f and "it has 3" in f for f in failures), failures)
+
+    def test_a_signature_not_located_on_a_sheet_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, signature_sheets="none")] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("Signature sheets" in f for f in failures), failures)
+
+    def test_a_short_recording_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, sheets=6)] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("has 6 sheets" in f for f in failures), failures)
+
+    def test_a_hand_made_recording_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, tool="by-hand")] + [
+                project.sequence_block(rank) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("must be emitted by the packaged record_reference.mjs" in f for f in failures), failures)
+
+    def test_an_event_recording_passes(self):
+        """9.1.0: the recorder keeps the moments the screen changed; a line per event."""
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(rank, schema=2) for rank in (1, 2, 3, 4)]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertEqual(failures, [])
+
+    def test_an_event_without_a_line_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, schema=2, omit=(3,))] + [
+                project.sequence_block(rank, schema=2) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("no line for e003" in f and "Every event gets a line" in f for f in failures), failures)
+
+    def test_a_recording_with_too_few_events_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, schema=2, events=5)] + [
+                project.sequence_block(rank, schema=2) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("has 5 events" in f for f in failures), failures)
+
+    def test_a_signature_not_located_on_an_event_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            blocks = [project.sequence_block(1, schema=2, signature_events="none")] + [
+                project.sequence_block(rank, schema=2) for rank in (2, 3, 4)
+            ]
+            failures = project.failures(project.body(sequence_blocks=blocks))
+        self.assertTrue(any("Signature events" in f for f in failures), failures)
+
+    def test_a_behaviour_component_citing_an_event_sheet_passes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            write_png(project.project / ".design-dna" / "references" / EVENT_FRAME_CELL)
+            rows = [
+                f"| {name} | 1 | {EVENT_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else FRAME_CELL} "
+                f"| {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertEqual(failures, [])
+
+    def test_a_behaviour_component_citing_a_rest_frame_fails(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rest = FRAME_CELL  # deliberately the still, for every row
+            rows = [
+                f"| {name} | 1 | {rest} | {STRUCTURE_CELL} | {VALUES_CELL} "
+                "| the primary route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            failures = project.failures(project.body(component_rows=rows))
+        self.assertTrue(
+            any("'hover behavior' must cite a recording sheet" in f for f in failures), failures
+        )
 
 
 if __name__ == "__main__":

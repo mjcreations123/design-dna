@@ -5647,6 +5647,8 @@ REFERENCE_SOURCE_REQUIRED_KEYS = {
     "retrieval",
     "scope",
     "notes",
+    "curation",
+    "curation_note",
 }
 REFERENCE_SOURCE_STATUSES = {"active", "inactive"}
 REFERENCE_SOURCE_RETRIEVAL = {"fetch", "browser", "none"}
@@ -5692,10 +5694,42 @@ REFERENCE_SIGNATURE_VERBS = re.compile(
 REFERENCE_DOSSIER_COMPONENT_HEADERS = (
     "Component",
     "Source rank or owner approval",
+    "Frame that shows it",
     "Structure taken",
     "Recorded values reproduced",
     "Where it is used",
 )
+# A source line is prose, and prose is free. A producer wrote
+# `footer <- index-space.org: a plain block, no rules` for a footer it had
+# never opened, because the table demanded a source and it could supply the
+# shape of one from memory. The frame column is the fix: name the capture that
+# shows this part, and the validator opens it. A part nobody looked at cannot
+# be cited, because the picture of it does not exist.
+REFERENCE_COMPONENT_FRAME_EXEMPT = "owner-approved"
+# A producer cannot build from a picture. Given a screenshot it reports what a
+# screenshot carries, guesses the rest, and believes it is copying. Every
+# number a row claims has to be one the reference actually computes.
+REFERENCE_STYLE_TOOL = "extract_reference_styles.mjs"
+REFERENCE_VALUE_MINIMUM = 3
+REFERENCE_VALUE_MATCH_FLOOR = 0.6
+# Quality is the first filter and register the second. A bulk submission feed
+# filtered by register produces register-matched mediocrity: six faithful
+# copies of forgettable sites make a forgettable site.
+REFERENCE_CURATION_ALLOWED = ("award", "curated")
+# The build is a combination of what the references do. It is never a new idea
+# the producer had. A field that asked for one got one, and the owner had to
+# say so.
+COMBINATION_INVENTION_WORDS = re.compile(
+    r"\b(invent|invented|invention|our own|my own|producer's own|new idea|"
+    r"came up with|dreamed up|original(?:ly)? (?:idea|concept)|added by us|"
+    r"beyond every reference|none of them attempt|no reference does)\b",
+    re.IGNORECASE,
+)
+COMBINATION_SOURCE_PATTERN = re.compile(r"\bstrong-\d+\b|\brank\s*\d+\b", re.IGNORECASE)
+# Every real site has more than one page. A producer that only ever observes
+# home pages can only ever copy a home page, and will design every inner page
+# itself while believing it is still copying.
+REFERENCE_INNER_PAGE_MINIMUM = 2
 # A property is a font size. A structure is where the thing sits, what it is
 # next to, and what fills the screen. The producer that shipped its own layout
 # with borrowed font sizes could satisfy a property column every time, so the
@@ -5729,16 +5763,86 @@ REFERENCE_DOSSIER_REQUIRED_COMPONENTS = (
 # how nine builds got Newsreader and Instrument Sans when not one reference
 # used anything like them.
 TYPEFACE_COMPONENTS = ("display typeface", "text typeface")
+# Six references were researched, watched, and measured, every gate passed, and
+# two of them reached the build as a background colour and a set of control
+# dimensions. The owner's words: "you still took the crack in the sidewalk
+# instead of the waterfall." A source line cannot tell which part of a
+# reference arrived, so the transfer table asks the one question a producer
+# cannot answer from the numbers: cut this reference out, and what does a
+# stranger notice is gone?
+# 9.0.0: the sequence read. A reference is watched as a RECORDING cut into
+# sheets, and the dossier is not valid until every sheet has a line written
+# about it. Three generations of instrument let a producer satisfy "watch the
+# site" without looking: stills called a sequence, computed styles called a
+# copy, and finally a harness whose mechanism numbers were read while one rest
+# frame out of forty-one was opened. The owner's own sixty-second recording,
+# walked at ten frames a second, held nineteen behaviours the build had never
+# seen. A script cannot make a producer understand what it sees; it can make
+# sure the producer saw all of it.
+REFERENCE_SEQUENCE_SECTION = "Sequence reads"
+REFERENCE_RECORDING_TOOL = "record_reference.mjs"
+REFERENCE_RECORDING_SCHEMA = 1
+# 9.1.0: the recorder differences its own video and keeps only the moments
+# where the screen changed, as EVENTS. Reading every contact sheet proved the
+# method and cost an afternoon per site, nearly all of it on sheets where
+# nothing moved. A schema-2 recording counts events; the read carries a line
+# per event. Schema-1 sheet recordings are still accepted.
+REFERENCE_RECORDING_SCHEMAS = (1, 2)
+REFERENCE_RECORDING_MINIMUM_EVENTS = 12
+REFERENCE_EVENT_LINE = re.compile(r"^-\s+e(\d{3})\s*\(", re.MULTILINE)
+REFERENCE_EVENT_ID = re.compile(r"\be(\d{3})\b")
+REFERENCE_EVENT_FRAME = re.compile(r"-events/e\d{3}[^\s|]*\.png\b")
+REFERENCE_RECORDING_MINIMUM_SHEETS = 20
+REFERENCE_RECORDING_MINIMUM_SECONDS = 30
+REFERENCE_SEQUENCE_LINE_MINIMUM = 40
+REFERENCE_SEQUENCE_LINE = re.compile(r"^-\s+s(\d{3})\s*\(", re.MULTILINE)
+REFERENCE_SEQUENCE_STATIC = re.compile(
+    r"\b(static|nothing (?:changes|moves|happens)|no change|unchanged|holds)\b",
+    re.IGNORECASE,
+)
+REFERENCE_SEQUENCE_STATIC_CEILING = 0.75
+REFERENCE_SEQUENCE_INVENTORY_MINIMUM = 8
+REFERENCE_SEQUENCE_SHEET_ID = re.compile(r"\bs(\d{3})\b")
+REFERENCE_SHEET_FRAME = re.compile(r"-sheets/s\d{3}\.png\b")
+# a rest frame cannot show these; their source line has to point at a sheet
+REFERENCE_BEHAVIOUR_COMPONENTS = (
+    "first screen", "navigation", "buttons", "scroll behavior", "hover behavior",
+)
+
+REFERENCE_DOSSIER_TRANSFER_HEADERS = (
+    "Rank",
+    "Signature, copied from the strong row",
+    "The build part that carries it",
+    "Recorded proof",
+    "What a stranger would lose if this reference were cut",
+)
+# The loss has to be a thing, not a property of a thing. "The warm ground" and
+# "the 12px corners" are what a producer writes when nothing would actually go.
+REFERENCE_TRANSFER_SUBSTANCE = re.compile(
+    r"\b(composition|arrangement|layout|grid|stack|stacked|split|band|bands|"
+    r"panel|panels|rail|plate|sequence|rhythm|screen|screens|edge|edges|"
+    r"full[- ]?bleed|overlap|overlaps|overlapping|break|breaks|breaking|crop|"
+    r"frame|framing|index|drawer|drawers|tab|tabs|column|columns|row|rows|"
+    r"choreography|entrance|opening|closing|route|routes|page|pages|structure|"
+    r"order|hierarchy|"
+    r"hold|holds|held|pin|pins|pinned|travel|travels|swap|swaps|reveal|reveals|"
+    r"slide|slides|scroll|scrolls|parallax|follow|follows|drift|drifts|"
+    r"transition|transitions|change|changes|move|moves|arrive|arrives|"
+    r"settle|settles|rise|rises|fill|fills)\b",
+    re.IGNORECASE,
+)
+REFERENCE_TRANSFER_SIGNATURE_MINIMUM = 40
 
 REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Rank",
     "Reference title or visible entry",
     "Public URL or gallery-entry URL",
-    "Discovery source",
+    "Discovery source and accolade",
     "Retrieval date",
     "Access status",
     "Capture path and SHA-256",
     "Observed evidence",
+    "Measured styles",
     "Signature (what a stranger would name)",
     "Brief relevance",
     "Design to copy",
@@ -5793,6 +5897,11 @@ def reference_source_registry_failures(payload: object) -> list[str]:
         if not isinstance(source, dict) or set(source) != REFERENCE_SOURCE_REQUIRED_KEYS:
             failures.append(f"{label} has an unsupported shape.")
             continue
+        if source.get("curation") not in ("award", "curated", "submission"):
+            failures.append(
+                f"{label} must declare curation as award, curated or "
+                "submission, so selection can put quality before register."
+            )
         source_id = source.get("id")
         if (
             not isinstance(source_id, str)
@@ -5862,6 +5971,28 @@ def load_reference_source_registry() -> tuple[dict[str, object], set[str], list[
         )
     } if isinstance(sources, list) else set()
     return payload, active_ids, failures
+
+
+def reference_source_curation() -> dict[str, str]:
+    """Which sources publish only work that a jury or an editor chose.
+
+    A bulk submission feed is fine to browse. It cannot supply a selected
+    reference, because filtering a bulk feed by register yields
+    register-matched mediocrity, and six faithful copies of forgettable sites
+    make a forgettable site.
+    """
+    try:
+        payload = json.loads(REFERENCE_SOURCE_REGISTRY_PATH.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return {}
+    sources = payload.get("sources") if isinstance(payload, dict) else None
+    if not isinstance(sources, list):
+        return {}
+    return {
+        source["id"]: str(source.get("curation", "submission"))
+        for source in sources
+        if isinstance(source, dict) and isinstance(source.get("id"), str)
+    }
 
 
 def reference_dossier_date_failures(value: str, label: str) -> list[str]:
@@ -5981,6 +6112,8 @@ def reference_dossier_failures(
             return [f"{capture_label} is not usable evidence: {exc}"]
         return []
 
+    observed_urls: list[str] = []
+
     def observation_failures(cell: str, label: str, row_url: str) -> list[str]:
         """A strong row binds a session emitted by observe_reference.mjs.
 
@@ -6037,6 +6170,8 @@ def reference_dossier_failures(
                 "sheet and cannot say what the site does."
             )
         observed_url = payload.get("url")
+        if isinstance(observed_url, str) and observed_url:
+            observed_urls.append(observed_url)
         if not isinstance(observed_url, str) or not observed_url:
             problems.append(f"{observation_label} must record the observed URL.")
         else:
@@ -6142,6 +6277,9 @@ def reference_dossier_failures(
     )
     source_by_rank: dict[int, str] = {}
     kind_by_rank: dict[str, str] = {}
+    measured_by_rank: dict[int, set[float]] = {}
+    signature_by_rank: dict[int, str] = {}
+    curation_by_source = reference_source_curation()
     strong_count = max(len(strong_rows), REFERENCE_MINIMUM_STRONG)
     if (
         strong_headers != REFERENCE_DOSSIER_STRONG_HEADERS
@@ -6163,8 +6301,25 @@ def reference_dossier_failures(
             ):
                 failures.append(f"{label} is incomplete.")
                 continue
-            source_id = row[3].casefold()
+            source_cell = row[3].strip()
+            source_id = source_cell.split(";", 1)[0].strip().casefold()
+            accolade = source_cell.split(";", 1)[1].strip() if ";" in source_cell else ""
             sources.append(source_id)
+            curation = curation_by_source.get(source_id, "submission")
+            if curation not in REFERENCE_CURATION_ALLOWED:
+                failures.append(
+                    f"{label} takes its reference from {source_id!r}, an open "
+                    "submission feed. A listing there means somebody sent it "
+                    "in, not that it is good. Select from an award or curated "
+                    "source; quality is the first filter and register the "
+                    "second."
+                )
+            if len(accolade) < 8:
+                failures.append(
+                    f"{label} must record what this site won or why the "
+                    "source's editor chose it, after a semicolon, e.g. "
+                    "`awwwards; Site of the Day 2026-08-14`."
+                )
             if not row[0].isdigit():
                 failures.append(
                     f"{label} rank must be an integer from 1 through {len(strong_rows)}."
@@ -6184,7 +6339,15 @@ def reference_dossier_failures(
             )
             failures.extend(capture_failures(row[6], label))
             failures.extend(observation_failures(row[7], label, row[2]))
-            failures.extend(signature_failures(row[8], label))
+            style_problems, style_numbers = measured_styles_failures(
+                row[8], label=label, project=project, record_path=record_path
+            )
+            failures.extend(style_problems)
+            if row[0].isdigit():
+                measured_by_rank[int(row[0])] = style_numbers
+            failures.extend(signature_failures(row[9], label))
+            if row[0].isdigit():
+                signature_by_rank[int(row[0])] = row[9]
             kind_by_rank[row[0]] = row[7].split(";", 1)[0].strip().casefold()
             access = row[5].split(";", 1)[0].strip().casefold()
             url_match = re.search(r"https://[^\s)]+", row[2])
@@ -6284,11 +6447,16 @@ def reference_dossier_failures(
         "Project-specific organizing synthesis",
         "Behavior copied and where it is rendered",
         "Negative-counterevidence result",
-        "Elevation beyond the references",
+        "Combination of references",
         "Direction record path and status",
     ):
-        if not non_placeholder(markdown_label_value(synthesis, label)):
+        value = markdown_label_value(synthesis, label)
+        if not non_placeholder(value):
             failures.append(f"Reference dossier {label!r} is missing or still scaffold text.")
+        elif label == "Combination of references":
+            failures.extend(
+                combination_failures(value, f"Reference dossier {label!r}")
+            )
     synthesis_headers, synthesis_rows = markdown_first_table(synthesis)
     if synthesis_headers != REFERENCE_DOSSIER_SYNTHESIS_HEADERS or not synthesis_rows:
         failures.append(
@@ -6339,7 +6507,8 @@ def reference_dossier_failures(
             component = row[0].strip().casefold()
             covered.add(component)
             source = row[1].strip()
-            structure = row[2].strip()
+            frame_cell = row[2].strip()
+            structure = row[3].strip()
             if COMPONENT_STRUCTURE_WORDS.search(structure) is None:
                 failures.append(
                     f"{label} structure column must say how the part is "
@@ -6348,7 +6517,19 @@ def reference_dossier_failures(
                     "can reproduce every font size and still be the producer's "
                     "own layout."
                 )
-            if source.casefold().startswith("owner-approved:"):
+            owner_approved = source.casefold().startswith("owner-approved:")
+            failures.extend(
+                component_frame_failures(
+                    frame_cell,
+                    label=label,
+                    source=source,
+                    owner_approved=owner_approved,
+                    project=project,
+                    selected_ranks=selected_ranks,
+                    strong_count=strong_count,
+                )
+            )
+            if owner_approved:
                 quote = source.split(":", 1)[1].strip()
                 if len(quote) < 12:
                     failures.append(
@@ -6362,15 +6543,22 @@ def reference_dossier_failures(
                         f"{label} must name a selected reference rank as its "
                         "source, or `owner-approved: <the owner's words>`."
                     )
-            if len(row[3].strip()) < 24:
+            if not owner_approved:
+                failures.extend(
+                    component_value_failures(
+                        row[4],
+                        label=label,
+                        ranks=(reference_rank_values(source, maximum=strong_count) or set()),
+                        measured=measured_by_rank,
+                    )
+                )
+            if len(row[4].strip()) < 24:
                 failures.append(
                     f"{label} must reproduce the recorded values it takes "
                     "(sizes, distances, durations, easings, counts), not a "
                     "paraphrase of the reference."
                 )
-            if component in TYPEFACE_COMPONENTS and source.casefold().startswith(
-                "owner-approved:"
-            ):
+            if component in TYPEFACE_COMPONENTS and owner_approved:
                 failures.append(
                     f"{label} names a typeface the producer chose. A typeface "
                     "comes from a selected reference: the same face where it is "
@@ -6387,7 +6575,580 @@ def reference_dossier_failures(
                 + ", ".join(missing_components)
                 + ". A part with no source line does not ship."
             )
+        failures.extend(
+            component_census_failures(
+                component_section,
+                project=project,
+                record_path=record_path,
+                covered=covered,
+            )
+        )
+
+    # Every gate above proves the producer looked, measured, and cited. None of
+    # them asks which PART of each reference arrived, which is how two of six
+    # references reached a shipped build as a background colour and a set of
+    # control dimensions.
+    failures.extend(
+        signature_transfer_failures(
+            sections.get("Signature transfer", ""),
+            project=project,
+            record_path=record_path,
+            selected_ranks=selected_ranks or set(),
+            signature_by_rank=signature_by_rank,
+            census_names=census_component_names(
+                sections.get("Component sources", ""),
+                project=project,
+                record_path=record_path,
+            ),
+        )
+    )
+
+    # The recording is the watching, and the watching is enforced by count:
+    # a line per sheet, an inventory of what the site does, and a signature
+    # located on sheets that exist.
+    failures.extend(
+        sequence_read_failures(
+            sections.get(REFERENCE_SEQUENCE_SECTION, ""),
+            sections.get("Component sources", ""),
+            project=project,
+            record_path=record_path,
+            selected_ranks=selected_ranks or set(),
+        )
+    )
+
+    # A producer that only ever watched home pages has no evidence for an
+    # inner page, and will design one while believing it is still copying.
+    inner = {
+        url for url in observed_urls
+        if urlsplit(url).path.strip("/") not in {"", "index.html", "index.php"}
+    }
+    if len(inner) < REFERENCE_INNER_PAGE_MINIMUM:
+        failures.append(
+            "Reference dossier must observe at least "
+            f"{REFERENCE_INNER_PAGE_MINIMUM} INNER pages across its selected "
+            f"references; it observed {len(inner)}. Every real site has more "
+            "than one page, and a producer holding only home-page captures "
+            "will invent every inner page it builds."
+        )
     return failures
+
+
+def measured_styles_failures(
+    cell: str, *, label: str, project: Path, record_path: Path
+) -> tuple[list[str], set[float]]:
+    """A reference binds a machine extraction of its live CSS.
+
+    This is the answer to "never build off a screenshot". A still carries
+    caption alignment, a radius and a colour impression; everything else the
+    producer fills in from memory while believing it is copying. The numbers a
+    build claims to reproduce are checked against this record.
+    """
+    value = cell.strip()
+    if not non_placeholder(value):
+        return ([
+            f"{label} must bind the {REFERENCE_STYLE_TOOL} record for this "
+            "reference, read from the live page. A build made from a "
+            "screenshot reproduces what a screenshot carries and invents the "
+            "rest."
+        ], set())
+    artifact, artifact_failures = bound_artifact(
+        value, project=project, record_path=record_path, label=label
+    )
+    if artifact_failures or artifact is None:
+        return (artifact_failures, set())
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return ([f"{label} measured styles are not readable JSON: {exc}"], set())
+    if not isinstance(payload, dict) or payload.get("tool") != REFERENCE_STYLE_TOOL:
+        return ([f"{label} measured styles must be emitted by {REFERENCE_STYLE_TOOL}."], set())
+    numbers = payload.get("numbers")
+    if not isinstance(numbers, list) or len(numbers) < 20:
+        return ([
+            f"{label} measured styles carry no usable values; the extraction "
+            "did not read the page."
+        ], set())
+    return ([], {float(n) for n in numbers if isinstance(n, (int, float))})
+
+
+def component_value_failures(
+    cell: str, *, label: str, ranks: set[int], measured: dict[int, set[float]]
+) -> list[str]:
+    """Every number a row claims has to be one the reference actually computes.
+
+    This is what stops a value being invented. A producer can write "16px by
+    30px padding, radius 999, 650ms" from memory all day; it cannot write
+    numbers the live stylesheet does not contain.
+    """
+    claimed = {
+        float(m) for m in re.findall(r"-?\d*\.?\d+", cell)
+    }
+    claimed = {c for c in claimed if c != 0}
+    if len(claimed) < REFERENCE_VALUE_MINIMUM:
+        return [
+            f"{label} must reproduce at least {REFERENCE_VALUE_MINIMUM} measured "
+            "values (sizes, distances, durations, counts, weights). A row with "
+            "no numbers in it is a paraphrase of a picture."
+        ]
+    pool: set[float] = set()
+    for rank in ranks:
+        pool |= measured.get(rank, set())
+    if not pool:
+        return []
+    unmatched = sorted(
+        c for c in claimed
+        if not any(abs(c - p) <= max(0.5, abs(c) * 0.02) for p in pool)
+    )
+    matched = len(claimed) - len(unmatched)
+    if matched / len(claimed) < REFERENCE_VALUE_MATCH_FLOOR:
+        return [
+            f"{label} claims values the reference does not compute: "
+            + ", ".join(str(u) for u in unmatched[:8])
+            + ". Read them off the live page with "
+            f"{REFERENCE_STYLE_TOOL} instead of writing down what the "
+            "screenshot looked like."
+        ]
+    return []
+
+
+def component_frame_failures(
+    cell: str,
+    *,
+    label: str,
+    source: str,
+    owner_approved: bool,
+    project: Path,
+    selected_ranks: set[int],
+    strong_count: int,
+) -> list[str]:
+    """The frame column has to open.
+
+    A citation nobody can follow is not a citation. This resolves the named
+    frame against the reference captures on disk and requires it to belong to
+    the reference the row names, which is why a producer cannot write a source
+    line for a page it never looked at.
+    """
+    value = cell.strip()
+    if owner_approved:
+        if value.casefold() != REFERENCE_COMPONENT_FRAME_EXEMPT:
+            return [
+                f"{label} is the producer's own design with the owner's "
+                "approval, so its frame column reads exactly "
+                f"`{REFERENCE_COMPONENT_FRAME_EXEMPT}`."
+            ]
+        return []
+    if not non_placeholder(value):
+        return [
+            f"{label} must name the capture frame that SHOWS this part, "
+            "relative to the reference captures directory, e.g. "
+            "`strong-4-frames/strong-4-006-scroll-settle.png`. A source line "
+            "nobody can open is the producer's own design with a citation "
+            "typed over it."
+        ]
+    relative = PurePosixPath(value.replace("\\", "/"))
+    if relative.is_absolute() or ".." in relative.parts:
+        return [f"{label} frame must stay inside the reference captures directory."]
+    root = (project / REFERENCE_CAPTURE_PREFIX).resolve()
+    resolved = (root / relative).resolve()
+    if root not in resolved.parents and resolved != root:
+        return [f"{label} frame must stay inside {REFERENCE_CAPTURE_PREFIX}."]
+    if not resolved.is_file():
+        return [
+            f"{label} frame {value!r} does not exist. Observe the page that "
+            "shows this part and cite the frame the harness wrote, or cut the "
+            "component."
+        ]
+    ranks = reference_rank_values(source, maximum=strong_count)
+    if ranks:
+        owners = {f"strong-{rank}" for rank in ranks}
+        if not any(part.startswith(tuple(owners)) for part in relative.parts):
+            return [
+                f"{label} frame {value!r} does not belong to the reference "
+                "this row names. Cite a frame of the site the part came from."
+            ]
+    return []
+
+
+def census_component_names(
+    section: str, *, project: Path, record_path: Path
+) -> set[str]:
+    """The component stems the finished build actually renders, or an empty set.
+
+    Returned empty when the census is missing or unreadable; the census gate
+    reports that separately and the transfer table should not fail twice for
+    one cause.
+    """
+    value = (markdown_label_value(section, "Component census") or "").strip()
+    if not non_placeholder(value) or value.startswith("__REPLACE_WITH"):
+        return set()
+    artifact, problems = bound_artifact(
+        value, project=project, record_path=record_path, label="Component census"
+    )
+    if problems or artifact is None:
+        return set()
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    names = payload.get("names") if isinstance(payload, dict) else None
+    if not isinstance(names, list):
+        return set()
+    return {str(name).strip() for name in names if str(name).strip()}
+
+
+def signature_transfer_failures(
+    section: str,
+    *,
+    project: Path,
+    record_path: Path,
+    selected_ranks: set[int],
+    signature_by_rank: dict[int, str],
+    census_names: set[str],
+) -> list[str]:
+    """Every selected reference has to have brought its signature with it.
+
+    The gates before this one prove that the producer looked, measured, and
+    cited. None of them asks WHICH PART arrived. A reference can clear all of
+    them and contribute a background colour and a control size, because those
+    are the parts a producer is most comfortable rebuilding, and the source
+    line records only that the reference was used.
+
+    So this table asks the deletion question, one row per selected reference:
+    cut it out of the set, and what does a stranger notice is gone? The answer
+    has to name a component the build actually ships, because a loss that
+    cannot be pointed at is not a loss.
+    """
+    label = "Reference dossier Signature transfer"
+    headers, rows = markdown_first_table(section)
+    if headers != REFERENCE_DOSSIER_TRANSFER_HEADERS or not rows:
+        return [
+            f"{label} needs a table using the exact contract, one row per "
+            "selected reference. Without it nothing in the record says which "
+            "PART of each reference arrived, and a reference that reached the "
+            "build as a background colour and a control size satisfies every "
+            "other gate."
+        ]
+    failures: list[str] = []
+    seen: set[int] = set()
+    for row_number, row in enumerate(rows, start=1):
+        row_label = f"{label} row {row_number}"
+        if len(row) != len(REFERENCE_DOSSIER_TRANSFER_HEADERS) or any(
+            not non_placeholder(cell) for cell in row
+        ):
+            failures.append(f"{row_label} is incomplete.")
+            continue
+        row_ranks = reference_rank_values(row[0], maximum=max(selected_ranks or {1}))
+        if row_ranks is None or len(row_ranks) != 1 or not row_ranks <= selected_ranks:
+            failures.append(f"{row_label} must name exactly one selected rank.")
+            continue
+        rank = next(iter(row_ranks))
+        if rank in seen:
+            failures.append(f"{row_label} repeats rank {rank}.")
+            continue
+        seen.add(rank)
+
+        # the signature cannot be quietly rewritten into something the build
+        # happens to have done
+        claimed = " ".join(row[1].split()).casefold()
+        recorded = " ".join(signature_by_rank.get(rank, "").split()).casefold()
+        if len(claimed) < REFERENCE_TRANSFER_SIGNATURE_MINIMUM:
+            failures.append(
+                f"{row_label} must copy at least "
+                f"{REFERENCE_TRANSFER_SIGNATURE_MINIMUM} characters of the "
+                "signature recorded in the strong row, not a summary of it."
+            )
+        elif recorded and claimed not in recorded:
+            failures.append(
+                f"{row_label} signature is not the one strong row {rank} "
+                "records. Copy it, or fix the strong row; a signature that "
+                "changes on its way down the record is a signature being "
+                "fitted to what got built."
+            )
+
+        carrier = row[2]
+        if census_names and not any(
+            re.search(rf"\b{re.escape(name)}\b", carrier, re.IGNORECASE)
+            for name in census_names
+        ):
+            failures.append(
+                f"{row_label} must name a component the build actually renders "
+                "as the part that carries this signature."
+            )
+
+        failures.extend(
+            bound_artifact(
+                row[3], project=project, record_path=record_path,
+                label=f"{row_label} recorded proof",
+            )[1]
+        )
+
+        loss = row[4]
+        residue = loss
+        named_component = False
+        for name in census_names:
+            pattern = rf"\b{re.escape(name)}\b"
+            if re.search(pattern, loss, re.IGNORECASE):
+                named_component = True
+                # the component's own name is not evidence that anything about
+                # it would change: "the first screen would lose its warm ground"
+                # borrows `screen` from the census and still describes a colour
+                residue = re.sub(pattern, " ", residue, flags=re.IGNORECASE)
+        if census_names and not named_component:
+            failures.append(
+                f"{row_label} must name a component that would be GONE without "
+                "this reference. A loss nobody can point at is what a producer "
+                "writes when the reference contributed a colour value."
+            )
+        if REFERENCE_TRANSFER_SUBSTANCE.search(residue) is None:
+            failures.append(
+                f"{row_label} describes the loss as a surface property. A "
+                "ground, a radius, a size or a control dimension is what "
+                "survives when the reference was sampled instead of copied; "
+                "name the arrangement or the behaviour that would go with it."
+            )
+
+    missing = sorted(selected_ranks - seen)
+    if missing:
+        failures.append(
+            f"{label} has no row for selected rank(s) "
+            + ", ".join(str(rank) for rank in missing)
+            + ". A selected reference with nothing to lose was not selected, "
+            "it was listed."
+        )
+    return failures
+
+
+def sequence_read_failures(
+    section: str,
+    component_section: str,
+    *,
+    project: Path,
+    record_path: Path,
+    selected_ranks: set[int],
+) -> list[str]:
+    """Every selected reference was recorded, and every sheet was narrated.
+
+    The watching is the gate. It is enforced by count: the recording says how
+    many sheets it produced, and the read has to carry a line for each one.
+    A line has to be long enough to have said something, most of the lines
+    have to describe change, the read has to end in an inventory of what the
+    site DOES with magnitudes, and the strong row's signature has to be
+    located on sheets that exist. None of that proves understanding. It proves
+    the producer looked at all of it, which is the part that was skipped.
+    """
+    label = f"Reference dossier {REFERENCE_SEQUENCE_SECTION}"
+    failures: list[str] = []
+    if not non_placeholder(section):
+        return [
+            f"{label} is missing. Record every selected reference with "
+            "scripts/record_reference.mjs and narrate every sheet before the "
+            "strong row is written; a reference that was measured and not "
+            "watched reaches the build as a still."
+        ]
+    blocks: dict[int, str] = {}
+    for match in re.finditer(r"^###\s+strong-(\d+)\s*$", section, re.MULTILINE):
+        start = match.end()
+        nxt = re.search(r"^###\s+", section[start:], re.MULTILINE)
+        end = start + nxt.start() if nxt else len(section)
+        blocks[int(match.group(1))] = section[start:end]
+
+    for rank in sorted(selected_ranks):
+        block_label = f"{label} strong-{rank}"
+        block = blocks.get(rank)
+        if block is None:
+            failures.append(f"{block_label} has no `### strong-{rank}` block.")
+            continue
+        recording_cell = markdown_label_value(block, "Recording")
+        read_cell = markdown_label_value(block, "Read")
+        sheets_cell = markdown_label_value(block, "Signature events") or markdown_label_value(
+            block, "Signature sheets"
+        )
+        if not non_placeholder(recording_cell) or not non_placeholder(read_cell):
+            failures.append(
+                f"{block_label} must bind `- Recording:` and `- Read:` as "
+                "`path plus sha256:<hex>`."
+            )
+            continue
+        recording, recording_failures = bound_artifact(
+            recording_cell, project=project, record_path=record_path,
+            label=f"{block_label} recording",
+        )
+        read, read_failures = bound_artifact(
+            read_cell, project=project, record_path=record_path,
+            label=f"{block_label} read",
+        )
+        failures.extend(recording_failures)
+        failures.extend(read_failures)
+        if recording is None or read is None:
+            continue
+        try:
+            payload = json.loads(recording.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"{block_label} recording is not readable JSON: {exc}")
+            continue
+        if not isinstance(payload, dict) or payload.get("tool") != REFERENCE_RECORDING_TOOL:
+            failures.append(
+                f"{block_label} recording must be emitted by the packaged "
+                f"{REFERENCE_RECORDING_TOOL}; a hand-made record cannot establish "
+                "what was watched."
+            )
+            continue
+        schema = payload.get("schema_version")
+        if schema not in REFERENCE_RECORDING_SCHEMAS:
+            failures.append(
+                f"{block_label} recording must use schema_version "
+                + " or ".join(str(v) for v in REFERENCE_RECORDING_SCHEMAS)
+                + "."
+            )
+            continue
+        # schema 2 counts events (the moments the screen changed); schema 1
+        # counts contact sheets
+        unit = "event" if schema == 2 else "sheet"
+        sheets = payload.get("events") if schema == 2 else payload.get("sheets")
+        minimum = (
+            REFERENCE_RECORDING_MINIMUM_EVENTS if schema == 2 else REFERENCE_RECORDING_MINIMUM_SHEETS
+        )
+        line_pattern = REFERENCE_EVENT_LINE if schema == 2 else REFERENCE_SEQUENCE_LINE
+        id_pattern = REFERENCE_EVENT_ID if schema == 2 else REFERENCE_SEQUENCE_SHEET_ID
+        duration = payload.get("duration_s")
+        if not isinstance(sheets, int) or sheets < minimum:
+            failures.append(
+                f"{block_label} recording has {sheets!r} {unit}s; a real session "
+                f"produces at least {minimum}."
+            )
+            continue
+        if not isinstance(duration, (int, float)) or duration < REFERENCE_RECORDING_MINIMUM_SECONDS:
+            failures.append(
+                f"{block_label} recording lasted {duration!r}s; a session that "
+                f"hovers, scrolls and follows a link takes at least "
+                f"{REFERENCE_RECORDING_MINIMUM_SECONDS}s."
+            )
+
+        try:
+            text = read.read_text(encoding="utf-8")
+        except OSError as exc:
+            failures.append(f"{block_label} read is not readable: {exc}")
+            continue
+        lines = {
+            int(m.group(1)): line
+            for m, line in (
+                (m, text[m.start():text.find("\n", m.start()) if text.find("\n", m.start()) != -1 else len(text)])
+                for m in line_pattern.finditer(text)
+            )
+        }
+        missing = [n for n in range(1, sheets + 1) if n not in lines]
+        if missing:
+            shown = ", ".join(f"{unit[0]}{n:03d}" for n in missing[:8])
+            more = f" and {len(missing) - 8} more" if len(missing) > 8 else ""
+            failures.append(
+                f"{block_label} read has no line for {shown}{more} "
+                f"({len(missing)} of {sheets} {unit}s). Every {unit} gets a line: "
+                "what the cursor did, what scrolled, what changed."
+            )
+        short = [n for n, line in lines.items() if len(line.strip()) < REFERENCE_SEQUENCE_LINE_MINIMUM]
+        if short:
+            failures.append(
+                f"{block_label} read has {len(short)} line(s) under "
+                f"{REFERENCE_SEQUENCE_LINE_MINIMUM} characters (first: "
+                f"{unit[0]}{min(short):03d}); a {unit} id with nothing after it is not a "
+                "reading."
+            )
+        if lines:
+            static = sum(1 for line in lines.values() if REFERENCE_SEQUENCE_STATIC.search(line))
+            if static / len(lines) > REFERENCE_SEQUENCE_STATIC_CEILING:
+                failures.append(
+                    f"{block_label} read calls {static} of {len(lines)} {unit}s "
+                    "static. A recording that hovers, scrolls and follows a link "
+                    "does not stand still that long; the cursor is being "
+                    "described instead of the page."
+                )
+        inventory = markdown_sections(text).get("Behaviour inventory", "")
+        _headers, rows = markdown_first_table(inventory)
+        if len(rows) < REFERENCE_SEQUENCE_INVENTORY_MINIMUM:
+            failures.append(
+                f"{block_label} read needs a `## Behaviour inventory` table with "
+                f"at least {REFERENCE_SEQUENCE_INVENTORY_MINIMUM} rows (trigger, "
+                f"element, effect, magnitude, {unit}s); it has {len(rows)}. The "
+                "inventory is what the build reproduces."
+            )
+        cited = [int(n) for n in id_pattern.findall(sheets_cell or "")]
+        valid = [n for n in cited if 1 <= n <= sheets and n in lines]
+        if not valid:
+            failures.append(
+                f"{block_label} must name `- Signature {unit}s:` as {unit} ids "
+                f"that exist in the read (e.g. `{unit[0]}004, {unit[0]}005`), so the signature "
+                "in the strong row is something that was WATCHED happening, "
+                "not something remembered from a still."
+            )
+
+    # a rest frame cannot show a first screen arriving, a nav responding, a
+    # button under the pointer, a scroll or a hover; those rows cite a sheet
+    _headers, component_rows = markdown_first_table(component_section)
+    for row in component_rows:
+        if len(row) < 3:
+            continue
+        name = " ".join(row[0].split()).casefold()
+        if name in REFERENCE_BEHAVIOUR_COMPONENTS and not (
+            REFERENCE_SHEET_FRAME.search(row[2]) or REFERENCE_EVENT_FRAME.search(row[2])
+        ):
+            failures.append(
+                f"Reference dossier Component sources row {row[0]!r} must cite "
+                "a recording sheet (`strong-N-events/eNNN-kind.png`, or "
+                "`strong-N-sheets/sNNN.png` from a schema-1 recording) in `Frame "
+                "that shows it`; a rest frame cannot show what this component does."
+            )
+    return failures
+
+
+def component_census_failures(
+    section: str, *, project: Path, record_path: Path, covered: set[str]
+) -> list[str]:
+    """Every component the build renders needs a row.
+
+    The table's required rows were a fixed list, so a build could satisfy all
+    twelve and still ship a lede block, a photo plate, a numbered steps list, a
+    form and a footer that came from nowhere. This counts what the build
+    actually renders, and a component with no row is a part of the design the
+    producer invented.
+    """
+    label = "Reference dossier Component census"
+    value = (markdown_label_value(section, "Component census") or "").strip()
+    if not non_placeholder(value) or value.startswith("__REPLACE_WITH"):
+        return [
+            f"{label} must bind the scan_build_components.mjs record for the "
+            "finished build, so the sources table is checked against what the "
+            "build renders instead of against a fixed list."
+        ]
+    artifact, artifact_failures = bound_artifact(
+        value, project=project, record_path=record_path, label=label
+    )
+    if artifact_failures or artifact is None:
+        return artifact_failures
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"{label} is not readable JSON: {exc}"]
+    if not isinstance(payload, dict) or payload.get("tool") != "scan_build_components.mjs":
+        return [f"{label} must be emitted by the packaged scan_build_components.mjs."]
+    names = payload.get("names")
+    if not isinstance(names, list) or not names:
+        return [f"{label} recorded no components; the scan did not read the build."]
+    words: set[str] = set()
+    for entry in covered:
+        words.update(part for part in re.split(r"[^a-z0-9]+", entry) if part)
+    unsourced = sorted(
+        str(name) for name in names
+        if str(name).casefold() not in words and str(name).casefold() not in covered
+    )
+    if unsourced:
+        return [
+            f"{label} found components in the build with no source row: "
+            + ", ".join(unsourced)
+            + ". Every one of those is a part of the design that came from "
+            "nowhere. Observe a reference page that shows it and cite the "
+            "frame, or cut the component."
+        ]
+    return []
 
 ASSURANCE_PROFILE_ALIASES = {
     "quick": "quick",
@@ -7365,7 +8126,7 @@ REFERENCE_LED_CLOSURE_LABELS = (
     "Rights boundary",
     "Lineage result",
     "Rendered result",
-    "Elevation result",
+    "Combination result",
     "Mechanism diff",
     "Structure diff",
 )
@@ -7443,6 +8204,13 @@ def structure_diff_failures(
         return [f"{label} is not readable JSON: {exc}"]
     if not isinstance(payload, dict) or payload.get("tool") != "compare_structure.mjs":
         return [f"{label} must be emitted by the packaged compare_structure.mjs."]
+    if not payload.get("census_sha256"):
+        return [
+            f"{label} must take its route list from the component census "
+            "(--census), so that every route the build renders is compared. A "
+            "run whose routes the producer chose compares the screen it "
+            "copied and skips the pages it invented."
+        ]
     if payload.get("pass") is not True:
         return [
             f"{label} did not pass: "
@@ -7453,9 +8221,33 @@ def structure_diff_failures(
     return []
 
 
+def combination_failures(value: str, label: str) -> list[str]:
+    """The combination names references, not ideas.
+
+    The producer must say which reference supplies which part and why no
+    single one of them is this build. If it reads as something the producer
+    thought of, it is the producer's design and it does not ship.
+    """
+    problems: list[str] = []
+    if COMBINATION_INVENTION_WORDS.search(value):
+        problems.append(
+            f"{label} describes something the producer invented. The build is a "
+            "combination of what the selected references already do; say which "
+            "reference supplies which part. A build's distinctiveness comes "
+            "from the combination, never from a new idea the producer had."
+        )
+    if len(COMBINATION_SOURCE_PATTERN.findall(value)) < 2:
+        problems.append(
+            f"{label} must name at least two selected references and what each "
+            "one supplies, e.g. `strong-2 supplies the held screen, strong-5 "
+            "the index`."
+        )
+    return problems
+
+
 def reference_led_closure_label_failures(section: str) -> list[str]:
     """Require the closure to say what the render showed, including the
-    elevation beyond the reference set, and to declare one disposition."""
+    combination the build is made of, and to declare one disposition."""
 
     failures: list[str] = []
     for label in REFERENCE_LED_CLOSURE_LABELS:

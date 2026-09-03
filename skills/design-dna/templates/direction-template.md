@@ -157,11 +157,14 @@ story.
 - Project-specific synthesis drawn from the selected references:
 - Negative-counterevidence result and relationship to avoid:
 - Ledger check result (prior references reused, or none):
-- Elevation beyond the references (what this build does that none of them do):
+- Combination of references (which reference supplies which part, and why no
+  single one of them is this build):
 
-References may guide composition, hierarchy, pacing, media, typography, and
-interaction. Adapt them to the actual project rather than copying a page,
-brand, asset, or treatment section-for-section. Keep this reasoning internal.
+References supply the composition, hierarchy, pacing, media, typography and
+interaction. What makes a build its own is the COMBINATION: which reference
+supplies which part, and the fact that no single one of them carries all of
+them. It is never an idea the producer had. Never reproduce a reference's
+brand, assets, writing or code. Keep this reasoning internal.
 
 ## Observable consequential design decisions
 

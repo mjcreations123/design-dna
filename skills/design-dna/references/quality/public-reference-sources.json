@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "audited_on": "2026-09-01",
-  "policy": "Only sources with currently usable public inspiration material are active. An account may be used only when the user is authorized to use it; access controls, paywalls, security interstitials, and private content are never bypassed. Sources marked inactive remain as an audit trail and cannot be selected for a project dossier. Each active source declares how its entries can actually be retrieved: 'fetch' means a plain HTTP request exposes entry links and images, 'browser' means entries render only in a real browser session, so a plain fetch that returns a script shell or a rate-limit response is not evidence that the source is unavailable.",
+  "audited_on": "2026-09-02",
+  "policy": "Only sources with currently usable public inspiration material are active. An account may be used only when the user is authorized to use it; access controls, paywalls, security interstitials, and private content are never bypassed. Sources marked inactive remain as an audit trail and cannot be selected for a project dossier. Each active source declares how its entries can actually be retrieved: 'fetch' means a plain HTTP request exposes entry links and images, 'browser' means entries render only in a real browser session, so a plain fetch that returns a script shell or a rate-limit response is not evidence that the source is unavailable. Selection is quality first and register second: references are chosen from award and curated sources, and a submission feed may be browsed but cannot supply a selected reference. Filtering a bulk feed by register produces register-matched mediocrity.",
   "sources": [
     {
       "id": "awwwards",
@@ -11,7 +11,9 @@
       "access": "public",
       "retrieval": "fetch",
       "scope": "Public website awards, nominees, winners, and category browsing.",
-      "notes": "Public listing and detail material was visible during the 2026-09-01 audit. Entry pages expose the live site link and a preview image to a plain fetch."
+      "notes": "Public listing and detail material was visible during the 2026-09-01 audit. Entry pages expose the live site link and a preview image to a plain fetch.",
+      "curation": "award",
+      "curation_note": "Site of the Day, Site of the Month, Site of the Year, honorable mentions, and jury scores."
     },
     {
       "id": "godly",
@@ -21,7 +23,9 @@
       "access": "public",
       "retrieval": "browser",
       "scope": "Public cross-discipline visual and interface inspiration; the current endpoint may redirect to Recent.",
-      "notes": "Public design browsing was visible during the 2026-09-01 audit. A plain fetch returns a script shell with no entry links; use a real browser session."
+      "notes": "Public design browsing was visible during the 2026-09-01 audit. A plain fetch returns a script shell with no entry links; use a real browser session.",
+      "curation": "curated",
+      "curation_note": "Editorially chosen; a small number of entries per week."
     },
     {
       "id": "mobbin",
@@ -31,17 +35,9 @@
       "access": "public-limited",
       "retrieval": "browser",
       "scope": "Publicly visible app, web, UI-element, flow, and pattern examples.",
-      "notes": "Use only examples and detail visible without sign-in; paid or account-only material cannot be selected. Entries render only in a real browser session."
-    },
-    {
-      "id": "siteinspire",
-      "name": "SiteInspire",
-      "url": "https://www.siteinspire.com/",
-      "status": "active",
-      "access": "public",
-      "retrieval": "browser",
-      "scope": "Public website gallery with category, style, type, and subject filters.",
-      "notes": "Public entries and filters were visible during the 2026-09-01 audit. The site rate-limits plain requests (HTTP 429); use a real browser session at a human pace and never work around the limit."
+      "notes": "Use only examples and detail visible without sign-in; paid or account-only material cannot be selected. Entries render only in a real browser session.",
+      "curation": "submission",
+      "curation_note": "A reference library of shipped screens, not a quality gate."
     },
     {
       "id": "site-of-sites",
@@ -51,7 +47,9 @@
       "access": "public",
       "retrieval": "fetch",
       "scope": "Public website collection with industry, type, style, and platform filters.",
-      "notes": "Public entries and filters were visible during the 2026-09-01 audit. A plain fetch exposes entry links."
+      "notes": "Public entries and filters were visible during the 2026-09-01 audit. A plain fetch exposes entry links.",
+      "curation": "curated",
+      "curation_note": "Editorially chosen."
     },
     {
       "id": "landingfolio",
@@ -61,7 +59,9 @@
       "access": "public-limited",
       "retrieval": "fetch",
       "scope": "Public landing-page and component inspiration by page type and industry.",
-      "notes": "Use publicly visible inspiration entries only; membership templates and private features are excluded. A plain fetch exposes entry links."
+      "notes": "Use publicly visible inspiration entries only; membership templates and private features are excluded. A plain fetch exposes entry links.",
+      "curation": "submission",
+      "curation_note": "Aggregated listings."
     },
     {
       "id": "one-page-love",
@@ -71,7 +71,9 @@
       "access": "public",
       "retrieval": "browser",
       "scope": "Public one-page website and section examples.",
-      "notes": "Public gallery content was visible during the 2026-09-01 audit. A plain fetch returns no entry links; use a real browser session."
+      "notes": "Public gallery content was visible during the 2026-09-01 audit. A plain fetch returns no entry links; use a real browser session.",
+      "curation": "submission",
+      "curation_note": "Open submissions with light screening."
     },
     {
       "id": "behance",
@@ -81,7 +83,9 @@
       "access": "public-limited",
       "retrieval": "fetch",
       "scope": "Public visual, product, brand, and case-study work.",
-      "notes": "Use publicly viewable work only; account-only actions and private projects are excluded. A plain fetch exposes a limited set of public project links; a browser session shows more."
+      "notes": "Use publicly viewable work only; account-only actions and private projects are excluded. A plain fetch exposes a limited set of public project links; a browser session shows more.",
+      "curation": "submission",
+      "curation_note": "Self-published portfolios; no gate."
     },
     {
       "id": "lapa-ninja",
@@ -91,7 +95,9 @@
       "access": "public-limited",
       "retrieval": "fetch",
       "scope": "Public landing-page, full-page screenshot, and motion examples.",
-      "notes": "Select only entries visibly available without sign-in or subscription. The first plain request may be refused (HTTP 403); a single retry with an ordinary browser user agent succeeded during the audit. Do not hammer it."
+      "notes": "Select only entries visibly available without sign-in or subscription. The first plain request may be refused (HTTP 403); a single retry with an ordinary browser user agent succeeded during the audit. Do not hammer it.",
+      "curation": "submission",
+      "curation_note": "Aggregated listings."
     },
     {
       "id": "css-nectar",
@@ -101,7 +107,9 @@
       "access": "public",
       "retrieval": "fetch",
       "scope": "Public website nominee and winner gallery.",
-      "notes": "Public entries were visible during the 2026-09-01 audit. A plain fetch exposes entry links."
+      "notes": "Public entries were visible during the 2026-09-01 audit. A plain fetch exposes entry links.",
+      "curation": "submission",
+      "curation_note": "Paid and free submission queue."
     },
     {
       "id": "httpster",
@@ -111,7 +119,9 @@
       "access": "public",
       "retrieval": "browser",
       "scope": "Public website inspiration by style and type.",
-      "notes": "Public examples were visible during the 2026-09-01 audit. A plain fetch returns images but no entry links; use a real browser session."
+      "notes": "Public examples were visible during the 2026-09-01 audit. A plain fetch returns images but no entry links; use a real browser session.",
+      "curation": "submission",
+      "curation_note": "Open submissions; a listing means somebody sent it in."
     },
     {
       "id": "typewolf",
@@ -121,7 +131,9 @@
       "access": "public",
       "retrieval": "fetch",
       "scope": "Public typography lookbooks, website examples, and type analysis.",
-      "notes": "Use for typographic and editorial relationships, not as a generic font recipe. A plain fetch exposes entry pages and images."
+      "notes": "Use for typographic and editorial relationships, not as a generic font recipe. A plain fetch exposes entry pages and images.",
+      "curation": "curated",
+      "curation_note": "One Site of the Day chosen by a single editor."
     },
     {
       "id": "websitevice",
@@ -131,7 +143,9 @@
       "access": "public",
       "retrieval": "fetch",
       "scope": "Public real-world website examples by sector and site type.",
-      "notes": "Public examples were visible during the 2026-09-01 audit. A plain fetch exposes entry links."
+      "notes": "Public examples were visible during the 2026-09-01 audit. A plain fetch exposes entry links.",
+      "curation": "submission",
+      "curation_note": "Aggregated listings."
     },
     {
       "id": "framer",
@@ -141,7 +155,9 @@
       "access": "public-limited",
       "retrieval": "fetch",
       "scope": "Public Framer inspiration, creator, and case-study material.",
-      "notes": "Use only material visibly exposed by Framer without an account. A plain fetch exposes public inspiration links."
+      "notes": "Use only material visibly exposed by Framer without an account. A plain fetch exposes public inspiration links.",
+      "curation": "submission",
+      "curation_note": "A vendor showcase of its own customers."
     },
     {
       "id": "land-book",
@@ -151,7 +167,9 @@
       "access": "security-blocked",
       "retrieval": "none",
       "scope": "Website inspiration gallery.",
-      "notes": "The public audit encountered a bot/security interstitial (HTTP 403); do not bypass it or select this source."
+      "notes": "The public audit encountered a bot/security interstitial (HTTP 403); do not bypass it or select this source.",
+      "curation": "curated",
+      "curation_note": "Editorially chosen landing pages."
     },
     {
       "id": "minimal-gallery",
@@ -161,7 +179,9 @@
       "access": "unavailable-current",
       "retrieval": "none",
       "scope": "Minimal website inspiration gallery.",
-      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds."
+      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds.",
+      "curation": "curated",
+      "curation_note": "Hand-picked by the gallery's editor."
     },
     {
       "id": "unsection",
@@ -171,7 +191,9 @@
       "access": "unavailable-current",
       "retrieval": "none",
       "scope": "Website inspiration gallery.",
-      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds."
+      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds.",
+      "curation": "curated",
+      "curation_note": "Editorially chosen sections and sites."
     },
     {
       "id": "dribbble",
@@ -181,7 +203,9 @@
       "access": "unavailable-current",
       "retrieval": "none",
       "scope": "Design showcase and portfolio platform.",
-      "notes": "No usable public design content rendered in the 2026-09-01 audit session; do not select it until a future public audit succeeds."
+      "notes": "No usable public design content rendered in the 2026-09-01 audit session; do not select it until a future public audit succeeds.",
+      "curation": "submission",
+      "curation_note": "Self-published shots; no gate, and mostly not shipped work."
     },
     {
       "id": "best-website-gallery",
@@ -191,7 +215,9 @@
       "access": "unavailable-current",
       "retrieval": "none",
       "scope": "Website inspiration gallery.",
-      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds."
+      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds.",
+      "curation": "curated",
+      "curation_note": "Editorially chosen by its owner."
     },
     {
       "id": "commerce-cream",
@@ -201,7 +227,9 @@
       "access": "unavailable-current",
       "retrieval": "none",
       "scope": "Commerce website inspiration gallery.",
-      "notes": "The source refused the public connection during the 2026-09-01 audit; skip until a future public audit succeeds."
+      "notes": "The source refused the public connection during the 2026-09-01 audit; skip until a future public audit succeeds.",
+      "curation": "curated",
+      "curation_note": "Hand-picked commerce work."
     }
   ]
 }

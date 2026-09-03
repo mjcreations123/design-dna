@@ -24,6 +24,7 @@ public build is an omission the gate will flag.
 - [Take the good parts into one design](#take-the-good-parts-into-one-design)
 - [Give every component a source](#give-every-component-a-source)
 - [Approve the first screen](#approve-the-first-screen)
+- [Measure the first screen before the second section exists](#measure-the-first-screen-before-the-second-section-exists)
 - [Diff the finished build against its references](#diff-the-finished-build-against-its-references)
 - [Check beauty, lineage, and flow before any gate](#check-beauty-lineage-and-flow-before-any-gate)
 - [Improve beyond the set](#improve-beyond-the-set)
@@ -254,14 +255,27 @@ records only margins.
   captions, and whether media or type carries the page;
 - composition: column structure, section composition, margins, how the first
   screen is built, what sits where;
-- color as behavior: how the ground carries the page, how a fade or a
-  contrast relationship works, how much color there is and where it lands;
-  the values themselves stay with the reference, because the build uses the
-  brand's own palette;
-- type as posture and scale: the sizes as a scale, weights, case, measure,
-  the relationship between display and text; not the family names, because
-  the build's families are chosen for beauty and brand fit, never because a
-  reference used them;
+- color as behavior AND as values: how the ground carries the page, how a
+  fade or a contrast relationship works, how much color there is and where it
+  lands, AND THE HUES THEMSELVES. Take them. Where the client has recorded
+  brand colors those win; where the client has none, which is every demo and
+  every spec build, the palette is the colors the extractor measured on the
+  selected references. This line used to end "the values themselves stay with
+  the reference, because the build uses the brand's own palette", and for a
+  client with no brand that sentence meant the producer invented every hue.
+  It did: one build's accent, the fill of every control and a whole full-bleed
+  band, measured 122 from the nearest color any of its five references
+  computes;
+- type as posture and scale AND THE FAMILIES: the sizes as a scale, weights,
+  case, measure, the relationship between display and text, and the families
+  themselves. Take a family the extractor measured on a selected reference.
+  This line used to read "not the family names, because the build's families
+  are chosen for beauty and brand fit, never because a reference used them",
+  which is an instruction to bring your own typeface to a copying exercise. A
+  face picked by matching an x-height ratio to the reference's face is chosen
+  by taste with arithmetic offered as the reason. When a measured family
+  cannot be licensed, name the closest licensable cut of THAT family, or get
+  the owner's permission for a substitute in the owner's quoted words;
 - shapes and surfaces: radii, borders, rules, cards, pills, frames, shadows
   or their absence;
 - the phone version: what the same page does at narrow width, scrolled the
@@ -285,8 +299,58 @@ a PNG saved under `.design-dna/references/`, recorded in the row as
 decodes as a PNG, and matches its hash. A row without a capture is rejected,
 because a reference nobody looked at is not research; it is a plausible name.
 
-Watch the site with the packaged harness before writing anything about it.
-`scripts/observe_reference.mjs` drives the page with real wheel gestures,
+### Record it, then narrate every event
+
+Before anything is written about a reference, record it and look at every
+moment in the recording where the screen changed:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/record_reference.mjs" \
+  --url "https://example.test/" --id strong-3 --out .design-dna/references
+```
+
+It moves a real cursor to every interactive thing on the first screen and
+dwells long enough for an expansion, a label and a caption to play; scrolls
+in steps hovering what arrives; returns to the top and follows one internal
+link so the transition and an inner page are on tape. Then it differences
+the video frame by frame and keeps the moments that matter as EVENTS under
+`strong-3-events/`: one sheet of four frames (before, during, after,
+settled) for every hover, click or scroll step that changed the screen, one
+for each run of quiet scrolling, and one for each change the page made on
+its own (a video, a carousel, a card that cycles), each with the percent of
+the screen that changed, where, and how long it took to settle. A hover
+that changed nothing is listed as quiet and gets no sheet. Open every event
+sheet in order and write `strong-3-sequence-read.md`: one line per event,
+what the cursor did, what scrolled, what changed; then a `## Behaviour
+inventory` table of what the site does with magnitudes and the events that
+show it (`strong-3-events.md`, written by the recorder, is its skeleton).
+The dossier binds the recording and the read, names the events the
+signature is on, and the validator refuses a read that skips an event, calls
+most of them static, or has no inventory. The per-sheet read of 9.0.0 proved
+the method and cost an afternoon per site, nearly all of it spent on sheets
+where nothing changed; the events are the same watching at the cost of the
+moments alone.
+
+This is the fourth instrument for the same job, and the reason is the same
+each time. Stills called a sequence. Computed styles called a copy. Then a
+harness that drove the page and wrote its mechanisms down as numbers, which
+was correct, and which let the producer read the numbers, open one rest frame
+of forty-one, and build a photograph inside a dotted line. The owner recorded
+himself using that site for a minute. Walked at ten frames a second it held:
+a sheet that loads as a miniature with a dieline around it and zooms up;
+navigation photographs that grow to half the viewport under the pointer and
+shove their neighbours out of the way; a label pill that trails the cursor
+and decodes through random glyphs; a justified caption per cell; a showreel
+with project cards drifting under the pointer; a button whose fill drains and
+splits into a label block and an arrow square; a dock that rises on the first
+scroll; brackets built from redacted bars; a quote whose words slide into
+place; section titles drawn in hatch lines that fill with colour as you dwell;
+a work index that reshuffles to promote what you hovered; and a page
+transition that zooms the sheet out to a card, slides it away, and slides the
+next one in. Nineteen behaviours. The build had one dashed border.
+
+The harness is kept, as a cross-check on the reading. Run it after the read,
+never instead of it. `scripts/observe_reference.mjs` drives the page with real wheel gestures,
 reads every element's geometry against the viewport, finds whichever scroller
 actually consumed the input, and records the site's mechanisms as numbers:
 what held in the viewport and for how many pixels, what travelled through the
@@ -392,17 +456,30 @@ another's scroll reveal. Multiple references exist so that the result is a
 clone of none of them. Then design the site as one thing before any route is
 built beyond the first screen:
 
-- One palette, the brand's own. If the brand has colors, they are the
-  palette; a reference contributes how color behaves (a fade that looks good,
-  a soft ground, one accent used sparingly), never its literal values. If
-  the brand has no colors yet, derive one palette from the product, the
-  material, and the audience, and hold it across every route.
-- One type system, chosen for beauty and brand fit: two families at most,
-  each one the producer would defend on its own with no reference to justify
-  it. Never a monospace, pixel, novelty, or display face as a workaround for
-  a reference's licensed font; never a face because a reference used
-  something like it. A reference's paid font is answered by a beautiful free
-  face of the same quality, a license, or dropping the element.
+- One palette, and its values are MEASURED, not chosen. If the client has
+  recorded brand colors, they are the palette. If the client has none, which
+  is every demo and every spec build, the palette is built from the colors
+  the extractor recorded on the selected references: their grounds, their
+  inks, their accent. A reference contributes how color behaves AND what the
+  colors are. This bullet used to say a reference contributes behavior
+  "never its literal values", and that for a brand with no colors the
+  producer should "derive one palette from the product, the material, and the
+  audience". Read plainly, that is an instruction to invent a palette, and it
+  is what a producer does with it: the accent of one build, filling every
+  control and a whole band, sat 122 from the nearest color any of its five
+  references computed. `check_style_provenance.mjs` now refuses a loud color
+  no reference computes, so this is checked and not merely asked for.
+- One type system, TAKEN: two families at most, each one a family the
+  extractor measured on a selected reference. Not a family chosen for beauty,
+  not a family whose x-height ratio matches the reference's, not "a
+  beautiful free face of the same quality". Those are all the producer
+  choosing the typeface, and the last one was written into this file as the
+  approved answer. When a measured family is not licensable, use the closest
+  licensable cut OF THAT FAMILY; if there is none, the substitute needs the
+  owner's permission in the owner's quoted words, recorded with the family it
+  replaces. Never a monospace, pixel, or novelty face as a workaround for a
+  reference's licensed font. `check_style_provenance.mjs` refuses a family no
+  selected reference uses.
 - One rhythm. Each section leads into the next: shared margins, a consistent
   scale, transitions of ground that feel like one page turning, not a new
   site starting. A page whose sections come from different references and
@@ -488,6 +565,78 @@ build that shipped the button, it said what a person says: the largest thing on
 the first screen is text where the reference's is a photograph, and the ink
 agrees on 20% of the screen against a floor of 55%.
 
+## Pick great sites, then filter by register
+
+Quality first, register second. Reversing that order is how a build ends up
+made of six faithful copies of forgettable sites, which is a forgettable site.
+
+The rejected build pulled candidates from a submission feed's bulk tag listing,
+judged each from one 1440x900 still, and kept the ones whose feeling matched
+the brief. What it kept was a wedding-vendor site with a press-logo strip, a
+Shopify storefront and a guesthouse template. It then copied them accurately,
+and the owner's reaction to the result was a single syllable.
+
+Take candidates only from sources the registry marks `award` or `curated`. A
+submission feed is fine to browse and cannot supply a selected reference.
+Record what each site won.
+
+## Never build from a picture
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/extract_reference_styles.mjs" \
+  --url "https://example.test/" --id strong-1 \
+  --out .design-dna/references
+```
+
+It drives the page and reads the design system out of the live CSS: every
+distinct type setting, every colour with how much it covers, every control's
+padding, radius, border and transition, every section ground and division. The
+dossier binds it, and the `Recorded values reproduced` column is checked
+against the numbers it found. A producer given a still reports the things a
+still carries, which is why the last three rejected builds came back with
+caption alignment, a pill radius and a hover duration, and everything else
+invented.
+
+## Copy the whole site, not the screen you captured
+
+A producer will copy exactly as far as its captures reach and then start
+designing, without noticing the moment it crossed over. The build that forced
+6.9.0 copied a first screen, a portfolio, a held statement block, a photograph
+band and a listing faithfully from five references, and then invented two
+entire inner pages, a form, a footer and every connective part of the home
+page. Asked why, the honest answer was that going back for more evidence meant
+standing the harness up again and driving four more pages, and writing a lede
+block took thirty seconds. It never presented itself as a decision to stop
+copying. It felt like continuing.
+
+Worse, it wrote source lines for parts it had never looked at, because the
+table demanded a source and it could produce the shape of one from memory of
+what the site generally looked like. A gate whose evidence the producer
+authors is not a gate.
+
+So: observe inner pages before building inner pages. Cite the frame that shows
+the part, and expect the validator to open it. And let
+`scripts/scan_build_components.mjs` count the build's components rather than
+listing them yourself:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/scan_build_components.mjs" \
+  --url "http://127.0.0.1:4960/" \
+  --url "http://127.0.0.1:4960/owners.html" \
+  --out .design-dna/evidence/component-census.json
+
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_structure.mjs" \
+  --census .design-dna/evidence/component-census.json \
+  --reference .design-dna/references/strong-1-observation.json \
+  --reference .design-dna/references/strong-1-inner-observation.json \
+  --out .design-dna/evidence/structure-diff.json
+```
+
+Run against the build that invented two pages, the census named them:
+`ask, band, button, doors, edge, first, folio, foot, footer, form, frame,
+input, lede, nav, overture, pill, place, plate, rise, roster, scope, select,
+sr, steps, textarea`. Twelve rows existed. Twenty-five components shipped.
+
 ## Approve the first screen
 
 Build and render the first screen of the primary route before any other
@@ -497,6 +646,57 @@ the reference captures) as a checkpoint. It must already carry the palette,
 the type system, the media treatment, and the first motion of the whole
 site. Building eight routes on an unapproved first screen was how the two
 rejected builds of 2026-09-01 and 2026-09-02 lost their time.
+
+## Measure the first screen before the second section exists
+
+Every comparator in this file used to run when the build was finished. That
+ordering is why they kept passing builds the owner rejected on sight: by the
+time a gate runs at the end, the design has been made, defended and written
+up, and what a failing gate produces then is a better dossier, not a better
+site.
+
+So the first screen is measured the moment it renders, and the second section
+is not written until both of these pass:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/extract_reference_styles.mjs"   --url "http://127.0.0.1:PORT/" --id build-index --out .design-dna/evidence
+
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/check_style_provenance.mjs"   --build .design-dna/evidence/build-index-styles.json   --reference .design-dna/references/strong-1-styles.json   --reference .design-dna/references/strong-2-styles.json   --out .design-dna/evidence/style-provenance.json
+
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_structure.mjs"   --url "http://127.0.0.1:PORT/"   --reference .design-dna/references/strong-1-observation.json   --out .design-dna/evidence/structure-diff-first-screen.json
+```
+
+`check_style_provenance.mjs` reads the build with the same extractor that read
+the references and asks of every color, typeface, size, radius and transition:
+which reference did this come from? It fails on a typeface no selected
+reference uses, on a LOUD color no reference computes (one filling a control,
+a section ground, or a measurable share of the screen), and on a traced share
+below the floor.
+
+`compare_structure.mjs` asks whether the screen is BUILT like the screen it
+cites: what kind of thing fills it, where the ink sits, what is against the
+edges and corners, the proportions of the type.
+
+This is what those two say about the build of 2026-09-03, run after it was
+finished:
+
+```text
+Cormorant Garamond is not a typeface any selected reference uses.
+rgb(232, 183, 29) is 122 from the nearest color any reference computes;
+  it is on background, 76.2% of the screen and 18 more places.
+the largest thing on the first screen is text (<h1>), the reference's is
+  media (<video>); where the ink sits agrees with the reference on 3% of
+  the screen (floor 55%).
+```
+
+Three percent. The producer had cited a reference whose first screen is a
+full-bleed video and built a typographic layout on a flat ground, and had
+written a frame citation against every component of it. Run at the first
+screen, that is ten minutes lost. Run at the end, it was the whole build.
+
+A failing first screen is rebuilt from the reference's screen. It is never
+answered by re-citing it to a different reference that happens to match, and
+never by editing the dossier row.
 
 ## Diff the finished build against its references
 
@@ -521,6 +721,53 @@ ships, and the tell the owner names first.
 
 The visual review's reference-led closure binds this record and it must pass.
 A build reviewed only by eye passes on color and type every time.
+
+## Prove the signature arrived, one reference at a time
+
+Every check up to here proves the producer looked at the reference, measured
+it, and cited it. Not one of them asks WHICH PART of it reached the page.
+
+That is the gap the owner named after a build that passed everything: "you
+still took the crack in the sidewalk instead of the waterfall." Six references
+were researched for that build. Two of them arrived as a background colour and
+a set of control dimensions, and both cleared the component table, the value
+cross-check, the mechanism diff and the structure diff, because a source line
+records that a reference was used and never which part of it was meant. A
+producer takes the part it is most comfortable rebuilding, and control
+geometry is the most comfortable part there is.
+
+Two things close it. The first is objective:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/check_signature_transfer.mjs" \
+  --dossier .design-dna/reference-dossier.md \
+  --observation .design-dna/references/strong-1-observation.json \
+  --observation .design-dna/references/strong-2-observation.json \
+  --out .design-dna/evidence/signature-transfer.json
+```
+
+The harness already sorts a site's mechanisms by weight, so it knows which one
+is the biggest thing that site does. This reads the producer's `Signature`
+cell against that order and refuses one that names anything but the loudest.
+A site's buttons really do fill with their own colour under the pointer; that
+is a small true thing written down in place of the large one, and once it is
+written down the reference contributes a small true thing. Rewrite the
+signature to name what the harness ranked first, then go and take THAT.
+
+The second is a judgment and no script can take it. The dossier's
+`Signature transfer` table asks the deletion question once per selected
+reference: cover its row, and what does a stranger notice is gone? The answer
+has to name a component the build actually ships, because a loss nobody can
+point at is not a loss, and it has to name an arrangement or a behaviour that
+would go with it, because a ground, a radius, a size and a control dimension
+are exactly what survive when a reference was sampled instead of copied. The
+component's own name does not count as the arrangement; "the first screen
+would lose its warm ground" borrows a noun from the census and still describes
+a colour.
+
+If the honest answer for a reference is that nothing anyone would name would
+go, that reference was not selected. It was listed. Cut it and select another,
+or go back to its recorded mechanisms and take its signature properly.
 
 ## Check beauty, lineage, and flow before any gate
 

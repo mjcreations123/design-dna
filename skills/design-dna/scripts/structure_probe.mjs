@@ -49,16 +49,33 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
     return false;
   };
 
-  // classify a sample point: 2 = media, 1 = text, 3 = a painted box, 0 = empty
+  // Classify a sample point: 2 = media, 1 = text, 3 = a painted box, 0 = empty.
+  //
+  // A point counts as text only when a text node's own rectangle actually
+  // covers it. Asking whether some ancestor merely CONTAINS text reported a
+  // full-bleed photograph as "100% text", because a transparent wrapper with a
+  // caption sat over the whole screen.
+  const coversText = (el, x, y) => {
+    for (const n of el.childNodes) {
+      if (n.nodeType !== 3 || !n.nodeValue.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const r of range.getClientRects()) {
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
+      }
+    }
+    return false;
+  };
   const at = (x, y) => {
     const stack = document.elementsFromPoint(x, y);
+    let painted = 0;
     for (const el of stack) {
       if (el === document.body || el === document.documentElement) break;
+      if (coversText(el, x, y)) return 1;
       if (isMedia(el)) return 2;
-      if (hasOwnText(el)) return 1;
-      if (paints(el)) return 3;
+      if (!painted && paints(el)) painted = 3;
     }
-    return 0;
+    return painted;
   };
 
   const grid = [];

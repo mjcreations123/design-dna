@@ -55,14 +55,14 @@ no single source supplying more than half of the rows. The floor exists so
 that no one site becomes the template; it is not a target. Add rows for every
 reference that earns its place. Number ranks 1 through N without gaps.
 
-| Rank | Reference title or visible entry | Public URL or gallery-entry URL | Discovery source | Retrieval date | Access status | Capture path and SHA-256 | Observed evidence | Signature (what a stranger would name) | Brief relevance | Design to copy | Rights boundary |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
-| 2 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
-| 3 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
-| 4 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
-| 5 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
-| 6 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |
+| Rank | Reference title or visible entry | Public URL or gallery-entry URL | Discovery source and accolade | Retrieval date | Access status | Capture path and SHA-256 | Observed evidence | Measured styles | Signature (what a stranger would name) | Brief relevance | Design to copy | Rights boundary |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
+| 2 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
+| 3 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
+| 4 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
+| 5 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
+| 6 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  | motion / static; path plus sha256:<hex> |  |  |  |  |  |
 
 The rank reflects fit for this exact brief, not a universal quality score.
 Every row's `Signature` cell answers one question first: if a stranger were
@@ -92,7 +92,7 @@ entry is sufficient when it is publicly viewable; a live URL is not required.
 
 ## Negative counterexamples
 
-| Reference title or visible entry | Public URL or gallery-entry URL | Discovery source | Retrieval date | Access status | Capture path and SHA-256 | Observed mismatch or weak relationship | What this project must avoid |
+| Reference title or visible entry | Public URL or gallery-entry URL | Discovery source and accolade | Retrieval date | Access status | Capture path and SHA-256 | Observed mismatch or weak relationship | What this project must avoid |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |
 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |
@@ -108,7 +108,8 @@ style bans.
 - Project-specific organizing synthesis:
 - Behavior copied and where it is rendered:
 - Negative-counterevidence result:
-- Elevation beyond the references (what this build does that none of them do):
+- Combination of references (which reference supplies which part, and why no
+  single one of them is this build):
 - Direction record path and status:
 
 | Selected rank(s) | Design copied and destination | Project-specific adaptation | Boundary or verification |
@@ -130,6 +131,91 @@ references that change voice at every screen fail the record. The references are
 project, not its ceiling: the elevation line names where the build goes
 further than any of them.
 
+## Sequence reads
+
+One block per selected reference. The reference was RECORDED, the recording
+was reduced to the moments where the screen changed, and every one of those
+events was narrated before the strong row was written. The validator counts:
+a line per event, an inventory of what the site does, and a signature located
+on events that exist.
+
+### strong-1
+- Recording: .design-dna/references/strong-1-recording.json plus sha256:<hex>
+- Read: .design-dna/references/strong-1-sequence-read.md plus sha256:<hex>
+- Signature events: e004, e005
+
+Produce the recording with the packaged recorder, which drives a real cursor
+over every interactive thing on the first screen, scrolls in steps hovering
+what arrives, follows one internal link so the page transition and an inner
+page are on tape, then differences the video and keeps one four-frame sheet
+per event (a hover, click or scroll step that changed something, a run of
+quiet travel, a change the page made on its own):
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/record_reference.mjs" \
+  --url "https://example.test/" --id strong-1 --out .design-dna/references
+```
+
+Then open `strong-1-events/` and write `strong-1-sequence-read.md` by hand:
+one line per event, `- e001 (0.3s, load): ...`, saying what the cursor did,
+what scrolled and what changed, followed by a `## Behaviour inventory` table
+(trigger, element, effect, magnitude, events) of at least eight rows; the
+recorder's `strong-1-events.md` is its skeleton. The inventory is what the
+build reproduces.
+
+This step is here because three instruments in a row let the producer say it
+had watched a site without looking. The last one recorded a reference's
+mechanisms as numbers; the producer read the numbers, opened one rest frame of
+forty-one, and built a photograph inside a dotted line. The owner recorded
+himself using the site for a minute and the producer, walking that recording
+at ten frames a second, found nineteen behaviours it had never seen. A script
+cannot make you understand what you see. It can make sure you saw it.
+
+## Signature transfer
+
+One row per selected reference. This is the last gate and the only one that
+asks WHICH PART of each reference arrived.
+
+| Rank | Signature, copied from the strong row | The build part that carries it | Recorded proof | What a stranger would lose if this reference were cut |
+| --- | --- | --- | --- | --- |
+|  |  |  | path plus sha256:<hex> |  |
+
+Every gate before this one proves the producer looked at the reference,
+measured it, and cited it. None of them asks which part of it reached the
+page. Six references were researched for one build, every gate passed, and two
+of them arrived as a background colour and a set of control dimensions,
+because those are the parts a producer is most comfortable rebuilding and a
+source line does not record which part it meant. The owner's words:
+"you still took the crack in the sidewalk instead of the waterfall."
+
+`Signature, copied from the strong row` is copied, not summarised. The
+validator checks it against the strong row, because a signature that changes
+on its way down the record is a signature being refitted to whatever got
+built.
+
+`Recorded proof` binds the `scripts/check_signature_transfer.mjs` record, or
+the mechanism or structure diff that shows this signature arriving. Run the
+transfer check before writing these rows:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/check_signature_transfer.mjs"   --dossier .design-dna/reference-dossier.md   --observation .design-dna/references/strong-1-observation.json   --out .design-dna/evidence/signature-transfer.json
+```
+
+It reads each reference's mechanisms in the order the harness ranked them and
+refuses a signature that names something other than the loudest thing that
+site does. A site's buttons really do change colour under the pointer; that is
+a small true thing written down in place of the large one, and a reference
+described by a small true thing contributes a small true thing.
+
+`What a stranger would lose if this reference were cut` is the deletion test,
+and it is the one cell no script can fill. Cover the reference's row and ask
+what visibly goes. The answer must name a component the build actually ships,
+because a loss nobody can point at is not a loss, and it must name an
+arrangement or a behaviour: a ground, a radius, a size or a control dimension
+is what survives when a reference was sampled rather than copied. If the
+honest answer is "nothing anyone would name", that reference was not selected,
+it was listed. Cut it or take its signature properly.
+
 ## Component sources
 
 Every part that ships has a source line, or it is the producer's own design,
@@ -138,23 +224,64 @@ rejected builds came from: the references supplied one scroll effect and the
 producer supplied the nav, the buttons, the list rows and the footer from
 memory, and memory is the generic skeleton every time.
 
-| Component | Source rank or owner approval | Structure taken | Recorded values reproduced | Where it is used |
-| --- | --- | --- | --- | --- |
-| first screen |  |  |  |  |
-| layout grid |  |  |  |  |
-| display typeface |  |  |  |  |
-| text typeface |  |  |  |  |
-| color behavior |  |  |  |  |
-| section rhythm |  |  |  |  |
-| navigation |  |  |  |  |
-| buttons |  |  |  |  |
-| rows or lists |  |  |  |  |
-| footer |  |  |  |  |
-| scroll behavior |  |  |  |  |
-| hover behavior |  |  |  |  |
+- Component census: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_COMPONENT_CENSUS_JSON_PLUS_SHA256__
+
+| Component | Source rank or owner approval | Frame that shows it | Structure taken | Recorded values reproduced | Where it is used |
+| --- | --- | --- | --- | --- | --- |
+| first screen |  | strong-N-events/eNNN-kind.png |  |  |  |
+| layout grid |  |  |  |  |  |
+| display typeface |  |  |  |  |  |
+| text typeface |  |  |  |  |  |
+| color behavior |  |  |  |  |  |
+| section rhythm |  |  |  |  |  |
+| navigation |  |  |  |  |  |
+| buttons |  |  |  |  |  |
+| rows or lists |  |  |  |  |  |
+| footer |  |  |  |  |  |
+| scroll behavior |  |  |  |  |  |
+| hover behavior |  |  |  |  |  |
+
+`Component census` binds the `scripts/scan_build_components.mjs` record for
+the finished build. It counts every component the build actually renders, and
+the gate requires a row for each one. The twelve rows below are a floor, not
+the list: a build that satisfied all twelve and also shipped a lede block, a
+photo plate, a numbered list, a form and a footer with no rows between them is
+exactly the failure this closes.
+
+`Recorded values reproduced` is checked against the reference's measured
+styles. Every number in the cell has to be a number that reference actually
+computes, and a cell with fewer than three numbers in it is refused. This is
+what a build made from a screenshot cannot survive: a still carries a caption
+alignment, a radius and a colour impression, and the producer fills in the
+rest from memory while believing it is copying.
+
+`Recorded values reproduced` is checked against the reference's measured
+styles. Every number in the cell has to be a number that reference actually
+computes, and a cell with fewer than three numbers in it is refused. This is
+what a build made from a screenshot cannot survive: a still carries a caption
+alignment, a radius and a colour impression, and the producer fills in the
+rest from memory while believing it is copying.
+
+`Recorded values reproduced` is checked against the reference's measured
+styles. Every number in the cell has to be a number that reference actually
+computes, and a cell with fewer than three numbers in it is refused. This is
+what a build made from a screenshot cannot survive: a still carries a caption
+alignment, a radius and a colour impression, and the producer fills in the
+rest from memory while believing it is copying.
+
+`Frame that shows it` names the capture that shows this part, relative to the
+reference captures directory, for example
+`strong-4-frames/strong-4-006-scroll-settle.png`. The validator opens it. A
+source line nobody can follow is not a source line: a producer once wrote
+`footer <- index-space.org: a plain block, no rules` for a footer it had never
+opened, because the table asked for a source and prose is free. If the frame
+does not exist, go and observe the page that shows the part, or cut the
+component.
 
 `Source rank or owner approval` is a selected rank, or
-`owner-approved: "<the owner's actual words>"`. The two typeface rows may not
+`owner-approved: "<the owner's actual words>"`. An owner-approved row writes
+`owner-approved` in the frame column, because the producer's own design has no
+reference frame to cite. The two typeface rows may not
 be owner-approved: a typeface comes from a selected reference, either the same
 face where it is freely licensed or one matched to that reference's measured
 proportions, because a face chosen by taste is how a build ends up sharing
