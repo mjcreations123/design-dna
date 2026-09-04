@@ -5,6 +5,52 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 10.0.0
+
+The owner's standing order, in his words on 2026-09-03: "Your own designs is
+absolutely forbidden ... There is absolutely no using your design. You must
+only use the designs from the websites you are copying from. And this
+includes designs, layouts, fonts, and everything else." It was the twentieth
+time, by his count. The build that day had been asked for as "a small
+two-page thing, just so I can make sure the skill is actually working
+properly"; the producer skipped every gate as too slow for a quick test and
+shipped its own nav, typefaces, palette, cards and accordion.
+
+- REMOVED the `owner-approved` path from the dossier's `Component sources`
+  table. Every part names a selected reference rank or it does not ship; the
+  validator refuses the phrase anywhere in the table. The header is now
+  `Source rank`; the legacy header still parses.
+- ADDED `scripts/gate.py`: every packaged check in one command against the
+  running build (extract, census, provenance, structure, mechanisms,
+  signature transfer, dossier validation), one record
+  (`.design-dna/evidence/gate.json`), one verdict line that the final message
+  to the owner quotes verbatim. It rebinds the dossier's SHA-256 for the
+  records it just wrote (they carry timestamps) before validating it;
+  `--no-rebind` leaves the dossier alone.
+- ADDED `scripts/match_typeface.mjs`: when a reference's family cannot be
+  licensed, it measures open-licence candidates the way the observation
+  measured the reference and ranks them; rank one is the substitute.
+- CHANGED `scripts/check_style_provenance.mjs`: `--substitute FROM=TO` now
+  requires `--match <typeface-match.json>` and refuses any pair the matcher
+  did not rank first. A substitute the producer chose is a fail.
+- CHANGED `scripts/structure_probe.mjs`: the type measurement records a third
+  proportion, `i_ratio` (the width of the capital I over the cap height),
+  which the matcher uses as a third axis because x-height and advance alone
+  ranked a serif nearest to a grotesk; it separates mono from proportional
+  faces, and no serif-or-sans label is claimed because measured live the two
+  overlap.
+  The matcher also loads the Latin subset of a Google face instead of the
+  first subset in the CSS, which has no Latin glyphs and measured every face
+  as the same fallback (the maintainer's older ad-hoc matcher had the same
+  fault).
+- ADDED the standing order as the first section of SKILL.md and as assurance
+  boundary 7: a provenance requirement, not an ingredient blacklist. "Quick",
+  "demo" and "hurry" shrink the page count and the copy, never the gate; a
+  build without the gate is not delivered.
+- Platform notes for Claude and Codex say the order applies on both hosts
+  exactly as written.
+- Tests: 6 changed, 8 new (`test_producer_design_forbidden.py`).
+
 ## 9.1.1
 
 - FIXED `scripts/check_signature_transfer.mjs`: only a SELECTED rank owes the build

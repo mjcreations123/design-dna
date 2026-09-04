@@ -44,9 +44,14 @@
  *     --id build-index --out .design-dna/evidence
  */
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import process from "node:process";
 
 const TOOL_NAME = "check_style_provenance.mjs";
+
+function sha256File(file) {
+  return createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+}
 const SCHEMA_VERSION = 1;
 
 /* A color is traced when it is within this sum-of-absolute-RGB distance of
@@ -75,7 +80,7 @@ function fail(code, message) {
 }
 
 function parseArgs(argv) {
-  const out = { builds: [], references: [], outFile: null, floor: TRACED_FLOOR, substitutes: [] };
+  const out = { builds: [], references: [], outFile: null, floor: TRACED_FLOOR, substitutes: [], match: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--build") out.builds.push(argv[++i]);
@@ -83,6 +88,7 @@ function parseArgs(argv) {
     else if (a === "--out") out.outFile = argv[++i];
     else if (a === "--floor") out.floor = Number(argv[++i]);
     else if (a === "--substitute") out.substitutes.push(argv[++i]);
+    else if (a === "--match") out.match = argv[++i];
   }
   return out;
 }
@@ -333,7 +339,7 @@ function auditBuild(build, index) {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.builds.length || !args.references.length) {
-    fail("usage", "check_style_provenance.mjs --build FILE... --reference FILE... [--out FILE] [--substitute FROM=TO]...");
+    fail("usage", "check_style_provenance.mjs --build FILE... --reference FILE... [--out FILE] [--substitute FROM=TO --match typeface-match.json]...");
   }
   const references = args.references.map(readRecord);
   const index = referenceIndex(references);
@@ -344,6 +350,27 @@ function main() {
      to it, but only declared: the substitute traces to the reference the
      original was measured on, and the record says so. A face that substitutes
      nothing measured is still the producer's own choice. */
+  /* The producer does not choose faces. A substitute is accepted only when
+     match_typeface.mjs ranked it first for the family it replaces, by the
+     same measurement the observation made of the reference. The owner's
+     order (2026-09-03): "this includes designs, layouts, fonts, and
+     everything else." */
+  let matchRecord = null;
+  let matchMeta = null;
+  if (args.substitutes.length) {
+    if (!args.match) {
+      fail("bad-substitute", "--substitute needs --match <typeface-match.json> from match_typeface.mjs; a substitute face the matcher did not rank first is the producer's choice, which is forbidden.");
+    }
+    try {
+      matchRecord = JSON.parse(fs.readFileSync(args.match, "utf8"));
+    } catch (e) {
+      fail("bad-match", `Could not read ${args.match}: ${e.message}`);
+    }
+    if (!matchRecord || matchRecord.tool !== "match_typeface.mjs" || !Array.isArray(matchRecord.results)) {
+      fail("bad-match", `${args.match} is not a match_typeface.mjs record.`);
+    }
+    matchMeta = { file: args.match, sha256: sha256File(args.match) };
+  }
   const substitutes = [];
   for (const raw of args.substitutes) {
     const [from, to] = String(raw).split("=").map((v) => String(v || "").trim());
@@ -353,8 +380,15 @@ function main() {
       fail("bad-substitute", `--substitute ${raw}: '${from}' is not a family any selected reference measured.`);
     }
     const origin = index.families.get(fromStem);
-    if (!index.families.has(toStem)) index.families.set(toStem, `${origin} (as the declared substitute for ${from})`);
-    substitutes.push({ from, to, reference: origin });
+    const chosenFor = matchRecord.results.find((r) => r && r.target && familyStem(r.target.family) === fromStem);
+    if (!chosenFor || !chosenFor.chosen) {
+      fail("bad-substitute", `--substitute ${raw}: match_typeface.mjs ranked nothing for '${from}'. Run it with the observation that measured ${from}.`);
+    }
+    if (familyStem(chosenFor.chosen.family) !== toStem) {
+      fail("bad-substitute", `--substitute ${raw}: the matcher ranked '${chosenFor.chosen.family}' first for '${from}' (delta ${chosenFor.chosen.delta}), not '${to}'. The substitute is rank one; the producer does not choose faces.`);
+    }
+    if (!index.families.has(toStem)) index.families.set(toStem, `${origin} (as the matched substitute for ${from})`);
+    substitutes.push({ from, to, reference: origin, matcher_delta: chosenFor.chosen.delta });
   }
 
   const routes = args.builds.map(readRecord).map((b) => auditBuild(b, index));
@@ -413,6 +447,7 @@ function main() {
     checked_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
     references: references.map((r) => ({ id: r.id, url: r.url })),
     substitutes,
+    typeface_match: matchMeta,
     routes: routes.map((r) => ({
       route: r.route, checked: r.checked, traced: r.traced,
       traced_share: r.checked ? +(r.traced / r.checked).toFixed(3) : 0,

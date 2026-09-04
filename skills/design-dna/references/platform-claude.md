@@ -3,6 +3,9 @@
 Use the shared Design DNA workflow without duplicating a Claude-specific rule
 set.
 
+- The owner's standing order in SKILL.md (no producer design, in any part;
+  one gate command; its verdict line quoted verbatim in the final report)
+  applies on this host exactly as written. There is no host-specific relief.
 - A direct personal Claude Code skill uses `/design-dna`. A packaged Claude
   Code plugin uses `/design-dna:design-dna`. Natural-language discovery may
   also select the installed skill for relevant work.

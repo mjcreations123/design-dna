@@ -5705,7 +5705,33 @@ REFERENCE_DOSSIER_COMPONENT_HEADERS = (
 # shape of one from memory. The frame column is the fix: name the capture that
 # shows this part, and the validator opens it. A part nobody looked at cannot
 # be cited, because the picture of it does not exist.
-REFERENCE_COMPONENT_FRAME_EXEMPT = "owner-approved"
+REFERENCE_DOSSIER_COMPONENT_HEADERS_LEGACY = REFERENCE_DOSSIER_COMPONENT_HEADERS
+REFERENCE_DOSSIER_COMPONENT_HEADERS = (
+    "Component",
+    "Source rank",
+    "Frame that shows it",
+    "Structure taken",
+    "Recorded values reproduced",
+    "Where it is used",
+)
+REFERENCE_DOSSIER_COMPONENT_HEADER_VARIANTS = (
+    REFERENCE_DOSSIER_COMPONENT_HEADERS,
+    REFERENCE_DOSSIER_COMPONENT_HEADERS_LEGACY,
+)
+# The owner's standing order, 2026-09-03, after a "quick test" build shipped
+# the producer's nav, typefaces, palette, cards and accordion: "There is
+# absolutely no using your design. You must only use the designs from the
+# websites you are copying from. And this includes designs, layouts, fonts,
+# and everything else." There is no owner-approved path for a producer's own
+# part any more. The phrase is refused wherever it appears in the table.
+PRODUCER_DESIGN_ORDER = (
+    "The owner's standing order (2026-09-03) forbids the producer's own design "
+    "in every part: \"There is absolutely no using your design. You must only "
+    "use the designs from the websites you are copying from. And this includes "
+    "designs, layouts, fonts, and everything else.\" Observe a reference that "
+    "shows this part and cite its frame, or cut the part."
+)
+PRODUCER_DESIGN_MARKER = re.compile(r"owner[- ]approved", re.IGNORECASE)
 # A producer cannot build from a picture. Given a screenshot it reports what a
 # screenshot carries, guesses the rest, and believes it is copying. Every
 # number a row claims has to be one the reference actually computes.
@@ -6489,7 +6515,12 @@ def reference_dossier_failures(
     # the producer's own design, and that needs the owner's words, quoted.
     component_section = sections.get("Component sources", "")
     component_headers, component_rows = markdown_first_table(component_section)
-    if component_headers != REFERENCE_DOSSIER_COMPONENT_HEADERS or not component_rows:
+    if PRODUCER_DESIGN_MARKER.search(component_section or ""):
+        failures.append(
+            "Reference dossier Component sources names an owner-approved part. "
+            + PRODUCER_DESIGN_ORDER
+        )
+    if tuple(component_headers) not in REFERENCE_DOSSIER_COMPONENT_HEADER_VARIANTS or not component_rows:
         failures.append(
             "Reference dossier needs a Component sources table using the exact "
             "contract; a build whose parts have no source is the producer's own "
@@ -6517,54 +6548,42 @@ def reference_dossier_failures(
                     "can reproduce every font size and still be the producer's "
                     "own layout."
                 )
-            owner_approved = source.casefold().startswith("owner-approved:")
+            if PRODUCER_DESIGN_MARKER.search(source) or PRODUCER_DESIGN_MARKER.search(frame_cell):
+                failures.append(
+                    f"{label} ({row[0].strip()}) is the producer's own design. "
+                    + PRODUCER_DESIGN_ORDER
+                )
+                continue
             failures.extend(
                 component_frame_failures(
                     frame_cell,
                     label=label,
                     source=source,
-                    owner_approved=owner_approved,
                     project=project,
                     selected_ranks=selected_ranks,
                     strong_count=strong_count,
                 )
             )
-            if owner_approved:
-                quote = source.split(":", 1)[1].strip()
-                if len(quote) < 12:
-                    failures.append(
-                        f"{label} owner approval must quote the owner's actual "
-                        "words granting the producer's own design for this part."
-                    )
-            else:
-                row_ranks = reference_rank_values(source, maximum=strong_count)
-                if row_ranks is None or not row_ranks.issubset(selected_ranks):
-                    failures.append(
-                        f"{label} must name a selected reference rank as its "
-                        "source, or `owner-approved: <the owner's words>`."
-                    )
-            if not owner_approved:
-                failures.extend(
-                    component_value_failures(
-                        row[4],
-                        label=label,
-                        ranks=(reference_rank_values(source, maximum=strong_count) or set()),
-                        measured=measured_by_rank,
-                    )
+            row_ranks = reference_rank_values(source, maximum=strong_count)
+            if row_ranks is None or not row_ranks.issubset(selected_ranks):
+                failures.append(
+                    f"{label} must name a selected reference rank as its "
+                    "source. There is no other kind of source: a part no "
+                    "reference shows is a part to observe on one, or to cut."
                 )
+            failures.extend(
+                component_value_failures(
+                    row[4],
+                    label=label,
+                    ranks=(row_ranks or set()),
+                    measured=measured_by_rank,
+                )
+            )
             if len(row[4].strip()) < 24:
                 failures.append(
                     f"{label} must reproduce the recorded values it takes "
                     "(sizes, distances, durations, easings, counts), not a "
                     "paraphrase of the reference."
-                )
-            if component in TYPEFACE_COMPONENTS and owner_approved:
-                failures.append(
-                    f"{label} names a typeface the producer chose. A typeface "
-                    "comes from a selected reference: the same face where it is "
-                    "freely licensed, otherwise one matched to that reference's "
-                    "measured proportions. Chosen by taste is how a build ends "
-                    "up sharing no face with any site it researched."
                 )
         missing_components = [
             name for name in REFERENCE_DOSSIER_REQUIRED_COMPONENTS if name not in covered
@@ -6716,7 +6735,6 @@ def component_frame_failures(
     *,
     label: str,
     source: str,
-    owner_approved: bool,
     project: Path,
     selected_ranks: set[int],
     strong_count: int,
@@ -6729,14 +6747,6 @@ def component_frame_failures(
     line for a page it never looked at.
     """
     value = cell.strip()
-    if owner_approved:
-        if value.casefold() != REFERENCE_COMPONENT_FRAME_EXEMPT:
-            return [
-                f"{label} is the producer's own design with the owner's "
-                "approval, so its frame column reads exactly "
-                f"`{REFERENCE_COMPONENT_FRAME_EXEMPT}`."
-            ]
-        return []
     if not non_placeholder(value):
         return [
             f"{label} must name the capture frame that SHOWS this part, "

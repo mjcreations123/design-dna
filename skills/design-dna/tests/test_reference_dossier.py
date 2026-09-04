@@ -56,6 +56,10 @@ SYNTHESIS_HEADER = (
 )
 SYNTHESIS_SEPARATOR = "| --- | --- | --- | --- |"
 COMPONENT_HEADER = (
+    "| Component | Source rank | Frame that shows it "
+    "| Structure taken | Recorded values reproduced | Where it is used |"
+)
+COMPONENT_HEADER_LEGACY = (
     "| Component | Source rank or owner approval | Frame that shows it "
     "| Structure taken | Recorded values reproduced | Where it is used |"
 )
@@ -1359,9 +1363,9 @@ class MechanismGateTests(unittest.TestCase):
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("recorded values" in item for item in failures), failures)
 
-    def test_owner_approved_own_design_passes_with_quoted_words(self) -> None:
-        # the footer may be the producer's own with the owner's words; a
-        # typeface may not, which StructureGateTests proves separately
+    def test_owner_approved_own_design_is_rejected_even_with_quoted_words(self) -> None:
+        # 10.0.0: the owner's standing order removed the owner-approved path.
+        # The producer's own footer does not ship, with or without words.
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
@@ -1373,7 +1377,8 @@ class MechanismGateTests(unittest.TestCase):
                 "owner's words above; three columns, 16px, no rules | every route |",
             ]
             failures = project.failures(project.body(component_rows=rows))
-        self.assertEqual([], failures)
+        self.assertTrue(any("producer's own design" in item for item in failures), failures)
+        self.assertTrue(any("standing order" in item for item in failures), failures)
 
     def test_owner_approval_without_words_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1385,7 +1390,18 @@ class MechanismGateTests(unittest.TestCase):
                 if name not in ("display typeface", "text typeface")
             ]
             failures = project.failures(project.body(component_rows=rows))
-        self.assertTrue(any("owner's actual words" in item for item in failures), failures)
+        self.assertTrue(any("producer's own design" in item for item in failures), failures)
+
+    def test_the_legacy_header_still_parses(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            rows = [
+                f"| {name} | 1 | {frame_for(name)} | {STRUCTURE_CELL} | {VALUES_CELL} | route |"
+                for name in REQUIRED_COMPONENTS
+            ]
+            body = project.body(component_rows=rows).replace(COMPONENT_HEADER, COMPONENT_HEADER_LEGACY, 1)
+            failures = project.failures(body)
+        self.assertEqual([], [i for i in failures if "Component sources table" in i], failures)
 
 
 class MechanismDiffTests(unittest.TestCase):
@@ -1511,7 +1527,7 @@ class StructureGateTests(unittest.TestCase):
                         f"{VALUES_CELL} | route |")
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(
-            any("comes from a selected reference" in i for i in failures), failures
+            any("producer's own design" in i for i in failures), failures
         )
 
 
@@ -1601,7 +1617,7 @@ class SourceLineEvidenceTests(unittest.TestCase):
             failures = project.failures(project.body(component_rows=rows))
         self.assertTrue(any("incomplete" in i or "SHOWS" in i for i in failures), failures)
 
-    def test_an_owner_approved_row_writes_owner_approved(self) -> None:
+    def test_an_owner_approved_row_with_a_frame_is_still_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
             rows = [
@@ -1613,7 +1629,7 @@ class SourceLineEvidenceTests(unittest.TestCase):
                 "| every route |"
             ]
             failures = project.failures(project.body(component_rows=rows))
-        self.assertTrue(any("owner-approved`" in i for i in failures), failures)
+        self.assertTrue(any("producer's own design" in i for i in failures), failures)
 
     def test_a_sourced_row_with_a_real_frame_passes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -151,7 +151,8 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
       const cap = H.actualBoundingBoxAscent || 0;
       const xh = x.actualBoundingBoxAscent || 0;
       const adv = c.measureText('Handgloves 0123').width;
-      return { x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3) };
+      const iw = c.measureText('I').width;
+      return { x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3), i_ratio: cap ? +(iw / cap).toFixed(3) : null };
     } catch (e) { return { x_ratio: null, advance: null }; }
   };
   let biggest = null, bigSize = 0;

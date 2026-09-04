@@ -520,9 +520,11 @@ that: "the call to action buttons, the shapes, the sizes, the colors, and
 everything about that looks vibe coded."
 
 The dossier's `Component sources` table closes it. Every part that ships on
-the site names either a selected reference rank and the recorded values it
-reproduces, or `owner-approved:` with the owner's own words permitting the
-producer's design for that part. The gate requires at least navigation,
+the site names a selected reference rank and the recorded values it
+reproduces. There is no other kind of source: the owner-approved path was
+removed in 10.0.0 on the owner's order, after a build shipped its producer's
+nav, typefaces, palette, cards and accordion under the words "just a quick
+test". The gate requires at least navigation,
 opening, buttons, rows or lists, footer, scroll behavior, hover behavior, and
 type scale, and refuses a values cell that paraphrases instead of reproducing.
 A component with no source line does not ship.
@@ -636,6 +638,44 @@ Run against the build that invented two pages, the census named them:
 `ask, band, button, doors, edge, first, folio, foot, footer, form, frame,
 input, lede, nav, overture, pill, place, plate, rise, roster, scope, select,
 sr, steps, textarea`. Twelve rows existed. Twenty-five components shipped.
+
+## The gate is one command
+
+The gates were all here before 10.0.0 and a build shipped without any of
+them. The producer was asked for "a small two-page thing, just so I can make
+sure the skill is actually working properly", decided that five scripts and a
+dossier were too slow for a quick test, and built. The result had a sticky
+blurred nav no reference carried, Fraunces and Inter because they "read as
+food-brand-appropriate", a palette approximated from memory of the
+screenshots, numbered cards, a stock accordion and an invented logo mark. The
+owner: "I asked you to do this about 20 times so far, and you never listened."
+
+A gate the producer can skip is a suggestion. So the gate is now one command:
+
+```text
+python "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" \
+  --url http://127.0.0.1:4830/ --url http://127.0.0.1:4830/shop.html \
+  [--substitute "Louize Display=Cormorant Garamond" \
+   --match .design-dna/evidence/typeface-match.json]
+```
+
+It extracts the build's computed styles per route, counts the components,
+runs provenance, structure, mechanisms and signature transfer, validates the
+dossier, and writes `.design-dna/evidence/gate.json` with one verdict line:
+`GATE PASS ...` or `GATE FAIL ...`. That line is quoted verbatim in the final
+message to the owner. If the gate did not run, the message says so in those
+words. "Quick", "demo" and "hurry" shrink the page count and the copy; they
+never shrink the gate. If there is no time for the gate, there is no time to
+build, and the honest answer is to say so.
+
+Typefaces have their own instrument. When a reference's family cannot be
+licensed, run `scripts/match_typeface.mjs --observation <the session that
+measured it> --out .design-dna/evidence/typeface-match.json`; it measures
+open-licence candidates the way the observation measured the reference
+(x-height ratio, advance width, the width of the capital I) and ranks them;
+mono faces are kept apart from proportional ones, and no serif-or-sans label
+is claimed because the numbers do not support one. Rank one is the substitute. The provenance check refuses any
+`--substitute` the record did not rank first, so the producer cannot choose.
 
 ## Approve the first screen
 

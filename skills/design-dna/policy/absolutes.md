@@ -52,6 +52,14 @@ preference or remembered criticism.
    system, brand, platform, and security constraints within their stated
    scope. Do not overwrite unrelated work or silently weaken an established
    contract.
+7. **Provenance of the design itself.** Every visible part of a build traces
+   to a recorded, measured reference in the project's dossier, or it does not
+   ship. This is the publisher's standing order (Motty, MJ's Studio,
+   2026-09-03; scope: every build made with this skill, by any producer, on
+   any host, at any size of job): the producer's own design is forbidden, in
+   every part, including layout, typefaces, colors and every component. It is
+   a provenance requirement, not an ingredient blacklist: nothing is banned by
+   name, and nothing ships without one.
 
 These boundaries are release-blocking only when they apply to the work and
 are violated. They do not turn optional evidence records, a particular

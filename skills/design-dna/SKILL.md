@@ -7,6 +7,7 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 
 ## Contents
 
+[the standing order](#the-owners-standing-order-no-producer-design) |
 [boundaries](#assurance-boundaries-come-first) |
 [quality axes](#separate-specificity-from-ambition) |
 [authority](#resolve-authority) | [classify](#classify-the-work) |
@@ -24,6 +25,59 @@ Reduce generic, repetitive, unsupported, careless, and artifact-heavy
 signals through project evidence and rendered review. Never promise
 undetectable AI involvement, score aesthetic authorship, claim human-only
 creation, or treat one ingredient as proof of how a site was made.
+
+## The owner's standing order: no producer design
+
+This is the publisher's own dated rule, and it outranks every other aesthetic
+instruction in this skill. Motty (MJ's Studio), 2026-09-03, after a build made
+"as a quick test" shipped a sticky blurred nav, a typeface pairing chosen by
+taste, an approximated palette, numbered cards and a stock accordion that no
+selected reference carried, and after the same thing had happened, in his
+count, about twenty times before:
+
+> "Your own designs is absolutely forbidden because you have terrible taste.
+> So even if you think that your design should be on there, don't. Never put
+> on your design. ... There is absolutely no using your design. You must only
+> use the designs from the websites you are copying from. And this includes
+> designs, layouts, fonts, and everything else. Stay out of it."
+
+What it means, mechanically:
+
+- Every part of a build that a visitor can see traces to a recorded, measured
+  reference in the project's dossier, or it does not ship. There is no
+  `owner-approved` path for a producer's own component any more; the
+  validator refuses the phrase anywhere in the sources table. A part no
+  reference shows is a part to go and observe on a reference, or a part to
+  cut. Layout, arrangement, typefaces, colors, controls, spacing, motion,
+  dividers, footers, navigation, cards, accordions, logo marks: all of it.
+- Typefaces are the reference's own families, self-hosted where the license
+  allows. Where it does not, the substitute is the top-ranked face from
+  `scripts/match_typeface.mjs`, which measures open-licence candidates the
+  way the observation measured the reference and ranks them by numbers; the
+  provenance check refuses any substitute that record did not rank first.
+  The producer never picks a face, not for beauty, not for brand fit, not
+  for "reads as right for a grocer".
+- There is no reduced-rigor mode. "Quick", "small", "just a test", "a demo",
+  "whatever's easiest" and "hurry up" shrink the page count and the copy.
+  They never shrink the reference count, the recordings, the measurements,
+  the dossier or the gate. The recorder exists so that watching a site costs
+  minutes. If there is still no time to run the gate, there is no time to
+  build; say so and stop. A build made without the gate is the producer's
+  design by definition, which is forbidden, so it is not delivered.
+- One command runs every gate:
+  `python "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --url <each route>
+  [--substitute FROM=TO --match .design-dna/evidence/typeface-match.json]`.
+  It extracts the build's computed styles, counts its components, checks
+  provenance, structure, mechanisms and signature transfer, validates the
+  dossier, and writes `.design-dna/evidence/gate.json` with one verdict line.
+- The final message to the owner quotes that verdict line verbatim
+  (`GATE PASS ...` or `GATE FAIL ...`). If the gate did not run, the message
+  says "the gate did not run" in those words. A finished-looking page
+  presented without that line is a lie of omission.
+
+This applies to every producer on every host that loads this skill, Claude
+and Codex alike. It is not a style blacklist: nothing is banned by name. It is
+a provenance requirement: nothing ships without a name.
 
 ## Assurance boundaries come first
 
@@ -119,7 +173,7 @@ Capability presets are cumulative; adding one cannot remove another:
 
 | Preset | Use when | Minimum |
 | --- | --- | --- |
-| Quick | Bounded repair in an established system, low risk. | Inspect context, preserve the system, implement changed states, run affected checks plus the preship gate on the touched surface. |
+| Quick | Bounded repair in an established system, low risk. Never a fresh build, however small: "quick", "demo" and "just a test" do not select this preset; see the standing order. | Inspect context, preserve the system, implement changed states, run affected checks plus the preship gate on the touched surface. |
 | Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, artifact-credibility review for a public proposition, full preship gate. |
 | Enterprise Candidate | Every fresh public website, unless the task is an explicitly bounded repair or non-public surface. | Standard plus category-appropriate public topology, intentional media/composition planning, fully considered key states, and a rendered wide/narrow review that must close obvious first-draft defects before preview. It does not claim a financial valuation, require an oversized scope, prescribe a style, or automatically select Showcase. |
 | Showcase | The brief expressly calls for premium, showcase, high-ambition work, or direction recovery after a rejected visual answer. | Research and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
@@ -236,12 +290,17 @@ brand colors, those are the brand's; where the client has none, which is every
 demo and every spec build, the hues come from the colors the extractor
 measured on the selected references, and "the brand's palette" is not a
 licence to invent one. The typefaces are families the extractor measured on a
-selected reference. A face chosen for its proportions is a face chosen by
-taste with arithmetic written down as the reason: one build picked Cormorant
-Garamond by matching an x-height ratio to a reference set in Louize, and it
-was the producer's own face on every headline. When a reference's family
-cannot be licensed, the substitute needs the owner's permission in the owner's
-quoted words, not a ratio. Observe inner pages, not only home pages. Every real site has more than one,
+selected reference, self-hosted where the license allows. When a reference's
+family cannot be licensed, the substitute is not chosen by anyone:
+`scripts/match_typeface.mjs` measures open-licence candidates exactly the way
+the observation measured the reference (x-height ratio, advance width and the
+width of the capital I, in the same engine) and ranks them; rank one is the substitute, recorded in
+`.design-dna/evidence/typeface-match.json`, and
+`check_style_provenance.mjs --substitute FROM=TO --match` refuses any pair
+that record did not rank first. One build picked Cormorant Garamond by
+matching an x-height by hand; another paired Fraunces with Inter because they
+read as right for the brief. Both were the producer's face on every headline,
+and the second happened on the day the owner forbade it. Observe inner pages, not only home pages. Every real site has more than one,
 and a producer holding only home-page captures can only copy a home page; it
 will design every inner page it builds while believing it is still copying.
 The gate requires at least two observed inner pages across the selected
@@ -287,10 +346,12 @@ typeface, color behavior, section rhythm, navigation, buttons, rows and lists,
 footer, scroll behavior, hover behavior, and anything else on the page. The
 structure column must say how the part is arranged, not what size it is,
 because a build can reproduce every font size on a reference and still be the
-producer's own layout. The two typefaces come from a reference and may not be
-owner-approved: chosen by taste is how a build shares no face with any site it
-researched. Any other component with no source is the producer's own design,
-and that ships only with the owner's permission in the owner's quoted words.
+producer's own layout. The two typefaces come from a reference, never from the
+producer. Any other component with no source is the producer's own design,
+and that does not ship: not with permission, not as a placeholder, not in a
+demo. The validator refuses the phrase `owner-approved` anywhere in the table
+(10.0.0, on the owner's order). A part no reference shows is a part to observe
+on a reference, or a part to cut.
 The frame column is opened by the validator, because a source line is prose
 and prose is free: one build cited a footer to a site whose footer it had
 never looked at. And the required rows are a floor, not the list. The dossier
@@ -465,12 +526,14 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   sheet that passes the thin-site score, at least three weak/mismatched
   counterexamples, a selected synthesis of at least four references of which
   three recorded motion, a component-sources table covering every shipping
-  part, a signature-transfer row per selected reference that survives the
+  part with no producer-designed row, a signature-transfer row per selected reference that survives the
   deletion test, a sequence read per selected reference with a line for
   every event of its recording, and the combination that makes it its own. It must also bind
   a passing `check_style_provenance.mjs` record and a passing
   `compare_structure.mjs` record for the FIRST SCREEN, both dated before the
-  second section was written, and again for every route at completion. A
+  second section was written, and again for every route at completion. The finished build binds a
+  passing `scripts/gate.py` record (`.design-dna/evidence/gate.json`), and the
+  final message to the owner quotes its verdict line verbatim. A
   dossier whose comparator records are all dated at the end of the build is a
   dossier written to justify a finished design. Reference material is a decision input, not a visual
   parts bin: transfer only project-relevant relationships and retain explicit
@@ -767,3 +830,10 @@ content, media, access, and engineering evidence. A violated assurance
 boundary blocks the corresponding completion or release claim. Missing
 optional evidence is disclosed in scope; it does not become a fabricated
 pass, a taste rule, or a reason to invent records.
+
+And the one command: `python "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --url
+<each route>` runs every packaged check against the running build and writes
+`.design-dna/evidence/gate.json`. Its verdict line is quoted verbatim in the
+final message to the owner. Without a passing gate there is no build to
+present, because whatever was made without it is the producer's design, and
+the owner has forbidden that in every part.

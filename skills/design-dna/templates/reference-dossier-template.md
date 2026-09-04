@@ -226,7 +226,7 @@ memory, and memory is the generic skeleton every time.
 
 - Component census: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_COMPONENT_CENSUS_JSON_PLUS_SHA256__
 
-| Component | Source rank or owner approval | Frame that shows it | Structure taken | Recorded values reproduced | Where it is used |
+| Component | Source rank | Frame that shows it | Structure taken | Recorded values reproduced | Where it is used |
 | --- | --- | --- | --- | --- | --- |
 | first screen |  | strong-N-events/eNNN-kind.png |  |  |  |
 | layout grid |  |  |  |  |  |
@@ -278,14 +278,13 @@ opened, because the table asked for a source and prose is free. If the frame
 does not exist, go and observe the page that shows the part, or cut the
 component.
 
-`Source rank or owner approval` is a selected rank, or
-`owner-approved: "<the owner's actual words>"`. An owner-approved row writes
-`owner-approved` in the frame column, because the producer's own design has no
-reference frame to cite. The two typeface rows may not
-be owner-approved: a typeface comes from a selected reference, either the same
-face where it is freely licensed or one matched to that reference's measured
-proportions, because a face chosen by taste is how a build ends up sharing
-nothing with any site it researched.
+`Source rank` is a selected rank. It is the only kind of source: the
+owner-approved path for a producer's own part was removed in 10.0.0 on the
+owner's standing order ("there is absolutely no using your design ... this
+includes designs, layouts, fonts, and everything else"), and the validator
+refuses the phrase anywhere in this table. A typeface row names the reference
+whose family it self-hosts, or whose family `scripts/match_typeface.mjs`
+matched by measurement; the match record is bound by the provenance check.
 
 `Structure taken` says how the part is ARRANGED: what fills the first screen,
 what sits at which edge, how the space is divided, what is beside what. The

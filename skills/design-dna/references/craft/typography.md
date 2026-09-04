@@ -10,6 +10,14 @@ pairing categories, family count, hosting method, scale ratio, or tracking
 formula. A common face may be exactly right; a rare face may be arbitrary.
 The failure is an unexamined or poorly executed system, not a family name.
 
+Under a reference-led build, which is every fresh public site, the families
+are not chosen here at all. They are the selected references' measured
+families, self-hosted where the license allows, or the substitute that
+`scripts/match_typeface.mjs` ranked first by measurement. The standing order in
+SKILL.md applies: the producer does not pick a face for beauty or brand fit.
+This document then governs the roles, spacing, delivery and verification of
+the families the references supplied.
+
 ## Contents
 
 - [Choose type for beauty and brand fit](#choose-type-for-beauty-and-brand-fit) |

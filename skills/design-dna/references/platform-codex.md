@@ -2,6 +2,9 @@
 
 Use the shared Design DNA workflow without duplicating rules in plugin metadata.
 
+- The owner's standing order in SKILL.md (no producer design, in any part;
+  one gate command; its verdict line quoted verbatim in the final report)
+  applies on this host exactly as written. There is no host-specific relief.
 - Invoke explicitly with `$design-dna`; natural-language discovery may also
   select it for relevant work.
 - Inspect repository instructions and the existing working state before editing.
