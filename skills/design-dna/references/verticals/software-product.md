@@ -81,8 +81,8 @@ evidence.
 
 Keep naming, claims, account state, and behavior consistent across the
 boundary. Share or vary typography, color, iconography, components, density,
-motion, ornament, and other aesthetic fields according to the verified brand,
-task, and `creative_logic`; visual sameness is not required for continuity.
+motion, ornament, and other aesthetic fields only according to verified brand,
+task, and exact selected-source/state/component mappings; visual sameness is not required for continuity.
 
 Do not leave starter or framework decisions as accidental identity. Any theme,
 including dark, light, multiple, adaptive, or highly local themes, is valid

@@ -12,7 +12,7 @@ could theoretically be replaced with another industry.
 - [Audit containers rather than banning cards](#audit-containers-rather-than-banning-cards)
 - [Audit action and link affordances](#audit-action-and-link-affordances)
 - [Compare actual output](#compare-actual-output)
-- [Preserve freedom](#preserve-freedom)
+- [Preserve source-supplied range](#preserve-source-supplied-range)
 
 ## Name the right failure
 
@@ -35,8 +35,9 @@ swap test or claim cross-project difference.
 
 ## Map relationship grammar
 
-After deriving the first answer from the current brief and before declaring it
-different, describe only the relationships material to this candidate:
+After qualifying and mapping the first reference combination for the current
+brief, and before declaring it different, describe only the relationships
+material to this candidate:
 
 - opening or first task-bearing encounter;
 - typography posture and hierarchy behavior;
@@ -62,8 +63,8 @@ plate, ask:
    or stateful object?
 2. Does the enclosure communicate a boundary the visitor needs, such as
    selection, status, comparison, drag scope, warning, or ownership?
-3. If the surround disappeared, could spacing, alignment, sequence, a rule, or
-   typography express the relationship more directly?
+3. Does the enclosure reproduce its selected source relationship, and would
+   another qualified source better serve the content if it did not?
 4. Across the whole route, are unrelated content jobs repeatedly being put
    into the same container because the composition otherwise lacks structure?
 
@@ -80,13 +81,14 @@ all remain available when the rendered sequence earns them.
 
 ## Audit action and link affordances
 
-Choose semantics before decoration:
+Establish semantics before reproducing source-bound decoration:
 
 - a button performs an action or changes state;
 - a link navigates to a destination;
 - an underline supplies link recognition or an intentional editorial
   convention;
-- visual prominence follows consequence and task priority.
+- visual prominence copies the selected source while preserving consequence
+  and task priority.
 
 Do not turn every primary action into the same generic filled rectangle, every
 secondary action into the same underlined phrase, or every link into decorative
@@ -105,18 +107,19 @@ the authorized sibling. Ask:
 - Which encounter-level relationships recur?
 - Which recurring relationships came from this project's evidence?
 - Which appear to be producer defaults?
-- Does the narrow version create its own fitting composition or repeat the
-  same card-stack collapse used elsewhere?
+- Does the narrow version reproduce the mapped reference's narrow composition
+  or fall back to a producer-default card stack?
 
 A failed comparison reopens the earliest unexplained relationship. Do not
 close it by rotating color, font, radius, shadow, icon, or motion while keeping
 the same opening, progression, containment, and action grammar.
 
-## Preserve freedom
+## Preserve source-supplied range
 
 This method creates no novelty score, category-exclusivity requirement,
 ingredient blacklist, mandatory layout family, or inverse house style. A
 conventional ecommerce grid, split hero, card system, three-column footer,
 serif/sans pairing, colored field, rectangular CTA, or underlined link can be
 the right answer. The requirement is that the complete relationship cluster is
-supported by the current project and does not recur by producer habit.
+supplied by exact-fit selected references, supports the current project, and
+does not recur by producer habit.

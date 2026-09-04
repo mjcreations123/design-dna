@@ -14,21 +14,24 @@ list, breakpoint set, or mobile silhouette.
 
 ## Define what must survive
 
-Classify non-negotiable, inherited, negotiated, and open constraints. Identify
+Classify non-negotiable, inherited, negotiated, and reference-open constraints. Identify
 the relationships, actions, states, atmosphere, and identity that should remain
-recognizable across conditions. Record the relevant `creative_logic` and how
-it may transform rather than assuming every surface should look alike.
+recognizable across conditions. Record the exact selected observation, mapped
+source state, census component, and narrow/wide measured transformation; transformations come from that source,
+not an assumption or producer invention.
 
 Some experiences preserve adjacency; others preserve sequence, hierarchy,
 comparison, immersion, or a particular gesture. A small-screen version may be
-a new composition, interaction, crop, or temporal arrangement. A wide version
-may reveal new simultaneity or retain deliberate narrowness. Neither is
-obligated to stack or stretch the other.
+a different composition, interaction, crop, or temporal arrangement when the
+selected source shows it. A wide version may reveal simultaneity or deliberate
+narrowness only when source-bound. Neither may be improvised as a generic stack
+or stretch.
 
 ## Let observed pressure drive adaptation
 
-Map the real content and behavior under supported conditions, then change the
-scaffold when a relationship stops working. Grid, flex, flow, overflow,
+Map the real content and behavior under supported conditions, then reproduce
+the selected source's matching responsive scaffold. If it cannot serve the
+brief, qualify another source. Grid, flex, flow, overflow,
 reordering, disclosure, container queries, and viewport queries are tools, not
 visual defaults. Multiple scaffolds or route-specific transformations are
 valid when their differences are intentional and maintainable.
@@ -106,11 +109,11 @@ fails on real devices when unaddressed:
   virtual width, and unbounded containers, stretched media, and orphaned
   rails show up there first.
 
-Art-direct media to preserve meaning, not merely dimensions. Provide an
-intentional strategy for tables, charts, comparisons, navigation, dialogs,
+Reproduce the selected reference's media adaptation to preserve meaning, not
+merely dimensions. Bind a source-mapped strategy for tables, charts, comparisons, navigation, dialogs,
 sticky regions, and other structures that become difficult under pressure.
 The strategy may be reflow, prioritization, disclosure, scrolling with context,
-an alternate view, or another project-specific solution.
+an alternate view, or another source-observed solution.
 
 When a chart, map, topology, process drawing, or other content-bearing diagram
 does explanatory work, also use [data visualization](data-visualization.md).
@@ -183,6 +186,6 @@ lines; inspect the actual composite at the consequential passage and relevant
 motion endpoints rather than sampling only the surrounding base color.
 
 Begin review with the rendered result before applying motif labels. Ask whether
-the transformation preserves the declared creative logic and hard safeguards,
+the transformation preserves the declared source/state/component transfer and hard safeguards,
 not whether it follows a familiar responsive pattern. Record concrete failures
 and the conditions that produce them.

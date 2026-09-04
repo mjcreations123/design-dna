@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-visible-decision-source-manifest",
+  "created_at": "__REPLACE_WITH_ISO_8601_TIMEZONE_TIMESTAMP__",
+  "proof_build_id": "__REPLACE_WITH_FIRST_SCREEN_PROOF_BUILD_ID__",
+  "route_manifest": {
+    "manifest_id": "__REPLACE_WITH_IMMUTABLE_MANIFEST_ID__",
+    "path": ".design-dna/route-manifest.json",
+    "sha256": "__REPLACE_WITH_ROUTE_MANIFEST_SHA256__"
+  },
+  "source_observations": [
+    {
+      "id": "strong-1",
+      "path": ".design-dna/references/strong-1-observation.json",
+      "sha256": "__REPLACE_WITH_OBSERVATION_SHA256__"
+    }
+  ],
+  "planned_decision_ids": [
+    "home-rest-layout",
+    "home-rest-typeface",
+    "home-rest-color",
+    "home-rest-control",
+    "home-rest-transition",
+    "home-rest-content-pattern",
+    "home-rest-effect"
+  ],
+  "decisions": [
+    {
+      "decision_id": "home-rest-layout",
+      "category": "layout",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_RELATIONSHIP__",
+      "route_keys": [
+        "home"
+      ],
+      "state_ids": [
+        "rest"
+      ],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_COMPONENT_OR_BEHAVIOR__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-typeface",
+      "category": "typeface",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_TYPE_RELATIONSHIP__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_TYPE_COMPONENT__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-color",
+      "category": "color",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_COLOR_RELATIONSHIP__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_COLOR_COMPONENT__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-control",
+      "category": "control",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_CONTROL_AND_STATE__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_CONTROL_BEHAVIOR__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-transition",
+      "category": "transition",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_TRANSITION_AND_STATE__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_TRANSITION_BEHAVIOR__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-content-pattern",
+      "category": "content-pattern",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_CONTENT_RELATIONSHIP__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_CONTENT_PATTERN__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    },
+    {
+      "decision_id": "home-rest-effect",
+      "category": "effect",
+      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_EFFECT_AND_STATE__",
+      "route_keys": ["home"],
+      "state_ids": ["rest"],
+      "source_reference_id": "strong-1",
+      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_EFFECT_BEHAVIOR__",
+      "evidence": {
+        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
+        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      },
+      "disposition": "required"
+    }
+  ],
+  "completeness": {
+    "required_categories": [
+      "layout",
+      "typeface",
+      "color",
+      "control",
+      "transition",
+      "content-pattern",
+      "effect"
+    ],
+    "covered_categories": [
+      "layout",
+      "typeface",
+      "color",
+      "control",
+      "transition",
+      "content-pattern",
+      "effect"
+    ],
+    "placeholders_allowed": false,
+    "generic_scaffold_allowed": false,
+    "fallback_design_allowed": false,
+    "unsourced_decisions": []
+  }
+}

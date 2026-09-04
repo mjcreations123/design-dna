@@ -7,6 +7,19 @@ evidence_contract: "proportional-evidence-v1"
 
 # Direction proof
 
+## Contents
+
+[status](#canonical-evidence-record-status) |
+[identity](#proof-identity-and-intent) |
+[truth](#truth-and-provenance) |
+[behavior](#responsive-accessible-and-functional-behavior) |
+[render](#rendered-proof) |
+[first screen](#first-screen-source-fidelity-gate-required-for-reference-led-public-work) |
+[contrast](#project-contrast-proof-context-when-selected) |
+[challenge](#direction-challenge-proof-context-when-selected) |
+[release](#owner-and-release-state) |
+[additional evidence](#additional-source-bound-evidence)
+
 <!-- proportional-evidence-v1 -->
 
 Prove the uncertainty that matters before scaling a consequential direction.
@@ -40,6 +53,23 @@ __REPLACE_WITH_THE_TESTED_CONTENT_CONTAINERS_INPUTS_PREFERENCES_STATES_AND_LIMIT
 ## Rendered proof
 
 __REPLACE_WITH_DIRECTLY_REVIEWABLE_ARTIFACT_PATH_HASH_CONDITIONS_AND_OBSERVATIONS__
+
+## First-screen source-fidelity gate (required for reference-led public work)
+
+- Full planned route manifest and SHA-256:
+- First-screen proof build ID:
+- Primary route key and mapped selected-reference rank:
+- Distinct wide and narrow first-screen proof:
+- First-screen gate: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_FIRST_SCREEN_GATE_JSON_PLUS_SHA256__
+- Verdict: __REPLACE_WITH_GATE_PASS_OR_GATE_FAIL_LINE__
+
+Run `gate.py --phase first-screen --route-key <PRIMARY_KEY>` against the full
+planned `.design-dna/route-manifest.json`. The phase binds the manifest and
+proof build but executes only the selected route at both manifest viewport
+classes. `First-screen gate` binds the resulting schema-2 `gate.py` record with
+`phase: first-screen`. A missing or failing result blocks the second section and all broad
+implementation; source edits, prose confidence, or a later final gate cannot
+retroactively prove this hard stop occurred.
 
 ## Project Contrast proof context (when selected)
 
@@ -79,7 +109,8 @@ An accepted owner disposition requires an accountable owner or owner-authorized
 human reviewer. Producer self-review may remain a useful provisional proof but
 must not claim owner acceptance. Placeholder status text is not evidence.
 
-## Project-specific extensions
+## Additional source-bound evidence
 
-Optional. Add evidence in whatever structure best tests this project's creative
-logic, risks, or unusual states.
+Optional. Add a current source/state/component binding or risk/condition proof
+when the exact project needs it. Freeform prose cannot authorize a visual
+decision or fill a missing mapping.

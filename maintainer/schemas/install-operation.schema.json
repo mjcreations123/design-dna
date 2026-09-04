@@ -241,6 +241,9 @@
             "$ref": "#/$defs/availableBackup"
           }
         },
+        "browser_preflight": {
+          "$ref": "#/$defs/browserPreflight"
+        },
         "status": {
           "enum": [
             "healthy",
@@ -254,6 +257,85 @@
         "recommendation": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "browserPreflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "code",
+        "message",
+        "project_root",
+        "node_executable",
+        "runtime_script",
+        "command",
+        "launch_checked",
+        "limitations",
+        "details"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["passed", "blocked", "not-run"]
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 800
+        },
+        "project_root": {
+          "$ref": "#/$defs/path"
+        },
+        "node_executable": {
+          "type": ["string", "null"]
+        },
+        "runtime_script": {
+          "type": ["string", "null"]
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "launch_checked": {
+          "type": "boolean"
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "playwright_source",
+            "playwright_version",
+            "playwright_entry_sha256",
+            "browser_source",
+            "browser_name",
+            "browser_sha256",
+            "browser_launch_version"
+          ],
+          "properties": {
+            "playwright_source": {"type": ["string", "null"]},
+            "playwright_version": {"type": ["string", "null"]},
+            "playwright_entry_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+            "browser_source": {"type": ["string", "null"]},
+            "browser_name": {"type": ["string", "null"]},
+            "browser_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+            "browser_launch_version": {"type": ["string", "null"]}
+          }
         }
       }
     },

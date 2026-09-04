@@ -417,7 +417,6 @@ class StateGateHardeningTests(unittest.TestCase):
                 route.update({
                     "title": f"Resolved route {index + 1}",
                     "user_job": f"Complete the distinct visitor job for route {index + 1}.",
-                    "creative_logic": f"A project-specific route logic for body {index + 1}.",
                     "responsive_result": f"Route {index + 1} preserves its task on narrow screens.",
                     "deliberate_differences": [
                         f"Route {index + 1} has a different body operation."
@@ -518,7 +517,7 @@ class StateGateHardeningTests(unittest.TestCase):
             "high-risk",
             INITIALIZER.PROFILES["high-risk"],
         )
-        self.assertEqual(("high-risk",), high_risk)
+        self.assertEqual(("standard", "high-risk"), high_risk)
         self.assertEqual(
             {"direction", "visual-review", "claims", "user-validation"},
             INITIALIZER.CAPABILITY_REQUIRED_RECORDS["high-risk"],
@@ -579,7 +578,7 @@ class StateGateHardeningTests(unittest.TestCase):
             ]["visual-review"],
         )
         self.assertEqual(
-            {"direction", "reference-dossier", "visual-review"},
+            {"direction", "reference-dossier", "route-manifest", "visual-review"},
             INITIALIZER.CAPABILITY_REQUIRED_RECORDS["reference-led-direction"],
         )
         self.assertEqual(
@@ -635,7 +634,9 @@ class StateGateHardeningTests(unittest.TestCase):
             updated = INITIALIZER.migrate_staged_state(state, "test-fixture")
 
             migrated = json.loads(state_path.read_text(encoding="utf-8"))
-            self.assertEqual(["high-risk"], migrated["assurance_profiles"])
+            self.assertEqual(
+                ["standard", "high-risk"], migrated["assurance_profiles"]
+            )
             self.assertEqual(
                 ["high-risk"],
                 migrated["evidence_contract"]["applicable_capabilities"],
@@ -692,7 +693,9 @@ class StateGateHardeningTests(unittest.TestCase):
             INITIALIZER.migrate_staged_state(state, "test-fixture")
 
             migrated = json.loads(state_path.read_text(encoding="utf-8"))
-            self.assertEqual(["high-risk"], migrated["assurance_profiles"])
+            self.assertEqual(
+                ["standard", "high-risk"], migrated["assurance_profiles"]
+            )
             self.assertEqual(
                 ["high-risk"],
                 migrated["evidence_contract"]["applicable_capabilities"],
@@ -850,8 +853,8 @@ class StateGateHardeningTests(unittest.TestCase):
                 failures,
             )
 
-    def test_quick_review_keeps_a_truthful_direct_png_path(self) -> None:
-        """Quick remains a smaller review, not a disguised Standard gate."""
+    def test_quick_review_rejects_a_single_after_png_without_invariance_proof(self) -> None:
+        """Quick cannot become a shortcut around before/after proof."""
 
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
@@ -875,7 +878,9 @@ class StateGateHardeningTests(unittest.TestCase):
                 evidence_contract=INITIALIZER.PROPORTIONAL_EVIDENCE_CONTRACT,
                 enforce_final_visual_binding=True,
             )
-            self.assertEqual([], failures)
+            joined = "\n".join(failures)
+            self.assertIn("Mechanical repair invariance", joined)
+            self.assertIn("performed packaged before/after", joined)
 
     def test_final_standard_review_cannot_drop_surface_or_preship_closure(self) -> None:
         body = minimal_final_review()
@@ -923,15 +928,15 @@ class StateGateHardeningTests(unittest.TestCase):
                 "The public surface helps a visitor understand the product concept and choose a real next path.",
                 "",
                 "## Reference dossier",
-                "| Source and retrieval date | Viewer-facing problem or role | Design to copy | Rights boundary |",
-                "| --- | --- | --- | --- |",
-                "| Project material, 2026-08-12 | Explain the concept without invented claims. | Keep the task next to its honest limit. | Do not copy another brand, layout, or identity. |",
+                "| Selected rank, source, and retrieval date | Exact observation path and SHA-256 | Brief-fit viewer role | Measured transferable relationship | Non-copying boundary |",
+                "| --- | --- | --- | --- | --- |",
+                "| strong-1; qualified reference, 2026-08-12 | .design-dna/references/strong-1-observation.json plus sha256:" + ("a" * 64) + " | Explain the concept without invented claims. | Keep the task next to its honest limit. | Do not copy another brand, wording, asset, or code. |",
                 "",
                 "## Direction proof",
                 "- Selected-direction proof evidence: selected.txt plus sha256:" + sha256(selected),
                 "- Counter-direction proof evidence: counter.txt plus sha256:" + sha256(counter),
                 "- Project material used in the proof: Sparse approved project material and a factual fixture boundary.",
-                "- Organizing answer being tested: Let the product task lead before supporting background detail.",
+                "- Selected reference ranks and mapped organizing relationships being tested: strong-1 maps its task-first progression and supporting-detail relationship to this exact proof.",
                 "- Consequential observable decision(s): The visitor can find a product path without crossing a generic promotional shell.",
                 "- What would make this direction lose: The counter proof better supports the same task at the tested conditions.",
                 "",

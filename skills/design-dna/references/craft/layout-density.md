@@ -6,33 +6,35 @@ container set, breakpoint count, section sequence, or amount of whitespace.
 
 ## Contents
 
-- [Derive the spatial logic](#derive-the-spatial-logic)
+- [Copy the mapped spatial logic](#copy-the-mapped-spatial-logic)
 - [Make density fit the situation](#make-density-fit-the-situation)
 - [Adapt when relationships change](#adapt-when-relationships-change)
 - [Stress the real layout](#stress-the-real-layout)
 - [Review without enforcing a house silhouette](#review-without-enforcing-a-house-silhouette)
 
-## Derive the spatial logic
+## Copy the mapped spatial logic
 
-Classify non-negotiable, inherited, negotiated, and open constraints. Then map
+Classify non-negotiable, inherited, negotiated, and reference-open constraints.
+Then map
 the relationships that must survive: order, proximity, comparison, hierarchy,
 shared context, cause and effect, action and consequence, or another
 project-specific dependency.
 
-Record the relevant `creative_logic` and its observable decisions. A layout
-may be systematic or idiosyncratic, dense or spacious, symmetrical or
-asymmetrical, stable or transform across routes. Multiple grids, spacing
-languages, or compositional regimes are valid when their relationships remain
-understandable and their differences serve the work.
+Record the exact selected rank, observation hash, source state, component map, and
+observable decisions. A layout may be systematic or idiosyncratic, dense or
+spacious, symmetrical or asymmetrical, stable or transform across routes only
+when selected measured references supply those relationships. Multiple grids,
+spacing languages, or compositional regimes remain valid when source-bound.
 
 Tokens, grids, components, and container rules can make repetition reliable,
-but they are tools rather than aesthetic obligations. Choose their scope from
-the actual content and maintenance needs. A justified one-off does not have to
+but they are implementation tools rather than aesthetic authority. Scope their
+reuse to the source-mapped content and maintenance needs. A measured source
+one-off does not have to
 be normalized into a reusable recipe.
 
 After a render exists, use empty grid cells and nested frames as diagnostic
 prompts rather than automatic defects. For an empty cell or deliberate void,
-ask whether it creates project-supported pacing, hierarchy, contrast,
+ask whether it reproduces source-supported pacing, hierarchy, contrast,
 interaction, or form, and whether that role remains convincing as content,
 viewport, and user settings change. Keep an intentional, accessible void;
 reshape the grid only when the render shows an observed failure such as a
@@ -59,14 +61,15 @@ perceivable in the working context. For editorial, cultural, artistic, or
 entertainment work, pacing may include silence, abundance, interruption,
 collision, repetition, or spectacle when the audience can still enter and use
 the experience. Ornament and spatial drama do not need a utilitarian excuse;
-they need a coherent creative role and acceptable impact on access and
-performance.
+  they need a measured source role and acceptable impact on access and
+  performance.
 
 ## Adapt when relationships change
 
 Do not treat mobile as stacked desktop or wide screens as stretched mobile.
 When available space, content, input, zoom, locale, or user settings change,
-recompose whatever no longer works. What changes may include order, adjacency,
+reproduce the selected source's applicable narrow/wide recomposition; if it
+does not work for the project, qualify another source. What changes may include order, adjacency,
 disclosure, crop, density, navigation, control placement, comparison method,
 or the entire spatial premise.
 
@@ -98,7 +101,7 @@ accumulate one-off patches merely to make a capture pass.
 Begin with an unprimed render review. Describe what the layout feels like and
 how it behaves before applying motif labels. Then ask:
 
-- Are the intended relationships and creative logic perceivable?
+- Are the exact selected relationships and source/state/component transfer perceivable?
 - Do repetition and variation feel authored in this project, including any
   intentionally plural system?
 - Does density support the actual use, audience, and atmosphere?

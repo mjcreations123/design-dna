@@ -7,12 +7,13 @@ evidence_contract: "proportional-evidence-v1"
 
 # Taste calibration
 
-Use this project-local record when taste calibration is activated for an open,
+Use this project-local record when taste calibration is activated for a reference-open,
 high-visibility, owner-sensitive, or previously rejected direction. It
 preserves evidence for the actual visual decision; it is not a completed
 assessment, style catalog, AI score, or mandatory artifact for a bounded
-repair. Replace every applicable field with project evidence or explicitly
-state why it is unavailable.
+repair. Replace every applicable field with project and measured-reference
+evidence. Unavailable evidence makes the corresponding disposition `blocked`;
+it never permits an unsourced visual decision.
 
 ## Record lifecycle and evidence boundary
 
@@ -41,13 +42,16 @@ Contrast or Direction Challenge record ready, reviewed, or owner-accepted.
 
 ## Reference dossier
 
-| Source and retrieval date | Viewer-facing problem or role | Transferable relationship | Non-copying boundary |
-| --- | --- | --- | --- |
-|  |  |  |  |
+| Selected rank, source, and retrieval date | Exact observation path and SHA-256 | Brief-fit viewer role | Measured transferable relationship | Non-copying boundary |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
-Record only sources that changed a decision. Owner examples, project material,
-category work, adjacent fields, and source limitations may all matter. Do not
-convert this table into a moodboard average or a global preference list.
+Copy the selected rows from the completed project `reference-dossier.md` and
+bind their exact current observation artifacts. Owner examples, project
+material, category work, adjacent fields, and source limitations may shape
+brief-fit selection, but they do not replace the qualified public-reference
+contract. Do not convert this table into a moodboard average, global preference
+list, or producer-authored synthesis.
 
 ## Direction proof
 
@@ -56,17 +60,17 @@ convert this table into a moodboard average or a global preference list.
 - Counter-direction proof evidence: exact proof route/state/viewport and
   project-relative direct-reviewable artifact plus SHA-256:
 - Project material used in the proof:
-- Organizing answer being tested:
+- Selected reference ranks and mapped organizing relationships being tested:
 - Consequential observable decision(s):
 - Ordinary body material included so the proof tests reading, comparison,
   evidence, action, or support rather than only a dramatic opening:
 - Cumulative-intensity risk the full build must not amplify:
 - What would make this direction lose:
 
-For an owner recurrence, rejected direction, or open Showcase, selected and
-counter proof artifacts are required unless an exact inability, its effect on
-the decision, and the next reviewable step are recorded above. Do not replace a
-counter artifact with a prose claim that an alternative was considered.
+For an owner recurrence, rejected direction, or reference-open Showcase,
+selected and counter proof artifacts are required. An inability makes the
+record `blocked`; it never waives either artifact. Do not replace a counter
+artifact with prose or an unsourced producer alternative.
 
 ## First-impression and surface-fidelity response
 

@@ -19,8 +19,9 @@ portable producer patterns.
 3. Group content by user question rather than an internal department, producer
    workstream, direction record, or database/content-model category.
 4. Order information by decision dependency.
-5. Choose navigation, taxonomy, search, filtering, and cross-links for the
-   actual corpus.
+5. Define the semantic navigation, taxonomy, search, filtering, and cross-links
+   the actual corpus requires; bind their visible hierarchy, controls, spacing,
+   and interaction treatment to selected reference evidence.
 6. Define what happens when content is absent, stale, restricted, or unknown.
 7. When a material entity, selection, or decision crosses routes, state what
    carries, what intentionally resets, what direct entry needs to reconstruct,
@@ -101,10 +102,10 @@ voice](public-copy.md) after the information model and facts are settled.
 
 ### Establish voice, tone, and terminology
 
-- Record as much or as little voice guidance as the project needs. Derive it
-  from approved brand language, audience expectations, culture, genre, and the
-  relationship the work should create; express consequential decisions through
-  observable writing evidence rather than a fixed trait count.
+- Record as much or as little voice guidance as the project needs. Derive
+  factual voice from approved brand language, audience expectations, culture,
+  and genre; bind visible copy rhythm, typographic grouping, and editorial
+  treatment to selected reference evidence rather than producer taste.
 - Keep or vary voice and tone according to the approved identity and moment.
   Orientation, action, waiting, risk, failure, recovery, and success may need
   different qualities; do not assign a universal emotional register to them.

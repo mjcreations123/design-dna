@@ -1,0 +1,123 @@
+{
+  "schema_version": 2,
+  "manifest_id": "fixture-route-family-safe-paths-manifest",
+  "viewports": [
+    {
+      "name": "wide",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "narrow",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routes": [
+    {
+      "key": "home",
+      "url": "http://127.0.0.1:4173/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "lakewood-case",
+      "url": "http://127.0.0.1:4173/Lakewood/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "torah-unicode",
+      "url": "http://127.0.0.1:4173/%D7%AA%D7%95%D7%A8%D7%94/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "made-here",
+      "url": "http://127.0.0.1:4173/made_here/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "about-html",
+      "url": "http://127.0.0.1:4173/about.html",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    }
+  ]
+}

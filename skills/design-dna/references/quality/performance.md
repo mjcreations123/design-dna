@@ -17,9 +17,11 @@ Use the project's measured baseline and contractual targets first. If none
 exist, scale the objective to the selected assurance capabilities and delivery
 stage:
 
-- For Quick work or a local concept, record a provisional route-specific
-  objective, representative device and network, and the checks actually run.
-  Label it unapproved and do not use it for release claims.
+- For an exact nonvisual mechanical repair using the legacy `quick` CLI
+  identifier, preserve the established objective and run every affected check;
+  it cannot lower a target or authorize a new visible fallback. A local concept
+  uses the same quality floor as any retained website surface, though its
+  truthful delivered scope may be smaller.
 - For Standard or Showcase work moving toward release, propose budgets and
   identify the accountable owner and review point.
 - For production, contractual, or regression-gated work, use owner-approved

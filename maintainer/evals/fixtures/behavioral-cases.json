@@ -1444,7 +1444,7 @@
     },
     {
       "id": "route-family-hash-pages-negative",
-      "task": "Audit the source-frozen Fragment Festival fixture as a claimed ten-route Range Study. Preserve every supplied byte and save the packaged report to .design-dna/route-family-audit.json. Inspect index.html separately to verify its ten legitimate in-document anchors. Then run the packaged audit and retain its intentional schema-2 contract-invalid result: every claimed route path contains a fragment and therefore cannot enter route, link, or atlas analysis as a separate page. Explain the distinction without claiming that a one-page site is inherently low quality. Do not redesign or publish.",
+      "task": "Audit the source-frozen Fragment Festival fixture as a claimed ten-route Range Study. Preserve every supplied byte and save the packaged report to .design-dna/route-family-audit.json. Inspect index.html separately to verify its ten legitimate in-document anchors. Then run the packaged audit and retain its intentional schema-3 contract-invalid result: every claimed route path contains a fragment and therefore cannot enter route, link, or atlas analysis as a separate page. Explain the distinction without claiming that a one-page site is inherently low quality. Do not redesign or publish.",
       "input_dir": "inputs/route-family-hash-negative",
       "timeout_seconds": 600,
       "tags": ["existing", "review", "range-study", "route-family", "hash-navigation", "negative-case", "adversarial"],
@@ -1476,6 +1476,35 @@
       "expected": {
         "exit_codes": [0],
         "files_exist": ["README.md", "index.html", "story/index.html", "orphan/index.html", ".design-dna/route-family.json", ".design-dna/route-family-audit.json"],
+        "max_changed_input_files": 0
+      }
+    },
+    {
+      "id": "hachnasas-postbuild-provenance-browser-qa-negative",
+      "task": "Audit the source-frozen Hachnasas archived prototype without repairing it. Read README.md and SOURCE-REUSE.md, render index.html at wide, narrow, and a 568px short-height condition, and write hachnasas-audit.md. Treat the stated three-route brief as authoritative: this single first-screen page is not a finished prototype or final-gate result. Inspect live geometry, every control and meaningful path, menu closed/open states, keyboard and focus behavior, reduced motion, direct entry and reload. Separately verify selected-source provenance for motion/media, font, mark, palette, and every component, plus visitor-facing public copy and source-reuse freshness. Report each blocking defect with direct source/render evidence. Do not edit, add missing routes, redesign, publish, or claim the gate passed.",
+      "input_dir": "inputs/hachnasas-postbuild-qa-negative",
+      "timeout_seconds": 900,
+      "tags": ["existing", "review", "hachnasas", "postbuild", "rendered-qa", "provenance", "interaction", "negative-case", "adversarial"],
+      "adversarial": true,
+      "release_coverage": {
+        "high_value": true,
+        "representative": true,
+        "primary_mode": "experience",
+        "scope": "review",
+        "project_stratum": "static-site"
+      },
+      "review_requirements": [
+        "State that a first-screen-only single page fails the supplied multi-route/full-site brief and cannot stand in for final post-build gate evidence.",
+        "Report the narrow-only hidden Change view control and the fixed rail collision/occlusion at short height from a rendered browser, not source code alone.",
+        "Report that the closed menu leaves focusable descendants active, while the open menu lacks modal semantics, background inertness, correct stacking, initial focus, focus containment, Escape handling, and focus return.",
+        "Report role-card disclosure controls that change hidden details without aria-expanded/aria-controls, the cosmetic-only dead primary action, missing keyboard-equivalent state proof, and incomplete/dead-end experience paths.",
+        "Report that the required moving welcome medium was replaced by a static SVG and that the font, mark, and purple/lime palette have no selected-source bindings.",
+        "Quote the builder-facing hero copy as public-copy residue and reject the stale copied source observation until current URL/content, producer/runtime hashes, full traversal, states, recording, and brief fit are revalidated.",
+        "Confirm all supplied fixture files remain byte-for-byte unchanged and distinguish source/DOM discovery from live rendered authority."
+      ],
+      "expected": {
+        "exit_codes": [0],
+        "files_exist": ["README.md", "SOURCE-REUSE.md", "index.html", "styles.css", "app.js", "welcome-still.svg", "hachnasas-audit.md"],
         "max_changed_input_files": 0
       }
     },

@@ -39,11 +39,11 @@ context. Useful aggregate causes include:
 | Cause | Evidence in the render | Revision principle |
 | --- | --- | --- |
 | Irrelevance | Effects, labels, modules, media, or motion compete with the message or task and cannot explain their role. | Remove or reconnect the irrelevant relationship. |
-| Repetition | Different content or routes inherit the same geometry, cadence, emphasis, interaction, or ending without a shared-system reason. | Rebuild the repeated organizing decision from each job. |
-| Inconsistency | Type, media, spacing, control, or motion rules shift without meaning and make the work feel assembled. | Establish the local relationship that should stay coherent. |
+| Repetition | Different content or routes inherit the same geometry, cadence, emphasis, interaction, or ending without a shared-system reason. | Reopen each route's exact-fit reference selection and replace the repeated mapping. |
+| Inconsistency | Type, media, spacing, control, or motion rules shift without meaning and make the work feel assembled. | Restore the dominant selected-reference relationship that should stay coherent. |
 | Falsity | Proof-shaped content, status, product UI, imagery, or claims imply facts or capability the project does not have. | Make it real, bound it as a concept, or remove the implication. |
 | Incompleteness | Ordinary states, content pressure, responsive behavior, media, metadata, or interactions expose the first draft. | Finish the real path and its edge conditions. |
-| Mismatch | A technically polished treatment belongs to another audience, era, genre, culture, or product relationship. | Re-derive from current project evidence. |
+| Mismatch | A technically polished treatment belongs to another audience, era, genre, culture, or product relationship. | Reject the mismatched source and qualify another against current project evidence. |
 | Care residue | Defaults, placeholders, broken assets, console errors, accessibility failures, or unexplained dead controls remain. | Correct the implementation and rerun the affected evidence. |
 
 A familiar card, gradient, serif, grotesk, mono label, centered hero, colored
@@ -71,8 +71,8 @@ Does the component library or starter theme remain recognizable because the
 site kept its default token names, neutral scale, radius, border, icon, page
 width, and component composition even though the subject calls for another
 relationship? A genuine product or internal tool may intentionally inherit
-that system. Re-theme or restructure only when the default substrate is the
-observed mismatch.
+that system. When the default substrate is the observed mismatch, replace it
+only with the selected measured reference system, never producer tuning.
 
 ### Swappable marketing formula
 

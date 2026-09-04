@@ -15,20 +15,20 @@ evidence_contract: "proportional-evidence-v1"
 [material](#material-media-and-public-copy-boundary) |
 [behavior](#responsive-accessible-and-functional-behavior) |
 [release](#owner-and-release-state) |
-[logic](#project-derived-organizing-logic) |
+[logic](#reference-sourced-organizing-logic) |
 [references](#reference-led-direction-required-for-public-candidates) |
 [decisions](#observable-consequential-design-decisions) |
 [reconciliation](#implementation-reconciliation) |
 [continuity](#connected-public-experience-when-selected) |
 [contrast](#project-contrast-narrative-context-when-selected) |
 [challenge](#direction-challenge-narrative-context-when-selected) |
-[extensions](#project-specific-extensions)
+[additional evidence](#additional-source-bound-evidence)
 
 <!-- proportional-evidence-v1 -->
 
 Keep this record proportional to the work. The sections below are evidence
-anchors, not design slots. Write in the project's own language, add any useful
-sections, and do not fill irrelevant fields merely to satisfy a template.
+anchors, not design slots. Project language may explain relevance or limits,
+but only exact selected-source/state/component mappings authorize visible work.
 
 ## Canonical evidence-record status
 
@@ -76,7 +76,10 @@ apply.
 
 ## Material, media, and public-copy boundary
 
-Required for Standard, Showcase, and other non-Quick new work or redesigns.
+Required for every new work or redesign with a visible decision. The legacy
+`quick` CLI identifier applies only to an exact nonvisual mechanical repair
+that preserves every rendered decision and cannot lower this requirement when
+anything visible changes.
 This is a project decision, not a photography quota. A physical product,
 place, person, food, hospitality, sensory subject, or explicit owner request
 for photos/rich media must not quietly become a text-only interface because
@@ -122,23 +125,25 @@ conditions the product can actually encounter.
 
 __REPLACE_WITH_OWNER_SCOPE_CURRENT_DISPOSITION_RELEASE_INTENT_AND_OPEN_BLOCKERS__
 
-Separate producer judgment from accountable-owner acceptance. Name the exact
+Separate producer evidence review from accountable-owner acceptance. Name the exact
 candidate or build, reversible checkpoint, known limitations, applicable
 specialist gates, and the honest current release state.
 
-## Project-derived organizing logic
+## Reference-sourced organizing logic
 
-Required for Standard, Showcase, and other non-Quick new work or redesigns. A
-bounded Quick repair inside an established system may remove this section and
-the observable-decisions section below.
+Required for every new work or redesign with a visible decision. An exact
+nonvisual mechanical repair using the legacy `quick` CLI identifier may mark
+this section and the observable-decisions section below not applicable only
+when direct rendered comparison proves every visible decision stayed unchanged.
 
-- Project evidence: __REPLACE_WITH_THE_APPROVED_PROJECT_MATERIAL_OR_AUTHORITY_THAT_GROUNDS_THIS_LOGIC__
-- Organizing logic: __REPLACE_WITH_THE_FREE_FORM_PROJECT_SPECIFIC_RELATIONSHIP_SEQUENCE_OR_BEHAVIOR_THAT_ORGANIZES_THIS_CANDIDATE__
+- Project evidence: __REPLACE_WITH_THE_APPROVED_PROJECT_MATERIAL_OR_AUTHORITY_THAT_GROUNDS_REFERENCE_SELECTION__
+- Organizing logic: __REPLACE_WITH_THE_SELECTED_REFERENCE_RANKS_AND_MAPPED_RELATIONSHIP_SEQUENCE_OR_BEHAVIOR_THAT_ORGANIZES_THIS_CANDIDATE__
 
 Use prose, bullets, a diagram description, or another structure when more
-space helps. The logic explains how this candidate organizes the real subject,
-content, task, or encounter; it is not a list of style adjectives. Do not add
-aesthetic ingredient fields merely to satisfy the record.
+space helps. The logic explains which selected references organize the real
+subject, content, task, or encounter and how their mapped relationships remain
+coherent; it is not a list of style adjectives. Do not add aesthetic ingredient
+fields or producer-authored connective design merely to satisfy the record.
 
 This is internal working evidence. Do not copy its organizing logic, project
 reason, record terms, or implementation vocabulary into public headings,
@@ -153,7 +158,9 @@ does not turn gallery membership into a design recipe or a customer-facing
 story.
 
 - Reference dossier path and completion status:
+- Candidate comparison and concrete selection/rejection reasons:
 - Selected positive ranks and decision coverage:
+- Dominant selected-reference grammar by route:
 - Project-specific synthesis drawn from the selected references:
 - Negative-counterevidence result and relationship to avoid:
 - Ledger check result (prior references reused, or none):
@@ -168,13 +175,14 @@ brand, assets, writing or code. Keep this reasoning internal.
 
 ## Observable consequential design decisions
 
-| Decision | Project reason or source | Observable consequence | Verification |
+| Decision | Selected source rank and project-fit reason | Observable consequence | Verification |
 | --- | --- | --- | --- |
-| __REPLACE_WITH_A_CONSEQUENTIAL_DECISION__ | __REPLACE_WITH_WHY_THIS_PROJECT_SUPPORTS_IT__ | __REPLACE_WITH_WHAT_SHOULD_BE_VISIBLE_OR_USABLE_IN_THE_CANDIDATE__ | __REPLACE_WITH_THE_RENDERED_CONDITION_THAT_CAN_CONFIRM_OR_REVISE_IT__ |
+| __REPLACE_WITH_A_CONSEQUENTIAL_DECISION__ | __REPLACE_WITH_SELECTED_SOURCE_RANK_AND_EXACT_BRIEF_FIT__ | __REPLACE_WITH_WHAT_SHOULD_BE_VISIBLE_OR_USABLE_IN_THE_CANDIDATE__ | __REPLACE_WITH_THE_RENDERED_CONDITION_THAT_CAN_CONFIRM_OR_REVISE_IT__ |
 
-Record at least one decision that carries the organizing logic into something
-a reviewer can observe. The decision may concern any project-relevant
-relationship; this table does not prescribe an aesthetic category or quota.
+Record at least one source-mapped decision that carries the organizing logic
+into something a reviewer can observe. The decision may concern any project-
+relevant relationship; this table does not prescribe an aesthetic category or
+quota and does not authorize a producer-designed choice.
 
 ## Implementation reconciliation
 
@@ -254,13 +262,13 @@ status; this document may summarize the project reason but must not certify
 those states.
 
 - Canonical Direction Challenge record path and current status:
-- Brief-native roots being considered, in project language:
+- Brief-qualified reference-backed roots being considered, with selected ranks and observation hashes:
 - Direct reviewable selected/counter proof artifacts, or explicit inability:
 - Selection boundary and unresolved decision:
 
-## Project-specific extensions
+## Additional source-bound evidence
 
-Optional. Record the relationships, tensions, rituals, content behavior,
-local exceptions, or risks that need further space. Use any structure and
-vocabulary that communicates them accurately; extension records may also be
-registered in `state.json`.
+Optional. Record additional relationships, content behavior, exceptions, or
+risks only with the exact selected observation/state/component and evidence
+that authorizes them. Additional records may be registered in `state.json`;
+freeform structure or vocabulary never fills a missing visual mapping.

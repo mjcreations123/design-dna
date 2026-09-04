@@ -1,6 +1,6 @@
 interface:
   display_name: "Design DNA"
-  short_description: "Specific web design with coherent creative range"
-  default_prompt: "Use $design-dna to build a project-specific website; activate Project Contrast when unrelated sites feel alike."
+  short_description: "Source-authorized web design; no invented visible choices"
+  default_prompt: "Use $design-dna to build only from qualified measured references or approved project authority; invent no visible design."
 policy:
   allow_implicit_invocation: true

@@ -34,14 +34,14 @@ honest current state such as `draft`, `proof-ready`, `reviewed`, `reopened`, or
 and the next irreversible decision. The file's existence does not mean a
 direction has been calibrated, accepted, or made beautiful.
 
-For an owner-recurrence concern, an owner-rejected direction, or an open
-Showcase, bind direct reviewable proof artifacts for both the selected and
-counter directions before broad implementation whenever possible. A useful
+For an owner-recurrence concern, an owner-rejected direction, or a
+reference-open Showcase, bind direct reviewable proof artifacts for both the
+selected and counter reference combinations before broad implementation. A useful
 proof makes the entry encounter and dominant content operation visible at the
 relevant wide and narrow conditions; a paragraph describing an alternative is
-not a substitute. When a counter-proof cannot be made, record the exact
-inability, its consequence for the decision, the accountable authority, and
-the next step rather than quietly treating the comparison as complete.
+not a substitute. When a counter-proof cannot be made, mark the direction
+blocked; an inability never becomes permission to scale one unchallenged or
+producer-authored answer.
 
 Narrative direction, proof, and review notes may summarize this work, but the
 authoritative lifecycle and status remain in the applicable Project Contrast
@@ -80,19 +80,20 @@ substitute for a compelling public proposition.
 
 ## Use references as visual evidence
 
-When browsing is permitted and visual uncertainty is material, collect a
-retrieval-dated, project-local reference dossier before committing a greenfield
-or replacement direction. Prefer current project material, real brand and
-product assets, credible category examples, and adjacent creative references
-that reveal a useful relationship. Image-capable research is often important
+For every greenfield or replacement visual direction, complete the
+retrieval-dated project-local reference dossier before committing a candidate.
+If browsing or required observation is unavailable, keep the direction
+blocked. Use current project material and real brand/product assets to qualify
+credible category and adjacent references that reveal a useful relationship.
+Image-capable research is often important
 when the subject depends on place, product, food, people, atmosphere, craft,
 or physical use.
 
 For each useful source, record only what transfers:
 
-| Source and date | What the viewer-facing work is solving | Observed relationship | Project lesson | Non-copying boundary |
+| Selected rank, source, and date | Exact observation path and SHA-256 | What the viewer-facing work is solving | Measured relationship to copy | Non-copying boundary |
 | --- | --- | --- | --- | --- |
-|  |  | composition, media role, hierarchy, pacing, behavior, material, or type role |  | do not copy its layout, assets, wording, identity, or distinctive interaction |
+|  |  |  | composition, media role, hierarchy, pacing, behavior, material, or type role | do not copy its identity, wording, assets, or code |
 
 Do not average a gallery into a fashionable template. Do not infer quality from
 likes, awards, prompts, engagement, or a source's popularity. A reference is
@@ -101,17 +102,20 @@ show a tempting treatment that is wrong here. Treat creator skill packages,
 social threads, and trend posts as hypothesis sources, not as authority over
 the project.
 
-When owner references exist, record what the owner responds to in them rather
-than copying their visible ingredients. “I like the tension between the product
-photo and the reading column” is actionable; “use the same black, grid, and
-font” is not enough to recreate someone else's work safely or intelligently.
+When owner references exist, use them as selection evidence and fully observe
+the exact visible relationships the owner wants. Copy measured layout, color,
+type, media, interaction, and responsive relationships when the reference
+qualifies for the brief, while preserving the rights boundary around identity,
+wording, assets, and code. Do not paraphrase a requested source relationship
+into the producer's generic substitute.
 
 ## Write a project read
 
 Before writing the main surface, state a concise project read in ordinary
 language: the public surface, audience situation, desired relationship, and
-the proposed organizing answer. It is not a style-name assignment. Ground it in
-the brief, source material, references, and applicable owner preference.
+the proposed selected-reference mapping. It is not a style-name assignment or
+an original visual concept. Ground it in the brief, source material, measured
+references, and applicable owner requirement.
 
 Then name the observable risk. Examples: the subject might feel generic without
 real material presence; a route might be mistaken for an internal worksheet; a
@@ -120,38 +124,38 @@ lose the relationship that makes the page desirable. Choose a proof that can
 settle that risk.
 
 If the project lacks the material required to make its claimed public encounter
-convincing, resolve the input gap, choose an honest alternative medium, or keep
-the result explicitly provisional. Do not disguise missing material with
+convincing, resolve the input gap, qualify a reference that truthfully uses an
+available alternative medium, or keep the result blocked. Do not disguise missing material with
 generic interface chrome, decorative pseudo-data, or invented internal lore.
 
 ## Make a proof that can fail
 
-Render the smallest representative slice that can test the direction before
+Render the complete first-screen slice required to test the direction before
 propagating it: an opening, product encounter, reading passage, service action,
 visual sequence, mobile transformation, or another task-bearing moment. Use
-real approved copy and representative assets wherever available.
+real approved copy and the actual applicable assets.
 
 The proof must be allowed to lose. Include enough of the ordinary body—not
 only a dramatic opening—to reveal whether the direction can support reading,
 comparison, action, support, evidence, and low-intensity content without making
 each one another showcase moment. Compare it with enough genuinely different
-evidence to expose a consequential choice when uncertainty warrants that
+reference evidence to expose a consequential choice when uncertainty warrants that
 contrast. A second direction is useful when it changes the proposed encounter,
 not when it merely swaps a font, palette, image, or ornament on unchanged
-geometry. There is no mandatory concept count, reference count, or proof shape.
+geometry. Meet every candidate, reference, rejection, recording, and proof
+floor in the active contract; never reduce it for speed or convenience.
 
 When the owner says unrelated projects are starting to feel alike, pair this
 proof with [Project Contrast](../quality/project-contrast.md). First define a
-brief-native alternate organizing answer without looking at prior output; only
+brief-qualified alternate reference combination without looking at prior output; only
 then use the smallest authorized nearest-sibling evidence to test whether the
-selected encounter is genuinely project-derived. Do not use previous work as a
+selected encounter is genuinely source-fit for the project. Do not use previous work as a
 style sampler or solve a collision with cosmetic variation.
 
-For an owner recurrence, rejection, or open Showcase, do not begin broad
+For an owner recurrence, rejection, or reference-open Showcase, do not begin broad
 implementation from one verbal concept and a cosmetic "alternate." Bind
-directly reviewable selected and counter proof artifacts, or record the exact
-reason that a counter-proof is unavailable and reopen the decision boundary
-when that limitation matters. Keep their evidence status in the canonical
+directly reviewable selected and counter proof artifacts. If either is
+unavailable, keep the decision blocked. Keep their evidence status in the canonical
 Project Contrast or Direction Challenge record; the calibration record makes
 the project read and human response legible alongside it.
 
@@ -213,8 +217,9 @@ unexplained decoration, or an allegedly uncommon font as a shortcut to taste.
 Those can be excellent inside a fitting answer and terrible inside a weak one.
 Likewise, do not replace familiar template slop with a portable anti-template
 recipe of giant type, saturated panels, numbered editorial devices, hard
-frames, or relentlessly dramatic sections. Those ingredients remain open;
-their repeated rendered relationship must earn its place from this project.
+frames, or relentlessly dramatic sections. Those ingredients are source-open,
+never producer-open; their rendered relationship must reproduce exact-fit
+reference evidence for this project.
 
 After the replacement reaches a complete render, use the
 [artifact credibility and cumulative-pattern review](../quality/artifact-credibility.md)
@@ -229,7 +234,7 @@ and rendered review are evidence for a decision—not permission to copy a
 competitor or invent facts, photos, endorsements, institutions, or cultural
 authority.
 
-Use [art direction](art-direction.md) for the broader creative logic,
+Use [art direction](art-direction.md) for the broader source/state/component transfer,
 [creative exploration](creative-exploration.md) for materially different
 answers, [imagery](imagery-illustration.md) for media rights and accuracy, and
 the [expressive perception review](../../templates/expressive-perception-template.md)

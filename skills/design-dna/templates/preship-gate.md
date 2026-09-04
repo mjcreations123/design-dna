@@ -1,15 +1,20 @@
 # Proportional preship gate
 
 Copy the applicable lines into the project review record. Bind the gate to the
-exact build, routes, states, browser/engine/OS/device condition, widths,
-preferences, date, and reviewer.
+exact final build, authoritative route-manifest ID and SHA-256, every declared
+route/state/wide-narrow cell, browser/engine/OS/device condition, additional
+applicable preferences, date, reviewer, and final `gate.json` verdict.
 Do not use this checklist to manufacture evidence records the project does not
 need.
 
-A failed applicable assurance boundary blocks the corresponding completion or
+A failed or missing applicable assurance boundary blocks the corresponding completion or
 release claim. Aesthetic findings require rendered evidence and contextual
 judgment; no font, palette, punctuation, component, layout, motion, media, or
 ornament category fails by itself.
+
+No quick, demo, sample, small-job, hurry, time, token, cost, missing-tool, or
+convenience condition lowers this gate. Remove an unprovable surface from the
+agreed deliverable or keep the candidate blocked; never reduce the evidence.
 
 ## Contents
 
@@ -40,6 +45,15 @@ ornament category fails by itself.
       contact, tracking, publication, or live-system mutation was introduced.
 - [ ] Repository, platform, brand, security, and explicit project contracts
       were preserved within scope; unrelated work remains intact.
+- [ ] The completed final `gate.json` binds the current gate and validator
+      producer hashes, route-manifest ID and hash, final build/tree identity,
+      predecessor first-screen authorization, unique complete coverage matrix,
+      direct evidence hashes, and `GATE PASS` verdict. Each direct artifact was
+      independently validated rather than trusted because the gate named it.
+- [ ] Every manifest URL returned 2xx, reached its exact normalized declared
+      destination without converging redirects, and rendered its declared
+      route/state at every required viewport. Omitted or duplicate cells block
+      release.
 - [ ] The deployed or served public root excludes `.design-dna/`, source
       packets, review evidence, transaction recovery, credentials, and browser
       profiles. Disposable task-owned server and browser state was stopped and
@@ -105,9 +119,19 @@ ornament category fails by itself.
       extraction sheet was walked row by row, and remaining deviations are
       recorded with reasons for the owner's knowing approval.
 - [ ] Project-relevant wide and narrow captures were saved and opened. Every
-      materially distinct route body is represented; route sampling is used
-      only when the same system genuinely makes the omitted route redundant
-      and the rationale is recorded.
+      authoritative route/state is directly represented; no sampled or
+      stand-in route clears another route.
+- [ ] The first-screen checkpoint is used only to authorize continued build
+      work. It is not presented as post-build QA or a finished prototype for a
+      multi-route/full-site brief. The final build has a distinct ID and a
+      complete final gate over every authoritative route/state/profile.
+- [ ] Generated live-browser QA has no unresolved clipping, control collision,
+      fixed-rail overlap, cross-profile hidden control, dead/cosmetic-only
+      primary action, blocked handoff, overlay inertness/stacking/initial-focus/
+      trap/Escape/return, ARIA state, keyboard, reduced-motion, deep-link,
+      reload, dead-end, semantic-equivalence, or primary experience-path
+      finding at wide, narrow, and derived short-height conditions. DOM/source
+      inspection discovered candidates but did not certify them.
 - [ ] Additional risk-selected states were reviewed where applicable: short
       height, intermediate width, 200 percent zoom, text spacing, open menus or
       dialogs, long content, empty/error/success, reduced motion, no
@@ -200,6 +224,15 @@ ornament category fails by itself.
 - [ ] Media was inspected as a rendered set for subject accuracy, crop,
       quality, continuity, artifacts, rights, privacy, representation,
       attribution, alternatives, and performance.
+- [ ] A selected source's moving or interactive medium remains moving and
+      interactive in the final build; a still image or poster frame does not
+      substitute for its recorded temporal behavior. Every final font, mark,
+      palette, component, and behavior binds exact current selected observation
+      bytes, source state, and rendered component evidence.
+- [ ] Reused source records were requalified for the current brief and
+      regenerated or revalidated against current URL/content bytes, relevant
+      inner pages/states, recording, producer/runtime hashes, and route
+      manifest. Convenience reuse of stale observations is blocking.
 - [ ] Planned-public media was inspected for visible private information and
       embedded EXIF/IPTC/XMP/GPS, device, author, thumbnail, filename, and
       container metadata as applicable. Sensitive data was removed without
@@ -255,9 +288,10 @@ ornament category fails by itself.
       relevant functional proof are recorded. No empty decorative admin was
       used to imply a live operation.
 - [ ] Consequential type, composition, media, color, material, ornament,
-      interaction, motion, and content decisions can be explained from this
-      project or accepted aesthetic judgment rather than a hidden portable
-      recipe.
+      interaction, motion, and visually structural content decisions bind to
+      exact selected reference ranks, observations, measurements, or inherited
+      project authority. Neither producer nor owner approval launders an
+      unsourced component.
 - [ ] Where visual character or owner taste is material, a rendered
       first-impression and surface-fidelity review confirms that the work reads
       as a credible public encounter for this subject and audience rather than
@@ -274,9 +308,9 @@ ornament category fails by itself.
       perform through one unexplained maximum-intensity cluster. Repeated
       display scale, color fields, hard or soft containers, numbering, labels,
       arrows, cards, effects, crops, CTA grammar, or rhetorical cadence are
-      retained only where the rendered relationship has a project, brand,
-      task, content-family, or maintenance reason. No ingredient was failed by
-      category alone.
+      retained only where the rendered relationship reproduces its selected
+      source or inherited brand/system authority and fits the real task and
+      content. No ingredient was failed by category alone.
 - [ ] The represented business, organization, product, service, publication,
       or concept remains plausible without access to the maker's direction
       rationale. The scope answers the ordinary visitor questions it actually
@@ -289,31 +323,34 @@ ornament category fails by itself.
       documentary ambiguity were revised or explicitly bounded rather than
       accepted because each image was technically clean.
 - [ ] The opening, body sequence, hierarchy, proof, action logic, and ending
-      are supported by the current project. The candidate was not failed merely
+      reproduce their exact selected-source mappings with truthful project
+      content. The candidate was not failed merely
       because another legitimate industry could use a similar composition.
       When cross-project recurrence is in scope, the comparison uses actual
       owner-authorized output and names justified shared foundations separately
       from unexplained producer grammar.
-- [ ] Prominent cards, panels, borders, and background plates represent real
-      units, states, ownership, interaction, material, or context—or have
-      another recorded compositional reason. The whole route was checked for
+- [ ] Prominent cards, panels, borders, and background plates reproduce their
+      mapped source relationship while representing real units, states,
+      ownership, interaction, material, or context. The whole route was checked for
       automatic cardification, panelification, and alternating-background
       section wallpaper; no container ingredient is prohibited by category.
 - [ ] Buttons perform actions and links navigate. Filled rectangles,
-      underlines, text links, icons, and other treatments follow task priority,
-      recognition, accessibility, and the selected direction. The whole action
+      underlines, text links, icons, and other treatments reproduce their
+      source mapping while preserving task priority, recognition, and access.
+      The whole action
       set was checked for unexplained primary-button and underlined-secondary-
       link monotony without creating an inverse shape or underline rule.
 - [ ] When Project Contrast is active, the selected direction, its
-      brief-native counter-answer, the comparison authority or limitation, and
+      brief-qualified reference-backed counter-answer, the comparison authority or limitation, and
       the wide/narrow collision-test evidence are bound to the exact candidate.
       A “still too close” result reopens the earliest shared encounter decision;
       a font, palette, shape, or effect swap alone does not close it.
 - [ ] Prominent emphasis, labels, cards, stats, status, diagrams, gradients,
       effects, and motion communicate or contribute intentionally; no
       ingredient was removed merely because it appeared on a trend list.
-- [ ] Responsive behavior recomposes the creative logic and task rather than
-      only shrinking desktop or turning every relationship into the same card.
+- [ ] Responsive behavior reproduces the selected reference's narrow
+      recomposition and preserves the task rather than only shrinking desktop
+      or turning every relationship into the same card.
 - [ ] Direct owner rejection or user confusion has been treated as new
       evidence: related routes and system consumers were re-audited, the cause
       was revised, and the affected conditions were rerendered.

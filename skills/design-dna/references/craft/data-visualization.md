@@ -7,7 +7,7 @@ prescribing a chart menu, visual grammar, dimensionality, or aesthetic style.
 ## Contents
 
 - [Frame the evidence and question](#frame-the-evidence-and-question)
-- [Choose an open but honest form](#choose-an-open-but-honest-form)
+- [Select a source-bound and honest form](#select-a-source-bound-and-honest-form)
 - [Make encoding accountable](#make-encoding-accountable)
 - [Preserve uncertainty and absence](#preserve-uncertainty-and-absence)
 - [Interaction and access](#interaction-and-access)
@@ -24,12 +24,14 @@ Do not invent data, conceal inconvenient variation, imply precision the source
 does not support, or present a fixture as current. A visual form cannot make
 weak evidence stronger.
 
-## Choose an open but honest form
+## Select a source-bound and honest form
 
 Start from the relationship people need to perceive or explore: exact values,
 ranking, change, distribution, correlation, composition, geography,
 uncertainty, flow, topology, narrative, or another project-specific question.
-Then choose any form that communicates it faithfully.
+Then select a measured reference form built for a comparable question and
+content relationship, and adapt it faithfully. The data determines truthful
+encoding; the producer does not invent the visible grammar.
 
 Tables, conventional charts, maps, diagrams, illustrations, pictorial
 encodings, spatial interfaces, animation, 3D, sound, physical metaphors, and
@@ -45,7 +47,7 @@ when its presentation is visually expressive.
 
 ## Make encoding accountable
 
-Record the relevant `creative_logic` and observable mapping from data to
+Record the selected reference rank/observation/hash/state, mapped component, and observable mapping from data to
 position, length, area, color, shape, texture, motion, depth, sound, annotation,
 or interaction. The mapping may be singular or mixed. Keep units, precision,
 sorting, aggregation, intervals, normalization, and transformations available
@@ -87,18 +89,20 @@ merely because it is not the shortest path to a value.
 
 ## Adapt and verify
 
-Recompose around the question when space, content, locale, input, or user
-settings change. A smaller surface may prioritize, disclose, scroll with
-context, transform the encoding, or provide a task-specific alternate view;
-it need not shrink or reproduce the same geometry.
+Use the selected reference's narrow transformation when space, content, locale,
+input, or user settings change, or qualify another source with the needed
+behavior. A smaller surface may prioritize, disclose, scroll with context,
+transform the encoding, or provide a task-specific alternate view only when
+that visible response is source-bound; it need not shrink the same geometry.
 
 For a content-bearing explanatory diagram, preserve the labels and
 relationships that carry its claim. At a project-relevant narrow condition,
 verify that a person can identify the parts, follow the intended relationship,
 and recover context while moving through the graphic. Recomposition,
 segmentation, an overview plus detail, contextual pan or zoom, or an equivalent
-structured explanation may work. Choose from the question and interaction
-conditions; this is not a prescribed diagram style or mobile recipe.
+structured explanation may work. Select from qualified reference evidence for
+the question and interaction conditions; this is not a prescribed diagram
+style or mobile recipe and not a producer choice.
 An overview preserves more than the outer silhouette when names, callouts,
 unknowns, statuses, or relationship categories determine what the reader must
 look for. Confirm that the initial view inventories those consequential parts,

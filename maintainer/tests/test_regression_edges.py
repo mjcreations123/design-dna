@@ -138,6 +138,7 @@ class ProjectStateRegressionTests(unittest.TestCase):
                 "--json",
             )
             self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            reported = json.loads(second.stdout)
             state = json.loads(
                 (project / ".design-dna" / "state.json").read_text(encoding="utf-8")
             )
@@ -145,6 +146,12 @@ class ProjectStateRegressionTests(unittest.TestCase):
                 state["records"],
                 ["direction", "visual-review", "assets"],
             )
+            self.assertEqual(reported["result_scope"], "persisted-effective-state")
+            self.assertEqual(reported["records"], state["records"])
+            self.assertEqual(
+                reported["assurance_profiles"], state["assurance_profiles"]
+            )
+            self.assertEqual(reported["requested"]["records"], ["assets"])
             self.assertEqual(direction.read_text(encoding="utf-8"), original)
             self.assertTrue((project / ".design-dna" / "assets.yml").is_file())
             self.assertEqual(

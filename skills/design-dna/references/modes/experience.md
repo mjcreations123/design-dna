@@ -4,9 +4,10 @@ Use when exploration, story, sequence, place, culture, or creative encounter is
 central. Typical surfaces include exhibitions, campaigns, cultural projects,
 narrative portfolios, editorial features, and product explorations.
 
-Mode describes the visitor's job, not a visual style. Experience work can be
+Mode describes the visitor's job, not a visual style. Experience work may be
 singular or plural, linear or open, quiet or overwhelming, familiar or
-experimental, still or highly temporal when the brief supports it.
+experimental, still or highly temporal only when brief-qualified selected
+references supply those relationships.
 
 ## Define the encounter
 
@@ -21,15 +22,16 @@ Record:
 
 Do not require an orientation-development-climax-resolution arc, one coherent
 idea, or a singular media system. Several independent moments can be the right
-form; one restrained relationship can also be enough. Record the candidate's
-own `creative_logic` and observable decisions.
+form; one restrained relationship can also be enough. Record the selected
+reference ranks, observation hashes, mapped source states and components, and observable transfer
+decisions; the candidate has no producer-owned visual logic.
 
 ## Direct media and interaction
 
 Photography, illustration, text, audio, video, 3D, typography, space, sound,
 motion, and interaction may work together, separately, or not appear at all.
-Choose their relationships from the material and audience rather than this
-mode.
+Copy their relationships from qualified measured references whose material and
+audience fit this brief; this mode and producer taste are not visual authority.
 
 - Preserve provenance, rights, privacy, captions, transcripts, factual status,
   and cultural boundaries.
@@ -37,8 +39,8 @@ mode.
 - Adapt crops, controls, loading, and performance to relevant devices.
 - Keep interaction honest and prevent unsupported media from impersonating
   evidence.
-- Learn relationships from references without copying identity, assets,
-  composition, or proprietary behavior.
+- Reproduce measured reference composition and behavior without copying
+  identity, wording, assets, code, or other protected material.
 
 Atmosphere, beauty, disorientation, surprise, play, and ornament may be valid
 goals. They fail when they conflict with the approved experience, make core
@@ -61,12 +63,14 @@ accessibility contract require.
 
 ## Review
 
-Judge the rendered work against its declared encounter and owner authority.
+Judge the rendered work against its exact selected observations, declared
+encounter, and owner authority.
 Look for a mismatch among material, sequence, media, interaction, typography,
 content depth, cultural representation, and runtime behavior. Do not flag a
 motif, effect, intensity, or plurality by itself.
 
-Test relevant entry points, routes, devices, content, media failure, loading,
-preferences, keyboard, touch, captions/transcripts, contrast, zoom,
-performance, deep links, history, exit, and fallback behavior. Record what was
-not performed.
+Test every route/state/wide-narrow cell in the authoritative manifest plus all
+applicable devices, content, media failure, loading, preferences, keyboard,
+touch, captions/transcripts, contrast, zoom, performance, deep links, history,
+exit, and fallback behavior. Record genuine unavailable evidence as blocked;
+do not substitute a smaller sample.

@@ -3,8 +3,8 @@
   "record_type": "design-dna-codex-validator-trust-pin",
   "logical_id": "plugin-creator/validate_plugin.py",
   "path_suffix": "/skills/.system/plugin-creator/scripts/validate_plugin.py",
-  "sha256": "7a75b3339396402ad9a40ddc1e037e01c54e71a53a3bfb22a01b1ca235c50206",
-  "bytes": 22172,
+  "sha256": "1e6cb914505b458856c2cfab7d18a224731c743ef47e0c9d78afe64f35b67f7c",
+  "bytes": 22396,
   "support_files": [
     {
       "logical_id": "plugin-creator/identifier_validation.py",
@@ -13,8 +13,8 @@
       "bytes": 804
     }
   ],
-  "reviewed_at": "2026-08-23",
-  "review_due": "2026-11-21",
-  "review_basis": "Reviewed the complete locally installed Plugin Creator validator and its identifier-validation import before validating the Design DNA candidate.",
+  "reviewed_at": "2026-09-04",
+  "review_due": "2026-12-03",
+  "review_basis": "Reviewed the complete installed validator and unchanged identifier-validation import against official openai/codex commit 84aa752; its change from the prior trusted revision is formatter-only and the Python AST is identical.",
   "trust_boundary": "Publisher-reviewed pins cover the validator and declared sibling import, while the attestation separately binds the current Python executable and pure-Python PyYAML snapshot. It does not bind jsonschema, every Python standard-library or runtime file, or provide an operating-system filesystem sandbox. It is not an OpenAI signature or proof that a future revision is equivalent."
 }

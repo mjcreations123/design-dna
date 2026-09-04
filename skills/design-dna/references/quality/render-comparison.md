@@ -22,9 +22,13 @@ copied or relocated evidence is rejected.
 
 ## Compare
 
-Use Node.js 20 or newer. Playwright may resolve normally from the calling
-environment. If it lives in another `node_modules` directory, set
-`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` to that directory.
+Use Node.js 20 or newer. The comparator first resolves an explicit absolute
+`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` (and fails closed when it is invalid), then
+the calling project's exact `node_modules`, a recognized source checkout's
+`maintainer/node_modules`, and exact `node_modules` directories inside the
+installed skill. It never installs or globally searches for a module. If the project does not already
+provide Playwright, set the explicit variable to an existing absolute
+`node_modules` directory.
 
 ```text
 node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_render_reviews.mjs" "BASELINE_REVIEW/render-review.json" "CANDIDATE_REVIEW/render-review.json" --output "COMPARISON_OUTPUT" --comparison-id "BUILD_A-vs-BUILD_B" --masks none

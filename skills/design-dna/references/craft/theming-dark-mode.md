@@ -4,13 +4,13 @@ Use this when a project ships more than one color scheme, asks for dark mode,
 or must follow an operating-system preference. A second scheme is another
 rendered state of the design, not a mechanical filter.
 
-## Decide from the project
+## Bind the scheme to project and reference authority
 
 Dark, light, high-contrast, seasonal, user-selected, and single-scheme systems
-can all be appropriate. Decide from audience, use duration, environment,
-brand, content, platform convention, accessibility, maintenance, and owner
-preference. Do not assume that a particular vertical needs or does not need
-dark mode.
+can all be appropriate. Use audience, use duration, environment, brand,
+content, platform convention, accessibility, maintenance, and owner requirements
+to qualify references that already carry the needed scheme relationships. Do
+not assume a vertical needs dark mode or let the producer invent one.
 
 Record whether the scheme is:
 
@@ -29,9 +29,10 @@ links, focus, selection, disabled, warning, error, success, overlays, media
 scrims, fields, charts, maps, code, SVG, canvas, and native controls.
 
 Pure black, pure white, saturated accents, unchanged brand colors, shadows,
-lighter elevated surfaces, borders, and glows are all available. Judge them
-from rendered contrast, halation, hierarchy, brand fit, and composition. No
-color value or elevation method is globally forbidden.
+lighter elevated surfaces, borders, and glows do not fail by category, but each
+applied value and relationship must reproduce a selected measured reference or
+approved inherited brand system. Judge source fidelity, rendered contrast,
+halation, hierarchy, brand fit, and composition.
 
 Typography may need optical changes between schemes, but do not require a
 weight or spacing adjustment without observing the real face and background.
@@ -48,8 +49,9 @@ needs durable handoff evidence.
 
 ## Define the preference contract
 
-Choose system following, a binary control, a three-state control, per-page
-choice, or no manual control from the product contract. A three-state system
+Use system following, a binary control, a three-state control, per-page choice,
+or no manual control only when the product contract requires that behavior;
+copy the visible control from a qualified reference. A three-state system
 is useful when users need system, light, and dark separately, but it is not a
 universal requirement.
 

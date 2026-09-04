@@ -13,7 +13,8 @@ Keep public claims and staff permissions independently truthful.
 
 Mode describes the operational job, not a visual style. Familiar conventions
 often reduce risk, but expressive, branded, dense, sparse, novel, or highly
-visual treatment can be correct when the task and evidence support it.
+visual treatment can be used only when an established approved system or
+brief-qualified measured reference supplies it.
 
 ## Model the task and authority
 
@@ -46,10 +47,11 @@ and cannot be presented as current production state. When authorized and safe,
 verify critical traces end to end. Otherwise keep them unverified and remove,
 disable, or qualify claims that depend on them.
 
-## Design the real operational patterns
+## Bind the real operational patterns
 
-Choose patterns from the task rather than a dashboard recipe. Depending on the
-work, this may include finding and inspecting, editing, creating, reviewing,
+Use the task to qualify shipped-product references, then reproduce their
+fitting operational patterns rather than inventing a dashboard recipe.
+Depending on the work, this may include finding and inspecting, editing, creating, reviewing,
 submitting, scheduling, acting in bulk, reconciling, importing, exporting,
 monitoring, or recovering.
 
@@ -73,17 +75,19 @@ These are functional possibilities, not required sections or visual forms.
 - Adapt complex information deliberately rather than translating every form
   into the same mobile component.
 
-Use `creative_logic` and observable decisions for the visual system. Do not
-reject cards, spaciousness, density, animation, ornament, strong branding, or
-unusual composition by ingredient. Revise when the rendered treatment impedes
+Use exact selected-source/state/component mappings and observable transfer decisions for the visual
+system. Do not reject cards, spaciousness, density, animation, ornament,
+strong branding, or unusual composition by ingredient, but require exact
+source authority for each. Revise the mapping when the rendered treatment impedes
 decisions, misrepresents state, breaks access, or exposes an unexplained
 producer default.
 
 ## Verify
 
-Test each relevant role and critical transition with realistic data. Cover
-applicable keyboard, focus, touch, permissions, validation, duplicate action,
-interruption, refresh, concurrency, slow and failed networks, offline/stale
-state, import/export, destructive recovery, audit evidence, and responsive
-operational constraints. Record unperformed real-source checks separately
-from presentation proof.
+Test every role, route/state/wide-narrow manifest cell, and critical transition
+with realistic data. Cover applicable keyboard, focus, touch, permissions,
+validation, duplicate action, interruption, refresh, concurrency, slow and
+failed networks, offline/stale state, import/export, destructive recovery,
+audit evidence, and responsive operational constraints. Keep unavailable
+real-source checks blocked rather than treating a smaller presentation sample
+as proof.

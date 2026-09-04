@@ -46,10 +46,47 @@ A clean source scan never proves visual quality.
 
 ## Rendered review cannot launch a browser
 
-Install a compatible Playwright package and browser, supply
-`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR`, or pass an explicit trusted browser
-executable. The harness must report the unavailable capability rather than
-silently substituting source-only review.
+An explicit browser executable does **not** replace the Playwright JavaScript
+module: it is consulted only after that module resolves. The installed skill
+never installs, downloads, bundles, or globally searches for either resource.
+
+From the package root, first check the exact installed runtime against the
+actual project. This is a read-only launch check for the current terminal
+process; it does not prove that Codex or Claude Code activated the skill:
+
+```text
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
+```
+
+On macOS or Linux, use `.venv/bin/python` and normal slash separators. The
+runtime resolves only these existing local module locations, in order:
+
+1. an explicit absolute `DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` (an invalid explicit
+   path fails rather than falling through);
+2. the target project's exact `node_modules` directory;
+3. `maintainer/node_modules` beside a recognized source checkout; and
+4. ordinary Node resolution from the installed skill.
+
+For a package checkout's pinned browser closure on Windows PowerShell:
+
+```powershell
+npm.cmd --prefix maintainer ci --ignore-scripts --no-audit --no-fund
+npm.cmd --prefix maintainer exec -- playwright install chromium
+$env:DESIGN_DNA_PLAYWRIGHT_MODULE_DIR = (Resolve-Path ".\maintainer\node_modules").Path
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
+```
+
+Alternatively, use the project's already-installed compatible Playwright; the
+preflight discovers that project-local module without an environment variable.
+Run the installed script directly when the installer is unavailable:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/browser_preflight.mjs" --project-root "ABSOLUTE_PROJECT" --launch
+```
+
+The preflight performs no installation or download. If it reports a missing
+module or browser, keep required rendered evidence blocked; do not relabel a
+source-only check as browser QA.
 
 ## A project record no longer validates
 

@@ -20,7 +20,7 @@
     "review"
   ],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
     "created_with": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": ".*\\S.*"},
     "record_status": {"$ref": "#/$defs/lifecycleStatus"},
     "classification": {"enum": ["internal", "confidential"]},
@@ -113,8 +113,9 @@
     "selectedDirection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state", "observable_predictions"],
+      "required": ["source_mapping", "organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state", "observable_predictions"],
       "properties": {
+        "source_mapping": {"oneOf": [{"$ref": "#/$defs/sourceMapping"}, {"type": "null"}]},
         "organizing_answer": {"$ref": "#/$defs/draftableText"},
         "opening_encounter": {"$ref": "#/$defs/draftableText"},
         "dominant_content_unit": {"$ref": "#/$defs/draftableText"},
@@ -126,9 +127,10 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "decision", "project_basis", "rendered_condition", "expected_observation", "status"],
+            "required": ["id", "source_mapping", "decision", "project_basis", "rendered_condition", "expected_observation", "status"],
             "properties": {
               "id": {"$ref": "#/$defs/id"},
+              "source_mapping": {"$ref": "#/$defs/sourceMapping"},
               "decision": {"$ref": "#/$defs/nonEmptyString"},
               "project_basis": {"$ref": "#/$defs/nonEmptyString"},
               "rendered_condition": {"$ref": "#/$defs/nonEmptyString"},
@@ -142,17 +144,18 @@
     "exploration": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["first_answer_risk", "challenge_method", "challenging_answer", "selection_reason", "why_sufficient"],
+      "required": ["first_answer_risk", "challenge_method", "challenging_answer", "challenging_source_mapping", "selection_reason", "why_sufficient"],
       "properties": {
         "first_answer_risk": {"$ref": "#/$defs/draftableText"},
         "challenge_method": {"oneOf": [{"enum": ["counter-model", "alternate-proof", "reference-decomposition", "not-needed"]}, {"type": "null"}]},
         "challenging_answer": {"$ref": "#/$defs/draftableText"},
+        "challenging_source_mapping": {"oneOf": [{"$ref": "#/$defs/sourceMapping"}, {"type": "null"}]},
         "selection_reason": {"$ref": "#/$defs/draftableText"},
         "why_sufficient": {"$ref": "#/$defs/draftableText"}
       }
     },
     "designSignature": {
-      "description": "Project-derived qualitative axes selected because they materially matter here. This is not a prescribed visual-style inventory or quota.",
+      "description": "Qualitative axes copied from the selected exact reference observation and retained because they materially matter here. Project basis may explain relevance but cannot authorize a visual axis by itself.",
       "type": "object",
       "additionalProperties": false,
       "required": ["selection_status", "selection_basis", "axes"],
@@ -165,9 +168,10 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["axis", "status", "project_basis", "decision", "observable_effect"],
+            "required": ["axis", "source_mapping", "status", "project_basis", "decision", "observable_effect"],
             "properties": {
               "axis": {"$ref": "#/$defs/id"},
+              "source_mapping": {"$ref": "#/$defs/sourceMapping"},
               "group": {"oneOf": [{"enum": ["encounter", "surface-language"]}, {"type": "null"}]},
               "status": {"enum": ["selected", "not-applicable"]},
               "project_basis": {"$ref": "#/$defs/nonEmptyString"},
@@ -295,15 +299,27 @@
       }
     },
     "routeCoverage": {
-      "description": "A declared evidence boundary for public routes. It is not a page-count, style, or capture quota.",
+      "description": "Exact direct coverage of every authoritative route-manifest row; no route may stand in for another.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["mode", "rationale"],
+      "required": ["mode", "rationale", "manifest", "manifest_id", "routes"],
       "properties": {
-        "mode": {"enum": ["representative", "all-discovered-public-routes", "sampled-with-rationale"]},
+        "mode": {"const": "all-authoritative-manifest-routes"},
         "rationale": {"$ref": "#/$defs/draftableText"},
-        "discovered_route_map": {
-          "description": "When static public routes are safely discovered, map each one either to its own reviewed wide/narrow capture pair or to a job/system-equivalent reviewed representative. This is coverage evidence, not a route-count quota.",
+        "manifest": {
+          "oneOf": [
+            {
+              "allOf": [
+                {"$ref": "#/$defs/fileRef"},
+                {"properties": {"path": {"const": ".design-dna/route-manifest.json"}}}
+              ]
+            },
+            {"type": "null"}
+          ]
+        },
+        "manifest_id": {"oneOf": [{"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"}, {"type": "null"}]},
+        "routes": {
+          "description": "One directly captured row for every route in the authoritative manifest.",
           "type": "array",
           "maxItems": 512,
           "items": {"$ref": "#/$defs/routeCoverageMapEntry"}
@@ -313,12 +329,24 @@
     "routeCoverageMapEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["route", "coverage", "representative_route", "equivalence_rationale"],
+      "required": ["route_key", "route", "coverage", "source_mapping"],
       "properties": {
+        "route_key": {"$ref": "#/$defs/id"},
         "route": {"$ref": "#/$defs/nonEmptyString"},
-        "coverage": {"enum": ["captured", "represented"]},
-        "representative_route": {"$ref": "#/$defs/draftableText"},
-        "equivalence_rationale": {"$ref": "#/$defs/draftableText"}
+        "coverage": {"const": "captured"},
+        "source_mapping": {"$ref": "#/$defs/sourceMapping"}
+      }
+    },
+    "sourceMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rank", "id", "observation", "sha256", "state_id"],
+      "properties": {
+        "rank": {"type": "integer", "minimum": 1},
+        "id": {"type": "string", "pattern": "^strong-[1-9][0-9]*$"},
+        "observation": {"type": "string", "pattern": "^\\.design-dna/references/strong-[1-9][0-9]*-observation\\.json$"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "state_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"}
       }
     },
     "evidenceBinding": {
@@ -494,10 +522,12 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "route", "viewport", "capture_mode", "capture_state", "candidate_build_id", "file", "render_review"],
+            "required": ["id", "route_key", "route", "source_mapping", "viewport", "capture_mode", "capture_state", "candidate_build_id", "file", "render_review"],
             "properties": {
               "id": {"$ref": "#/$defs/id"},
+              "route_key": {"$ref": "#/$defs/id"},
               "route": {"$ref": "#/$defs/nonEmptyString"},
+              "source_mapping": {"$ref": "#/$defs/sourceMapping"},
               "viewport": {"$ref": "#/$defs/viewport"},
               "capture_mode": {
                 "description": "The rendered-review harness emits a full-page PNG. This mode describes image content, not whether the captured state was reached through interaction.",

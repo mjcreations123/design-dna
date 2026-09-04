@@ -30,19 +30,20 @@ import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 import zlib
 from datetime import date, datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import NoReturn
-from urllib.parse import urlsplit
+from urllib.parse import quote, unquote_to_bytes, urlsplit, urlunsplit
 
 
 STATE_SCHEMA_VERSION = 2
 RECORD_SCHEMA_VERSION = 1
 ASSET_SCHEMA_VERSION = 2
-EVIDENCE_CONTRACT_VERSION = 2
+EVIDENCE_CONTRACT_VERSION = 3
 PROPORTIONAL_EVIDENCE_CONTRACT = "proportional-evidence-v1"
-DIRECTION_CONTRACT_PROJECT_DERIVED = "project-derived-organizing-logic-v1"
+DIRECTION_CONTRACT_REFERENCE_SOURCED = "reference-sourced-organizing-logic-v1"
 DIRECTION_CONTRACT_QUICK_EXEMPT = "quick-repair-exempt"
 REFERENCE_SOURCE_REGISTRY_PATH = (
     Path(__file__).resolve().parents[1]
@@ -174,6 +175,9 @@ RECORD_TEMPLATES = {
     "reference-dossier": (
         "reference-dossier.md", "reference-dossier-template.md",
     ),
+    "route-manifest": (
+        "route-manifest.json", "route-manifest-template.json",
+    ),
     "direction": ("direction.md", "direction-template.md"),
     "direction-proof": ("direction-proof.md", "direction-proof-template.md"),
     "route-family": ("route-family.json", "route-family-template.json"),
@@ -200,7 +204,7 @@ PROFILES = {
     "greenfield": ("direction", "visual-review"),
     "standard": ("direction", "visual-review"),
     "enterprise-candidate": (
-        "direction", "reference-dossier", "visual-review",
+        "direction", "reference-dossier", "route-manifest", "visual-review",
     ),
     "connected-public-experience": (
         "direction",
@@ -211,11 +215,15 @@ PROFILES = {
         "exploration",
         "taste-calibration",
         "direction",
+        "reference-dossier",
+        "route-manifest",
         "direction-proof",
         "visual-review",
     ),
     "project-contrast": (
         "direction",
+        "reference-dossier",
+        "route-manifest",
         "project-contrast",
         "visual-review",
     ),
@@ -223,6 +231,8 @@ PROFILES = {
         "exploration",
         "taste-calibration",
         "direction",
+        "reference-dossier",
+        "route-manifest",
         "direction-challenge",
         "direction-proof",
         "visual-review",
@@ -281,15 +291,24 @@ REQUEST_PROFILE_ASSURANCE = {
     "standard": ("standard",),
     "enterprise-candidate": ("standard", "enterprise-candidate"),
     "greenfield": ("standard",),
-    "showcase": ("showcase",),
+    # A Showcase or multi-root public direction is an addition to the fresh
+    # public-site baseline, never a way to drop it.  Persist the cumulative
+    # profiles explicitly so downstream tools and humans can see that the
+    # reference dossier, public-copy review, and Enterprise Candidate closure
+    # still apply.
+    "showcase": ("standard", "enterprise-candidate", "showcase"),
     "connected-public-experience": (
         "standard", "connected-public-experience",
     ),
-    "direction-challenge": ("direction-challenge",),
-    "project-contrast": ("standard", "project-contrast"),
+    "direction-challenge": (
+        "standard", "enterprise-candidate", "showcase", "direction-challenge",
+    ),
+    "project-contrast": (
+        "standard", "enterprise-candidate", "project-contrast",
+    ),
     "range-study": ("standard", "range-study"),
     "batch-study": ("standard", "batch-study"),
-    "high-risk": ("high-risk",),
+    "high-risk": ("standard", "high-risk"),
     # The compatibility validation preset selects one supplemental research
     # record.  It is not a declaration that the project is High-risk.
     "validation": ("standard",),
@@ -319,10 +338,24 @@ def normalize_assurance_profiles(
             + ", ".join(sorted(unknown))
             + ".",
         )
+    # Profiles are cumulative contracts.  Normalize both new requests and
+    # persisted legacy state toward the complete prerequisite set so an old
+    # `showcase` or `direction-challenge` label cannot silently waive the
+    # reference-led public-site baseline on migration or readiness checks.
+    if "direction-challenge" in observed:
+        observed.update({"showcase", "enterprise-candidate", "standard"})
+    if "showcase" in observed:
+        observed.update({"enterprise-candidate", "standard"})
+    if "project-contrast" in observed:
+        observed.update({"enterprise-candidate", "standard"})
+    if "enterprise-candidate" in observed:
+        observed.add("standard")
+    if observed & {
+        "connected-public-experience", "range-study", "batch-study", "high-risk"
+    }:
+        observed.add("standard")
     if observed - {"quick"}:
         observed.discard("quick")
-    if observed & {"showcase", "direction-challenge", "high-risk"}:
-        observed.discard("standard")
     if not observed:
         observed.add("standard")
     return tuple(
@@ -549,7 +582,7 @@ def evidence_contract_payload(
         "direction_contract": (
             DIRECTION_CONTRACT_QUICK_EXEMPT
             if canonical_profiles == ("quick",)
-            else DIRECTION_CONTRACT_PROJECT_DERIVED
+            else DIRECTION_CONTRACT_REFERENCE_SOURCED
         ),
         "applicable_capabilities": list(capabilities),
         "extension_records": list(extension_records),
@@ -587,7 +620,7 @@ def validate_evidence_contract(
     expected_direction_contract = (
         DIRECTION_CONTRACT_QUICK_EXEMPT
         if normalize_assurance_profiles(assurance_profiles) == ("quick",)
-        else DIRECTION_CONTRACT_PROJECT_DERIVED
+        else DIRECTION_CONTRACT_REFERENCE_SOURCED
     )
     if payload.get("direction_contract") != expected_direction_contract:
         raise StateError(
@@ -742,10 +775,17 @@ def migrate_evidence_contract(
         upgraded["direction_contract"] = (
             DIRECTION_CONTRACT_QUICK_EXEMPT
             if normalize_assurance_profiles(assurance_profiles) == ("quick",)
-            else DIRECTION_CONTRACT_PROJECT_DERIVED
+            else DIRECTION_CONTRACT_REFERENCE_SOURCED
         )
     elif isinstance(payload, dict):
         upgraded = dict(payload)
+        if upgraded.get("version") == 2:
+            upgraded["version"] = EVIDENCE_CONTRACT_VERSION
+            upgraded["direction_contract"] = (
+                DIRECTION_CONTRACT_QUICK_EXEMPT
+                if normalize_assurance_profiles(assurance_profiles) == ("quick",)
+                else DIRECTION_CONTRACT_REFERENCE_SOURCED
+            )
     else:
         return validate_evidence_contract(payload, assurance_profiles)
 
@@ -833,9 +873,14 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
     },
     "reference-dossier": {
         "Research frame",
+        "Candidate comparison",
         "Strong references",
         "Negative counterexamples",
         "Selected synthesis",
+        "Route manifest",
+        "Sequence reads",
+        "Signature transfer",
+        "Component sources",
     },
     "direction": {
         "Identity and outcome",
@@ -843,7 +888,7 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
         "Routes, flows, and states",
         "Evidence, content, and authority",
         "Research and exploration",
-        "Creative logic",
+        "Source mappings and observable decisions",
         "System and implementation",
         "Quality and specialist contracts",
         "Acceptance",
@@ -851,7 +896,7 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
     "direction-proof": {
         "Identity",
         "Constraints and assumptions",
-        "Creative logic under test",
+        "Reference mappings under test",
         "Proof evidence",
         "Perception and decision test",
         "Outcome",
@@ -884,7 +929,7 @@ LEGACY_REQUIRED_RECORD_SECTIONS = {
     "handoff": {
         "Identity and scope",
         "Sources of truth and authority",
-        "Creative logic and design decisions",
+        "Source mappings and design decisions",
         "System lifecycle",
         "Operations",
         "Verification",
@@ -922,7 +967,7 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         ),
         "Unproven behavior or missing evidence",
         "Decision",
-        "Selected candidate ID and `creative_logic`",
+        "Selected candidate ID and source mapping",
         "Why it best fits the actual brief and constraints",
         "Why alternatives lost without creating global bans",
         "Accountable-owner disposition",
@@ -961,9 +1006,9 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         "Candidate identities and directly reviewable proof",
         "What the comparison changed",
         "Research or proof not performed and why",
-        "`logic_id`",
-        "`statement`",
-        "`evidence`",
+        "`source_mapping_id`",
+        "`mapped_relationship`",
+        "`source_evidence`",
         "`limits`",
         "`status`",
         "`extensions`",
@@ -1009,15 +1054,15 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         "Honest final readiness statement",
     ),
     "direction-proof": (
-        "Candidate and `creative_logic.logic_id`",
+        "Candidate and source mapping ID",
         "Direction/exploration record and source-packet identity",
         "Candidate/build ID and reversible checkpoint",
         "Route, flow, state, and purpose of this proof",
         "Exact decision this artifact must settle",
         "Accountable owner and decision scope",
         "Reviewer, relationship, prior exposure, and date",
-        "`statement`",
-        "`evidence`",
+        "`mapped_relationship`",
+        "`source_evidence`",
         "`limits`",
         "`extensions`",
         "Real content and representative data/media used",
@@ -1061,7 +1106,7 @@ LEGACY_REQUIRED_RECORD_LABELS = {
             "reviewer, and result, or `not performed`"
         ),
         "Coverage contact sheet or artifact index",
-        "Bound direction, exploration, `creative_logic`, and proof-to-build records",
+        "Bound direction, exploration, source mappings, and proof-to-build records",
         "Review order and any unavoidable exposure to the brief, rationale, scanner",
         "Project-specific success conditions and owner anti-traits",
         "What an unbriefed reviewer understands or expects",
@@ -1137,9 +1182,9 @@ LEGACY_REQUIRED_RECORD_LABELS = {
         "Repository, release, deployment, and environment source",
         "Rights, provenance, privacy, generated-media, and cultural authority",
         "Mapping confidence, known drift, and reconciliation owner",
-        "Selected `creative_logic`",
+        "Selected reference mapping",
         "Protected recognition and comprehension decisions",
-        "Open creative fields for future work",
+        "Unresolved source mappings that block future visible changes",
         "Decisions intentionally local and not to be generalized",
         "Proof-to-build deviations and owner dispositions",
         "Component, token, content, asset, and dependency lifecycle states",
@@ -1225,6 +1270,9 @@ STANDARD_VISUAL_REVIEW_SECTIONS = {
     "Artifact credibility and cumulative-pattern review",
     "Preship and specificity closure",
 }
+QUICK_VISUAL_REVIEW_SECTIONS = {
+    "Mechanical repair invariance",
+}
 REVIEW_SCOPE_CAPTURE_HEADERS = (
     "Route/state or reviewed body",
     "Material review risk or not-applicable reason",
@@ -1268,8 +1316,8 @@ REVIEW_CLOSURE_DISPOSITIONS = {
     "not-applicable",
     "blocked",
 }
-PROJECT_DERIVED_DIRECTION_SECTIONS = {
-    "Project-derived organizing logic",
+REFERENCE_SOURCED_DIRECTION_SECTIONS = {
+    "Reference-sourced organizing logic",
     "Observable consequential design decisions",
     "Material, media, and public-copy boundary",
 }
@@ -1363,11 +1411,11 @@ CAPABILITY_REQUIRED_SECTIONS = {
     },
 }
 CAPABILITY_REQUIRED_RECORDS = {
-    "enterprise-candidate": {"direction", "visual-review"},
+    "enterprise-candidate": {"direction", "route-manifest", "visual-review"},
     "numeric-rhetoric-integrity": {"direction", "visual-review"},
     "public-copy-integrity": {"direction", "visual-review"},
     "reference-led-direction": {
-        "direction", "reference-dossier", "visual-review"
+        "direction", "reference-dossier", "route-manifest", "visual-review"
     },
     "connected-public-experience": {"connected-public-experience"},
     "project-contrast": {"project-contrast"},
@@ -2125,6 +2173,116 @@ def verify_png_artifact(path: Path) -> tuple[int, int]:
                 path=path,
             )
     return width, height
+
+
+def decoded_png_rgba(path: Path) -> tuple[int, int, bytes]:
+    """Decode ordinary non-interlaced 8-bit PNG pixels for exact comparison."""
+
+    width, height = verify_png_artifact(path)
+    data = path.read_bytes()
+    offset = 8
+    bit_depth = color_type = None
+    compressed = bytearray()
+    palette = b""
+    transparency = b""
+    while offset < len(data):
+        length = struct.unpack(">I", data[offset:offset + 4])[0]
+        chunk_type = data[offset + 4:offset + 8]
+        chunk = data[offset + 8:offset + 8 + length]
+        offset += 12 + length
+        if chunk_type == b"IHDR":
+            _w, _h, bit_depth, color_type, _compression, _filtering, _interlace = struct.unpack(
+                ">IIBBBBB", chunk
+            )
+        elif chunk_type == b"PLTE":
+            palette = chunk
+        elif chunk_type == b"tRNS":
+            transparency = chunk
+        elif chunk_type == b"IDAT":
+            compressed.extend(chunk)
+        elif chunk_type == b"IEND":
+            break
+    if bit_depth != 8 or color_type not in {0, 2, 3, 4, 6}:
+        raise StateError(
+            "render-comparison-png-unsupported",
+            "Quick exact invariance requires non-interlaced 8-bit gray, RGB, indexed, gray-alpha, or RGBA PNGs.",
+            path=path,
+        )
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color_type]
+    row_bytes = width * channels
+    raw = zlib.decompress(bytes(compressed))
+    if len(raw) != height * (row_bytes + 1):
+        raise StateError(
+            "render-comparison-png-invalid",
+            "PNG decoded bytes do not match dimensions.",
+            path=path,
+        )
+
+    def paeth(a: int, b: int, c: int) -> int:
+        estimate = a + b - c
+        da, db, dc = abs(estimate - a), abs(estimate - b), abs(estimate - c)
+        return a if da <= db and da <= dc else b if db <= dc else c
+
+    rows: list[bytes] = []
+    previous = bytearray(row_bytes)
+    stride = row_bytes + 1
+    for row_index in range(height):
+        start = row_index * stride
+        filter_type = raw[start]
+        filtered = raw[start + 1:start + stride]
+        current = bytearray(row_bytes)
+        for index, byte in enumerate(filtered):
+            left = current[index - channels] if index >= channels else 0
+            up = previous[index]
+            upper_left = previous[index - channels] if index >= channels else 0
+            if filter_type == 0:
+                value = byte
+            elif filter_type == 1:
+                value = byte + left
+            elif filter_type == 2:
+                value = byte + up
+            elif filter_type == 3:
+                value = byte + ((left + up) // 2)
+            elif filter_type == 4:
+                value = byte + paeth(left, up, upper_left)
+            else:
+                raise StateError(
+                    "render-comparison-png-invalid",
+                    f"PNG row {row_index} has an invalid filter.",
+                    path=path,
+                )
+            current[index] = value & 0xFF
+        rows.append(bytes(current))
+        previous = current
+    rgba = bytearray(width * height * 4)
+    output = 0
+    for row in rows:
+        for index in range(0, len(row), channels):
+            if color_type == 6:
+                red, green, blue, alpha = row[index:index + 4]
+            elif color_type == 2:
+                red, green, blue = row[index:index + 3]
+                alpha = 255
+            elif color_type == 4:
+                red = green = blue = row[index]
+                alpha = row[index + 1]
+            elif color_type == 0:
+                red = green = blue = row[index]
+                alpha = 255
+            else:
+                palette_index = row[index]
+                palette_offset = palette_index * 3
+                if palette_offset + 3 > len(palette):
+                    raise StateError(
+                        "render-comparison-png-invalid",
+                        "PNG palette index is out of range.",
+                        path=path,
+                    )
+                red, green, blue = palette[palette_offset:palette_offset + 3]
+                alpha = transparency[palette_index] if palette_index < len(transparency) else 255
+            rgba[output:output + 4] = bytes((red, green, blue, alpha))
+            output += 4
+    return width, height, bytes(rgba)
 
 
 def state_tree_records(root: Path) -> tuple[tuple[str, str, int, str], ...]:
@@ -3435,7 +3593,7 @@ def template_text(
     ):
         rendered = remove_markdown_sections(
             rendered,
-            PROJECT_DERIVED_DIRECTION_SECTIONS,
+            REFERENCE_SOURCED_DIRECTION_SECTIONS,
         )
     if "__DESIGN_DNA_VERSION__" in rendered:
         raise StateError("unresolved-template-token", "Template token was not resolved.", path=path)
@@ -3913,7 +4071,7 @@ ASSET_OPTIONAL_FIELDS = {
     "owner_approval_date",
     "owner_approval_reason",
     "generated_media_provenance",
-    "art_direction",
+    "source_mapping",
 }
 ASSET_NESTED_FIELDS = {
     "generated": {
@@ -3972,6 +4130,17 @@ ASSET_NESTED_FIELDS = {
         "owner",
         "due_date",
     },
+    "source_mapping": {
+        "source_rank",
+        "source_id",
+        "observation",
+        "observation_sha256",
+        "source_state_id",
+        "source_component_or_behavior",
+        "measured_transfer",
+        "evidence_path",
+        "evidence_sha256",
+    },
 }
 ASSET_LIST_FIELDS = {
     "usage_locations",
@@ -3990,7 +4159,6 @@ ASSET_BOOLEAN_FIELDS = {
     "migration_review.required",
     "delivery.intrinsic_dimensions_reserved",
 }
-ASSET_EXTENSIBLE_MAPPING_FIELDS = {"art_direction"}
 ASSET_TYPES = {
     "image",
     "video",
@@ -4213,7 +4381,6 @@ def validate_asset_manifest(
     string_fields = (
         (ASSET_FIELDS | ASSET_OPTIONAL_FIELDS)
         - set(ASSET_NESTED_FIELDS)
-        - ASSET_EXTENSIBLE_MAPPING_FIELDS
         - {
             "usage_locations",
             "attribution_required",
@@ -4376,6 +4543,8 @@ def validate_asset_manifest(
                 label=f"{label}.{nested_name}",
                 path=path,
             )
+            if nested_name == "source_mapping":
+                continue
             for field, value in nested.items():
                 dotted = f"{nested_name}.{field}"
                 if dotted in ASSET_BOOLEAN_FIELDS:
@@ -4412,63 +4581,185 @@ def validate_asset_manifest(
                         f"{label}.{dotted} must be a string.",
                         path=path,
                     )
-        art_direction = asset.get("art_direction")
-        if art_direction is not None:
-            if isinstance(art_direction, str):
-                if not art_direction.strip():
-                    raise StateError(
-                        "invalid-asset-manifest",
-                        (
-                            f"{label}.art_direction must be omitted or contain "
-                            "a nonempty project-specific note."
-                        ),
-                        path=path,
-                    )
-            elif isinstance(art_direction, dict):
-                if not 1 <= len(art_direction) <= 24:
-                    raise StateError(
-                        "invalid-asset-manifest",
-                        (
-                            f"{label}.art_direction must contain 1 through 24 "
-                            "project-specific notes when present."
-                        ),
-                        path=path,
-                    )
-                for concern, note in art_direction.items():
-                    if (
-                        not isinstance(concern, str)
-                        or not concern.strip()
-                        or len(concern) > 80
-                        or any(
-                            ord(character) < 32 or ord(character) == 127
-                            for character in concern
-                        )
-                    ):
-                        raise StateError(
-                            "invalid-asset-manifest",
-                            (
-                                f"{label}.art_direction keys must be nonempty "
-                                "project-specific labels of at most 80 "
-                                "characters."
-                            ),
-                            path=path,
-                        )
-                    if not isinstance(note, str) or not note.strip():
-                        raise StateError(
-                            "invalid-asset-manifest",
-                            (
-                                f"{label}.art_direction.{concern} must be a "
-                                "nonempty string."
-                            ),
-                            path=path,
-                        )
-            else:
+        source_mapping = asset.get("source_mapping")
+        if source_mapping is not None:
+            if not isinstance(source_mapping, dict):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping must be an exact selected-source binding object.",
+                    path=path,
+                )
+            source_rank = source_mapping.get("source_rank")
+            source_id = source_mapping.get("source_id")
+            observation_relative = source_mapping.get("observation")
+            evidence_relative = source_mapping.get("evidence_path")
+            expected_source_id = f"strong-{source_rank}"
+            expected_observation = (
+                f".design-dna/references/{expected_source_id}-observation.json"
+            )
+            string_mapping_fields = (
+                "source_id", "observation", "observation_sha256",
+                "source_state_id", "source_component_or_behavior",
+                "measured_transfer", "evidence_path", "evidence_sha256",
+            )
+            if (
+                type(source_rank) is not int
+                or source_rank < 1
+                or source_id != expected_source_id
+                or observation_relative != expected_observation
+                or any(
+                    not isinstance(source_mapping.get(field), str)
+                    or not source_mapping[field].strip()
+                    for field in string_mapping_fields
+                )
+                or SHA256_HEX.fullmatch(
+                    str(source_mapping.get("observation_sha256") or "")
+                ) is None
+                or SHA256_HEX.fullmatch(
+                    str(source_mapping.get("evidence_sha256") or "")
+                ) is None
+                or len(str(source_mapping.get("measured_transfer") or "").strip()) < 24
+            ):
                 raise StateError(
                     "invalid-asset-manifest",
                     (
-                        f"{label}.art_direction must be a nonempty string or "
-                        "a project-defined mapping of string notes."
+                        f"{label}.source_mapping must bind one exact strong-N observation/state/component, "
+                        "a measured transfer, and generated evidence bytes."
                     ),
+                    path=path,
+                )
+            observation_path = lexical_absolute(
+                project_root / PurePosixPath(str(observation_relative))
+            )
+            evidence_path = lexical_absolute(
+                project_root / PurePosixPath(str(evidence_relative))
+            )
+            try:
+                assert_no_reparse_ancestors(
+                    observation_path, stop=project_root
+                )
+                assert_no_reparse_ancestors(evidence_path, stop=project_root)
+            except StateError as exc:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping refuses linked/reparse evidence: {exc}",
+                    path=path,
+                ) from exc
+            if (
+                not is_within(observation_path, project_root.resolve())
+                or not observation_path.is_file()
+                or file_sha256(observation_path)[1]
+                != source_mapping["observation_sha256"]
+                or not is_within(evidence_path, project_root.resolve())
+                or not evidence_path.is_file()
+                or file_sha256(evidence_path)[1]
+                != source_mapping["evidence_sha256"]
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping observation/evidence bytes are missing or drifted.",
+                    path=path,
+                )
+            try:
+                source_observation = json.loads(
+                    observation_path.read_text(encoding="utf-8")
+                )
+            except (OSError, ValueError) as exc:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping observation is unreadable: {exc}",
+                    path=path,
+                ) from exc
+            source_state_id = source_mapping["source_state_id"]
+            observer_script = Path(__file__).resolve().parent / "observe_reference.mjs"
+            structure_script = Path(__file__).resolve().parent / "structure_probe.mjs"
+            browser_script = Path(__file__).resolve().parent / "browser_evidence.mjs"
+            resolver_script = Path(__file__).resolve().parent / "playwright_resolver.mjs"
+            source_runtime = (
+                source_observation.get("runtime_identity")
+                if isinstance(source_observation, dict)
+                else None
+            )
+            if (
+                not isinstance(source_observation, dict)
+                or source_observation.get("tool") != "observe_reference.mjs"
+                or source_observation.get("schema_version")
+                != REFERENCE_OBSERVATION_SCHEMA
+                or source_observation.get("producer_script_sha256")
+                != file_sha256(observer_script)[1]
+                or source_observation.get("id") != source_id
+                or packaged_runtime_record_failures(
+                    source_observation, tool="observe_reference.mjs"
+                )
+                or not isinstance(source_runtime, dict)
+                or source_runtime.get("observe_reference.mjs")
+                != file_sha256(observer_script)[1]
+                or source_runtime.get("structure_probe.mjs")
+                != file_sha256(structure_script)[1]
+                or source_runtime.get("browser_evidence.mjs")
+                != file_sha256(browser_script)[1]
+                or source_runtime.get("playwright_resolver.mjs")
+                != file_sha256(resolver_script)[1]
+                or any(
+                    source_state_id
+                    not in source_observation.get("states_by_viewport", {}).get(
+                        profile, {}
+                    )
+                    for profile in ("wide", "narrow")
+                )
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping state is not proven at wide and narrow in the bound source.",
+                    path=path,
+                )
+            evidence_key = (
+                PurePosixPath(str(evidence_relative)).as_posix(),
+                source_mapping["evidence_sha256"],
+            )
+            observation_artifacts: set[tuple[str, str]] = set()
+            frame_dir = source_observation.get("frame_dir")
+            frames = source_observation.get("frames")
+            if isinstance(frame_dir, str) and isinstance(frames, list):
+                for frame in frames:
+                    if (
+                        not isinstance(frame, dict)
+                        or not isinstance(frame.get("file"), str)
+                        or type(frame.get("bytes")) is not int
+                        or not isinstance(frame.get("sha256"), str)
+                    ):
+                        continue
+                    relative_frame = (
+                        PurePosixPath(".design-dna/references")
+                        / PurePosixPath(frame_dir)
+                        / PurePosixPath(frame["file"])
+                    )
+                    generated_frame = lexical_absolute(
+                        project_root / relative_frame
+                    )
+                    try:
+                        assert_no_reparse_ancestors(
+                            generated_frame, stop=project_root
+                        )
+                    except StateError:
+                        continue
+                    if (
+                        is_within(generated_frame, project_root.resolve())
+                        and generated_frame.is_file()
+                        and generated_frame.stat().st_size == frame["bytes"]
+                        and file_sha256(generated_frame)[1] == frame["sha256"]
+                    ):
+                        try:
+                            verify_png_artifact(generated_frame)
+                        except StateError:
+                            continue
+                        observation_artifacts.add(
+                            (relative_frame.as_posix(), frame["sha256"])
+                        )
+            if evidence_key not in observation_artifacts:
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.source_mapping evidence is not in the bound observation artifact ledger.",
                     path=path,
                 )
         migration_review = asset["migration_review"]
@@ -5662,6 +5953,8 @@ REFERENCE_ENTRY_ACCESS = {
 # The reference count is a floor with a reason, not a quota: enough
 # independent sources that no single site becomes the template.
 REFERENCE_MINIMUM_STRONG = 6
+REFERENCE_MINIMUM_CANDIDATES = 8
+REFERENCE_MINIMUM_REJECTED_CANDIDATES = 2
 REFERENCE_MINIMUM_SOURCES = 3
 REFERENCE_MINIMUM_NEGATIVE = 3
 REFERENCE_MINIMUM_SELECTED = 4
@@ -5670,7 +5963,7 @@ REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 # Two held scroll positions is the floor at which a producer can tell an
 # animated arrival from a static one; one hold proves nothing.
 REFERENCE_OBSERVATION_MIN_HOLDS = 2
-REFERENCE_OBSERVATION_SCHEMA = 3
+REFERENCE_OBSERVATION_SCHEMA = 5
 # A site earns a motion row on its own numbers: at least three distinct
 # mechanisms, with scroll choreography active on at least half of its depth.
 # Below that it is a thin site, and a thin reference teaches a thin design.
@@ -5678,7 +5971,7 @@ REFERENCE_MECHANISM_MIN_DISTINCT = 3
 REFERENCE_MECHANISM_MIN_COVERAGE = 0.5
 # Most of the selected set has to do something; a build cannot take its
 # behavior from references that have none.
-REFERENCE_MINIMUM_SELECTED_MOTION = 3
+REFERENCE_MINIMUM_SELECTED_MOTION = 0
 # A signature is what a site does. A cell with none of these is describing a
 # subject, a palette or a mood, which is the sidewalk and not the falls.
 REFERENCE_SIGNATURE_VERBS = re.compile(
@@ -5689,6 +5982,18 @@ REFERENCE_SIGNATURE_VERBS = re.compile(
     r"transition|transitions|wipe|wipes|mask|masks|split|splits|assemble|"
     r"assembles|write|writes|light|lights|move|moves|moving|enter|enters|"
     r"arrive|arrives|drift|drifts|plays|loop|loops|respond|responds|react|reacts)\b",
+    re.IGNORECASE,
+)
+REFERENCE_STATIC_SIGNATURE_TERMS = re.compile(
+    r"\b(composition|typograph|grid|photograph|image|object|media|color|colour|"
+    r"contrast|hierarchy|alignment|crop|frame|density|negative space|scale|"
+    r"edge|corner|column|row|field|ground|surface)\w*\b",
+    re.IGNORECASE,
+)
+REFERENCE_STATIC_RELATIONSHIP_TERMS = re.compile(
+    r"\b(align|aligned|against|beside|between|spans?|across|over|under|behind|"
+    r"inside|outside|fills?|frames?|anchors?|balances?|offset|overlap|grid|"
+    r"column|row|edge|corner|hierarchy|negative space)\w*\b",
     re.IGNORECASE,
 )
 REFERENCE_DOSSIER_COMPONENT_HEADERS = (
@@ -5807,19 +6112,21 @@ TYPEFACE_COMPONENTS = ("display typeface", "text typeface")
 # sure the producer saw all of it.
 REFERENCE_SEQUENCE_SECTION = "Sequence reads"
 REFERENCE_RECORDING_TOOL = "record_reference.mjs"
-REFERENCE_RECORDING_SCHEMA = 1
-# 9.1.0: the recorder differences its own video and keeps only the moments
-# where the screen changed, as EVENTS. Reading every contact sheet proved the
-# method and cost an afternoon per site, nearly all of it on sheets where
-# nothing moved. A schema-2 recording counts events; the read carries a line
-# per event. Schema-1 sheet recordings are still accepted.
-REFERENCE_RECORDING_SCHEMAS = (1, 2)
+# Current recordings bind the exact packaged producer and complete discovery
+# coverage. Older sheet/event manifests do not prove either and cannot close a
+# new no-producer-design dossier.
+REFERENCE_RECORDING_SCHEMAS = (4,)
 REFERENCE_RECORDING_MINIMUM_EVENTS = 12
-REFERENCE_EVENT_LINE = re.compile(r"^-\s+e(\d{3})\s*\(", re.MULTILINE)
-REFERENCE_EVENT_ID = re.compile(r"\be(\d{3})\b")
-REFERENCE_EVENT_FRAME = re.compile(r"-events/e\d{3}[^\s|]*\.png\b")
+REFERENCE_EVENT_LINE = re.compile(
+    r"^-\s+(wide|narrow)/e(\d{4})\s*\(", re.MULTILINE
+)
+REFERENCE_EVENT_ID = re.compile(r"\b(wide|narrow)/e(\d{4})\b")
+REFERENCE_EVENT_FRAME = re.compile(
+    r"strong-\d+-(?:wide|narrow)-events/e\d{4}[^\s|]*\.png\b"
+)
 REFERENCE_RECORDING_MINIMUM_SHEETS = 20
-REFERENCE_RECORDING_MINIMUM_SECONDS = 30
+REFERENCE_RECORDING_MINIMUM_SECONDS = 90
+REFERENCE_RECORDING_MINIMUM_FPS = 15
 REFERENCE_SEQUENCE_LINE_MINIMUM = 40
 REFERENCE_SEQUENCE_LINE = re.compile(r"^-\s+s(\d{3})\s*\(", re.MULTILINE)
 REFERENCE_SEQUENCE_STATIC = re.compile(
@@ -5841,6 +6148,15 @@ REFERENCE_DOSSIER_TRANSFER_HEADERS = (
     "The build part that carries it",
     "Recorded proof",
     "What a stranger would lose if this reference were cut",
+)
+REFERENCE_INTERACTION_CENSUS_HEADERS = (
+    "Target ID and page/route",
+    "Target kind and repeat/equivalence class",
+    "Input tested",
+    "Before state",
+    "After/settled state and changed property or behavior",
+    "Wide/narrow evidence frames or event artifacts with SHA-256",
+    "Disposition",
 )
 # The loss has to be a thing, not a property of a thing. "The warm ground" and
 # "the 12px corners" are what a producer writes when nothing would actually go.
@@ -5866,18 +6182,30 @@ REFERENCE_DOSSIER_STRONG_HEADERS = (
     "Discovery source and accolade",
     "Retrieval date",
     "Access status",
-    "Capture path and SHA-256",
+    "Wide capture path and SHA-256",
+    "Narrow capture path and SHA-256",
+    "Pages, progression, and states studied",
     "Observed evidence",
     "Measured styles",
-    "Signature (what a stranger would name)",
+    "Signature (motion or static; what a stranger would name)",
     "Brief relevance",
     "Design to copy",
     "Rights boundary",
 )
+REFERENCE_DOSSIER_CANDIDATE_HEADERS = (
+    "Candidate title and URL",
+    "Registry source, exact discovery path/filter, retrieval date, and fresh/reuse basis",
+    "Wide capture path and SHA-256",
+    "Narrow capture path and SHA-256",
+    "Complete live pages, progression, and states studied",
+    "Brief-fit gate: organization/audience/task criteria passed/failed and bound evidence",
+    "Quality/execution gate: criteria passed/failed and bound capture/sequence evidence",
+    "Conjunctive disposition and concrete rejection reason",
+)
 REFERENCE_DOSSIER_NEGATIVE_HEADERS = (
     "Reference title or visible entry",
     "Public URL or gallery-entry URL",
-    "Discovery source",
+    "Discovery source and accolade",
     "Retrieval date",
     "Access status",
     "Capture path and SHA-256",
@@ -5890,6 +6218,289 @@ REFERENCE_DOSSIER_SYNTHESIS_HEADERS = (
     "Project-specific adaptation",
     "Boundary or verification",
 )
+
+VISIBLE_DECISION_SOURCE_SCHEMA = 1
+VISIBLE_DECISION_SOURCE_RECORD = "design-dna-visible-decision-source-manifest"
+VISIBLE_DECISION_CATEGORIES = (
+    "layout", "typeface", "color", "control", "transition",
+    "content-pattern", "effect",
+)
+
+
+def visible_decision_source_manifest_failures(
+    payload: object,
+    *,
+    project: Path,
+    route_manifest: dict[str, object],
+    route_manifest_path: Path,
+    proof_identity: str,
+) -> list[str]:
+    """Prove planned visible decisions were sourced before broad build work."""
+
+    failures: list[str] = []
+    expected_top = {
+        "schema_version", "record_type", "created_at", "proof_build_id",
+        "route_manifest", "source_observations", "planned_decision_ids",
+        "decisions", "completeness",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_top:
+        return ["Visible decision source manifest has an unsupported shape."]
+    if (
+        payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA
+        or payload.get("record_type") != VISIBLE_DECISION_SOURCE_RECORD
+    ):
+        failures.append("Visible decision source manifest has an unsupported identity.")
+    try:
+        created = datetime.fromisoformat(
+            str(payload.get("created_at") or "").replace("Z", "+00:00")
+        )
+    except ValueError:
+        created = None
+    if created is None or created.tzinfo is None:
+        failures.append("Visible decision source manifest needs a timezone-bound created_at.")
+    proof_fields = semicolon_fields(proof_identity)
+    proof_build_id = proof_fields.get("build_id", "")
+    if (
+        set(proof_fields) != {"build_id", "route_key"}
+        or payload.get("proof_build_id") != proof_build_id
+        or not isinstance(proof_build_id, str)
+        or ROUTE_MANIFEST_ID.fullmatch(proof_build_id) is None
+    ):
+        failures.append("Visible decision source manifest does not bind the exact first-screen proof build ID.")
+    manifest_binding = payload.get("route_manifest")
+    if (
+        not isinstance(manifest_binding, dict)
+        or set(manifest_binding) != {"manifest_id", "path", "sha256"}
+        or manifest_binding.get("manifest_id") != route_manifest.get("manifest_id")
+        or manifest_binding.get("path") != ".design-dna/route-manifest.json"
+        or manifest_binding.get("sha256") != file_sha256(route_manifest_path)[1]
+    ):
+        failures.append("Visible decision source manifest does not bind the exact route manifest bytes.")
+    routes = {
+        str(route.get("key")): route
+        for route in route_manifest.get("routes", [])
+        if isinstance(route, dict)
+    }
+    route_states = {
+        key: {
+            str(state.get("id")) for state in route.get("states", [])
+            if isinstance(state, dict)
+        }
+        for key, route in routes.items()
+    }
+    source_rows = payload.get("source_observations")
+    source_ids: set[str] = set()
+    allowed_source_evidence: dict[str, set[tuple[str, str]]] = {}
+    if not isinstance(source_rows, list) or not source_rows:
+        failures.append("Visible decision source manifest has no source observations.")
+        source_rows = []
+    for index, row in enumerate(source_rows, start=1):
+        if not isinstance(row, dict) or set(row) != {"id", "path", "sha256"}:
+            failures.append(f"Visible decision source observation {index} has an unsupported shape.")
+            continue
+        source_id = row.get("id")
+        relative = row.get("path")
+        expected_relative = f".design-dna/references/{source_id}-observation.json"
+        if (
+            not isinstance(source_id, str)
+            or ROUTE_REFERENCE_ID.fullmatch(source_id) is None
+            or source_id in source_ids
+            or relative != expected_relative
+        ):
+            failures.append(f"Visible decision source observation {index} has invalid identity/path.")
+            continue
+        source_ids.add(source_id)
+        artifact = (project / PurePosixPath(relative)).resolve()
+        if (
+            not is_within(artifact, project.resolve())
+            or not artifact.is_file()
+            or not isinstance(row.get("sha256"), str)
+            or file_sha256(artifact)[1] != row["sha256"]
+        ):
+            failures.append(f"Visible decision source observation {index} bytes are missing or drifted.")
+        else:
+            # The observation record proves producer identity, but a design
+            # decision must cite one of the immutable artifacts it records.
+            # Treating the JSON envelope itself as visual/behavioral proof
+            # would let a hand-authored record stand in for captured source
+            # pixels or state evidence.
+            allowed: set[tuple[str, str]] = set()
+            try:
+                observed_payload = json.loads(artifact.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                failures.append(f"Visible decision source observation {index} is unreadable.")
+            else:
+                identity = packaged_runtime_record_failures(
+                    observed_payload, tool="observe_reference.mjs"
+                )
+                failures.extend(
+                    f"Visible decision source observation {index}: {problem}"
+                    for problem in identity
+                )
+
+                # Only the observer's canonical frame inventory can supply
+                # decision proof. Do not recursively trust an arbitrary
+                # ``file``/``sha256`` pair inserted into otherwise plausible
+                # JSON; it must be a ledgered captured PNG with exact bytes.
+                frame_dir = observed_payload.get("frame_dir")
+                frames = observed_payload.get("frames")
+                if not isinstance(frame_dir, str) or not isinstance(frames, list):
+                    failures.append(
+                        f"Visible decision source observation {index} has no canonical frame inventory."
+                    )
+                else:
+                    for frame in frames:
+                        if (
+                            not isinstance(frame, dict)
+                            or not isinstance(frame.get("file"), str)
+                            or not frame["file"].casefold().endswith(".png")
+                            or type(frame.get("bytes")) is not int
+                            or frame["bytes"] < 1
+                            or not isinstance(frame.get("sha256"), str)
+                            or SHA256_HEX.fullmatch(frame["sha256"]) is None
+                        ):
+                            continue
+                        relative_frame = (
+                            PurePosixPath(frame_dir) / PurePosixPath(frame["file"])
+                        )
+                        generated = (artifact.parent / relative_frame).resolve()
+                        if (
+                            not relative_frame.is_absolute()
+                            and ".." not in relative_frame.parts
+                            and is_within(generated, artifact.parent.resolve())
+                            and generated.is_file()
+                            and generated.stat().st_size == frame["bytes"]
+                            and file_sha256(generated)[1] == frame["sha256"]
+                        ):
+                            try:
+                                verify_png_artifact(generated)
+                            except StateError:
+                                continue
+                            allowed.add((
+                                generated.relative_to(project).as_posix(),
+                                frame["sha256"],
+                            ))
+            allowed_source_evidence[str(source_id)] = allowed
+    planned = payload.get("planned_decision_ids")
+    decisions = payload.get("decisions")
+    if (
+        not isinstance(planned, list)
+        or len(planned) != len(set(planned))
+        or not isinstance(decisions, list)
+        or not decisions
+    ):
+        failures.append("Visible decision source manifest needs unique planned decisions and decision rows.")
+        planned = []
+        decisions = []
+    observed_ids: set[str] = set()
+    observed_categories: set[str] = set()
+    for index, decision in enumerate(decisions, start=1):
+        label = f"Visible decision source row {index}"
+        if not isinstance(decision, dict) or set(decision) != {
+            "decision_id", "category", "planned_surface", "route_keys",
+            "state_ids", "source_reference_id", "source_component_or_behavior",
+            "evidence", "disposition",
+        }:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        decision_id = decision.get("decision_id")
+        category = decision.get("category")
+        if (
+            not isinstance(decision_id, str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", decision_id) is None
+            or decision_id in observed_ids
+        ):
+            failures.append(f"{label} needs a unique stable decision ID.")
+        else:
+            observed_ids.add(decision_id)
+        if category not in VISIBLE_DECISION_CATEGORIES:
+            failures.append(f"{label} has an unsupported visible-decision category.")
+        else:
+            observed_categories.add(str(category))
+        if (
+            not isinstance(decision.get("planned_surface"), str)
+            or len(decision["planned_surface"].strip()) < 24
+            or not isinstance(decision.get("source_component_or_behavior"), str)
+            or len(decision["source_component_or_behavior"].strip()) < 24
+            or decision.get("disposition") != "required"
+        ):
+            failures.append(f"{label} does not concretely bind the planned surface and source behavior.")
+        decision_routes = decision.get("route_keys")
+        decision_states = decision.get("state_ids")
+        if (
+            not isinstance(decision_routes, list)
+            or not decision_routes
+            or not set(decision_routes).issubset(routes)
+            or not isinstance(decision_states, list)
+            or not decision_states
+            or any(
+                state_id not in route_states.get(route_key, set())
+                for route_key in decision_routes
+                for state_id in decision_states
+            )
+        ):
+            failures.append(f"{label} does not bind exact manifested routes/states.")
+        if decision.get("source_reference_id") not in source_ids:
+            failures.append(f"{label} cites no bound source observation.")
+        evidence = decision.get("evidence")
+        if not isinstance(evidence, dict) or set(evidence) != {"path", "sha256"}:
+            failures.append(f"{label} has invalid source evidence.")
+        else:
+            evidence_path = (project / PurePosixPath(str(evidence.get("path") or ""))).resolve()
+            if (
+                not is_within(evidence_path, project.resolve())
+                or not evidence_path.is_file()
+                or not isinstance(evidence.get("sha256"), str)
+                or file_sha256(evidence_path)[1] != evidence["sha256"]
+            ):
+                failures.append(f"{label} source evidence bytes are missing or drifted.")
+            elif (
+                str(evidence.get("path")), str(evidence.get("sha256"))
+            ) not in allowed_source_evidence.get(
+                str(decision.get("source_reference_id")), set()
+            ):
+                failures.append(
+                    f"{label} evidence is not an immutable generated artifact of its cited source observation."
+                )
+    if set(planned) != observed_ids:
+        failures.append("Visible decision planned IDs do not equal the exact sourced decision rows.")
+    completeness = payload.get("completeness")
+    expected_categories = list(VISIBLE_DECISION_CATEGORIES)
+    if (
+        not isinstance(completeness, dict)
+        or set(completeness) != {
+            "required_categories", "covered_categories", "placeholders_allowed",
+            "generic_scaffold_allowed", "fallback_design_allowed",
+            "unsourced_decisions",
+        }
+        or completeness.get("required_categories") != expected_categories
+        or completeness.get("covered_categories") != expected_categories
+        or observed_categories != set(expected_categories)
+        or completeness.get("placeholders_allowed") is not False
+        or completeness.get("generic_scaffold_allowed") is not False
+        or completeness.get("fallback_design_allowed") is not False
+        or completeness.get("unsourced_decisions") != []
+    ):
+        failures.append("Visible decision completeness does not prove every category sourced with no scaffold/fallback/placeholder escape.")
+    # Inspect authored string values, not schema keys such as
+    # ``placeholders_allowed`` which deliberately name the forbidden escape.
+    authored_strings: list[str] = []
+
+    def collect_authored_strings(value: object) -> None:
+        if isinstance(value, str):
+            authored_strings.append(value)
+        elif isinstance(value, dict):
+            for child in value.values():
+                collect_authored_strings(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect_authored_strings(child)
+
+    collect_authored_strings(payload)
+    serialized = "\n".join(authored_strings).casefold()
+    if re.search(r"__replace_with|\btodo\b|lorem ipsum|coming soon|\bplaceholder\b", serialized):
+        failures.append("Visible decision source manifest contains placeholder or fallback content.")
+    return failures
 
 
 def reference_source_registry_failures(payload: object) -> list[str]:
@@ -6082,13 +6693,3412 @@ def reference_rank_values(
     return ranks
 
 
+ROUTE_MANIFEST_SCHEMA_VERSION = 2
+ROUTE_MANIFEST_STATE_KINDS = {"rest", "interactive", "system", "data"}
+ROUTE_MANIFEST_TRIGGER_TYPES = {
+    "none", "hover", "focus", "click", "keyboard", "input", "url", "programmatic"
+}
+ROUTE_MANIFEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}")
+ROUTE_REFERENCE_ID = re.compile(r"strong-(\d+)(?:-[a-z][a-z0-9-]{0,47})?")
+GATE_IGNORED_TREE_PARTS = {
+    ".design-dna",
+    ".git",
+    "node_modules",
+    "coverage",
+    "__pycache__",
+    ".pytest_cache",
+    ".turbo",
+}
+
+
+def project_tree_identity(root: Path) -> str:
+    """Hash the exact project tree that a gate build identity represents."""
+
+    digest = hashlib.sha256()
+    files = (path for path in root.rglob("*") if path.is_file())
+    for file in sorted(files, key=lambda item: item.as_posix().casefold()):
+        relative = file.relative_to(root)
+        if any(part in GATE_IGNORED_TREE_PARTS for part in relative.parts):
+            continue
+        digest.update(relative.as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        with file.open("rb") as handle:
+            while chunk := handle.read(1024 * 1024):
+                digest.update(chunk)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def canonical_route_url(value: str) -> str:
+    parsed = urlsplit(value.strip())
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("route URL must be absolute HTTP(S)")
+    normalized_path = quote(
+        re.sub(r"/{2,}", "/", parsed.path or "/"),
+        safe="/%:@!$&'()*+,;=-._~",
+    )
+    normalized_query = quote(
+        parsed.query,
+        safe="!$&'()*+,-./:;=?@_%~",
+    )
+    return urlunsplit(
+        (
+            parsed.scheme.casefold(),
+            parsed.netloc.casefold(),
+            normalized_path,
+            normalized_query,
+            "",
+        )
+    )
+
+
+INVALID_ROUTE_PERCENT = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
+
+def normalize_safe_route_path(value: str) -> str | None:
+    """Decode UTF-8 route IRIs while rejecting semantic/path escapes.
+
+    This mirrors route_family_audit.normalize_route_path: case, Unicode NFC,
+    underscores, extensions, and trailing slash stay significant; encoded
+    separators, traversal, controls, whitespace, query, and fragment fail.
+    """
+
+    if not isinstance(value, str) or not value or len(value) > 2048:
+        return None
+    if INVALID_ROUTE_PERCENT.search(value):
+        return None
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc or parsed.query or parsed.fragment:
+        return None
+    raw_path = parsed.path
+    if not raw_path.startswith("/") or "//" in raw_path:
+        return None
+    decoded_segments: list[str] = []
+    for raw_segment in raw_path.split("/"):
+        try:
+            decoded = unquote_to_bytes(raw_segment).decode("utf-8", "strict")
+        except UnicodeDecodeError:
+            return None
+        decoded = unicodedata.normalize("NFC", decoded)
+        if decoded in {".", ".."}:
+            return None
+        if any(
+            character in "/\\?#"
+            or ord(character) <= 0x1F
+            or ord(character) == 0x7F
+            or character.isspace()
+            for character in decoded
+        ):
+            return None
+        decoded_segments.append(decoded)
+    normalized = "/".join(decoded_segments)
+    if not normalized.startswith("/") or "//" in normalized:
+        return None
+    return normalized
+
+
+def reference_state_contract_failures(
+    payload: object,
+    *,
+    expected_reference_id: str,
+    expected_primary_url: str | None = None,
+) -> tuple[list[str], set[str]]:
+    """Validate the source-authored state authority shared by recorder/observer.
+
+    Source states deliberately have no guessed vocabulary beyond `rest`.
+    Stable project-local IDs name interactive, system, and data states and each
+    carries an executable trigger.  Both browser producers consume these same
+    bytes, so validating the contract here closes the hand-written JSON gap.
+    """
+
+    failures: list[str] = []
+    ids: set[str] = set()
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"schema_version", "reference_id", "states"}
+        or payload.get("schema_version") != 1
+        or payload.get("reference_id") != expected_reference_id
+        or not isinstance(payload.get("states"), list)
+        or not payload["states"]
+    ):
+        return [
+            "Source-state contract must use exact schema 1 and bind the expected reference ID."
+        ], ids
+    origins: set[tuple[str, str]] = set()
+    canonical_primary: str | None = None
+    if expected_primary_url:
+        try:
+            canonical_primary = canonical_route_url(expected_primary_url)
+        except ValueError:
+            failures.append("Source-state contract expected primary URL is invalid.")
+    rest_urls: list[str] = []
+    for index, state in enumerate(payload["states"], start=1):
+        label = f"Source-state contract state {index}"
+        if not isinstance(state, dict) or set(state) != {
+            "id", "url", "kind", "trigger", "expectation"
+        }:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        state_id = state.get("id")
+        kind = state.get("kind")
+        trigger = state.get("trigger")
+        expectation = state.get("expectation")
+        if (
+            not isinstance(state_id, str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{0,47}", state_id) is None
+            or state_id in ids
+        ):
+            failures.append(f"{label} needs a unique stable lowercase state ID.")
+        else:
+            ids.add(state_id)
+        if kind not in ROUTE_MANIFEST_STATE_KINDS:
+            failures.append(f"{label} has an unsupported state kind.")
+        if (
+            not isinstance(trigger, dict)
+            or set(trigger) != {"type", "target", "value"}
+        ):
+            failures.append(f"{label} needs the exact executable trigger shape.")
+            trigger = {}
+        trigger_type = trigger.get("type")
+        if trigger_type not in ROUTE_MANIFEST_TRIGGER_TYPES:
+            failures.append(f"{label} has an unsupported trigger type.")
+        if not isinstance(trigger.get("target"), str) or not trigger["target"].strip():
+            failures.append(f"{label} trigger target must be explicit.")
+        if trigger.get("value") is not None and not isinstance(trigger.get("value"), str):
+            failures.append(f"{label} trigger value must be a string or null.")
+        if not isinstance(expectation, str) or len(expectation.strip()) < 12:
+            failures.append(f"{label} needs a substantive expectation.")
+        if kind == "rest" and (
+            state_id != "rest"
+            or trigger_type != "none"
+            or trigger.get("target") != "document"
+            or trigger.get("value") is not None
+        ):
+            failures.append(
+                f"{label} rest must use id rest and the canonical none/document/null trigger."
+            )
+        if kind != "rest" and trigger_type == "none":
+            failures.append(f"{label} only rest may use a none trigger.")
+        raw_url = state.get("url")
+        try:
+            normalized_url = canonical_route_url(raw_url) if isinstance(raw_url, str) else ""
+        except ValueError:
+            normalized_url = ""
+        if (
+            not normalized_url
+            or normalized_url != raw_url
+            or str(raw_url).startswith("__REPLACE_WITH")
+        ):
+            failures.append(f"{label} needs an exact canonical HTTP(S) URL.")
+        else:
+            parsed = urlsplit(normalized_url)
+            origins.add((parsed.scheme, parsed.netloc))
+            if state_id == "rest":
+                rest_urls.append(normalized_url)
+    if len(origins) != 1:
+        failures.append("Every source-state URL must share one reference origin.")
+    if rest_urls != ([canonical_primary] if canonical_primary else rest_urls[:1]):
+        failures.append(
+            "Source-state contract must contain exactly one canonical rest state at the primary URL."
+        )
+    if len(rest_urls) != 1:
+        failures.append("Source-state contract must contain exactly one rest state.")
+    return failures, ids
+
+
+def interaction_census_failures(
+    census: object,
+    *,
+    expected_profile: str,
+    expected_state_ids: set[str],
+    expected_urls: set[str] | None = None,
+    artifact_root: Path | None = None,
+    allowed_artifacts: set[tuple[str, int, str]] | None = None,
+) -> list[str]:
+    """Validate an uncapped live DOM/code-to-interaction reconciliation."""
+
+    failures: list[str] = []
+    expected_keys = {
+        "profile", "pages", "page_states", "repeat_classes", "pointer_follow",
+        "blocked_side_effects", "totals", "truncated", "missing", "complete",
+    }
+    if (
+        not isinstance(census, dict)
+        or set(census) != expected_keys
+        or census.get("profile") != expected_profile
+        or census.get("truncated") is not False
+        or census.get("missing") != []
+        or census.get("complete") is not True
+    ):
+        return [
+            f"{expected_profile} interaction census is partial, capped, or has an unsupported shape."
+        ]
+    pages = census.get("pages")
+    if not isinstance(pages, list) or not pages:
+        return [f"{expected_profile} interaction census contains no live pages."]
+    urls: set[str] = set()
+    target_ids: set[str] = set()
+    source_state_ids: set[str] = set()
+    repeat_members: dict[str, set[str]] = {}
+    repeat_inputs: dict[str, set[str]] = {}
+    blocked_inputs: set[tuple[str, str]] = set()
+    input_rows = exercised_rows = blocked_rows = 0
+
+    def evidence_failures(value: object, label: str) -> list[str]:
+        local: list[str] = []
+        if not isinstance(value, dict) or not {"before", "after", "settled"}.issubset(value):
+            return [f"{label} lacks before/after/settled generated artifacts."]
+        for phase in ("before", "after", "settled"):
+            item = value.get(phase)
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("file"), str)
+                or type(item.get("bytes")) is not int
+                or not isinstance(item.get("sha256"), str)
+                or SHA256_HEX.fullmatch(item["sha256"]) is None
+            ):
+                local.append(f"{label} {phase} artifact metadata is invalid.")
+                continue
+            if artifact_root is not None:
+                evidence_path = (
+                    artifact_root / PurePosixPath(item["file"])
+                ).resolve()
+                if (
+                    not is_within(evidence_path, artifact_root.resolve())
+                    or not evidence_path.is_file()
+                    or evidence_path.stat().st_size != item["bytes"]
+                    or file_sha256(evidence_path)[1] != item["sha256"]
+                ):
+                    local.append(f"{label} {phase} artifact bytes are missing or drifted.")
+                else:
+                    try:
+                        verify_png_artifact(evidence_path)
+                    except StateError as exc:
+                        local.append(f"{label} {phase} artifact is not a valid PNG: {exc}")
+            if (
+                allowed_artifacts is not None
+                and (item["file"], item["bytes"], item["sha256"])
+                not in allowed_artifacts
+            ):
+                local.append(f"{label} {phase} artifact is absent from the immutable ledger.")
+            # Recorder evidence additionally maps the exact video instant to
+            # an extracted full frame and source video. Timestamp-only rows
+            # are deliberately insufficient.
+            if "video_t_s" in item:
+                for derived_name in ("frame", "video"):
+                    derived = item.get(derived_name)
+                    if (
+                        not isinstance(derived, dict)
+                        or not isinstance(derived.get("file"), str)
+                        or type(derived.get("bytes")) is not int
+                        or not isinstance(derived.get("sha256"), str)
+                        or (
+                            allowed_artifacts is not None
+                            and (
+                                derived["file"], derived["bytes"], derived["sha256"]
+                            ) not in allowed_artifacts
+                        )
+                    ):
+                        local.append(
+                            f"{label} {phase} recorder evidence is timestamp-only or unledgered."
+                        )
+        navigation = value.get("navigation")
+        if navigation is not None and (
+            not isinstance(navigation, dict)
+            or navigation.get("requested_normalized_url")
+            != navigation.get("final_normalized_url")
+            or navigation.get("redirect_count") != 0
+            or type(navigation.get("final_status")) is not int
+            or not 200 <= navigation["final_status"] < 300
+        ):
+            local.append(f"{label} navigation evidence is not an exact 2xx route binding.")
+        return local
+    for page_index, page in enumerate(pages, start=1):
+        if not isinstance(page, dict) or set(page) != {
+            "url", "targets", "dom_code_inventory"
+        }:
+            failures.append(f"{expected_profile} interaction page {page_index} has an unsupported shape.")
+            continue
+        url = page.get("url")
+        try:
+            canonical = canonical_route_url(str(url or ""))
+        except ValueError:
+            canonical = ""
+        if not canonical or canonical != url or canonical in urls:
+            failures.append(f"{expected_profile} interaction page {page_index} URL is invalid or duplicate.")
+        else:
+            urls.add(canonical)
+        targets = page.get("targets")
+        if not isinstance(targets, list):
+            failures.append(f"{expected_profile} interaction page {page_index} targets are invalid.")
+            continue
+        page_target_ids: list[str] = []
+        for target_index, target in enumerate(targets, start=1):
+            if not isinstance(target, dict) or set(target) != {
+                "target_id", "page_url", "selector", "tag", "role", "text", "semantic_key",
+                "class_signature", "repeat_class", "repeat_index",
+                "repeat_count", "kind", "semantic_state", "source_state_ids", "inputs",
+            }:
+                failures.append(
+                    f"{expected_profile} interaction target {page_index}/{target_index} has an unsupported shape."
+                )
+                continue
+            target_id = target.get("target_id")
+            if (
+                not isinstance(target_id, str)
+                or re.fullmatch(r"[0-9a-f]{24}", target_id) is None
+                or target_id in target_ids
+                or target.get("page_url") != url
+                or not isinstance(target.get("selector"), str)
+                or not target["selector"].startswith('[data-dna-interaction-id="')
+                or not isinstance(target.get("class_signature"), list)
+                or not isinstance(target.get("text"), str)
+                or not isinstance(target.get("semantic_key"), str)
+                or not target.get("semantic_key")
+                or not isinstance(target.get("semantic_state"), dict)
+                or set(target.get("semantic_state", {})) != {
+                    "aria_expanded", "aria_pressed", "aria_controls",
+                    "aria_haspopup", "disabled",
+                }
+                or type(target.get("semantic_state", {}).get("disabled")) is not bool
+                or type(target.get("repeat_index")) is not int
+                or type(target.get("repeat_count")) is not int
+                or target.get("repeat_index", 0) < 1
+                or target.get("repeat_count", 0) < target.get("repeat_index", 0)
+            ):
+                failures.append(
+                    f"{expected_profile} interaction target {page_index}/{target_index} identity is invalid."
+                )
+                continue
+            target_ids.add(target_id)
+            page_target_ids.append(target_id)
+            state_ids = target.get("source_state_ids")
+            if (
+                not isinstance(state_ids, list)
+                or len(state_ids) != len(set(state_ids))
+                or not set(state_ids).issubset(expected_state_ids)
+            ):
+                failures.append(f"{expected_profile} interaction target {target_id} has invalid source states.")
+            else:
+                source_state_ids.update(state_ids)
+            repeat_class = target.get("repeat_class")
+            if not isinstance(repeat_class, str) or not repeat_class:
+                failures.append(f"{expected_profile} interaction target {target_id} has no repeat class.")
+            else:
+                repeat_members.setdefault(repeat_class, set()).add(target_id)
+            inputs = target.get("inputs")
+            if not isinstance(inputs, list) or not inputs:
+                failures.append(f"{expected_profile} DOM-discovered target {target_id} has no input coverage.")
+                continue
+            if isinstance(repeat_class, str) and repeat_class:
+                repeat_inputs.setdefault(repeat_class, set()).update(
+                    str(item.get("input_kind"))
+                    for item in inputs
+                    if isinstance(item, dict) and item.get("input_kind")
+                )
+            safe_exercised = False
+            active_behavior = False
+            blocked_target = False
+            exercised_input_kinds: set[str] = set()
+            for input_record in inputs:
+                input_rows += 1
+                if not isinstance(input_record, dict) or set(input_record) != {
+                    "input_kind", "input_value", "safety", "status",
+                    "source_state_id", "before_sha256", "after_sha256",
+                    "settled_sha256", "changed_properties", "change_classification", "behavior",
+                    "evidence", "disposition",
+                }:
+                    failures.append(f"{expected_profile} target {target_id} input has an unsupported shape.")
+                    continue
+                state_id = input_record.get("source_state_id")
+                if state_id is not None and state_id not in expected_state_ids:
+                    failures.append(f"{expected_profile} target {target_id} input maps an unknown source state.")
+                status = input_record.get("status")
+                classification = input_record.get("change_classification")
+                if (
+                    not isinstance(classification, dict)
+                    or set(classification) != {
+                        "cosmetic", "structural_semantic", "diagnostic"
+                    }
+                    or any(
+                        not isinstance(classification.get(field), list)
+                        for field in ("cosmetic", "structural_semantic", "diagnostic")
+                    )
+                ):
+                    failures.append(
+                        f"{expected_profile} target {target_id} input lacks exact semantic/cosmetic/diagnostic classification."
+                    )
+                    classification = {
+                        "cosmetic": [], "structural_semantic": [], "diagnostic": []
+                    }
+                if status == "exercised":
+                    exercised_rows += 1
+                    safe_exercised = True
+                    exercised_input_kinds.add(str(input_record.get("input_kind")))
+                    if (
+                        input_record.get("safety") != "safe"
+                        or input_record.get("disposition")
+                        not in {"sourceable-observed-behavior", "observed-quiet"}
+                        or not isinstance(input_record.get("changed_properties"), list)
+                        or not isinstance(input_record.get("behavior"), str)
+                        or not input_record["behavior"]
+                        or not isinstance(input_record.get("evidence"), dict)
+                        or any(
+                            not isinstance(input_record.get(field), str)
+                            or SHA256_HEX.fullmatch(input_record[field]) is None
+                            for field in ("before_sha256", "after_sha256", "settled_sha256")
+                        )
+                    ):
+                        failures.append(f"{expected_profile} target {target_id} exercised input lacks generated evidence.")
+                    else:
+                        meaningful_changes = classification["structural_semantic"]
+                        changed = input_record.get("changed_properties", [])
+                        classified = (
+                            classification["cosmetic"]
+                            + classification["structural_semantic"]
+                        )
+                        canonical_rows = lambda rows: sorted(
+                            json.dumps(
+                                row,
+                                sort_keys=True,
+                                separators=(",", ":"),
+                                ensure_ascii=False,
+                            )
+                            for row in rows
+                        )
+                        if canonical_rows(classified) != canonical_rows(changed):
+                            failures.append(
+                                f"{expected_profile} target {target_id} classification does not partition its measured changes."
+                            )
+                        if any(
+                            isinstance(change, dict)
+                            and change.get("property")
+                            in {
+                                "hovered", "transition_duration", "transition_delay",
+                                "transition_property", "transition_timing",
+                            }
+                            for change in classified
+                        ):
+                            failures.append(
+                                f"{expected_profile} target {target_id} promotes diagnostic hover/transition bookkeeping to visible behavior."
+                            )
+                        if (
+                            input_record.get("disposition")
+                            == "sourceable-observed-behavior"
+                            and (
+                                bool(meaningful_changes)
+                            )
+                        ):
+                            active_behavior = True
+                        failures.extend(
+                            evidence_failures(
+                                input_record.get("evidence"),
+                                f"{expected_profile} target {target_id} input",
+                            )
+                        )
+                elif status == "blocked":
+                    blocked_rows += 1
+                    blocked_target = True
+                    blocked_inputs.add((target_id, str(input_record.get("input_kind"))))
+                    if (
+                        input_record.get("safety") != "blocked-side-effect"
+                        or input_record.get("disposition") != "blocked-requires-safe-owner-handoff"
+                        or input_record.get("evidence") is not None
+                        or classification != {
+                            "cosmetic": [], "structural_semantic": [], "diagnostic": []
+                        }
+                        or any(input_record.get(field) is not None for field in (
+                            "before_sha256", "after_sha256", "settled_sha256"
+                        ))
+                    ):
+                        failures.append(f"{expected_profile} target {target_id} blocked input is misrepresented as observed.")
+                else:
+                    failures.append(f"{expected_profile} target {target_id} input is neither exercised nor safely blocked.")
+            if (
+                target.get("kind")
+                in {"control", "open-close", "input-control", "media"}
+                and safe_exercised
+                and not active_behavior
+                and not blocked_target
+            ):
+                failures.append(
+                    f"{expected_profile} DOM control {target_id} is exercised but visually/semantically dead."
+                )
+            if (
+                target.get("kind")
+                in {"route-link", "control", "open-close", "input-control"}
+                and target.get("semantic_state", {}).get("disabled") is not True
+                and not exercised_input_kinds.intersection({"focus", "keyboard"})
+            ):
+                failures.append(
+                    f"{expected_profile} DOM control {target_id} has no generated keyboard/focus coverage."
+                )
+        dom = page.get("dom_code_inventory")
+        if not isinstance(dom, dict) or set(dom) != {
+            "routes_discovered", "controls_discovered", "state_hooks",
+            "animation_hooks", "assets", "scripts", "inline_handlers",
+            "live_target_ids", "live_source_state_ids",
+            "unreconciled_controls", "complete",
+        }:
+            failures.append(f"{expected_profile} interaction page {page_index} DOM/code inventory is invalid.")
+        elif (
+            dom.get("complete") is not True
+            or dom.get("unreconciled_controls") != []
+            or dom.get("controls_discovered") != page_target_ids
+            or dom.get("live_target_ids") != page_target_ids
+            or not isinstance(dom.get("routes_discovered"), list)
+            or not isinstance(dom.get("assets"), list)
+            or not isinstance(dom.get("scripts"), list)
+            or not set(dom.get("live_source_state_ids", [])).issubset(expected_state_ids)
+        ):
+            failures.append(
+                f"{expected_profile} interaction page {page_index} omits DOM/code-discovered routes, controls, hooks, or assets."
+            )
+    if expected_urls is not None and urls != expected_urls:
+        failures.append(f"{expected_profile} interaction census pages differ from full discovery coverage.")
+    page_states = census.get("page_states")
+    if not isinstance(page_states, list):
+        failures.append(f"{expected_profile} interaction census page-state ledger is invalid.")
+    else:
+        for state in page_states:
+            if (
+                not isinstance(state, dict)
+                or set(state) != {
+                    "source_state_id", "kind", "trigger", "page_url",
+                    "disposition", "trigger_evidence", "evidence",
+                }
+                or state.get("source_state_id") not in expected_state_ids
+                or state.get("disposition")
+                not in {"observed-rest", "covered-by-state-ledger"}
+                or not isinstance(state.get("trigger_evidence"), dict)
+                or set(state["trigger_evidence"]) != {
+                    "before_sha256", "after_sha256", "settled_sha256",
+                    "changed_properties", "change_classification", "behavior",
+                }
+                or any(
+                    not isinstance(state["trigger_evidence"].get(field), str)
+                    or SHA256_HEX.fullmatch(state["trigger_evidence"][field]) is None
+                    for field in ("before_sha256", "after_sha256", "settled_sha256")
+                )
+                or not isinstance(state["trigger_evidence"].get("changed_properties"), list)
+                or not isinstance(state["trigger_evidence"].get("change_classification"), dict)
+                or set(state["trigger_evidence"].get("change_classification", {}))
+                != {"cosmetic", "structural_semantic", "diagnostic"}
+                or any(
+                    not isinstance(
+                        state["trigger_evidence"]["change_classification"].get(field),
+                        list,
+                    )
+                    for field in ("cosmetic", "structural_semantic", "diagnostic")
+                )
+                or not isinstance(state["trigger_evidence"].get("behavior"), str)
+            ):
+                failures.append(f"{expected_profile} interaction census has an invalid page state.")
+                continue
+            source_state_ids.add(str(state["source_state_id"]))
+            failures.extend(
+                evidence_failures(
+                    state.get("evidence"),
+                    f"{expected_profile} page state {state.get('source_state_id')}",
+                )
+            )
+    if source_state_ids != expected_state_ids:
+        failures.append(f"{expected_profile} interaction census does not bind every authored source state.")
+    repeats = census.get("repeat_classes")
+    repeat_rows: dict[str, set[str]] = {}
+    repeat_invalid = False
+    for row in repeats or []:
+        if (
+            not isinstance(row, dict)
+            or set(row) != {
+                "repeat_class", "target_ids", "input_kinds", "equivalent",
+                "behavior_signatures", "evidence",
+            }
+            or not isinstance(row.get("repeat_class"), str)
+            or row.get("repeat_class") in repeat_rows
+            or not isinstance(row.get("target_ids"), list)
+            or len(row.get("target_ids", [])) != len(set(row.get("target_ids", [])))
+            or not isinstance(row.get("input_kinds"), list)
+            or set(row.get("input_kinds", [])) != repeat_inputs.get(str(row.get("repeat_class")), set())
+            or row.get("equivalent") is not True
+            or not isinstance(row.get("behavior_signatures"), list)
+            or not isinstance(row.get("evidence"), list)
+        ):
+            repeat_invalid = True
+            continue
+        repeat_rows[str(row["repeat_class"])] = set(row["target_ids"])
+    if not isinstance(repeats, list) or repeat_invalid or repeat_rows != repeat_members:
+        failures.append(f"{expected_profile} repeated-control census is incomplete or gameable.")
+    blocked = census.get("blocked_side_effects")
+    blocked_ledger = {
+        (str(item.get("target_id")), str(item.get("input_kind")))
+        for item in blocked or []
+        if isinstance(item, dict)
+        and isinstance(item.get("reason"), str)
+        and isinstance(item.get("handoff"), str)
+        and item.get("handoff")
+    }
+    if not isinstance(blocked, list) or blocked_ledger != blocked_inputs:
+        failures.append(f"{expected_profile} blocked side-effect ledger does not reconcile inputs.")
+    totals = census.get("totals")
+    if (
+        not isinstance(totals, dict)
+        or set(totals) != {
+            "targets_discovered", "inputs_discovered", "inputs_exercised",
+            "inputs_blocked",
+        }
+        or any(type(value) is not int or value < 0 for value in totals.values())
+        or totals.get("inputs_discovered")
+        != totals.get("inputs_exercised", 0) + totals.get("inputs_blocked", 0)
+        or totals.get("targets_discovered", 0) < len(target_ids)
+        or totals.get("inputs_discovered", 0) < input_rows
+        or totals.get("inputs_exercised", 0) < exercised_rows
+        or totals.get("inputs_blocked", 0) < blocked_rows
+    ):
+        failures.append(f"{expected_profile} interaction census totals do not reconcile uncapped coverage.")
+    pointer_follow = census.get("pointer_follow")
+    if not isinstance(pointer_follow, list) or any(
+        not isinstance(item, dict)
+        or item.get("distinct_from_hover") is not True
+        or not isinstance(item.get("evidence"), dict)
+        for item in pointer_follow
+    ):
+        failures.append(f"{expected_profile} pointer-follow census is invalid.")
+    else:
+        for pointer in pointer_follow:
+            failures.extend(
+                evidence_failures(
+                    pointer.get("evidence"),
+                    f"{expected_profile} pointer-follow {pointer.get('target_id')}",
+                )
+            )
+    return failures
+
+
+SOURCE_RENDERED_QA_TOP_KEYS = {
+    "profile", "pages", "totals", "truncated", "missing", "complete",
+}
+SOURCE_RENDERED_QA_PAGE_KEYS = {
+    "url", "evidence", "clipping", "collisions", "fixed_rail_overlaps",
+    "hidden_controls", "control_visibility", "dead_controls",
+    "semantic_issues", "overlays", "keyboard_paths", "keyboard",
+    "semantic_equivalence", "state_semantics",
+    "reduced_motion", "deep_link", "reload", "dead_end",
+}
+
+
+def source_rendered_qa_failures(
+    payload: object,
+    *,
+    expected_profile: str,
+    expected_urls: set[str],
+    artifact_root: Path,
+    allowed_artifacts: set[tuple[str, int, str]],
+    interaction_census: object | None = None,
+) -> list[str]:
+    """Validate generated source rendered-QA bytes and live invariants."""
+
+    failures: list[str] = []
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != SOURCE_RENDERED_QA_TOP_KEYS
+        or payload.get("profile") != expected_profile
+        or payload.get("truncated") is not False
+        or payload.get("missing") != []
+        or payload.get("complete") is not True
+    ):
+        return [
+            f"{expected_profile} source rendered QA is partial, capped, or has an unsupported shape."
+        ]
+
+    root = artifact_root.resolve()
+
+    def artifact_failures(value: object, label: str) -> list[str]:
+        local: list[str] = []
+        if (
+            not isinstance(value, dict)
+            or not isinstance(value.get("file"), str)
+            or type(value.get("bytes")) is not int
+            or value.get("bytes", -1) < 1
+            or not isinstance(value.get("sha256"), str)
+            or SHA256_HEX.fullmatch(value["sha256"]) is None
+        ):
+            return [f"{label} lacks a generated file/bytes/SHA-256 binding."]
+        relative = PurePosixPath(value["file"])
+        candidate = (root / relative).resolve()
+        try:
+            relative_to_root = candidate.relative_to(root)
+        except ValueError:
+            relative_to_root = None
+        ancestors = [root]
+        if relative_to_root is not None:
+            cursor = root
+            for part in relative_to_root.parts:
+                cursor = cursor / part
+                ancestors.append(cursor)
+        if (
+            relative.is_absolute()
+            or ".." in relative.parts
+            or relative_to_root is None
+            or any(is_reparse(item) for item in ancestors if item.exists())
+            or not candidate.is_file()
+            or candidate.stat().st_size != value["bytes"]
+            or file_sha256(candidate)[1] != value["sha256"]
+            or (value["file"], value["bytes"], value["sha256"])
+            not in allowed_artifacts
+        ):
+            local.append(f"{label} artifact is outside the generated ledger or its bytes drifted.")
+        else:
+            try:
+                verify_png_artifact(candidate)
+            except StateError as exc:
+                local.append(f"{label} is not a valid generated PNG: {exc}")
+        if "video_t_s" in value:
+            for derived_name in ("frame", "video"):
+                derived = value.get(derived_name)
+                if (
+                    not isinstance(derived, dict)
+                    or not isinstance(derived.get("file"), str)
+                    or type(derived.get("bytes")) is not int
+                    or not isinstance(derived.get("sha256"), str)
+                    or (
+                        derived["file"], derived["bytes"], derived["sha256"]
+                    ) not in allowed_artifacts
+                ):
+                    local.append(
+                        f"{label} recorder evidence is timestamp-only or lacks its frame/video ledger binding."
+                    )
+        return local
+
+    def navigation_failures(value: object, url: str, label: str) -> list[str]:
+        if (
+            not isinstance(value, dict)
+            or value.get("requested_normalized_url") != url
+            or value.get("final_normalized_url") != url
+            or value.get("response_final_normalized_url") != url
+            or value.get("redirect_count") != 0
+            or type(value.get("final_status")) is not int
+            or not 200 <= value["final_status"] < 300
+        ):
+            return [f"{label} is not an exact nonredirecting 2xx navigation."]
+        return []
+
+    census_targets: dict[str, dict[str, object]] = {}
+    if isinstance(interaction_census, dict):
+        for page in interaction_census.get("pages", []):
+            if not isinstance(page, dict):
+                continue
+            for target in page.get("targets", []):
+                if isinstance(target, dict) and isinstance(target.get("target_id"), str):
+                    census_targets[target["target_id"]] = target
+
+    pages = payload.get("pages")
+    if not isinstance(pages, list) or not pages:
+        return [*failures, f"{expected_profile} source rendered QA contains no pages."]
+    observed_urls: set[str] = set()
+    overlay_total = 0
+    issue_total = 0
+    for index, page in enumerate(pages, start=1):
+        label = f"{expected_profile} source rendered QA page {index}"
+        if not isinstance(page, dict) or set(page) != SOURCE_RENDERED_QA_PAGE_KEYS:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        url = page.get("url")
+        try:
+            canonical = canonical_route_url(str(url or ""))
+        except ValueError:
+            canonical = ""
+        if not canonical or canonical != url or canonical in observed_urls:
+            failures.append(f"{label} URL is invalid or duplicate.")
+            continue
+        observed_urls.add(canonical)
+        failures.extend(artifact_failures(page.get("evidence"), f"{label} rest evidence"))
+        for field in (
+            "clipping", "collisions", "fixed_rail_overlaps", "dead_controls",
+            "semantic_issues",
+        ):
+            if page.get(field) != []:
+                failures.append(f"{label} reports generated {field.replace('_', '-')} defects.")
+        hidden = page.get("hidden_controls")
+        if not isinstance(hidden, list) or any(
+            not isinstance(item, dict) or item.get("focusable_while_hidden") is True
+            for item in hidden or []
+        ):
+            failures.append(f"{label} has a visually hidden control that remains keyboard-operable.")
+        controls = page.get("control_visibility")
+        if not isinstance(controls, list) or any(
+            not isinstance(item, dict)
+            or set(item) != {
+                "selector", "semantic_key", "text", "role", "tag", "visible",
+                "focusable", "aria_hidden",
+            }
+            or not isinstance(item.get("semantic_key"), str)
+            or not item["semantic_key"]
+            or type(item.get("visible")) is not bool
+            or type(item.get("focusable")) is not bool
+            for item in controls or []
+        ):
+            failures.append(f"{label} control-visibility census is invalid.")
+        state_semantics = page.get("state_semantics")
+        if (
+            not isinstance(state_semantics, dict)
+            or set(state_semantics) not in (
+                {"required", "complete", "target", "attributes"},
+                {"required", "complete", "target", "attributes", "controlled_visible"},
+            )
+            or type(state_semantics.get("required")) is not bool
+            or state_semantics.get("complete") is not True
+            or (
+                state_semantics.get("required") is True
+                and not isinstance(state_semantics.get("attributes"), dict)
+            )
+        ):
+            failures.append(f"{label} disclosure/toggle semantics are incomplete.")
+        overlays = page.get("overlays")
+        if not isinstance(overlays, list):
+            failures.append(f"{label} overlay inventory is invalid.")
+            overlays = []
+        overlay_total += len(overlays)
+        for overlay_index, overlay in enumerate(overlays, start=1):
+            overlay_label = f"{label} overlay {overlay_index}"
+            required_overlay_fields = {
+                "selector", "key", "open", "aria_modal", "initial_focus_inside",
+                "inert_background", "closed_descendants_inert",
+                "stacking_above_background_controls", "focusable_count",
+                "background_control_selectors", "descendant_selectors",
+                "opener_selector", "hit_tests", "initial_focus",
+                "background_focus_blocked", "focus_trap", "focus_return",
+                "escape_closes", "evidence", "complete",
+            }
+            if (
+                not isinstance(overlay, dict)
+                or set(overlay) != required_overlay_fields
+                or overlay.get("complete") is not True
+                or overlay.get("inert_background") is not True
+                or overlay.get("closed_descendants_inert") is not True
+                or overlay.get("stacking_above_background_controls") is not True
+                or overlay.get("initial_focus") is not True
+                or overlay.get("background_focus_blocked") is not True
+                or overlay.get("focus_trap") is not True
+                or overlay.get("focus_return") is not True
+                or overlay.get("escape_closes") is not True
+                or not isinstance(overlay.get("background_control_selectors"), list)
+                or not isinstance(overlay.get("descendant_selectors"), list)
+                or not isinstance(overlay.get("hit_tests"), list)
+            ):
+                failures.append(f"{overlay_label} inert/focus/stacking behavior is incomplete.")
+                continue
+            evidence = overlay.get("evidence")
+            if not isinstance(evidence, dict) or set(evidence) != {"before", "after", "settled"}:
+                failures.append(f"{overlay_label} lacks before/after/settled evidence.")
+            else:
+                for phase in ("before", "after", "settled"):
+                    failures.extend(artifact_failures(evidence[phase], f"{overlay_label} {phase}"))
+        keyboard = page.get("keyboard_paths")
+        keyboard_by_id = {
+            row.get("target_id"): row
+            for row in keyboard or []
+            if isinstance(row, dict) and isinstance(row.get("target_id"), str)
+        } if isinstance(keyboard, list) else {}
+        if not isinstance(keyboard, list) or len(keyboard_by_id) != len(keyboard):
+            failures.append(f"{label} keyboard-path inventory is invalid or duplicate.")
+        for target_id, target in census_targets.items():
+            if target.get("page_url") != url or target.get("semantic_state", {}).get("disabled") is True:
+                continue
+            if target.get("kind") not in {"route-link", "control", "open-close", "input-control"}:
+                continue
+            row = keyboard_by_id.get(target_id)
+            inputs = row.get("inputs") if isinstance(row, dict) else None
+            if (
+                not isinstance(row, dict)
+                or set(row) != {"target_id", "inputs", "complete"}
+                or row.get("complete") is not True
+                or not isinstance(inputs, list)
+                or not any(
+                    isinstance(item, dict)
+                    and item.get("input_kind") in {"focus", "keyboard"}
+                    and item.get("status") == "exercised"
+                    and isinstance(item.get("evidence"), dict)
+                    for item in inputs
+                )
+            ):
+                failures.append(f"{label} target {target_id} has no generated keyboard/focus path.")
+        keyboard_summary = page.get("keyboard")
+        if keyboard_summary != {"complete": True, "missing": []}:
+            failures.append(f"{label} keyboard summary is incomplete.")
+        semantic_equivalence = page.get("semantic_equivalence")
+        if semantic_equivalence != {"complete": True, "mismatches": []}:
+            failures.append(f"{label} repeated controls are not semantically equivalent.")
+        reduced = page.get("reduced_motion")
+        if (
+            not isinstance(reduced, dict)
+            or set(reduced) != {"navigation", "animations", "evidence", "honors_preference", "complete"}
+            or reduced.get("honors_preference") is not True
+            or reduced.get("complete") is not True
+            or not isinstance(reduced.get("animations"), list)
+        ):
+            failures.append(f"{label} reduced-motion evidence is incomplete.")
+        else:
+            failures.extend(navigation_failures(reduced["navigation"], url, f"{label} reduced-motion navigation"))
+            failures.extend(artifact_failures(reduced["evidence"], f"{label} reduced-motion evidence"))
+        deep_link = page.get("deep_link")
+        if not isinstance(deep_link, dict) or set(deep_link) != {"navigation", "evidence", "complete"} or deep_link.get("complete") is not True:
+            failures.append(f"{label} deep-link evidence is incomplete.")
+        else:
+            failures.extend(navigation_failures(deep_link["navigation"], url, f"{label} deep-link navigation"))
+            failures.extend(artifact_failures(deep_link["evidence"], f"{label} deep-link evidence"))
+        reload = page.get("reload")
+        if (
+            not isinstance(reload, dict)
+            or set(reload) != {"navigation", "before", "after", "stable_pixels", "complete"}
+            or reload.get("complete") is not True
+            or type(reload.get("stable_pixels")) is not bool
+        ):
+            failures.append(f"{label} reload evidence is incomplete.")
+        else:
+            failures.extend(navigation_failures(reload["navigation"], url, f"{label} reload navigation"))
+            failures.extend(artifact_failures(reload["before"], f"{label} reload before"))
+            failures.extend(artifact_failures(reload["after"], f"{label} reload after"))
+        dead_end = page.get("dead_end")
+        if (
+            not isinstance(dead_end, dict)
+            or set(dead_end) != {"same_origin_destinations", "is_dead_end", "terminal_signal", "problem"}
+            or not isinstance(dead_end.get("same_origin_destinations"), list)
+            or type(dead_end.get("is_dead_end")) is not bool
+            or type(dead_end.get("terminal_signal")) is not bool
+            or dead_end.get("problem") is not False
+        ):
+            failures.append(f"{label} is a generated dead-end experience path.")
+        page_issues = sum(
+            len(page.get(field) or [])
+            for field in (
+                "clipping", "collisions", "fixed_rail_overlaps", "dead_controls",
+                "semantic_issues",
+            )
+        ) + len([
+            item for item in hidden or []
+            if isinstance(item, dict) and item.get("focusable_while_hidden") is True
+        ]) + len([
+            item for item in overlays
+            if isinstance(item, dict) and item.get("complete") is not True
+        ]) + (0 if isinstance(state_semantics, dict) and state_semantics.get("complete") is True else 1) + (
+            len(keyboard_summary.get("missing", []))
+            if isinstance(keyboard_summary, dict)
+            and isinstance(keyboard_summary.get("missing"), list)
+            else 1
+        ) + (
+            len(semantic_equivalence.get("mismatches", []))
+            if isinstance(semantic_equivalence, dict)
+            and isinstance(semantic_equivalence.get("mismatches"), list)
+            else 1
+        ) + (
+            0 if isinstance(reduced, dict) and reduced.get("honors_preference") is True else 1
+        ) + (0 if isinstance(dead_end, dict) and dead_end.get("problem") is False else 1)
+        issue_total += page_issues
+    if observed_urls != expected_urls:
+        failures.append(f"{expected_profile} source rendered QA pages differ from complete live traversal.")
+    totals = payload.get("totals")
+    if (
+        not isinstance(totals, dict)
+        or set(totals) != {"pages", "issues", "controls", "overlays"}
+        or totals.get("pages") != len(pages)
+        or totals.get("issues") != issue_total
+        or type(totals.get("overlays")) is not int
+        or totals.get("overlays", -1) < overlay_total
+        or type(totals.get("controls")) is not int
+        or totals.get("controls", -1) < len(census_targets)
+    ):
+        failures.append(f"{expected_profile} source rendered QA totals do not reconcile generated findings.")
+    return failures
+
+
+SHA256_HEX = re.compile(r"[0-9a-f]{64}")
+PREBUILD_AUTHORIZATION_SCHEMA_VERSION = 1
+PREBUILD_AUTHORIZATION_RECORD_TYPE = "design-dna-prebuild-authorization"
+PREBUILD_AUTHORIZATION_RELATIVE_DIR = PurePosixPath(
+    ".design-dna/evidence/prebuild-authorizations"
+)
+FIRST_SCREEN_GATE_LINE = re.compile(
+    r"(?m)^-\s*First-screen gate:\s*.*$",
+    re.IGNORECASE,
+)
+
+
+def dossier_core_sha256(path: Path) -> str:
+    """Hash a dossier while excluding only its circular gate binding value."""
+
+    text = path.read_text(encoding="utf-8", errors="strict").replace("\r\n", "\n")
+    normalized = FIRST_SCREEN_GATE_LINE.sub(
+        "- First-screen gate: <excluded-from-dossier-core-hash>", text
+    )
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def packaged_gate_runtime_identity() -> dict[str, str]:
+    scripts = Path(__file__).resolve().parent
+    gate = scripts / "gate.py"
+    files = [gate, Path(__file__).resolve(), *sorted(scripts.glob("*.mjs"), key=lambda item: item.name)]
+    return {path.name: file_sha256(path)[1] for path in files}
+
+
+def prebuild_authorization_chain(
+    project: Path,
+) -> tuple[list[str], list[tuple[Path, dict[str, object], str]]]:
+    """Validate the append-only predecessor chain and return its records."""
+
+    failures: list[str] = []
+    root = project / PREBUILD_AUTHORIZATION_RELATIVE_DIR
+    if not root.is_dir():
+        return (["Prebuild authorization directory is missing."], [])
+    files = sorted(root.glob("*.json"), key=lambda item: item.name)
+    if not files:
+        return (["Prebuild authorization chain is empty."], [])
+    expected_runtime = packaged_gate_runtime_identity()
+    expected_gate_sha = expected_runtime.get("gate.py")
+    previous_path: Path | None = None
+    previous_sha: str | None = None
+    previous_time: datetime | None = None
+    records: list[tuple[Path, dict[str, object], str]] = []
+    expected_keys = {
+        "schema_version", "record_type", "authorization_id", "authorized_at",
+        "project", "manifest_id", "manifest_sha256", "route_key",
+        "proof_build_id", "proof_tree_sha256", "dossier_core_sha256",
+        "visible_decision_source_manifest", "visible_decision_snapshot",
+        "first_screen_gate", "previous_authorization",
+        "producer_script_sha256", "runtime_identity",
+    }
+    for index, file in enumerate(files):
+        if file.is_symlink() or not file.is_file():
+            failures.append(f"Prebuild authorization entry is not a regular file: {file.name}.")
+            continue
+        try:
+            payload = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"Prebuild authorization {file.name} is unreadable: {exc}")
+            continue
+        digest = file_sha256(file)[1]
+        if not isinstance(payload, dict) or set(payload) != expected_keys:
+            failures.append(f"Prebuild authorization {file.name} has an unsupported shape.")
+            continue
+        if (
+            payload.get("schema_version") != PREBUILD_AUTHORIZATION_SCHEMA_VERSION
+            or payload.get("record_type") != PREBUILD_AUTHORIZATION_RECORD_TYPE
+            or not isinstance(payload.get("authorization_id"), str)
+            or re.fullmatch(r"[0-9a-f]{32}", payload["authorization_id"]) is None
+        ):
+            failures.append(f"Prebuild authorization {file.name} has invalid identity.")
+        try:
+            authorized_at = datetime.fromisoformat(
+                str(payload.get("authorized_at", "")).replace("Z", "+00:00")
+            )
+        except ValueError:
+            authorized_at = None
+            failures.append(f"Prebuild authorization {file.name} has invalid authorized_at.")
+        if authorized_at is not None and previous_time is not None and authorized_at <= previous_time:
+            failures.append("Prebuild authorization timestamps are not strictly increasing.")
+        if authorized_at is not None:
+            previous_time = authorized_at
+        if Path(str(payload.get("project") or "")).resolve() != project.resolve():
+            failures.append(f"Prebuild authorization {file.name} belongs to another project.")
+        for field in ("manifest_sha256", "proof_tree_sha256", "dossier_core_sha256"):
+            if not isinstance(payload.get(field), str) or SHA256_HEX.fullmatch(payload[field]) is None:
+                failures.append(f"Prebuild authorization {file.name} has invalid {field}.")
+        if (
+            not isinstance(payload.get("manifest_id"), str)
+            or ROUTE_MANIFEST_ID.fullmatch(payload["manifest_id"]) is None
+            or not isinstance(payload.get("proof_build_id"), str)
+            or ROUTE_MANIFEST_ID.fullmatch(payload["proof_build_id"]) is None
+            or not isinstance(payload.get("route_key"), str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{0,47}", payload["route_key"]) is None
+        ):
+            failures.append(f"Prebuild authorization {file.name} has invalid manifest/build/route fields.")
+        if payload.get("producer_script_sha256") != expected_gate_sha:
+            failures.append(f"Prebuild authorization {file.name} uses stale gate.py bytes.")
+        if payload.get("runtime_identity") != expected_runtime:
+            failures.append(f"Prebuild authorization {file.name} uses stale runtime bytes.")
+        visible_binding = payload.get("visible_decision_source_manifest")
+        current_visible = project / ".design-dna" / "visible-decision-sources.json"
+        if (
+            not isinstance(visible_binding, dict)
+            or set(visible_binding) != {"path", "sha256"}
+            or visible_binding.get("path")
+            != ".design-dna/visible-decision-sources.json"
+            or not current_visible.is_file()
+            or visible_binding.get("sha256") != file_sha256(current_visible)[1]
+        ):
+            failures.append(
+                f"Prebuild authorization {file.name} visible-decision source bytes are missing or drifted."
+            )
+        gate_binding = payload.get("first_screen_gate")
+        if (
+            not isinstance(gate_binding, dict)
+            or set(gate_binding) != {"path", "sha256"}
+            or gate_binding.get("path")
+            != (
+                PREBUILD_AUTHORIZATION_RELATIVE_DIR.parent
+                / "prebuild-runs"
+                / str(payload.get("authorization_id") or "")
+                / "gate.json"
+            ).as_posix()
+            or not isinstance(gate_binding.get("sha256"), str)
+            or SHA256_HEX.fullmatch(gate_binding["sha256"]) is None
+        ):
+            failures.append(f"Prebuild authorization {file.name} has invalid gate binding.")
+        else:
+            immutable_gate = (
+                project / PurePosixPath(gate_binding["path"])
+            ).resolve()
+            if (
+                not is_within(immutable_gate, project.resolve())
+                or not immutable_gate.is_file()
+                or file_sha256(immutable_gate)[1] != gate_binding["sha256"]
+            ):
+                failures.append(
+                    f"Prebuild authorization {file.name} immutable gate bytes are missing or drifted."
+                )
+            else:
+                try:
+                    immutable_record = json.loads(
+                        immutable_gate.read_text(encoding="utf-8")
+                    )
+                except (OSError, ValueError) as exc:
+                    failures.append(
+                        f"Prebuild authorization {file.name} immutable gate is unreadable: {exc}"
+                    )
+                    immutable_record = None
+                if not isinstance(immutable_record, dict) or any(
+                    immutable_record.get(gate_field) != expected_value
+                    for gate_field, expected_value in {
+                        "tool": "gate.py",
+                        "schema_version": 2,
+                        "phase": "first-screen",
+                        "pass": True,
+                        "project": str(project.resolve()),
+                        "authorization_id": payload.get("authorization_id"),
+                        "route_key": payload.get("route_key"),
+                        "build_id": payload.get("proof_build_id"),
+                        "build_tree_sha256_before": payload.get("proof_tree_sha256"),
+                        "build_tree_sha256_after": payload.get("proof_tree_sha256"),
+                        "manifest_id": payload.get("manifest_id"),
+                        "route_manifest_sha256": payload.get("manifest_sha256"),
+                        "dossier_core_sha256": payload.get("dossier_core_sha256"),
+                        "visible_decision_source_manifest": payload.get(
+                            "visible_decision_source_manifest"
+                        ),
+                        "visible_decision_snapshot": payload.get(
+                            "visible_decision_snapshot"
+                        ),
+                        "producer_script_sha256": payload.get("producer_script_sha256"),
+                        "runtime_identity": payload.get("runtime_identity"),
+                    }.items()
+                ):
+                    failures.append(
+                        f"Prebuild authorization {file.name} immutable gate fields do not match its authorization."
+                    )
+                elif immutable_record.get("build_stable") is not True:
+                    failures.append(
+                        f"Prebuild authorization {file.name} immutable gate did not prove a stable tree."
+                    )
+                else:
+                    for snapshot_field, expected_digest, core_only in (
+                        ("manifest_snapshot", payload.get("manifest_sha256"), False),
+                        ("dossier_snapshot", payload.get("dossier_core_sha256"), True),
+                        (
+                            "visible_decision_snapshot",
+                            (
+                                visible_binding.get("sha256")
+                                if isinstance(visible_binding, dict)
+                                else None
+                            ),
+                            False,
+                        ),
+                    ):
+                        snapshot = immutable_record.get(snapshot_field)
+                        snapshot_path = (
+                            project / PurePosixPath(str(snapshot.get("path") or ""))
+                        ).resolve() if isinstance(snapshot, dict) else Path()
+                        snapshot_digest = (
+                            dossier_core_sha256(snapshot_path)
+                            if core_only and snapshot_path.is_file()
+                            else file_sha256(snapshot_path)[1]
+                            if snapshot_path.is_file()
+                            else None
+                        )
+                        if (
+                            not isinstance(snapshot, dict)
+                            or set(snapshot) != {"path", "sha256"}
+                            or snapshot_digest != expected_digest
+                            or file_sha256(snapshot_path)[1] != snapshot.get("sha256")
+                        ):
+                            failures.append(
+                                f"Prebuild authorization {file.name} {snapshot_field} bytes are missing or drifted."
+                            )
+                    evidence_ledger = immutable_record.get("evidence_hashes")
+                    ledger_paths: set[str] = set()
+                    if not isinstance(evidence_ledger, list):
+                        failures.append(
+                            f"Prebuild authorization {file.name} immutable gate has no evidence ledger."
+                        )
+                    else:
+                        for evidence_entry in evidence_ledger:
+                            relative = (
+                                evidence_entry.get("path")
+                                if isinstance(evidence_entry, dict)
+                                else None
+                            )
+                            evidence_path = (
+                                project / PurePosixPath(str(relative or ""))
+                            ).resolve()
+                            if (
+                                not isinstance(relative, str)
+                                or relative in ledger_paths
+                                or not is_within(evidence_path, project.resolve())
+                                or not evidence_path.is_file()
+                                or file_sha256(evidence_path)[1]
+                                != evidence_entry.get("sha256")
+                            ):
+                                failures.append(
+                                    f"Prebuild authorization {file.name} immutable evidence ledger is missing or drifted."
+                                )
+                                break
+                            ledger_paths.add(relative)
+        predecessor = payload.get("previous_authorization")
+        if index == 0:
+            if predecessor is not None:
+                failures.append("The first prebuild authorization must have no predecessor.")
+        else:
+            expected_relative = previous_path.relative_to(project).as_posix() if previous_path else ""
+            if (
+                not isinstance(predecessor, dict)
+                or set(predecessor) != {"path", "sha256"}
+                or predecessor.get("path") != expected_relative
+                or predecessor.get("sha256") != previous_sha
+            ):
+                failures.append(f"Prebuild authorization {file.name} breaks the append-only predecessor chain.")
+        previous_path, previous_sha = file, digest
+        records.append((file, payload, digest))
+    return failures, records
+
+
+def load_prebuild_authorization(
+    project: Path, authorization_path: Path
+) -> tuple[list[str], dict[str, object] | None, str | None]:
+    failures, records = prebuild_authorization_chain(project)
+    resolved = authorization_path.resolve()
+    match = next(
+        ((payload, digest) for path, payload, digest in records if path.resolve() == resolved),
+        None,
+    )
+    if match is None:
+        failures.append("Selected prebuild authorization is not in the validated append-only chain.")
+        return failures, None, None
+    if records and records[-1][0].resolve() != resolved:
+        failures.append("Final gate must cite the latest prebuild authorization predecessor.")
+    return failures, match[0], match[1]
+
+
+def canonical_json_sha256(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def served_content_identity_failures(
+    identity: object,
+    *,
+    expected_routes: list[dict[str, object]],
+    expected_viewports: list[dict[str, object]],
+) -> list[str]:
+    failures: list[str] = []
+    if not isinstance(identity, dict) or set(identity) != {
+        "algorithm",
+        "probes",
+        "reload_counts",
+        "inconsistent_reloads",
+        "sha256",
+        "complete",
+    }:
+        return ["Served-content identity has an unsupported shape."]
+    if identity.get("algorithm") != "sha256-response-bodies-v1":
+        failures.append("Served-content identity uses an unsupported algorithm.")
+    probes = identity.get("probes")
+    if not isinstance(probes, list):
+        return [*failures, "Served-content identity probes must be a list."]
+    expected_cells = {
+        (str(route.get("key")), str(viewport.get("name")))
+        for route in expected_routes
+        for viewport in expected_viewports
+    }
+    observed_cells: set[tuple[str, str]] = set()
+    top_projection: list[dict[str, object]] = []
+    canonical_probe_order = sorted(
+        probes,
+        key=lambda probe: (
+            str(probe.get("route_key", "")) if isinstance(probe, dict) else "",
+            str(probe.get("viewport", "")) if isinstance(probe, dict) else "",
+        ),
+    )
+    if probes != canonical_probe_order:
+        failures.append("Served-content probes are not canonically ordered.")
+    for index, probe in enumerate(probes, start=1):
+        label = f"Served-content probe {index}"
+        if not isinstance(probe, dict) or set(probe) != {
+            "route_key", "viewport", "requested_url", "final_url", "status",
+            "document_sha256", "resources", "sha256",
+        }:
+            failures.append(f"{label} has an unsupported shape.")
+            continue
+        cell = (str(probe.get("route_key")), str(probe.get("viewport")))
+        if cell in observed_cells:
+            failures.append(f"{label} duplicates route/profile {cell[0]}/{cell[1]}.")
+        observed_cells.add(cell)
+        matching_route = next(
+            (route for route in expected_routes if route.get("key") == cell[0]),
+            None,
+        )
+        requested = probe.get("requested_url")
+        final = probe.get("final_url")
+        status = probe.get("status")
+        if (
+            matching_route is None
+            or requested != matching_route.get("url")
+            or final != requested
+            or type(status) is not int
+            or not 200 <= status < 300
+        ):
+            failures.append(
+                f"{label} must bind the exact manifested URL with a 2xx non-redirect response."
+            )
+        if (
+            not isinstance(probe.get("document_sha256"), str)
+            or SHA256_HEX.fullmatch(probe["document_sha256"]) is None
+        ):
+            failures.append(f"{label} has invalid document_sha256.")
+        resources = probe.get("resources")
+        if not isinstance(resources, list):
+            failures.append(f"{label} resources must be a list.")
+            continue
+        expected_order = sorted(
+            resources,
+            key=lambda item: (
+                str(item.get("url", "")) if isinstance(item, dict) else "",
+                item.get("status", -1) if isinstance(item, dict) else -1,
+                str(item.get("sha256", "")) if isinstance(item, dict) else "",
+                item.get("bytes", -1) if isinstance(item, dict) else -1,
+            ),
+        )
+        if resources != expected_order:
+            failures.append(f"{label} resources are not canonically sorted.")
+        for resource in resources:
+            if (
+                not isinstance(resource, dict)
+                or set(resource) != {"url", "status", "sha256", "bytes"}
+                or not isinstance(resource.get("url"), str)
+                or type(resource.get("status")) is not int
+                or not 200 <= resource["status"] < 300
+                or not isinstance(resource.get("sha256"), str)
+                or SHA256_HEX.fullmatch(resource["sha256"]) is None
+                or type(resource.get("bytes")) is not int
+                or resource["bytes"] < 0
+            ):
+                failures.append(f"{label} contains an invalid or unreadable resource binding.")
+                break
+        projection = {
+            "requested_url": requested,
+            "final_url": final,
+            "status": status,
+            "document_sha256": probe.get("document_sha256"),
+            "resources": resources,
+        }
+        if probe.get("sha256") != canonical_json_sha256(projection):
+            failures.append(f"{label} hash does not match its canonical response-body projection.")
+        top_projection.append(
+            {"route_key": cell[0], "viewport": cell[1], "sha256": probe.get("sha256")}
+        )
+    if observed_cells != expected_cells:
+        failures.append(
+            "Served-content identity does not cover the exact active route/profile matrix."
+        )
+    reload_counts = identity.get("reload_counts")
+    expected_reload_keys = {
+        f"{route_key}/{viewport}" for route_key, viewport in expected_cells
+    }
+    if (
+        not isinstance(reload_counts, dict)
+        or set(reload_counts) != expected_reload_keys
+        or any(type(count) is not int or count < 2 for count in reload_counts.values())
+    ):
+        failures.append(
+            "Served-content reload_counts must prove at least two byte-identical "
+            "loads for every active route/profile cell."
+        )
+    if identity.get("inconsistent_reloads") != [] or identity.get("complete") is not True:
+        failures.append(
+            "Served-content identity reports inconsistent response bytes across reloads."
+        )
+    top_projection.sort(key=lambda item: (str(item["route_key"]), str(item["viewport"])))
+    if identity.get("sha256") != canonical_json_sha256(top_projection):
+        failures.append("Served-content top hash does not match its canonical probes.")
+    return failures
+
+
+def census_runtime_failures(
+    payload: object,
+    *,
+    expected_routes: list[dict[str, object]],
+    expected_viewports: list[dict[str, object]],
+    first_screen: bool,
+    record_path: Path | None = None,
+    project: Path | None = None,
+) -> list[str]:
+    """Reconcile build scope, inferred states, and interaction transfer cells."""
+
+    failures: list[str] = []
+    if not isinstance(payload, dict):
+        return ["Component census must contain an object."]
+    if project is None and record_path is not None:
+        for ancestor in record_path.resolve().parents:
+            if ancestor.name == ".design-dna":
+                project = ancestor.parent
+                break
+    route_by_key = {
+        str(route.get("key")): route
+        for route in expected_routes
+        if isinstance(route, dict)
+    }
+    viewport_by_name = {
+        str(viewport.get("name")): viewport
+        for viewport in expected_viewports
+        if isinstance(viewport, dict)
+    }
+    expected_route_keys = list(route_by_key)
+    if payload.get("route_filter") != expected_route_keys:
+        failures.append("Component census route_filter is not the exact active manifest order.")
+    if payload.get("first_screen_only") is not first_screen:
+        failures.append("Component census phase/scope flag does not match the gate phase.")
+    if payload.get("viewports") != expected_viewports:
+        failures.append("Component census viewport definitions differ from the manifest.")
+    expected_state_ids = sorted(
+        {
+            str(state.get("id"))
+            for route in expected_routes
+            for state in route.get("states", [])
+            if isinstance(state, dict)
+        }
+    )
+    if payload.get("state_ids") != expected_state_ids:
+        failures.append("Component census state_ids differ from the manifest.")
+    if payload.get("pass") is not True:
+        failures.append("Component census did not pass.")
+    if payload.get("unexpected_urls") != [] or payload.get("failed_states") != []:
+        failures.append("Component census reports unmanifested routes or failed states.")
+
+    expected_cells = {
+        (route_key, viewport_name, str(state.get("id")))
+        for route_key, route in route_by_key.items()
+        for viewport_name in viewport_by_name
+        for state in route.get("states", [])
+        if isinstance(state, dict)
+    }
+    checks = payload.get("checks")
+    check_by_cell: dict[tuple[str, str, str], dict[str, object]] = {}
+    if not isinstance(checks, list):
+        failures.append("Component census checks must be a list.")
+        checks = []
+    for index, check in enumerate(checks, start=1):
+        if not isinstance(check, dict):
+            failures.append(f"Component census check {index} is invalid.")
+            continue
+        cell = (
+            str(check.get("route_key")),
+            str(check.get("viewport")),
+            str(check.get("state_id")),
+        )
+        if cell in check_by_cell:
+            failures.append(f"Component census check {index} duplicates a route/profile/state cell.")
+            continue
+        check_by_cell[cell] = check
+        route = route_by_key.get(cell[0])
+        viewport = viewport_by_name.get(cell[1])
+        state = next(
+            (
+                item for item in route.get("states", [])
+                if isinstance(item, dict) and item.get("id") == cell[2]
+            ),
+            None,
+        ) if isinstance(route, dict) else None
+        if (
+            route is None
+            or viewport is None
+            or state is None
+            or check.get("url") != route.get("url")
+            or check.get("mapped_reference_rank") != route.get("mapped_reference_rank")
+            or check.get("mapped_reference_id") != route.get("mapped_reference_id")
+            or check.get("mapped_reference_observation") != route.get("mapped_reference_observation")
+            or check.get("mapped_reference_sha256") != route.get("mapped_reference_sha256")
+            or check.get("width") != viewport.get("width")
+            or check.get("height") != viewport.get("height")
+            or check.get("state_kind") != state.get("kind")
+            or check.get("state_trigger") != state.get("trigger")
+            or check.get("mapped_reference_state_id")
+            != state.get("mapped_reference_state_id")
+        ):
+            failures.append(f"Component census check {index} is not the exact manifested cell.")
+        if (
+            check.get("pass") is not True
+            or type(check.get("attempted")) is not int
+            or check.get("attempted", 0) < 1
+            or check.get("covered") != check.get("attempted")
+            or not isinstance(check.get("state_application"), dict)
+            or check["state_application"].get("applied") is not True
+            or not isinstance(check.get("scroll_traversal"), dict)
+            or check["scroll_traversal"].get("complete") is not True
+            or not isinstance(check.get("inspection"), list)
+            or not check.get("inspection")
+            or any(
+                not isinstance(item, dict) or item.get("complete") is not True
+                for item in check.get("inspection", [])
+            )
+        ):
+            failures.append(f"Component census check {index} has incomplete state/scroll/DOM evidence.")
+        decision_ids = check.get("visible_decision_ids")
+        if (
+            not isinstance(decision_ids, list)
+            or decision_ids != sorted(set(decision_ids))
+            or not all(isinstance(item, str) and item for item in decision_ids)
+            or check.get("unsourced_visible_parts") != []
+        ):
+            failures.append(
+                f"Component census check {index} has unsourced or invalid visible-decision coverage."
+            )
+    if set(check_by_cell) != expected_cells:
+        failures.append("Component census does not cover the exact route/profile/state matrix.")
+
+    scopes = payload.get("implementation_scope")
+    expected_scope_cells = {
+        (route_key, viewport_name)
+        for route_key in route_by_key
+        for viewport_name in viewport_by_name
+    }
+    observed_scope_cells: set[tuple[str, str]] = set()
+    if not isinstance(scopes, list):
+        failures.append("Component census implementation_scope must be a list.")
+        scopes = []
+    for index, scope in enumerate(scopes, start=1):
+        if not isinstance(scope, dict):
+            failures.append(f"Component census implementation scope {index} is invalid.")
+            continue
+        cell = (str(scope.get("route_key")), str(scope.get("viewport")))
+        if cell in observed_scope_cells:
+            failures.append(f"Component census implementation scope {index} duplicates a cell.")
+        observed_scope_cells.add(cell)
+        substantial = scope.get("substantial_regions")
+        beyond = scope.get("beyond_first_screen_regions")
+        if (
+            cell not in expected_scope_cells
+            or type(scope.get("document_height")) is not int
+            or type(scope.get("viewport_height")) is not int
+            or not isinstance(substantial, list)
+            or not isinstance(beyond, list)
+        ):
+            failures.append(f"Component census implementation scope {index} is incomplete.")
+            continue
+        if first_screen and (
+            scope.get("first_screen_scope_pass") is not True
+            or scope["document_height"] > scope["viewport_height"]
+            or len(substantial) != 1
+            or beyond != []
+        ):
+            failures.append(
+                f"Component census implementation scope {index} proves broad implementation existed before authorization."
+            )
+    if observed_scope_cells != expected_scope_cells:
+        failures.append("Component census implementation scope misses active route/profile cells.")
+
+    state_inventories = payload.get("state_inventories")
+    inventory_cells: set[tuple[str, str]] = set()
+    if not isinstance(state_inventories, list):
+        failures.append("Component census inferred state inventories must be a list.")
+        state_inventories = []
+    for inventory in state_inventories:
+        if not isinstance(inventory, dict):
+            failures.append("Component census has an invalid inferred state inventory.")
+            continue
+        cell = (str(inventory.get("route_key")), str(inventory.get("viewport")))
+        inventory_cells.add(cell)
+        inferred = inventory.get("inferred")
+        if (
+            cell not in expected_scope_cells
+            or inventory.get("complete") is not True
+            or inventory.get("unreconciled") != []
+            or not isinstance(inventory.get("discovery_scroll"), dict)
+            or inventory["discovery_scroll"].get("complete") is not True
+            or not isinstance(inferred, list)
+            or any(
+                not isinstance(item, dict)
+                or not isinstance(item.get("reconciled_state_ids"), list)
+                or not item.get("reconciled_state_ids")
+                for item in inferred
+            )
+        ):
+            failures.append(f"Component census inferred states do not reconcile for {cell[0]}/{cell[1]}.")
+    if inventory_cells != expected_scope_cells:
+        failures.append("Component census inferred state inventories miss active route/profile cells.")
+
+    interaction = payload.get("interaction_inventory")
+    if (
+        not isinstance(interaction, dict)
+        or set(interaction) != {
+            "complete", "missing", "cells", "responsive_transformations",
+            "inferred_components", "target_censuses",
+        }
+        or interaction.get("complete") is not True
+        or interaction.get("missing") != []
+        or interaction.get("inferred_components") != state_inventories
+    ):
+        failures.append("Component census interaction inventory is incomplete or detached from inferred states.")
+        return failures
+    frame_artifacts: set[tuple[str, int, str]] | None = None
+    if record_path is not None:
+        frame_failures, frame_bindings = generated_interaction_frame_bindings(
+            payload, record_path=record_path
+        )
+        failures.extend(frame_failures)
+        frame_artifacts = {
+            (str(binding["relative"]), int(binding["bytes"]), str(binding["sha256"]))
+            for binding in frame_bindings
+        }
+    target_censuses = interaction.get("target_censuses")
+    target_census_cells: set[tuple[str, str]] = set()
+    if not isinstance(target_censuses, list):
+        failures.append("Component census generated target censuses must be a list.")
+        target_censuses = []
+    census_keys = {
+        "profile", "pages", "page_states", "repeat_classes", "pointer_follow",
+        "blocked_side_effects", "totals", "truncated", "missing", "complete",
+    }
+    for index, target_census in enumerate(target_censuses, start=1):
+        if not isinstance(target_census, dict) or set(target_census) != {
+            *census_keys, "route_key", "viewport"
+        }:
+            failures.append(f"Component target census {index} has an unsupported shape.")
+            continue
+        route_key = str(target_census.get("route_key"))
+        viewport_name = str(target_census.get("viewport"))
+        cell = (route_key, viewport_name)
+        if cell in target_census_cells:
+            failures.append(f"Component target census {index} duplicates a route/profile.")
+        target_census_cells.add(cell)
+        route = route_by_key.get(route_key)
+        if route is None or viewport_name not in viewport_by_name:
+            failures.append(f"Component target census {index} is not an active manifest cell.")
+            continue
+        core = {key: target_census.get(key) for key in census_keys}
+        failures.extend(
+            f"Component target census {index}: {failure}"
+            for failure in interaction_census_failures(
+                core,
+                expected_profile=viewport_name,
+                expected_state_ids={
+                    str(state.get("id"))
+                    for state in route.get("states", [])
+                    if isinstance(state, dict)
+                },
+                expected_urls={str(route.get("url"))},
+                artifact_root=record_path.parent if record_path is not None else None,
+                allowed_artifacts=frame_artifacts,
+            )
+        )
+    if target_census_cells != expected_scope_cells:
+        failures.append("Component target censuses miss active route/profile cells.")
+    interaction_cells = interaction.get("cells")
+    interaction_by_cell: dict[tuple[str, str, str], dict[str, object]] = {}
+    if not isinstance(interaction_cells, list):
+        failures.append("Component census interaction cells must be a list.")
+        interaction_cells = []
+    for index, cell_record in enumerate(interaction_cells, start=1):
+        if not isinstance(cell_record, dict):
+            failures.append(f"Component census interaction cell {index} is invalid.")
+            continue
+        cell = (
+            str(cell_record.get("route_key")),
+            str(cell_record.get("viewport")),
+            str(cell_record.get("state_id")),
+        )
+        if cell in interaction_by_cell:
+            failures.append(f"Component census interaction cell {index} is duplicate.")
+            continue
+        interaction_by_cell[cell] = cell_record
+        check = check_by_cell.get(cell)
+        route = route_by_key.get(cell[0])
+        state = next(
+            (item for item in route.get("states", []) if isinstance(item, dict) and item.get("id") == cell[2]),
+            None,
+        ) if isinstance(route, dict) else None
+        expected_mapping = {
+            "rank": route.get("mapped_reference_rank") if isinstance(route, dict) else None,
+            "id": route.get("mapped_reference_id") if isinstance(route, dict) else None,
+            "observation": route.get("mapped_reference_observation") if isinstance(route, dict) else None,
+            "sha256": route.get("mapped_reference_sha256") if isinstance(route, dict) else None,
+            "state_id": state.get("mapped_reference_state_id") if isinstance(state, dict) else None,
+        }
+        evidence = cell_record.get("trigger_evidence")
+        if (
+            check is None
+            or state is None
+            or cell_record.get("mapped_reference_state_id")
+            != state.get("mapped_reference_state_id")
+            or cell_record.get("source_mapping") != expected_mapping
+            or cell_record.get("trigger") != state.get("trigger")
+            or cell_record.get("complete") is not True
+            or cell_record.get("target_components_present") is not True
+            or not isinstance(cell_record.get("target_components"), list)
+            or not cell_record.get("target_components")
+            or not isinstance(evidence, dict)
+            or any(
+                not isinstance(evidence.get(field), str)
+                or SHA256_HEX.fullmatch(evidence[field]) is None
+                for field in ("before_sha256", "after_sha256", "settled_sha256")
+            )
+            or evidence.get("type") != state.get("trigger", {}).get("type")
+            or evidence.get("settled") is not True
+        ):
+            failures.append(
+                f"Component census interaction cell {index} lacks exact mapped trigger/source/render evidence."
+            )
+    if set(interaction_by_cell) != expected_cells:
+        failures.append("Component census interaction inventory misses route/profile/state cells.")
+    transformations = interaction.get("responsive_transformations")
+    expected_transformations = {
+        (route_key, str(state.get("id")))
+        for route_key, route in route_by_key.items()
+        for state in route.get("states", [])
+        if isinstance(state, dict)
+    }
+    observed_transformations: set[tuple[str, str]] = set()
+    if not isinstance(transformations, list):
+        failures.append("Component census responsive interaction transformations must be a list.")
+        transformations = []
+    for transformation in transformations:
+        if not isinstance(transformation, dict):
+            continue
+        key = (str(transformation.get("route_key")), str(transformation.get("state_id")))
+        observed_transformations.add(key)
+        if (
+            transformation.get("complete") is not True
+            or not isinstance(transformation.get("wide"), dict)
+            or not isinstance(transformation.get("narrow"), dict)
+        ):
+            failures.append(
+                f"Component census responsive interaction {key[0]}/{key[1]} is incomplete."
+            )
+    if observed_transformations != expected_transformations:
+        failures.append("Component census responsive interactions miss manifested route/state pairs.")
+
+    rendered_qa = payload.get("rendered_qa")
+    expected_qa_top = {
+        "schema_version", "complete", "missing", "truncated", "cells",
+        "presentation_ready", "presentation_blocker", "experience_paths",
+    }
+    if (
+        not isinstance(rendered_qa, dict)
+        or set(rendered_qa) != expected_qa_top
+        or rendered_qa.get("schema_version") != 1
+        or rendered_qa.get("complete") is not True
+        or rendered_qa.get("missing") != []
+        or rendered_qa.get("truncated") is not False
+        or rendered_qa.get("presentation_ready") is not (not first_screen)
+    ):
+        failures.append("Component census rendered_qa is incomplete, truncated, or has the wrong phase readiness.")
+        return failures
+    if first_screen:
+        if rendered_qa.get("presentation_ready") is not False or rendered_qa.get(
+            "presentation_blocker"
+        ) != "first-screen authorization is not post-build multi-route/site QA":
+            failures.append("First-screen rendered QA must retain its explicit presentation blocker.")
+    elif rendered_qa.get("presentation_ready") is not True or rendered_qa.get(
+        "presentation_blocker"
+    ) is not None:
+        failures.append("Final rendered QA is not presentation-ready.")
+    qa_cells = rendered_qa.get("cells")
+    qa_by_cell: dict[tuple[str, str, str], dict[str, object]] = {}
+    if not isinstance(qa_cells, list):
+        failures.append("Component rendered QA cells must be a list.")
+        qa_cells = []
+    expected_qa_cell_keys = {
+        "route_key", "viewport", "state_id", "clipping", "collisions",
+        "fixed_rail_overlaps", "control_visibility",
+        "responsive_control_parity", "hidden_controls", "dead_controls",
+        "blocked_handoffs", "overlays", "keyboard", "reduced_motion",
+        "deep_link", "reload", "dead_ends", "semantic_equivalence",
+        "state_semantics", "public_copy", "accessibility", "experience_paths",
+        "short_height", "missing", "truncated", "complete",
+    }
+    served = payload.get("served_content_identity")
+    served_sha = served.get("sha256") if isinstance(served, dict) else None
+    source_observations: dict[str, dict[str, object]] = {}
+    if project is not None:
+        for route_key, route in route_by_key.items():
+            relative = route.get("mapped_reference_observation")
+            if not isinstance(relative, str):
+                failures.append(f"Component rendered QA route {route_key} has no source observation path.")
+                continue
+            observation_path = lexical_absolute(project / PurePosixPath(relative))
+            if not is_within(observation_path, project.resolve()):
+                failures.append(f"Component rendered QA route {route_key} source observation escapes the project.")
+                continue
+            try:
+                assert_no_reparse_ancestors(observation_path, stop=project)
+            except StateError as exc:
+                failures.append(f"Component rendered QA route {route_key} source observation is linked/reparse: {exc}")
+                continue
+            try:
+                observation = json.loads(observation_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                failures.append(f"Component rendered QA route {route_key} source observation is unreadable: {exc}")
+                continue
+            if (
+                file_sha256(observation_path)[1]
+                != route.get("mapped_reference_sha256")
+                or not isinstance(observation, dict)
+            ):
+                failures.append(f"Component rendered QA route {route_key} source observation bytes drifted.")
+                continue
+            source_observations[route_key] = observation
+
+    def source_semantic_keys(
+        route_key: str, profile: str, mapped_state_id: str
+    ) -> set[str]:
+        observation = source_observations.get(route_key, {})
+        census = observation.get("interaction_census_by_viewport", {}).get(profile)
+        result: set[str] = set()
+        if not isinstance(census, dict):
+            return result
+        for page in census.get("pages", []):
+            if not isinstance(page, dict):
+                continue
+            for target in page.get("targets", []):
+                if not isinstance(target, dict):
+                    continue
+                semantic_key = target.get("semantic_key")
+                source_state_ids = target.get("source_state_ids")
+                if (
+                    isinstance(semantic_key, str)
+                    and semantic_key
+                    and isinstance(source_state_ids, list)
+                    and (
+                        not source_state_ids
+                        or mapped_state_id in source_state_ids
+                    )
+                ):
+                    result.add(semantic_key)
+        return result
+
+    def surface_qa_failures(surface: object, label: str) -> list[str]:
+        local: list[str] = []
+        if not isinstance(surface, dict):
+            return [f"{label} is not an object."]
+        state_semantics = surface.get("state_semantics")
+        if (
+            not isinstance(state_semantics, dict)
+            or set(state_semantics) != {"required", "complete", "target", "attributes"}
+            or type(state_semantics.get("required")) is not bool
+            or state_semantics.get("complete") is not True
+            or (
+                state_semantics.get("required") is True
+                and not isinstance(state_semantics.get("attributes"), dict)
+            )
+        ):
+            local.append(f"{label} disclosure/toggle ARIA state semantics are incomplete.")
+        public_copy = surface.get("public_copy")
+        if (
+            not isinstance(public_copy, dict)
+            or set(public_copy) != {
+                "visible_text", "findings", "contextual_review", "truncated",
+                "complete", "evidence",
+            }
+            or not isinstance(public_copy.get("visible_text"), list)
+            or public_copy.get("findings") != []
+            or not isinstance(public_copy.get("contextual_review"), list)
+            or public_copy.get("truncated") is not False
+            or public_copy.get("complete") is not True
+            or not isinstance(public_copy.get("evidence"), dict)
+        ):
+            local.append(f"{label} contains scaffold, prototype, fallback, or builder-facing public copy.")
+        accessibility = surface.get("accessibility")
+        if (
+            not isinstance(accessibility, dict)
+            or set(accessibility) != {
+                "headings", "landmarks", "focus_indicators", "missing",
+                "truncated", "complete",
+            }
+            or accessibility.get("missing") != []
+            or accessibility.get("truncated") is not False
+            or accessibility.get("complete") is not True
+            or not isinstance(accessibility.get("headings"), list)
+            or not any(
+                isinstance(heading, dict) and heading.get("level") == 1
+                for heading in accessibility.get("headings", [])
+            )
+            or not isinstance(accessibility.get("landmarks"), list)
+            or len([
+                landmark for landmark in accessibility.get("landmarks", [])
+                if isinstance(landmark, dict) and landmark.get("visible") is True
+                and (landmark.get("tag") == "main" or landmark.get("role") == "main")
+            ]) != 1
+            or not isinstance(accessibility.get("focus_indicators"), list)
+            or any(
+                not isinstance(indicator, dict)
+                or indicator.get("complete") is not True
+                or indicator.get("active") is not True
+                or indicator.get("visible_indicator") is not True
+                or not isinstance(indicator.get("evidence"), dict)
+                for indicator in accessibility.get("focus_indicators", [])
+            )
+        ):
+            local.append(f"{label} heading/landmark/visible-focus accessibility evidence is incomplete.")
+        return local
+
+    for index, qa_cell in enumerate(qa_cells, start=1):
+        if not isinstance(qa_cell, dict) or set(qa_cell) != expected_qa_cell_keys:
+            failures.append(f"Component rendered QA cell {index} has an unsupported shape.")
+            continue
+        cell = (
+            str(qa_cell.get("route_key")),
+            str(qa_cell.get("viewport")),
+            str(qa_cell.get("state_id")),
+        )
+        if cell in qa_by_cell:
+            failures.append(f"Component rendered QA cell {index} duplicates a manifest cell.")
+            continue
+        qa_by_cell[cell] = qa_cell
+        route = route_by_key.get(cell[0])
+        control_visibility = qa_cell.get("control_visibility")
+        if (
+            not isinstance(control_visibility, list)
+            or any(
+                not isinstance(control, dict)
+                or set(control) != {
+                    "key", "semantic_key", "text", "role", "visible",
+                    "focusable", "aria_hidden", "tag", "display",
+                    "visibility", "opacity", "rendered_box", "tab_index",
+                }
+                or not isinstance(control.get("key"), str)
+                or not control["key"]
+                or not isinstance(control.get("semantic_key"), str)
+                or not control["semantic_key"]
+                or type(control.get("visible")) is not bool
+                or type(control.get("focusable")) is not bool
+                or type(control.get("rendered_box")) is not bool
+                or type(control.get("tab_index")) is not int
+                for control in control_visibility or []
+            )
+        ):
+            failures.append(
+                f"Component rendered QA cell {index} has an invalid generated control-visibility inventory."
+            )
+        if (
+            cell not in expected_cells
+            or check_by_cell.get(cell, {}).get("rendered_qa") != qa_cell
+            or any(
+                qa_cell.get(field) != []
+                for field in (
+                    "clipping", "collisions", "fixed_rail_overlaps",
+                    "hidden_controls", "dead_controls", "blocked_handoffs",
+                    "dead_ends", "missing",
+                )
+            )
+            or qa_cell.get("truncated") is not False
+            or qa_cell.get("complete") is not True
+        ):
+            failures.append(
+                f"Component rendered QA cell {index} contains clipping, overlap, hidden/dead control, blocked path, or dead-end findings."
+            )
+        failures.extend(surface_qa_failures(qa_cell, f"Component rendered QA cell {index}"))
+        overlays = qa_cell.get("overlays")
+        if (
+            not isinstance(overlays, dict)
+            or set(overlays) != {
+                "records", "inert_background", "closed_descendants_inert",
+                "stacking", "initial_focus", "background_focus_blocked",
+                "focus_trap", "focus_return"
+            }
+            or overlays.get("inert_background") is not True
+            or overlays.get("closed_descendants_inert") is not True
+            or overlays.get("stacking") is not True
+            or overlays.get("initial_focus") is not True
+            or overlays.get("background_focus_blocked") is not True
+            or overlays.get("focus_trap") is not True
+            or overlays.get("focus_return") is not True
+            or not isinstance(overlays.get("records"), list)
+            or any(
+                not isinstance(row, dict)
+                or row.get("inert_background") is not True
+                or row.get("closed_descendants_inert") is not True
+                or row.get("stacking_above_background_controls") is not True
+                or row.get("initial_focus") is not True
+                or row.get("background_focus_blocked") is not True
+                or row.get("focus_trap") is not True
+                or row.get("focus_return") is not True
+                or row.get("escape_closes") is not True
+                or not isinstance(row.get("evidence"), dict)
+                for row in overlays.get("records", [])
+            )
+        ):
+            failures.append(f"Component rendered QA cell {index} overlay inert/focus/escape evidence failed.")
+        keyboard = qa_cell.get("keyboard")
+        semantic = qa_cell.get("semantic_equivalence")
+        if keyboard != {"complete": True, "missing": []}:
+            failures.append(f"Component rendered QA cell {index} keyboard paths are incomplete.")
+        if semantic != {"complete": True, "mismatches": []}:
+            failures.append(f"Component rendered QA cell {index} repeated controls are not semantically equivalent.")
+        reduced = qa_cell.get("reduced_motion")
+        if (
+            not isinstance(reduced, dict)
+            or reduced.get("complete") is not True
+            or reduced.get("violations") != []
+            or not isinstance(reduced.get("evidence"), dict)
+        ):
+            failures.append(f"Component rendered QA cell {index} reduced-motion evidence is incomplete.")
+        deep = qa_cell.get("deep_link")
+        reload = qa_cell.get("reload")
+        if (
+            not isinstance(deep, dict)
+            or deep.get("complete") is not True
+            or not isinstance(route, dict)
+            or deep.get("requested_url") != route.get("url")
+            or deep.get("final_urls") != [route.get("url")]
+        ):
+            failures.append(f"Component rendered QA cell {index} deep-link evidence is incomplete.")
+        if (
+            not isinstance(reload, dict)
+            or reload.get("complete") is not True
+            or type(reload.get("count")) is not int
+            or reload.get("count", 0) < 2
+            or reload.get("served_content_sha256") != served_sha
+        ):
+            failures.append(f"Component rendered QA cell {index} reload evidence is incomplete.")
+        short = qa_cell.get("short_height")
+        expected_short_keys = {
+            "profile", "width", "height", "clipping", "collisions",
+            "fixed_rail_overlaps", "control_visibility", "overlays",
+            "state_semantics", "public_copy", "accessibility", "viewport",
+            "truncated", "reduced_motion",
+        }
+        expected_short_height = min(int(viewport_by_name.get(cell[1], {}).get("height") or 0), 568)
+        if (
+            not isinstance(short, dict)
+            or set(short) != expected_short_keys
+            or short.get("profile") != f"{cell[1]}-short"
+            or short.get("width") != viewport_by_name.get(cell[1], {}).get("width")
+            or short.get("height") != expected_short_height
+            or short.get("viewport") != {
+                "width": viewport_by_name.get(cell[1], {}).get("width"),
+                "height": expected_short_height,
+            }
+            or short.get("clipping") != []
+            or short.get("collisions") != []
+            or short.get("fixed_rail_overlaps") != []
+            or short.get("truncated") is not False
+            or not isinstance(short.get("control_visibility"), list)
+        ):
+            failures.append(
+                f"Component rendered QA cell {index} short-height geometry/control evidence is incomplete."
+            )
+        else:
+            failures.extend(
+                surface_qa_failures(
+                    short, f"Component rendered QA cell {index} short-height"
+                )
+            )
+            short_overlays = short.get("overlays")
+            if (
+                not isinstance(short_overlays, dict)
+                or set(short_overlays) != {
+                    "records", "inert_background", "closed_descendants_inert",
+                    "stacking", "initial_focus", "background_focus_blocked",
+                    "focus_trap", "focus_return",
+                }
+                or any(
+                    short_overlays.get(field) is not True
+                    for field in (
+                        "inert_background", "closed_descendants_inert", "stacking",
+                        "initial_focus", "background_focus_blocked",
+                        "focus_trap", "focus_return",
+                    )
+                )
+                or not isinstance(short_overlays.get("records"), list)
+                or any(
+                    not isinstance(row, dict)
+                    or row.get("inert_background") is not True
+                    or row.get("closed_descendants_inert") is not True
+                    or row.get("stacking_above_background_controls") is not True
+                    or row.get("initial_focus") is not True
+                    or row.get("background_focus_blocked") is not True
+                    or row.get("focus_trap") is not True
+                    or row.get("focus_return") is not True
+                    or row.get("escape_closes") is not True
+                    or not isinstance(row.get("evidence"), dict)
+                    for row in short_overlays.get("records", [])
+                )
+            ):
+                failures.append(
+                    f"Component rendered QA cell {index} short-height overlay inert/focus evidence failed."
+                )
+            short_reduced = short.get("reduced_motion")
+            if (
+                not isinstance(short_reduced, dict)
+                or short_reduced.get("complete") is not True
+                or short_reduced.get("violations") != []
+                or not isinstance(short_reduced.get("evidence"), dict)
+            ):
+                failures.append(
+                    f"Component rendered QA cell {index} short-height reduced-motion evidence is incomplete."
+                )
+    controls_by_route_state: dict[tuple[str, str], dict[str, dict[str, object]]] = {}
+    for (route_key, _viewport_name, state_id), qa_cell in qa_by_cell.items():
+        records = controls_by_route_state.setdefault((route_key, state_id), {})
+        for control in qa_cell.get("control_visibility", []):
+            if not isinstance(control, dict) or not isinstance(control.get("key"), str):
+                continue
+            prior = records.get(control["key"])
+            if prior is not None and prior.get("semantic_key") != control.get("semantic_key"):
+                failures.append(
+                    f"Component rendered QA control {control['key']} changes semantic identity across profiles."
+                )
+            records[control["key"]] = control
+    for cell, qa_cell in qa_by_cell.items():
+        route_key, viewport_name, state_id = cell
+        route = route_by_key.get(route_key, {})
+        viewport = viewport_by_name.get(viewport_name, {})
+        state = next(
+            (
+                item for item in route.get("states", [])
+                if isinstance(item, dict) and item.get("id") == state_id
+            ),
+            {},
+        ) if isinstance(route, dict) else {}
+        mapped_state_id = str(state.get("mapped_reference_state_id") or "")
+        source_profile = "narrow" if int(viewport.get("width") or 0) <= 430 else "wide"
+        opposite_profile = "wide" if source_profile == "narrow" else "narrow"
+        current_controls = [
+            control for control in qa_cell.get("control_visibility", [])
+            if isinstance(control, dict)
+        ]
+        current_by_key = {
+            str(control.get("key")): control for control in current_controls
+        }
+        visible_keys = {
+            str(control.get("key")) for control in current_controls
+            if control.get("visible") is True
+        }
+        visible_semantics = {
+            str(control.get("semantic_key")) for control in current_controls
+            if control.get("visible") is True
+        }
+        cross_profile_hidden: list[dict[str, object]] = []
+        for control in controls_by_route_state.get((route_key, state_id), {}).values():
+            key = str(control.get("key"))
+            semantic_key = str(control.get("semantic_key") or "")
+            if key in visible_keys or semantic_key in visible_semantics:
+                continue
+            cross_profile_hidden.append({
+                "target": key,
+                "semantic_key": semantic_key,
+                "reason": (
+                    "control-hidden-in-every-declared-state-for-required-profile"
+                    if key in current_by_key
+                    else "control-absent-without-responsive-equivalent"
+                ),
+            })
+        source_current = source_semantic_keys(
+            route_key, source_profile, mapped_state_id
+        )
+        source_opposite = source_semantic_keys(
+            route_key, opposite_profile, mapped_state_id
+        )
+        authorized = source_opposite - source_current
+        expected_findings = [
+            {
+                **candidate,
+                "source_profile": source_profile,
+                "mapped_reference_state_id": mapped_state_id,
+                "source_authorized_omission": False,
+            }
+            for candidate in cross_profile_hidden
+            if candidate["semantic_key"] not in authorized
+        ]
+        parity = qa_cell.get("responsive_control_parity")
+        expected_parity = {
+            "source_profile": source_profile,
+            "mapped_reference_state_id": mapped_state_id,
+            "source_current_semantic_keys": sorted(source_current),
+            "source_opposite_semantic_keys": sorted(source_opposite),
+            "source_authorized_omissions": sorted(authorized),
+            "build_visible_semantic_keys": sorted(visible_semantics),
+            "findings": expected_findings,
+            "complete": not expected_findings,
+        }
+        if parity != expected_parity or expected_findings:
+            failures.append(
+                f"Component rendered QA {route_key}/{viewport_name}/{state_id} does not preserve exact source-bound responsive control parity."
+            )
+    experience_summary = rendered_qa.get("experience_paths")
+    expected_experience_keys: set[tuple[str, str, str]] = set()
+    for target_census in target_censuses:
+        if not isinstance(target_census, dict):
+            continue
+        route_key = str(target_census.get("route_key"))
+        viewport_name = str(target_census.get("viewport"))
+        for page in target_census.get("pages", []):
+            if not isinstance(page, dict):
+                continue
+            for target in page.get("targets", []):
+                if isinstance(target, dict) and isinstance(target.get("target_id"), str):
+                    expected_experience_keys.add(
+                        (route_key, viewport_name, target["target_id"])
+                    )
+    experience_by_key: dict[tuple[str, str, str], dict[str, object]] = {}
+    if (
+        not isinstance(experience_summary, dict)
+        or set(experience_summary) != {
+            "complete", "missing", "truncated", "totals", "paths"
+        }
+        or experience_summary.get("complete") is not True
+        or experience_summary.get("missing") != []
+        or experience_summary.get("truncated") is not False
+        or not isinstance(experience_summary.get("paths"), list)
+    ):
+        failures.append("Component rendered QA experience-path ledger is incomplete or unsupported.")
+    else:
+        for path_index, path_record in enumerate(
+            experience_summary.get("paths", []), start=1
+        ):
+            if (
+                not isinstance(path_record, dict)
+                or set(path_record) != {
+                    "route_key", "viewport", "target_id", "kind", "actions",
+                    "missing", "complete",
+                }
+            ):
+                failures.append(f"Component experience path {path_index} has an unsupported shape.")
+                continue
+            key = (
+                str(path_record.get("route_key")),
+                str(path_record.get("viewport")),
+                str(path_record.get("target_id")),
+            )
+            if key in experience_by_key:
+                failures.append(f"Component experience path {path_index} duplicates a target/profile.")
+                continue
+            experience_by_key[key] = path_record
+            actions = path_record.get("actions")
+            if (
+                path_record.get("complete") is not True
+                or path_record.get("missing") != []
+                or not isinstance(actions, list)
+                or not actions
+                or any(
+                    not isinstance(action, dict)
+                    or set(action) != {
+                        "input_kind", "status", "resolution",
+                        "manifested_state_id", "final_url", "evidence",
+                    }
+                    for action in actions or []
+                )
+                or not any(
+                    isinstance(action, dict)
+                    and action.get("resolution")
+                    in {"manifested-route", "manifested-state", "blocked-handoff"}
+                    for action in actions or []
+                )
+            ):
+                failures.append(f"Component experience path {path_index} has no resolved generated action.")
+                continue
+            route = route_by_key.get(key[0], {})
+            route_urls = {
+                str(item.get("url")) for item in route_by_key.values()
+                if isinstance(item, dict)
+            }
+            route_states = {
+                str(item.get("id")) for item in route.get("states", [])
+                if isinstance(item, dict)
+            } if isinstance(route, dict) else set()
+            for action in actions:
+                if action.get("resolution") == "manifested-route" and action.get("final_url") not in route_urls:
+                    failures.append(f"Component experience path {path_index} resolves to an unmanifested route.")
+                if action.get("resolution") == "manifested-state" and action.get("manifested_state_id") not in route_states:
+                    failures.append(f"Component experience path {path_index} resolves to an unmanifested state.")
+                if action.get("resolution") == "blocked-handoff" and action.get("status") != "blocked":
+                    failures.append(f"Component experience path {path_index} mislabels an exercised action as blocked.")
+        if set(experience_by_key) != expected_experience_keys:
+            failures.append("Component experience paths do not cover every discovered target/profile.")
+        totals = experience_summary.get("totals")
+        if (
+            not isinstance(totals, dict)
+            or set(totals) != {"targets", "resolved", "blocked_handoffs"}
+            or totals.get("targets") != len(experience_by_key)
+            or totals.get("resolved") != len(experience_by_key)
+            or totals.get("blocked_handoffs") != len([
+                record for record in experience_by_key.values()
+                if any(
+                    isinstance(action, dict)
+                    and action.get("resolution") == "blocked-handoff"
+                    for action in record.get("actions", [])
+                )
+            ])
+        ):
+            failures.append("Component experience-path totals do not reconcile its exact ledger.")
+        for cell, qa_cell in qa_by_cell.items():
+            expected_paths = [
+                record for key, record in experience_by_key.items()
+                if key[:2] == cell[:2]
+            ]
+            if qa_cell.get("experience_paths") != expected_paths:
+                failures.append(
+                    f"Component rendered QA {cell[0]}/{cell[1]}/{cell[2]} detaches its target experience paths."
+                )
+    if set(qa_by_cell) != expected_cells:
+        failures.append("Component rendered QA does not cover the exact route/profile/state matrix.")
+    reconciliation = payload.get("visible_decision_reconciliation")
+    decision_manifest_path = (
+        project / ".design-dna" / "visible-decision-sources.json"
+        if project is not None
+        else None
+    )
+    decision_manifest: object = None
+    decision_manifest_sha: str | None = None
+    if decision_manifest_path is not None:
+        try:
+            decision_manifest = json.loads(
+                decision_manifest_path.read_text(encoding="utf-8")
+            )
+            decision_manifest_sha = file_sha256(decision_manifest_path)[1]
+        except (OSError, ValueError) as exc:
+            failures.append(
+                f"Component census visible-decision source manifest is unreadable: {exc}"
+            )
+    expected_reconciliation_keys = {
+        "manifest_path", "manifest_sha256", "implemented_decision_ids",
+        "missing_decision_ids", "unsourced_visible_decisions",
+        "scaffold_findings", "fallback_findings", "placeholder_findings",
+        "complete",
+    }
+    if (
+        not isinstance(reconciliation, dict)
+        or set(reconciliation) != expected_reconciliation_keys
+        or reconciliation.get("manifest_path")
+        != ".design-dna/visible-decision-sources.json"
+        or reconciliation.get("manifest_sha256") != decision_manifest_sha
+        or reconciliation.get("missing_decision_ids") != []
+        or reconciliation.get("unsourced_visible_decisions") != []
+        or reconciliation.get("scaffold_findings") != []
+        or reconciliation.get("fallback_findings") != []
+        or reconciliation.get("placeholder_findings") != []
+        or reconciliation.get("complete") is not True
+    ):
+        failures.append(
+            "Component census visible-decision reconciliation is incomplete, stale, or contains scaffold/fallback/placeholder output."
+        )
+    if isinstance(decision_manifest, dict):
+        planned_ids = decision_manifest.get("planned_decision_ids")
+        decisions = decision_manifest.get("decisions")
+        implemented = sorted({
+            decision_id
+            for check in check_by_cell.values()
+            for decision_id in check.get("visible_decision_ids", [])
+            if isinstance(decision_id, str)
+        })
+        if (
+            not isinstance(planned_ids, list)
+            or not isinstance(decisions, list)
+            or reconciliation.get("implemented_decision_ids") != implemented
+            or any(decision_id not in planned_ids for decision_id in implemented)
+        ):
+            failures.append(
+                "Component census implemented decision IDs do not reconcile the bound source manifest."
+            )
+        else:
+            for decision in decisions:
+                if not isinstance(decision, dict):
+                    failures.append("Component census source decision row is invalid.")
+                    continue
+                decision_id = decision.get("decision_id")
+                route_keys = decision.get("route_keys")
+                state_ids = decision.get("state_ids")
+                if (
+                    not isinstance(decision_id, str)
+                    or not isinstance(route_keys, list)
+                    or not isinstance(state_ids, list)
+                ):
+                    failures.append("Component census source decision mapping is invalid.")
+                    continue
+                for cell, check in check_by_cell.items():
+                    if cell[0] in route_keys and cell[2] in state_ids and decision_id not in check.get("visible_decision_ids", []):
+                        failures.append(
+                            f"Component census {cell[0]}/{cell[1]}/{cell[2]} omits planned visible decision {decision_id}."
+                        )
+    return failures
+
+
+def generated_interaction_frame_bindings(
+    payload: object,
+    *,
+    record_path: Path,
+) -> tuple[list[str], list[dict[str, object]]]:
+    """Reconcile every persisted interaction PNG with generated JSON metadata."""
+
+    if not isinstance(payload, dict):
+        return ["Interaction-frame record must contain an object."], []
+    relative_root = payload.get("interaction_frame_directory")
+    expected_root_name = f"{record_path.stem}-interaction-frames"
+    if (
+        not isinstance(relative_root, str)
+        or relative_root != expected_root_name
+        or PurePosixPath(relative_root).is_absolute()
+        or ".." in PurePosixPath(relative_root).parts
+    ):
+        return ["Interaction-frame directory is missing or not derived from the canonical record path."], []
+    root = lexical_absolute(record_path.parent / PurePosixPath(relative_root))
+    try:
+        assert_no_reparse_ancestors(root, stop=record_path.parent)
+        assert_safe_tree(root)
+    except StateError as exc:
+        return [f"Interaction-frame directory contains a link/reparse point: {exc}"], []
+    if (
+        not is_within(root, lexical_absolute(record_path.parent))
+        or not root.is_dir()
+        or is_reparse(root)
+    ):
+        return ["Interaction-frame directory is missing, linked, or escapes the evidence root."], []
+    referenced: dict[str, tuple[int, str]] = {}
+    failures: list[str] = []
+
+    def walk(value: object) -> None:
+        if isinstance(value, dict):
+            relative = value.get("file")
+            if (
+                isinstance(relative, str)
+                and relative.startswith(relative_root + "/")
+            ):
+                size = value.get("bytes")
+                digest = value.get("sha256")
+                if (
+                    type(size) is not int
+                    or size < 1
+                    or not isinstance(digest, str)
+                    or SHA256_HEX.fullmatch(digest) is None
+                ):
+                    failures.append(f"Interaction frame metadata is invalid: {relative}.")
+                elif relative in referenced and referenced[relative] != (size, digest):
+                    failures.append(f"Interaction frame has conflicting metadata: {relative}.")
+                else:
+                    referenced[relative] = (size, digest)
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(payload)
+    actual_files = sorted(
+        (
+            file
+            for file in root.rglob("*")
+            if file.is_file() and not is_reparse(file)
+        ),
+        key=lambda file: file.as_posix(),
+    )
+    actual_relatives = {
+        file.relative_to(record_path.parent).as_posix() for file in actual_files
+    }
+    if not referenced:
+        failures.append("Interaction record references no persisted before/after/settled frames.")
+    if actual_relatives != set(referenced):
+        failures.append("Interaction-frame directory is not the exact referenced PNG set.")
+    bindings: list[dict[str, object]] = []
+    for file in actual_files:
+        relative = file.relative_to(record_path.parent).as_posix()
+        expected = referenced.get(relative)
+        if (
+            file.suffix.casefold() != ".png"
+            or expected is None
+            or file.stat().st_size != expected[0]
+            or file_sha256(file)[1] != expected[1]
+        ):
+            failures.append(f"Interaction frame bytes are invalid or drifted: {relative}.")
+            continue
+        try:
+            verify_png_artifact(file)
+        except StateError as exc:
+            failures.append(f"Interaction frame is not a valid PNG ({relative}): {exc}")
+            continue
+        bindings.append({"file": file, "relative": relative, "bytes": expected[0], "sha256": expected[1]})
+    return failures, bindings
+
+
+def recompute_interaction_transfer(
+    build: object,
+    source: object,
+    states: list[dict[str, object]],
+) -> dict[str, object]:
+    """Python mirror of compare_mechanisms.diffInteractionCensus."""
+
+    failures: list[str] = []
+    if any(
+        not isinstance(census, dict)
+        or census.get("complete") is not True
+        or census.get("truncated") is not False
+        or census.get("missing") != []
+        for census in (build, source)
+    ):
+        return {
+            "pass": False,
+            "failures": [
+                "build/source interaction census is incomplete, truncated, or has missing targets"
+            ],
+            "target_transfers": [],
+        }
+    assert isinstance(build, dict) and isinstance(source, dict)
+    source_to_build = {
+        str(state.get("mapped_reference_state_id")): state.get("id")
+        for state in states
+    }
+
+    def flatten(census: dict[str, object], source_side: bool) -> list[dict[str, object]]:
+        rows: list[dict[str, object]] = []
+        for page in census.get("pages", []):
+            if not isinstance(page, dict):
+                continue
+            for target in page.get("targets", []):
+                if not isinstance(target, dict):
+                    continue
+                for input_record in target.get("inputs", []):
+                    if (
+                        not isinstance(input_record, dict)
+                        or input_record.get("status") != "exercised"
+                    ):
+                        continue
+                    state_id = input_record.get("source_state_id")
+                    mapped_state = (
+                        source_to_build.get(str(state_id), f"unmapped:{state_id}")
+                        if source_side and state_id is not None
+                        else state_id
+                    )
+                    signature = {
+                        "input_kind": input_record.get("input_kind"),
+                        "input_value": (
+                            None
+                            if mapped_state is not None
+                            or input_record.get("input_kind") == "navigation"
+                            else input_record.get("input_value")
+                        ),
+                        "state_id": mapped_state,
+                        "changed_properties": [
+                            {
+                                "property": change.get("property"),
+                                "before": change.get("before"),
+                                "after": change.get("after"),
+                            }
+                            for change in input_record.get("changed_properties", [])
+                            if isinstance(change, dict)
+                        ],
+                        "changed": input_record.get("before_sha256")
+                        != input_record.get("settled_sha256"),
+                        "disposition": input_record.get("disposition"),
+                    }
+                    component_keys = sorted([
+                        *[
+                            "class:" + quote(str(value), safe="-_.!~*'()")
+                            for value in target.get("class_signature", [])
+                        ],
+                        *(
+                            ["tag:" + str(target.get("tag"))]
+                            if target.get("tag")
+                            else []
+                        ),
+                        *(
+                            [
+                                "role:"
+                                + quote(
+                                    str(target.get("role")).casefold(),
+                                    safe="-_.!~*'()",
+                                )
+                            ]
+                            if target.get("role")
+                            else []
+                        ),
+                    ])
+                    canonical = json.dumps(
+                        signature,
+                        separators=(",", ":"),
+                        ensure_ascii=False,
+                    )
+                    rows.append(
+                        {
+                            "target_id": target.get("target_id"),
+                            "repeat_class": target.get("repeat_class"),
+                            "component_keys": component_keys,
+                            "repeat_index": target.get("repeat_index"),
+                            "signature": signature,
+                            "canonical": canonical,
+                        }
+                    )
+        rows.sort(key=lambda row: (str(row["canonical"]), str(row["target_id"])))
+        return rows
+
+    build_rows = flatten(build, False)
+    source_rows = flatten(source, True)
+    build_targets = int(build.get("totals", {}).get("targets_discovered", 0))
+    source_targets = int(source.get("totals", {}).get("targets_discovered", 0))
+    if build_targets != source_targets:
+        failures.append(
+            f"interaction target count {build_targets} vs source {source_targets}"
+        )
+    if len(build_rows) != len(source_rows):
+        failures.append(
+            f"exercised input count {len(build_rows)} vs source {len(source_rows)}"
+        )
+    transfers: list[dict[str, object]] = []
+    for index in range(max(len(build_rows), len(source_rows))):
+        build_row = build_rows[index] if index < len(build_rows) else None
+        source_row = source_rows[index] if index < len(source_rows) else None
+        if (
+            build_row is None
+            or source_row is None
+            or build_row["canonical"] != source_row["canonical"]
+        ):
+            failures.append(
+                f"interaction behavior row {index + 1} does not exactly match its source trigger/state/property sequence"
+            )
+            continue
+        transfers.append(
+            {
+                "source_target_id": source_row["target_id"],
+                "build_target_id": build_row["target_id"],
+                "source_component_keys": source_row["component_keys"],
+                "build_component_keys": build_row["component_keys"],
+                "input_kind": build_row["signature"]["input_kind"],
+                "build_state_id": build_row["signature"]["state_id"],
+                "behavior_signature": build_row["signature"],
+                "complete": True,
+            }
+        )
+    source_pointers = source.get("pointer_follow", [])
+    build_pointers = build.get("pointer_follow", [])
+    if len(source_pointers) != len(build_pointers):
+        failures.append(
+            f"pointer-follow target count {len(build_pointers)} vs source {len(source_pointers)}"
+        )
+    for index, (build_pointer, source_pointer) in enumerate(
+        zip(build_pointers, source_pointers),
+        start=1,
+    ):
+        def relative_delta(left: object, right: object) -> float:
+            return abs(float(left or 0) - float(right or 0)) / max(
+                abs(float(right or 0)), 1
+            )
+
+        if (
+            not isinstance(build_pointer, dict)
+            or not isinstance(source_pointer, dict)
+            or build_pointer.get("distinct_from_hover") is not True
+            or source_pointer.get("distinct_from_hover") is not True
+            or relative_delta(
+                build_pointer.get("moved_px"), source_pointer.get("moved_px")
+            ) > 0.25
+            or float(build_pointer.get("return_error_px") or 0)
+            > max(8, float(build_pointer.get("moved_px") or 0) * 0.3)
+        ):
+            failures.append(
+                f"pointer-follow row {index} is hover-like or differs in movement/return magnitude"
+            )
+    return {
+        "pass": not failures,
+        "failures": failures,
+        "build_targets": build_targets,
+        "source_targets": source_targets,
+        "target_transfers": transfers,
+        "verdict": (
+            "; ".join(failures)
+            if failures
+            else "Every live interaction target/input/state/frame sequence matches the exact source interaction census."
+        ),
+    }
+
+
+def mechanism_interaction_transfer_failures(
+    payload: object,
+    *,
+    project: Path,
+    expected_routes: list[dict[str, object]],
+    expected_viewports: list[dict[str, object]],
+    first_screen: bool,
+    record_path: Path,
+) -> list[str]:
+    """Validate exact source-to-build interaction transfer for every cell."""
+
+    failures: list[str] = []
+    if not isinstance(payload, dict):
+        return ["Mechanism transfer record must contain an object."]
+    route_by_key = {
+        str(route.get("key")): route for route in expected_routes
+        if isinstance(route, dict)
+    }
+    viewport_by_name = {
+        str(viewport.get("name")): viewport for viewport in expected_viewports
+        if isinstance(viewport, dict)
+    }
+    if payload.get("route_filter") != list(route_by_key):
+        failures.append("Mechanism route_filter is not the exact active manifest order.")
+    if payload.get("first_screen_only") is not first_screen:
+        failures.append("Mechanism first-screen scope differs from the gate phase.")
+    frame_failures, frame_bindings = generated_interaction_frame_bindings(
+        payload, record_path=record_path
+    )
+    failures.extend(frame_failures)
+    frame_artifacts = {
+        (str(binding["relative"]), int(binding["bytes"]), str(binding["sha256"]))
+        for binding in frame_bindings
+    }
+    expected_cells = {
+        (route_key, viewport_name, str(state.get("id")))
+        for route_key, route in route_by_key.items()
+        for viewport_name in viewport_by_name
+        for state in route.get("states", [])
+        if isinstance(state, dict)
+    }
+    checks = payload.get("checks")
+    transfer = payload.get("interaction_transfer")
+    if (
+        not isinstance(transfer, dict)
+        or set(transfer) != {
+            "complete", "missing", "cells", "responsive_transformations"
+        }
+        or transfer.get("complete") is not True
+        or transfer.get("missing") != []
+        or transfer.get("cells") != checks
+    ):
+        failures.append("Mechanism interaction_transfer is incomplete or detached from checks.")
+        return failures
+    observed_cells: set[tuple[str, str, str]] = set()
+    if not isinstance(checks, list):
+        failures.append("Mechanism checks must be a list.")
+        checks = []
+    observation_cache: dict[str, dict[str, object]] = {}
+    for index, check in enumerate(checks, start=1):
+        if not isinstance(check, dict):
+            failures.append(f"Mechanism interaction check {index} is invalid.")
+            continue
+        cell = (
+            str(check.get("route_key")),
+            str(check.get("viewport")),
+            str(check.get("state_id")),
+        )
+        if cell in observed_cells:
+            failures.append(f"Mechanism interaction check {index} duplicates a cell.")
+        observed_cells.add(cell)
+        route = route_by_key.get(cell[0])
+        viewport = viewport_by_name.get(cell[1])
+        state = next(
+            (item for item in route.get("states", []) if isinstance(item, dict) and item.get("id") == cell[2]),
+            None,
+        ) if isinstance(route, dict) else None
+        expected_mapping = {
+            "rank": route.get("mapped_reference_rank") if isinstance(route, dict) else None,
+            "id": route.get("mapped_reference_id") if isinstance(route, dict) else None,
+            "observation": route.get("mapped_reference_observation") if isinstance(route, dict) else None,
+            "sha256": route.get("mapped_reference_sha256") if isinstance(route, dict) else None,
+            "state_id": state.get("mapped_reference_state_id") if isinstance(state, dict) else None,
+        }
+        if (
+            route is None
+            or viewport is None
+            or state is None
+            or check.get("url") != route.get("url")
+            or check.get("width") != viewport.get("width")
+            or check.get("height") != viewport.get("height")
+            or check.get("state_kind") != state.get("kind")
+            or check.get("state_trigger") != state.get("trigger")
+            or check.get("state_expectation") != state.get("expectation")
+            or check.get("mapped_reference_state_id")
+            != state.get("mapped_reference_state_id")
+            or check.get("source_mapping") != expected_mapping
+            or check.get("mapped_reference") != {
+                "rank": expected_mapping["rank"],
+                "id": expected_mapping["id"],
+                "observation": expected_mapping["observation"],
+                "sha256": expected_mapping["sha256"],
+                "url": check.get("mapped_reference", {}).get("url")
+                if isinstance(check.get("mapped_reference"), dict) else None,
+            }
+            or check.get("pass") is not True
+            or check.get("state_contract_match") is not True
+            or not isinstance(check.get("trigger_diff"), dict)
+            or check["trigger_diff"].get("pass") is not True
+            or not isinstance(check.get("interaction_diff"), dict)
+            or check["interaction_diff"].get("pass") is not True
+            or check["interaction_diff"].get("failures") != []
+        ):
+            failures.append(f"Mechanism interaction check {index} is not an exact passing mapped cell.")
+        build_census = check.get("build_interaction_census")
+        failures.extend(
+            f"Mechanism interaction check {index}: {failure}"
+            for failure in interaction_census_failures(
+                build_census,
+                expected_profile=cell[1],
+                expected_state_ids={
+                    str(item.get("id"))
+                    for item in route.get("states", [])
+                    if isinstance(item, dict)
+                } if isinstance(route, dict) else set(),
+                expected_urls={str(route.get("url"))} if isinstance(route, dict) else set(),
+                artifact_root=record_path.parent,
+                allowed_artifacts=frame_artifacts,
+            )
+        )
+        if check.get("build_interaction_census_sha256") != canonical_json_sha256(
+            build_census
+        ):
+            failures.append(
+                f"Mechanism interaction check {index} build-census hash differs from its embedded evidence."
+            )
+        if isinstance(route, dict) and isinstance(state, dict):
+            relative_observation = str(route.get("mapped_reference_observation") or "")
+            observation = observation_cache.get(relative_observation)
+            if observation is None:
+                observation_path = (project / PurePosixPath(relative_observation)).resolve()
+                try:
+                    loaded = json.loads(observation_path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    loaded = {}
+                observation = loaded if isinstance(loaded, dict) else {}
+                observation_cache[relative_observation] = observation
+            profile = "narrow" if int(viewport.get("width", 0)) <= 430 else "wide"
+            source_census = (
+                observation.get("states_by_viewport", {})
+                .get(profile, {})
+                .get(state.get("mapped_reference_state_id"), {})
+                .get("interaction_census")
+                if isinstance(observation, dict)
+                else None
+            )
+            if check.get("source_interaction_census_sha256") != canonical_json_sha256(
+                source_census
+            ):
+                failures.append(
+                    f"Mechanism interaction check {index} source-census hash differs from its mapped observation state."
+                )
+            recomputed = recompute_interaction_transfer(
+                build_census,
+                source_census,
+                [
+                    item for item in route.get("states", [])
+                    if isinstance(item, dict)
+                ],
+            )
+            if recomputed.get("pass") is not True:
+                failures.append(
+                    f"Mechanism interaction check {index} independently recomputed a source/build mismatch: "
+                    + "; ".join(str(item) for item in recomputed.get("failures", []))
+                )
+            if check.get("interaction_diff") != recomputed:
+                failures.append(
+                    f"Mechanism interaction check {index} embedded interaction_diff differs from independent recomputation."
+                )
+            mapped_reference = check.get("mapped_reference")
+            if (
+                not isinstance(mapped_reference, dict)
+                or mapped_reference.get("url") != observation.get("url")
+            ):
+                failures.append(
+                    f"Mechanism interaction check {index} source URL differs from its mapped observation."
+                )
+    if observed_cells != expected_cells:
+        failures.append("Mechanism interaction checks miss route/profile/state cells.")
+    transformations = transfer.get("responsive_transformations")
+    expected_pairs = {
+        (route_key, str(state.get("id")))
+        for route_key, route in route_by_key.items()
+        for state in route.get("states", [])
+        if isinstance(state, dict)
+    }
+    observed_pairs: set[tuple[str, str]] = set()
+    if not isinstance(transformations, list):
+        failures.append("Mechanism responsive interaction transformations must be a list.")
+        transformations = []
+    for transformation in transformations:
+        if not isinstance(transformation, dict):
+            continue
+        pair = (str(transformation.get("route_key")), str(transformation.get("state_id")))
+        observed_pairs.add(pair)
+        if (
+            transformation.get("complete") is not True
+            or not isinstance(transformation.get("wide_cell"), str)
+            or not isinstance(transformation.get("narrow_cell"), str)
+        ):
+            failures.append(f"Mechanism responsive interaction {pair[0]}/{pair[1]} is incomplete.")
+    if observed_pairs != expected_pairs:
+        failures.append("Mechanism responsive interactions miss manifested route/state pairs.")
+    return failures
+
+
+def route_manifest_payload_failures(
+    payload: object,
+    *,
+    selected_ranks: set[int] | None = None,
+    expected_manifest_id: str | None = None,
+) -> list[str]:
+    """Validate the one route/reference/state/viewport authority."""
+
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema_version", "manifest_id", "viewports", "routes"
+    }:
+        return ["Route manifest must use the exact versioned object shape."]
+    failures: list[str] = []
+    if payload.get("schema_version") != ROUTE_MANIFEST_SCHEMA_VERSION:
+        failures.append(
+            f"Route manifest schema_version must be {ROUTE_MANIFEST_SCHEMA_VERSION}."
+        )
+    manifest_id = payload.get("manifest_id")
+    if (
+        not isinstance(manifest_id, str)
+        or ROUTE_MANIFEST_ID.fullmatch(manifest_id) is None
+        or manifest_id.startswith("__REPLACE_WITH")
+    ):
+        failures.append("Route manifest needs an immutable 8-128 character manifest_id.")
+    elif expected_manifest_id is not None and manifest_id != expected_manifest_id:
+        failures.append(
+            f"Route manifest manifest_id {manifest_id!r} does not match "
+            f"{expected_manifest_id!r}."
+        )
+
+    viewports = payload.get("viewports")
+    viewport_names: set[str] = set()
+    valid_viewports: list[tuple[str, int, int]] = []
+    if not isinstance(viewports, list) or not viewports:
+        failures.append("Route manifest needs a nonempty viewport list.")
+    else:
+        for index, viewport in enumerate(viewports, start=1):
+            label = f"Route manifest viewport {index}"
+            if not isinstance(viewport, dict) or set(viewport) != {
+                "name", "width", "height"
+            }:
+                failures.append(f"{label} has an unsupported shape.")
+                continue
+            name = viewport.get("name")
+            width = viewport.get("width")
+            height = viewport.get("height")
+            if (
+                not isinstance(name, str)
+                or not re.fullmatch(r"[a-z][a-z0-9-]{0,31}", name)
+                or name in viewport_names
+            ):
+                failures.append(f"{label} needs a unique lowercase slug name.")
+                continue
+            viewport_names.add(name)
+            if (
+                type(width) is not int
+                or type(height) is not int
+                or width < 280
+                or width > 3840
+                or height < 480
+                or height > 4320
+            ):
+                failures.append(f"{label} dimensions are outside supported bounds.")
+                continue
+            valid_viewports.append((name, width, height))
+        if not any(width >= 1280 for _name, width, _height in valid_viewports):
+            failures.append("Route manifest needs at least one wide viewport (1280px+).")
+        if not any(width <= 430 for _name, width, _height in valid_viewports):
+            failures.append("Route manifest needs at least one narrow viewport (430px or less).")
+
+    routes = payload.get("routes")
+    keys: set[str] = set()
+    urls: set[str] = set()
+    origins: set[tuple[str, str]] = set()
+    if not isinstance(routes, list) or not routes:
+        failures.append("Route manifest needs at least one route.")
+    else:
+        for index, route in enumerate(routes, start=1):
+            label = f"Route manifest route {index}"
+            if not isinstance(route, dict) or set(route) != {
+                "key",
+                "url",
+                "mapped_reference_rank",
+                "mapped_reference_id",
+                "mapped_reference_observation",
+                "mapped_reference_sha256",
+                "states",
+            }:
+                failures.append(f"{label} has an unsupported shape.")
+                continue
+            key = route.get("key")
+            if (
+                not isinstance(key, str)
+                or not re.fullmatch(r"[a-z][a-z0-9-]{0,47}", key)
+                or key in keys
+            ):
+                failures.append(f"{label} needs a unique lowercase slug key.")
+            else:
+                keys.add(key)
+            raw_url = route.get("url")
+            try:
+                normalized_url = (
+                    canonical_route_url(raw_url)
+                    if isinstance(raw_url, str)
+                    else ""
+                )
+            except ValueError:
+                normalized_url = ""
+            if not normalized_url or str(raw_url).startswith("__REPLACE_WITH"):
+                failures.append(f"{label} needs an absolute HTTP(S) URL.")
+            elif normalized_url != raw_url:
+                failures.append(
+                    f"{label} URL must already be canonical and fragment-free: "
+                    f"{normalized_url}."
+                )
+            else:
+                if normalized_url in urls:
+                    failures.append(f"{label} duplicates another normalized URL.")
+                urls.add(normalized_url)
+                parsed = urlsplit(normalized_url)
+                origins.add((parsed.scheme, parsed.netloc))
+                if normalize_safe_route_path(parsed.path or "/") is None:
+                    failures.append(
+                        f"{label} URL path contains invalid UTF-8, encoded separators, traversal, controls, or whitespace."
+                    )
+            rank = route.get("mapped_reference_rank")
+            if type(rank) is not int or rank < 1:
+                failures.append(f"{label} needs a positive mapped_reference_rank.")
+            elif selected_ranks is not None and rank not in selected_ranks:
+                failures.append(
+                    f"{label} maps to rank {rank}, which is not a selected reference."
+                )
+            reference_id = route.get("mapped_reference_id")
+            id_match = (
+                ROUTE_REFERENCE_ID.fullmatch(reference_id)
+                if isinstance(reference_id, str)
+                else None
+            )
+            if id_match is None:
+                failures.append(f"{label} needs a strong-N mapped_reference_id.")
+            elif type(rank) is int and int(id_match.group(1)) != rank:
+                failures.append(
+                    f"{label} mapped reference ID does not belong to rank {rank}."
+                )
+            observation = route.get("mapped_reference_observation")
+            expected_observation = (
+                f".design-dna/references/{reference_id}-observation.json"
+                if isinstance(reference_id, str)
+                else ""
+            )
+            if (
+                not isinstance(observation, str)
+                or observation.replace("\\", "/") != expected_observation
+                or ".." in PurePosixPath(observation).parts
+            ):
+                failures.append(
+                    f"{label} mapped_reference_observation must be "
+                    f"{expected_observation or 'the canonical strong-N observation path'}."
+                )
+            reference_sha = route.get("mapped_reference_sha256")
+            if (
+                not isinstance(reference_sha, str)
+                or re.fullmatch(r"[0-9a-f]{64}", reference_sha) is None
+            ):
+                failures.append(
+                    f"{label} needs a lowercase mapped_reference_sha256."
+                )
+            states = route.get("states")
+            state_ids: set[str] = set()
+            if not isinstance(states, list) or not states:
+                failures.append(f"{label} needs a nonempty typed states list.")
+            else:
+                for state_index, state in enumerate(states, start=1):
+                    state_label = f"{label} state {state_index}"
+                    if not isinstance(state, dict) or set(state) != {
+                        "id", "kind", "trigger", "expectation",
+                        "mapped_reference_state_id",
+                    }:
+                        failures.append(f"{state_label} has an unsupported shape.")
+                        continue
+                    state_id = state.get("id")
+                    kind = state.get("kind")
+                    trigger = state.get("trigger")
+                    expectation = state.get("expectation")
+                    mapped_state_id = state.get("mapped_reference_state_id")
+                    if (
+                        not isinstance(state_id, str)
+                        or re.fullmatch(r"[a-z][a-z0-9-]{0,47}", state_id) is None
+                        or state_id in state_ids
+                    ):
+                        failures.append(f"{state_label} needs a unique lowercase slug id.")
+                    else:
+                        state_ids.add(state_id)
+                    if kind not in ROUTE_MANIFEST_STATE_KINDS:
+                        failures.append(f"{state_label} has an unsupported kind.")
+                    if not isinstance(trigger, dict) or set(trigger) != {
+                        "type", "target", "value"
+                    }:
+                        failures.append(f"{state_label} trigger has an unsupported shape.")
+                        continue
+                    trigger_type = trigger.get("type")
+                    if trigger_type not in ROUTE_MANIFEST_TRIGGER_TYPES:
+                        failures.append(f"{state_label} has an unsupported trigger type.")
+                    if not isinstance(trigger.get("target"), str) or not trigger["target"].strip():
+                        failures.append(f"{state_label} trigger target must be explicit.")
+                    if trigger.get("value") is not None and not isinstance(trigger.get("value"), str):
+                        failures.append(f"{state_label} trigger value must be a string or null.")
+                    if not isinstance(expectation, str) or len(expectation.strip()) < 12:
+                        failures.append(f"{state_label} needs a substantive expectation.")
+                    if (
+                        not isinstance(mapped_state_id, str)
+                        or re.fullmatch(r"[a-z][a-z0-9-]{0,63}", mapped_state_id) is None
+                    ):
+                        failures.append(
+                            f"{state_label} needs a stable mapped_reference_state_id."
+                        )
+                    if state_id == "rest" and (
+                        kind != "rest"
+                        or trigger_type != "none"
+                        or trigger.get("target") != "document"
+                        or trigger.get("value") is not None
+                        or expectation != "initial settled route"
+                        or mapped_state_id != "rest"
+                    ):
+                        failures.append(
+                            f"{state_label} rest must use the exact canonical rest contract and mapped source rest state."
+                        )
+                    if state_id != "rest" and kind == "rest":
+                        failures.append(f"{state_label} only the rest state may use kind rest.")
+                if "rest" not in state_ids:
+                    failures.append(f"{label} states must include the canonical `rest` state.")
+    if len(origins) > 1:
+        failures.append("Every route in the manifest must share one build origin.")
+    return failures
+
+
+def route_manifest_reference_failures(
+    payload: dict[str, object], *, project: Path
+) -> list[str]:
+    failures: list[str] = []
+    observer = Path(__file__).resolve().parent / "observe_reference.mjs"
+    expected_observer_sha = file_sha256(observer)[1]
+    for index, route in enumerate(payload.get("routes", []), start=1):
+        if not isinstance(route, dict):
+            continue
+        relative = str(route.get("mapped_reference_observation") or "")
+        observation = (project / PurePosixPath(relative)).resolve()
+        reference_sha = str(route.get("mapped_reference_sha256") or "")
+        label = f"Route manifest route {index} mapped reference"
+        if not is_within(observation, project.resolve()) or not observation.is_file():
+            failures.append(f"{label} observation is missing or escapes the project.")
+            continue
+        if file_sha256(observation)[1] != reference_sha:
+            failures.append(f"{label} observation SHA-256 has drifted.")
+            continue
+        try:
+            observed = json.loads(observation.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"{label} observation is unreadable: {exc}")
+            continue
+        if (
+            not isinstance(observed, dict)
+            or observed.get("tool") != "observe_reference.mjs"
+            or observed.get("schema_version") != REFERENCE_OBSERVATION_SCHEMA
+            or observed.get("producer_script_sha256") != expected_observer_sha
+            or observed.get("id") != route.get("mapped_reference_id")
+        ):
+            failures.append(
+                f"{label} does not bind the current observer schema, producer, and ID."
+            )
+            continue
+        failures.extend(
+            f"{label}: {failure}"
+            for failure in packaged_runtime_record_failures(
+                observed, tool="observe_reference.mjs"
+            )
+        )
+        state_contract = observed.get("state_contract")
+        contract_ids: set[str] = set()
+        if (
+            not isinstance(state_contract, dict)
+            or set(state_contract) != {"file", "sha256"}
+            or not isinstance(state_contract.get("file"), str)
+            or not isinstance(state_contract.get("sha256"), str)
+            or SHA256_HEX.fullmatch(state_contract["sha256"]) is None
+        ):
+            failures.append(f"{label} has no valid source-state contract binding.")
+        else:
+            contract_path = (
+                observation.parent / PurePosixPath(state_contract["file"])
+            ).resolve()
+            expected_contract = (
+                project
+                / ".design-dna"
+                / "references"
+                / f"{route.get('mapped_reference_id')}-state-contract.json"
+            ).resolve()
+            if (
+                contract_path != expected_contract
+                or not is_within(contract_path, project.resolve())
+                or not contract_path.is_file()
+                or file_sha256(contract_path)[1] != state_contract["sha256"]
+            ):
+                failures.append(f"{label} source-state contract bytes are missing or drifted.")
+            else:
+                try:
+                    contract_payload = json.loads(
+                        contract_path.read_text(encoding="utf-8")
+                    )
+                except (OSError, ValueError) as exc:
+                    failures.append(f"{label} source-state contract is unreadable: {exc}")
+                else:
+                    contract_problems, contract_ids = reference_state_contract_failures(
+                        contract_payload,
+                        expected_reference_id=str(route.get("mapped_reference_id")),
+                        expected_primary_url=(
+                            observed.get("url")
+                            if isinstance(observed.get("url"), str)
+                            else None
+                        ),
+                    )
+                    failures.extend(f"{label}: {problem}" for problem in contract_problems)
+        states_by_viewport = observed.get("states_by_viewport")
+        mapped_state_ids = {
+            str(state.get("mapped_reference_state_id"))
+            for state in route.get("states", [])
+            if isinstance(state, dict)
+        }
+        if (
+            not isinstance(states_by_viewport, dict)
+            or set(states_by_viewport) != {"wide", "narrow"}
+            or any(
+                not isinstance(states_by_viewport.get(viewport), dict)
+                or not mapped_state_ids.issubset(set(states_by_viewport[viewport]))
+                or (contract_ids and set(states_by_viewport[viewport]) != contract_ids)
+                for viewport in ("wide", "narrow")
+            )
+        ):
+            failures.append(
+                f"{label} does not contain every mapped reference state at wide and narrow viewports."
+            )
+        discovery = observed.get("discovery_metadata")
+        interaction = observed.get("interaction_census_by_viewport")
+        rendered_qa = observed.get("rendered_qa_by_viewport")
+        frame_dir = observed.get("frame_dir")
+        observer_artifacts = {
+            (
+                (PurePosixPath(frame_dir) / PurePosixPath(frame.get("file"))).as_posix(),
+                frame.get("bytes"),
+                frame.get("sha256"),
+            )
+            for frame in observed.get("frames", [])
+            if isinstance(frame, dict)
+            and isinstance(frame_dir, str)
+            and isinstance(frame.get("file"), str)
+            and type(frame.get("bytes")) is int
+            and isinstance(frame.get("sha256"), str)
+        }
+        if (
+            not isinstance(discovery, dict)
+            or set(discovery) != {"wide", "narrow"}
+            or not isinstance(interaction, dict)
+            or set(interaction) != {"wide", "narrow"}
+            or not isinstance(rendered_qa, dict)
+            or set(rendered_qa) != {"wide", "narrow"}
+        ):
+            failures.append(f"{label} has no generated wide/narrow discovery, interaction census, and rendered QA.")
+        else:
+            for viewport in ("wide", "narrow"):
+                discovery_entry = discovery.get(viewport)
+                if not isinstance(discovery_entry, dict):
+                    failures.append(f"{label} {viewport} discovery metadata is invalid.")
+                    continue
+                discovered_urls = discovery_entry.get("discovered_urls")
+                visited_urls = discovery_entry.get("visited_urls")
+                source_state_ids = discovery_entry.get("source_state_ids")
+                if (
+                    not isinstance(discovered_urls, list)
+                    or not discovered_urls
+                    or discovered_urls != visited_urls
+                    or not isinstance(source_state_ids, list)
+                    or set(source_state_ids) != contract_ids
+                ):
+                    failures.append(f"{label} {viewport} source discovery/state coverage is incomplete.")
+                    continue
+                failures.extend(
+                    f"{label}: {failure}"
+                    for failure in interaction_census_failures(
+                        interaction.get(viewport),
+                        expected_profile=viewport,
+                        expected_state_ids=contract_ids,
+                        expected_urls=set(visited_urls),
+                        artifact_root=observation.parent,
+                        allowed_artifacts=observer_artifacts,
+                    )
+                )
+                failures.extend(
+                    f"{label}: {failure}"
+                    for failure in source_rendered_qa_failures(
+                        rendered_qa.get(viewport),
+                        expected_profile=viewport,
+                        expected_urls=set(visited_urls),
+                        artifact_root=observation.parent,
+                        allowed_artifacts=observer_artifacts,
+                        interaction_census=interaction.get(viewport),
+                    )
+                )
+    return failures
+
+
+def bound_route_manifest_failures(
+    cell: str,
+    *,
+    project: Path,
+    record_path: Path,
+    selected_ranks: set[int] | None = None,
+    expected_manifest_id: str | None = None,
+) -> tuple[list[str], dict[str, object] | None, Path | None]:
+    artifact, failures = bound_artifact(
+        cell,
+        project=project,
+        record_path=record_path,
+        label="Route manifest",
+    )
+    if failures or artifact is None:
+        return failures, None, artifact
+    expected = (project / ".design-dna" / "route-manifest.json").resolve()
+    if artifact.resolve() != expected:
+        return (["Route manifest binding must name .design-dna/route-manifest.json."], None, artifact)
+    try:
+        payload = json.loads(artifact.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return ([f"Route manifest is not readable JSON: {exc}"], None, artifact)
+    payload_failures = route_manifest_payload_failures(
+        payload,
+        selected_ranks=selected_ranks,
+        expected_manifest_id=expected_manifest_id,
+    )
+    if isinstance(payload, dict) and not payload_failures:
+        payload_failures.extend(
+            route_manifest_reference_failures(payload, project=project)
+        )
+    return payload_failures, payload if isinstance(payload, dict) else None, artifact
+
+
 def reference_dossier_failures(
     body: str,
     *,
     project: Path,
     record_path: Path,
 ) -> list[str]:
-    """Validate captured, source-spread, and elevated reference research.
+    """Validate captured, source-spread, brief-fit reference research.
 
     The count is a floor tied to source spread, not a quota: enough
     independent sites that none becomes the template. Every row binds a
@@ -6097,16 +10107,26 @@ def reference_dossier_failures(
     """
 
     failures: list[str] = []
-    _registry, active_source_ids, registry_failures = load_reference_source_registry()
+    registry, active_source_ids, registry_failures = load_reference_source_registry()
     failures.extend(registry_failures)
+    registry_sources = {
+        source.get("id"): source
+        for source in (
+            registry.get("sources", []) if isinstance(registry, dict) else []
+        )
+        if isinstance(source, dict) and isinstance(source.get("id"), str)
+    }
     sections = markdown_sections(body)
     frame = sections.get("Research frame", "")
     for label in (
+        "Reference-selection brief",
         "Brief and priority-source rationale",
         "Current active registry audit date and limitations",
         "Public-access disposition for blocked or unavailable sources",
         "Source-specific filters",
+        "Plausible alternate discovery paths",
         "Ledger check",
+        "Planned route/state coverage",
     ):
         if not non_placeholder(markdown_label_value(frame, label)):
             failures.append(f"Reference dossier {label!r} is missing or still scaffold text.")
@@ -6138,9 +10158,599 @@ def reference_dossier_failures(
             return [f"{capture_label} is not usable evidence: {exc}"]
         return []
 
-    observed_urls: list[str] = []
+    def capture_pair_failures(
+        wide_cell: str, narrow_cell: str, label: str
+    ) -> list[str]:
+        """Require two real, distinct viewport captures for every candidate."""
 
-    def observation_failures(cell: str, label: str, row_url: str) -> list[str]:
+        problems = [
+            *capture_failures(wide_cell, f"{label} wide"),
+            *capture_failures(narrow_cell, f"{label} narrow"),
+        ]
+        if problems:
+            return problems
+        wide, wide_problems = bound_artifact(
+            wide_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{label} wide capture",
+        )
+        narrow, narrow_problems = bound_artifact(
+            narrow_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{label} narrow capture",
+        )
+        problems.extend(wide_problems)
+        problems.extend(narrow_problems)
+        if wide is None or narrow is None:
+            return problems
+        if (
+            wide.resolve() == narrow.resolve()
+            or file_sha256(wide)[1] == file_sha256(narrow)[1]
+        ):
+            problems.append(
+                f"{label} must bind distinct wide and narrow capture pixels; "
+                "one screenshot cannot prove responsive transformation."
+            )
+            return problems
+        try:
+            wide_width, _wide_height = verify_png_artifact(wide)
+            narrow_width, _narrow_height = verify_png_artifact(narrow)
+        except StateError as exc:
+            return [*problems, f"{label} capture pair is not usable: {exc}"]
+        if wide_width < 900 or narrow_width > 600 or wide_width <= narrow_width:
+            problems.append(
+                f"{label} capture widths do not prove wide/narrow review "
+                f"({wide_width}px versus {narrow_width}px)."
+            )
+        return problems
+
+    def study_scope_failures(value: str, label: str) -> list[str]:
+        normalized = " ".join(value.casefold().split())
+        concepts = (
+            "page", "inner", "progression", "navigation", "scroll", "hover",
+            "click", "state", "ending", "reset", "narrow", "mobile",
+        )
+        hits = sum(1 for concept in concepts if concept in normalized)
+        if len(normalized) < 80 or hits < 4:
+            return [
+                f"{label} must name the accessible pages, full progression, "
+                "meaningful states/interactions, and narrow behavior actually studied."
+            ]
+        return []
+
+    def brief_fit_failures(value: str, label: str) -> list[str]:
+        normalized = " ".join(value.casefold().split())
+        dimensions = (
+            ("content", "content model"),
+            ("task", "visitor job"),
+            ("audience",),
+            ("brand", "identity"),
+            ("operat", "service reality"),
+            ("route", "progression"),
+            ("responsive", "mobile", "narrow"),
+            ("right", "access", "license"),
+        )
+        hits = sum(
+            1 for aliases in dimensions
+            if any(alias in normalized for alias in aliases)
+        )
+        if len(normalized) < 120 or hits < 6:
+            return [
+                f"{label} must compare content model, visitor task, audience, "
+                "brand/operating reality, route progression, responsive fit, "
+                "and rights/access instead of relying on an award, tag, or mood."
+            ]
+        return []
+
+    def candidate_observation_context(
+        binding: str,
+        *,
+        candidate_url: str,
+        wide_capture: str,
+        narrow_capture: str,
+        label: str,
+    ) -> tuple[list[str], dict[str, object] | None, Path | None]:
+        """Load generated candidate-study evidence, never prose-as-proof."""
+
+        problems: list[str] = []
+        artifact, binding_problems = bound_artifact(
+            binding,
+            project=project,
+            record_path=record_path,
+            label=f"{label} generated study evidence",
+        )
+        problems.extend(binding_problems)
+        if artifact is None or binding_problems:
+            return problems, None, artifact
+        if (
+            artifact.parent.resolve()
+            != (project / ".design-dna" / "references").resolve()
+        ):
+            return [
+                *problems,
+                f"{label} generated study evidence must live directly in .design-dna/references.",
+            ], None, artifact
+        try:
+            observed = json.loads(artifact.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            return [*problems, f"{label} generated study evidence is unreadable: {exc}"], None, artifact
+        identity = packaged_runtime_record_failures(
+            observed, tool="observe_reference.mjs"
+        )
+        problems.extend(f"{label}: {failure}" for failure in identity)
+        if not isinstance(observed, dict):
+            return [*problems, f"{label} generated study evidence is not an object."], None, artifact
+        try:
+            exact_candidate_url = canonical_route_url(candidate_url)
+            exact_observed_url = canonical_route_url(str(observed.get("url") or ""))
+        except ValueError:
+            exact_candidate_url = exact_observed_url = ""
+        if (
+            not exact_candidate_url
+            or exact_candidate_url != candidate_url
+            or exact_observed_url != exact_candidate_url
+            or observed.get("url") != exact_observed_url
+            or observed.get("requested_url") != exact_observed_url
+            or observed.get("final_url") != exact_observed_url
+        ):
+            problems.append(f"{label} generated study does not bind the candidate's exact non-redirect URL.")
+
+        captures = observed.get("captures_by_viewport")
+        if not isinstance(captures, dict) or set(captures) != {"wide", "narrow"}:
+            problems.append(f"{label} generated study lacks wide/narrow capture bindings.")
+        else:
+            for viewport, declared in (
+                ("wide", wide_capture),
+                ("narrow", narrow_capture),
+            ):
+                capture = captures.get(viewport)
+                declared_path, declared_problems = bound_artifact(
+                    declared,
+                    project=project,
+                    record_path=record_path,
+                    label=f"{label} {viewport} capture",
+                )
+                problems.extend(declared_problems)
+                generated_path = (
+                    artifact.parent / PurePosixPath(str(capture.get("file") or ""))
+                ).resolve() if isinstance(capture, dict) else Path()
+                if (
+                    not isinstance(capture, dict)
+                    or set(capture) != {"file", "bytes", "sha256"}
+                    or declared_path is None
+                    or generated_path != declared_path.resolve()
+                    or not is_within(generated_path, artifact.parent.resolve())
+                    or not generated_path.is_file()
+                    or type(capture.get("bytes")) is not int
+                    or generated_path.stat().st_size != capture.get("bytes")
+                    or not isinstance(capture.get("sha256"), str)
+                    or file_sha256(generated_path)[1] != capture.get("sha256")
+                ):
+                    problems.append(
+                        f"{label} {viewport} capture is not the exact generated observation capture."
+                    )
+                else:
+                    try:
+                        verify_png_artifact(generated_path)
+                    except StateError as exc:
+                        problems.append(f"{label} {viewport} generated capture is invalid: {exc}")
+
+        discovery = observed.get("discovery_metadata")
+        discovery_context: dict[str, dict[str, object]] = {}
+        if not isinstance(discovery, dict) or set(discovery) != {"wide", "narrow"}:
+            problems.append(f"{label} generated study lacks wide/narrow discovery metadata.")
+        else:
+            for viewport in ("wide", "narrow"):
+                entry = discovery.get(viewport)
+                if not isinstance(entry, dict) or set(entry) != {
+                    "discovered_urls", "visited_urls", "source_state_ids"
+                }:
+                    problems.append(f"{label} {viewport} discovery metadata has an unsupported shape.")
+                    continue
+                discovered = entry.get("discovered_urls")
+                visited = entry.get("visited_urls")
+                state_ids = entry.get("source_state_ids")
+                if (
+                    not isinstance(discovered, list)
+                    or not discovered
+                    or discovered != sorted(set(discovered))
+                    or visited != discovered
+                    or not isinstance(state_ids, list)
+                    or not state_ids
+                    or len(state_ids) != len(set(state_ids))
+                    or "rest" not in state_ids
+                ):
+                    problems.append(
+                        f"{label} {viewport} did not completely visit every discovered page and authored state."
+                    )
+                else:
+                    discovery_context[viewport] = entry
+        if (
+            set(discovery_context) == {"wide", "narrow"}
+            and set(discovery_context["wide"]["source_state_ids"])
+            != set(discovery_context["narrow"]["source_state_ids"])
+        ):
+            problems.append(f"{label} wide/narrow source-state coverage differs.")
+        interaction_census = observed.get("interaction_census_by_viewport")
+        observer_frame_dir = observed.get("frame_dir")
+        observer_artifacts = {
+            (
+                (PurePosixPath(observer_frame_dir) / PurePosixPath(frame.get("file"))).as_posix(),
+                frame.get("bytes"),
+                frame.get("sha256"),
+            )
+            for frame in observed.get("frames", [])
+            if isinstance(frame, dict)
+            and isinstance(observer_frame_dir, str)
+            and isinstance(frame.get("file"), str)
+            and type(frame.get("bytes")) is int
+            and isinstance(frame.get("sha256"), str)
+        }
+        if (
+            not isinstance(interaction_census, dict)
+            or set(interaction_census) != {"wide", "narrow"}
+        ):
+            problems.append(f"{label} generated study lacks a wide/narrow interaction census.")
+        else:
+            for viewport in ("wide", "narrow"):
+                discovery_entry = discovery_context.get(viewport, {})
+                problems.extend(
+                    f"{label}: {problem}"
+                    for problem in interaction_census_failures(
+                        interaction_census.get(viewport),
+                        expected_profile=viewport,
+                        expected_state_ids=set(
+                            discovery_entry.get("source_state_ids", [])
+                        ),
+                        expected_urls=set(
+                            discovery_entry.get("visited_urls", [])
+                        ),
+                        artifact_root=artifact.parent,
+                        allowed_artifacts=observer_artifacts,
+                    )
+                )
+
+        quality = observed.get("quality_observations")
+        categories = {
+            row.get("category"): row
+            for row in quality or []
+            if isinstance(row, dict)
+        }
+        if (
+            not isinstance(quality, list)
+            or len(categories) != len(quality)
+            or set(categories)
+            != {"responsive-first-screen", "experience-coverage", "behavior"}
+            or not categories.get("responsive-first-screen", {}).get("wide_dominant")
+            or not categories.get("responsive-first-screen", {}).get("narrow_dominant")
+            or type(categories.get("experience-coverage", {}).get("wide_pages")) is not int
+            or type(categories.get("experience-coverage", {}).get("narrow_pages")) is not int
+            or categories.get("experience-coverage", {}).get("wide_pages", 0) < 1
+            or categories.get("experience-coverage", {}).get("narrow_pages", 0) < 1
+            or type(categories.get("experience-coverage", {}).get("authored_state_cells")) is not int
+            or categories.get("experience-coverage", {}).get("authored_state_cells", 0) < 2
+            or not isinstance(categories.get("behavior", {}).get("mechanisms"), list)
+            or not isinstance(categories.get("behavior", {}).get("responsive_state_results"), list)
+        ):
+            problems.append(f"{label} generated quality observations are incomplete.")
+        defects = observed.get("defect_observations")
+        if not isinstance(defects, list) or any(not isinstance(item, dict) for item in defects):
+            problems.append(f"{label} generated defect observations are invalid.")
+
+        return problems, {
+            "record": observed,
+            "discovery": discovery_context,
+            "defects": defects if isinstance(defects, list) else [],
+            "quality": categories,
+        }, artifact
+
+    observed_inner_urls: list[str] = []
+
+    candidate_headers, candidate_rows = markdown_first_table(
+        sections.get("Candidate comparison", "")
+    )
+    selected_candidate_urls: set[str] = set()
+    candidate_capture_bindings: set[str] = set()
+    rejected_candidates = 0
+    if (
+        candidate_headers != REFERENCE_DOSSIER_CANDIDATE_HEADERS
+        or len(candidate_rows) < REFERENCE_MINIMUM_CANDIDATES
+    ):
+        failures.append(
+            "Reference dossier needs at least eight serious candidate-comparison "
+            "rows using the exact contract, including concrete rejections; "
+            "selection cannot begin from the first convenient gallery results."
+        )
+    else:
+        curation_by_source = reference_source_curation()
+        brief_criteria = (
+            "content_model", "organization_context", "visitor_task", "audience", "brand_authority",
+            "operating_reality", "route_responsive", "rights_access",
+        )
+        quality_criteria = (
+            "composition", "typography", "media", "responsive",
+            "interaction", "finish",
+        )
+        generic_only = re.compile(
+            r"\b(?:beautiful|cool|clean|modern|premium|polished|stunning|"
+            r"interesting|nice|strong|good|great|on[- ]brand|fits? the vibe)\b",
+            re.IGNORECASE,
+        )
+        quota_padding = re.compile(
+            r"\b(?:quota|padding|fill(?:ing)? (?:the )?(?:list|count)|"
+            r"needed (?:one|another|more)|make up the numbers)\b",
+            re.IGNORECASE,
+        )
+        for row_number, row in enumerate(candidate_rows, start=1):
+            label = f"Reference dossier candidate row {row_number}"
+            if len(row) != len(REFERENCE_DOSSIER_CANDIDATE_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{label} is incomplete.")
+                continue
+            failures.extend(reference_entry_url_failures(row[0], f"{label} URL"))
+            url_match = re.search(r"https://[^\s)]+", row[0])
+            candidate_url = url_match.group(0).rstrip(".,;|") if url_match else ""
+            source_fields = semicolon_fields(row[1])
+            required_source_fields = {
+                "source", "discovery_path", "filter", "retrieval", "retrieved",
+                "reuse_basis",
+            }
+            source_id = source_fields.get("source", "").casefold()
+            allowed_source_fields = set(required_source_fields)
+            if source_fields.get("reuse_basis", "").casefold() == "revalidated-reuse":
+                allowed_source_fields.update({"prior_evidence", "revalidated"})
+            if set(source_fields) != allowed_source_fields:
+                failures.append(
+                    f"{label} source history must use the exact discovery/retrieval/reuse fields."
+                )
+            if source_id not in active_source_ids:
+                failures.append(
+                    f"{label} discovery source must be an active, legitimately "
+                    "accessible public source."
+                )
+            source_record = registry_sources.get(source_id, {})
+            discovery_path = source_fields.get("discovery_path", "")
+            try:
+                source_host = urlsplit(str(source_record.get("url") or "")).netloc.casefold().removeprefix("www.")
+                discovery_host = urlsplit(discovery_path).netloc.casefold().removeprefix("www.")
+                canonical_discovery = canonical_route_url(discovery_path)
+            except ValueError:
+                source_host = discovery_host = canonical_discovery = ""
+            if (
+                not source_host
+                or discovery_host != source_host
+                or canonical_discovery != discovery_path
+            ):
+                failures.append(
+                    f"{label} discovery_path must be the exact canonical listing/filter URL on its registry source."
+                )
+            if source_fields.get("retrieval") != source_record.get("retrieval"):
+                failures.append(
+                    f"{label} retrieval method must match the registry source contract."
+                )
+            failures.extend(
+                reference_dossier_date_failures(
+                    source_fields.get("retrieved", ""), f"{label} source retrieval"
+                )
+            )
+            filter_value = source_fields.get("filter", "")
+            filter_dimensions = sum(
+                1
+                for aliases in (
+                    ("content", "editorial", "catalog"),
+                    ("visitor", "task", "conversion", "reading"),
+                    ("route", "page", "state", "flow"),
+                    ("responsive", "mobile", "narrow"),
+                    ("brand", "authority", "business"),
+                    ("material", "cultural", "time", "place"),
+                )
+                if any(alias in filter_value.casefold() for alias in aliases)
+            )
+            if (
+                len(" ".join(filter_value.split())) < 60
+                or filter_dimensions < 3
+                or quota_padding.search(filter_value)
+            ):
+                failures.append(
+                    f"{label} filter must bind at least three brief dimensions; a category/tag or quota need is not selection logic."
+                )
+            reuse_basis = source_fields.get("reuse_basis", "").casefold()
+            if reuse_basis not in {"fresh", "revalidated-reuse"}:
+                failures.append(f"{label} reuse_basis must be fresh or revalidated-reuse.")
+            elif reuse_basis == "revalidated-reuse":
+                prior, prior_failures = bound_artifact(
+                    source_fields.get("prior_evidence", ""),
+                    project=project,
+                    record_path=record_path,
+                    label=f"{label} prior reuse evidence",
+                )
+                failures.extend(prior_failures)
+                if prior is None:
+                    failures.append(f"{label} reused candidate has no bound prior evidence.")
+                failures.extend(
+                    reference_dossier_date_failures(
+                        source_fields.get("revalidated", ""), f"{label} reuse revalidation"
+                    )
+                )
+            pair_problems = capture_pair_failures(row[2], row[3], label)
+            failures.extend(pair_problems)
+            for binding in (row[2].strip(), row[3].strip()):
+                if binding in candidate_capture_bindings:
+                    failures.append(
+                        f"{label} reuses another candidate's capture binding; "
+                        "each website must be inspected on its own pixels."
+                    )
+                candidate_capture_bindings.add(binding)
+            study_fields = semicolon_fields(row[4])
+            if set(study_fields) != {
+                "evidence", "wide_pages", "narrow_pages", "states", "progression"
+            }:
+                failures.append(f"{label} complete-study cell has an unsupported shape.")
+            study_problems, study_context, study_artifact = candidate_observation_context(
+                study_fields.get("evidence", ""),
+                candidate_url=candidate_url,
+                wide_capture=row[2],
+                narrow_capture=row[3],
+                label=label,
+            )
+            failures.extend(study_problems)
+            if study_context is not None:
+                discovery = study_context.get("discovery", {})
+                wide_discovery = discovery.get("wide", {}) if isinstance(discovery, dict) else {}
+                narrow_discovery = discovery.get("narrow", {}) if isinstance(discovery, dict) else {}
+                try:
+                    declared_wide_pages = int(study_fields.get("wide_pages", ""))
+                    declared_narrow_pages = int(study_fields.get("narrow_pages", ""))
+                except ValueError:
+                    declared_wide_pages = declared_narrow_pages = -1
+                exact_states = set(wide_discovery.get("source_state_ids", []))
+                declared_states = {
+                    item.strip() for item in study_fields.get("states", "").split(",")
+                    if item.strip()
+                }
+                if (
+                    declared_wide_pages != len(wide_discovery.get("visited_urls", []))
+                    or declared_narrow_pages != len(narrow_discovery.get("visited_urls", []))
+                    or declared_states != exact_states
+                    or declared_states
+                    != set(narrow_discovery.get("source_state_ids", []))
+                    or len(study_fields.get("progression", "").strip()) < 60
+                    or sum(
+                        term in study_fields.get("progression", "").casefold()
+                        for term in ("page", "route", "scroll", "state", "navigation", "ending")
+                    ) < 3
+                ):
+                    failures.append(
+                        f"{label} complete-study declaration does not match generated wide/narrow pages, states, and progression."
+                    )
+
+            brief_fields = semicolon_fields(row[5])
+            if set(brief_fields) != {*brief_criteria, "evidence"}:
+                failures.append(f"{label} brief-fit gate must name every exact criterion and evidence.")
+            brief_statuses = [brief_fields.get(criterion) for criterion in brief_criteria]
+            if any(status not in {"pass", "fail"} for status in brief_statuses):
+                failures.append(f"{label} brief-fit criteria must each be pass or fail.")
+            brief_evidence, brief_evidence_failures = bound_artifact(
+                brief_fields.get("evidence", ""),
+                project=project,
+                record_path=record_path,
+                label=f"{label} brief-fit evidence",
+            )
+            failures.extend(brief_evidence_failures)
+            if brief_evidence is not None and brief_evidence.resolve() == record_path.resolve():
+                failures.append(f"{label} brief-fit evidence cannot circularly bind this dossier.")
+            brief_pass = bool(brief_statuses) and all(status == "pass" for status in brief_statuses)
+
+            quality_fields = semicolon_fields(row[6])
+            if set(quality_fields) != {*quality_criteria, "defects", "evidence"}:
+                failures.append(f"{label} quality/execution gate must name every exact criterion, defects, and evidence.")
+            quality_statuses = [quality_fields.get(criterion) for criterion in quality_criteria]
+            if any(status not in {"pass", "fail"} for status in quality_statuses):
+                failures.append(f"{label} quality/execution criteria must each be pass or fail.")
+            quality_evidence, quality_evidence_failures = bound_artifact(
+                quality_fields.get("evidence", ""),
+                project=project,
+                record_path=record_path,
+                label=f"{label} quality/execution evidence",
+            )
+            failures.extend(quality_evidence_failures)
+            if (
+                study_artifact is not None
+                and quality_evidence is not None
+                and quality_evidence.resolve() != study_artifact.resolve()
+            ):
+                failures.append(
+                    f"{label} quality/execution gate must bind the same packaged observer record as complete study."
+                )
+            defects = (
+                study_context.get("defects", [])
+                if isinstance(study_context, dict)
+                else []
+            )
+            defect_names = {
+                str(defect.get("category") or defect.get("kind") or "")
+                for defect in defects
+                if isinstance(defect, dict)
+            } - {""}
+            declared_defects = quality_fields.get("defects", "")
+            if defect_names:
+                if declared_defects.casefold() == "none" or any(
+                    name.casefold() not in declared_defects.casefold()
+                    for name in defect_names
+                ):
+                    failures.append(f"{label} hides generated negative defect observations.")
+            elif declared_defects.casefold() != "none":
+                failures.append(f"{label} defects must be exactly none when the generated ledger is empty.")
+            quality_pass = (
+                bool(quality_statuses)
+                and all(status == "pass" for status in quality_statuses)
+                and not defect_names
+            )
+
+            disposition_fields = semicolon_fields(row[7])
+            if set(disposition_fields) != {
+                "brief_fit", "quality_execution", "disposition", "reason"
+            }:
+                failures.append(f"{label} conjunctive disposition has an unsupported shape.")
+            declared_brief = disposition_fields.get("brief_fit")
+            declared_quality = disposition_fields.get("quality_execution")
+            disposition = disposition_fields.get("disposition", "").casefold()
+            reason = disposition_fields.get("reason", "")
+            if declared_brief != ("pass" if brief_pass else "fail"):
+                failures.append(f"{label} disposition misstates its brief-fit gate result.")
+            if declared_quality != ("pass" if quality_pass else "fail"):
+                failures.append(f"{label} disposition misstates its quality/execution gate result.")
+            if (
+                len(" ".join(reason.split())) < 45
+                or quota_padding.search(reason)
+                or (
+                    generic_only.search(reason)
+                    and not re.search(
+                        r"\b(?:composition|type|media|responsive|interaction|"
+                        r"finish|content|visitor|audience|brand|route|rights|"
+                        r"defect|page|state|capture|sequence)\b",
+                        reason,
+                        re.IGNORECASE,
+                    )
+                )
+            ):
+                failures.append(
+                    f"{label} disposition reason must name concrete evidence/criteria, not generic praise or quota padding."
+                )
+            if disposition == "selected":
+                if not brief_pass or not quality_pass:
+                    failures.append(
+                        f"{label} cannot be selected unless both independent gates pass and generated defects are empty."
+                    )
+                if curation_by_source.get(source_id, "submission") not in REFERENCE_CURATION_ALLOWED:
+                    failures.append(
+                        f"{label} selects an entry from a submission feed; "
+                        "only award or editorially curated sources establish "
+                        "the required quality basis."
+                    )
+                if candidate_url:
+                    selected_candidate_urls.add(candidate_url)
+            elif disposition == "rejected":
+                rejected_candidates += 1
+            else:
+                failures.append(
+                    f"{label} disposition must be selected or rejected."
+                )
+        if rejected_candidates < REFERENCE_MINIMUM_REJECTED_CANDIDATES:
+            failures.append(
+                "Reference dossier candidate comparison must record at least two "
+                "serious rejected alternatives with concrete reasons."
+            )
+
+    def observation_failures(
+        cell: str,
+        label: str,
+        row_url: str,
+        expected_reference_id: str,
+    ) -> list[str]:
         """A strong row binds a session emitted by observe_reference.mjs.
 
         The cell reads `<motion|static>; <path> plus sha256:<hex>`. The kind is
@@ -6189,15 +10799,51 @@ def reference_dossier_failures(
                 "observe_reference.mjs harness; a hand-written or ad-hoc "
                 "capture cannot establish what was watched."
             )
+        observer_path = Path(__file__).resolve().parent / "observe_reference.mjs"
+        expected_observer_sha = file_sha256(observer_path)[1]
+        if payload.get("producer_script_sha256") != expected_observer_sha:
+            problems.append(
+                f"{observation_label} does not bind the current packaged "
+                "observe_reference.mjs bytes; a tool-name string alone is not provenance."
+            )
         if payload.get("schema_version") != REFERENCE_OBSERVATION_SCHEMA:
             problems.append(
                 f"{observation_label} must use observation schema_version "
                 f"{REFERENCE_OBSERVATION_SCHEMA}; an older session has no mechanism "
                 "sheet and cannot say what the site does."
             )
+        if payload.get("id") != expected_reference_id:
+            problems.append(
+                f"{observation_label} reference ID must be {expected_reference_id!r}."
+            )
+        problems.extend(
+            f"{observation_label}: {failure}"
+            for failure in packaged_runtime_record_failures(
+                payload, tool="observe_reference.mjs"
+            )
+        )
+        frames = payload.get("frames")
+        frame_dir = payload.get("frame_dir")
+        if not isinstance(frames, list) or not frames or not isinstance(frame_dir, str):
+            problems.append(f"{observation_label} must bind its captured frame artifacts.")
+        else:
+            for frame_index, frame in enumerate(frames, start=1):
+                if (
+                    not isinstance(frame, dict)
+                    or not isinstance(frame.get("file"), str)
+                    or not isinstance(frame.get("sha256"), str)
+                    or SHA256_HEX.fullmatch(frame["sha256"]) is None
+                ):
+                    problems.append(f"{observation_label} frame {frame_index} metadata is invalid.")
+                    continue
+                frame_path = artifact.parent / frame_dir / frame["file"]
+                try:
+                    if file_sha256(frame_path)[1] != frame["sha256"]:
+                        problems.append(f"{observation_label} frame {frame_index} SHA-256 drifted.")
+                    verify_png_artifact(frame_path)
+                except (OSError, StateError) as exc:
+                    problems.append(f"{observation_label} frame {frame_index} is invalid: {exc}")
         observed_url = payload.get("url")
-        if isinstance(observed_url, str) and observed_url:
-            observed_urls.append(observed_url)
         if not isinstance(observed_url, str) or not observed_url:
             problems.append(f"{observation_label} must record the observed URL.")
         else:
@@ -6211,6 +10857,18 @@ def reference_dossier_failures(
                     f"{observation_label} observed {obs_host}, which is not the "
                     "site this row names."
                 )
+        interactions = payload.get("interactions")
+        if isinstance(interactions, list):
+            for interaction in interactions:
+                if not isinstance(interaction, dict):
+                    continue
+                inner_url = interaction.get("url")
+                if (
+                    interaction.get("type") == "transition"
+                    and isinstance(inner_url, str)
+                    and inner_url
+                ):
+                    observed_inner_urls.append(inner_url)
         coverage = payload.get("coverage")
         if not isinstance(coverage, dict):
             problems.append(f"{observation_label} must record what the session covered.")
@@ -6240,18 +10898,339 @@ def reference_dossier_failures(
                 "transition. Record what was actually seen instead of the motion "
                 "the site was assumed to have."
             )
-        first_screen = payload.get("first_screen")
-        if not isinstance(first_screen, dict) or not isinstance(
-            first_screen.get("grid"), list
+        first_screens = payload.get("first_screens")
+        if (
+            not isinstance(first_screens, dict)
+            or set(first_screens) != {"wide", "narrow"}
+            or any(
+                not isinstance(first_screens.get(viewport), dict)
+                or not isinstance(first_screens[viewport].get("grid"), list)
+                for viewport in ("wide", "narrow")
+            )
         ):
             problems.append(
-                f"{observation_label} must carry the reference's first-screen "
-                "structure; without it a build can only be compared on font "
-                "sizes, and a build compared on font sizes is the producer's "
-                "own layout with borrowed numbers."
+                f"{observation_label} must carry distinct wide and narrow "
+                "first-screen structures; a desktop-only observation cannot "
+                "source the mobile design."
             )
+        else:
+            wide_viewport = first_screens["wide"].get("viewport", {})
+            narrow_viewport = first_screens["narrow"].get("viewport", {})
+            if (
+                not isinstance(wide_viewport, dict)
+                or not isinstance(narrow_viewport, dict)
+                or not isinstance(wide_viewport.get("w"), (int, float))
+                or not isinstance(narrow_viewport.get("w"), (int, float))
+                or wide_viewport["w"] < 900
+                or narrow_viewport["w"] > 600
+                or wide_viewport["w"] <= narrow_viewport["w"]
+            ):
+                problems.append(
+                    f"{observation_label} first-screen structures do not prove "
+                    "distinct wide and narrow viewport observations."
+                )
         mechanisms = payload.get("mechanisms")
         score = payload.get("score")
+        mechanisms_by_viewport = payload.get("mechanisms_by_viewport")
+        if (
+            not isinstance(mechanisms_by_viewport, dict)
+            or set(mechanisms_by_viewport) != {"wide", "narrow"}
+            or any(
+                not isinstance(mechanisms_by_viewport.get(viewport), dict)
+                or not isinstance(
+                    mechanisms_by_viewport[viewport].get("mechanisms"), list
+                )
+                or not isinstance(mechanisms_by_viewport[viewport].get("score"), dict)
+                for viewport in ("wide", "narrow")
+            )
+        ):
+            problems.append(
+                f"{observation_label} must carry wide and narrow mechanism reads."
+            )
+        first_screen_mechanisms = payload.get("first_screen_mechanisms_by_viewport")
+        states_by_viewport = payload.get("states_by_viewport")
+        if (
+            not isinstance(first_screen_mechanisms, dict)
+            or set(first_screen_mechanisms) != {"wide", "narrow"}
+            or any(
+                not isinstance(first_screen_mechanisms.get(viewport), dict)
+                or not isinstance(first_screen_mechanisms[viewport].get("mechanisms"), list)
+                or not isinstance(first_screen_mechanisms[viewport].get("score"), dict)
+                for viewport in ("wide", "narrow")
+            )
+        ):
+            problems.append(
+                f"{observation_label} must carry wide and narrow first-screen mechanism reads."
+            )
+        if (
+            not isinstance(states_by_viewport, dict)
+            or set(states_by_viewport) != {"wide", "narrow"}
+            or any(
+                not isinstance(states_by_viewport.get(viewport), dict)
+                or "rest" not in states_by_viewport[viewport]
+                for viewport in ("wide", "narrow")
+            )
+        ):
+            problems.append(
+                f"{observation_label} must carry explicit source-state evidence at wide and narrow viewports."
+            )
+        state_contract = payload.get("state_contract")
+        contract_payload: object = None
+        contract_ids: set[str] = set()
+        if (
+            not isinstance(state_contract, dict)
+            or set(state_contract) != {"file", "sha256"}
+            or not isinstance(state_contract.get("file"), str)
+            or not isinstance(state_contract.get("sha256"), str)
+            or SHA256_HEX.fullmatch(state_contract["sha256"]) is None
+        ):
+            problems.append(f"{observation_label} must bind its explicit source-state contract.")
+        else:
+            # Browser producers intentionally store the sibling filename so a
+            # private evidence directory can move as one immutable unit.
+            contract_path = (
+                artifact.parent / PurePosixPath(state_contract["file"])
+            ).resolve()
+            expected_contract = (
+                project
+                / ".design-dna"
+                / "references"
+                / f"{expected_reference_id}-state-contract.json"
+            ).resolve()
+            if (
+                not is_within(contract_path, project.resolve())
+                or contract_path != expected_contract
+                or not contract_path.is_file()
+                or file_sha256(contract_path)[1] != state_contract["sha256"]
+            ):
+                problems.append(f"{observation_label} source-state contract bytes are missing or drifted.")
+            else:
+                try:
+                    contract_payload = json.loads(
+                        contract_path.read_text(encoding="utf-8")
+                    )
+                except (OSError, ValueError) as exc:
+                    problems.append(
+                        f"{observation_label} source-state contract is unreadable: {exc}"
+                    )
+                else:
+                    contract_problems, contract_ids = reference_state_contract_failures(
+                        contract_payload,
+                        expected_reference_id=expected_reference_id,
+                        expected_primary_url=(
+                            observed_url if isinstance(observed_url, str) else None
+                        ),
+                    )
+                    problems.extend(
+                        f"{observation_label}: {problem}"
+                        for problem in contract_problems
+                    )
+        if contract_ids and isinstance(states_by_viewport, dict):
+            contract_states = {
+                state.get("id"): state
+                for state in (
+                    contract_payload.get("states", [])
+                    if isinstance(contract_payload, dict)
+                    else []
+                )
+                if isinstance(state, dict)
+            }
+            for viewport in ("wide", "narrow"):
+                state_map = states_by_viewport.get(viewport)
+                if not isinstance(state_map, dict) or set(state_map) != contract_ids:
+                    problems.append(
+                        f"{observation_label} {viewport} states are not the exact source-state contract."
+                    )
+                    continue
+                for state_id, state_evidence in state_map.items():
+                    source_state = contract_states.get(state_id)
+                    if (
+                        not isinstance(state_evidence, dict)
+                        or not isinstance(source_state, dict)
+                        or any(
+                            state_evidence.get(field) != source_state.get(field)
+                            for field in ("id", "url", "kind", "trigger", "expectation")
+                        )
+                        or not isinstance(state_evidence.get("trigger_application"), dict)
+                        or state_evidence["trigger_application"].get("applied") is not True
+                        or not isinstance(state_evidence.get("trigger_evidence"), dict)
+                        or not isinstance(state_evidence.get("evidence_frames"), dict)
+                        or set(state_evidence.get("evidence_frames", {}))
+                        != {"before", "after", "settled"}
+                        or any(
+                            not isinstance(frame, dict)
+                            or not isinstance(frame.get("file"), str)
+                            or type(frame.get("bytes")) is not int
+                            or not isinstance(frame.get("sha256"), str)
+                            for frame in state_evidence.get("evidence_frames", {}).values()
+                        )
+                        or not isinstance(state_evidence.get("interaction_census"), dict)
+                        or state_evidence["interaction_census"].get("complete") is not True
+                        or state_evidence["interaction_census"].get("truncated") is not False
+                        or not isinstance(state_evidence.get("structure"), dict)
+                        or not isinstance(state_evidence.get("mechanisms"), list)
+                        or not isinstance(state_evidence.get("score"), dict)
+                        or not isinstance(state_evidence.get("scroll_traversal"), dict)
+                        or state_evidence["scroll_traversal"].get("complete") is not True
+                    ):
+                        problems.append(
+                            f"{observation_label} {viewport}/{state_id} did not execute and capture its exact source state."
+                        )
+        navigations = payload.get("navigations")
+        if not isinstance(navigations, list) or not navigations:
+            problems.append(f"{observation_label} must carry exact navigation evidence.")
+        else:
+            for navigation in navigations:
+                if (
+                    not isinstance(navigation, dict)
+                    or navigation.get("requested_normalized_url")
+                    != navigation.get("final_normalized_url")
+                    or navigation.get("response_final_normalized_url")
+                    != navigation.get("final_normalized_url")
+                    or type(navigation.get("final_status")) is not int
+                    or not 200 <= navigation["final_status"] < 300
+                    or navigation.get("redirect_count") != 0
+                ):
+                    problems.append(
+                        f"{observation_label} navigation ledger contains a redirect, rewrite, or failed response."
+                    )
+                    break
+        traversals = payload.get("site_traversal_by_viewport")
+        traversal_urls: dict[str, set[str]] = {}
+        if (
+            not isinstance(traversals, dict)
+            or set(traversals) != {"wide", "narrow"}
+        ):
+            problems.append(
+                f"{observation_label} must recursively traverse the source at wide and narrow widths."
+            )
+        else:
+            for viewport in ("wide", "narrow"):
+                traversal = traversals.get(viewport)
+                if not isinstance(traversal, dict):
+                    problems.append(f"{observation_label} {viewport} traversal is invalid.")
+                    continue
+                discovered = traversal.get("discovered_urls")
+                visited = traversal.get("visited_urls")
+                pages = traversal.get("pages")
+                if (
+                    traversal.get("profile") != viewport
+                    or traversal.get("complete") is not True
+                    or traversal.get("missing_urls") != []
+                    or not isinstance(discovered, list)
+                    or not isinstance(visited, list)
+                    or discovered != visited
+                    or len(discovered) != len(set(discovered))
+                    or not isinstance(pages, list)
+                    or len(pages) != len(visited)
+                ):
+                    problems.append(
+                        f"{observation_label} {viewport} recursive page coverage does not reconcile."
+                    )
+                    continue
+                observed_inner_urls.extend(
+                    url for url in visited if isinstance(url, str)
+                )
+                traversal_urls[viewport] = {
+                    url for url in visited if isinstance(url, str)
+                }
+                for page_record in pages:
+                    if (
+                        not isinstance(page_record, dict)
+                        or page_record.get("url") not in visited
+                        or not isinstance(page_record.get("state_inventory"), dict)
+                        or page_record["state_inventory"].get("complete") is not True
+                        or page_record["state_inventory"].get("unreconciled") != []
+                        or not isinstance(page_record.get("scroll_traversal"), dict)
+                        or page_record["scroll_traversal"].get("complete") is not True
+                    ):
+                        problems.append(
+                            f"{observation_label} {viewport} page traversal has unreconciled state or scroll evidence."
+                        )
+                        break
+        interaction_census = payload.get("interaction_census_by_viewport")
+        interaction_frame_dir = payload.get("frame_dir")
+        interaction_artifacts = {
+            (
+                (PurePosixPath(interaction_frame_dir) / PurePosixPath(frame.get("file"))).as_posix(),
+                frame.get("bytes"),
+                frame.get("sha256"),
+            )
+            for frame in payload.get("frames", [])
+            if isinstance(frame, dict)
+            and isinstance(interaction_frame_dir, str)
+            and isinstance(frame.get("file"), str)
+            and type(frame.get("bytes")) is int
+            and isinstance(frame.get("sha256"), str)
+        }
+        if (
+            not isinstance(interaction_census, dict)
+            or set(interaction_census) != {"wide", "narrow"}
+        ):
+            problems.append(
+                f"{observation_label} must carry a generated wide/narrow interaction census."
+            )
+        else:
+            for viewport in ("wide", "narrow"):
+                problems.extend(
+                    f"{observation_label}: {problem}"
+                    for problem in interaction_census_failures(
+                        interaction_census.get(viewport),
+                        expected_profile=viewport,
+                        expected_state_ids=contract_ids,
+                        expected_urls=traversal_urls.get(viewport),
+                        artifact_root=artifact.parent,
+                        allowed_artifacts=interaction_artifacts,
+                    )
+                )
+        rendered_qa_by_viewport = payload.get("rendered_qa_by_viewport")
+        if (
+            not isinstance(rendered_qa_by_viewport, dict)
+            or set(rendered_qa_by_viewport) != {"wide", "narrow"}
+        ):
+            problems.append(
+                f"{observation_label} must carry generated wide/narrow rendered QA."
+            )
+        else:
+            for viewport in ("wide", "narrow"):
+                viewport_interaction = (
+                    interaction_census.get(viewport)
+                    if isinstance(interaction_census, dict)
+                    else None
+                )
+                problems.extend(
+                    f"{observation_label}: {problem}"
+                    for problem in source_rendered_qa_failures(
+                        rendered_qa_by_viewport.get(viewport),
+                        expected_profile=viewport,
+                        expected_urls=traversal_urls.get(viewport, set()),
+                        artifact_root=artifact.parent,
+                        allowed_artifacts=interaction_artifacts,
+                        interaction_census=viewport_interaction,
+                    )
+                )
+                state_map = (
+                    states_by_viewport.get(viewport)
+                    if isinstance(states_by_viewport, dict)
+                    else None
+                )
+                if isinstance(state_map, dict):
+                    for source_state_id, state_evidence in state_map.items():
+                        if not isinstance(state_evidence, dict):
+                            continue
+                        state_url = state_evidence.get("url")
+                        state_interaction = state_evidence.get("interaction_census")
+                        problems.extend(
+                            f"{observation_label} {viewport}/{source_state_id}: {problem}"
+                            for problem in source_rendered_qa_failures(
+                                state_evidence.get("rendered_qa"),
+                                expected_profile=viewport,
+                                expected_urls={str(state_url)} if isinstance(state_url, str) else set(),
+                                artifact_root=artifact.parent,
+                                allowed_artifacts=interaction_artifacts,
+                                interaction_census=state_interaction,
+                            )
+                        )
         if not isinstance(mechanisms, list) or not isinstance(score, dict):
             problems.append(
                 f"{observation_label} must carry a mechanism sheet and a score; "
@@ -6280,23 +11259,41 @@ def reference_dossier_failures(
                 )
         return problems
 
-    def signature_failures(cell: str, label: str) -> list[str]:
-        """A signature names what the site does, in a verb.
+    def signature_failures(cell: str, label: str, observed_kind: str) -> list[str]:
+        """Require an honest motion or static signature, never forced motion."""
 
-        'Black page', 'warm cream', 'one image at a time', 'domestic object,
-        photography led' are all true and all sidewalk cracks. The producer
-        who wrote this gate reported each of them as a signature, and the
-        owner rejected each build. A cell without a mechanism verb is refused
-        before anyone spends an hour building from it.
-        """
-        if REFERENCE_SIGNATURE_VERBS.search(cell) is None:
-            return [
-                f"{label} signature describes a subject, palette or mood, not a "
-                "mechanism. Say what the site does as it is scrolled, hovered or "
-                "entered (what holds, travels, swaps, reveals, follows, "
-                "transitions), because that is what a stranger would name."
-            ]
-        return []
+        normalized = " ".join(cell.strip().split())
+        kind, separator, claim = normalized.partition(":")
+        kind = kind.casefold()
+        if not separator or kind not in {"motion", "static"}:
+            return [f"{label} signature must begin with `motion:` or `static:`."]
+        problems: list[str] = []
+        if observed_kind in {"motion", "static"} and kind != observed_kind:
+            problems.append(
+                f"{label} signature is {kind}, but its observed-evidence lane is "
+                f"{observed_kind}; the evidence type and claim must agree."
+            )
+        if len(claim.strip()) < 60:
+            problems.append(
+                f"{label} signature must name the dominant element, relationship, "
+                "trigger where applicable, and visible result in concrete detail."
+            )
+        if kind == "motion" and REFERENCE_SIGNATURE_VERBS.search(claim) is None:
+            problems.append(
+                f"{label} motion signature must name the actual interaction or "
+                "sequence the observation recorded."
+            )
+        if kind == "static":
+            if (
+                REFERENCE_STATIC_SIGNATURE_TERMS.search(claim) is None
+                or REFERENCE_STATIC_RELATIONSHIP_TERMS.search(claim) is None
+            ):
+                problems.append(
+                    f"{label} static signature must name a concrete composition, "
+                    "type, media, color, hierarchy, and spatial relationship; "
+                    "a subject, palette, or mood is not a signature."
+                )
+        return problems
 
     strong_headers, strong_rows = markdown_first_table(
         sections.get("Strong references", "")
@@ -6305,6 +11302,11 @@ def reference_dossier_failures(
     kind_by_rank: dict[str, str] = {}
     measured_by_rank: dict[int, set[float]] = {}
     signature_by_rank: dict[int, str] = {}
+    wide_capture_by_rank: dict[int, str] = {}
+    narrow_capture_by_rank: dict[int, str] = {}
+    styles_by_rank: dict[int, str] = {}
+    observation_by_rank: dict[int, str] = {}
+    strong_urls: set[str] = set()
     curation_by_source = reference_source_curation()
     strong_count = max(len(strong_rows), REFERENCE_MINIMUM_STRONG)
     if (
@@ -6363,18 +11365,32 @@ def reference_dossier_failures(
             failures.extend(
                 reference_entry_access_failures(row[5], label, authorized_basis)
             )
-            failures.extend(capture_failures(row[6], label))
-            failures.extend(observation_failures(row[7], label, row[2]))
+            failures.extend(capture_pair_failures(row[6], row[7], label))
+            failures.extend(study_scope_failures(row[8], f"{label} study scope"))
+            failures.extend(
+                observation_failures(
+                    row[9],
+                    label,
+                    row[2],
+                    f"strong-{row[0]}" if row[0].isdigit() else "",
+                )
+            )
             style_problems, style_numbers = measured_styles_failures(
-                row[8], label=label, project=project, record_path=record_path
+                row[10], label=label, project=project, record_path=record_path
             )
             failures.extend(style_problems)
             if row[0].isdigit():
                 measured_by_rank[int(row[0])] = style_numbers
-            failures.extend(signature_failures(row[9], label))
+                wide_capture_by_rank[int(row[0])] = row[6].strip()
+                narrow_capture_by_rank[int(row[0])] = row[7].strip()
+                styles_by_rank[int(row[0])] = row[10].strip()
+                observation_by_rank[int(row[0])] = row[9].partition(";")[2].strip()
+            observed_kind = row[9].split(";", 1)[0].strip().casefold()
+            failures.extend(signature_failures(row[11], label, observed_kind))
+            failures.extend(brief_fit_failures(row[12], f"{label} brief relevance"))
             if row[0].isdigit():
-                signature_by_rank[int(row[0])] = row[9]
-            kind_by_rank[row[0]] = row[7].split(";", 1)[0].strip().casefold()
+                signature_by_rank[int(row[0])] = row[11]
+            kind_by_rank[row[0]] = observed_kind
             access = row[5].split(";", 1)[0].strip().casefold()
             url_match = re.search(r"https://[^\s)]+", row[2])
             if access == "public-live" and url_match is not None:
@@ -6387,6 +11403,14 @@ def reference_dossier_failures(
                     )
                 else:
                     live_hosts[host] = row_number
+            if url_match is not None:
+                strong_url = url_match.group(0).rstrip(".,;|")
+                strong_urls.add(strong_url)
+                if strong_url not in selected_candidate_urls:
+                    failures.append(
+                        f"{label} was not selected in Candidate comparison. "
+                        "A strong row cannot bypass the compared finalist set."
+                    )
         if sorted(ranks) != list(range(1, len(strong_rows) + 1)):
             failures.append(
                 "Reference dossier strong rows must contain each rank from 1 "
@@ -6429,7 +11453,8 @@ def reference_dossier_failures(
                 failures.append(f"{label} is incomplete.")
                 continue
             failures.extend(reference_entry_url_failures(row[1], f"{label} URL"))
-            if row[2].casefold() not in active_source_ids:
+            negative_source = row[2].split(";", 1)[0].strip().casefold()
+            if negative_source not in active_source_ids:
                 failures.append(
                     f"{label} discovery source must be an active public source ID."
                 )
@@ -6459,21 +11484,13 @@ def reference_dossier_failures(
                 "Reference dossier selected references must come from at least "
                 "two distinct sources."
             )
-        moving = sum(
-            1 for rank in selected_ranks if kind_by_rank.get(str(rank)) == "motion"
-        )
-        if moving < REFERENCE_MINIMUM_SELECTED_MOTION:
-            failures.append(
-                "Reference dossier must select at least "
-                f"{REFERENCE_MINIMUM_SELECTED_MOTION} references whose sessions "
-                "recorded motion; a build cannot take its behavior from sites "
-                "that have none."
-            )
     for label in (
         "Project-specific organizing synthesis",
-        "Behavior copied and where it is rendered",
+        "Dominant visual grammar by route",
+        "Interaction or motion copied and where it is rendered, or static posture with evidence",
         "Negative-counterevidence result",
         "Combination of references",
+        "Execution improvements only",
         "Direction record path and status",
     ):
         value = markdown_label_value(synthesis, label)
@@ -6511,10 +11528,96 @@ def reference_dossier_failures(
                 + ", ".join(str(rank) for rank in missing_mapped)
             )
 
+    route_manifest_section = sections.get("Route manifest", "")
+    route_manifest_cell = markdown_label_value(
+        route_manifest_section, "Route manifest"
+    )
+    route_proof_identity = markdown_label_value(
+        route_manifest_section, "First-screen proof build ID and primary route key"
+    )
+    route_payload: dict[str, object] | None = None
+    route_path: Path | None = None
+    if not non_placeholder(route_manifest_cell):
+        failures.append(
+            "Reference dossier Route manifest must bind "
+            ".design-dna/route-manifest.json plus its SHA-256."
+        )
+    elif not non_placeholder(route_proof_identity):
+        failures.append(
+            "Reference dossier needs the first-screen proof build ID and primary route key."
+        )
+    else:
+        route_failures, route_payload, route_path = bound_route_manifest_failures(
+            route_manifest_cell or "",
+            project=project,
+            record_path=record_path,
+            selected_ranks=selected_ranks,
+        )
+        failures.extend(route_failures)
+    visible_section = sections.get("Preimplementation visible decisions", "")
+    visible_cell = markdown_label_value(
+        visible_section, "Visible decision source manifest"
+    )
+    if not non_placeholder(visible_cell):
+        failures.append(
+            "Reference dossier must bind the preimplementation Visible decision source manifest."
+        )
+    elif isinstance(route_payload, dict) and route_path is not None:
+        visible_artifact, visible_binding_failures = bound_artifact(
+            visible_cell or "",
+            project=project,
+            record_path=record_path,
+            label="Visible decision source manifest",
+        )
+        failures.extend(visible_binding_failures)
+        expected_visible = (project / ".design-dna" / "visible-decision-sources.json").resolve()
+        if visible_artifact is not None:
+            if visible_artifact.resolve() != expected_visible:
+                failures.append(
+                    "Visible decision source manifest must use .design-dna/visible-decision-sources.json."
+                )
+            else:
+                try:
+                    visible_payload = json.loads(
+                        visible_artifact.read_text(encoding="utf-8")
+                    )
+                except (OSError, ValueError) as exc:
+                    failures.append(
+                        f"Visible decision source manifest is unreadable: {exc}"
+                    )
+                else:
+                    failures.extend(
+                        visible_decision_source_manifest_failures(
+                            visible_payload,
+                            project=project,
+                            route_manifest=route_payload,
+                            route_manifest_path=route_path,
+                            proof_identity=route_proof_identity or "",
+                        )
+                    )
+    dominant_grammar = markdown_label_value(
+        synthesis, "Dominant visual grammar by route"
+    ) or ""
+    if isinstance(route_payload, dict) and isinstance(route_payload.get("routes"), list):
+        for route in route_payload["routes"]:
+            if not isinstance(route, dict):
+                continue
+            key = str(route.get("key") or "")
+            rank = route.get("mapped_reference_rank")
+            if key and (
+                re.search(rf"\b{re.escape(key)}\b", dominant_grammar, re.I) is None
+                or re.search(rf"\b(?:rank\s*)?{rank}\b", dominant_grammar, re.I) is None
+            ):
+                failures.append(
+                    f"Reference dossier dominant grammar must name route {key!r} "
+                    f"and its mapped selected rank {rank}."
+                )
+
     # Every component that ships has a source line. A component with none is
     # the producer's own design, and that needs the owner's words, quoted.
     component_section = sections.get("Component sources", "")
     component_headers, component_rows = markdown_first_table(component_section)
+    component_ranks: dict[str, set[int]] = {}
     if PRODUCER_DESIGN_MARKER.search(component_section or ""):
         failures.append(
             "Reference dossier Component sources names an owner-approved part. "
@@ -6565,6 +11668,8 @@ def reference_dossier_failures(
                 )
             )
             row_ranks = reference_rank_values(source, maximum=strong_count)
+            if row_ranks:
+                component_ranks[component] = set(row_ranks)
             if row_ranks is None or not row_ranks.issubset(selected_ranks):
                 failures.append(
                     f"{label} must name a selected reference rank as its "
@@ -6619,6 +11724,7 @@ def reference_dossier_failures(
                 project=project,
                 record_path=record_path,
             ),
+            component_ranks=component_ranks,
         )
     )
 
@@ -6632,13 +11738,27 @@ def reference_dossier_failures(
             project=project,
             record_path=record_path,
             selected_ranks=selected_ranks or set(),
+            kind_by_rank=kind_by_rank,
+            wide_capture_by_rank=wide_capture_by_rank,
+            narrow_capture_by_rank=narrow_capture_by_rank,
+            styles_by_rank=styles_by_rank,
+            observation_by_rank=observation_by_rank,
+        )
+    )
+    failures.extend(
+        interaction_census_section_failures(
+            sections.get("Interaction census", ""),
+            project=project,
+            record_path=record_path,
+            selected_ranks=selected_ranks or set(),
+            observation_by_rank=observation_by_rank,
         )
     )
 
     # A producer that only ever watched home pages has no evidence for an
     # inner page, and will design one while believing it is still copying.
     inner = {
-        url for url in observed_urls
+        url for url in observed_inner_urls
         if urlsplit(url).path.strip("/") not in {"", "index.html", "index.php"}
     }
     if len(inner) < REFERENCE_INNER_PAGE_MINIMUM:
@@ -6649,6 +11769,71 @@ def reference_dossier_failures(
             "than one page, and a producer holding only home-page captures "
             "will invent every inner page it builds."
         )
+    return failures
+
+
+def packaged_runtime_record_failures(
+    payload: object,
+    *,
+    tool: str,
+    require_pass: bool = False,
+) -> list[str]:
+    if not isinstance(payload, dict):
+        return [f"Evidence must contain a {tool} object."]
+    script = Path(__file__).resolve().parent / tool
+    if not script.is_file():
+        return [f"Packaged producer is missing: {tool}."]
+    schema = packaged_script_schema_version(script)
+    failures: list[str] = []
+    if payload.get("tool") != tool:
+        failures.append(f"Evidence tool must be {tool}.")
+    if schema is None or payload.get("schema_version") != schema:
+        failures.append(f"Evidence schema must match current {tool} schema {schema}.")
+    if payload.get("producer_script_sha256") != file_sha256(script)[1]:
+        failures.append(f"Evidence does not bind current {tool} bytes.")
+    runtime = payload.get("runtime_identity")
+    if not isinstance(runtime, dict) or runtime.get(tool) != file_sha256(script)[1]:
+        failures.append(f"Evidence runtime_identity does not include current {tool}.")
+    else:
+        scripts = Path(__file__).resolve().parent
+        dependencies = payload.get("dependencies")
+        for name, digest in runtime.items():
+            dependency = scripts / str(name)
+            if dependency.is_file():
+                if (
+                    not isinstance(digest, str)
+                    or file_sha256(dependency)[1] != digest
+                ):
+                    failures.append(f"Evidence runtime dependency drifted: {name}.")
+                continue
+            external: object = None
+            if isinstance(dependencies, dict) and name == "playwright-entry":
+                external = dependencies.get("playwright")
+            elif isinstance(dependencies, dict) and name == "browser-executable":
+                external = dependencies.get("browser_executable")
+            if not isinstance(external, dict):
+                failures.append(f"Evidence runtime dependency is unrecognized: {name}.")
+                continue
+            external_file = external.get("resolved_file") or external.get("file")
+            external_digest = external.get("sha256") or external.get(
+                "resolved_file_sha256"
+            )
+            try:
+                external_path = Path(str(external_file)).resolve()
+            except (OSError, ValueError):
+                external_path = Path()
+            if (
+                not isinstance(digest, str)
+                or digest != external_digest
+                or SHA256_HEX.fullmatch(digest) is None
+                or not external_path.is_file()
+                or file_sha256(external_path)[1] != digest
+            ):
+                failures.append(f"Evidence runtime dependency drifted: {name}.")
+    if require_pass and not (
+        payload.get("pass") is True or payload.get("ok") is True
+    ):
+        failures.append(f"Evidence from {tool} did not pass.")
     return failures
 
 
@@ -6679,8 +11864,18 @@ def measured_styles_failures(
         payload = json.loads(artifact.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return ([f"{label} measured styles are not readable JSON: {exc}"], set())
-    if not isinstance(payload, dict) or payload.get("tool") != REFERENCE_STYLE_TOOL:
-        return ([f"{label} measured styles must be emitted by {REFERENCE_STYLE_TOOL}."], set())
+    identity_failures = packaged_runtime_record_failures(
+        payload, tool=REFERENCE_STYLE_TOOL
+    )
+    if identity_failures:
+        return ([f"{label}: {failure}" for failure in identity_failures], set())
+    measured_viewports = payload.get("viewports_measured")
+    if (
+        not isinstance(measured_viewports, list)
+        or not any(isinstance(item, dict) and item.get("width", 0) >= 1280 for item in measured_viewports)
+        or not any(isinstance(item, dict) and item.get("width", 9999) <= 430 for item in measured_viewports)
+    ):
+        return ([f"{label} measured styles must cover wide and narrow reference viewports."], set())
     numbers = payload.get("numbers")
     if not isinstance(numbers, list) or len(numbers) < 20:
         return ([
@@ -6768,6 +11963,10 @@ def component_frame_failures(
             "shows this part and cite the frame the harness wrote, or cut the "
             "component."
         ]
+    try:
+        verify_png_artifact(resolved)
+    except StateError as exc:
+        return [f"{label} frame {value!r} is not a valid PNG: {exc}"]
     ranks = reference_rank_values(source, maximum=strong_count)
     if ranks:
         owners = {f"strong-{rank}" for rank in ranks}
@@ -6814,6 +12013,7 @@ def signature_transfer_failures(
     selected_ranks: set[int],
     signature_by_rank: dict[int, str],
     census_names: set[str],
+    component_ranks: dict[str, set[int]],
 ) -> list[str]:
     """Every selected reference has to have brought its signature with it.
 
@@ -6876,13 +12076,23 @@ def signature_transfer_failures(
             )
 
         carrier = row[2]
-        if census_names and not any(
-            re.search(rf"\b{re.escape(name)}\b", carrier, re.IGNORECASE)
-            for name in census_names
-        ):
+        carrier_components = {
+            name for name in census_names
+            if re.search(rf"\b{re.escape(name)}\b", carrier, re.IGNORECASE)
+        }
+        if census_names and not carrier_components:
             failures.append(
                 f"{row_label} must name a component the build actually renders "
                 "as the part that carries this signature."
+            )
+        elif carrier_components and not any(
+            rank in component_ranks.get(name.casefold(), set())
+            for name in carrier_components
+        ):
+            failures.append(
+                f"{row_label} claims rank {rank} is carried by "
+                + ", ".join(sorted(carrier_components))
+                + ", but those component source rows do not cite that rank."
             )
 
         failures.extend(
@@ -6928,6 +12138,980 @@ def signature_transfer_failures(
     return failures
 
 
+def _recording_artifact_projection(value: object) -> dict[str, object] | None:
+    if not isinstance(value, dict):
+        return None
+    required = ("kind", "profile", "file", "bytes", "sha256")
+    if any(key not in value for key in required):
+        return None
+    return {key: value.get(key) for key in required}
+
+
+def reference_recording_failures(
+    payload: object,
+    *,
+    recording: Path,
+    ledger_payload: object,
+    ledger: Path,
+    state_contract: Path,
+    state_contract_sha256: str,
+    expected_reference_id: str,
+) -> tuple[list[str], set[tuple[str, int]]]:
+    """Validate schema-4 recorder output and its non-circular artifact ledger."""
+
+    failures: list[str] = []
+    event_ids: set[tuple[str, int]] = set()
+    expected_top = {
+        "tool", "schema_version", "producer_script_sha256", "runtime_identity",
+        "dependencies", "id", "url", "requested_url", "final_urls",
+        "recorded_at", "minimum_duration_per_profile_s", "fps",
+        "state_contract", "captures_by_viewport", "discovery_metadata",
+        "quality_observations", "defect_observations",
+        "interaction_census_by_viewport", "rendered_qa_by_viewport",
+        "profiles", "coverage",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_top:
+        return ["Recording must use the exact schema-4 object shape."], event_ids
+    failures.extend(
+        packaged_runtime_record_failures(
+            payload, tool=REFERENCE_RECORDING_TOOL
+        )
+    )
+    if payload.get("id") != expected_reference_id:
+        failures.append("Recording reference ID does not match its dossier block.")
+    try:
+        requested_url = canonical_route_url(str(payload.get("requested_url") or ""))
+        source_url = canonical_route_url(str(payload.get("url") or ""))
+    except ValueError:
+        requested_url = source_url = ""
+        failures.append("Recording source URL is not canonical HTTP(S).")
+    if (
+        not requested_url
+        or payload.get("requested_url") != requested_url
+        or payload.get("url") != source_url
+        or requested_url != source_url
+    ):
+        failures.append("Recording must bind one exact canonical source URL.")
+    minimum_duration = payload.get("minimum_duration_per_profile_s")
+    fps = payload.get("fps")
+    if (
+        not isinstance(minimum_duration, (int, float))
+        or minimum_duration < REFERENCE_RECORDING_MINIMUM_SECONDS
+    ):
+        failures.append("Recording minimum duration is below the 90-second per-profile floor.")
+    if not isinstance(fps, (int, float)) or fps < REFERENCE_RECORDING_MINIMUM_FPS:
+        failures.append("Recording sampling rate is below the 15-FPS floor.")
+
+    try:
+        contract_payload = json.loads(state_contract.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        contract_payload = None
+        failures.append(f"Recording source-state contract is unreadable: {exc}")
+    contract_failures, contract_ids = reference_state_contract_failures(
+        contract_payload,
+        expected_reference_id=expected_reference_id,
+        expected_primary_url=source_url or None,
+    )
+    failures.extend(contract_failures)
+    state_binding = payload.get("state_contract")
+    if (
+        not isinstance(state_binding, dict)
+        or set(state_binding) != {"file", "sha256"}
+        or state_binding.get("file") != state_contract.name
+        or state_binding.get("sha256") != state_contract_sha256
+        or file_sha256(state_contract)[1] != state_contract_sha256
+    ):
+        failures.append("Recording does not bind the exact dossier source-state contract bytes.")
+
+    expected_artifacts: list[dict[str, object]] = []
+    recording_size = recording.stat().st_size
+    expected_artifacts.append(
+        {
+            "kind": "recording",
+            "profile": None,
+            "file": recording.name,
+            "bytes": recording_size,
+            "sha256": file_sha256(recording)[1],
+        }
+    )
+    profiles = payload.get("profiles")
+    expected_dimensions = {
+        "wide": (1440, 900),
+        "narrow": (390, 844),
+    }
+    if not isinstance(profiles, dict) or set(profiles) != set(expected_dimensions):
+        failures.append("Recording must contain exact wide and narrow profile records.")
+        profiles = {}
+    final_urls = payload.get("final_urls")
+    if not isinstance(final_urls, dict) or set(final_urls) != set(expected_dimensions):
+        failures.append("Recording final_urls must contain exact wide and narrow entries.")
+        final_urls = {}
+
+    def add_artifact(value: object, label: str) -> None:
+        projection = _recording_artifact_projection(value)
+        if projection is None:
+            failures.append(f"{label} artifact metadata is incomplete.")
+            return
+        expected_artifacts.append(projection)
+
+    for profile_name, dimensions in expected_dimensions.items():
+        profile = profiles.get(profile_name)
+        expected_profile_keys = {
+            "profile", "viewport", "duration_s", "fps", "video", "frames",
+            "events", "cursor_path", "difference_signal", "video_elements",
+            "navigations", "scroll_traversals", "interaction_census",
+            "rendered_qa", "coverage",
+        }
+        if not isinstance(profile, dict) or set(profile) != expected_profile_keys:
+            failures.append(f"Recording {profile_name} profile has an unsupported shape.")
+            continue
+        if profile.get("profile") != profile_name:
+            failures.append(f"Recording {profile_name} profile identity is wrong.")
+        viewport = profile.get("viewport")
+        if viewport != {
+            "name": profile_name,
+            "width": dimensions[0],
+            "height": dimensions[1],
+        }:
+            failures.append(f"Recording {profile_name} viewport is not the packaged profile.")
+        if (
+            not isinstance(profile.get("duration_s"), (int, float))
+            or profile["duration_s"] < REFERENCE_RECORDING_MINIMUM_SECONDS
+            or (
+                isinstance(minimum_duration, (int, float))
+                and profile["duration_s"] < minimum_duration
+            )
+        ):
+            failures.append(f"Recording {profile_name} did not meet its duration floor.")
+        if profile.get("fps") != fps:
+            failures.append(f"Recording {profile_name} FPS differs from the record.")
+        try:
+            final_url = canonical_route_url(str(final_urls.get(profile_name) or ""))
+        except ValueError:
+            final_url = ""
+        if final_url != source_url or final_urls.get(profile_name) != final_url:
+            failures.append(f"Recording {profile_name} did not settle on the exact source URL.")
+
+        coverage = profile.get("coverage")
+        expected_coverage_keys = {
+            "interactive_targets_discovered", "interactive_targets_hovered",
+            "missing_interactive_targets", "hover_failures",
+            "internal_pages_discovered", "internal_pages_visited",
+            "internal_pages_discovered_urls", "internal_pages_visited_urls",
+            "missing_internal_pages", "states_required", "states_visited",
+            "missing_states", "incomplete_scroll_traversals",
+            "state_inventories", "unreconciled_states",
+            "duration_floor_met", "complete",
+        }
+        if not isinstance(coverage, dict) or set(coverage) != expected_coverage_keys:
+            failures.append(f"Recording {profile_name} coverage has an unsupported shape.")
+        else:
+            discovered = coverage.get("interactive_targets_discovered")
+            hovered = coverage.get("interactive_targets_hovered")
+            pages_discovered = coverage.get("internal_pages_discovered")
+            pages_visited = coverage.get("internal_pages_visited")
+            if (
+                type(discovered) is not int
+                or type(hovered) is not int
+                or discovered != hovered
+                or type(pages_discovered) is not int
+                or type(pages_visited) is not int
+                or pages_discovered != pages_visited
+                or pages_discovered < 1
+                or not isinstance(coverage.get("internal_pages_discovered_urls"), list)
+                or coverage.get("internal_pages_discovered_urls")
+                != sorted(set(coverage.get("internal_pages_discovered_urls", [])))
+                or coverage.get("internal_pages_visited_urls")
+                != coverage.get("internal_pages_discovered_urls")
+                or len(coverage.get("internal_pages_discovered_urls", []))
+                != pages_discovered
+                or coverage.get("missing_interactive_targets") != []
+                or coverage.get("hover_failures") != {}
+                or coverage.get("missing_internal_pages") != []
+                or set(coverage.get("states_required") or []) != contract_ids
+                or set(coverage.get("states_visited") or []) != contract_ids
+                or coverage.get("missing_states") != []
+                or coverage.get("incomplete_scroll_traversals") != []
+                or coverage.get("unreconciled_states") != []
+                or coverage.get("duration_floor_met") is not True
+                or coverage.get("complete") is not True
+            ):
+                failures.append(
+                    f"Recording {profile_name} coverage does not reconcile every target/page/state/surface."
+                )
+            inventories = coverage.get("state_inventories")
+            if (
+                not isinstance(inventories, list)
+                or len(inventories) != pages_discovered
+                or any(
+                    not isinstance(inventory, dict)
+                    or inventory.get("url")
+                    not in coverage.get("internal_pages_discovered_urls", [])
+                    or inventory.get("complete") is not True
+                    or inventory.get("unreconciled") != []
+                    for inventory in inventories
+                )
+            ):
+                failures.append(
+                    f"Recording {profile_name} inferred state inventory is incomplete."
+                )
+
+        navigations = profile.get("navigations")
+        if not isinstance(navigations, list) or not navigations:
+            failures.append(f"Recording {profile_name} has no exact navigation ledger.")
+        else:
+            for navigation in navigations:
+                if (
+                    not isinstance(navigation, dict)
+                    or navigation.get("requested_normalized_url")
+                    != navigation.get("final_normalized_url")
+                    or navigation.get("response_final_normalized_url")
+                    != navigation.get("final_normalized_url")
+                    or type(navigation.get("final_status")) is not int
+                    or not 200 <= navigation["final_status"] < 300
+                    or navigation.get("redirect_count") != 0
+                ):
+                    failures.append(
+                        f"Recording {profile_name} contains a redirect, rewrite, or failed navigation."
+                    )
+                    break
+        scrolls = profile.get("scroll_traversals")
+        if (
+            not isinstance(scrolls, list)
+            or not scrolls
+            or any(
+                not isinstance(item, dict)
+                or item.get("complete") is not True
+                or not isinstance(item.get("surfaces"), list)
+                or any(
+                    not isinstance(surface, dict)
+                    or surface.get("complete") is not True
+                    for surface in item.get("surfaces", [])
+                )
+                for item in scrolls
+            )
+        ):
+            failures.append(f"Recording {profile_name} has incomplete scroll-surface traversal.")
+        if not isinstance(profile.get("video_elements"), list):
+            failures.append(f"Recording {profile_name} ambient-video inventory is missing.")
+
+        add_artifact(profile.get("video"), f"Recording {profile_name} video")
+        add_artifact(profile.get("cursor_path"), f"Recording {profile_name} cursor path")
+        add_artifact(
+            profile.get("difference_signal"),
+            f"Recording {profile_name} difference signal",
+        )
+        frames = profile.get("frames")
+        if (
+            not isinstance(frames, dict)
+            or set(frames) != {"count", "directory", "files"}
+            or type(frames.get("count")) is not int
+            or not isinstance(frames.get("files"), list)
+            or frames.get("count") != len(frames.get("files", []))
+            or frames.get("count", 0)
+            < math.floor(float(profile.get("duration_s") or 0) * float(fps or 0) * 0.9)
+        ):
+            failures.append(f"Recording {profile_name} frame inventory is incomplete.")
+        else:
+            for frame in frames["files"]:
+                add_artifact(frame, f"Recording {profile_name} frame")
+        events = profile.get("events")
+        if (
+            not isinstance(events, dict)
+            or set(events) != {"count", "directory", "files", "index", "quiet"}
+            or type(events.get("count")) is not int
+            or not isinstance(events.get("files"), list)
+            or events.get("count") != len(events.get("files", []))
+            or not isinstance(events.get("quiet"), list)
+        ):
+            failures.append(f"Recording {profile_name} event inventory is incomplete.")
+        else:
+            for event_index, event in enumerate(events["files"], start=1):
+                if (
+                    not isinstance(event, dict)
+                    or event.get("id") != f"e{event_index:04d}"
+                ):
+                    failures.append(f"Recording {profile_name} event IDs are not contiguous.")
+                else:
+                    event_ids.add((profile_name, event_index))
+                if (
+                    not isinstance(event, dict)
+                    or not isinstance(event.get("file"), str)
+                    or type(event.get("bytes")) is not int
+                    or not isinstance(event.get("sha256"), str)
+                ):
+                    failures.append(f"Recording {profile_name} event artifact is incomplete.")
+                else:
+                    expected_artifacts.append(
+                        {
+                            "kind": "event-sheet",
+                            "profile": profile_name,
+                            "file": event["file"],
+                            "bytes": event["bytes"],
+                            "sha256": event["sha256"],
+                        }
+                    )
+            add_artifact(events.get("index"), f"Recording {profile_name} event index")
+
+    captures_by_viewport = payload.get("captures_by_viewport")
+    discovery_metadata = payload.get("discovery_metadata")
+    quality_observations = payload.get("quality_observations")
+    interaction_census_by_viewport = payload.get("interaction_census_by_viewport")
+    rendered_qa_by_viewport = payload.get("rendered_qa_by_viewport")
+    ledger_allowed_artifacts = {
+        (entry.get("file"), entry.get("bytes"), entry.get("sha256"))
+        for entry in (
+            ledger_payload.get("artifacts", [])
+            if isinstance(ledger_payload, dict)
+            else []
+        )
+        if isinstance(entry, dict)
+        and isinstance(entry.get("file"), str)
+        and type(entry.get("bytes")) is int
+        and isinstance(entry.get("sha256"), str)
+    }
+    if (
+        not isinstance(captures_by_viewport, dict)
+        or set(captures_by_viewport) != set(expected_dimensions)
+        or not isinstance(discovery_metadata, dict)
+        or set(discovery_metadata) != set(expected_dimensions)
+        or not isinstance(quality_observations, list)
+        or len(quality_observations) != 2
+        or not isinstance(interaction_census_by_viewport, dict)
+        or set(interaction_census_by_viewport) != set(expected_dimensions)
+        or not isinstance(rendered_qa_by_viewport, dict)
+        or set(rendered_qa_by_viewport) != set(expected_dimensions)
+    ):
+        failures.append("Recording generated selection observations are incomplete.")
+    else:
+        for profile_name in expected_dimensions:
+            profile = profiles.get(profile_name)
+            if not isinstance(profile, dict):
+                continue
+            profile_coverage = profile.get("coverage", {})
+            frames = profile.get("frames", {})
+            first_frame = (
+                frames.get("files", [None])[0]
+                if isinstance(frames, dict) and frames.get("files")
+                else None
+            )
+            expected_capture = (
+                {
+                    "file": first_frame.get("file"),
+                    "bytes": first_frame.get("bytes"),
+                    "sha256": first_frame.get("sha256"),
+                }
+                if isinstance(first_frame, dict)
+                else None
+            )
+            if captures_by_viewport.get(profile_name) != expected_capture:
+                failures.append(
+                    f"Recording {profile_name} generated capture does not bind its first frame."
+                )
+            discovery = discovery_metadata.get(profile_name)
+            if discovery != {
+                "discovered_urls": profile_coverage.get("internal_pages_discovered_urls"),
+                "visited_urls": profile_coverage.get("internal_pages_visited_urls"),
+                "states_required": profile_coverage.get("states_required"),
+                "states_visited": profile_coverage.get("states_visited"),
+            }:
+                failures.append(
+                    f"Recording {profile_name} generated discovery metadata differs from coverage."
+                )
+            expected_quality = {
+                "profile": profile_name,
+                "pages_observed": profile_coverage.get("internal_pages_visited"),
+                "states_observed": len(profile_coverage.get("states_visited", [])),
+                "hover_targets_observed": profile_coverage.get("interactive_targets_hovered"),
+                "event_sheets": profile.get("events", {}).get("count")
+                if isinstance(profile.get("events"), dict) else None,
+                "video_elements": len(profile.get("video_elements", []))
+                if isinstance(profile.get("video_elements"), list) else None,
+            }
+            matches = [
+                row for row in quality_observations
+                if isinstance(row, dict) and row.get("profile") == profile_name
+            ]
+            if matches != [expected_quality]:
+                failures.append(
+                    f"Recording {profile_name} generated quality observations differ from captured coverage."
+                )
+            interaction = interaction_census_by_viewport.get(profile_name)
+            if profile.get("interaction_census") != interaction:
+                failures.append(
+                    f"Recording {profile_name} interaction census differs from its top-level binding."
+                )
+            failures.extend(
+                f"Recording {problem}"
+                for problem in interaction_census_failures(
+                    interaction,
+                    expected_profile=profile_name,
+                    expected_state_ids=contract_ids,
+                    expected_urls=set(
+                        profile_coverage.get("internal_pages_visited_urls", [])
+                    ),
+                    artifact_root=ledger.parent,
+                    allowed_artifacts=ledger_allowed_artifacts,
+                )
+            )
+            rendered_qa = rendered_qa_by_viewport.get(profile_name)
+            if profile.get("rendered_qa") != rendered_qa:
+                failures.append(
+                    f"Recording {profile_name} rendered QA differs from its top-level binding."
+                )
+            failures.extend(
+                f"Recording {problem}"
+                for problem in source_rendered_qa_failures(
+                    rendered_qa,
+                    expected_profile=profile_name,
+                    expected_urls=set(
+                        profile_coverage.get("internal_pages_visited_urls", [])
+                    ),
+                    artifact_root=ledger.parent,
+                    allowed_artifacts=ledger_allowed_artifacts,
+                    interaction_census=interaction,
+                )
+            )
+    if payload.get("defect_observations") != []:
+        failures.append(
+            "A completed recording cannot hide or carry unresolved generated coverage defects."
+        )
+    referenced_interaction_artifacts: set[tuple[str, int, str]] = set()
+
+    def collect_interaction_artifacts(value: object) -> None:
+        if isinstance(value, dict):
+            if (
+                isinstance(value.get("file"), str)
+                and "-interaction-evidence/" in value["file"]
+                and type(value.get("bytes")) is int
+                and isinstance(value.get("sha256"), str)
+            ):
+                referenced_interaction_artifacts.add(
+                    (value["file"], value["bytes"], value["sha256"])
+                )
+            for child in value.values():
+                collect_interaction_artifacts(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect_interaction_artifacts(child)
+
+    collect_interaction_artifacts(interaction_census_by_viewport)
+    collect_interaction_artifacts(rendered_qa_by_viewport)
+    ledger_interaction = [
+        dict(entry)
+        for entry in (
+            ledger_payload.get("artifacts", [])
+            if isinstance(ledger_payload, dict)
+            else []
+        )
+        if isinstance(entry, dict) and entry.get("kind") == "interaction-frame"
+    ]
+    ledger_interaction_keys = {
+        (entry.get("file"), entry.get("bytes"), entry.get("sha256"))
+        for entry in ledger_interaction
+    }
+    if ledger_interaction_keys != referenced_interaction_artifacts:
+        failures.append(
+            "Recording interaction-frame ledger does not equal every generated census evidence frame."
+        )
+    expected_artifacts.extend(ledger_interaction)
+
+    outer_coverage = payload.get("coverage")
+    if outer_coverage != {
+        "wide_complete": True,
+        "narrow_complete": True,
+        "complete": True,
+    }:
+        failures.append("Recording top-level coverage does not prove both profiles complete.")
+    if len(event_ids) < REFERENCE_RECORDING_MINIMUM_EVENTS:
+        failures.append(
+            f"Recording has {len(event_ids)} events; at least "
+            f"{REFERENCE_RECORDING_MINIMUM_EVENTS} observed changes are required for a motion signature."
+        )
+
+    expected_ledger_keys = {
+        "schema_version", "algorithm", "recording", "artifacts", "sha256"
+    }
+    if (
+        not isinstance(ledger_payload, dict)
+        or set(ledger_payload) != expected_ledger_keys
+        or ledger_payload.get("schema_version") != 1
+        or ledger_payload.get("algorithm") != "sha256"
+        or ledger_payload.get("recording") != recording.name
+        or not isinstance(ledger_payload.get("artifacts"), list)
+    ):
+        failures.append("Recording artifact ledger has an unsupported schema.")
+        return failures, event_ids
+    ledger_core = {
+        "schema_version": 1,
+        "algorithm": "sha256",
+        "recording": recording.name,
+        "artifacts": ledger_payload["artifacts"],
+    }
+    if ledger_payload.get("sha256") != canonical_json_sha256(ledger_core):
+        failures.append("Recording artifact ledger canonical hash is invalid.")
+    actual_artifacts: list[dict[str, object]] = []
+    seen_files: set[str] = set()
+    for index, entry in enumerate(ledger_payload["artifacts"], start=1):
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"kind", "profile", "file", "bytes", "sha256"}
+        ):
+            failures.append(f"Recording artifact ledger row {index} has an unsupported shape.")
+            continue
+        relative = entry.get("file")
+        if not isinstance(relative, str) or relative in seen_files:
+            failures.append(f"Recording artifact ledger row {index} has a duplicate/invalid path.")
+            continue
+        seen_files.add(relative)
+        parts = PurePosixPath(relative)
+        artifact = (ledger.parent / parts).resolve()
+        if (
+            parts.is_absolute()
+            or ".." in parts.parts
+            or not is_within(artifact, ledger.parent.resolve())
+            or not artifact.is_file()
+            or type(entry.get("bytes")) is not int
+            or artifact.stat().st_size != entry.get("bytes")
+            or not isinstance(entry.get("sha256"), str)
+            or SHA256_HEX.fullmatch(entry["sha256"]) is None
+            or file_sha256(artifact)[1] != entry.get("sha256")
+        ):
+            failures.append(f"Recording artifact ledger row {index} bytes are missing or drifted.")
+        if parts.suffix.casefold() == ".png":
+            try:
+                verify_png_artifact(artifact)
+            except StateError as exc:
+                failures.append(f"Recording artifact ledger row {index} PNG is invalid: {exc}")
+        actual_artifacts.append(dict(entry))
+    expected_artifacts.sort(key=lambda entry: str(entry.get("file")))
+    if actual_artifacts != expected_artifacts:
+        failures.append(
+            "Recording artifact ledger is not the exact recording/video/frame/event/cursor/difference artifact set."
+        )
+    return failures, event_ids
+
+
+def interaction_census_section_failures(
+    section: str,
+    *,
+    project: Path,
+    record_path: Path,
+    selected_ranks: set[int],
+    observation_by_rank: dict[int, str],
+) -> list[str]:
+    """Bind every human interaction row to observer and recorder pixels."""
+
+    failures: list[str] = []
+    if not non_placeholder(section):
+        return [
+            "Reference dossier Interaction census is missing; selected references need generated target/input evidence."
+        ]
+    blocks: dict[int, str] = {}
+    for match in re.finditer(
+        r"^###\s+strong-(\d+)\s+interaction census\s*$",
+        section,
+        re.MULTILINE | re.IGNORECASE,
+    ):
+        start = match.end()
+        nxt = re.search(r"^###\s+", section[start:], re.MULTILINE)
+        end = start + nxt.start() if nxt else len(section)
+        rank = int(match.group(1))
+        if rank in blocks:
+            failures.append(f"Interaction census repeats strong-{rank}.")
+        blocks[rank] = section[start:end]
+    if set(blocks) != selected_ranks:
+        missing = sorted(selected_ranks - set(blocks))
+        extra = sorted(set(blocks) - selected_ranks)
+        if missing:
+            failures.append(
+                "Interaction census is missing selected rank(s): "
+                + ", ".join(str(rank) for rank in missing)
+            )
+        if extra:
+            failures.append(
+                "Interaction census contains unselected rank(s): "
+                + ", ".join(str(rank) for rank in extra)
+            )
+
+    def flatten(value: object) -> dict[tuple[str, str, str, str, str, int], dict[str, object]]:
+        rows: dict[tuple[str, str, str, str, str, int], dict[str, object]] = {}
+        if not isinstance(value, dict):
+            return rows
+        occurrences: dict[tuple[str, str, str, str, str], int] = {}
+
+        def add(
+            *,
+            profile: str,
+            page: str,
+            target_id: str,
+            kind: str,
+            repeat_class: str,
+            repeat_index: int,
+            repeat_count: int,
+            input_kind: str,
+            source_state_id: str | None,
+            before: object,
+            after: object,
+            settled: object,
+            behavior: str,
+            evidence: object,
+            disposition: str,
+        ) -> None:
+            base = (profile, page, target_id, input_kind, source_state_id or "none")
+            occurrence = occurrences.get(base, 0) + 1
+            occurrences[base] = occurrence
+            rows[(*base, occurrence)] = {
+                "profile": profile,
+                "page": page,
+                "target_id": target_id,
+                "kind": kind,
+                "repeat_class": repeat_class,
+                "repeat_index": repeat_index,
+                "repeat_count": repeat_count,
+                "input": input_kind,
+                "source_state_id": source_state_id,
+                "before": before,
+                "after": after,
+                "settled": settled,
+                "behavior": behavior,
+                "evidence": evidence,
+                "disposition": disposition,
+                "occurrence": occurrence,
+            }
+
+        for profile in ("wide", "narrow"):
+            census = value.get(profile)
+            if not isinstance(census, dict):
+                continue
+            for page in census.get("pages", []):
+                if not isinstance(page, dict):
+                    continue
+                page_url = str(page.get("url") or "")
+                for target in page.get("targets", []):
+                    if not isinstance(target, dict):
+                        continue
+                    for input_record in target.get("inputs", []):
+                        if not isinstance(input_record, dict):
+                            continue
+                        raw_disposition = input_record.get("disposition")
+                        disposition = (
+                            "exercised"
+                            if raw_disposition == "sourceable-observed-behavior"
+                            else "quiet"
+                            if raw_disposition == "observed-quiet"
+                            else "blocked hand-off"
+                        )
+                        add(
+                            profile=profile,
+                            page=page_url,
+                            target_id=str(target.get("target_id") or ""),
+                            kind=str(target.get("kind") or ""),
+                            repeat_class=str(target.get("repeat_class") or ""),
+                            repeat_index=int(target.get("repeat_index") or 0),
+                            repeat_count=int(target.get("repeat_count") or 0),
+                            input_kind=str(input_record.get("input_kind") or ""),
+                            source_state_id=(
+                                str(input_record["source_state_id"])
+                                if input_record.get("source_state_id") is not None
+                                else None
+                            ),
+                            before=input_record.get("before_sha256"),
+                            after=input_record.get("after_sha256"),
+                            settled=input_record.get("settled_sha256"),
+                            behavior=str(input_record.get("behavior") or ""),
+                            evidence=input_record.get("evidence"),
+                            disposition=disposition,
+                        )
+            for state in census.get("page_states", []):
+                if not isinstance(state, dict):
+                    continue
+                state_id = str(state.get("source_state_id") or "")
+                trigger = state.get("trigger")
+                trigger_evidence = state.get("trigger_evidence")
+                if not isinstance(trigger, dict) or not isinstance(trigger_evidence, dict):
+                    continue
+                changed = trigger_evidence.get("changed_properties")
+                disposition = "quiet" if not changed else "exercised"
+                add(
+                    profile=profile,
+                    page=str(state.get("page_url") or ""),
+                    target_id="page-state-" + hashlib.sha256(
+                        f"{profile}\0{state.get('page_url')}\0{state_id}".encode("utf-8")
+                    ).hexdigest()[:16],
+                    kind=str(state.get("kind") or "") + "-page-state",
+                    repeat_class="page-state",
+                    repeat_index=1,
+                    repeat_count=1,
+                    input_kind=str(trigger.get("type") or ""),
+                    source_state_id=state_id,
+                    before=trigger_evidence.get("before_sha256"),
+                    after=trigger_evidence.get("after_sha256"),
+                    settled=trigger_evidence.get("settled_sha256"),
+                    behavior=str(trigger_evidence.get("behavior") or ""),
+                    evidence=state.get("evidence"),
+                    disposition=disposition,
+                )
+            for pointer in census.get("pointer_follow", []):
+                if not isinstance(pointer, dict) or not isinstance(pointer.get("evidence"), dict):
+                    continue
+                evidence = pointer["evidence"]
+                add(
+                    profile=profile,
+                    page=str(pointer.get("page_url") or ""),
+                    target_id=str(pointer.get("target_id") or ""),
+                    kind="pointer-follow",
+                    repeat_class="pointer-follow",
+                    repeat_index=1,
+                    repeat_count=1,
+                    input_kind="pointer-follow",
+                    source_state_id=None,
+                    before=(evidence.get("before") or {}).get("sha256")
+                    if isinstance(evidence.get("before"), dict) else None,
+                    after=(evidence.get("after") or {}).get("sha256")
+                    if isinstance(evidence.get("after"), dict) else None,
+                    settled=(evidence.get("settled") or {}).get("sha256")
+                    if isinstance(evidence.get("settled"), dict) else None,
+                    behavior=(
+                        f"moved_px={pointer.get('moved_px')}, "
+                        f"return_error_px={pointer.get('return_error_px')}, "
+                        f"pointer_correlation={pointer.get('pointer_correlation')}"
+                    ),
+                    evidence=evidence,
+                    disposition="exercised",
+                )
+        return rows
+
+    def evidence_binding_matches(
+        binding: str,
+        metadata: object,
+        *,
+        root: Path,
+        label: str,
+    ) -> list[str]:
+        artifact, binding_failures = bound_artifact(
+            binding,
+            project=project,
+            record_path=record_path,
+            label=label,
+        )
+        local = list(binding_failures)
+        if not isinstance(metadata, dict) or artifact is None:
+            return [*local, f"{label} does not map generated artifact metadata."]
+        expected = (root / PurePosixPath(str(metadata.get("file") or ""))).resolve()
+        if (
+            artifact.resolve() != expected
+            or type(metadata.get("bytes")) is not int
+            or not expected.is_file()
+            or expected.stat().st_size != metadata.get("bytes")
+            or file_sha256(expected)[1] != metadata.get("sha256")
+        ):
+            local.append(f"{label} bytes do not match generated census evidence.")
+        return local
+
+    for rank in sorted(selected_ranks):
+        block = blocks.get(rank)
+        if block is None:
+            continue
+        block_label = f"Reference dossier Interaction census strong-{rank}"
+        observation_cell = (markdown_label_value(block, "Observation") or "").strip()
+        recording_cell = (markdown_label_value(block, "Recording") or "").strip()
+        ledger_cell = (
+            markdown_label_value(block, "Recording artifact ledger") or ""
+        ).strip()
+        if observation_cell != observation_by_rank.get(rank, ""):
+            failures.append(
+                f"{block_label} Observation must copy the exact strong-row observation binding."
+            )
+        observation, observation_binding_failures = bound_artifact(
+            observation_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} observation",
+        )
+        recording, recording_binding_failures = bound_artifact(
+            recording_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} recording",
+        )
+        ledger, ledger_binding_failures = bound_artifact(
+            ledger_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} recording artifact ledger",
+        )
+        failures.extend(observation_binding_failures)
+        failures.extend(recording_binding_failures)
+        failures.extend(ledger_binding_failures)
+        if observation is None or recording is None or ledger is None:
+            continue
+        expected_id = f"strong-{rank}"
+        if (
+            recording.resolve()
+            != (project / ".design-dna" / "references" / f"{expected_id}-recording.json").resolve()
+            or ledger.resolve()
+            != (project / ".design-dna" / "references" / f"{expected_id}-artifacts.json").resolve()
+        ):
+            failures.append(f"{block_label} recording/ledger paths are not canonical.")
+        try:
+            observed = json.loads(observation.read_text(encoding="utf-8"))
+            recorded = json.loads(recording.read_text(encoding="utf-8"))
+            ledger_payload = json.loads(ledger.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"{block_label} generated evidence is unreadable: {exc}")
+            continue
+        state_binding = recorded.get("state_contract") if isinstance(recorded, dict) else None
+        state_contract = (
+            recording.parent / PurePosixPath(str(state_binding.get("file") or ""))
+        ).resolve() if isinstance(state_binding, dict) else Path()
+        recording_problems, _events = reference_recording_failures(
+            recorded,
+            recording=recording,
+            ledger_payload=ledger_payload,
+            ledger=ledger,
+            state_contract=state_contract,
+            state_contract_sha256=(
+                str(state_binding.get("sha256")) if isinstance(state_binding, dict) else ""
+            ),
+            expected_reference_id=expected_id,
+        )
+        failures.extend(f"{block_label}: {problem}" for problem in recording_problems)
+        if (
+            not isinstance(observed, dict)
+            or observed.get("id") != expected_id
+            or recorded.get("id") != expected_id
+            or observed.get("url") != recorded.get("url")
+            or observed.get("state_contract") != recorded.get("state_contract")
+        ):
+            failures.append(f"{block_label} observer and recorder reference bindings differ.")
+            continue
+        observer_rows = flatten(observed.get("interaction_census_by_viewport"))
+        recorder_rows = flatten(recorded.get("interaction_census_by_viewport"))
+        if set(observer_rows) != set(recorder_rows):
+            failures.append(
+                f"{block_label} observer and recorder target/page/input inventories differ."
+            )
+        expected_keys = set(observer_rows) & set(recorder_rows)
+        headers, table_rows = markdown_first_table(block)
+        if headers != REFERENCE_INTERACTION_CENSUS_HEADERS or not table_rows:
+            failures.append(f"{block_label} needs the exact generated-interaction table.")
+            continue
+        seen: set[tuple[str, str, str, str, str, int]] = set()
+        for row_number, row in enumerate(table_rows, start=1):
+            row_label = f"{block_label} row {row_number}"
+            if len(row) != len(REFERENCE_INTERACTION_CENSUS_HEADERS) or any(
+                not non_placeholder(cell) for cell in row
+            ):
+                failures.append(f"{row_label} is incomplete.")
+                continue
+            identity_fields = semicolon_fields(row[0])
+            kind_fields = semicolon_fields(row[1])
+            input_fields = semicolon_fields(row[2])
+            before_fields = semicolon_fields(row[3])
+            after_fields = semicolon_fields(row[4])
+            evidence_fields = semicolon_fields(row[5])
+            if set(identity_fields) != {"target_id", "profile", "page", "occurrence"}:
+                failures.append(f"{row_label} target identity has an unsupported shape.")
+                continue
+            try:
+                occurrence = int(identity_fields.get("occurrence", ""))
+            except ValueError:
+                occurrence = 0
+            key = (
+                identity_fields.get("profile", ""),
+                identity_fields.get("page", ""),
+                identity_fields.get("target_id", ""),
+                input_fields.get("input", ""),
+                input_fields.get("source_state_id", "none"),
+                occurrence,
+            )
+            if key not in expected_keys or key in seen:
+                failures.append(f"{row_label} does not name one unique generated target/input occurrence.")
+                continue
+            seen.add(key)
+            observer_row = observer_rows[key]
+            recorder_row = recorder_rows[key]
+            expected_kind = {
+                "kind": observer_row["kind"],
+                "repeat_class_sha256": hashlib.sha256(
+                    str(observer_row["repeat_class"]).encode("utf-8")
+                ).hexdigest(),
+                "repeat_index": str(observer_row["repeat_index"]),
+                "repeat_count": str(observer_row["repeat_count"]),
+            }
+            if kind_fields != expected_kind:
+                failures.append(f"{row_label} kind/repeat identity differs from generated census.")
+            if input_fields != {
+                "input": observer_row["input"],
+                "source_state_id": observer_row["source_state_id"] or "none",
+            }:
+                failures.append(f"{row_label} input/source-state differs from generated census.")
+            expected_before = {
+                "observer_sha256": str(observer_row["before"] or "null"),
+                "recorder_sha256": str(recorder_row["before"] or "null"),
+            }
+            if before_fields != expected_before:
+                failures.append(f"{row_label} before hashes differ from generated census.")
+            expected_after = {
+                "observer_after_sha256": str(observer_row["after"] or "null"),
+                "observer_settled_sha256": str(observer_row["settled"] or "null"),
+                "recorder_after_sha256": str(recorder_row["after"] or "null"),
+                "recorder_settled_sha256": str(recorder_row["settled"] or "null"),
+                "observer_behavior": str(observer_row["behavior"]),
+                "recorder_behavior": str(recorder_row["behavior"]),
+            }
+            if after_fields != expected_after:
+                failures.append(f"{row_label} after/settled behavior differs from generated census.")
+            if row[6].strip().casefold() != observer_row["disposition"] or (
+                recorder_row["disposition"] != observer_row["disposition"]
+            ):
+                failures.append(f"{row_label} disposition differs between generated runs.")
+            if observer_row["disposition"] == "blocked hand-off":
+                if evidence_fields != {
+                    "observer": "blocked",
+                    "recorder": "blocked",
+                    "ledger": ledger_cell,
+                }:
+                    failures.append(f"{row_label} blocked evidence/handoff binding is invalid.")
+            else:
+                if set(evidence_fields) != {
+                    "observer_before", "observer_after", "observer_settled",
+                    "recorder_before", "recorder_after", "recorder_settled",
+                    "ledger",
+                }:
+                    failures.append(f"{row_label} evidence bindings have an unsupported shape.")
+                else:
+                    observer_evidence = observer_row.get("evidence")
+                    recorder_evidence = recorder_row.get("evidence")
+                    for phase in ("before", "after", "settled"):
+                        failures.extend(
+                            evidence_binding_matches(
+                                evidence_fields[f"observer_{phase}"],
+                                observer_evidence.get(phase)
+                                if isinstance(observer_evidence, dict) else None,
+                                root=observation.parent,
+                                label=f"{row_label} observer {phase}",
+                            )
+                        )
+                        failures.extend(
+                            evidence_binding_matches(
+                                evidence_fields[f"recorder_{phase}"],
+                                recorder_evidence.get(phase)
+                                if isinstance(recorder_evidence, dict) else None,
+                                root=recording.parent,
+                                label=f"{row_label} recorder {phase}",
+                            )
+                        )
+                    if evidence_fields.get("ledger") != ledger_cell:
+                        failures.append(f"{row_label} does not bind the exact recording artifact ledger.")
+        if seen != expected_keys:
+            failures.append(
+                f"{block_label} table omits or adds generated target/page/input rows."
+            )
+    return failures
+
+
 def sequence_read_failures(
     section: str,
     component_section: str,
@@ -6935,8 +13119,13 @@ def sequence_read_failures(
     project: Path,
     record_path: Path,
     selected_ranks: set[int],
+    kind_by_rank: dict[str, str],
+    wide_capture_by_rank: dict[int, str],
+    narrow_capture_by_rank: dict[int, str],
+    styles_by_rank: dict[int, str],
+    observation_by_rank: dict[int, str],
 ) -> list[str]:
-    """Every selected reference was recorded, and every sheet was narrated.
+    """Require complete motion reads or explicit static-evidence blocks.
 
     The watching is the gate. It is enforced by count: the recording says how
     many sheets it produced, and the read has to carry a line for each one.
@@ -6955,119 +13144,214 @@ def sequence_read_failures(
             "strong row is written; a reference that was measured and not "
             "watched reaches the build as a still."
         ]
-    blocks: dict[int, str] = {}
-    for match in re.finditer(r"^###\s+strong-(\d+)\s*$", section, re.MULTILINE):
+    blocks: dict[int, tuple[str, str]] = {}
+    for match in re.finditer(
+        r"^###\s+strong-(\d+)(?:\s+(static evidence))?\s*$",
+        section,
+        re.MULTILINE,
+    ):
         start = match.end()
         nxt = re.search(r"^###\s+", section[start:], re.MULTILINE)
         end = start + nxt.start() if nxt else len(section)
-        blocks[int(match.group(1))] = section[start:end]
+        blocks[int(match.group(1))] = (
+            "static" if match.group(2) else "motion",
+            section[start:end],
+        )
 
     for rank in sorted(selected_ranks):
         block_label = f"{label} strong-{rank}"
-        block = blocks.get(rank)
-        if block is None:
-            failures.append(f"{block_label} has no `### strong-{rank}` block.")
+        block_entry = blocks.get(rank)
+        expected_kind = kind_by_rank.get(str(rank), "")
+        if block_entry is None:
+            suffix = " static evidence" if expected_kind == "static" else ""
+            failures.append(
+                f"{block_label} has no `### strong-{rank}{suffix}` block."
+            )
             continue
+        block_kind, block = block_entry
+        if block_kind != expected_kind:
+            failures.append(
+                f"{block_label} uses a {block_kind} block but the strong row "
+                f"declares {expected_kind or 'no valid'} evidence."
+            )
+            continue
+        if expected_kind == "static":
+            required_static = {
+                "Wide capture": wide_capture_by_rank.get(rank, ""),
+                "Narrow capture": narrow_capture_by_rank.get(rank, ""),
+                "Measured styles": styles_by_rank.get(rank, ""),
+                "Structure observation": observation_by_rank.get(rank, ""),
+            }
+            for field, expected in required_static.items():
+                actual = (markdown_label_value(block, field) or "").strip()
+                if not non_placeholder(actual) or actual != expected:
+                    failures.append(
+                        f"{block_label} {field!r} must copy the exact bound "
+                        "artifact from its strong row."
+                    )
+            relationship = markdown_label_value(
+                block, "Dominant static relationship"
+            ) or ""
+            if (
+                len(" ".join(relationship.split())) < 80
+                or REFERENCE_STATIC_SIGNATURE_TERMS.search(relationship) is None
+            ):
+                failures.append(
+                    f"{block_label} must explain the dominant static composition, "
+                    "type, media, color, hierarchy, or spatial relationship."
+                )
+            continue
+        state_contract_cell = markdown_label_value(block, "State contract")
         recording_cell = markdown_label_value(block, "Recording")
+        ledger_cell = markdown_label_value(block, "Recording artifact ledger")
         read_cell = markdown_label_value(block, "Read")
         sheets_cell = markdown_label_value(block, "Signature events") or markdown_label_value(
             block, "Signature sheets"
         )
-        if not non_placeholder(recording_cell) or not non_placeholder(read_cell):
+        if (
+            not non_placeholder(state_contract_cell)
+            or not non_placeholder(recording_cell)
+            or not non_placeholder(ledger_cell)
+            or not non_placeholder(read_cell)
+        ):
             failures.append(
-                f"{block_label} must bind `- Recording:` and `- Read:` as "
-                "`path plus sha256:<hex>`."
+                f"{block_label} must hash-bind `State contract`, `Recording`, "
+                "`Recording artifact ledger`, and `Read`."
             )
             continue
+        state_contract, state_contract_failures = bound_artifact(
+            state_contract_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} state contract",
+        )
         recording, recording_failures = bound_artifact(
             recording_cell, project=project, record_path=record_path,
             label=f"{block_label} recording",
+        )
+        ledger, ledger_failures = bound_artifact(
+            ledger_cell,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} recording artifact ledger",
         )
         read, read_failures = bound_artifact(
             read_cell, project=project, record_path=record_path,
             label=f"{block_label} read",
         )
+        failures.extend(state_contract_failures)
         failures.extend(recording_failures)
+        failures.extend(ledger_failures)
         failures.extend(read_failures)
-        if recording is None or read is None:
+        if state_contract is None or recording is None or ledger is None or read is None:
             continue
+        expected_reference_id = f"strong-{rank}"
+        expected_paths = {
+            "state contract": project / ".design-dna" / "references" / f"{expected_reference_id}-state-contract.json",
+            "recording": project / ".design-dna" / "references" / f"{expected_reference_id}-recording.json",
+            "recording artifact ledger": project / ".design-dna" / "references" / f"{expected_reference_id}-artifacts.json",
+        }
+        for artifact_label, (artifact, expected_path) in {
+            "state contract": (state_contract, expected_paths["state contract"]),
+            "recording": (recording, expected_paths["recording"]),
+            "recording artifact ledger": (ledger, expected_paths["recording artifact ledger"]),
+        }.items():
+            if artifact.resolve() != expected_path.resolve():
+                failures.append(
+                    f"{block_label} {artifact_label} must use the canonical "
+                    f".design-dna/references/{expected_path.name} path."
+                )
         try:
             payload = json.loads(recording.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             failures.append(f"{block_label} recording is not readable JSON: {exc}")
             continue
-        if not isinstance(payload, dict) or payload.get("tool") != REFERENCE_RECORDING_TOOL:
-            failures.append(
-                f"{block_label} recording must be emitted by the packaged "
-                f"{REFERENCE_RECORDING_TOOL}; a hand-made record cannot establish "
-                "what was watched."
-            )
+        try:
+            ledger_payload = json.loads(ledger.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"{block_label} recording artifact ledger is not readable JSON: {exc}")
             continue
-        schema = payload.get("schema_version")
-        if schema not in REFERENCE_RECORDING_SCHEMAS:
-            failures.append(
-                f"{block_label} recording must use schema_version "
-                + " or ".join(str(v) for v in REFERENCE_RECORDING_SCHEMAS)
-                + "."
-            )
-            continue
-        # schema 2 counts events (the moments the screen changed); schema 1
-        # counts contact sheets
-        unit = "event" if schema == 2 else "sheet"
-        sheets = payload.get("events") if schema == 2 else payload.get("sheets")
-        minimum = (
-            REFERENCE_RECORDING_MINIMUM_EVENTS if schema == 2 else REFERENCE_RECORDING_MINIMUM_SHEETS
+        recording_problems, event_ids = reference_recording_failures(
+            payload,
+            recording=recording,
+            ledger_payload=ledger_payload,
+            ledger=ledger,
+            state_contract=state_contract,
+            state_contract_sha256=file_sha256(state_contract)[1],
+            expected_reference_id=expected_reference_id,
         )
-        line_pattern = REFERENCE_EVENT_LINE if schema == 2 else REFERENCE_SEQUENCE_LINE
-        id_pattern = REFERENCE_EVENT_ID if schema == 2 else REFERENCE_SEQUENCE_SHEET_ID
-        duration = payload.get("duration_s")
-        if not isinstance(sheets, int) or sheets < minimum:
-            failures.append(
-                f"{block_label} recording has {sheets!r} {unit}s; a real session "
-                f"produces at least {minimum}."
+        failures.extend(f"{block_label}: {problem}" for problem in recording_problems)
+        observation_binding = observation_by_rank.get(rank, "")
+        observation, observation_failures = bound_artifact(
+            observation_binding,
+            project=project,
+            record_path=record_path,
+            label=f"{block_label} observation",
+        )
+        failures.extend(observation_failures)
+        if observation is not None:
+            try:
+                observation_payload = json.loads(observation.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                observation_payload = None
+            observation_state = (
+                observation_payload.get("state_contract")
+                if isinstance(observation_payload, dict)
+                else None
             )
-            continue
-        if not isinstance(duration, (int, float)) or duration < REFERENCE_RECORDING_MINIMUM_SECONDS:
-            failures.append(
-                f"{block_label} recording lasted {duration!r}s; a session that "
-                f"hovers, scrolls and follows a link takes at least "
-                f"{REFERENCE_RECORDING_MINIMUM_SECONDS}s."
-            )
+            if (
+                not isinstance(observation_state, dict)
+                or observation_state.get("file") != state_contract.name
+                or observation_state.get("sha256") != file_sha256(state_contract)[1]
+                or observation_payload.get("id") != expected_reference_id
+                or observation_payload.get("url") != payload.get("url")
+            ):
+                failures.append(
+                    f"{block_label} observer and recorder do not bind the same reference URL/state-contract bytes."
+                )
 
         try:
             text = read.read_text(encoding="utf-8")
         except OSError as exc:
             failures.append(f"{block_label} read is not readable: {exc}")
             continue
+        line_matches = list(REFERENCE_EVENT_LINE.finditer(text))
         lines = {
-            int(m.group(1)): line
+            (m.group(1), int(m.group(2))): line
             for m, line in (
                 (m, text[m.start():text.find("\n", m.start()) if text.find("\n", m.start()) != -1 else len(text)])
-                for m in line_pattern.finditer(text)
+                for m in line_matches
             )
         }
-        missing = [n for n in range(1, sheets + 1) if n not in lines]
+        if len(lines) != len(line_matches):
+            failures.append(f"{block_label} read repeats a profile-qualified event ID.")
+        missing = sorted(event_ids - set(lines))
+        unexpected = sorted(set(lines) - event_ids)
         if missing:
-            shown = ", ".join(f"{unit[0]}{n:03d}" for n in missing[:8])
+            shown = ", ".join(f"{profile}/e{number:04d}" for profile, number in missing[:8])
             more = f" and {len(missing) - 8} more" if len(missing) > 8 else ""
             failures.append(
                 f"{block_label} read has no line for {shown}{more} "
-                f"({len(missing)} of {sheets} {unit}s). Every {unit} gets a line: "
+                f"({len(missing)} event(s)). Every event gets a line: "
                 "what the cursor did, what scrolled, what changed."
             )
-        short = [n for n, line in lines.items() if len(line.strip()) < REFERENCE_SEQUENCE_LINE_MINIMUM]
+        if unexpected:
+            failures.append(
+                f"{block_label} read names event IDs absent from the recording artifact ledger."
+            )
+        short = [event for event, line in lines.items() if len(line.strip()) < REFERENCE_SEQUENCE_LINE_MINIMUM]
         if short:
             failures.append(
                 f"{block_label} read has {len(short)} line(s) under "
                 f"{REFERENCE_SEQUENCE_LINE_MINIMUM} characters (first: "
-                f"{unit[0]}{min(short):03d}); a {unit} id with nothing after it is not a "
+                f"{min(short)[0]}/e{min(short)[1]:04d}); an event id with nothing after it is not a "
                 "reading."
             )
         if lines:
             static = sum(1 for line in lines.values() if REFERENCE_SEQUENCE_STATIC.search(line))
             if static / len(lines) > REFERENCE_SEQUENCE_STATIC_CEILING:
                 failures.append(
-                    f"{block_label} read calls {static} of {len(lines)} {unit}s "
+                    f"{block_label} read calls {static} of {len(lines)} events "
                     "static. A recording that hovers, scrolls and follows a link "
                     "does not stand still that long; the cursor is being "
                     "described instead of the page."
@@ -7078,15 +13362,18 @@ def sequence_read_failures(
             failures.append(
                 f"{block_label} read needs a `## Behaviour inventory` table with "
                 f"at least {REFERENCE_SEQUENCE_INVENTORY_MINIMUM} rows (trigger, "
-                f"element, effect, magnitude, {unit}s); it has {len(rows)}. The "
+                f"element, effect, magnitude, events); it has {len(rows)}. The "
                 "inventory is what the build reproduces."
             )
-        cited = [int(n) for n in id_pattern.findall(sheets_cell or "")]
-        valid = [n for n in cited if 1 <= n <= sheets and n in lines]
+        cited = {
+            (profile, int(number))
+            for profile, number in REFERENCE_EVENT_ID.findall(sheets_cell or "")
+        }
+        valid = cited & event_ids & set(lines)
         if not valid:
             failures.append(
-                f"{block_label} must name `- Signature {unit}s:` as {unit} ids "
-                f"that exist in the read (e.g. `{unit[0]}004, {unit[0]}005`), so the signature "
+                f"{block_label} must name `- Signature events:` as profile-qualified "
+                "event ids that exist in the read (e.g. `wide/e0004, narrow/e0005`), so the signature "
                 "in the strong row is something that was WATCHED happening, "
                 "not something remembered from a still."
             )
@@ -7103,7 +13390,8 @@ def sequence_read_failures(
         ):
             failures.append(
                 f"Reference dossier Component sources row {row[0]!r} must cite "
-                "a recording sheet (`strong-N-events/eNNN-kind.png`, or "
+                "a recording sheet (`strong-N-wide-events/eNNNN-kind.png` or "
+                "`strong-N-narrow-events/eNNNN-kind.png`, or "
                 "`strong-N-sheets/sNNN.png` from a schema-1 recording) in `Frame "
                 "that shows it`; a rest frame cannot show what this component does."
             )
@@ -7134,21 +13422,47 @@ def component_census_failures(
     )
     if artifact_failures or artifact is None:
         return artifact_failures
+    expected = (project / ".design-dna" / "evidence" / "component-census.json").resolve()
+    if artifact.resolve() != expected:
+        return [f"{label} must bind .design-dna/evidence/component-census.json."]
     try:
         payload = json.loads(artifact.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return [f"{label} is not readable JSON: {exc}"]
-    if not isinstance(payload, dict) or payload.get("tool") != "scan_build_components.mjs":
-        return [f"{label} must be emitted by the packaged scan_build_components.mjs."]
+    identity_failures = packaged_runtime_record_failures(
+        payload, tool="scan_build_components.mjs", require_pass=True
+    )
+    if identity_failures:
+        return [f"{label}: {failure}" for failure in identity_failures]
+    manifest_path = project / ".design-dna" / "route-manifest.json"
+    try:
+        manifest = read_json(manifest_path)
+    except StateError as exc:
+        return [f"{label} cannot validate the authoritative route manifest: {exc}"]
+    if not isinstance(manifest, dict):
+        return [f"{label} route manifest must contain an object."]
+    runtime_failures = census_runtime_failures(
+        payload,
+        expected_routes=[
+            route for route in manifest.get("routes", []) if isinstance(route, dict)
+        ],
+        expected_viewports=[
+            viewport for viewport in manifest.get("viewports", [])
+            if isinstance(viewport, dict)
+        ],
+        first_screen=False,
+        record_path=artifact,
+        project=project,
+    )
+    if runtime_failures:
+        return [f"{label}: {failure}" for failure in runtime_failures]
     names = payload.get("names")
     if not isinstance(names, list) or not names:
         return [f"{label} recorded no components; the scan did not read the build."]
-    words: set[str] = set()
-    for entry in covered:
-        words.update(part for part in re.split(r"[^a-z0-9]+", entry) if part)
+    normalized_covered = {" ".join(entry.casefold().split()) for entry in covered}
     unsourced = sorted(
         str(name) for name in names
-        if str(name).casefold() not in words and str(name).casefold() not in covered
+        if " ".join(str(name).casefold().split()) not in normalized_covered
     )
     if unsourced:
         return [
@@ -8104,6 +14418,11 @@ def visual_review_schema3_capture_matrix_failures(
         )
     )
     if "reference-led-direction" in set(required_evidence_capabilities):
+        failures.extend(
+            final_source_fidelity_section_failures(
+                body, project=project, record_path=record_path
+            )
+        )
         closure_section = sections.get(
             "Reference-led direction closure (required for public candidates)",
             "",
@@ -8119,6 +14438,22 @@ def visual_review_schema3_capture_matrix_failures(
                 closure_section, project=project, record_path=record_path
             )
         )
+        final_build_id = (
+            markdown_label_value(body, "Build or artifact ID") or ""
+        ).strip()
+        if not non_placeholder(final_build_id):
+            failures.append(
+                "Reference-led direction closure needs the canonical final build ID."
+            )
+        else:
+            failures.extend(
+                final_gate_failures(
+                    closure_section,
+                    project=project,
+                    record_path=record_path,
+                    expected_build_id=final_build_id,
+                )
+            )
         failures.extend(
             closure_table_failures(
                 "Reference-led direction closure (required for public candidates)",
@@ -8131,12 +14466,18 @@ def visual_review_schema3_capture_matrix_failures(
 
 REFERENCE_LED_CLOSURE_LABELS = (
     "Dossier result",
+    "Candidate selection result",
+    "Complete-study result",
+    "Brief-fit result",
     "Positive synthesis",
     "Negative counterevidence",
     "Rights boundary",
     "Lineage result",
     "Rendered result",
+    "Dominant grammar result",
     "Combination result",
+    "Route manifest",
+    "Gate result",
     "Mechanism diff",
     "Structure diff",
 )
@@ -8147,6 +14488,87 @@ REFERENCE_LED_CLOSURE_DISPOSITIONS = {
     "reject",
     "blocked",
 }
+FINAL_SOURCE_FIDELITY_LABELS = (
+    "Route manifest ID and binding",
+    "Final build ID and tree SHA-256",
+    "First-screen authorization binding",
+    "Final gate binding",
+    "Gate run ID and runtime identity SHA-256",
+    "Exact coverage matrix result",
+    "Verdict",
+)
+
+
+def final_source_fidelity_section_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> list[str]:
+    failures: list[str] = []
+    section = markdown_sections(body).get("Final source-fidelity gate", "")
+    if not section:
+        return ["Reference-led final review is missing `Final source-fidelity gate`."]
+    values: dict[str, str] = {}
+    for label in FINAL_SOURCE_FIDELITY_LABELS:
+        value = (markdown_label_value(section, label) or "").strip()
+        values[label] = value
+        if not non_placeholder(value):
+            failures.append(f"Final source-fidelity gate needs {label!r}.")
+    gate_value = values["Final gate binding"]
+    gate_path, gate_failures = bound_artifact(
+        gate_value,
+        project=project,
+        record_path=record_path,
+        label="Final source-fidelity gate binding",
+    )
+    failures.extend(gate_failures)
+    expected_gate = (project / ".design-dna" / "evidence" / "gate.json").resolve()
+    if gate_path is None or gate_failures:
+        return failures
+    if gate_path.resolve() != expected_gate:
+        return [*failures, "Final source-fidelity gate must bind .design-dna/evidence/gate.json."]
+    try:
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [*failures, f"Final source-fidelity gate record is unreadable: {exc}"]
+    if not isinstance(gate, dict):
+        return [*failures, "Final source-fidelity gate record must be an object."]
+    manifest_path = project / ".design-dna" / "route-manifest.json"
+    manifest_value = values["Route manifest ID and binding"]
+    if (
+        not manifest_path.is_file()
+        or str(gate.get("manifest_id")) not in manifest_value
+        or str(gate.get("route_manifest_sha256")) not in manifest_value
+    ):
+        failures.append("Final source-fidelity manifest summary does not match gate.json.")
+    build_value = values["Final build ID and tree SHA-256"]
+    if (
+        str(gate.get("build_id")) not in build_value
+        or str(gate.get("build_tree_sha256_before")) not in build_value
+    ):
+        failures.append("Final source-fidelity build/tree summary does not match gate.json.")
+    predecessor = gate.get("prebuild_authorization")
+    predecessor_value = values["First-screen authorization binding"]
+    if (
+        not isinstance(predecessor, dict)
+        or str(predecessor.get("path")) not in predecessor_value
+        or str(predecessor.get("sha256")) not in predecessor_value
+    ):
+        failures.append("Final source-fidelity predecessor summary does not match gate.json.")
+    runtime_value = values["Gate run ID and runtime identity SHA-256"]
+    runtime_sha = canonical_json_sha256(gate.get("runtime_identity"))
+    if str(gate.get("run_id")) not in runtime_value or runtime_sha not in runtime_value:
+        failures.append("Final source-fidelity run/runtime summary does not match gate.json.")
+    coverage_value = values["Exact coverage matrix result"]
+    expected_count = len(gate.get("coverage_matrix", [])) if isinstance(gate.get("coverage_matrix"), list) else -1
+    served = gate.get("served_content_identity")
+    served_sha = served.get("sha256") if isinstance(served, dict) else None
+    if str(expected_count) not in coverage_value or not served_sha or served_sha not in coverage_value:
+        failures.append("Final source-fidelity coverage summary does not match gate.json.")
+    if values["Verdict"] != gate.get("verdict") or not values["Verdict"].startswith("GATE PASS: final"):
+        failures.append("Final source-fidelity verdict must exactly equal the final gate verdict.")
+    return failures
 
 
 def mechanism_diff_failures(
@@ -8169,12 +14591,18 @@ def mechanism_diff_failures(
     )
     if artifact_failures or artifact is None:
         return artifact_failures
+    expected = (project / ".design-dna" / "evidence" / "mechanism-diff.json").resolve()
+    if artifact.resolve() != expected:
+        return [f"{label} must bind .design-dna/evidence/mechanism-diff.json."]
     try:
         payload = json.loads(artifact.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return [f"{label} is not readable JSON: {exc}"]
-    if not isinstance(payload, dict) or payload.get("tool") != "compare_mechanisms.mjs":
-        return [f"{label} must be emitted by the packaged compare_mechanisms.mjs."]
+    identity_failures = packaged_runtime_record_failures(
+        payload, tool="compare_mechanisms.mjs", require_pass=True
+    )
+    if identity_failures:
+        return [f"{label}: {failure}" for failure in identity_failures]
     if payload.get("pass") is not True:
         return [
             f"{label} did not pass: "
@@ -8208,12 +14636,18 @@ def structure_diff_failures(
     )
     if artifact_failures or artifact is None:
         return artifact_failures
+    expected = (project / ".design-dna" / "evidence" / "structure-diff.json").resolve()
+    if artifact.resolve() != expected:
+        return [f"{label} must bind .design-dna/evidence/structure-diff.json."]
     try:
         payload = json.loads(artifact.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         return [f"{label} is not readable JSON: {exc}"]
-    if not isinstance(payload, dict) or payload.get("tool") != "compare_structure.mjs":
-        return [f"{label} must be emitted by the packaged compare_structure.mjs."]
+    identity_failures = packaged_runtime_record_failures(
+        payload, tool="compare_structure.mjs", require_pass=True
+    )
+    if identity_failures:
+        return [f"{label}: {failure}" for failure in identity_failures]
     if not payload.get("census_sha256"):
         return [
             f"{label} must take its route list from the component census "
@@ -8229,6 +14663,840 @@ def structure_diff_failures(
             "from a description of it."
         ]
     return []
+
+
+def packaged_script_schema_version(path: Path) -> int | None:
+    body = path.read_text(encoding="utf-8", errors="replace")
+    match = re.search(
+        r"\bSCHEMA_VERSION\s*=\s*(\d+)",
+        body,
+    )
+    if match:
+        return int(match.group(1))
+    if "PRODUCER_OUTPUT_SCHEMA_VERSION" in body:
+        contract = path.parent / "provenance_contract.mjs"
+        contract_match = re.search(
+            r"\bPRODUCER_OUTPUT_SCHEMA_VERSION\s*=\s*(\d+)",
+            contract.read_text(encoding="utf-8", errors="replace"),
+        )
+        if contract_match:
+            return int(contract_match.group(1))
+    return None
+
+
+def expected_gate_coverage(
+    routes: list[dict[str, object]], viewports: list[dict[str, object]]
+) -> list[dict[str, object]]:
+    return [
+        {
+            "route_key": route["key"],
+            "url": route["url"],
+            "mapped_reference_rank": route["mapped_reference_rank"],
+            "mapped_reference_id": route["mapped_reference_id"],
+            "mapped_reference_observation": route["mapped_reference_observation"],
+            "mapped_reference_sha256": route["mapped_reference_sha256"],
+            "viewport": viewport["name"],
+            "width": viewport["width"],
+            "height": viewport["height"],
+            "states": route["states"],
+        }
+        for route in routes
+        for viewport in viewports
+    ]
+
+
+def gate_runtime_evidence_failures(
+    gate: dict[str, object],
+    *,
+    project: Path,
+    manifest: dict[str, object],
+    phase: str,
+    require_current_tree: bool,
+) -> list[str]:
+    """Independently validate a gate and every canonical direct artifact."""
+
+    failures: list[str] = []
+    scripts = Path(__file__).resolve().parent
+    gate_script = scripts / "gate.py"
+    expected_runtime = packaged_gate_runtime_identity()
+    if gate.get("tool") != "gate.py" or gate.get("schema_version") != 2:
+        failures.append("Gate record must use gate.py schema_version 2.")
+    if gate.get("producer_script_sha256") != expected_runtime.get("gate.py"):
+        failures.append("Gate record does not bind current gate.py bytes.")
+    if gate.get("runtime_identity") != expected_runtime:
+        failures.append("Gate record runtime identity is stale or incomplete.")
+    if gate.get("phase") != phase:
+        failures.append(f"Gate record phase must be {phase}.")
+    run_id = gate.get("run_id")
+    build_id = gate.get("build_id")
+    if not isinstance(run_id, str) or re.fullmatch(r"[0-9a-f]{32}", run_id) is None:
+        failures.append("Gate record run_id is invalid.")
+    if not isinstance(build_id, str) or ROUTE_MANIFEST_ID.fullmatch(build_id) is None:
+        failures.append("Gate record build_id is invalid.")
+    if gate.get("project") != str(project.resolve()) or gate.get("project_identity") != {
+        "root": str(project.resolve())
+    }:
+        failures.append("Gate record belongs to another project root.")
+    manifest_path = project / ".design-dna" / "route-manifest.json"
+    manifest_sha = file_sha256(manifest_path)[1] if manifest_path.is_file() else None
+    if (
+        gate.get("manifest_id") != manifest.get("manifest_id")
+        or gate.get("route_manifest_sha256") != manifest_sha
+    ):
+        failures.append("Gate record does not bind the current manifest ID and bytes.")
+    visible_path = project / ".design-dna" / "visible-decision-sources.json"
+    visible_sha = file_sha256(visible_path)[1] if visible_path.is_file() else None
+    if gate.get("visible_decision_source_manifest") != {
+        "path": ".design-dna/visible-decision-sources.json",
+        "sha256": visible_sha,
+    }:
+        failures.append("Gate record does not bind the current preimplementation visible-decision source bytes.")
+    dossier_path = project / ".design-dna" / "reference-dossier.md"
+    if (
+        gate.get("dossier") != str(dossier_path.resolve())
+        or not dossier_path.is_file()
+        or gate.get("dossier_core_sha256") != dossier_core_sha256(dossier_path)
+        or (
+            phase == "final"
+            and gate.get("dossier_sha256") != file_sha256(dossier_path)[1]
+        )
+    ):
+        failures.append("Gate record does not bind the current dossier identity.")
+    before = gate.get("build_tree_sha256_before")
+    after = gate.get("build_tree_sha256_after")
+    if (
+        not isinstance(before, str)
+        or SHA256_HEX.fullmatch(before) is None
+        or after != before
+        or gate.get("build_stable") is not True
+    ):
+        failures.append("Gate record does not prove one byte-stable project tree.")
+    if require_current_tree and before != project_tree_identity(project):
+        failures.append("Gate project tree has changed since the recorded run.")
+
+    planned_routes = manifest.get("routes")
+    viewports = manifest.get("viewports")
+    if not isinstance(planned_routes, list) or not isinstance(viewports, list):
+        return [*failures, "Current route manifest has invalid routes/viewports."]
+    if gate.get("planned_routes") != planned_routes or gate.get("viewports_checked") != viewports:
+        failures.append("Gate planned route or viewport set differs from the manifest.")
+    active_routes: list[dict[str, object]]
+    if phase == "final":
+        active_routes = planned_routes
+        if gate.get("route_key") is not None or gate.get("routes") != planned_routes:
+            failures.append("Final gate must cover the complete manifest route set.")
+    else:
+        route_key = gate.get("route_key")
+        active_routes = [
+            route for route in planned_routes
+            if isinstance(route, dict) and route.get("key") == route_key
+        ]
+        if len(active_routes) != 1 or gate.get("routes") != active_routes:
+            failures.append("First-screen gate route object is not the exact manifested route.")
+    expected_coverage = expected_gate_coverage(active_routes, viewports)
+    if gate.get("coverage_matrix") != expected_coverage:
+        failures.append("Gate coverage matrix is not the exact unique route/profile/state matrix.")
+    expected_states = sorted(
+        {
+            str(state.get("id"))
+            for route in active_routes
+            for state in route.get("states", [])
+            if isinstance(state, dict)
+        }
+    )
+    if gate.get("states_checked") != expected_states:
+        failures.append("Gate states_checked differs from the manifested state IDs.")
+    served_failures = served_content_identity_failures(
+        gate.get("served_content_identity"),
+        expected_routes=active_routes,
+        expected_viewports=viewports,
+    )
+    failures.extend(f"Gate {failure}" for failure in served_failures)
+
+    prefix = "first-screen-" if phase == "first-screen" else ""
+    artifact_root = ".design-dna/evidence"
+    if phase == "first-screen":
+        authorization_id = gate.get("authorization_id")
+        if not isinstance(authorization_id, str) or re.fullmatch(
+            r"[0-9a-f]{32}", authorization_id
+        ) is None:
+            failures.append("First-screen gate authorization_id is invalid.")
+            authorization_id = "invalid"
+        artifact_root += f"/prebuild-runs/{authorization_id}"
+        expected_manifest_snapshot = {
+            "path": f"{artifact_root}/route-manifest.json",
+            "sha256": manifest_sha,
+        }
+        dossier_snapshot_path = project / PurePosixPath(
+            f"{artifact_root}/reference-dossier.md"
+        )
+        expected_dossier_snapshot = {
+            "path": f"{artifact_root}/reference-dossier.md",
+            "sha256": (
+                file_sha256(dossier_snapshot_path)[1]
+                if dossier_snapshot_path.is_file()
+                else None
+            ),
+        }
+        expected_visible_snapshot = {
+            "path": f"{artifact_root}/visible-decision-sources.json",
+            "sha256": visible_sha,
+        }
+        if gate.get("manifest_snapshot") != expected_manifest_snapshot:
+            failures.append("First-screen gate immutable manifest snapshot binding is invalid.")
+        if gate.get("dossier_snapshot") != expected_dossier_snapshot:
+            failures.append("First-screen gate immutable dossier snapshot binding is invalid.")
+        if gate.get("visible_decision_snapshot") != expected_visible_snapshot:
+            failures.append("First-screen gate immutable visible-decision snapshot binding is invalid.")
+    elif (
+        gate.get("manifest_snapshot") is not None
+        or gate.get("dossier_snapshot") is not None
+        or gate.get("visible_decision_snapshot") is not None
+    ):
+        failures.append("Final gate must not masquerade as an immutable first-screen snapshot.")
+    expected_artifacts: dict[str, str | None] = {
+        ".design-dna/visible-decision-sources.json": None,
+        (
+            f"{artifact_root}/route-manifest.json"
+            if phase == "first-screen"
+            else ".design-dna/route-manifest.json"
+        ): None,
+        f"{artifact_root}/{prefix}component-census.json": "scan_build_components.mjs",
+        f"{artifact_root}/{prefix}style-provenance.json": "check_style_provenance.mjs",
+        f"{artifact_root}/{prefix}structure-diff.json": "compare_structure.mjs",
+        f"{artifact_root}/{prefix}mechanism-diff.json": "compare_mechanisms.mjs",
+        f"{artifact_root}/{prefix}signature-transfer.json": "check_signature_transfer.mjs",
+    }
+    if phase == "first-screen":
+        expected_artifacts[f"{artifact_root}/reference-dossier.md"] = None
+        expected_artifacts[f"{artifact_root}/visible-decision-sources.json"] = None
+    for route in active_routes:
+        for viewport in viewports:
+            expected_artifacts[
+                f"{artifact_root}/build-{prefix}{route['key']}-{viewport['name']}-styles.json"
+            ] = "extract_reference_styles.mjs"
+    if phase != "first-screen":
+        predecessor = gate.get("prebuild_authorization")
+        if isinstance(predecessor, dict) and isinstance(predecessor.get("path"), str):
+            expected_artifacts[predecessor["path"]] = None
+        else:
+            failures.append("Final gate has no prebuild authorization binding.")
+
+    expected_frame_bytes: dict[str, int] = {}
+    for frame_record_relative in (
+        f"{artifact_root}/{prefix}component-census.json",
+        f"{artifact_root}/{prefix}mechanism-diff.json",
+    ):
+        frame_record_path = (project / PurePosixPath(frame_record_relative)).resolve()
+        if not frame_record_path.is_file():
+            continue
+        try:
+            frame_payload = json.loads(frame_record_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        frame_failures, frame_bindings = generated_interaction_frame_bindings(
+            frame_payload, record_path=frame_record_path
+        )
+        failures.extend(
+            f"Gate artifact {frame_record_relative}: {failure}"
+            for failure in frame_failures
+        )
+        for binding in frame_bindings:
+            relative_frame = binding["file"].relative_to(project).as_posix()
+            expected_artifacts[relative_frame] = None
+            expected_frame_bytes[relative_frame] = int(binding["bytes"])
+
+    ledger = gate.get("evidence_hashes")
+    ledger_by_path: dict[str, dict[str, object]] = {}
+    if not isinstance(ledger, list):
+        failures.append("Gate evidence ledger must be a list.")
+        ledger = []
+    for index, entry in enumerate(ledger, start=1):
+        if not isinstance(entry, dict):
+            failures.append(f"Gate evidence entry {index} is not an object.")
+            continue
+        relative = entry.get("path")
+        digest = entry.get("sha256")
+        if (
+            not isinstance(relative, str)
+            or relative in ledger_by_path
+            or not isinstance(digest, str)
+            or SHA256_HEX.fullmatch(digest) is None
+        ):
+            failures.append(f"Gate evidence entry {index} is duplicate or invalid.")
+            continue
+        ledger_by_path[relative] = entry
+    if set(ledger_by_path) != set(expected_artifacts):
+        failures.append("Gate evidence ledger does not contain the exact canonical artifact set.")
+
+    aggregate_served_hashes: set[str] = set()
+    payloads: dict[str, dict[str, object]] = {}
+    for relative, tool in expected_artifacts.items():
+        artifact = (project / PurePosixPath(relative)).resolve()
+        entry = ledger_by_path.get(relative)
+        if (
+            not is_within(artifact, project.resolve())
+            or not artifact.is_file()
+            or entry is None
+            or file_sha256(artifact)[1] != entry.get("sha256")
+        ):
+            failures.append(f"Gate artifact is missing or drifted: {relative}.")
+            continue
+        if (
+            relative in expected_frame_bytes
+            and entry.get("bytes") != expected_frame_bytes[relative]
+        ):
+            failures.append(f"Gate interaction-frame byte count drifted: {relative}.")
+        if tool is None:
+            continue
+        try:
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"Gate artifact {relative} is unreadable: {exc}")
+            continue
+        producer = scripts / tool
+        schema = packaged_script_schema_version(producer)
+        if (
+            not isinstance(payload, dict)
+            or payload.get("tool") != tool
+            or payload.get("schema_version") != schema
+            or payload.get("producer_script_sha256") != file_sha256(producer)[1]
+            or payload.get("build_id") != build_id
+            or payload.get("run_id") != run_id
+            or payload.get("manifest_id") != manifest.get("manifest_id")
+            or payload.get("manifest_sha256") != manifest_sha
+            or not (payload.get("pass") is True or payload.get("ok") is True)
+        ):
+            failures.append(f"Gate artifact {relative} has invalid runtime/build/run/manifest identity.")
+            continue
+        runtime_failures = packaged_runtime_record_failures(
+            payload, tool=tool, require_pass=True
+        )
+        if runtime_failures:
+            failures.extend(
+                f"Gate artifact {relative}: {failure}"
+                for failure in runtime_failures
+            )
+            continue
+        artifact_routes = active_routes
+        artifact_viewports = viewports
+        if tool == "extract_reference_styles.mjs":
+            route_key = str(payload.get("route_key") or "")
+            viewport_name = str(payload.get("viewport_name") or payload.get("viewport") or "")
+            artifact_routes = [route for route in active_routes if route.get("key") == route_key]
+            artifact_viewports = [viewport for viewport in viewports if viewport.get("name") == viewport_name]
+            if len(artifact_routes) != 1 or len(artifact_viewports) != 1:
+                failures.append(f"Gate extractor artifact {relative} has wrong route/profile identity.")
+                continue
+        identity_failures = served_content_identity_failures(
+            payload.get("served_content_identity"),
+            expected_routes=artifact_routes,
+            expected_viewports=artifact_viewports,
+        )
+        failures.extend(f"Gate artifact {relative}: {failure}" for failure in identity_failures)
+        if tool == "scan_build_components.mjs":
+            census_failures = census_runtime_failures(
+                payload,
+                expected_routes=active_routes,
+                expected_viewports=viewports,
+                first_screen=phase == "first-screen",
+                record_path=artifact,
+                project=project,
+            )
+            failures.extend(
+                f"Gate artifact {relative}: {failure}"
+                for failure in census_failures
+            )
+        if tool == "compare_mechanisms.mjs":
+            mechanism_failures = mechanism_interaction_transfer_failures(
+                payload,
+                project=project,
+                expected_routes=active_routes,
+                expected_viewports=viewports,
+                first_screen=phase == "first-screen",
+                record_path=artifact,
+            )
+            failures.extend(
+                f"Gate artifact {relative}: {failure}"
+                for failure in mechanism_failures
+            )
+        identity = payload.get("served_content_identity")
+        if tool != "extract_reference_styles.mjs" and isinstance(identity, dict):
+            aggregate_served_hashes.add(str(identity.get("sha256")))
+        payloads[tool] = payload
+    gate_served = gate.get("served_content_identity")
+    gate_served_sha = gate_served.get("sha256") if isinstance(gate_served, dict) else None
+    if len(aggregate_served_hashes) != 1 or gate_served_sha not in aggregate_served_hashes:
+        failures.append("Gate aggregate artifacts do not agree on one served-content identity.")
+
+    census_path = f"{artifact_root}/{prefix}component-census.json"
+    structure_payload = payloads.get("compare_structure.mjs")
+    if isinstance(structure_payload, dict) and structure_payload.get("census_sha256") != ledger_by_path.get(census_path, {}).get("sha256"):
+        failures.append("Structure evidence does not bind the gate census bytes.")
+    signature_payload = payloads.get("check_signature_transfer.mjs")
+    if isinstance(signature_payload, dict):
+        expected_hashes = {
+            "mechanism_diff": ledger_by_path.get(f"{artifact_root}/{prefix}mechanism-diff.json", {}).get("sha256"),
+            "structure_diff": ledger_by_path.get(f"{artifact_root}/{prefix}structure-diff.json", {}).get("sha256"),
+            "style_provenance": ledger_by_path.get(f"{artifact_root}/{prefix}style-provenance.json", {}).get("sha256"),
+            "census": ledger_by_path.get(census_path, {}).get("sha256"),
+        }
+        if signature_payload.get("evidence_hashes") != expected_hashes:
+            failures.append("Signature-transfer evidence does not bind the gate direct artifacts.")
+    return failures
+
+
+def final_prebuild_predecessor_failures(
+    gate: dict[str, object],
+    *,
+    project: Path,
+    manifest: dict[str, object],
+) -> list[str]:
+    failures: list[str] = []
+    binding = gate.get("prebuild_authorization")
+    if not isinstance(binding, dict) or set(binding) != {
+        "path", "sha256", "authorization_id", "proof_build_id",
+        "proof_tree_sha256", "authorized_at",
+    }:
+        return ["Final gate has an invalid first-screen predecessor binding."]
+    relative = binding.get("path")
+    if not isinstance(relative, str):
+        return ["Final gate predecessor path is invalid."]
+    authorization_path = (project / PurePosixPath(relative)).resolve()
+    chain_failures, authorization, digest = load_prebuild_authorization(
+        project, authorization_path
+    )
+    failures.extend(chain_failures)
+    if not isinstance(authorization, dict):
+        return failures
+    if digest != binding.get("sha256"):
+        failures.append("Final gate predecessor SHA-256 differs from the authorization file.")
+    for field in (
+        "authorization_id", "proof_build_id", "proof_tree_sha256", "authorized_at"
+    ):
+        if binding.get(field) != authorization.get(field):
+            failures.append(f"Final gate predecessor {field} does not match its authorization.")
+    manifest_path = project / ".design-dna" / "route-manifest.json"
+    if (
+        authorization.get("manifest_id") != manifest.get("manifest_id")
+        or authorization.get("manifest_sha256") != file_sha256(manifest_path)[1]
+    ):
+        failures.append("Final gate predecessor belongs to another route manifest.")
+    dossier = project / ".design-dna" / "reference-dossier.md"
+    if not dossier.is_file() or authorization.get("dossier_core_sha256") != dossier_core_sha256(dossier):
+        failures.append("Final gate predecessor does not bind the current normalized dossier core.")
+    if (
+        authorization.get("proof_build_id") == gate.get("build_id")
+        or authorization.get("proof_tree_sha256") == gate.get("build_tree_sha256_before")
+    ):
+        failures.append("Final build/tree identity must differ from its first-screen predecessor.")
+    try:
+        authorized_at = datetime.fromisoformat(
+            str(authorization.get("authorized_at", "")).replace("Z", "+00:00")
+        )
+        final_at = datetime.fromisoformat(
+            str(gate.get("checked_at", "")).replace("Z", "+00:00")
+        )
+        if authorized_at >= final_at:
+            failures.append("First-screen authorization does not precede the final gate.")
+    except ValueError:
+        failures.append("Gate chronology timestamps are invalid.")
+    first_binding = authorization.get("first_screen_gate")
+    first_path = (
+        project / PurePosixPath(str(first_binding.get("path") or ""))
+    ).resolve() if isinstance(first_binding, dict) else Path()
+    if (
+        not isinstance(first_binding, dict)
+        or not is_within(first_path, project.resolve())
+        or not first_path.is_file()
+        or first_binding.get("sha256") != file_sha256(first_path)[1]
+    ):
+        failures.append("First-screen gate bytes do not match the authorization predecessor.")
+        return failures
+    try:
+        first_gate = json.loads(first_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        failures.append(f"First-screen predecessor is unreadable: {exc}")
+        return failures
+    if not isinstance(first_gate, dict):
+        failures.append("First-screen predecessor must be an object.")
+        return failures
+    failures.extend(
+        "First-screen predecessor: " + failure
+        for failure in gate_runtime_evidence_failures(
+            first_gate,
+            project=project,
+            manifest=manifest,
+            phase="first-screen",
+            require_current_tree=False,
+        )
+    )
+    if (
+        first_gate.get("authorization_id") != authorization.get("authorization_id")
+        or first_gate.get("build_id") != authorization.get("proof_build_id")
+        or first_gate.get("build_tree_sha256_before") != authorization.get("proof_tree_sha256")
+        or first_gate.get("dossier_core_sha256") != authorization.get("dossier_core_sha256")
+    ):
+        failures.append("First-screen predecessor fields differ from the authorization.")
+    return failures
+
+
+def final_gate_failures(
+    section: str,
+    *,
+    project: Path,
+    record_path: Path,
+    expected_build_id: str,
+) -> list[str]:
+    """Bind readiness to the exact passing all-route, all-viewport gate."""
+
+    failures: list[str] = []
+    manifest_cell = (markdown_label_value(section, "Route manifest") or "").strip()
+    manifest_failures, manifest, manifest_path = bound_route_manifest_failures(
+        manifest_cell,
+        project=project,
+        record_path=record_path,
+    )
+    failures.extend(manifest_failures)
+
+    gate_cell = (markdown_label_value(section, "Gate result") or "").strip()
+    gate_path, gate_binding_failures = bound_artifact(
+        gate_cell,
+        project=project,
+        record_path=record_path,
+        label="Reference-led direction closure Gate result",
+    )
+    failures.extend(gate_binding_failures)
+    if gate_path is None:
+        return failures
+    expected_gate_path = (project / ".design-dna" / "evidence" / "gate.json").resolve()
+    if gate_path.resolve() != expected_gate_path:
+        failures.append(
+            "Reference-led direction closure Gate result must bind "
+            ".design-dna/evidence/gate.json."
+        )
+        return failures
+    try:
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [*failures, f"Gate result is not readable JSON: {exc}"]
+    if not isinstance(gate, dict):
+        return [*failures, "Gate result must be an object."]
+    if gate.get("tool") != "gate.py" or gate.get("schema_version") != 2:
+        failures.append("Gate result must come from gate.py schema_version 2.")
+    gate_script = Path(__file__).resolve().parent / "gate.py"
+    if gate.get("producer_script_sha256") != file_sha256(gate_script)[1]:
+        failures.append("Gate result does not bind the current packaged gate.py bytes.")
+    expected_runtime = {
+        path.name: file_sha256(path)[1]
+        for path in [
+            gate_script,
+            Path(__file__).resolve(),
+            *sorted(gate_script.parent.glob("*.mjs"), key=lambda item: item.name),
+        ]
+    }
+    if gate.get("runtime_identity") != expected_runtime:
+        failures.append("Gate result runtime identity differs from the packaged checks.")
+    if gate.get("phase") != "final" or gate.get("route_key") is not None:
+        failures.append("Final readiness requires a `--phase final` gate result.")
+    if gate.get("pass") is not True or gate.get("build_stable") is not True:
+        failures.append(
+            "Gate result did not pass on one byte-stable build: "
+            + str(gate.get("verdict") or "no passing verdict")
+        )
+    if gate.get("build_id") != expected_build_id:
+        failures.append(
+            "Gate result build_id does not match visual-review.md's canonical build."
+        )
+    try:
+        gate_project = Path(str(gate.get("project") or "")).resolve()
+    except (OSError, ValueError):
+        gate_project = Path()
+    if gate_project != project.resolve():
+        failures.append("Gate result belongs to a different project root.")
+    if manifest_path is not None:
+        if gate.get("route_manifest_sha256") != file_sha256(manifest_path)[1]:
+            failures.append("Gate result does not bind the current route manifest bytes.")
+    if isinstance(manifest, dict):
+        if (
+            gate.get("routes") != manifest.get("routes")
+            or gate.get("planned_routes") != manifest.get("routes")
+        ):
+            failures.append("Gate result route set differs from the route manifest.")
+        if gate.get("viewports_checked") != manifest.get("viewports"):
+            failures.append("Gate result viewport set differs from the route manifest.")
+        expected_cells = len(manifest.get("routes", [])) * len(
+            manifest.get("viewports", [])
+        )
+        coverage = gate.get("coverage_matrix")
+        if not isinstance(coverage, list) or len(coverage) != expected_cells:
+            failures.append(
+                "Gate result does not cover every route/viewport cell in the manifest."
+            )
+    dossier_path = project / ".design-dna" / "reference-dossier.md"
+    if dossier_path.is_file() and gate.get("dossier_sha256") != file_sha256(dossier_path)[1]:
+        failures.append("Gate result does not bind the current completed dossier bytes.")
+    if isinstance(manifest, dict):
+        failures.extend(
+            gate_runtime_evidence_failures(
+                gate,
+                project=project,
+                manifest=manifest,
+                phase="final",
+                require_current_tree=True,
+            )
+        )
+        failures.extend(
+            final_prebuild_predecessor_failures(
+                gate, project=project, manifest=manifest
+            )
+        )
+    steps = gate.get("steps")
+    if (
+        not isinstance(steps, list)
+        or not steps
+        or any(not isinstance(step, dict) or step.get("pass") is not True for step in steps)
+    ):
+        failures.append("Gate result contains a missing or failed packaged check.")
+    else:
+        step_names = {str(step.get("name")) for step in steps}
+        required_steps = {
+            "route-manifest", "census", "provenance", "structure", "mechanisms",
+            "signature-transfer", "dossier", "dossier-core", "build-stability",
+            "runtime-stability", "served-content-consensus", "prebuild-authorization",
+            "visible-decision-source-manifest",
+        }
+        if (
+            not required_steps.issubset(step_names)
+            or not any(name.startswith("extract:") for name in step_names)
+        ):
+            failures.append(
+                "Gate result omits a required route, viewport, provenance, "
+                "structure, mechanism, signature, census, or dossier check."
+            )
+    if not str(gate.get("verdict") or "").startswith("GATE PASS:"):
+        failures.append("Gate result has no canonical GATE PASS verdict line.")
+
+    evidence = gate.get("evidence_hashes")
+    if not isinstance(evidence, list) or not evidence:
+        failures.append("Gate result carries no evidence hash ledger.")
+    else:
+        seen: set[str] = set()
+        for index, entry in enumerate(evidence, start=1):
+            if not isinstance(entry, dict):
+                failures.append(f"Gate evidence entry {index} is not an object.")
+                continue
+            relative = entry.get("path")
+            digest = entry.get("sha256")
+            if (
+                not isinstance(relative, str)
+                or not isinstance(digest, str)
+                or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+            ):
+                failures.append(f"Gate evidence entry {index} has an invalid binding.")
+                continue
+            if relative in {
+                ".design-dna/route-manifest.json",
+                ".design-dna/visible-decision-sources.json",
+            }:
+                canonical_path = project / PurePosixPath(relative)
+                if not canonical_path.is_file() or file_sha256(canonical_path)[1] != digest:
+                    failures.append(f"Gate evidence ledger canonical binding drifted: {relative}.")
+                continue
+            if not relative.startswith(".design-dna/evidence/"):
+                failures.append(f"Gate evidence entry {index} is outside the evidence root.")
+                continue
+            if relative in seen:
+                # Repeated route/viewport metadata may point at one aggregate
+                # file only when its bytes are identical; a second conflicting
+                # digest is refused below by the file comparison.
+                continue
+            seen.add(relative)
+            evidence_path = (project / PurePosixPath(relative)).resolve()
+            evidence_root = (project / ".design-dna" / "evidence").resolve()
+            if evidence_root not in evidence_path.parents:
+                failures.append(f"Gate evidence entry {index} escapes the evidence root.")
+            elif not evidence_path.is_file() or file_sha256(evidence_path)[1] != digest:
+                failures.append(
+                    f"Gate evidence entry {index} is missing or has changed: {relative}."
+                )
+    return failures
+
+
+def first_screen_gate_failures(
+    dossier_body: str,
+    *,
+    project: Path,
+    record_path: Path,
+) -> list[str]:
+    """Prove source fidelity was checked before broad implementation."""
+
+    sections = markdown_sections(dossier_body)
+    route_section = sections.get("Route manifest", "")
+    manifest_cell = (markdown_label_value(route_section, "Route manifest") or "").strip()
+    proof_identity = semicolon_fields(
+        (markdown_label_value(
+            route_section, "First-screen proof build ID and primary route key"
+        ) or "").strip()
+    )
+    build_id = proof_identity.get("build_id", "")
+    expected_route_key = proof_identity.get("route_key", "")
+    manifest_failures, manifest, manifest_path = bound_route_manifest_failures(
+        manifest_cell,
+        project=project,
+        record_path=record_path,
+    )
+    failures = list(manifest_failures)
+    gate_cell = (
+        markdown_label_value(route_section, "First-screen gate") or ""
+    ).strip()
+    gate_path, binding_failures = bound_artifact(
+        gate_cell,
+        project=project,
+        record_path=record_path,
+        label="Reference dossier First-screen gate",
+    )
+    failures.extend(binding_failures)
+    if gate_path is None:
+        return failures
+    expected_path = (
+        project / ".design-dna" / "evidence" / "first-screen-gate.json"
+    ).resolve()
+    if gate_path.resolve() != expected_path:
+        failures.append(
+            "Reference dossier First-screen gate must bind "
+            ".design-dna/evidence/first-screen-gate.json."
+        )
+        return failures
+    try:
+        gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [*failures, f"First-screen gate is not readable JSON: {exc}"]
+    if not isinstance(gate, dict):
+        return [*failures, "First-screen gate must contain an object."]
+    gate_script = Path(__file__).resolve().parent / "gate.py"
+    if (
+        gate.get("tool") != "gate.py"
+        or gate.get("schema_version") != 2
+        or gate.get("producer_script_sha256") != file_sha256(gate_script)[1]
+    ):
+        failures.append(
+            "First-screen gate does not bind the current packaged gate.py identity."
+        )
+    expected_runtime = {
+        path.name: file_sha256(path)[1]
+        for path in [
+            gate_script,
+            Path(__file__).resolve(),
+            *sorted(gate_script.parent.glob("*.mjs"), key=lambda item: item.name),
+        ]
+    }
+    if gate.get("runtime_identity") != expected_runtime:
+        failures.append(
+            "First-screen gate runtime identity differs from the current packaged checks."
+        )
+    if gate.get("phase") != "first-screen" or not gate.get("route_key"):
+        failures.append(
+            "First-screen gate must be a `--phase first-screen --route-key` run."
+        )
+    if gate.get("route_key") != expected_route_key:
+        failures.append("First-screen gate route_key differs from the dossier proof identity.")
+    if gate.get("pass") is not True or gate.get("build_stable") is not True:
+        failures.append(
+            "First-screen source-fidelity gate did not pass on one byte-stable proof build."
+        )
+    if gate.get("build_id") != build_id:
+        failures.append("First-screen gate build_id differs from the bound route manifest.")
+    if manifest_path is not None and gate.get("route_manifest_sha256") != file_sha256(manifest_path)[1]:
+        failures.append("First-screen gate does not bind the current planned route manifest.")
+    if isinstance(manifest, dict):
+        if gate.get("planned_routes") != manifest.get("routes"):
+            failures.append("First-screen gate did not bind the full planned route set.")
+        active_routes = gate.get("routes")
+        route_key = gate.get("route_key")
+        if (
+            not isinstance(active_routes, list)
+            or len(active_routes) != 1
+            or not isinstance(active_routes[0], dict)
+            or active_routes[0].get("key") != route_key
+        ):
+            failures.append("First-screen gate must inspect exactly its declared route key.")
+        viewports = manifest.get("viewports")
+        coverage = gate.get("coverage_matrix")
+        if (
+            not isinstance(viewports, list)
+            or not isinstance(coverage, list)
+            or len(coverage) != len(viewports)
+        ):
+            failures.append(
+                "First-screen gate must inspect the selected route at every manifest viewport."
+            )
+    required_steps = {
+        "route-manifest", "census", "provenance", "structure", "mechanisms",
+        "signature-transfer", "dossier-binding", "dossier-core", "build-stability",
+        "runtime-stability", "served-content-consensus", "authorization-chain",
+        "route-manifest-snapshot", "dossier-snapshot",
+        "visible-decision-source-manifest", "visible-decision-source-snapshot",
+    }
+    steps = gate.get("steps")
+    step_names = {
+        str(step.get("name"))
+        for step in steps or []
+        if isinstance(step, dict)
+    }
+    if (
+        not isinstance(steps, list)
+        or any(not isinstance(step, dict) or step.get("pass") is not True for step in steps)
+        or not required_steps.issubset(step_names)
+        or not any(name.startswith("extract:") for name in step_names)
+    ):
+        failures.append(
+            "First-screen gate is missing a passing provenance, structure, "
+            "mechanism, signature, census, or viewport extraction step."
+        )
+    if not str(gate.get("verdict") or "").startswith("GATE PASS: first-screen"):
+        failures.append("First-screen gate has no canonical first-screen PASS verdict.")
+    if isinstance(manifest, dict):
+        failures.extend(
+            gate_runtime_evidence_failures(
+                gate,
+                project=project,
+                manifest=manifest,
+                phase="first-screen",
+                require_current_tree=True,
+            )
+        )
+    if gate.get("dossier_core_sha256") != dossier_core_sha256(record_path):
+        failures.append("First-screen gate does not bind the current normalized dossier core.")
+    authorization_id = gate.get("authorization_id")
+    authorization_relative = gate.get("authorization_path")
+    current_manifest_id = manifest.get("manifest_id") if isinstance(manifest, dict) else None
+    if (
+        not isinstance(authorization_id, str)
+        or re.fullmatch(r"[0-9a-f]{32}", authorization_id) is None
+        or not isinstance(authorization_relative, str)
+    ):
+        failures.append("First-screen gate has no generated authorization identity/path.")
+    else:
+        authorization_path = (project / PurePosixPath(authorization_relative)).resolve()
+        chain_failures, authorization, _authorization_sha = load_prebuild_authorization(
+            project, authorization_path
+        )
+        failures.extend(chain_failures)
+        if isinstance(authorization, dict):
+            gate_binding = authorization.get("first_screen_gate")
+            if (
+                authorization.get("authorization_id") != authorization_id
+                or authorization.get("proof_build_id") != gate.get("build_id")
+                or authorization.get("proof_tree_sha256") != gate.get("build_tree_sha256_before")
+                or authorization.get("manifest_id") != current_manifest_id
+                or authorization.get("manifest_sha256") != gate.get("route_manifest_sha256")
+                or authorization.get("dossier_core_sha256") != gate.get("dossier_core_sha256")
+                or not isinstance(gate_binding, dict)
+                or gate_binding.get("sha256") != file_sha256(gate_path)[1]
+            ):
+                failures.append("First-screen authorization does not bind the exact gate/project/dossier/manifest proof.")
+    return failures
 
 
 def combination_failures(value: str, label: str) -> list[str]:
@@ -8300,6 +15568,7 @@ def showcase_taste_calibration_failures(
         "Candidate/build under review",
         "Reviewer relationship and date",
         "Direct reviewable artifacts currently bound",
+        "Selected reference ranks and mapped organizing relationships being tested",
         "Missing evidence, explicit inability, and next decision",
     ):
         if required_label_value("taste-calibration", body, label) is None:
@@ -8323,10 +15592,11 @@ def showcase_taste_calibration_failures(
         sections.get("Reference dossier", "")
     )
     expected_reference_headers = (
-        "Source and retrieval date",
-        "Viewer-facing problem or role",
-        "Design to copy",
-        "Rights boundary",
+        "Selected rank, source, and retrieval date",
+        "Exact observation path and SHA-256",
+        "Brief-fit viewer role",
+        "Measured transferable relationship",
+        "Non-copying boundary",
     )
     if reference_headers != expected_reference_headers or not reference_rows:
         failures.append(
@@ -8749,6 +16019,8 @@ def render_comparison_body_failures(
     required_top_level = {
         "schema_version",
         "tool",
+        "producer_script_sha256",
+        "runtime_identity",
         "comparison_id",
         "created_at",
         "output_identity",
@@ -8770,23 +16042,35 @@ def render_comparison_body_failures(
     if set(report) != required_top_level:
         failures.append(
             "Cross-build comparison report must use the exact packaged "
-            "schema-1 top-level shape"
+            "schema-2 top-level shape"
         )
 
     tool = report.get("tool")
     if (
-        report.get("schema_version") != 1
+        report.get("schema_version") != 2
         or not isinstance(tool, dict)
         or tool != {
             "name": "design-dna-render-comparison",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "report_schema": "render-comparison.schema.json",
         }
     ):
         failures.append(
-            "Cross-build comparison report must use the packaged schema-1 "
+            "Cross-build comparison report must use the packaged schema-2 "
             "tool identity"
         )
+    compare_script = Path(__file__).resolve().parent / "compare_render_reviews.mjs"
+    resolver_script = Path(__file__).resolve().parent / "playwright_resolver.mjs"
+    render_schema = Path(__file__).resolve().parents[1] / "schemas" / "render-review.schema.json"
+    expected_comparison_runtime = {
+        "compare_render_reviews.mjs": file_sha256(compare_script)[1],
+        "playwright_resolver.mjs": file_sha256(resolver_script)[1],
+        "render-review.schema.json": file_sha256(render_schema)[1],
+    }
+    if report.get("producer_script_sha256") != expected_comparison_runtime["compare_render_reviews.mjs"]:
+        failures.append("Cross-build comparison report does not bind current comparator bytes.")
+    if report.get("runtime_identity") != expected_comparison_runtime:
+        failures.append("Cross-build comparison report runtime identity is stale.")
     if (
         report.get("execution_ok") is not True
         or report.get("review_required") is not True
@@ -8944,6 +16228,155 @@ def render_comparison_body_failures(
             "manual-review actions and limitations contract"
         )
 
+    artifact_rows: list[dict[str, object]] = []
+    artifact_paths: dict[tuple[int, str], Path] = {}
+    report_artifacts = report.get("artifacts")
+    contact = (
+        report_artifacts.get("contact_sheet")
+        if isinstance(report_artifacts, dict)
+        else None
+    )
+    records_to_validate: list[tuple[int, str, object]] = [(-1, "contact_sheet", contact)]
+    if isinstance(comparisons, list):
+        for comparison_index, comparison in enumerate(comparisons):
+            artifacts = comparison.get("artifacts") if isinstance(comparison, dict) else None
+            for role in ("baseline", "actual", "diff"):
+                records_to_validate.append(
+                    (
+                        comparison_index,
+                        role,
+                        artifacts.get(role) if isinstance(artifacts, dict) else None,
+                    )
+                )
+    for comparison_index, role, artifact_record in records_to_validate:
+        if (
+            not isinstance(artifact_record, dict)
+            or not isinstance(artifact_record.get("path"), str)
+            or not isinstance(artifact_record.get("sha256"), str)
+            or SHA256_HEX.fullmatch(artifact_record["sha256"]) is None
+            or type(artifact_record.get("bytes")) is not int
+        ):
+            failures.append(f"Cross-build comparison {role} artifact metadata is invalid.")
+            continue
+        artifact_path = (
+            report_path.parent / PurePosixPath(artifact_record["path"])
+        ).resolve()
+        if not is_within(artifact_path, report_path.parent.resolve()) or not artifact_path.is_file():
+            failures.append(f"Cross-build comparison {role} artifact is missing or escapes output.")
+            continue
+        size, digest = file_sha256(artifact_path)
+        if size != artifact_record["bytes"] or digest != artifact_record["sha256"]:
+            failures.append(f"Cross-build comparison {role} artifact bytes have drifted.")
+            continue
+        artifact_rows.append(
+            {"path": artifact_record["path"], "bytes": size, "sha256": digest}
+        )
+        artifact_paths[(comparison_index, role)] = artifact_path
+        if role != "contact_sheet":
+            try:
+                width, height = verify_png_artifact(artifact_path)
+            except StateError as exc:
+                failures.append(f"Cross-build comparison {role} PNG is invalid: {exc}")
+                continue
+            if (
+                artifact_record.get("pixel_width") != width
+                or artifact_record.get("pixel_height") != height
+            ):
+                failures.append(f"Cross-build comparison {role} PNG dimensions drifted.")
+
+    artifact_rows.sort(key=lambda item: str(item["path"]))
+    manifest_record = (
+        report_artifacts.get("manifest")
+        if isinstance(report_artifacts, dict)
+        else None
+    )
+    expected_artifact_manifest = {
+        "algorithm": "sha256-canonical-artifact-list-v1",
+        "sha256": canonical_json_sha256(artifact_rows),
+        "count": len(artifact_rows),
+        "bytes": sum(int(item["bytes"]) for item in artifact_rows),
+    }
+    if manifest_record != expected_artifact_manifest:
+        failures.append("Cross-build comparison artifact manifest does not match output files.")
+    if not isinstance(report_artifacts, dict) or report_artifacts.get("comparison_bytes") != expected_artifact_manifest["bytes"]:
+        failures.append("Cross-build comparison byte count does not match artifact manifest.")
+
+    recomputed_mismatches = 0
+    recomputed_pixels = 0
+    if isinstance(comparisons, list):
+        for index, comparison in enumerate(comparisons):
+            baseline_path = artifact_paths.get((index, "baseline"))
+            actual_path = artifact_paths.get((index, "actual"))
+            if baseline_path is None or actual_path is None or not isinstance(comparison, dict):
+                continue
+            try:
+                width, height, baseline_rgba = decoded_png_rgba(baseline_path)
+                actual_width, actual_height, actual_rgba = decoded_png_rgba(actual_path)
+            except StateError as exc:
+                failures.append(f"Cross-build comparison decoded PNG failed: {exc}")
+                continue
+            if (width, height) != (actual_width, actual_height):
+                failures.append("Cross-build comparison baseline/actual dimensions differ.")
+                continue
+            mismatch = sum(
+                1
+                for pixel in range(width * height)
+                if baseline_rgba[pixel * 4:pixel * 4 + 4]
+                != actual_rgba[pixel * 4:pixel * 4 + 4]
+            )
+            metrics = comparison.get("metrics")
+            expected_metrics = {
+                "algorithm": "exact-decoded-rgba-v1",
+                "total_pixels": width * height,
+                "mismatch_pixels": mismatch,
+                "mismatch_pixel_ratio": mismatch / (width * height),
+            }
+            if metrics != expected_metrics:
+                failures.append(f"Cross-build comparison capture {index + 1} metrics do not match decoded pixels.")
+            recomputed_mismatches += mismatch
+            recomputed_pixels += width * height
+    expected_summary = {
+        "capture_count": len(comparisons) if isinstance(comparisons, list) else 0,
+        "changed_capture_count": sum(
+            1
+            for comparison in comparisons or []
+            if isinstance(comparison, dict)
+            and isinstance(comparison.get("metrics"), dict)
+            and comparison["metrics"].get("mismatch_pixels", 0) > 0
+        ),
+        "total_pixels": recomputed_pixels,
+        "mismatch_pixels": recomputed_mismatches,
+        "mismatch_pixel_ratio": (
+            recomputed_mismatches / recomputed_pixels if recomputed_pixels else 0
+        ),
+    }
+    if summary != expected_summary:
+        failures.append("Cross-build comparison summary does not match decoded captures.")
+
+    marker_path = report_path.parent / ".design-dna-render-comparison.json"
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        marker = None
+        failures.append(f"Cross-build comparison output marker is missing or invalid: {exc}")
+    if isinstance(marker, dict):
+        marker_report = marker.get("report")
+        if (
+            marker.get("schema_version") != 2
+            or marker.get("marker_type") != "design-dna-render-comparison-output"
+            or marker.get("producer_script_sha256") != expected_comparison_runtime["compare_render_reviews.mjs"]
+            or marker.get("runtime_identity") != expected_comparison_runtime
+            or marker.get("output_identity") != report.get("output_identity")
+            or marker.get("artifact_manifest") != expected_artifact_manifest
+            or not isinstance(marker_report, dict)
+            or marker_report.get("path") != "render-comparison.json"
+            or marker_report.get("sha256") != file_sha256(report_path)[1]
+            or marker_report.get("bytes") != report_size
+            or marker.get("comparison_id_sha256")
+            != hashlib.sha256(str(report.get("comparison_id", "")).encode("utf-8")).hexdigest()
+        ):
+            failures.append("Cross-build comparison output marker does not bind report/runtime/artifacts.")
+
     comparison_context = report_declaration.casefold()
     reviewer_relationship = comparison_fields.get(
         "reviewer_relationship",
@@ -8966,6 +16399,387 @@ def render_comparison_body_failures(
             "candidate, capture count, compatibility, changed-capture count, "
             "and visual-review reviewer relationship"
         )
+    return failures
+
+
+QUICK_VISUAL_SOURCE_EXTENSIONS = {
+    ".css", ".scss", ".sass", ".less", ".html", ".htm", ".svg", ".png",
+    ".jpg", ".jpeg", ".webp", ".gif", ".avif", ".ico", ".woff", ".woff2",
+    ".ttf", ".otf", ".eot", ".jsx", ".tsx", ".vue", ".svelte",
+}
+
+
+def quick_impact_manifest_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+    comparison_report: dict[str, object],
+) -> list[str]:
+    failures: list[str] = []
+    value = (
+        markdown_label_value(body, "Authoritative Quick impact manifest") or ""
+    ).strip()
+    impact_path, binding_failures = bound_artifact(
+        value,
+        project=project,
+        record_path=record_path,
+        label="Authoritative Quick impact manifest",
+    )
+    failures.extend(binding_failures)
+    if impact_path is None or binding_failures:
+        return failures
+    expected_impact = (project / ".design-dna" / "quick-impact.json").resolve()
+    if impact_path.resolve() != expected_impact:
+        return [*failures, "Quick impact manifest must be .design-dna/quick-impact.json."]
+    try:
+        impact = json.loads(impact_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [*failures, f"Quick impact manifest is unreadable: {exc}"]
+    expected_keys = {
+        "schema_version", "record_type", "baseline_render_report",
+        "candidate_render_report", "changed_files", "authoritative_capture_ids",
+    }
+    if (
+        not isinstance(impact, dict)
+        or set(impact) != expected_keys
+        or impact.get("schema_version") != 1
+        or impact.get("record_type") != "design-dna-quick-impact"
+    ):
+        return [*failures, "Quick impact manifest has an unsupported schema."]
+
+    adapter, adapter_failure = load_schema3_render_review_adapter()
+    if adapter is None:
+        return [*failures, str(adapter_failure)]
+    contexts: dict[str, dict[str, object]] = {}
+    for role in ("baseline", "candidate"):
+        binding = impact.get(f"{role}_render_report")
+        if (
+            not isinstance(binding, dict)
+            or set(binding) != {"path", "sha256"}
+            or not isinstance(binding.get("path"), str)
+            or not isinstance(binding.get("sha256"), str)
+            or SHA256_HEX.fullmatch(binding["sha256"]) is None
+        ):
+            failures.append(f"Quick impact {role} render-report binding is invalid.")
+            continue
+        report_path = (project / PurePosixPath(binding["path"])).resolve()
+        if (
+            not is_within(report_path, project.resolve())
+            or not report_path.is_file()
+            or file_sha256(report_path)[1] != binding["sha256"]
+        ):
+            failures.append(f"Quick impact {role} render-report bytes are missing or drifted.")
+            continue
+        try:
+            budget = getattr(adapter, "EvidenceBudget")()
+            context = getattr(adapter, "load_schema3_render_review")(
+                project,
+                {"path": binding["path"], "sha256": binding["sha256"]},
+                f"quick-impact.{role}",
+                budget,
+            )
+        except Exception as exc:
+            failures.append(f"Quick impact {role} renderer evidence is invalid: {getattr(exc, 'message', str(exc))}")
+            continue
+        if isinstance(context, dict):
+            contexts[role] = context
+        else:
+            failures.append(f"Quick impact {role} renderer context is invalid.")
+    if set(contexts) != {"baseline", "candidate"}:
+        return failures
+
+    comparison_inputs = comparison_report.get("inputs")
+    for role in ("baseline", "candidate"):
+        context = contexts[role]
+        binding = impact[f"{role}_render_report"]
+        compared = comparison_inputs.get(role) if isinstance(comparison_inputs, dict) else None
+        source_report = context.get("report")
+        source_manifest = (
+            source_report.get("source_snapshot", {}).get("manifest")
+            if isinstance(source_report, dict)
+            and isinstance(source_report.get("source_snapshot"), dict)
+            else None
+        )
+        if (
+            not isinstance(compared, dict)
+            or compared.get("report_sha256") != binding["sha256"]
+            or compared.get("build", {}).get("id") != context.get("build_id")
+            or not isinstance(source_manifest, dict)
+            or compared.get("build", {}).get("source_manifest_sha256")
+            != source_manifest.get("manifest_sha256")
+        ):
+            failures.append(f"Quick comparison {role} input does not bind the selected renderer report/build/source manifest.")
+
+    baseline_report = contexts["baseline"].get("report")
+    candidate_report = contexts["candidate"].get("report")
+    baseline_files = (
+        baseline_report.get("source_snapshot", {}).get("manifest", {}).get("files")
+        if isinstance(baseline_report, dict)
+        else None
+    )
+    candidate_files = (
+        candidate_report.get("source_snapshot", {}).get("manifest", {}).get("files")
+        if isinstance(candidate_report, dict)
+        else None
+    )
+    if not isinstance(baseline_files, list) or not isinstance(candidate_files, list):
+        return [*failures, "Quick renderer reports must carry frozen source-file manifests."]
+    baseline_by_path = {
+        item["path"]: item for item in baseline_files
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    candidate_by_path = {
+        item["path"]: item for item in candidate_files
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    actual_changes: list[dict[str, object]] = []
+    for path_value in sorted(set(baseline_by_path) | set(candidate_by_path)):
+        before = baseline_by_path.get(path_value)
+        after = candidate_by_path.get(path_value)
+        before_sha = before.get("sha256") if before else None
+        after_sha = after.get("sha256") if after else None
+        if before_sha == after_sha:
+            continue
+        change = "added" if before is None else "deleted" if after is None else "modified"
+        actual_changes.append(
+            {
+                "path": path_value,
+                "change": change,
+                "baseline_sha256": before_sha,
+                "candidate_sha256": after_sha,
+            }
+        )
+    declared_changes = impact.get("changed_files")
+    if not isinstance(declared_changes, list) or not declared_changes:
+        failures.append("Quick impact manifest must declare at least one real changed file.")
+    else:
+        declared_projection = []
+        for index, item in enumerate(declared_changes, start=1):
+            if not isinstance(item, dict) or set(item) != {
+                "path", "change", "baseline_sha256", "candidate_sha256",
+                "mechanical_reason",
+            }:
+                failures.append(f"Quick changed-file row {index} has an unsupported shape.")
+                continue
+            if not isinstance(item.get("mechanical_reason"), str) or len(item["mechanical_reason"].strip()) < 20:
+                failures.append(f"Quick changed-file row {index} needs a substantive mechanical reason.")
+            suffix = PurePosixPath(str(item.get("path") or "")).suffix.casefold()
+            if suffix in QUICK_VISUAL_SOURCE_EXTENSIONS:
+                failures.append(
+                    f"Quick cannot modify visible-surface source or asset file {item.get('path')!r}; use Standard."
+                )
+            declared_projection.append({key: item.get(key) for key in (
+                "path", "change", "baseline_sha256", "candidate_sha256"
+            )})
+        if declared_projection != actual_changes:
+            failures.append("Quick changed_files is not the exact baseline/candidate source-manifest diff.")
+
+    def capture_ids(report: object) -> set[str]:
+        captures = report.get("captures") if isinstance(report, dict) else None
+        return {
+            str(capture.get("id"))
+            for capture in captures or []
+            if isinstance(capture, dict) and isinstance(capture.get("id"), str)
+        }
+
+    baseline_capture_ids = capture_ids(baseline_report)
+    candidate_capture_ids = capture_ids(candidate_report)
+    comparison_capture_ids = {
+        str(item.get("capture_id"))
+        for item in comparison_report.get("comparisons", [])
+        if isinstance(item, dict) and isinstance(item.get("capture_id"), str)
+    }
+    declared_capture_ids = impact.get("authoritative_capture_ids")
+    if (
+        not isinstance(declared_capture_ids, list)
+        or len(declared_capture_ids) != len(set(declared_capture_ids))
+        or set(declared_capture_ids) != baseline_capture_ids
+        or set(declared_capture_ids) != candidate_capture_ids
+        or set(declared_capture_ids) != comparison_capture_ids
+    ):
+        failures.append(
+            "Quick authoritative_capture_ids must equal every baseline, candidate, and comparison capture."
+        )
+    return failures
+
+
+def quick_visual_invariance_failures(
+    body: str,
+    *,
+    project: Path | None,
+    record_path: Path | None,
+) -> list[str]:
+    """Require exact before/after visual equality for the legacy quick profile.
+
+    `quick` is not a lower-quality website mode.  It is retained only for a
+    strictly nonvisual mechanical repair, so a completed record must bind a
+    fresh packaged comparison covering wide and narrow states with zero changed
+    pixels.  Anything else must use Standard and the reference-led gates.
+    """
+
+    failures: list[str] = []
+    scope = (
+        markdown_label_value(body, "Repair scope and affected routes/states")
+        or ""
+    ).strip()
+    purpose = (
+        markdown_label_value(body, "Changed files and mechanical purpose")
+        or ""
+    ).strip()
+    assertion = (
+        markdown_label_value(body, "Strictly nonvisual repair") or ""
+    ).strip().casefold()
+    if not non_placeholder(scope) or len(scope) < 12:
+        failures.append(
+            "Quick mechanical repair must name every affected route/state"
+        )
+    if not non_placeholder(purpose) or len(purpose) < 12:
+        failures.append(
+            "Quick mechanical repair must name the changed files and mechanical purpose"
+        )
+    if assertion != "yes":
+        failures.append(
+            "Quick is allowed only when Strictly nonvisual repair is exactly yes"
+        )
+
+    comparison_record = markdown_label_value(
+        body,
+        (
+            "Cross-build comparison identity, compatibility, changed captures, "
+            "reviewer, and result, or `not performed`"
+        ),
+    )
+    decision_value = markdown_label_value(body, "Cross-build decision")
+    if not comparison_record or comparison_record.strip().casefold().replace(
+        "-", " "
+    ).startswith("not performed"):
+        failures.append(
+            "Quick mechanical repair requires a performed packaged before/after render comparison"
+        )
+        return failures
+    parsed_decision = comparison_decision(decision_value or "")
+    if parsed_decision is None or parsed_decision[0] != "accept candidate":
+        failures.append(
+            "Quick mechanical repair requires an accept candidate cross-build decision after human review"
+        )
+
+    if project is None or record_path is None:
+        failures.append(
+            "Quick mechanical repair requires a project-local comparison report binding"
+        )
+        return failures
+    fields = semicolon_fields(comparison_record.strip().replace("`", ""))
+    report_value = fields.get("report", "")
+    if not report_value and ";" in comparison_record:
+        first_segment = comparison_record.split(";", 1)[0].strip()
+        if "sha256:" in first_segment.casefold():
+            report_value = first_segment
+    report_path, binding_failures = bound_artifact(
+        report_value,
+        project=project,
+        record_path=record_path,
+        label="Quick visual-invariance comparison report binding",
+    )
+    if binding_failures or report_path is None:
+        failures.extend(binding_failures)
+        return failures
+    try:
+        report = read_json(report_path)
+    except StateError as exc:
+        failures.append(f"Quick visual-invariance report is invalid JSON: {exc}")
+        return failures
+    if not isinstance(report, dict):
+        return [*failures, "Quick visual-invariance report must contain an object"]
+    failures.extend(
+        quick_impact_manifest_failures(
+            body,
+            project=project,
+            record_path=record_path,
+            comparison_report=report,
+        )
+    )
+
+    inputs = report.get("inputs")
+    baseline = inputs.get("baseline") if isinstance(inputs, dict) else None
+    candidate = inputs.get("candidate") if isinstance(inputs, dict) else None
+    baseline_build = (
+        baseline.get("build") if isinstance(baseline, dict) else None
+    )
+    candidate_build = (
+        candidate.get("build") if isinstance(candidate, dict) else None
+    )
+    baseline_id = (
+        baseline_build.get("id") if isinstance(baseline_build, dict) else None
+    )
+    candidate_id = (
+        candidate_build.get("id") if isinstance(candidate_build, dict) else None
+    )
+    if not baseline_id or not candidate_id or baseline_id == candidate_id:
+        failures.append(
+            "Quick visual invariance requires distinct baseline and candidate build IDs"
+        )
+
+    freshness = report.get("baseline_freshness")
+    if not isinstance(freshness, dict) or freshness.get("status") != "current":
+        failures.append("Quick visual invariance requires a current baseline")
+
+    summary = report.get("summary")
+    comparisons = report.get("comparisons")
+    if (
+        not isinstance(summary, dict)
+        or summary.get("changed_capture_count") != 0
+        or summary.get("mismatch_pixels") != 0
+        or summary.get("mismatch_pixel_ratio") != 0
+    ):
+        failures.append(
+            "Quick visual invariance requires zero changed captures and zero mismatched pixels"
+        )
+    if not isinstance(comparisons, list) or not comparisons:
+        failures.append("Quick visual invariance requires compared captures")
+        return failures
+
+    capture_widths: dict[tuple[str, str], set[int]] = {}
+    scope_folded = scope.casefold()
+    for comparison in comparisons:
+        if not isinstance(comparison, dict):
+            failures.append("Quick visual invariance contains an invalid comparison")
+            continue
+        metrics = comparison.get("metrics")
+        if (
+            not isinstance(metrics, dict)
+            or metrics.get("mismatch_pixels") != 0
+            or metrics.get("mismatch_pixel_ratio") != 0
+        ):
+            failures.append(
+                "Every Quick comparison capture must have zero pixel mismatch"
+            )
+        identity = comparison.get("identity")
+        if not isinstance(identity, dict):
+            failures.append("Quick visual invariance comparison lacks capture identity")
+            continue
+        route_id = identity.get("route_id")
+        scenario_id = identity.get("scenario_id")
+        viewport = identity.get("viewport")
+        width = viewport.get("width") if isinstance(viewport, dict) else None
+        if not isinstance(route_id, str) or not isinstance(scenario_id, str) or type(width) is not int:
+            failures.append("Quick visual invariance comparison has an invalid route/state viewport")
+            continue
+        capture_widths.setdefault((route_id, scenario_id), set()).add(width)
+        for visible_name in (identity.get("route_label"), identity.get("state_label")):
+            if isinstance(visible_name, str) and visible_name.strip() and visible_name.casefold() not in scope_folded:
+                failures.append(
+                    "Quick repair scope must name every compared route and state label"
+                )
+                break
+    for route_state, widths in capture_widths.items():
+        if not any(width <= 600 for width in widths) or not any(
+            width >= 900 for width in widths
+        ):
+            failures.append(
+                "Quick visual invariance requires wide and narrow captures for "
+                f"{route_state[0]}/{route_state[1]}"
+            )
     return failures
 
 
@@ -9229,6 +17043,7 @@ def substantive_body_failures(
     standard_or_stronger = bool(
         set(required_assurance_profiles or {"standard"}) - {"quick"}
     )
+    quick_only = set(required_assurance_profiles or ()) == {"quick"}
     if proportional:
         for capability in capabilities:
             required_sections = {
@@ -9244,7 +17059,7 @@ def substantive_body_failures(
         ):
             required_sections = {
                 *required_sections,
-                *PROJECT_DERIVED_DIRECTION_SECTIONS,
+                *REFERENCE_SOURCED_DIRECTION_SECTIONS,
             }
         if (
             record == "visual-review"
@@ -9254,6 +17069,11 @@ def substantive_body_failures(
             required_sections = {
                 *required_sections,
                 *STANDARD_VISUAL_REVIEW_SECTIONS,
+            }
+        if record == "visual-review" and quick_only:
+            required_sections = {
+                *required_sections,
+                *QUICK_VISUAL_REVIEW_SECTIONS,
             }
     missing_sections = sorted(required_sections - set(sections))
     if missing_sections:
@@ -9313,13 +17133,13 @@ def substantive_body_failures(
         ).strip()
         if not non_placeholder(project_evidence):
             failures.append(
-                "Project-derived organizing logic must bind non-placeholder "
+                "Reference-sourced organizing logic must bind non-placeholder "
                 "project evidence or authority"
             )
         if not non_placeholder(organizing_logic):
             failures.append(
-                "Project-derived organizing logic must state the free-form "
-                "organizing relationship, sequence, or behavior"
+                "Reference-sourced organizing logic must state the selected "
+                "reference ranks and mapped relationship, sequence, or behavior"
             )
         if (
             non_placeholder(project_evidence)
@@ -9344,7 +17164,7 @@ def substantive_body_failures(
         )
         expected_decision_headers = (
             "Decision",
-            "Project reason or source",
+            "Selected source rank and project-fit reason",
             "Observable consequence",
             "Verification",
         )
@@ -9481,7 +17301,7 @@ def substantive_body_failures(
         selected_value = (
             markdown_label_value(
                 body,
-                "Selected candidate ID and `creative_logic`",
+                "Selected candidate ID and source mapping",
             )
             or ""
         ).strip()
@@ -9592,7 +17412,7 @@ def substantive_body_failures(
             ("Routes, flows, and states", 5),
             ("Evidence, content, and authority", 5),
             ("Research and exploration", 4),
-            ("Creative logic", 7),
+            ("Source mappings and observable decisions", 7),
         ):
             _headers, rows = markdown_first_table(
                 sections.get(heading, "")
@@ -9644,11 +17464,11 @@ def substantive_body_failures(
             "blocked",
         }:
             failures.append(
-                "creative_logic status must be provisional, accepted, revised, "
+                "Source-mapping status must be provisional, accepted, revised, "
                 "rejected, or blocked"
             )
         _decision_headers, decision_rows = markdown_first_table(
-            sections.get("Creative logic", "")
+            sections.get("Source mappings and observable decisions", "")
         )
         decision_ids = [
             row[0].strip()
@@ -9885,6 +17705,14 @@ def substantive_body_failures(
                         record_path=record_path,
                     )
                 )
+        if quick_only:
+            failures.extend(
+                quick_visual_invariance_failures(
+                    body,
+                    project=project,
+                    record_path=record_path,
+                )
+            )
         review_headers, review_rows = markdown_first_table(
             sections.get("Rendered review", "")
         )
@@ -11206,7 +19034,7 @@ def validate_state_root(
             )
             if state_profiles and state_profiles != ("quick",):
                 failures.append(
-                    "state.json needs the current project-derived direction "
+                    "state.json needs the current reference-sourced direction "
                     "contract; run --migrate."
                 )
         elif state_profiles:
@@ -12312,10 +20140,110 @@ def route_family_prebuild_failures(path: Path) -> list[str]:
             "meaningful body-level comparison."
         )
         return failures
+    project = path.parent.parent
+    manifest_path = path.parent / "route-manifest.json"
+    try:
+        manifest = read_json(manifest_path)
+    except StateError as exc:
+        failures.append(f"Route-family needs the authoritative route manifest: {exc}")
+        manifest = None
+    manifest_routes: dict[str, dict[str, object]] = {}
+    if isinstance(manifest, dict):
+        manifest_failures = route_manifest_payload_failures(manifest)
+        manifest_failures.extend(route_manifest_reference_failures(manifest, project=project))
+        failures.extend(f"Route-family manifest: {failure}" for failure in manifest_failures)
+        manifest_routes = {
+            str(route.get("key")): route
+            for route in manifest.get("routes", [])
+            if isinstance(route, dict)
+        }
+        route_ids = {
+            str(route.get("id")) for route in routes if isinstance(route, dict)
+        }
+        if route_ids != set(manifest_routes):
+            failures.append(
+                "Route-family routes must equal every authoritative route-manifest key."
+            )
     for index, route in enumerate(routes):
         if not isinstance(route, dict):
             continue
         route_id = str(route.get("id", f"index-{index}"))
+        manifested = manifest_routes.get(route_id)
+        source_mapping = route.get("source_mapping")
+        if manifested is None:
+            failures.append(f"Route-family route {route_id!r} is not authoritative.")
+        else:
+            expected_path = normalize_safe_route_path(
+                urlsplit(str(manifested.get("url") or "")).path or "/"
+            )
+            declared_path = normalize_safe_route_path(str(route.get("path") or ""))
+            expected_mapping = {
+                "rank": manifested.get("mapped_reference_rank"),
+                "id": manifested.get("mapped_reference_id"),
+                "observation": manifested.get("mapped_reference_observation"),
+                "sha256": manifested.get("mapped_reference_sha256"),
+            }
+            if expected_path is None or declared_path is None or declared_path != expected_path:
+                failures.append(f"Route-family route {route_id!r} path differs from the route manifest.")
+            if source_mapping != expected_mapping:
+                failures.append(f"Route-family route {route_id!r} source_mapping differs from the exact manifested observation.")
+            mapped_state_ids = {
+                str(state.get("mapped_reference_state_id"))
+                for state in manifested.get("states", [])
+                if isinstance(state, dict)
+            }
+            components = route.get("component_sources")
+            if not isinstance(components, list) or not components:
+                failures.append(
+                    f"Route-family route {route_id!r} needs at least one exact component source mapping."
+                )
+            else:
+                for component_index, component in enumerate(components, start=1):
+                    if not isinstance(component, dict):
+                        failures.append(
+                            f"Route-family route {route_id!r} component {component_index} is invalid."
+                        )
+                        continue
+                    component_mapping = {
+                        "rank": component.get("source_rank"),
+                        "id": component.get("source_id"),
+                        "observation": component.get("source_observation"),
+                        "sha256": component.get("source_sha256"),
+                    }
+                    if (
+                        component_mapping != expected_mapping
+                        or component.get("source_state_id") not in mapped_state_ids
+                        or not non_placeholder(str(component.get("component") or ""))
+                        or not non_placeholder(str(component.get("transfer") or ""))
+                    ):
+                        failures.append(
+                            f"Route-family route {route_id!r} component {component_index} is not bound to its exact reference observation/source state."
+                        )
+            decisions = route.get("observable_decisions")
+            if not isinstance(decisions, list) or not decisions:
+                failures.append(
+                    f"Route-family route {route_id!r} needs at least one exact observable-decision source mapping."
+                )
+            else:
+                for decision_index, decision in enumerate(decisions, start=1):
+                    if not isinstance(decision, dict):
+                        failures.append(
+                            f"Route-family route {route_id!r} decision {decision_index} is invalid."
+                        )
+                        continue
+                    decision_mapping = {
+                        "rank": decision.get("source_rank"),
+                        "id": decision.get("source_id"),
+                        "observation": decision.get("source_observation"),
+                        "sha256": decision.get("source_sha256"),
+                    }
+                    if (
+                        decision_mapping != expected_mapping
+                        or decision.get("source_state_id") not in mapped_state_ids
+                    ):
+                        failures.append(
+                            f"Route-family route {route_id!r} decision {decision_index} is not bound to its exact reference observation/source state."
+                        )
         differences = route.get("deliberate_differences")
         if (
             not isinstance(differences, list)
@@ -12332,7 +20260,13 @@ def route_family_prebuild_failures(path: Path) -> list[str]:
         )
         if (
             not isinstance(viewports, list)
-            or len(viewports) < 2
+            or not isinstance(manifest, dict)
+            or viewports
+            != [
+                {"id": viewport.get("name"), "width": viewport.get("width")}
+                for viewport in manifest.get("viewports", [])
+                if isinstance(viewport, dict)
+            ]
             or any(
                 not isinstance(viewport, dict)
                 or not isinstance(viewport.get("width"), int)
@@ -12536,6 +20470,28 @@ def prebuild_failures(project: Path) -> list[str]:
             f"Prebuild {filename}: {failure}" for failure in record_failures
         )
 
+    if "reference-led-direction" in capability_set:
+        dossier_path = state_root / "reference-dossier.md"
+        if not dossier_path.is_file():
+            failures.append(
+                "Reference-led prebuild requires reference-dossier.md and its "
+                "first-screen source-fidelity gate."
+            )
+        else:
+            try:
+                _dossier_meta, dossier_body = read_frontmatter_document(dossier_path)
+            except StateError as exc:
+                failures.append(f"Reference-led prebuild dossier is unreadable: {exc}")
+            else:
+                failures.extend(
+                    "Prebuild first-screen gate: " + failure
+                    for failure in first_screen_gate_failures(
+                        dossier_body,
+                        project=project,
+                        record_path=dossier_path,
+                    )
+                )
+
     if "route-family" in records:
         failures.extend(
             route_family_prebuild_failures(state_root / "route-family.json")
@@ -12698,7 +20654,7 @@ def readiness_failures(project: Path) -> list[str]:
             if canonical_profiles != ("quick",):
                 return [
                     *failures,
-                    "state.json needs the current project-derived direction "
+                    "state.json needs the current reference-sourced direction "
                     "contract before readiness; run --migrate."
                 ]
         else:
@@ -13287,6 +21243,11 @@ def render_new_state(
             handle.flush()
             os.fsync(handle.fileno())
     (destination / "evidence").mkdir()
+    if "reference-dossier" in records:
+        # Contracts are rank-specific and bind real source URLs, so the
+        # initializer creates only their private home.  It never fabricates a
+        # `strong-N` contract or replaces an existing project-authored one.
+        (destination / "references").mkdir()
     append_required_ignore_lines(destination, STATE_PRIVACY_IGNORE_LINES)
 
 
@@ -13842,6 +21803,14 @@ def migrate_asset_manifest_contract(
             "publication_status decision",
             "concept_disclosure decision",
         ]
+        # Schema 1 did not have the current cryptographic source-binding
+        # contract.  Never preserve or manufacture a purported visual-source
+        # binding from that format: it would either be unverified legacy text
+        # or falsely imply that current observer/frame evidence exists.  Keep
+        # the migrated row explicitly unresolved until a reviewer supplies a
+        # fresh schema-2 binding backed by current generated artifacts.
+        if asset.pop("source_mapping", None) is not None:
+            unresolved.append("source_mapping binding")
         source_path = str(asset.get("source_path", "")).strip()
         inferred_type = ASSET_TYPE_BY_SUFFIX.get(
             Path(source_path).suffix.casefold(),
@@ -14199,6 +22168,14 @@ def migrate_staged_state(state_root: Path, current_version: str) -> list[str]:
         and "reference-dossier" not in migrated_records
     ):
         migrated_records.append("reference-dossier")
+    if (
+        "enterprise-candidate" in cumulative_profiles
+        and "route-manifest" not in migrated_records
+    ):
+        # Every build gate now derives its complete route/state/reference map
+        # from this single record.  Migrate old projects by adding the truthful
+        # unresolved template; never infer routes or claim coverage for them.
+        migrated_records.append("route-manifest")
     if source_contract is None:
         migrated_capabilities = inferred_evidence_capabilities(
             cumulative_profiles
@@ -15996,6 +23973,14 @@ def main() -> int:
                     "reference-led-direction",
                 }
             ),
+            *(
+                "route-manifest"
+                for capability in selected_evidence_capabilities
+                if capability in {
+                    "enterprise-candidate",
+                    "reference-led-direction",
+                }
+            ),
         ]))
         require_capability_record_selection(
             selected_evidence_capabilities,
@@ -16032,24 +24017,72 @@ def main() -> int:
             triggers=selected_triggers,
             version=version,
         )
+        effective_profiles = list(selected_assurance_profiles)
+        effective_records = list(selected)
+        effective_capabilities = list(
+            normalize_evidence_capabilities(
+                expand_enterprise_candidate_requirements([
+                    *inferred_evidence_capabilities(
+                        selected_assurance_profiles
+                    ),
+                    *selected_evidence_capabilities,
+                ])
+            )
+        )
+        result_scope = "planned-request" if args.dry_run else "persisted-effective-state"
+        if not args.dry_run:
+            # Installation is additive.  Report the state that was actually
+            # promoted, not only the fragment named by this invocation.  The
+            # old response made `--record reference-dossier` look as though it
+            # had replaced a Showcase/Contrast/Challenge state with a lone
+            # Standard record even when the transaction had preserved it.
+            persisted = read_json(project / ".design-dna" / "state.json")
+            if not isinstance(persisted, dict):
+                raise StateError(
+                    "promoted-state-unreadable",
+                    "The transaction completed but the promoted state.json could not be read.",
+                    path=project / ".design-dna" / "state.json",
+                )
+            persisted_profiles = persisted.get("assurance_profiles")
+            persisted_records = persisted.get("records")
+            if (
+                not isinstance(persisted_profiles, list)
+                or not all(isinstance(item, str) for item in persisted_profiles)
+                or not isinstance(persisted_records, list)
+                or not all(isinstance(item, str) for item in persisted_records)
+            ):
+                raise StateError(
+                    "promoted-state-invalid",
+                    "The transaction promoted an invalid assurance profile or record inventory.",
+                    path=project / ".design-dna" / "state.json",
+                )
+            effective_profiles = list(persisted_profiles)
+            effective_records = list(persisted_records)
+            persisted_contract = persisted.get("evidence_contract")
+            if isinstance(persisted_contract, dict):
+                persisted_capabilities = persisted_contract.get(
+                    "applicable_capabilities"
+                )
+                if isinstance(persisted_capabilities, list) and all(
+                    isinstance(item, str) for item in persisted_capabilities
+                ):
+                    effective_capabilities = list(persisted_capabilities)
         result = {
             "ok": True,
             "project": str(project),
             "version": version,
             "assurance_profile": selected_profile,
-            "assurance_profiles": list(selected_assurance_profiles),
+            "result_scope": result_scope,
+            "assurance_profiles": effective_profiles,
             "triggers": list(selected_triggers),
-            "evidence_capabilities": list(
-                normalize_evidence_capabilities(
-                    expand_enterprise_candidate_requirements([
-                        *inferred_evidence_capabilities(
-                            selected_assurance_profiles
-                        ),
-                        *selected_evidence_capabilities,
-                    ])
-                )
-            ),
-            "records": selected,
+            "evidence_capabilities": effective_capabilities,
+            "records": effective_records,
+            "requested": {
+                "assurance_profiles": list(selected_assurance_profiles),
+                "evidence_capabilities": list(selected_evidence_capabilities),
+                "records": list(selected),
+                "triggers": list(selected_triggers),
+            },
             "actions": actions,
         }
         print(json.dumps(result, indent=2) if args.json else "\n".join(

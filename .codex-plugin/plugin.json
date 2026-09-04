@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
-  "version": "6.1.0",
-  "description": "Cross-host web-design direction for truthful project-specific interfaces, visitor-serving copy, rendered verification, and opt-in Connected Public Experience.",
+  "version": "11.0.0",
+  "description": "Cross-host website production with specific, source-authorized visual decisions and no producer-authored design, visitor-serving copy, rendered verification, and opt-in Connected Public Experience.",
   "author": {
     "name": "Motty"
   },
@@ -22,8 +22,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Design DNA",
-    "shortDescription": "Project-specific web design with truthful proof.",
-    "longDescription": "Build, redesign, or review project-specific websites with visitor-serving copy, rendered verification, opt-in Connected Public Experience continuity, Project Contrast for recurrence concerns, and Direction Challenge for escalated high-ambition concepts.",
+    "shortDescription": "Source-authorized web design with truthful proof.",
+    "longDescription": "Build, redesign, or review websites whose visible layout, type, color, controls, spacing, motion, interactions, and components trace to recorded references or approved project authority, never producer-authored visual design, with visitor-serving copy and rendered verification.",
     "developerName": "Motty",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use $design-dna for project-specific web design with visitor-facing copy, honest state, and rendered verification."
+      "Use $design-dna: all visual decisions need qualified measured references or approved project authority; never invent design."
     ],
     "brandColor": "#164E63"
   }

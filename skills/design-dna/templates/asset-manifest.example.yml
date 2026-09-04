@@ -68,12 +68,20 @@ assets:
       legal_review_owner: ""
       legal_review_date: ""
       legal_review_reason: ""
-    # Optional. Omit this mapping when content_job and delivery already carry
-    # the useful decisions. When it is useful, replace both the key and value;
-    # there is no required subject, crop, palette, lighting, perspective, set,
-    # or other aesthetic field.
-    art_direction:
-      replace_with_project_specific_concern: "Replace with the decision, evidence, adaptation, or limit that matters to this exact asset."
+    # Add source_mapping only after this asset makes a visible decision that is
+    # bound to real, current selected-reference observation and frame bytes.
+    # The complete field shape is shown below as comments so a copied placeholder
+    # never impersonates proof with invented hashes or paths.
+    # source_mapping:
+    #   source_rank: 1
+    #   source_id: "strong-1"
+    #   observation: ".design-dna/references/strong-1-observation.json"
+    #   observation_sha256: "replace-with-exact-observation-sha256"
+    #   source_state_id: "replace-with-observed-state-id"
+    #   source_component_or_behavior: "Replace with the exact observed component, medium, or behavior this asset transfers."
+    #   measured_transfer: "Replace with the measured subject, medium, crop, motion, responsive, and state relationship retained here."
+    #   evidence_path: ".design-dna/references/strong-1-frames/replace-with-bound-evidence.png"
+    #   evidence_sha256: "replace-with-exact-evidence-sha256"
     delivery:
       source_dimensions: "Replace with verified intrinsic dimensions."
       output_dimensions:

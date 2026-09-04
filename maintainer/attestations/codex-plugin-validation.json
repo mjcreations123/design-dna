@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "record_type": "design-dna-codex-plugin-validation-attestation",
-  "created_at": "2026-08-25T01:52:57Z",
+  "created_at": "2026-09-04T11:17:48Z",
   "package": "design-dna",
-  "release_version": "6.0.0",
+  "release_version": "11.0.0",
   "validator": {
     "logical_id": "plugin-creator/validate_plugin.py",
-    "sha256": "7a75b3339396402ad9a40ddc1e037e01c54e71a53a3bfb22a01b1ca235c50206",
-    "bytes": 22172,
+    "sha256": "1e6cb914505b458856c2cfab7d18a224731c743ef47e0c9d78afe64f35b67f7c",
+    "bytes": 22396,
     "support_files": [
       {
         "logical_id": "plugin-creator/identifier_validation.py",
@@ -17,7 +17,7 @@
       }
     ],
     "trust_policy_path": "maintainer/trust/codex-plugin-validator.json",
-    "trust_policy_sha256": "2a86b7543f7dd3a31a40e77f3997487047351492fc08fa29ebea624d407dc834"
+    "trust_policy_sha256": "be1989f6eab646e198d396a1e33f0dedf1f56337e6b61a73c596b2343477bd28"
   },
   "python": {
     "implementation": "CPython",
@@ -51,17 +51,17 @@
   "inputs": {
     "plugin_manifest_tree": {
       "path": ".codex-plugin",
-      "sha256": "98996029e0770e5bbad32f82e491a4a98b9d590a45ff275e2cb4304ef501e2e2",
+      "sha256": "96085f8e3e722a7c0c7a882a319a17331db345273cea42efcfd84ce6273f3fe5",
       "entry_count": 1,
       "file_count": 1,
-      "byte_count": 1303
+      "byte_count": 1379
     },
     "skills_tree": {
       "path": "skills",
-      "sha256": "8389dcd4f0c76fc7469243c4d697aeb24df84cb73adeca902244674d42ce8dff",
-      "entry_count": 171,
-      "file_count": 156,
-      "byte_count": 3100075
+      "sha256": "70af7fa8713609400d2ba3a23a4a576e723682660b35fe66da2f4afc0b5f08a7",
+      "entry_count": 201,
+      "file_count": 186,
+      "byte_count": 4743178
     },
     "files": {
       "attestor": {
@@ -91,8 +91,8 @@
       },
       "trust_policy": {
         "path": "maintainer/trust/codex-plugin-validator.json",
-        "sha256": "2a86b7543f7dd3a31a40e77f3997487047351492fc08fa29ebea624d407dc834",
-        "bytes": 1234
+        "sha256": "be1989f6eab646e198d396a1e33f0dedf1f56337e6b61a73c596b2343477bd28",
+        "bytes": 1313
       }
     }
   },

@@ -27,17 +27,17 @@ small concepts and one-off prototypes in their direction and review records.
 - Rights, provenance, privacy, generated-media, and cultural authority:
 - Mapping confidence, known drift, and reconciliation owner:
 
-## Creative logic and design decisions
+## Source mappings and design decisions
 
-- Selected `creative_logic`: ID, statement, evidence, limits, status, and
-  project-specific extensions:
+- Selected reference mapping: ID, selected ranks and observation hashes,
+  exact source states/components, source-supplied relationships, limits, and status:
 
 | Decision ID | Accepted observable decision | Scope | Implementation source | Adaptation/maintenance boundary | Change authority |
 | --- | --- | --- | --- | --- | --- |
 |  |  | systemic, route-local, component-local, one-off, or exception |  |  |  |
 
 - Protected recognition and comprehension decisions:
-- Open creative fields for future work:
+- Unresolved source mappings that block future visible changes:
 - Decisions intentionally local and not to be generalized:
 - Proof-to-build deviations and owner dispositions:
 

@@ -353,9 +353,9 @@ class PublicCopyContractTests(unittest.TestCase):
 class ReferenceEvidenceContractTests(unittest.TestCase):
     """Keep the 6.1.0 reference-evidence contract durable.
 
-    The reference step is research only when it is provable: captured rows,
-    a floor tied to source spread instead of a quota, and a synthesis that
-    goes beyond its set.
+    The reference step is research only when it is provable: wide/narrow
+    captured rows, a floor tied to source spread instead of a quota, exact
+    brief-fit comparison, and a source-bound coherent synthesis.
     """
 
     def test_reference_count_is_a_floor_with_its_reason(self) -> None:
@@ -380,18 +380,100 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
 
     def test_every_reference_row_binds_a_capture(self) -> None:
         template = read("templates/reference-dossier-template.md")
-        self.assertEqual(2, template.count("Capture path and SHA-256"))
+        self.assertEqual(2, template.count("Wide capture path and SHA-256"))
+        self.assertEqual(2, template.count("Narrow capture path and SHA-256"))
+        self.assertIn("| Capture path and SHA-256 |", template)
         self.assertIn(".design-dna/references/", template)
         led = read("references/quality/reference-led-direction.md")
         self.assertIn("## Capture what you looked at", led)
         self.assertIn("plus sha256:", led)
+
+    def test_reference_selection_is_quality_gated_and_exact_brief_fit(self) -> None:
+        led = " ".join(
+            read("references/quality/reference-led-direction.md").casefold().split()
+        )
+        for phrase in (
+            "quality and exact brief fit are joint gates",
+            "do not choose from gallery order, a random result",
+            "study its complete legitimately accessible experience",
+            "candidate-comparison table",
+            "content model, visitor task, audience relationship, brand posture",
+            "concrete reason",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, led)
+
+        template = read("templates/reference-dossier-template.md")
+        self.assertIn("## Candidate comparison", template)
+        self.assertIn("Complete live pages, progression, and states studied", template)
+        self.assertIn("Brief-fit gate: organization/audience/task criteria passed/failed and bound evidence", template)
+        self.assertIn("Conjunctive disposition and concrete rejection reason", template)
+
+    def test_static_signature_contract_does_not_invent_motion(self) -> None:
+        led = read("references/quality/reference-led-direction.md")
+        self.assertIn("Prefix the signature `motion:` or `static:`", led)
+        self.assertIn("without inventing movement or adding a fake verb", led)
+        self.assertNotIn("Write the signature as a verb", led)
+
+        template = read("templates/reference-dossier-template.md")
+        for label in (
+            "### strong-N static evidence",
+            "- Wide capture:",
+            "- Narrow capture:",
+            "- Measured styles:",
+            "- Structure observation:",
+            "- Dominant static relationship:",
+        ):
+            with self.subTest(label=label):
+                self.assertIn(label, template)
+
+    def test_first_screen_gate_blocks_generic_structure_before_scaling(self) -> None:
+        skill = read("SKILL.md")
+        led = read("references/quality/reference-led-direction.md")
+        workflow = read("references/workflow.md")
+        dossier = read("templates/reference-dossier-template.md")
+        proof = read("templates/direction-proof-template.md")
+        for document in (skill, led, workflow):
+            with self.subTest(document=document[:40]):
+                self.assertIn("--phase first-screen", document)
+                self.assertIn("--route-key <PRIMARY_KEY>", document)
+                self.assertIn("first-screen-gate.json", document)
+        self.assertIn("- First-screen gate: __REPLACE_WITH_", dossier)
+        self.assertIn("- First-screen gate: __REPLACE_WITH_", proof)
+        self.assertIn("blocks the second section", proof)
+        self.assertIn("--phase final", skill)
+
+    def test_no_shortcuts_rule_reduces_scope_never_quality(self) -> None:
+        skill = " ".join(read("SKILL.md").casefold().split())
+        absolutes = " ".join(read("policy/absolutes.md").casefold().split())
+        led = " ".join(
+            read("references/quality/reference-led-direction.md").casefold().split()
+        )
+        workflow = " ".join(read("references/workflow.md").casefold().split())
+        for document in (skill, absolutes, led, workflow):
+            with self.subTest(document=document[:40]):
+                self.assertIn("time", document)
+                self.assertRegex(document, r"tokens?\b")
+                self.assertIn("cost", document)
+                self.assertRegex(document, r"90[- ]second")
+                self.assertRegex(document, r"15[- ]fps")
+                self.assertRegex(document, r"block(?:s|ed|ing)?.{0,80}present")
+
+        self.assertIn("mechanical repair (`quick` legacy cli identifier only)", skill)
+        self.assertIn("cannot lower research, capture, review, or gate rigor", skill)
+        self.assertIn("no homemade", workflow)
+        self.assertIn("post-hoc", workflow)
 
     def test_registry_declares_measured_retrieval_modes(self) -> None:
         payload = json.loads(read("references/quality/public-reference-sources.json"))
         modes = {source["id"]: source["retrieval"] for source in payload["sources"]}
         self.assertEqual("fetch", modes["awwwards"])
         self.assertEqual("browser", modes["godly"])
-        self.assertEqual("browser", modes["siteinspire"])
+        # SiteInspire was deliberately removed in 6.9.0 because the owner did
+        # not consider its entries good enough to research from. Keep the
+        # executable contract aligned with the registry instead of silently
+        # resurrecting a rejected source through a stale assertion.
+        self.assertNotIn("siteinspire", modes)
         self.assertEqual("none", modes["land-book"])
         for source in payload["sources"]:
             with self.subTest(source=source["id"]):
@@ -403,17 +485,21 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
         self.assertIn("## retrieve the way each source allows", led)
         self.assertIn("not evidence that the source is unavailable", led)
 
-    def test_synthesis_must_spread_and_elevate(self) -> None:
+    def test_synthesis_must_spread_and_remain_source_bound(self) -> None:
         template = read("templates/reference-dossier-template.md")
-        self.assertIn("Elevation beyond the references", template)
         self.assertIn("Ledger check", template)
         self.assertIn("at least four distinct", template)
-        self.assertIn(
+        self.assertIn("Dominant visual grammar by route", template)
+        self.assertIn("Execution improvements only", template)
+        self.assertNotIn("Elevation beyond the references", template)
+        self.assertNotIn(
             "Elevation beyond the references", read("templates/direction-template.md")
         )
-        self.assertIn("Elevation result", read("templates/visual-review-template.md"))
+        self.assertNotIn(
+            "Elevation result", read("templates/visual-review-template.md")
+        )
         led = read("references/quality/reference-led-direction.md")
-        self.assertIn("## Improve beyond the set", led)
+        self.assertIn("## Improve execution without adding design", led)
         self.assertIn("## Check the ledger before selecting", led)
 
     def test_ledger_records_references_used(self) -> None:
@@ -432,10 +518,13 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
         workflow = " ".join(read("references/workflow.md").casefold().split())
         self.assertIn("filling its references-used column from the dossier", workflow)
         router = read("references/router.md")
-        self.assertIn("capture every reference you weigh", router)
-        self.assertIn("elevation beyond the set", router)
+        self.assertIn("complete accessible pages, states, and wide/narrow widths", router)
+        self.assertIn("selection plus rejection reasons", router)
         visual = read("templates/visual-review-template.md")
-        self.assertIn("- Elevation result: __REPLACE_WITH_", visual)
+        self.assertIn("- Candidate selection result: __REPLACE_WITH_", visual)
+        self.assertIn("- Dominant grammar result: __REPLACE_WITH_", visual)
+        self.assertIn("- Route manifest: __REPLACE_WITH_", visual)
+        self.assertIn("- Gate result: __REPLACE_WITH_", visual)
         self.assertIn("def reference_led_closure_label_failures", read("scripts/init_project_state.py"))
 
     def test_fresh_public_builds_initialize_the_enterprise_profile(self) -> None:

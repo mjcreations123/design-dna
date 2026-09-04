@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "created_with": "design-dna 4.0.0",
   "classification": "internal",
   "study": {
@@ -21,13 +21,17 @@
       "path": "/",
       "title": "Root route",
       "user_job": "Enter the fixture and reach every declared path.",
-      "creative_logic": "A neutral index exposes literal route behavior without prescribing a visual treatment.",
       "observable_decisions": [
         {
           "decision": "Use literal links to every declared route.",
           "reason": "The link graph can prove direct destinations without runtime inference.",
           "evidence": "index.html",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The document remains a normal reading flow at both chosen widths.",
@@ -37,27 +41,51 @@
       "deliberate_differences": [],
       "capture_requirements": {
         "viewports": [
-          {"id": "fixture-wide", "width": 1280},
-          {"id": "fixture-narrow", "width": 412}
+          {
+            "id": "fixture-wide",
+            "width": 1280
+          },
+          {
+            "id": "fixture-narrow",
+            "width": 412
+          }
         ]
       },
-      "review_status": "implemented"
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "lakewood-case",
       "path": "/Lakewood/",
       "title": "Case-preserving route",
       "user_job": "Verify that route case is not folded into a lowercase recipe.",
-      "creative_logic": {
-        "path_property": "Preserve the uppercase L exactly.",
-        "evidence": ["Lakewood/index.html", "Literal navigation targets"]
-      },
       "observable_decisions": [
         {
           "decision": "Keep the source directory and declared path case aligned.",
           "reason": "Case can be significant on the deployed filesystem.",
           "evidence": "Lakewood/index.html",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The route uses the fixture's normal reading flow.",
@@ -67,24 +95,51 @@
       "deliberate_differences": [],
       "capture_requirements": {
         "viewports": [
-          {"id": "fixture-wide", "width": 1280},
-          {"id": "fixture-narrow", "width": 412}
+          {
+            "id": "fixture-wide",
+            "width": 1280
+          },
+          {
+            "id": "fixture-narrow",
+            "width": 412
+          }
         ]
       },
-      "review_status": "implemented"
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "torah-unicode",
       "path": "/תורה/",
       "title": "Unicode route",
       "user_job": "Verify a safe localized UTF-8 path without transliteration.",
-      "creative_logic": "Keep the supplied localized path as route evidence, not as raster decoration.",
       "observable_decisions": [
         {
           "decision": "Use the UTF-8 directory name and literal IRI path.",
           "reason": "Localized paths are valid route material.",
           "evidence": "תורה/index.html",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The route uses the fixture's normal reading flow.",
@@ -94,24 +149,51 @@
       "deliberate_differences": [],
       "capture_requirements": {
         "viewports": [
-          {"id": "fixture-wide", "width": 1280},
-          {"id": "fixture-narrow", "width": 412}
+          {
+            "id": "fixture-wide",
+            "width": 1280
+          },
+          {
+            "id": "fixture-narrow",
+            "width": 412
+          }
         ]
       },
-      "review_status": "implemented"
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "made-here",
       "path": "/made_here/",
       "title": "Underscore route",
       "user_job": "Verify that an underscore is preserved in a safe route segment.",
-      "creative_logic": "Keep the declared underscore instead of converting it to a preferred slug style.",
       "observable_decisions": [
         {
           "decision": "Match the underscore-bearing directory exactly.",
           "reason": "The audit should inspect the project's route rather than rename it.",
           "evidence": "made_here/index.html",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The route uses the fixture's normal reading flow.",
@@ -121,24 +203,51 @@
       "deliberate_differences": [],
       "capture_requirements": {
         "viewports": [
-          {"id": "fixture-wide", "width": 1280},
-          {"id": "fixture-narrow", "width": 412}
+          {
+            "id": "fixture-wide",
+            "width": 1280
+          },
+          {
+            "id": "fixture-narrow",
+            "width": 412
+          }
         ]
       },
-      "review_status": "implemented"
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "about-html",
       "path": "/about.html",
       "title": "Extension-bearing route",
       "user_job": "Verify that a real filename route is not rewritten as a directory route.",
-      "creative_logic": "Preserve the extension-bearing destination exactly as the project serves it.",
       "observable_decisions": [
         {
           "decision": "Resolve about.html as the declared destination.",
           "reason": "Rewriting it to about/index.html would assert a route that does not exist.",
           "evidence": "about.html",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The route uses the fixture's normal reading flow.",
@@ -148,11 +257,34 @@
       "deliberate_differences": [],
       "capture_requirements": {
         "viewports": [
-          {"id": "fixture-wide", "width": 1280},
-          {"id": "fixture-narrow", "width": 412}
+          {
+            "id": "fixture-wide",
+            "width": 1280
+          },
+          {
+            "id": "fixture-narrow",
+            "width": 412
+          }
         ]
       },
-      "review_status": "implemented"
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     }
   ],
   "review": {

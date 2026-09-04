@@ -17,6 +17,7 @@ from pathlib import Path
 MAINTAINER = Path(__file__).resolve().parents[1]
 SCRIPT = MAINTAINER / "scripts" / "manage_install.py"
 SCHEMA = MAINTAINER / "schemas" / "install-operation.schema.json"
+RUNTIME_SCRIPTS = MAINTAINER.parent / "skills" / "design-dna" / "scripts"
 
 
 class ManageInstallTests(unittest.TestCase):
@@ -167,6 +168,89 @@ class ManageInstallTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, payload)
         self.assertTrue(payload["ok"])
         return payload
+
+    @staticmethod
+    def write_browser_runtime(path: Path) -> None:
+        scripts = path / "scripts"
+        scripts.mkdir(exist_ok=True)
+        for name in ("playwright_resolver.mjs", "browser_preflight.mjs"):
+            shutil.copy2(RUNTIME_SCRIPTS / name, scripts / name)
+
+    @staticmethod
+    def write_fake_playwright(project: Path) -> None:
+        package = project / "node_modules" / "playwright"
+        package.mkdir(parents=True)
+        (package / "package.json").write_text(
+            '{"name":"playwright","version":"fixture-1","main":"index.js"}\n',
+            encoding="utf-8",
+        )
+        (package / "index.js").write_text(
+            "module.exports={chromium:{executablePath:()=>'',launch:async()=>({"
+            "version:()=> 'fixture-browser',newPage:async()=>({goto:async()=>{},close:async()=>{}}),close:async()=>{}})}};\n",
+            encoding="utf-8",
+        )
+
+    @unittest.skipIf(shutil.which("node") is None, "node is required")
+    def test_doctor_browser_project_checks_each_current_installed_runtime(self) -> None:
+        self.write_browser_runtime(self.source)
+        self.install_codex()
+        project = self.root / "browser-project"
+        project.mkdir()
+        self.write_fake_playwright(project)
+
+        completed, payload = self.command(
+            "doctor",
+            extra=["--browser-project", str(project)],
+            environment_overrides={
+                "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
+                "NODE_PATH": "",
+            },
+        )
+
+        self.assertEqual(0, completed.returncode, payload)
+        preflight = payload["hosts"][0]["browser_preflight"]
+        self.assertEqual("passed", preflight["status"])
+        self.assertEqual("browser-preflight-passed", preflight["code"])
+        self.assertTrue(preflight["launch_checked"])
+        self.assertEqual("project-local-node-modules", preflight["details"]["playwright_source"])
+        self.assertEqual("fixture-browser", preflight["details"]["browser_launch_version"])
+        self.assert_valid_schema(payload)
+
+    @unittest.skipIf(shutil.which("node") is None, "node is required")
+    def test_doctor_browser_project_reports_missing_module_without_fallback(self) -> None:
+        self.write_browser_runtime(self.source)
+        self.install_codex()
+        project = self.root / "browser-project"
+        project.mkdir()
+
+        completed, payload = self.command(
+            "doctor",
+            extra=["--browser-project", str(project)],
+            environment_overrides={
+                "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
+                "NODE_PATH": "",
+            },
+        )
+
+        self.assertEqual(1, completed.returncode, payload)
+        preflight = payload["hosts"][0]["browser_preflight"]
+        self.assertEqual("blocked", preflight["status"])
+        self.assertEqual("playwright-unavailable", preflight["code"])
+        self.assert_valid_schema(payload)
+
+    def test_browser_project_is_refused_for_mutating_commands(self) -> None:
+        project = self.root / "browser-project"
+        project.mkdir()
+        completed, payload = self.command(
+            "sync",
+            extra=["--browser-project", str(project)],
+        )
+        self.assertEqual(2, completed.returncode, payload)
+        self.assertEqual(
+            "browser-project-only-for-doctor",
+            payload["errors"][0]["code"],
+        )
+        self.assert_valid_schema(payload)
 
     def test_doctor_install_and_schema_validated_healthy_state(self) -> None:
         before, before_payload = self.command("doctor")

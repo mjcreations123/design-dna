@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-quick-impact",
+  "baseline_render_report": {
+    "path": "__REPLACE_WITH_PROJECT_RELATIVE_BASELINE_RENDER_REVIEW_JSON__",
+    "sha256": "__REPLACE_WITH_SHA256__"
+  },
+  "candidate_render_report": {
+    "path": "__REPLACE_WITH_PROJECT_RELATIVE_CANDIDATE_RENDER_REVIEW_JSON__",
+    "sha256": "__REPLACE_WITH_SHA256__"
+  },
+  "changed_files": [
+    {
+      "path": "__REPLACE_WITH_EXACT_CHANGED_PUBLIC_FILE__",
+      "change": "modified",
+      "baseline_sha256": "__REPLACE_WITH_BASELINE_SHA256_OR_NULL__",
+      "candidate_sha256": "__REPLACE_WITH_CANDIDATE_SHA256_OR_NULL__",
+      "mechanical_reason": "__REPLACE_WITH_STRICTLY_NONVISUAL_MECHANICAL_REASON__"
+    }
+  ],
+  "authoritative_capture_ids": [
+    "__REPLACE_WITH_EVERY_BASELINE_AND_CANDIDATE_CAPTURE_ID__"
+  ]
+}

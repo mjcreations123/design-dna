@@ -319,6 +319,23 @@ class RenderComparisonTests(unittest.TestCase):
         report_path = output / "render-comparison.json"
         report = json.loads(report_path.read_text(encoding="utf-8"))
         self.validator.validate(report)
+        producer_hash = sha256_bytes(COMPARATOR.read_bytes())
+        render_schema_hash = sha256_bytes(
+            (PACKAGE_ROOT / "skills" / "design-dna" / "schemas" / "render-review.schema.json").read_bytes()
+        )
+        resolver_hash = sha256_bytes(
+            (PACKAGE_ROOT / "skills" / "design-dna" / "scripts" / "playwright_resolver.mjs").read_bytes()
+        )
+        self.assertEqual(report["schema_version"], 2)
+        self.assertEqual(report["producer_script_sha256"], producer_hash)
+        self.assertEqual(
+            report["runtime_identity"],
+            {
+                "compare_render_reviews.mjs": producer_hash,
+                "playwright_resolver.mjs": resolver_hash,
+                "render-review.schema.json": render_schema_hash,
+            },
+        )
         self.assertEqual(report["summary"]["changed_capture_count"], 0)
         self.assertEqual(
             report["comparisons"][0]["metrics"]["mismatch_pixel_ratio"],
@@ -349,6 +366,37 @@ class RenderComparisonTests(unittest.TestCase):
         )
         self.assertEqual(marker["report"]["bytes"], len(report_bytes))
         self.assertEqual(marker["report"]["sha256"], sha256_bytes(report_bytes))
+        self.assertEqual(marker["schema_version"], 2)
+        self.assertEqual(marker["producer_script_sha256"], producer_hash)
+        self.assertEqual(marker["runtime_identity"], report["runtime_identity"])
+        artifact_rows = [
+            {
+                "path": report["artifacts"]["contact_sheet"]["path"],
+                "bytes": report["artifacts"]["contact_sheet"]["bytes"],
+                "sha256": report["artifacts"]["contact_sheet"]["sha256"],
+            }
+        ]
+        for comparison in report["comparisons"]:
+            for name in ("baseline", "actual", "diff"):
+                artifact = comparison["artifacts"][name]
+                artifact_rows.append(
+                    {"path": artifact["path"], "bytes": artifact["bytes"], "sha256": artifact["sha256"]}
+                )
+        artifact_rows.sort(key=lambda item: item["path"])
+        manifest_hash = sha256_bytes(
+            json.dumps(
+                artifact_rows,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        )
+        self.assertEqual(report["artifacts"]["manifest"]["sha256"], manifest_hash)
+        self.assertEqual(marker["artifact_manifest"], report["artifacts"]["manifest"])
+        self.assertEqual(
+            report["artifacts"]["comparison_bytes"],
+            report["artifacts"]["manifest"]["bytes"],
+        )
         serialized = report_path.read_text(encoding="utf-8")
         self.assertNotIn(str(self.baseline_output), serialized)
         self.assertNotIn(str(self.browser.parent), serialized)

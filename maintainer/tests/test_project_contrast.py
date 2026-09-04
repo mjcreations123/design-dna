@@ -276,6 +276,9 @@ def prepared_contract(
 ) -> dict:
     evidence = root / "evidence"
     evidence.mkdir(parents=True)
+    state = root / ".design-dna"
+    references = state / "references"
+    references.mkdir(parents=True)
     files = {
         "build.txt": b"candidate-build-v1\n",
         "wide.png": WIDE_PNG,
@@ -298,6 +301,57 @@ def prepared_contract(
         route=render_route,
         wide_interaction=wide_interaction,
     )
+    observer_path = SKILL_ROOT / "scripts" / "observe_reference.mjs"
+    observation_path = references / "strong-1-observation.json"
+    observed_states = {"rest": {"id": "rest"}}
+    if wide_interaction:
+        observed_states["opened"] = {"id": "opened"}
+    observation_path.write_text(json.dumps({
+        "tool": "observe_reference.mjs",
+        "schema_version": 5,
+        "producer_script_sha256": digest(observer_path.read_bytes()),
+        "runtime_identity": {
+            "observe_reference.mjs": digest(observer_path.read_bytes()),
+            "structure_probe.mjs": digest((SKILL_ROOT / "scripts" / "structure_probe.mjs").read_bytes()),
+            "browser_evidence.mjs": digest((SKILL_ROOT / "scripts" / "browser_evidence.mjs").read_bytes()),
+            "playwright_resolver.mjs": digest((SKILL_ROOT / "scripts" / "playwright_resolver.mjs").read_bytes()),
+        },
+        "id": "strong-1",
+        "url": "https://reference.example/",
+        "states_by_viewport": {
+            "wide": observed_states,
+            "narrow": observed_states,
+        },
+    }, indent=2) + "\n", encoding="utf-8")
+    observation_sha = digest(observation_path.read_bytes())
+    manifest_path = state / "route-manifest.json"
+    manifest_path.write_text(json.dumps({
+        "schema_version": 2,
+        "manifest_id": "manifest-project-contrast-001",
+        "viewports": [
+            {"name": "wide", "width": 1440, "height": 900},
+            {"name": "narrow", "width": 390, "height": 844},
+        ],
+        "routes": [{
+            "key": "home",
+            "url": f"http://127.0.0.1{render_route}",
+            "mapped_reference_rank": 1,
+            "mapped_reference_id": "strong-1",
+            "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+            "mapped_reference_sha256": observation_sha,
+            "states": [{
+                "id": "rest", "kind": "rest",
+                "trigger": {"type": "none", "target": "document", "value": None},
+                "expectation": "initial settled route",
+                "mapped_reference_state_id": "rest",
+            }] + ([{
+                "id": "opened", "kind": "interactive",
+                "trigger": {"type": "click", "target": "#fixture-control", "value": None},
+                "expectation": "opened interaction state",
+                "mapped_reference_state_id": "opened",
+            }] if wide_interaction else []),
+        }],
+    }, indent=2) + "\n", encoding="utf-8")
     raw = FIXTURE_PATH.read_text(encoding="utf-8")
     replacements = {
         "__BUILD_SHA256__": hashes["build.txt"],
@@ -311,12 +365,12 @@ def prepared_contract(
         "__UNPRIMED_SHA256__": hashes["unprimed.md"],
         "__PAIRED_SHA256__": hashes["paired.md"],
         "__OWNER_REVIEW_SHA256__": hashes["owner-review.md"],
+        "__SOURCE_OBSERVATION_SHA256__": observation_sha,
+        "__ROUTE_MANIFEST_SHA256__": digest(manifest_path.read_bytes()),
     }
     for token, value in replacements.items():
         raw = raw.replace(token, value)
     contract = json.loads(raw)
-    state = root / ".design-dna"
-    state.mkdir()
     (state / "project-contrast.json").write_text(
         json.dumps(contract, indent=2) + "\n", encoding="utf-8"
     )
@@ -716,6 +770,7 @@ class ProjectContrastAuditTests(unittest.TestCase):
             contract = prepared_contract(root, wide_interaction=True)
             wide = contract["evidence"]["captures"][0]
             wide["capture_state"] = "interaction"
+            wide["source_mapping"]["state_id"] = "opened"
             report = AUDITOR.audit_payload(root, contract)
             self.assertTrue(report["ready"])
             self.assertEqual(wide["capture_mode"], "full-page")
@@ -1087,99 +1142,111 @@ class ProjectContrastAuditTests(unittest.TestCase):
             codes = {entry["code"] for entry in errors}
             self.assertIn("technical-foundation-has-public-evidence", codes)
 
-    def test_seven_static_routes_reject_root_only_representative_scope(self) -> None:
+    def test_legacy_reduced_route_coverage_mode_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             contract = copy.deepcopy(prepared_contract(root))
-            site = root / "site"
-            site.mkdir()
-            (site / "index.html").write_text("<!doctype html><title>root</title>", encoding="utf-8")
-            for name in ("about", "visit", "work", "notes", "contact", "archive"):
-                page = site / name
-                page.mkdir()
-                (page / "index.html").write_text(f"<!doctype html><title>{name}</title>", encoding="utf-8")
-            contract["scope"]["route_coverage"] = {
-                "mode": "representative",
-                "rationale": "Root was selected before the route family was reviewed.",
-            }
-            report = AUDITOR.audit_payload(root, contract)
-            gap_codes = {entry["code"] for entry in report["gaps"]}
-            self.assertFalse(report["ready"])
-            self.assertIn("route-coverage-representative-too-narrow", gap_codes)
+            contract["scope"]["route_coverage"]["mode"] = "representative"
+            errors, _ = AUDITOR.validate_contract_payload(contract)
+            self.assertIn("invalid-value", {entry["code"] for entry in errors})
 
-    def test_static_route_coverage_requires_each_discovered_route_to_be_captured_or_represented(self) -> None:
+    def test_route_coverage_equals_every_authoritative_manifest_route(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             contract = copy.deepcopy(prepared_contract(root))
-            site = root / "site"
-            site.mkdir()
-            (site / "index.html").write_text("<!doctype html><title>root</title>", encoding="utf-8")
-            for name in ("about", "contact"):
-                page = site / name
-                page.mkdir()
-                (page / "index.html").write_text(f"<!doctype html><title>{name}</title>", encoding="utf-8")
-            contract["scope"]["route_coverage"] = {
-                "mode": "representative",
-                "rationale": "The documented repair-intake route represents equivalent information-only public routes.",
-                "discovered_route_map": [
-                    {
-                        "route": "/",
-                        "coverage": "captured",
-                        "representative_route": None,
-                        "equivalence_rationale": "The root route is directly reviewed at wide and narrow conditions.",
-                    },
-                    {
-                        "route": "/about/",
-                        "coverage": "represented",
-                        "representative_route": "/",
-                        "equivalence_rationale": "About uses the same informational route job, reading order, public shell, and responsive system as the reviewed root route.",
-                    },
-                ],
-            }
+            manifest_path = root / ".design-dna" / "route-manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            second = copy.deepcopy(manifest["routes"][0])
+            second.update({"key": "about", "url": "http://127.0.0.1/about/"})
+            manifest["routes"].append(second)
+            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+            contract["scope"]["route_coverage"]["manifest"]["sha256"] = digest(manifest_path.read_bytes())
+            report = AUDITOR.audit_payload(root, contract)
+            codes = {entry["code"] for entry in report["findings"]}
+            self.assertFalse(report["ready"])
+            self.assertIn("route-scope-manifest-mismatch", codes)
+            self.assertIn("route-coverage-manifest-keys-mismatch", codes)
+
+    def test_route_coverage_cannot_drift_from_exact_reference_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            contract["scope"]["route_coverage"]["routes"][0]["source_mapping"]["state_id"] = "invented"
             report = AUDITOR.audit_payload(root, contract)
             self.assertFalse(report["ready"])
-            self.assertIn(
-                "route-coverage-map-missing-discovered-routes",
-                {entry["code"] for entry in report["gaps"]},
-            )
+            self.assertIn("route-coverage-manifest-binding-mismatch", {entry["code"] for entry in report["findings"]})
 
-    def test_static_route_mapping_can_use_one_directly_reviewed_equivalent_representative(self) -> None:
+    def test_route_coverage_cannot_bind_an_alternate_manifest_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             contract = copy.deepcopy(prepared_contract(root))
-            site = root / "site"
-            site.mkdir()
-            (site / "index.html").write_text("<!doctype html><title>root</title>", encoding="utf-8")
-            for name in ("about", "contact"):
-                page = site / name
-                page.mkdir()
-                (page / "index.html").write_text(f"<!doctype html><title>{name}</title>", encoding="utf-8")
-            contract["scope"]["route_coverage"] = {
-                "mode": "representative",
-                "rationale": "One complete route is a reviewed representative for equivalent information-only public routes.",
-                "discovered_route_map": [
-                    {
-                        "route": "/",
-                        "coverage": "captured",
-                        "representative_route": None,
-                        "equivalence_rationale": "The root route is directly reviewed at wide and narrow conditions.",
-                    },
-                    {
-                        "route": "/about/",
-                        "coverage": "represented",
-                        "representative_route": "/",
-                        "equivalence_rationale": "About has the same direct-entry information job, responsive body system, and persistent public shell as the reviewed root route.",
-                    },
-                    {
-                        "route": "/contact/",
-                        "coverage": "represented",
-                        "representative_route": "/",
-                        "equivalence_rationale": "Contact has the same informational route job, responsive reading sequence, and public system as the reviewed root route in this static prototype.",
-                    },
-                ],
-            }
-            report = AUDITOR.audit_payload(root, contract)
-            self.assertTrue(report["ready"])
+            contract["scope"]["route_coverage"]["manifest"]["path"] = "evidence/alternate-manifest.json"
+            errors, _ = AUDITOR.validate_contract_payload(contract)
+            self.assertIn("route-manifest-path-invalid", {entry["code"] for entry in errors})
+
+    def test_project_basis_cannot_replace_exact_axis_or_prediction_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = copy.deepcopy(prepared_contract(root))
+            contract["selected_direction"]["observable_predictions"][0]["source_mapping"]["state_id"] = "invented"
+            contract["design_signature"]["axes"][0]["source_mapping"]["state_id"] = "invented"
+            errors, _ = AUDITOR.validate_contract_payload(contract)
+            codes = {entry["code"] for entry in errors}
+            self.assertIn("prediction-source-mismatch", codes)
+            self.assertIn("axis-source-mismatch", codes)
+
+    def test_authoritative_manifest_state_contract_fails_closed(self) -> None:
+        mutations = {
+            "duplicate state": lambda states: states.append(copy.deepcopy(states[0])),
+            "rest not first": lambda states: states.insert(0, {
+                "id": "opened",
+                "kind": "interactive",
+                "trigger": {"type": "click", "target": "#fixture-control", "value": None},
+                "expectation": "fixture control is visibly opened",
+                "mapped_reference_state_id": "rest",
+            }),
+            "underspecified expectation": lambda states: states.append({
+                "id": "opened",
+                "kind": "interactive",
+                "trigger": {"type": "click", "target": "#fixture-control", "value": None},
+                "expectation": "open",
+                "mapped_reference_state_id": "rest",
+            }),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                contract = copy.deepcopy(prepared_contract(root))
+                manifest_path = root / ".design-dna" / "route-manifest.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                mutate(manifest["routes"][0]["states"])
+                manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                contract["scope"]["route_coverage"]["manifest"]["sha256"] = digest(manifest_path.read_bytes())
+                report = AUDITOR.audit_payload(root, contract)
+                self.assertFalse(report["ready"])
+                self.assertIn("route-manifest-invalid", {entry["code"] for entry in report["findings"]})
+
+    def test_authoritative_manifest_rejects_viewport_aliases_and_mixed_origins(self) -> None:
+        mutations = {
+            "duplicate viewport": lambda manifest: manifest["viewports"][1].update({"name": "wide"}),
+            "mixed origin": lambda manifest: manifest["routes"].append({
+                **copy.deepcopy(manifest["routes"][0]),
+                "key": "second",
+                "url": "http://localhost/second/",
+            }),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                contract = copy.deepcopy(prepared_contract(root))
+                manifest_path = root / ".design-dna" / "route-manifest.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                mutate(manifest)
+                manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                contract["scope"]["route_coverage"]["manifest"]["sha256"] = digest(manifest_path.read_bytes())
+                report = AUDITOR.audit_payload(root, contract)
+                self.assertFalse(report["ready"])
+                self.assertIn("route-manifest-invalid", {entry["code"] for entry in report["findings"]})
 
     def test_direction_ready_lifecycle_rejects_unresolved_draft_values(self) -> None:
         template = json.loads(

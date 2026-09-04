@@ -15,9 +15,10 @@ decision dependencies, evidence, limits, and useful actions. Make price,
 scope, availability, location, delivery, contact, and conversion behavior as
 truthful and discoverable as the decision requires.
 
-Let the actual offer determine content order, route structure, composition,
-media, typography, and interaction. No hero, action count, feature section,
-testimonial structure, FAQ, proof module, or closing form is required.
+Use the actual offer to qualify references, then copy their fitting content
+order, route structure, composition, media, typography, and interaction. No
+hero, action count, feature section, testimonial structure, FAQ, proof module,
+or closing form may be invented merely because the mode is persuasive.
 
 Immediate comprehension is often important for transactional and service
 offers. A brand, entertainment, or editorial campaign may unfold differently
@@ -64,10 +65,9 @@ specialists.
 - Remove, explain, or defer controls that do not work.
 
 The aesthetic may be familiar, unconventional, minimal, maximal, decorative,
-image-led, typographic, interactive, or another form. Judge whether the
-rendered `creative_logic` supports the real decision and owner brief. No
-single font, component, effect, composition, media treatment, or fashionable
-choice is a failure by itself.
+image-led, typographic, or interactive only when selected measured references
+supply it. Judge whether the rendered source mapping supports the real decision
+and owner brief. No single ingredient fails by name, but none is producer-open.
 
 ## Review
 
@@ -76,7 +76,8 @@ interchangeable route structure, misleading media, repeated producer grammar,
 unclear actions, or expression that obscures important terms. Diagnose causes
 without turning observed ingredients into a blacklist.
 
-Test relevant entry points, claims, assets, actions, forms, price, policy,
-privacy, consent, errors, success, content variation, mobile behavior,
-performance, metadata, and handoffs. Use Read and Operate guidance where the
-route's job actually changes.
+Test every route/state/wide-narrow cell in the authoritative manifest plus all
+applicable claims, assets, actions, forms, price, policy, privacy, consent,
+errors, success, content variation, performance, metadata, and handoffs. Use
+Read and Operate guidance where the route's job actually changes; blocked
+evidence stays blocked rather than being sampled away.

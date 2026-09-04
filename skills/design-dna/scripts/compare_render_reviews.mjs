@@ -11,20 +11,24 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { browserExecutableIdentity, discoverBrowserExecutable as discoverSharedBrowser, resolvePlaywright } from "./playwright_resolver.mjs";
 
 const TOOL_NAME = "design-dna-render-comparison";
-const TOOL_VERSION = "1.0.0";
-const SCHEMA_VERSION = 1;
+const TOOL_VERSION = "2.0.0";
+const SCHEMA_VERSION = 2;
 const REPORT_NAME = "render-comparison.json";
 const CONTACT_SHEET_NAME = "comparison.html";
 const MARKER_NAME = ".design-dna-render-comparison.json";
 const TRANSACTION_MARKER = ".design-dna-render-comparison.transaction.json";
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
+const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(await readFile(SCRIPT_PATH)).digest("hex");
+const PLAYWRIGHT_RESOLVER_SHA256 = createHash("sha256").update(
+  await readFile(path.join(path.dirname(SCRIPT_PATH), "playwright_resolver.mjs")),
+).digest("hex");
 const SKILL_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
 const PACKAGE_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "../../..");
 const RENDER_SCHEMA_PATH = path.join(
@@ -124,7 +128,7 @@ function parseArgs(argv) {
     output: null,
     comparisonId: null,
     masks: null,
-    browserExecutable: null,
+    browserExecutable: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
     help: false,
   };
   const seen = new Set();
@@ -1178,6 +1182,7 @@ function environmentProjection(report) {
     "execution.platform": report.execution.platform,
     "execution.architecture": report.execution.architecture,
     "execution.playwright_version": report.execution.playwright_version,
+    "execution.playwright_entry_sha256": report.execution.playwright_entry_sha256,
     "execution.browser.engine": report.execution.browser.engine,
     "execution.browser.product_hint": report.execution.browser.product_hint,
     "execution.browser.version": report.execution.browser.version,
@@ -1185,6 +1190,8 @@ function environmentProjection(report) {
       report.execution.browser.executable_source,
     "execution.browser.executable_name":
       report.execution.browser.executable_name,
+    "execution.browser.executable_sha256":
+      report.execution.browser.executable_sha256,
   };
 }
 
@@ -1380,124 +1387,22 @@ async function validateOutput(raw, inputRoots) {
 }
 
 function loadPlaywright() {
-  const moduleDir = process.env.DESIGN_DNA_PLAYWRIGHT_MODULE_DIR;
   try {
-    const requireFrom = moduleDir
-      ? createRequire(
-          path.join(path.resolve(moduleDir), "__design_dna_loader__.cjs"),
-        )
-      : createRequire(import.meta.url);
-    const playwright = requireFrom("playwright");
-    const metadata = requireFrom("playwright/package.json");
-    if (!playwright?.chromium) throw new Error("chromium unavailable");
+    const loaded = resolvePlaywright({ moduleUrl: import.meta.url });
     return {
-      playwright,
-      version: String(metadata.version ?? "unknown"),
-      source: moduleDir
-        ? "environment-module-directory"
-        : "normal-node-resolution",
+      playwright: loaded.playwright,
+      version: loaded.dependency.version,
+      source: loaded.source,
+      dependency: loaded.dependency,
     };
-  } catch {
+  } catch (error) {
     throw new ComparisonError(
-      "playwright-unavailable",
-      "Playwright could not be loaded. Install it normally or set DESIGN_DNA_PLAYWRIGHT_MODULE_DIR to its node_modules directory.",
-      {},
+      error?.code || "playwright-unavailable",
+      String(error?.message || error),
+      error?.details || {},
       3,
     );
   }
-}
-
-function executableCandidates() {
-  const candidates = [];
-  if (process.platform === "win32") {
-    for (const base of [
-      process.env.PROGRAMFILES,
-      process.env["PROGRAMFILES(X86)"],
-      process.env.LOCALAPPDATA,
-      process.env.ProgramW6432,
-    ]) {
-      if (!base) continue;
-      candidates.push(
-        path.join(base, "Google", "Chrome", "Application", "chrome.exe"),
-        path.join(base, "Microsoft", "Edge", "Application", "msedge.exe"),
-      );
-    }
-  } else if (process.platform === "darwin") {
-    candidates.push(
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-      "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-      "/Applications/Chromium.app/Contents/MacOS/Chromium",
-    );
-  }
-  const names =
-    process.platform === "win32"
-      ? ["chrome.exe", "msedge.exe", "chromium.exe"]
-      : [
-          "google-chrome",
-          "google-chrome-stable",
-          "microsoft-edge",
-          "chromium",
-          "chromium-browser",
-        ];
-  for (const directory of (process.env.PATH ?? "")
-    .split(path.delimiter)
-    .filter(Boolean)) {
-    for (const name of names) candidates.push(path.join(directory, name));
-  }
-  return candidates;
-}
-
-async function discoverBrowser(chromium, explicit) {
-  if (explicit) {
-    if (looksLikeUri(explicit)) {
-      throw new ComparisonError(
-        "browser-executable-invalid",
-        "--browser-executable must be a local regular file.",
-        {},
-        3,
-      );
-    }
-    assertSafeFilesystemArgument(explicit);
-    const executable = path.resolve(explicit);
-    await assertNoSymlinkComponents(executable);
-    const info = await stat(executable).catch(() => null);
-    if (!info?.isFile()) {
-      throw new ComparisonError(
-        "browser-executable-invalid",
-        "--browser-executable must identify an existing regular file.",
-        {},
-        3,
-      );
-    }
-    return {
-      path: executable,
-      source: "explicit",
-      name: path.basename(executable),
-    };
-  }
-  const bundled = chromium.executablePath?.();
-  if (bundled && (await stat(bundled).catch(() => null))?.isFile()) {
-    return { path: bundled, source: "playwright", name: "chromium" };
-  }
-  const seen = new Set();
-  for (const candidate of executableCandidates()) {
-    const normalized = normalizePathForComparison(candidate);
-    if (seen.has(normalized)) continue;
-    seen.add(normalized);
-    if ((await stat(candidate).catch(() => null))?.isFile()) {
-      return {
-        path: path.resolve(candidate),
-        source: "system-discovery",
-        name: path.basename(candidate),
-      };
-    }
-  }
-  throw new ComparisonError(
-    "browser-unavailable",
-    "No local Chromium-family browser was found. Supply --browser-executable.",
-    {},
-    3,
-  );
 }
 
 async function comparePngs(page, baselineBytes, candidateBytes, expected) {
@@ -1645,6 +1550,22 @@ function artifactRecord(relativePath, bytes, width, height) {
   };
 }
 
+function artifactManifest(comparisons, contactSheet) {
+  const records = [
+    { path: contactSheet.path, bytes: contactSheet.bytes, sha256: contactSheet.sha256 },
+    ...comparisons.flatMap((comparison) => ["baseline", "actual", "diff"].map((name) => {
+      const artifact = comparison.artifacts[name];
+      return { path: artifact.path, bytes: artifact.bytes, sha256: artifact.sha256 };
+    })),
+  ].sort((a, b) => a.path.localeCompare(b.path));
+  return {
+    algorithm: "sha256-canonical-artifact-list-v1",
+    sha256: sha256(canonicalJson(records)),
+    count: records.length,
+    bytes: records.reduce((total, record) => total + record.bytes, 0),
+  };
+}
+
 function inputIdentity(evidence) {
   return {
     role: evidence.role,
@@ -1722,17 +1643,20 @@ function buildContactSheet(comparisonId, comparisons, freshness, warnings) {
 </main></body></html>`;
 }
 
-function outputMarker(outputIdentity, reportBytes, comparisonId, createdAt) {
+function outputMarker(outputIdentity, reportBytes, comparisonId, createdAt, runtimeIdentity, artifacts) {
   return {
-    schema_version: 1,
+    schema_version: SCHEMA_VERSION,
     marker_type: "design-dna-render-comparison-output",
     tool: { name: TOOL_NAME, version: TOOL_VERSION },
+    producer_script_sha256: PRODUCER_SCRIPT_SHA256,
+    runtime_identity: runtimeIdentity,
     output_identity: outputIdentity,
     report: {
       path: REPORT_NAME,
       sha256: sha256(reportBytes),
       bytes: reportBytes.length,
     },
+    artifact_manifest: artifacts,
     created_at: createdAt,
     comparison_id_sha256: sha256(comparisonId),
   };
@@ -1807,9 +1731,8 @@ async function run(options) {
     await mkdir(captureRoot);
 
     const loaded = loadPlaywright();
-    const browserExecutable = await discoverBrowser(
-      loaded.playwright.chromium,
-      options.browserExecutable,
+    const browserExecutable = browserExecutableIdentity(
+      discoverSharedBrowser(loaded.playwright, options.browserExecutable),
     );
     try {
       browser = await loaded.playwright.chromium.launch({
@@ -1948,11 +1871,30 @@ async function run(options) {
     }
     await writeFile(path.join(staging, CONTACT_SHEET_NAME), contactPayload);
     outputBytes += contactPayload.length;
+    const contactSheet = {
+      path: CONTACT_SHEET_NAME,
+      sha256: sha256(contactPayload),
+      media_type: "text/html",
+      bytes: contactPayload.length,
+    };
+    const artifactsManifest = artifactManifest(comparisons, contactSheet);
+    if (artifactsManifest.bytes !== outputBytes) {
+      throw new ComparisonError(
+        "artifact-manifest-accounting-invalid",
+        "The canonical artifact manifest byte total does not equal the generated comparison artifacts.",
+        {},
+      );
+    }
 
     const createdAt = new Date().toISOString();
     const outputIdentity = {
       id: randomBytes(32).toString("hex"),
       path_sha256: sha256(normalizePathForComparison(output)),
+    };
+    const runtimeIdentity = {
+      "compare_render_reviews.mjs": PRODUCER_SCRIPT_SHA256,
+      "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
+      "render-review.schema.json": renderSchemaSha256,
     };
     const report = {
       schema_version: SCHEMA_VERSION,
@@ -1961,6 +1903,8 @@ async function run(options) {
         version: TOOL_VERSION,
         report_schema: "render-comparison.schema.json",
       },
+      producer_script_sha256: PRODUCER_SCRIPT_SHA256,
+      runtime_identity: runtimeIdentity,
       comparison_id: options.comparisonId,
       created_at: createdAt,
       output_identity: outputIdentity,
@@ -1974,12 +1918,14 @@ async function run(options) {
         architecture: process.arch,
         playwright_version: loaded.version,
         playwright_source: loaded.source,
+        playwright_entry_sha256: loaded.dependency.resolved_file_sha256,
         browser: {
           engine: "chromium",
           product_hint: browserExecutable.name,
           version: browser.version(),
           executable_source: browserExecutable.source,
           executable_name: path.basename(browserExecutable.path),
+          executable_sha256: browserExecutable.sha256,
         },
         network_policy:
           "offline-about-blank-data-png-decode-all-routed-requests-blocked",
@@ -2032,13 +1978,9 @@ async function run(options) {
         mismatch_pixel_ratio: totalPixels ? mismatchPixels / totalPixels : 0,
       },
       artifacts: {
-        contact_sheet: {
-          path: CONTACT_SHEET_NAME,
-          sha256: sha256(contactPayload),
-          media_type: "text/html",
-          bytes: contactPayload.length,
-        },
+        contact_sheet: contactSheet,
         comparison_bytes: outputBytes,
+        manifest: artifactsManifest,
       },
       manual_review: {
         status: "required",
@@ -2071,6 +2013,8 @@ async function run(options) {
           reportPayload,
           options.comparisonId,
           createdAt,
+          runtimeIdentity,
+          artifactsManifest,
         ),
       ),
       "utf8",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -36,6 +37,70 @@ def load_route_audit_module():
 class CreativeFreedomContractTests(unittest.TestCase):
     """Protect the release from silently turning rigor into a house style."""
 
+    def test_active_runtime_and_guidance_have_no_creative_logic_lane(self) -> None:
+        active_files = [
+            *(path for path in SKILL.rglob("*") if path.is_file() and "tests" not in path.parts),
+            PACKAGE_ROOT / "README.md",
+            *(path for path in (PACKAGE_ROOT / "docs").rglob("*") if path.is_file()),
+        ]
+        offenders = []
+        for path in active_files:
+            if path.suffix.casefold() not in {".md", ".json", ".yml", ".yaml", ".py", ".mjs"}:
+                continue
+            if re.search(r"creative[-_ ]logic|\blogic_id\b", path.read_text(encoding="utf-8", errors="replace"), re.IGNORECASE):
+                offenders.append(path.relative_to(PACKAGE_ROOT).as_posix())
+        self.assertEqual([], offenders, "Active source/state/component contracts cannot expose a creative_logic prose lane.")
+
+    def test_hachnasas_postbuild_failure_is_a_high_value_attestation_input(self) -> None:
+        suite = load_json(EVAL_FIXTURES / "behavioral-cases.json")
+        case = next(
+            item for item in suite["cases"]
+            if item.get("id") == "hachnasas-postbuild-provenance-browser-qa-negative"
+        )
+        self.assertTrue(case["adversarial"])
+        self.assertTrue(case["release_coverage"]["high_value"])
+        combined = " ".join([case["task"], *case["review_requirements"]]).casefold()
+        for required in (
+            "first-screen", "multi-route", "short height", "hidden", "fixed rail",
+            "background inertness", "initial focus", "focus containment", "focus return",
+            "aria-expanded", "dead primary", "moving welcome", "static svg",
+            "font", "mark", "palette", "builder-facing", "stale copied source",
+            "live rendered authority",
+        ):
+            self.assertIn(required, combined)
+
+        fixture = EVAL_FIXTURES / "inputs" / "hachnasas-postbuild-qa-negative"
+        readme = read(fixture / "README.md").casefold()
+        reuse = read(fixture / "SOURCE-REUSE.md").casefold()
+        html = read(fixture / "index.html")
+        css = read(fixture / "styles.css")
+        script = read(fixture / "app.js")
+
+        # Preserve a real adversarial package, not merely prose that names the
+        # expected findings. Each release-attestation run must encounter the
+        # archived failures in source and then confirm them in a live browser.
+        self.assertIn("complete three-route", readme)
+        self.assertIn("first-screen prototype", readme)
+        self.assertIn("moving welcome film", readme)
+        self.assertIn("not rerun", reuse)
+        self.assertIn("not revalidated", reuse)
+        self.assertIn('class="rail-button rail-button--view"', html)
+        self.assertIn('class="menu-panel" aria-hidden="true"', html)
+        self.assertIn("This section uses our new component system and will become video later.", html)
+        self.assertIn('src="welcome-still.svg"', html)
+        self.assertNotIn("aria-expanded", html)
+        self.assertNotIn("aria-controls", html)
+        self.assertIn("font-family: Arial", css)
+        self.assertIn("--invented-purple", css)
+        self.assertIn("--invented-lime", css)
+        self.assertIn(".rail-button--view { display: none; }", css)
+        self.assertRegex(css, r"\.control-rail\s*\{[^}]*z-index:\s*90")
+        self.assertRegex(css, r"\.menu-panel\s*\{[^}]*z-index:\s*20")
+        self.assertIn("event.currentTarget.style.filter", script)
+        self.assertNotIn(".focus()", script)
+        self.assertNotIn("keyboard.press", script)
+        self.assertNotIn("location.assign", script)
+
     def test_legacy_font_convergence_policy_is_not_shipped(self) -> None:
         self.assertFalse(
             (SKILL / "policy" / "type-convergence-watch.yml").exists()
@@ -48,16 +113,14 @@ class CreativeFreedomContractTests(unittest.TestCase):
         )
         self.assertFalse((SCHEMAS / "pattern-history.schema.json").exists())
 
-    def test_runtime_typography_guidance_has_no_family_allow_or_deny_list(self) -> None:
+    def test_runtime_typography_is_source_bound_without_family_allow_or_deny_list(self) -> None:
         typography = read(
             SKILL / "references" / "craft" / "typography.md"
         ).casefold()
         self.assertIn("no universal set of \"ai fonts,\"", typography)
         self.assertIn("system font can be an intentional identity decision", typography)
-        self.assertIn(
-            "self-hosted files, a trusted service, platform fonts, system fonts",
-            typography,
-        )
+        self.assertIn("the producer never chooses a typeface", typography)
+        self.assertIn("rank-one substitute", typography)
         self.assertNotIn("approved font list", typography)
         self.assertNotIn("forbidden font list", typography)
         self.assertNotIn("preferred font list", typography)
@@ -93,12 +156,15 @@ class CreativeFreedomContractTests(unittest.TestCase):
             with self.subTest(rule=rule):
                 self.assertNotIn(rule, runtime)
 
-        assurance = read(SKILL / "policy" / "absolutes.md").casefold()
+        assurance = " ".join(
+            read(SKILL / "policy" / "absolutes.md").casefold().split()
+        )
         self.assertIn("not an aesthetic blacklist", assurance)
         self.assertIn("truth and provenance", assurance)
         self.assertIn("access and working behavior", assurance)
         self.assertIn("aesthetic, expressive, compositional", assurance)
-        self.assertIn("ingredients remain neutral and open", assurance)
+        self.assertIn("ingredients remain neutral across projects", assurance)
+        self.assertIn("producer has no open design lane", assurance)
         for motif in (
             "hero formulas",
             "font choices",
@@ -113,7 +179,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             with self.subTest(motif=motif):
                 self.assertNotIn(motif, assurance)
 
-    def test_neutral_ingredients_remain_available_to_project_judgment(self) -> None:
+    def test_neutral_ingredients_require_source_authority_not_producer_judgment(self) -> None:
         typography = read(SKILL / "references" / "craft" / "typography.md").casefold()
         watch = " ".join(
             read(SKILL / "references" / "convergence-watch.md")
@@ -130,7 +196,9 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("colored, italic, underlined, outlined, animated", typography)
         self.assertIn("singular, plural, layered, local, restrained, maximal", freedom)
         self.assertIn("no universal richness or memorability device is required", freedom)
-        self.assertIn("gradients, icons, and conventional components are neutral", policy)
+        self.assertIn("do not fail by category, but none is producer-open", policy)
+        self.assertIn("zero producer creative freedom", freedom)
+        self.assertIn("selected measured source", policy)
 
     def test_voids_nested_frames_and_isolated_headline_lines_remain_open(self) -> None:
         layout = " ".join(
@@ -166,6 +234,8 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertNotIn("a wrapping defect the balancing text-wrap", typography)
         self.assertIn("unconvincing hierarchy or pacing", layout)
         self.assertIn("composition that does not fit the project", layout)
+        self.assertIn("source-supported pacing", layout)
+        self.assertIn("selected rank, observation hash", layout)
         self.assertIn("proportional figures may better fit", typography)
         self.assertIn("rather than gluing every pair", typography)
         self.assertNotIn("compared figures need tabular", typography)
@@ -346,14 +416,29 @@ class CreativeFreedomContractTests(unittest.TestCase):
             self.assertNotIn("truthful, contemporary", artifact)
             self.assertNotIn("must feel specific, contemporary", artifact)
 
-    def test_creative_freedom_keeps_aesthetic_dimensions_open(self) -> None:
+    def test_skill_entrypoint_metadata_preserves_source_authority(self) -> None:
+        entrypoint = read(SKILL / "agents" / "openai.yaml").casefold()
+
+        self.assertIn(
+            'short_description: "source-authorized web design; no invented visible choices"',
+            entrypoint,
+        )
+        self.assertIn(
+            'default_prompt: "use $design-dna to build only from qualified measured references or approved project authority; invent no visible design."',
+            entrypoint,
+        )
+        self.assertIn("allow_implicit_invocation: true", entrypoint)
+        self.assertNotIn("creative range", entrypoint)
+
+    def test_creative_range_is_source_supplied_not_producer_authored(self) -> None:
         freedom = read(
             SKILL / "references" / "creative-freedom.md"
         ).casefold()
         for statement in (
-            "does not require or prohibit a font",
-            "fixed number of concepts or proofs applies across projects",
-            "aesthetic autonomy",
+            "hard source-authority lock",
+            "zero producer creative freedom",
+            "producer aesthetic lane",
+            "preserve source-supplied expression",
             "does not detect ai authorship",
         ):
             with self.subTest(statement=statement):
@@ -390,12 +475,11 @@ class CreativeFreedomContractTests(unittest.TestCase):
             with self.subTest(field=legacy_field):
                 self.assertNotIn(legacy_field, schema_text)
                 self.assertNotIn(legacy_field, template_text)
-        self.assertIn('"creative_logic"', schema_text)
+        self.assertNotIn('"creative_logic"', schema_text)
+        self.assertIn('"source_mapping"', schema_text)
+        self.assertIn('"component_sources"', schema_text)
         self.assertIn('"observable_decisions"', schema_text)
         self.assertNotIn("maxitems", schema["properties"]["routes"])
-        creative_logic = schema["$defs"]["creative_logic"]
-        self.assertEqual(len(creative_logic["oneOf"]), 2)
-        self.assertEqual(creative_logic["oneOf"][1]["type"], "object")
         self.assertEqual(
             schema["$defs"]["route"]["properties"]["deliberate_differences"]["minItems"],
             0,
@@ -407,7 +491,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             "not-required",
         )
 
-    def test_active_route_family_fixtures_use_the_current_open_contract(self) -> None:
+    def test_active_route_family_fixtures_use_current_source_bound_contract(self) -> None:
         suite = load_json(EVAL_FIXTURES / "behavioral-cases.json")
         route_audit = load_route_audit_module()
         legacy_fields = (
@@ -438,7 +522,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             payload = load_json(contract)
             self.assertEqual(
                 payload["schema_version"],
-                2,
+                3,
                 f"{input_dir} must use the current route-family schema.",
             )
             for route in payload["routes"]:
@@ -476,7 +560,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         extension_errors, _ = route_audit.validate_contract_payload(
             extension_probe
         )
-        self.assertEqual(extension_errors, [])
+        self.assertIn("unknown-properties", {item["code"] for item in extension_errors})
 
         self.assertEqual(
             inspected,
@@ -901,33 +985,41 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("scale the review to stage, claim, audience risk", asset_guidance)
         self.assertIn("a decorative asset does not need an invented", asset_guidance)
         self.assertIn("aesthetic, atmospheric, ornamental, or compositional role", asset_example)
-        self.assertIn("there is no required subject, crop, palette", asset_example)
+        self.assertIn("`content_job` records purpose; it is not visual authority", asset_guidance)
 
-    def test_asset_art_direction_is_optional_and_project_defined(self) -> None:
+    def test_asset_visual_direction_cannot_be_freeform_authority(self) -> None:
         initializer = read(SKILL / "scripts" / "init_project_state.py")
         asset_example = read(
             SKILL / "templates" / "asset-manifest.example.yml"
         ).casefold()
-        asset_guidance = read(
-            SKILL / "references" / "quality" / "asset-integrity.md"
-        ).casefold()
+        asset_guidance = " ".join(
+            read(SKILL / "references" / "quality" / "asset-integrity.md")
+            .casefold()
+            .split()
+        )
 
-        self.assertIn('asset_extensible_mapping_fields = {"art_direction"}', initializer.casefold())
+        self.assertNotIn('asset_extensible_mapping_fields', initializer.casefold())
+        self.assertNotIn('"art_direction"', initializer.casefold())
+        self.assertNotIn("art_direction:", asset_example)
+        self.assertNotIn("`art_direction`", asset_guidance)
+        self.assertIn("does not accept a freeform visual-direction field", asset_guidance)
         optional_block = initializer.split("ASSET_OPTIONAL_FIELDS = {", 1)[1].split("}", 1)[0]
-        self.assertIn('"art_direction"', optional_block)
-        nested_block = initializer.split("ASSET_NESTED_FIELDS = {", 1)[1].split(
-            "ASSET_LIST_FIELDS = {", 1
-        )[0]
-        self.assertNotIn('"art_direction": {', nested_block)
-        for fixed_field in (
-            "crop_or_safe_zone:",
-            "lighting_palette_perspective:",
-            "set_consistency_notes:",
+        self.assertIn('"source_mapping"', optional_block)
+        nested_block = initializer.split('"source_mapping": {', 1)[1].split("},", 1)[0]
+        for field in (
+            "source_rank", "source_id", "observation", "observation_sha256",
+            "source_state_id", "source_component_or_behavior", "measured_transfer",
+            "evidence_path", "evidence_sha256",
         ):
-            with self.subTest(field=fixed_field):
-                self.assertNotIn(fixed_field, asset_example)
-        self.assertIn("replace_with_project_specific_concern", asset_example)
-        self.assertIn("`art_direction` is optional and extensible", asset_guidance)
+            with self.subTest(field=field):
+                self.assertIn(f'"{field}"', nested_block)
+                self.assertIn(f"{field}:", asset_example)
+        for binding in (
+            "exact selected rank", "observation bytes", "source state",
+            "source component or behavior", "manifested route/state", "measured transfer",
+        ):
+            with self.subTest(binding=binding):
+                self.assertIn(binding, asset_guidance)
 
     def test_flow_guidance_does_not_ban_a_message_geometry(self) -> None:
         messaging = read(

@@ -19,8 +19,8 @@ turn them into one undifferentiated score.
 - **Perception:** use screenshots, recordings, or the live artifact for
   project fit, hierarchy, composition, visual quality, currentness,
   credibility, and audience response.
-- **Direction parity:** compare the final candidate with the selected
-  `creative_logic`, observable decisions, proof, and previous accepted
+- **Direction parity:** compare the final candidate with the exact selected
+  source/state/component map, observable decisions, proof, and previous accepted
   baseline; separate intentional evolution from drift.
 - **Specificity closure:** when the request explicitly rejects generic,
   templated, repeated, vibe-coded, or allegedly AI-looking work, run the
@@ -52,7 +52,7 @@ Typical conditions include narrow through wide and short-height layouts;
 touch, keyboard, pointer, hover/no-hover; default, loading, empty, error,
 success, disabled, permission, destructive, cancellation, and recovery;
 content extremes; translation and RTL; theme, zoom, text enlargement, reduced
-motion, and contrast preferences. This is an extensible condition set, not a
+motion, and contrast preferences. This is a project-scoped condition set, not a
 universal screenshot quota. Mark relevant omissions and why.
 
 ## Choose project questions
@@ -61,8 +61,8 @@ Use the questions that can decide this project's readiness:
 
 - **Project fit:** Which real project, audience, owner, cultural, or system
   evidence explains the result?
-- **Creative logic:** Are the accepted observable decisions present and well
-  executed? Does the candidate's singular, plural, layered, familiar,
+- **Source transfer:** Are the accepted source/state/component mappings present and well
+  executed? Does the selected reference system's singular, plural, layered, familiar,
   decorative, restrained, maximal, or other logic work on its own terms?
 - **Visual quality:** Do typography, composition, spacing, color
   relationships, media, material, ornament, interaction, and detail reach the
@@ -75,9 +75,9 @@ Use the questions that can decide this project's readiness:
   habit?
 - **Copy and claims:** Are voice, labels, actions, proof, numbers, and endings
   concrete, authoritative, and free of an unexplained rhetorical machine?
-- **Aesthetic autonomy:** Do ornamental, atmospheric, playful, or formal
-  choices succeed in the whole composition without pretending to be evidence
-  or utility?
+- **Source-supplied expression:** Do ornamental, atmospheric, playful, or formal
+  reference relationships succeed in the whole composition without pretending
+  to be evidence or utility, and without an unsourced producer addition?
 - **Credibility:** Are claims, assets, controls, metadata, generated status,
   placeholders, and operating states truthful?
 - **Usability and resilience:** Can people complete, understand, continue,
@@ -89,9 +89,10 @@ Use the questions that can decide this project's readiness:
 - **Care:** Do ordinary copy, actions, states, media, accessibility,
   responsive behavior, performance, metadata, and failure details show that
   the team understood the actual subject?
-- **Creative freedom:** Is a choice being rewarded or rejected merely because
-  it appeared in a trend or warning list? Judge the rendered relationship and
-  credible counterevidence instead.
+- **Source authority:** Is a sourced choice being rewarded or rejected merely
+  because it appeared in a trend or warning list? Judge the rendered
+  relationship and credible counterevidence instead; do not replace it with a
+  producer preference.
 - **Typography:** Do actual fonts, roles, typesetting, spacing, wrapping,
   scripts, fallbacks, loading, and tone make a convincing and accessible
   contribution for the real copy without family-name policing?

@@ -89,7 +89,7 @@ choices; it does not authorize a public label, heading, caption, tooltip, or
 "why this is here" panel that repeats the producer's reasoning.
 
 Likewise, do not promote internal working language into visitor-facing
-categories just because it helps organize the project. Creative logic, review
+categories just because it helps organize the project. Source mappings, review
 records, fixtures, source gaps, workflow stages, component names, route IDs,
 database or content-model fields, raw back-end states, analytics terms, and
 back-office categories are internal by default. A category belongs on the

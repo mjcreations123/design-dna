@@ -19,23 +19,25 @@ operational requirements.
 ## Establish the editorial stance
 
 Define the story's subject, audience, purpose, evidence, emotional register,
-and relationship between words and media before choosing a page treatment.
+and relationship between words and media, then use those criteria to qualify
+references before any page treatment exists.
 State what the reader should understand, feel, question, and remember. Name the
 editorial qualities to protect and the qualities the work must not imply.
 
-Choose a form that follows the reporting and reading task: investigation,
+Copy a form from a qualified reference with the same reporting and reading task: investigation,
 profile, essay, dispatch, interview, visual story, guide, review, data story,
 reference, archive, or another truthful form. Do not force unlike stories into
 one fashionable template.
 
 ## Give routes distinct silhouettes
 
-Create a coherent publication family without making every route share the same
-hero, card grid, or content width. Let a feature, news item, reference page,
+Map each route to an exact reference observation and reproduce a coherent
+publication family without making every route share the same hero, card grid,
+or content width. Let a feature, news item, reference page,
 issue opener, topic index, author page, and archive differ according to their
 job, evidence, reading length, and entry context.
 
-For each material route, define:
+For each material route, record the selected rank/observation/hash and copy:
 
 - opening move, information hierarchy, reading rhythm, and ending condition;
 - relationship among headline, deck, byline, date, status, body, media, notes,
@@ -46,13 +48,14 @@ For each material route, define:
   developing content.
 
 Asymmetry, scale, density, silence, repetition, interruption, steady cadence,
-and change of pace are all available. Their editorial, atmospheric, or purely
-compositional role should fit the rendered story; variation and decoration are
-legitimate without becoming a quota for every article.
+and change of pace do not fail by category. Use them only when the route's
+selected reference supplies their editorial, atmospheric, or compositional
+role; variation and decoration are source decisions, not producer options.
 
 ## Commission and sequence media
 
-Create a media brief before sourcing or generating important imagery. Record
+Create a factual media brief, then qualify visual references before sourcing or
+generating important imagery. Record
 the editorial job, subject, moment, point of view, required truth, desired
 specificity, orientation, likely crops, minimum resolution, rights, credit,
 disclosure, and unacceptable implications.
@@ -75,16 +78,17 @@ the accountable owner.
 
 ## Direct typography and reading pace
 
-Treat typography as editorial structure rather than a preset scale. Establish
-relationships for display, headline, deck, metadata, body, annotation,
-caption, quotation, data, and navigation that fit the publication's voice and
-the actual content.
+Treat typography as editorial structure rather than a preset scale. Reproduce
+the selected reference's measured relationships for display, headline, deck,
+metadata, body, annotation, caption, quotation, data, and navigation after
+proving they fit the publication's voice and actual content.
 
 Test rhythm with representative long and short text, real names, dates,
 numbers, links, headings, lists, captions, and translated strings. Protect
 legible measure, spacing, hierarchy, zoom, text reflow, and user text-spacing
-over an art-directed line break. Avoid tightening display or body text merely
-to imitate a reference composition.
+over an art-directed line break. Match the reference composition and metrics;
+when its line break cannot survive truthful content or access, reject that
+source or use another observed state rather than tuning from taste.
 
 ## Use emphasis without manufacturing evidence
 
@@ -105,7 +109,8 @@ publication's authoritative conclusion.
 
 ## Re-art-direct for smaller and alternate surfaces
 
-Mobile is a new editorial composition, not a scaled desktop page. Re-evaluate
+Mobile reproduces the selected reference's narrow editorial composition, not a
+scaled desktop page. Verify
 the opening sequence, crop, type relationships, media order, interruptions,
 sticky elements, tables, notes, navigation, and ending. Preserve the editorial
 premise while removing dependencies on viewport width, hover, simultaneous

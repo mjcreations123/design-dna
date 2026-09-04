@@ -8,6 +8,13 @@ and is often read with images switched off.
 messages exist and what preferences govern them; this file owns making one
 render.
 
+The task and delivery contract determine semantic content and safe client
+behavior. Every visible email relationship—layout, width, columns, type,
+color, spacing, controls, media treatment, responsive transformation, and
+copy rhythm—must still reproduce a qualified measured email/reference system
+or an approved inherited brand/email system. Do not invent a visual fallback
+because email clients are inconvenient.
+
 ## Contents
 
 - [Decide the job and the class](#decide-the-job-and-the-class)
@@ -51,9 +58,10 @@ client testing rather than trusting this list forever.
 - Keep critical presentation in the delivery form the selected clients
   preserve. Inline styles are often the durable baseline; `<style>` blocks and
   media queries can enhance clients that retain them.
-- Derive content width and column behavior from message density, expected
-  reading environment, and the actual client matrix. A roughly 600px fluid
-  column is common, not mandatory. Define how any columns stack or simplify.
+- Use message density, expected reading environment, and the actual client
+  matrix to qualify an email reference; reproduce its measured content width,
+  column behavior, and narrow transformation. A roughly 600px fluid column is
+  common, not authority.
 - Put backgrounds, padding, and click targets on elements the target clients
   reliably render. Table cells are a common interoperable button foundation;
   another implementation needs equivalent client evidence.
@@ -103,9 +111,9 @@ grey halo and a carefully chosen brand colour becomes something else.
 ## Type in email
 
 Webfonts load in some clients and not others, so the fallback stack is the
-real typography for a meaningful share of readers. Choose a stack whose
-metrics do not wreck the layout when the intended face is absent, and set
-line-height and size for the fallback as well as the ideal. The
+real typography for a meaningful share of readers. Use the selected reference
+or inherited email system's verified fallback relationship, then set line-height
+and size so the source hierarchy survives actual client fallback. The
 [typography protocol](typography.md) still applies: tune the fallback's size,
 line-height, measure, weight, hierarchy, and wrapping in the real email layout.
 Persistent small print remains readable under zoom and client text settings;
@@ -153,9 +161,9 @@ specialist before any live send.
 A browser alone is not a verification environment for email. Send real test
 messages and inspect the clients this audience actually uses, including a
 materially different or constrained rendering engine when compatibility risk
-is high. Select light/dark, images blocked/allowed, desktop/mobile, and other
-conditions from the recipient and delivery evidence rather than a permanent
-brand list.
+is high. Test light/dark, images blocked/allowed, desktop/mobile, and every
+client condition that can change the mapped visible relationship; recipient and
+delivery evidence define the coverage, never a shortcut brand list.
 
 Rendered review applies to the medium: for email that means representative
 mail-client captures rather than only a local webpage. Check the plain-text

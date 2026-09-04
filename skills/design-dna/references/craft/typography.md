@@ -20,7 +20,7 @@ the families the references supplied.
 
 ## Contents
 
-- [Choose type for beauty and brand fit](#choose-type-for-beauty-and-brand-fit) |
+- [Use source-bound type](#use-source-bound-type) |
 [Start from the reading situation](#start-from-the-reading-situation)
 - [Choose roles, not a recipe](#choose-roles-not-a-recipe)
 - [Compare enough to make a real decision](#compare-enough-to-make-a-real-decision)
@@ -31,26 +31,31 @@ the families the references supplied.
 - [Audit delivery and provenance](#audit-delivery-and-provenance)
 - [Verify the delivered type system](#verify-the-delivered-type-system)
 
-## Choose type for beauty and brand fit
+## Use source-bound type
 
-A typeface earns its place on a public site for two reasons only: it is
-beautiful in the render, and it fits this brand and audience. Two families at
-most, and the producer must be able to defend each one on its own, with no
-reference to justify it. Never choose a face because a reference site used
-something like it, and never answer a reference's licensed font with a
-monospace, pixel, novelty, or display face as a substitute; the answer is a
-free face of the same quality, a license, or dropping the element. The
-studio's own tell records apply before any reference does. This is the owner's
-law of 2026-09-02, after a rebuild shipped a pixel title and a monospace
-label face copied from a manual-style reference.
+The producer never chooses a typeface. On a fresh public site, every family,
+role, and consequential setting comes from a selected reference's measured
+type system or an explicit client brand system. Use the source family when its
+license and delivery permit. Otherwise use only the rank-one substitute emitted
+by `scripts/match_typeface.mjs` from that source observation. If no valid match
+can be produced, reject that type contribution or select another suitable
+reference. Do not use a favorite, familiar, supposedly brand-fitting, or
+owner-approved producer substitute.
+
+For an existing system, bounded repair, or supplied artwork, preserve the
+established or supplied type authority unless the task explicitly replaces it.
+Any new visible role still needs a recorded source. This document governs how
+the supplied system is assigned, delivered, stress-tested, and verified; it is
+not a second type-selection path.
 
 ## Start from the reading situation
 
-Before naming a face, establish the actual conditions:
+Before assigning the source-bound face to roles, establish the actual conditions:
 
 - audience, language, script, familiarity, accessibility needs, and devices;
 - content roles, reading duration, density, tone, and highest-value message;
-- approved brand or product continuity and the degree of expressive freedom;
+- approved brand or product continuity and the reference roles that supply the
+  visible behavior;
 - real headline lengths, names, numbers, punctuation, controls, and data;
 - performance, privacy, licensing, redistribution, maintenance, and fallback
   constraints;
@@ -64,17 +69,19 @@ These are examples, not selectable presets.
 
 ## Choose roles, not a recipe
 
-Define only the roles the content needs. A project may use one family across
-every role, several related voices, a system stack, a custom face, variable
-axes, lettering, or no conventional display role. Pairing is optional. A
-system font can be an intentional identity decision, not an automatic sign of
-missing design.
+Define only the roles the content needs and source each one from the selected
+reference or established brand/system. The resulting authority may use one
+family, several related voices, a system stack, a custom face, variable axes,
+lettering, or no conventional display role. Do not impose a family count or
+pairing recipe, and do not add a system font unless the source authority uses
+or requires it. A system font can be an intentional identity decision when a
+selected reference, explicit client brand, or established system supplies it.
 
 For every consequential role, decide:
 
 - what the role must communicate or help someone do;
-- which face, style, weight, width, optical size, case, and punctuation serve
-  it;
+- which sourced face, style, weight, width, optical size, case, and punctuation
+  relationship supplies it;
 - how it relates to adjacent roles in scale, rhythm, contrast, and density;
 - how it changes with content, width, language, zoom, and user settings;
 - what fallback remains acceptable and what evidence will prove it.
@@ -86,16 +93,14 @@ fixed modular scale or family count when another system reads better.
 
 ## Compare enough to make a real decision
 
-When type is open or the owner has rejected the fonts, render enough credible
-possibilities to expose the consequential difference. Use the longest real
-headline, ordinary paragraphs, navigation, controls, numbers, punctuation,
-and every required script inside the intended composition.
-
-The comparison may contain several families, one family with different
-settings, an established brand option against a repair, or a system-stack
-continuity option. Its size follows uncertainty. Record the selected option,
-the strongest alternative or tension considered, and the project-specific
-reason the choice won. Do not require a named number of rejects.
+When type remains unresolved or the owner rejects it, return to the selected
+reference evidence rather than opening a producer font search. Compare complete
+measured type systems from suitable reference candidates, an explicit client
+brand option, or an established-system continuity option using the longest real
+headline, ordinary paragraphs, navigation, controls, numbers, punctuation, and
+every required script inside the intended composition. Record which source
+authority wins and why it fits the brief. Do not hybridize the candidates from
+taste or require a fixed number of rejected systems.
 
 Do not consult a portable font blacklist or dated recommendation bench. When
 owner-authorized cross-project history exists, compare the rendered system
@@ -196,9 +201,12 @@ fashionable or associated with generated sites.
 
 ## Deliver fonts deliberately
 
-Choose self-hosted files, a trusted service, platform fonts, system fonts, or
-another delivery path from rights, privacy, performance, resilience, tooling,
-and maintenance evidence. No method is globally required.
+Deliver the required source-bound family through a rights-compliant,
+privacy-conscious, performant, resilient, and maintainable path. Self-host the
+original family where licensed; use its authorized service or an established
+platform/system path when that is the actual source authority. Delivery
+constraints may force rejection of a source or the measured rank-one
+substitute; they do not authorize an aesthetic replacement.
 
 For downloadable fonts:
 
@@ -207,11 +215,11 @@ For downloadable fonts:
   free commercial licensing and privacy-conscious mirrors of common font
   CDNs are legitimate sources when budget or data-protection constraints
   apply; the license record is identical either way;
-- when the direction's face is licensed and cannot ship, record the
-  substitute mapping explicitly: the closest available face, the
-  corrective settings that make it serve the role, and at least one named
-  face that would not be an acceptable substitute, with the reason. A
-  recorded mapping keeps future editors from silently degrading the role;
+- when the direction's face cannot ship, bind the
+  `scripts/match_typeface.mjs` record and use only its rank-one substitute.
+  Record the source family, matched family, measured basis, and delivery limit;
+  do not hand-select a closer-looking alternative or tune an unranked family
+  into place;
 - load only what the rendered project uses and configure an appropriate
   `font-display` behavior; subset by script coverage where the license and
   tooling allow, so readers do not download alphabets the site never sets;
@@ -221,8 +229,9 @@ For downloadable fonts:
 - test failure behavior and layout stability rather than assuming the CSS
   declaration is enough.
 
-For system or platform fonts, record why continuity, density, latency,
-privacy, regulation, or the chosen aesthetic makes that path appropriate.
+For system or platform fonts, record the reference, client brand, or established
+system authority and why continuity, density, latency, privacy, or regulation
+makes that delivery path appropriate.
 Verify the actual platform/browser matrix relevant to the project and define
 acceptable fallbacks.
 

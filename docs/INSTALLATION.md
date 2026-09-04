@@ -48,6 +48,46 @@ and leaves current routes unchanged in one all-host transaction. The lower-level
 `install` and `update` operations remain available for a deliberately selected
 single host.
 
+### Browser-evidence prerequisite
+
+The direct installer copies only the skill runtime. It deliberately does not
+copy `node_modules`, install Playwright, download Chromium, edit a global Node
+configuration, or claim that either host activated the copied skill. Before a
+task whose gate requires browser evidence, check the exact current direct route
+against the actual project:
+
+```text
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
+```
+
+The command runs each healthy installed route's `browser_preflight.mjs` in the
+current operator process and launches only a blank local browser. It is a
+prerequisite check, not Codex/Claude activation proof or finished site QA.
+
+The resolver checks an explicit absolute
+`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` first (and fails closed if it is invalid),
+then the project’s exact `node_modules`, then the recognized source checkout’s
+`maintainer/node_modules`, and finally exact `node_modules` directories inside
+the installed skill. It never scans global module directories. A project that already has a
+compatible Playwright needs no new configuration. To use this package’s pinned
+closure from Windows PowerShell without modifying the project:
+
+```powershell
+npm.cmd --prefix maintainer ci --ignore-scripts --no-audit --no-fund
+npm.cmd --prefix maintainer exec -- playwright install chromium
+$env:DESIGN_DNA_PLAYWRIGHT_MODULE_DIR = (Resolve-Path ".\maintainer\node_modules").Path
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
+```
+
+An explicit `--browser-executable` or `DESIGN_DNA_BROWSER_EXECUTABLE` selects a
+browser only after a Playwright module has resolved; it cannot bypass that
+module prerequisite. When the package management tooling is unavailable, run
+the installed preflight directly from the project root:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/browser_preflight.mjs" --project-root "ABSOLUTE_PROJECT" --launch
+```
+
 If a process or machine interruption leaves a hidden `.stage-*` or `.pending-*`
 transaction record, normal inspection and mutation fail closed. Preview the
 exact repair with `recover --host all --dry-run`, inspect its

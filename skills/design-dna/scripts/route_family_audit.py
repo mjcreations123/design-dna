@@ -29,8 +29,8 @@ from urllib.parse import unquote, unquote_to_bytes, urljoin, urlsplit
 
 
 MINIMUM_PYTHON = (3, 10)
-SCHEMA_VERSION = 2
-TOOL_VERSION = "2.0.0"
+SCHEMA_VERSION = 3
+TOOL_VERSION = "3.0.0"
 ARTIFACT_TYPE = "design-dna-route-family-audit"
 DEFAULT_CONTRACT = Path(".design-dna") / "route-family.json"
 DEFAULT_ATLAS = Path(".design-dna") / "route-atlas.html"
@@ -74,6 +74,12 @@ SOURCE_SUFFIXES = {
 HTML_SUFFIXES = {".htm", ".html"}
 FRAMEWORK_EXTENSIONS = (".astro", ".js", ".jsx", ".mdx", ".mjs", ".ts", ".tsx", ".svelte", ".vue")
 ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]{0,47}$")
+MANIFEST_STATE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
+MANIFEST_STATE_KINDS = {"rest", "interactive", "system", "data"}
+MANIFEST_TRIGGER_TYPES = {
+    "none", "hover", "focus", "click", "keyboard", "input", "url",
+    "programmatic",
+}
 INVALID_PERCENT_PATTERN = re.compile(r"%(?![0-9A-Fa-f]{2})")
 SEMVER_PATTERN = re.compile(
     r"^design-dna "
@@ -617,47 +623,47 @@ def string_field(
     return valid
 
 
-def creative_logic_field(
+def source_mapping_field(
     value: object,
-    path: str,
+    path_label: str,
     errors: list[dict[str, str]],
-) -> bool:
-    if isinstance(value, str):
-        return string_field(value, path, errors)
-    valid = isinstance(value, dict) and 1 <= len(value) <= 24
-    if valid:
-        valid = all(
-            isinstance(key, str)
-            and bool(key.strip())
-            and len(key) <= 80
-            and not any(ord(character) <= 0x1F or ord(character) == 0x7F for character in key)
-            for key in value
-        )
-    if valid:
-        try:
-            json.dumps(
-                value,
-                ensure_ascii=False,
-                allow_nan=False,
-                separators=(",", ":"),
-            )
-        except (TypeError, ValueError):
-            valid = False
-    if not valid:
-        errors.append(
-            error_item(
-                path,
-                "invalid-creative-logic",
-                "Expected either a nonempty statement or a bounded project-defined object with 1 through 24 printable keys.",
-            )
-        )
-    return valid
+) -> Optional[dict[str, object]]:
+    mapping = exact_keys(
+        value,
+        path_label,
+        {"rank", "id", "observation", "sha256"},
+        errors,
+    )
+    if mapping is None:
+        return None
+    rank = mapping.get("rank")
+    source_id = mapping.get("id")
+    observation = mapping.get("observation")
+    digest = mapping.get("sha256")
+    if not isinstance(rank, int) or isinstance(rank, bool) or rank < 1:
+        errors.append(error_item(f"{path_label}.rank", "invalid-source-rank", "Expected a positive selected-reference rank."))
+    if not isinstance(source_id, str) or re.fullmatch(r"strong-[1-9][0-9]*", source_id) is None:
+        errors.append(error_item(f"{path_label}.id", "invalid-source-id", "Expected a strong-N observation identity."))
+    expected_observation = (
+        f".design-dna/references/{source_id}-observation.json"
+        if isinstance(source_id, str)
+        else None
+    )
+    if observation != expected_observation:
+        errors.append(error_item(f"{path_label}.observation", "invalid-source-observation", "Expected an exact project-relative reference observation path."))
+    if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        errors.append(error_item(f"{path_label}.sha256", "invalid-source-sha256", "Expected the exact observation SHA-256."))
+    if isinstance(source_id, str) and isinstance(rank, int):
+        match = re.match(r"strong-([1-9][0-9]*)", source_id)
+        if match is None or int(match.group(1)) != rank:
+            errors.append(error_item(path_label, "source-rank-id-mismatch", "Source rank must equal the strong-N identity."))
+    return mapping
 
 
 def validate_contract_payload(
     payload: object,
 ) -> tuple[list[dict[str, str]], list[dict[str, object]]]:
-    """Validate the schema-2 contract without a runtime JSON Schema dependency."""
+    """Validate the schema-3 reference-bound contract without JSON Schema."""
     errors: list[dict[str, str]] = []
     routes_out: list[dict[str, object]] = []
     root_keys = {
@@ -672,9 +678,9 @@ def validate_contract_payload(
     root = exact_keys(payload, "$", root_keys, errors)
     if root is None:
         return errors[:MAX_CONTRACT_ERRORS], routes_out
-    if root.get("schema_version") != 2:
+    if root.get("schema_version") != 3:
         errors.append(
-            error_item("$.schema_version", "unsupported-schema", "Expected integer 2.")
+            error_item("$.schema_version", "unsupported-schema", "Expected integer 3.")
         )
     created_with = root.get("created_with")
     if not isinstance(created_with, str) or not SEMVER_PATTERN.fullmatch(created_with):
@@ -764,7 +770,8 @@ def validate_contract_payload(
         "path",
         "title",
         "user_job",
-        "creative_logic",
+        "source_mapping",
+        "component_sources",
         "observable_decisions",
         "responsive_result",
         "reduced_motion_result",
@@ -816,11 +823,36 @@ def validate_contract_payload(
                 errors,
                 maximum=160 if key == "title" else 1200,
             )
-        creative_logic_field(
-            route.get("creative_logic"),
-            f"{base}.creative_logic",
-            errors,
-        )
+        source_mapping = source_mapping_field(route.get("source_mapping"), f"{base}.source_mapping", errors)
+        component_sources = route.get("component_sources")
+        if not isinstance(component_sources, list) or not 1 <= len(component_sources) <= 512:
+            errors.append(error_item(f"{base}.component_sources", "invalid-component-sources", "Expected 1 through 512 exact census-component source mappings."))
+        else:
+            component_names: list[str] = []
+            for component_index, component_item in enumerate(component_sources):
+                component_base = f"{base}.component_sources[{component_index}]"
+                component = exact_keys(
+                    component_item,
+                    component_base,
+                    {"component", "source_rank", "source_id", "source_observation", "source_sha256", "source_state_id", "transfer"},
+                    errors,
+                )
+                if component is None:
+                    continue
+                for key in ("component", "source_state_id", "transfer"):
+                    string_field(component.get(key), f"{component_base}.{key}", errors)
+                component_names.append(str(component.get("component") or ""))
+                component_mapping = {
+                    "rank": component.get("source_rank"),
+                    "id": component.get("source_id"),
+                    "observation": component.get("source_observation"),
+                    "sha256": component.get("source_sha256"),
+                }
+                source_mapping_field(component_mapping, component_base, errors)
+                if source_mapping is not None and component_mapping != source_mapping:
+                    errors.append(error_item(component_base, "component-source-route-mismatch", "Every route component must bind the route's exact selected observation; producer-authored connective design is forbidden."))
+            if len(component_names) != len(set(component_names)):
+                errors.append(error_item(f"{base}.component_sources", "duplicate-component-source", "Component source keys must be unique within a route."))
         decisions = route.get("observable_decisions")
         if not isinstance(decisions, list) or not 1 <= len(decisions) <= 24:
             errors.append(
@@ -836,7 +868,7 @@ def validate_contract_payload(
                 decision = exact_keys(
                     decision_item,
                     decision_base,
-                    {"decision", "reason", "evidence", "status"},
+                    {"decision", "reason", "evidence", "source_rank", "source_id", "source_observation", "source_sha256", "source_state_id", "status"},
                     errors,
                 )
                 if decision is None:
@@ -847,6 +879,16 @@ def validate_contract_payload(
                         f"{decision_base}.{key}",
                         errors,
                     )
+                decision_mapping = {
+                    "rank": decision.get("source_rank"),
+                    "id": decision.get("source_id"),
+                    "observation": decision.get("source_observation"),
+                    "sha256": decision.get("source_sha256"),
+                }
+                source_mapping_field(decision_mapping, decision_base, errors)
+                if source_mapping is not None and decision_mapping != source_mapping:
+                    errors.append(error_item(decision_base, "decision-source-route-mismatch", "Every visible decision must bind the route's exact selected observation."))
+                string_field(decision.get("source_state_id"), f"{decision_base}.source_state_id", errors, maximum=64)
                 if decision.get("status") not in {
                     "provisional",
                     "accepted",
@@ -1004,6 +1046,9 @@ def validate_contract_payload(
                     "id": route_id,
                     "path": normalized_route_path,
                     "title": route.get("title"),
+                    "source_mapping": route.get("source_mapping"),
+                    "component_sources": route.get("component_sources"),
+                    "observable_decisions": route.get("observable_decisions"),
                     "capture_requirements": {"viewports": viewports_out},
                 }
             )
@@ -1241,6 +1286,289 @@ def validate_contract_payload(
                     )
                 )
     return errors[:MAX_CONTRACT_ERRORS], routes_out
+
+
+def reference_binding_errors(
+    root: Path,
+    routes: list[dict[str, object]],
+) -> list[dict[str, str]]:
+    errors: list[dict[str, str]] = []
+    observed: dict[str, dict[str, object]] = {}
+    manifest_path = canonical(root / ".design-dna" / "route-manifest.json")
+    manifest_routes: dict[str, dict[str, object]] = {}
+    manifest_state_ids: dict[str, set[str]] = {}
+    try:
+        ensure_no_reparse_ancestors(manifest_path, root)
+        if not contained(manifest_path, root) or not manifest_path.is_file() or is_reparse(manifest_path):
+            raise AuditError("route-manifest-missing", "The authoritative .design-dna/route-manifest.json file is missing.")
+        manifest_raw = stable_bytes(manifest_path, MAX_SOURCE_FILE_BYTES)
+        manifest = json.loads(manifest_raw.decode("utf-8"))
+        if (
+            not isinstance(manifest, dict)
+            or set(manifest) != {"schema_version", "manifest_id", "viewports", "routes"}
+            or manifest.get("schema_version") != 2
+            or not isinstance(manifest.get("manifest_id"), str)
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}", manifest["manifest_id"]) is None
+            or not isinstance(manifest.get("routes"), list)
+            or not manifest["routes"]
+        ):
+            raise AuditError("route-manifest-invalid", "The authoritative route manifest does not use the exact current schema-2 identity and route shape.")
+        viewport_names: set[str] = set()
+        valid_viewports: list[tuple[int, int]] = []
+        if not isinstance(manifest.get("viewports"), list) or not manifest["viewports"]:
+            raise AuditError("route-manifest-invalid", "The authoritative route manifest needs a nonempty viewport matrix.")
+        for viewport_index, viewport in enumerate(manifest["viewports"]):
+            if (
+                not isinstance(viewport, dict)
+                or set(viewport) != {"name", "width", "height"}
+                or not isinstance(viewport.get("name"), str)
+                or re.fullmatch(r"[a-z][a-z0-9-]{0,31}", viewport["name"]) is None
+                or viewport["name"] in viewport_names
+                or type(viewport.get("width")) is not int
+                or type(viewport.get("height")) is not int
+                or not 280 <= viewport["width"] <= 3840
+                or not 480 <= viewport["height"] <= 4320
+            ):
+                raise AuditError(
+                    "route-manifest-invalid",
+                    f"Authoritative viewport row {viewport_index + 1} is invalid or duplicated.",
+                )
+            viewport_names.add(viewport["name"])
+            valid_viewports.append((viewport["width"], viewport["height"]))
+        if not any(width >= 1280 for width, _height in valid_viewports) or not any(
+            width <= 430 for width, _height in valid_viewports
+        ):
+            raise AuditError("route-manifest-invalid", "The authoritative route manifest must include wide and narrow viewports.")
+
+        manifest_urls: set[tuple[tuple[str, str, int], str]] = set()
+        manifest_origins: set[tuple[str, str, int]] = set()
+        for manifest_index, manifest_route in enumerate(manifest["routes"]):
+            parsed_url = urlsplit(str(manifest_route.get("url") or "")) if isinstance(manifest_route, dict) else None
+            normalized_path = normalize_route_path(parsed_url.path or "/") if parsed_url is not None else None
+            normalized_origin = (
+                (
+                    parsed_url.scheme.casefold(),
+                    parsed_url.hostname.casefold(),
+                    parsed_url.port or (80 if parsed_url.scheme.casefold() == "http" else 443),
+                )
+                if parsed_url is not None and parsed_url.hostname
+                else None
+            )
+            if (
+                not isinstance(manifest_route, dict)
+                or set(manifest_route) != {
+                    "key", "url", "mapped_reference_rank", "mapped_reference_id",
+                    "mapped_reference_observation", "mapped_reference_sha256", "states",
+                }
+                or not isinstance(manifest_route.get("key"), str)
+                or ID_PATTERN.fullmatch(manifest_route["key"]) is None
+                or manifest_route["key"] in manifest_routes
+                or not isinstance(manifest_route.get("url"), str)
+                or parsed_url is None
+                or parsed_url.scheme not in {"http", "https"}
+                or not parsed_url.hostname
+                or parsed_url.username is not None
+                or parsed_url.password is not None
+                or bool(parsed_url.query)
+                or bool(parsed_url.fragment)
+                or normalized_path is None
+                or normalized_origin is None
+                or (normalized_origin, normalized_path) in manifest_urls
+            ):
+                raise AuditError(
+                    "route-manifest-invalid",
+                    f"Authoritative route-manifest row {manifest_index + 1} is invalid or duplicated.",
+                )
+            source_errors: list[dict[str, str]] = []
+            source_mapping_field(
+                {
+                    "rank": manifest_route.get("mapped_reference_rank"),
+                    "id": manifest_route.get("mapped_reference_id"),
+                    "observation": manifest_route.get("mapped_reference_observation"),
+                    "sha256": manifest_route.get("mapped_reference_sha256"),
+                },
+                f"$.route_manifest.routes[{manifest_index}].source_mapping",
+                source_errors,
+            )
+            if source_errors:
+                raise AuditError("route-manifest-invalid", source_errors[0]["message"])
+            states = manifest_route.get("states")
+            if not isinstance(states, list) or not states:
+                raise AuditError("route-manifest-invalid", f"Authoritative route {manifest_route['key']!r} has no source-mapped states.")
+            state_ids: set[str] = set()
+            mapped_state_ids: set[str] = set()
+            for state_index, state in enumerate(states):
+                if (
+                    not isinstance(state, dict)
+                    or set(state) != {"id", "kind", "trigger", "expectation", "mapped_reference_state_id"}
+                    or not isinstance(state.get("id"), str)
+                    or ID_PATTERN.fullmatch(state["id"]) is None
+                    or state["id"] in state_ids
+                    or state.get("kind") not in MANIFEST_STATE_KINDS
+                    or not isinstance(state.get("trigger"), dict)
+                    or set(state["trigger"]) != {"type", "target", "value"}
+                    or state["trigger"].get("type") not in MANIFEST_TRIGGER_TYPES
+                    or not isinstance(state["trigger"].get("target"), str)
+                    or not state["trigger"]["target"].strip()
+                    or not (state["trigger"].get("value") is None or isinstance(state["trigger"].get("value"), str))
+                    or not isinstance(state.get("expectation"), str)
+                    or len(state["expectation"].strip()) < 12
+                    or not isinstance(state.get("mapped_reference_state_id"), str)
+                    or MANIFEST_STATE_ID_PATTERN.fullmatch(state["mapped_reference_state_id"]) is None
+                    or (state["id"] != "rest" and state.get("kind") == "rest")
+                ):
+                    raise AuditError(
+                        "route-manifest-invalid",
+                        f"Authoritative route {manifest_route['key']!r} state row {state_index + 1} is invalid, duplicated, or underspecified.",
+                    )
+                state_ids.add(state["id"])
+                mapped_state_ids.add(state["mapped_reference_state_id"])
+            if states[0] != {
+                "id": "rest",
+                "kind": "rest",
+                "trigger": {"type": "none", "target": "document", "value": None},
+                "expectation": "initial settled route",
+                "mapped_reference_state_id": "rest",
+            }:
+                raise AuditError("route-manifest-invalid", f"Authoritative route {manifest_route['key']!r} must begin with the exact canonical rest state.")
+            manifest_routes[manifest_route["key"]] = manifest_route
+            manifest_state_ids[manifest_route["key"]] = mapped_state_ids
+            manifest_urls.add((normalized_origin, normalized_path))
+            manifest_origins.add(normalized_origin)
+        if len(manifest_origins) != 1:
+            raise AuditError("route-manifest-invalid", "Every authoritative route must share one exact build origin.")
+    except (AuditError, OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+        code = exc.code if isinstance(exc, AuditError) else "route-manifest-unreadable"
+        errors.append(error_item("$.route_manifest", code, str(exc)))
+
+    contract_routes = {
+        str(route.get("id")): route
+        for route in routes
+        if isinstance(route.get("id"), str)
+    }
+    if manifest_routes and set(contract_routes) != set(manifest_routes):
+        errors.append(error_item(
+            "$.routes",
+            "route-manifest-coverage-mismatch",
+            "Route-family routes must equal every authoritative route-manifest key; sampled or producer-selected coverage is forbidden.",
+        ))
+
+    observer_path = Path(__file__).with_name("observe_reference.mjs")
+    try:
+        observer_sha256 = sha256_bytes(stable_bytes(observer_path, MAX_SOURCE_FILE_BYTES))
+        structure_sha256 = sha256_bytes(stable_bytes(Path(__file__).with_name("structure_probe.mjs"), MAX_SOURCE_FILE_BYTES))
+        browser_evidence_sha256 = sha256_bytes(stable_bytes(Path(__file__).with_name("browser_evidence.mjs"), MAX_SOURCE_FILE_BYTES))
+        resolver_sha256 = sha256_bytes(stable_bytes(Path(__file__).with_name("playwright_resolver.mjs"), MAX_SOURCE_FILE_BYTES))
+    except OSError as exc:
+        errors.append(error_item("$.routes", "observer-runtime-unreadable", str(exc)))
+        observer_sha256 = None
+        structure_sha256 = None
+        browser_evidence_sha256 = None
+        resolver_sha256 = None
+
+    for index, route in enumerate(routes):
+        mapping = route.get("source_mapping")
+        if not isinstance(mapping, dict):
+            continue
+        route_id = route.get("id")
+        manifested = manifest_routes.get(str(route_id))
+        if isinstance(manifested, dict):
+            raw_expected_path = urlsplit(str(manifested.get("url") or "")).path or "/"
+            expected_path = normalize_route_path(raw_expected_path)
+            expected_mapping = {
+                "rank": manifested.get("mapped_reference_rank"),
+                "id": manifested.get("mapped_reference_id"),
+                "observation": manifested.get("mapped_reference_observation"),
+                "sha256": manifested.get("mapped_reference_sha256"),
+            }
+            if expected_path is None or route.get("path") != expected_path or mapping != expected_mapping:
+                errors.append(error_item(
+                    f"$.routes[{index}]",
+                    "route-manifest-binding-mismatch",
+                    "Route path and selected observation must exactly equal the authoritative manifest row.",
+                ))
+        relative = mapping.get("observation")
+        digest = mapping.get("sha256")
+        if not isinstance(relative, str) or not isinstance(digest, str):
+            continue
+        candidate = canonical(root.joinpath(*relative.split("/")))
+        label = f"$.routes[{index}].source_mapping"
+        try:
+            ensure_no_reparse_ancestors(candidate, root)
+            if not contained(candidate, root) or not candidate.is_file() or is_reparse(candidate):
+                raise AuditError("reference-observation-missing", "Mapped reference observation is not an ordinary in-project file.")
+            raw = stable_bytes(candidate, MAX_SOURCE_FILE_BYTES)
+            if sha256_bytes(raw) != digest:
+                raise AuditError("reference-observation-drift", "Mapped reference observation bytes do not match source_sha256.")
+            payload = json.loads(raw.decode("utf-8"))
+            if (
+                not isinstance(payload, dict)
+                or payload.get("tool") != "observe_reference.mjs"
+                or type(payload.get("schema_version")) is not int
+                or payload["schema_version"] < 5
+                or observer_sha256 is None
+                or payload.get("producer_script_sha256") != observer_sha256
+                or structure_sha256 is None
+                or browser_evidence_sha256 is None
+                or resolver_sha256 is None
+                or not isinstance(payload.get("runtime_identity"), dict)
+                or payload["runtime_identity"].get("observe_reference.mjs") != observer_sha256
+                or payload["runtime_identity"].get("structure_probe.mjs") != structure_sha256
+                or payload["runtime_identity"].get("browser_evidence.mjs") != browser_evidence_sha256
+                or payload["runtime_identity"].get("playwright_resolver.mjs") != resolver_sha256
+            ):
+                raise AuditError("reference-observation-invalid", "Mapped reference observation is not a current observer record.")
+            if payload.get("id") != mapping.get("id"):
+                raise AuditError("reference-observation-id-mismatch", "Mapped reference id does not equal the observation payload id.")
+            match = re.match(r"strong-([1-9][0-9]*)", str(payload.get("id") or ""))
+            if match is None or int(match.group(1)) != mapping.get("rank"):
+                raise AuditError("reference-observation-rank-mismatch", "Mapped rank does not equal the observation payload identity.")
+            observed[digest] = payload
+        except (AuditError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+            code = exc.code if isinstance(exc, AuditError) else "reference-observation-unreadable"
+            errors.append(error_item(label, code, str(exc)))
+            continue
+        for component_index, component in enumerate(route.get("component_sources") or []):
+            if not isinstance(component, dict):
+                continue
+            state_id = component.get("source_state_id")
+            states = payload.get("states_by_viewport")
+            if state_id not in manifest_state_ids.get(str(route_id), set()):
+                errors.append(error_item(
+                    f"$.routes[{index}].component_sources[{component_index}].source_state_id",
+                    "unmanifested-reference-state",
+                    "Every component must bind a source state explicitly mapped by this authoritative route.",
+                ))
+            elif not isinstance(states, dict) or any(
+                not isinstance(states.get(profile), dict) or state_id not in states[profile]
+                for profile in ("wide", "narrow")
+            ):
+                errors.append(error_item(
+                    f"$.routes[{index}].component_sources[{component_index}].source_state_id",
+                    "reference-state-missing",
+                    "Every component source state must exist in both wide and narrow observation evidence.",
+                ))
+        for decision_index, decision in enumerate(route.get("observable_decisions") or []):
+            if not isinstance(decision, dict):
+                continue
+            state_id = decision.get("source_state_id")
+            states = payload.get("states_by_viewport")
+            if state_id not in manifest_state_ids.get(str(route_id), set()):
+                errors.append(error_item(
+                    f"$.routes[{index}].observable_decisions[{decision_index}].source_state_id",
+                    "unmanifested-reference-state",
+                    "Every visible decision must bind a source state explicitly mapped by this authoritative route.",
+                ))
+            elif not isinstance(states, dict) or any(
+                not isinstance(states.get(profile), dict) or state_id not in states[profile]
+                for profile in ("wide", "narrow")
+            ):
+                errors.append(error_item(
+                    f"$.routes[{index}].observable_decisions[{decision_index}].source_state_id",
+                    "reference-state-missing",
+                    "Every visible decision source state must exist in both wide and narrow observation evidence.",
+                ))
+    return errors
 
 
 def normalize_route_path(value: str) -> Optional[str]:
@@ -3019,6 +3347,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, object], int, Path, Budget]
             ]
             return report, 1, root, budget
         errors, contract_routes = validate_contract_payload(contract_payload)
+        if not errors:
+            errors.extend(reference_binding_errors(root, contract_routes))
         study = (
             contract_payload.get("study")
             if isinstance(contract_payload, dict)
@@ -3059,7 +3389,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, object], int, Path, Budget]
                     "high",
                     True,
                     "contract",
-                    "The route-family contract failed its schema-2 structural validation.",
+                    "The route-family contract failed its schema-3 structural or reference-binding validation.",
                     paths=[contract_label],
                     evidence=[f"{item['path']}: {item['code']}" for item in errors],
                 )

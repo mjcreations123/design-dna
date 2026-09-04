@@ -35,9 +35,10 @@ Collect or explicitly mark unavailable:
 8. **Operational reality:** maintained content, states, integrations,
    handoffs, responsible owner, launch state, and known limitations.
 
-Do not require every item before a reversible concept. Do require the facts
-that make a public claim, consequential action, live integration, or
-irreversible direction safe.
+Do not require every content item before a reversible internal model. A first
+visual website candidate still requires its complete reference-led evidence and
+gates. Require the facts that make a public claim, consequential action, live
+integration, or irreversible direction safe.
 
 ## Extract useful texture
 
@@ -132,9 +133,10 @@ impersonation still apply.
 ## Work when evidence is sparse
 
 - Reduce the number of public claims and proof-shaped modules.
-- Choose a direction that works with modest real material.
-- Use structure, proportion, typography, interaction, and honest utility
-  instead of invented backstory or testimonial theater.
+- Select references whose content model works with modest real material.
+- Use their measured structure, proportion, typography, interaction, and
+  honest utility instead of invented backstory, testimonial theater, or
+  producer design.
 - Label concept identity, sample data, and unavailable integrations where a
   reasonable visitor could mistake them for reality.
 - Keep decisions reversible until the missing source arrives.
@@ -142,13 +144,14 @@ impersonation still apply.
 
 Separate a missing fact from a missing expressive asset. A missing address,
 price, review, or product capability cannot be invented. Missing photography,
-however, requires a deliberate media decision rather than an automatic
+however, requires a reference-sourced media decision rather than an automatic
 photo-free layout or an automatic substitute-photo workflow. Approved
 first-party material, commissioned or licensed media, an owner capture brief,
 owner-authorized generated concept media, illustration, diagrams, typography,
 sound, motion, objects, or another medium may be the right answer. These are
-concurrent possibilities, not a preference order. Record the chosen medium's
-authority, rights, truth status, inspection, access, delivery, fallback, and
+concurrent possibilities for content acquisition, not a producer preference
+order. The selected reference supplies the visible role and treatment. Record
+the medium's authority, rights, truth status, inspection, access, delivery, fallback, and
 any disclosure the actual use requires. Generated media must not impersonate
 documentary evidence.
 
@@ -159,7 +162,7 @@ atmosphere, scale, use, people, process, detail, sound, movement, or another
 project-specific quality may matter; none forms a universal shot list. Do not
 let missing input choose the art direction by accident. Abstract media,
 typography, or elaborate interface treatment may genuinely become the
-project's strongest medium when the creative logic supports it; review the
+project's strongest medium when the selected reference grammar supports it; review the
 rendered result rather than treating any of them as a second-choice fallback.
 
 Keep the source-gap log internal. The public page may need proportionate
@@ -170,9 +173,9 @@ until those caveats become the main content.
 Do not fabricate specifics, precision, local detail, quotations, or proof to
 cover a gap in a real project. In an authorized fictional fixture, create only
 the worldbuilding the experience needs and keep its status unmistakable. Stock
-media and decorative complexity may be valid creative materials, but they must
-not impersonate missing project evidence or appear by accident as compensation
-for it.
+media and decorative complexity may be valid content materials when the
+selected reference supplies their visible treatment, but they must not
+impersonate missing project evidence or appear as producer-made compensation.
 
 ## Resolve contradictions
 

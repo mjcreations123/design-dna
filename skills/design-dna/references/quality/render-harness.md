@@ -83,6 +83,22 @@ and record the exact missing report as a narrow formal-readiness block. Do not
 turn one unavailable capture adapter into a reason to stop unrelated work, and
 do not translate unbound screenshots into a fabricated schema pass.
 
+Before a required run, use the installed read-only prerequisite check from the
+actual project root:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/browser_preflight.mjs" --project-root "ABSOLUTE_PROJECT" --launch
+```
+
+It never installs Playwright, downloads Chromium, writes project configuration,
+or searches global module directories. It resolves an explicit absolute
+`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` first and fails if that explicit path is
+invalid; otherwise it checks the exact project `node_modules`, a recognized
+source checkout's `maintainer/node_modules`, and exact `node_modules`
+directories inside the installed skill. An explicit browser executable only selects the browser after a
+Playwright module resolves. A successful preflight proves the local operator
+process and blank-browser launch, not host activation or finished project QA.
+
 That package boundary is deliberate: this release has no audited importer for
 external evidence. An established project harness can supply valuable and even
 stronger project evidence, but it cannot be relabeled as schema 3. A future

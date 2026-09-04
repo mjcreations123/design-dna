@@ -213,7 +213,10 @@ class InitializerTests(unittest.TestCase):
                 migrated.stdout + migrated.stderr,
             )
             current = json.loads(state_path.read_text(encoding="utf-8"))
-            self.assertEqual(current["assurance_profiles"], ["showcase"])
+            self.assertEqual(
+                current["assurance_profiles"],
+                ["standard", "enterprise-candidate", "showcase"],
+            )
             self.assertNotIn("assurance_profile", current)
 
     def test_migration_withdraws_stale_completion_against_current_profile(
@@ -354,7 +357,9 @@ class InitializerTests(unittest.TestCase):
             state = project / ".design-dna"
             manifest_path = state / "state.json"
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(manifest["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                manifest["assurance_profiles"], ["standard", "high-risk"]
+            )
             self.assertEqual(
                 manifest["records"],
                 ["direction", "visual-review", "claims", "user-validation"],
@@ -452,7 +457,9 @@ class InitializerTests(unittest.TestCase):
                 migrated.stdout + migrated.stderr,
             )
             preserved = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(preserved["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                preserved["assurance_profiles"], ["standard", "high-risk"]
+            )
             self.assertEqual(
                 preserved["evidence_contract"]["applicable_capabilities"],
                 ["high-risk"],
@@ -503,7 +510,9 @@ class InitializerTests(unittest.TestCase):
                 migrated.stdout + migrated.stderr,
             )
             repaired = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(repaired["assurance_profiles"], ["high-risk"])
+            self.assertEqual(
+                repaired["assurance_profiles"], ["standard", "high-risk"]
+            )
             self.assertEqual(
                 repaired["evidence_contract"]["applicable_capabilities"],
                 ["high-risk"],
@@ -581,11 +590,16 @@ class InitializerTests(unittest.TestCase):
                     "exploration",
                     "taste-calibration",
                     "direction",
+                    "reference-dossier",
+                    "route-manifest",
                     "direction-proof",
                     "visual-review",
                 ],
             )
-            self.assertEqual(manifest["assurance_profiles"], ["showcase"])
+            self.assertEqual(
+                manifest["assurance_profiles"],
+                ["standard", "enterprise-candidate", "showcase"],
+            )
             state_schema = json.loads(
                 (
                     PLUGIN
@@ -830,7 +844,13 @@ class InitializerTests(unittest.TestCase):
             )
             self.assertEqual(
                 state["assurance_profiles"],
-                ["showcase", "high-risk", "asset-led"],
+                [
+                    "standard",
+                    "enterprise-candidate",
+                    "showcase",
+                    "high-risk",
+                    "asset-led",
+                ],
             )
             self.assertEqual(
                 set(state["records"]),
@@ -838,6 +858,8 @@ class InitializerTests(unittest.TestCase):
                     "exploration",
                     "taste-calibration",
                     "direction",
+                    "reference-dossier",
+                    "route-manifest",
                     "direction-proof",
                     "visual-review",
                     "claims",
@@ -907,7 +929,7 @@ class InitializerTests(unittest.TestCase):
                         )
                     )
 
-    def test_stronger_capability_applies_to_listed_standalone_record_only(
+    def test_public_showcase_cannot_be_applied_to_a_lone_direction_record(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -956,7 +978,14 @@ class InitializerTests(unittest.TestCase):
                 )
             )
 
-            state["assurance_profiles"] = ["showcase"]
+            initializer = load_initializer()
+            cumulative = (
+                "standard", "enterprise-candidate", "showcase",
+            )
+            state["assurance_profiles"] = list(cumulative)
+            state["evidence_contract"] = initializer.evidence_contract_payload(
+                cumulative
+            )
             state_path.write_text(
                 json.dumps(state, indent=2) + "\n",
                 encoding="utf-8",
@@ -969,51 +998,15 @@ class InitializerTests(unittest.TestCase):
                 "--check-state",
                 "--json",
             )
-            self.assertEqual(
-                checked.returncode,
-                0,
-                checked.stdout + checked.stderr,
-            )
-            readiness = run_script(
-                INIT,
-                "--project",
-                str(project),
-                "--check-ready",
-                "--json",
-            )
-            self.assertEqual(
-                readiness.returncode,
-                1,
-                readiness.stdout + readiness.stderr,
-            )
-            failures = json.loads(readiness.stdout)["failures"]
-            self.assertEqual(len(failures), 1)
-            self.assertIn(
-                "Listed showcase record remains draft: direction.md",
-                failures[0],
-            )
-            self.assertFalse(
-                any("exploration" in failure for failure in failures)
-            )
-
-            initializer = load_initializer()
-            direction = (
-                project / ".design-dna" / "direction.md"
-            ).read_text(encoding="utf-8")
-            required = initializer.required_labels_for_record(
-                "direction",
-                direction,
-                required_assurance_profiles=("showcase",),
-            )
-            self.assertNotIn(
-                "Creative-exploration record, candidate IDs, and "
-                "source-packet version",
-                required,
-            )
-            self.assertEqual(
-                (),
-                required,
-                "A profile must not reintroduce a fixed aesthetic evidence label.",
+            self.assertEqual(checked.returncode, 1, checked.stdout + checked.stderr)
+            failures = json.loads(checked.stdout)["failures"]
+            self.assertTrue(
+                any(
+                    "requires records" in failure
+                    and "reference-dossier" in failure
+                    for failure in failures
+                ),
+                failures,
             )
             help_result = run_script(INIT, "--help")
             self.assertEqual(help_result.returncode, 0, help_result.stderr)
@@ -1420,6 +1413,40 @@ class InitializerTests(unittest.TestCase):
             source_digest = hashlib.sha256(
                 source_asset.read_bytes()
             ).hexdigest()
+            reference_dir = project / ".design-dna" / "references"
+            reference_frame = reference_dir / "strong-1-frames" / "asset-evidence.png"
+            reference_frame_digest = write_png(reference_frame, 1, 1)
+            observer = INIT.parent / "observe_reference.mjs"
+            structure_probe = INIT.parent / "structure_probe.mjs"
+            browser_evidence = INIT.parent / "browser_evidence.mjs"
+            resolver = INIT.parent / "playwright_resolver.mjs"
+            observation = reference_dir / "strong-1-observation.json"
+            observation.write_text(json.dumps({
+                "tool": "observe_reference.mjs",
+                "schema_version": 5,
+                "producer_script_sha256": hashlib.sha256(observer.read_bytes()).hexdigest(),
+                "runtime_identity": {
+                    "observe_reference.mjs": hashlib.sha256(observer.read_bytes()).hexdigest(),
+                    "structure_probe.mjs": hashlib.sha256(structure_probe.read_bytes()).hexdigest(),
+                    "browser_evidence.mjs": hashlib.sha256(browser_evidence.read_bytes()).hexdigest(),
+                    "playwright_resolver.mjs": hashlib.sha256(resolver.read_bytes()).hexdigest(),
+                },
+                "id": "strong-1",
+                "url": "https://reference.example/asset/",
+                "states_by_viewport": {
+                    "wide": {"rest": {"id": "rest"}},
+                    "narrow": {"rest": {"id": "rest"}},
+                },
+                "frame_dir": "strong-1-frames",
+                "frames": [{
+                    "seq": 1,
+                    "kind": "rest",
+                    "file": "asset-evidence.png",
+                    "bytes": reference_frame.stat().st_size,
+                    "sha256": reference_frame_digest,
+                }],
+            }, indent=2) + "\n", encoding="utf-8")
+            observation_digest = hashlib.sha256(observation.read_bytes()).hexdigest()
             original = f"""schema_version: 2
 created_with: "design-dna 2.2.0"
 classification: "internal"
@@ -1486,11 +1513,16 @@ assets:
       legal_review_owner: ""
       legal_review_date: ""
       legal_review_reason: ""
-    art_direction:
-      subject: "Real service environment"
-      crop_or_safe_zone: "Keep the service subject visible."
-      lighting_palette_perspective: "Natural owner-approved capture."
-      set_consistency_notes: "Use only with the approved documentary set."
+    source_mapping:
+      source_rank: 1
+      source_id: "strong-1"
+      observation: ".design-dna/references/strong-1-observation.json"
+      observation_sha256: "{observation_digest}"
+      source_state_id: "rest"
+      source_component_or_behavior: "Exact observed documentary hero medium"
+      measured_transfer: "Preserve the measured subject, crop role, and responsive focal relationship."
+      evidence_path: ".design-dna/references/strong-1-frames/asset-evidence.png"
+      evidence_sha256: "{reference_frame_digest}"
     delivery:
       source_dimensions: "2400 x 1600"
       output_dimensions:
@@ -1533,40 +1565,22 @@ assets:
             )
             self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
 
-            art_start = original.index("    art_direction:\n")
-            art_end = original.index("    delivery:\n", art_start)
-            without_art_direction = original[:art_start] + original[art_end:]
-            asset_path.write_text(
-                without_art_direction,
-                encoding="utf-8",
-                newline="\n",
-            )
-            optional_art_direction = run_script(
-                INIT,
-                "--project",
-                str(project),
-                "--check-state",
-                "--json",
-            )
-            self.assertEqual(
-                optional_art_direction.returncode,
-                0,
-                optional_art_direction.stdout + optional_art_direction.stderr,
-            )
-
-            project_defined_art_direction = (
-                original[:art_start]
-                + "    art_direction:\n"
-                + '      material_relationship: "Let the approved steel surface remain visibly cool beside the warm product."\n'
-                + '      removal_condition: "Remove the treatment if it hides the service action."\n'
-                + original[art_end:]
+            project_defined_art_direction = original.replace(
+                "    delivery:\n",
+                "    art_direction:\n"
+                '      subject: "Real service environment"\n'
+                '      crop_or_safe_zone: "Keep the service subject visible."\n'
+                '      lighting_palette_perspective: "Natural owner-approved capture."\n'
+                '      set_consistency_notes: "Use only with the approved documentary set."\n'
+                "    delivery:\n",
+                1,
             )
             asset_path.write_text(
                 project_defined_art_direction,
                 encoding="utf-8",
                 newline="\n",
             )
-            extensible_art_direction = run_script(
+            arbitrary_visual_authority = run_script(
                 INIT,
                 "--project",
                 str(project),
@@ -1574,9 +1588,16 @@ assets:
                 "--json",
             )
             self.assertEqual(
-                extensible_art_direction.returncode,
-                0,
-                extensible_art_direction.stdout + extensible_art_direction.stderr,
+                arbitrary_visual_authority.returncode,
+                1,
+                arbitrary_visual_authority.stdout + arbitrary_visual_authority.stderr,
+            )
+            self.assertTrue(
+                any(
+                    "Invalid assets.yml" in failure
+                    for failure in json.loads(arbitrary_visual_authority.stdout)["failures"]
+                ),
+                arbitrary_visual_authority.stdout,
             )
             asset_path.write_text(original, encoding="utf-8", newline="\n")
 
@@ -2461,10 +2482,7 @@ assets:
             provenance_start = public_generated_media.index(
                 "    generated_media_provenance:\n"
             )
-            provenance_end = public_generated_media.index(
-                "    art_direction:\n",
-                provenance_start,
-            )
+            provenance_end = public_generated_media.index("    delivery:\n", provenance_start)
             public_without_provenance = (
                 public_generated_media[:provenance_start]
                 + public_generated_media[provenance_end:]
@@ -2719,12 +2737,30 @@ assets:
                 ),
             ):
                 legacy = legacy.replace(block, "", 1)
+            # A schema-1 row may contain a lookalike source binding, but that
+            # format never established the current observer/frame contract.
+            # Migration must remove it and leave an accountable unresolved
+            # review item rather than carrying invented proof into schema 2.
+            legacy = legacy.replace(
+                "    delivery:\n",
+                (
+                    "    source_mapping:\n"
+                    "      source_rank: 1\n"
+                    '      source_id: "strong-1"\n'
+                    '      observation: ".design-dna/references/strong-1-observation.json"\n'
+                    '      observation_sha256: "0000000000000000000000000000000000000000000000000000000000000000"\n'
+                    '      source_state_id: "rest"\n'
+                    '      source_component_or_behavior: "Legacy text without current observation proof"\n'
+                    '      measured_transfer: "Legacy text without current measured transfer proof"\n'
+                    '      evidence_path: ".design-dna/references/strong-1-frames/legacy.png"\n'
+                    '      evidence_sha256: "0000000000000000000000000000000000000000000000000000000000000000"\n'
+                    "    delivery:\n"
+                ),
+                1,
+            )
             asset_path = project / ".design-dna" / "assets.yml"
             generated_start = legacy.index("    generated:\n")
-            generated_end = legacy.index(
-                "    art_direction:\n",
-                generated_start,
-            )
+            generated_end = legacy.index("    delivery:\n", generated_start)
             malformed_legacy = (
                 legacy[:generated_start]
                 + '    generated: "not-a-mapping"\n'
@@ -2786,6 +2822,16 @@ assets:
             self.assertIn("schema_version: 2", current)
             self.assertIn("migration_review:", current)
             self.assertIn("required: true", current)
+            migrated_payload = load_initializer().parse_strict_yaml_subset(
+                current,
+                path=asset_path,
+            )
+            migrated_asset = migrated_payload["assets"][0]
+            self.assertNotIn("source_mapping", migrated_asset)
+            self.assertIn(
+                "source_mapping binding",
+                migrated_asset["migration_review"]["unresolved_fields"],
+            )
             checked = run_script(
                 INIT,
                 "--project",

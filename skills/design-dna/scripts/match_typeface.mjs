@@ -15,8 +15,8 @@
  * arithmetic written next to it.
  *
  * So: the observation session already measured the reference's display and
- * body faces with proportions a face cannot fake (x-height ratio, advance
- * width). This script measures candidate open-licence faces the SAME way,
+ * body faces with proportions a face cannot fake (seven geometry axes and a
+ * rendered-glyph fingerprint). This script measures candidate open-licence faces the SAME way,
  * in the same browser engine, and ranks them by distance. Rank one is the
  * substitute. check_style_provenance.mjs refuses any --substitute this
  * record did not rank first.
@@ -30,12 +30,10 @@
  *     --out .design-dna/evidence/typeface-match.json \
  *     [--browser-executable FILE]
  *
- * Measurement (identical to structure_probe.mjs): at 100px, x_ratio is the
- * canvas ascent of "x" over the ascent of "H", advance is the width of
- * "Handgloves 0123" divided by 100, and i_ratio is the width of "I" over the
- * ascent of "H", which separates serif (brackets widen the I), sans and mono
- * (every glyph the same width). The distance is the sum of the relative
- * differences on every axis the target carries. Measured on live sites the
+ * Measurement (identical to structure_probe.mjs): at 100px it records x-height,
+ * mixed-case, lowercase, uppercase, digit and punctuation advance, capital-I
+ * ratio, plus a 96px raster fingerprint. The distance is a weighted mean of
+ * relative differences on every axis the target carries. Measured on live sites the
  * I width does not split serif from sans cleanly (Louize Display 0.342,
  * ABC Diatype 0.389, Tobias 0.44), so no serif/sans label is claimed; only
  * mono (0.8 and above) is a class. --posture mono|proportional keeps the
@@ -46,16 +44,29 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { createHash } from "node:crypto";
-import { createRequire } from "node:module";
+import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 
 const TOOL_NAME = "match_typeface.mjs";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 3;
+const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
+const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "observe_reference.mjs"))).digest("hex");
+const STRUCTURE_PROBE_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "structure_probe.mjs"))).digest("hex");
+const PLAYWRIGHT_RESOLVER_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "playwright_resolver.mjs"))).digest("hex");
 /* The I-width axis is one glyph; x-height and advance are the texture of
    every line. Equal weights let the I override both (Louize Display, whose
    capitals carry tiny serifs, ranked a face with the wrong x-height and the
    wrong width first). At 0.4 the axis separates postures when the texture
    axes are close and cannot outrank them when they are not. */
-const I_WEIGHT = 0.4;
+const AXIS_WEIGHTS = {
+  x_ratio: 1,
+  advance: 1,
+  i_ratio: 0.4,
+  lower_advance: 0.8,
+  upper_advance: 0.8,
+  digit_advance: 0.6,
+  punct_advance: 0.4,
+};
 const FONTS_CSS = "https://fonts.googleapis.com/css2";
 
 /* A search space, not a shortlist: open-licence families across postures.
@@ -107,7 +118,9 @@ function fail(code, message) {
 function parseArgs(argv) {
   const out = {
     observations: [], family: null, candidates: [], candidatesFile: null,
-    measured: null, out: null, browser: undefined, posture: null,
+    measured: null, out: null,
+    browser: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
+    posture: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -139,13 +152,23 @@ function stem(family) {
 }
 
 function loadPlaywright() {
-  const dir = process.env.DESIGN_DNA_PLAYWRIGHT_MODULE_DIR;
-  const require_ = createRequire(dir ? path.join(dir, "noop.js") : import.meta.url);
-  for (const name of ["playwright", "playwright-core"]) {
-    try { return require_(name); } catch { /* next */ }
+  try {
+    return resolvePlaywright({ moduleUrl: import.meta.url });
+  } catch (error) {
+    fail(error?.code || "playwright-missing", String(error?.message || error));
+    return null;
   }
-  fail("playwright-missing", "Playwright is not installed; set DESIGN_DNA_PLAYWRIGHT_MODULE_DIR to a node_modules that has it, or pass --measured with pre-measured candidates.");
-  return null;
+}
+
+function loadBrowserDependency(loaded, explicit) {
+  try {
+    return browserExecutableIdentity(
+      discoverBrowserExecutable(loaded.playwright, explicit),
+    );
+  } catch (error) {
+    fail(error?.code || "browser-executable-unavailable", String(error?.message || error));
+    return null;
+  }
 }
 
 /* The targets: every face the observation measured on the reference. */
@@ -157,8 +180,14 @@ function targetsFrom(observationPath, familyFilter) {
     fail("observation-unreadable", `Could not read ${observationPath}: ${e.message}`);
   }
   const type = payload && payload.first_screen && payload.first_screen.type;
+  if (payload?.tool !== "observe_reference.mjs" || !Number.isInteger(payload.schema_version) || payload.schema_version < 5 ||
+      payload.producer_script_sha256 !== OBSERVER_SCRIPT_SHA256 ||
+      payload.runtime_identity?.["structure_probe.mjs"] !== STRUCTURE_PROBE_SHA256 ||
+      payload.runtime_identity?.["playwright_resolver.mjs"] !== PLAYWRIGHT_RESOLVER_SHA256) {
+    fail("observation-identity", `${observationPath} was not emitted by the current observe_reference.mjs runtime.`);
+  }
   if (!type || typeof type !== "object") {
-    fail("no-type-measurements", `${observationPath} carries no first_screen.type; re-run observe_reference.mjs (schema 3).`);
+    fail("no-type-measurements", `${observationPath} carries no first_screen.type; re-run the current observe_reference.mjs (schema 5).`);
   }
   const targets = [];
   for (const role of ["display", "body"]) {
@@ -169,6 +198,11 @@ function targetsFrom(observationPath, familyFilter) {
       family: t.family, role, weight: String(t.weight || "400"),
       x_ratio: t.x_ratio, advance: t.advance,
       i_ratio: typeof t.i_ratio === "number" ? t.i_ratio : null,
+      lower_advance: typeof t.lower_advance === "number" ? t.lower_advance : null,
+      upper_advance: typeof t.upper_advance === "number" ? t.upper_advance : null,
+      digit_advance: typeof t.digit_advance === "number" ? t.digit_advance : null,
+      punct_advance: typeof t.punct_advance === "number" ? t.punct_advance : null,
+      font_fingerprint: t.font_fingerprint || null,
       observation: path.relative(process.cwd(), observationPath).split(path.sep).join("/"),
       observation_sha256: sha256(observationPath),
     });
@@ -176,9 +210,8 @@ function targetsFrom(observationPath, familyFilter) {
   return targets;
 }
 
-async function measureCandidates(specs, browserPath) {
-  const { chromium } = loadPlaywright();
-  const browser = await chromium.launch({ executablePath: browserPath });
+async function measureCandidates(specs, loaded, browserDependency) {
+  const browser = await loaded.playwright.chromium.launch({ executablePath: browserDependency.file });
   const page = await browser.newPage();
   await page.goto("https://fonts.google.com/", { waitUntil: "domcontentloaded", timeout: 60000 });
   const rows = await page.evaluate(async ({ specs, cssBase }) => {
@@ -203,6 +236,9 @@ async function measureCandidates(specs, browserPath) {
           if (!src) { src = m[1]; subset = "first"; }
         }
         if (!src) { out.push({ family, weight, error: "no src in the css" }); continue; }
+        const fontBytes = await (await fetch(src)).arrayBuffer();
+        const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', fontBytes))]
+          .map((byte) => byte.toString(16).padStart(2, '0')).join('');
         const name = family.replace(/[^A-Za-z0-9]/g, "") + "_" + weight;
         const face = new FontFace(name, `url(${src})`, { weight });
         await face.load();
@@ -214,7 +250,29 @@ async function measureCandidates(specs, browserPath) {
         const xh = x.actualBoundingBoxAscent || 0;
         const adv = c.measureText("Handgloves 0123").width;
         const iw = c.measureText("I").width;
-        out.push({ family, weight, subset, x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3), i_ratio: cap ? +(iw / cap).toFixed(3) : null });
+        const raster = document.createElement('canvas'); raster.width = 720; raster.height = 150;
+        const rc = raster.getContext('2d', { willReadFrequently: true });
+        rc.fillStyle = '#000'; rc.font = `${weight} 96px "${name}"`; rc.textBaseline = 'alphabetic';
+        const probe = 'Hamburgefontsiv 0123 Il1 @&?'; rc.fillText(probe, 4, 108);
+        const data = rc.getImageData(0, 0, raster.width, raster.height).data;
+        let hash = 2166136261, hash2 = 2654435769, ink = 0;
+        for (let i = 3; i < data.length; i += 4) {
+          if (!data[i]) continue;
+          const signal = ((i / 4) & 0xffff) ^ data[i];
+          ink += 1; hash ^= signal; hash = Math.imul(hash, 16777619);
+          hash2 ^= signal + ink; hash2 = Math.imul(hash2, 2246822519);
+        }
+        out.push({
+          family, weight, subset, source_url: src, source_sha256: digest,
+          x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3),
+          i_ratio: cap ? +(iw / cap).toFixed(3) : null,
+          lower_advance: +(c.measureText('abcdefghijklmnopqrstuvwxyz').width / 100).toFixed(3),
+          upper_advance: +(c.measureText('ABCDEFGHIJKLMNOPQRSTUVWXYZ').width / 100).toFixed(3),
+          digit_advance: +(c.measureText('0123456789').width / 100).toFixed(3),
+          punct_advance: +(c.measureText('.,:;!?@&()[]').width / 100).toFixed(3),
+          font_fingerprint: { raster: (hash >>> 0).toString(16).padStart(8, '0') + (hash2 >>> 0).toString(16).padStart(8, '0'), ink,
+            probe_width: +rc.measureText(probe).width.toFixed(3) },
+        });
       } catch (e) {
         out.push({ family, weight, error: String(e).slice(0, 60) });
       }
@@ -239,16 +297,22 @@ function rank(target, measured, posture) {
     .filter((r) => !r.error && typeof r.x_ratio === "number" && typeof r.advance === "number")
     .filter((r) => !posture || postureOf(r.i_ratio) === posture)
     .map((r) => {
-      let delta = Math.abs(r.x_ratio - target.x_ratio) / target.x_ratio
-        + Math.abs(r.advance - target.advance) / target.advance;
-      if (typeof target.i_ratio === "number" && typeof r.i_ratio === "number" && target.i_ratio > 0) {
-        delta += I_WEIGHT * Math.abs(r.i_ratio - target.i_ratio) / target.i_ratio;
+      let delta = 0, weight = 0;
+      const axes = [];
+      for (const [axis, axisWeight] of Object.entries(AXIS_WEIGHTS)) {
+        if (typeof target[axis] !== "number" || typeof r[axis] !== "number" || target[axis] === 0) continue;
+        delta += axisWeight * Math.abs(r[axis] - target[axis]) / Math.abs(target[axis]);
+        weight += axisWeight; axes.push(axis);
       }
       return {
         family: r.family, weight: String(r.weight),
         x_ratio: r.x_ratio, advance: r.advance, i_ratio: r.i_ratio ?? null,
+        lower_advance: r.lower_advance ?? null, upper_advance: r.upper_advance ?? null,
+        digit_advance: r.digit_advance ?? null, punct_advance: r.punct_advance ?? null,
+        font_fingerprint: r.font_fingerprint || null,
+        source_url: r.source_url || null, source_sha256: r.source_sha256 || null,
         posture: postureOf(r.i_ratio),
-        delta: +delta.toFixed(4),
+        axes, delta: +(weight ? delta / weight : Infinity).toFixed(4),
       };
     })
     .sort((a, b) => a.delta - b.delta);
@@ -259,6 +323,20 @@ const args = parseArgs(process.argv.slice(2));
 let targets = [];
 for (const file of args.observations) targets.push(...targetsFrom(file, args.family));
 if (!targets.length) fail("no-targets", "No measured faces found in the observation(s)" + (args.family ? ` for family ${args.family}` : "") + ".");
+const inputObservations = args.observations.map((file) => {
+  let payload;
+  try { payload = JSON.parse(fs.readFileSync(file, "utf8")); }
+  catch (error) { fail("observation-unreadable", `Could not re-read ${file}: ${error.message}`); }
+  return {
+    file: path.relative(process.cwd(), file).split(path.sep).join("/"),
+    id: payload.id,
+    url: payload.url,
+    sha256: sha256(file),
+  };
+}).sort((a, b) => a.sha256.localeCompare(b.sha256));
+const observationSetSha256 = createHash("sha256")
+  .update(JSON.stringify(inputObservations.map((item) => ({ id: item.id, url: item.url, sha256: item.sha256 }))))
+  .digest("hex");
 
 let specs = [...args.candidates];
 if (args.candidatesFile) {
@@ -270,28 +348,37 @@ if (args.candidatesFile) {
     fail("candidates-unreadable", `Could not read ${args.candidatesFile}: ${e.message}`);
   }
 }
-if (!specs.length) specs = [...DEFAULT_CANDIDATES];
+// User-supplied candidates extend the maintained search space; they cannot
+// shrink it until a preferred answer becomes rank one.
+specs = [...new Set([...DEFAULT_CANDIDATES, ...specs])];
 
 let measured;
 let measuredSource;
 if (args.measured) {
   try {
-    measured = JSON.parse(fs.readFileSync(args.measured, "utf8"));
-    if (!Array.isArray(measured)) throw new Error("not an array");
+    const payload = JSON.parse(fs.readFileSync(args.measured, "utf8"));
+    measured = Array.isArray(payload) ? payload : payload?.candidates;
+    if (!Array.isArray(measured)) throw new Error("not an array or measurement record");
   } catch (e) {
     fail("measured-unreadable", `Could not read ${args.measured}: ${e.message}`);
   }
-  measuredSource = { file: path.relative(process.cwd(), args.measured).split(path.sep).join("/"), sha256: sha256(args.measured) };
+  measuredSource = { mode: "offline-diagnostic", verified: false, file: path.relative(process.cwd(), args.measured).split(path.sep).join("/"), sha256: sha256(args.measured) };
 } else {
-  measured = await measureCandidates(specs, args.browser);
-  measuredSource = { file: null, css: FONTS_CSS, candidates: specs.length };
+  const loaded = loadPlaywright();
+  const browserDependency = loadBrowserDependency(loaded, args.browser);
+  measured = await measureCandidates(specs, loaded, browserDependency);
+  measuredSource = {
+    mode: "browser", verified: measured.some((row) => !row.error) && measured.filter((row) => !row.error).every((row) => row.source_sha256 && row.font_fingerprint),
+    file: null, css: FONTS_CSS, candidates: specs.length,
+    playwright: loaded.dependency, browser_executable: browserDependency,
+  };
 }
 
 const results = targets.map((target) => {
   const ranked = rank(target, measured, args.posture);
   return {
     target: { ...target, posture: postureOf(target.i_ratio) || args.posture || null },
-    axes: typeof target.i_ratio === "number" ? ["x_ratio", "advance", "i_ratio"] : ["x_ratio", "advance"],
+    axes: Object.keys(AXIS_WEIGHTS).filter((axis) => typeof target[axis] === "number" && ranked.some((row) => typeof row[axis] === "number")),
     posture_filter: args.posture,
     ranked: ranked.slice(0, 12),
     chosen: ranked.length ? ranked[0] : null,
@@ -301,9 +388,27 @@ const results = targets.map((target) => {
 const record = {
   tool: TOOL_NAME,
   schema_version: SCHEMA_VERSION,
+  producer_script_sha256: PRODUCER_SCRIPT_SHA256,
+  runtime_identity: {
+    "match_typeface.mjs": PRODUCER_SCRIPT_SHA256,
+    "observe_reference.mjs": OBSERVER_SCRIPT_SHA256,
+    "structure_probe.mjs": STRUCTURE_PROBE_SHA256,
+    "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
+    ...(measuredSource.mode === "browser" ? {
+      "playwright-entry": measuredSource.playwright.resolved_file_sha256,
+      "browser-executable": measuredSource.browser_executable.sha256,
+    } : {}),
+  },
+  dependencies: measuredSource.mode === "browser"
+    ? { playwright: measuredSource.playwright, browser_executable: measuredSource.browser_executable }
+    : {},
   matched_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
-  measurement: "100px canvas; x_ratio = ascent(x)/ascent(H); advance = width(\"Handgloves 0123\")/100; i_ratio = width(I)/ascent(H); identical to structure_probe.mjs",
-  distance: "|dx|/x + |dadv|/adv + " + I_WEIGHT + " * |dI|/I",
+  input_observations: inputObservations,
+  observation_set_sha256: observationSetSha256,
+  measurement: "100px canvas geometry on seven axes plus a 96px rendered-glyph raster fingerprint; browser candidates bind the fetched font bytes by SHA-256",
+  distance: "weighted mean relative error over every shared axis",
+  axis_weights: AXIS_WEIGHTS,
+  verified_browser_measurement: measuredSource.verified,
   candidates: measuredSource,
   candidates_measured: measured,
   results,

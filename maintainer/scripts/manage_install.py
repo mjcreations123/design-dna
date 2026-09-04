@@ -25,6 +25,7 @@ import re
 import secrets
 import shutil
 import stat
+import subprocess
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -1091,6 +1092,151 @@ def inspect_host(config: HostConfig, canonical: TreeIdentity) -> dict[str, objec
         "available_backups": available,
         "status": status,
         "recommendation": recommendation,
+    }
+
+
+def browser_preflight_for_host(
+    config: HostConfig,
+    snapshot: dict[str, object],
+    project_root: Path,
+) -> dict[str, object]:
+    """Run only the installed runtime's opt-in, read-only Node prerequisite check.
+
+    It proves at most that this operator process can run the current direct
+    route against one explicit project. It never claims host activation.
+    """
+
+    limitations = [
+        "This checks one local Node process and does not prove Codex or Claude Code activated the skill.",
+        "This check does not install Playwright, download Chromium, or replace rendered project QA.",
+    ]
+    base: dict[str, object] = {
+        "project_root": str(project_root),
+        "launch_checked": True,
+        "limitations": limitations,
+    }
+    if snapshot.get("status") != "healthy":
+        return {
+            **base,
+            "status": "not-run",
+            "code": "installed-runtime-not-current",
+            "message": "Browser preflight requires one current managed direct route; synchronize and rerun doctor first.",
+            "node_executable": None,
+            "runtime_script": None,
+            "command": [],
+            "details": {},
+        }
+    runtime_script = config.target / "scripts" / "browser_preflight.mjs"
+    if not runtime_script.is_file():
+        return {
+            **base,
+            "status": "blocked",
+            "code": "browser-preflight-script-missing",
+            "message": "The current installed runtime has no browser_preflight.mjs script.",
+            "node_executable": None,
+            "runtime_script": str(runtime_script),
+            "command": [],
+            "details": {},
+        }
+    node = shutil.which("node")
+    if not node:
+        return {
+            **base,
+            "status": "blocked",
+            "code": "node-unavailable",
+            "message": "Node.js is unavailable on PATH; install or expose Node.js 20+ and rerun doctor.",
+            "node_executable": None,
+            "runtime_script": str(runtime_script),
+            "command": [],
+            "details": {},
+        }
+    command = [
+        str(Path(node).resolve()),
+        str(runtime_script),
+        "--project-root",
+        str(project_root),
+        "--launch",
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            timeout=45,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired, UnicodeError) as exc:
+        return {
+            **base,
+            "status": "blocked",
+            "code": "browser-preflight-execution-failed",
+            "message": f"Browser preflight could not run: {type(exc).__name__}: {str(exc)[:400]}",
+            "node_executable": str(Path(node).resolve()),
+            "runtime_script": str(runtime_script),
+            "command": command,
+            "details": {},
+        }
+    raw = completed.stdout
+    payload: object = None
+    if len(raw.encode("utf-8")) <= 64 * 1024 and len(raw.splitlines()) == 1:
+        try:
+            payload = json.loads(raw)
+        except ValueError:
+            payload = None
+    if not isinstance(payload, dict):
+        return {
+            **base,
+            "status": "blocked",
+            "code": "browser-preflight-output-invalid",
+            "message": "Browser preflight did not return one bounded JSON object.",
+            "node_executable": str(Path(node).resolve()),
+            "runtime_script": str(runtime_script),
+            "command": command,
+            "details": {},
+        }
+    playwright = payload.get("playwright")
+    browser = payload.get("browser")
+    details = {
+        "playwright_source": playwright.get("source") if isinstance(playwright, dict) else None,
+        "playwright_version": playwright.get("version") if isinstance(playwright, dict) else None,
+        "playwright_entry_sha256": playwright.get("resolved_file_sha256") if isinstance(playwright, dict) else None,
+        "browser_source": browser.get("source") if isinstance(browser, dict) else None,
+        "browser_name": browser.get("name") if isinstance(browser, dict) else None,
+        "browser_sha256": browser.get("sha256") if isinstance(browser, dict) else None,
+        "browser_launch_version": browser.get("launch_version") if isinstance(browser, dict) else None,
+    }
+    if (
+        completed.returncode == 0
+        and payload.get("ok") is True
+        and payload.get("record_type") == "design-dna-browser-preflight"
+        and payload.get("schema_version") == 1
+        and payload.get("launch_checked") is True
+    ):
+        return {
+            **base,
+            "status": "passed",
+            "code": "browser-preflight-passed",
+            "message": "The current installed runtime resolved Playwright and launched a local browser for this project root.",
+            "node_executable": str(Path(node).resolve()),
+            "runtime_script": str(runtime_script),
+            "command": command,
+            "details": details,
+        }
+    error = payload.get("error")
+    error_code = error.get("code") if isinstance(error, dict) else None
+    error_message = error.get("message") if isinstance(error, dict) else None
+    return {
+        **base,
+        "status": "blocked",
+        "code": error_code if isinstance(error_code, str) and re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", error_code) else "browser-preflight-failed",
+        "message": str(error_message or "Browser preflight did not establish a launchable local browser.")[:800],
+        "node_executable": str(Path(node).resolve()),
+        "runtime_script": str(runtime_script),
+        "command": command,
+        "details": details,
     }
 
 
@@ -2316,6 +2462,7 @@ def run(
     source: Path,
     backup_base: Path,
     claude_config_dir: Path | None = None,
+    browser_project: Path | None = None,
     backup_id: str | None = None,
     dry_run: bool = False,
     simulate_commit_failure: bool = False,
@@ -2336,6 +2483,20 @@ def run(
                 "backup-id-not-applicable",
                 "--backup-id is only valid with rollback.",
             )
+        if browser_project is not None and command != "doctor":
+            raise ManagerError(
+                "browser-project-only-for-doctor",
+                "--browser-project is available only with the read-only doctor command.",
+            )
+        if browser_project is not None:
+            browser_project = absolute(browser_project)
+            if not browser_project.is_dir():
+                raise ManagerError(
+                    "browser-project-not-found",
+                    "--browser-project must identify an existing directory.",
+                    browser_project,
+                )
+            assert_no_reparse_path(browser_project)
         if simulate_commit_failure and command == "recover":
             raise ManagerError(
                 "test-hook-not-applicable",
@@ -2363,6 +2524,7 @@ def run(
                     source=source,
                     backup_base=backup_base,
                     claude_config_dir=claude_config_dir,
+                    browser_project=browser_project,
                     backup_id=backup_id,
                     dry_run=dry_run,
                     simulate_commit_failure=simulate_commit_failure,
@@ -2434,6 +2596,13 @@ def run(
             )
         snapshots = [inspect_host(config, canonical) for config in configs]
         if command == "doctor":
+            if browser_project is not None:
+                for config, snapshot in zip(configs, snapshots):
+                    snapshot["browser_preflight"] = browser_preflight_for_host(
+                        config,
+                        snapshot,
+                        browser_project,
+                    )
             stable_source = validate_design_dna_tree(source)
             if stable_source.records != canonical.records:
                 raise ManagerError(
@@ -2442,6 +2611,11 @@ def run(
                     source,
                 )
             healthy = all(snapshot["status"] == "healthy" for snapshot in snapshots)
+            if browser_project is not None:
+                healthy = healthy and all(
+                    snapshot.get("browser_preflight", {}).get("status") == "passed"
+                    for snapshot in snapshots
+                )
             return (
                 operation_result(
                     operation=command,
@@ -2680,6 +2854,14 @@ def build_parser() -> JsonArgumentParser:
         help="Backup base under HOME; host-specific subdirectories are created below it.",
     )
     parser.add_argument("--backup-id", help="Exact recoverable backup ID for rollback.")
+    parser.add_argument(
+        "--browser-project",
+        type=Path,
+        help=(
+            "With doctor only, run each current installed runtime's read-only "
+            "browser prerequisite check from this absolute project directory."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--simulate-commit-failure", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument(
@@ -2721,6 +2903,7 @@ def main(argv: list[str] | None = None) -> int:
             source=args.source,
             backup_base=backup_base,
             claude_config_dir=claude_config_dir,
+            browser_project=args.browser_project,
             backup_id=args.backup_id,
             dry_run=args.dry_run,
             simulate_commit_failure=args.simulate_commit_failure,

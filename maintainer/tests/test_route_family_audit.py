@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -163,12 +164,31 @@ def contract(route_paths: list[str]) -> dict[str, object]:
                 "path": path,
                 "title": f"Route {index + 1}",
                 "user_job": "Understand this route's distinct information job.",
-                "creative_logic": "A project-specific route body chosen for this information job.",
+                "source_mapping": {
+                    "rank": index + 1,
+                    "id": f"strong-{index + 1}",
+                    "observation": f".design-dna/references/strong-{index + 1}-observation.json",
+                    "sha256": "0" * 64,
+                },
+                "component_sources": [{
+                    "component": "tag:main",
+                    "source_rank": index + 1,
+                    "source_id": f"strong-{index + 1}",
+                    "source_observation": f".design-dna/references/strong-{index + 1}-observation.json",
+                    "source_sha256": "0" * 64,
+                    "source_state_id": "rest",
+                    "transfer": "The main content follows the exact source state structure.",
+                }],
                 "observable_decisions": [
                     {
                         "decision": "The content order and rendered body follow this route's user job.",
                         "reason": "It distinguishes purpose without requiring a fixed aesthetic dimension.",
                         "evidence": "Fixture source and matched rendered captures.",
+                        "source_rank": index + 1,
+                        "source_id": f"strong-{index + 1}",
+                        "source_observation": f".design-dna/references/strong-{index + 1}-observation.json",
+                        "source_sha256": "0" * 64,
+                        "source_state_id": "rest",
                         "status": "provisional",
                     }
                 ],
@@ -189,7 +209,7 @@ def contract(route_paths: list[str]) -> dict[str, object]:
             }
         )
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "created_with": "design-dna 4.0.0",
         "classification": "internal",
         "study": {
@@ -228,6 +248,40 @@ def contract(route_paths: list[str]) -> dict[str, object]:
 def write_contract(project: Path, payload: dict[str, object]) -> Path:
     state = project / ".design-dna"
     state.mkdir(parents=True, exist_ok=True)
+    references = state / "references"
+    references.mkdir(exist_ok=True)
+    manifest_routes = []
+    observer_sha = hashlib.sha256((AUDIT.parent / "observe_reference.mjs").read_bytes()).hexdigest()
+    structure_sha = hashlib.sha256((AUDIT.parent / "structure_probe.mjs").read_bytes()).hexdigest()
+    browser_evidence_sha = hashlib.sha256((AUDIT.parent / "browser_evidence.mjs").read_bytes()).hexdigest()
+    resolver_sha = hashlib.sha256((AUDIT.parent / "playwright_resolver.mjs").read_bytes()).hexdigest()
+    for route in payload.get("routes", []):
+        mapping = route["source_mapping"]
+        observation_path = project.joinpath(*mapping["observation"].split("/"))
+        observation_path.write_text(json.dumps({
+            "tool": "observe_reference.mjs", "schema_version": 5,
+            "producer_script_sha256": observer_sha, "id": mapping["id"],
+            "runtime_identity": {"observe_reference.mjs": observer_sha, "structure_probe.mjs": structure_sha, "browser_evidence.mjs": browser_evidence_sha, "playwright_resolver.mjs": resolver_sha},
+            "url": f"https://reference.example/{mapping['id']}/",
+            "states_by_viewport": {"wide": {"rest": {"id": "rest"}}, "narrow": {"rest": {"id": "rest"}}},
+        }, indent=2) + "\n", encoding="utf-8")
+        mapping["sha256"] = hashlib.sha256(observation_path.read_bytes()).hexdigest()
+        for component in route["component_sources"]:
+            component["source_sha256"] = mapping["sha256"]
+        for decision in route["observable_decisions"]:
+            decision["source_sha256"] = mapping["sha256"]
+        manifest_routes.append({
+            "key": route["id"], "url": "http://127.0.0.1" + route["path"],
+            "mapped_reference_rank": mapping["rank"], "mapped_reference_id": mapping["id"],
+            "mapped_reference_observation": mapping["observation"], "mapped_reference_sha256": mapping["sha256"],
+            "states": [{"id": "rest", "kind": "rest", "trigger": {"type": "none", "target": "document", "value": None},
+                        "expectation": "initial settled route", "mapped_reference_state_id": "rest"}],
+        })
+    (state / "route-manifest.json").write_text(json.dumps({
+        "schema_version": 2, "manifest_id": "route-family-manifest-001",
+        "viewports": [{"name": "wide", "width": 1440, "height": 900}, {"name": "narrow", "width": 390, "height": 844}],
+        "routes": manifest_routes,
+    }, indent=2) + "\n", encoding="utf-8")
     path = state / "route-family.json"
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
@@ -539,19 +593,15 @@ class RouteFamilyContractTests(unittest.TestCase):
                     {item["code"] for item in report["contract"]["errors"]},
                 )
 
-    def test_open_creative_logic_honest_reuse_and_project_viewports_validate(
+    def test_producer_authored_logic_is_rejected_and_project_viewports_validate(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary)
             payload = contract(["/", "/second/"])
-            payload["routes"][0]["creative_logic"] = {
-                "project_statement": "The route follows the supplied material.",
-                "unfixed_concerns": {
-                    "density": "Chosen from the actual reading task.",
-                    "media": ["Owner-supplied evidence", "No decorative quota"],
-                },
-            }
+            payload["routes"][0]["creative_logic"] = "Producer-authored connective design."
+            self.assertTrue(list(CONTRACT_VALIDATOR.iter_errors(payload)))
+            del payload["routes"][0]["creative_logic"]
             payload["routes"][0]["deliberate_differences"] = []
             for route in payload["routes"]:
                 route["capture_requirements"]["viewports"] = [
@@ -591,6 +641,79 @@ class RouteFamilyContractTests(unittest.TestCase):
                 "cultural-acceptance-not-independent",
                 {item["code"] for item in report["contract"]["errors"]},
             )
+
+    def test_authoritative_manifest_route_cannot_be_omitted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            payload = contract(["/", "/second/"])
+            write_contract(project, payload)
+            manifest_path = project / ".design-dna" / "route-manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["routes"] = manifest["routes"][:1]
+            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+            report = parse_result(run_tool(project, "--no-atlas"))
+            self.assertEqual("contract-invalid", report["audit_status"])
+            self.assertIn("route-manifest-coverage-mismatch", {item["code"] for item in report["contract"]["errors"]})
+
+    def test_component_and_decision_bind_existing_exact_source_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary)
+            payload = contract(["/", "/second/"])
+            payload["routes"][0]["component_sources"][0]["source_state_id"] = "invented"
+            payload["routes"][0]["observable_decisions"][0]["source_state_id"] = "invented"
+            write_contract(project, payload)
+            report = parse_result(run_tool(project, "--no-atlas"))
+            self.assertEqual("contract-invalid", report["audit_status"])
+            self.assertEqual(2, len([item for item in report["contract"]["errors"] if item["code"] == "unmanifested-reference-state"]))
+
+    def test_manifest_state_contract_cannot_be_duplicated_or_underspecified(self) -> None:
+        mutations = {
+            "duplicate state": lambda states: states.append(dict(states[0])),
+            "weak expectation": lambda states: states.append({
+                "id": "opened",
+                "kind": "interactive",
+                "trigger": {"type": "click", "target": "#menu", "value": None},
+                "expectation": "open",
+                "mapped_reference_state_id": "rest",
+            }),
+            "non-rest rest-kind": lambda states: states.append({
+                "id": "opened",
+                "kind": "rest",
+                "trigger": {"type": "click", "target": "#menu", "value": None},
+                "expectation": "menu is visibly opened",
+                "mapped_reference_state_id": "rest",
+            }),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as temporary:
+                project = Path(temporary)
+                payload = contract(["/", "/second/"])
+                write_contract(project, payload)
+                manifest_path = project / ".design-dna" / "route-manifest.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                mutate(manifest["routes"][0]["states"])
+                manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                report = parse_result(run_tool(project, "--no-atlas"))
+                self.assertEqual("contract-invalid", report["audit_status"])
+                self.assertIn("route-manifest-invalid", {item["code"] for item in report["contract"]["errors"]})
+
+    def test_manifest_requires_exact_viewports_and_one_build_origin(self) -> None:
+        mutations = {
+            "duplicate viewport": lambda manifest: manifest["viewports"][1].update({"name": "wide"}),
+            "second origin": lambda manifest: manifest["routes"][1].update({"url": "http://localhost/second/"}),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(case=label), tempfile.TemporaryDirectory() as temporary:
+                project = Path(temporary)
+                payload = contract(["/", "/second/"])
+                write_contract(project, payload)
+                manifest_path = project / ".design-dna" / "route-manifest.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                mutate(manifest)
+                manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                report = parse_result(run_tool(project, "--no-atlas"))
+                self.assertEqual("contract-invalid", report["audit_status"])
+                self.assertIn("route-manifest-invalid", {item["code"] for item in report["contract"]["errors"]})
 
     def test_missing_contract_is_a_schema_valid_execution_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -887,20 +1010,19 @@ class RouteFamilyStructuralAuditTests(unittest.TestCase):
             )
 
     def test_permanent_safe_path_fixture_resolves_without_rewriting_paths(self) -> None:
-        result = run_tool(SAFE_PATHS_FIXTURE, "--no-atlas")
-        self.assertEqual(result.returncode, 1, result.stderr)
-        report = parse_result(result)
-        self.assertEqual(report["contract"]["status"], "loaded")
-        expected = {"/", "/Lakewood/", "/תורה/", "/made_here/", "/about.html"}
-        self.assertEqual(
-            {route["path"] for route in report["route_resolution"]["routes"]},
-            expected,
-        )
-        self.assertTrue(
-            all(route["status"] == "resolved" for route in report["route_resolution"]["routes"])
-        )
-        self.assertEqual(report["link_graph"]["broken_links"], [])
-        self.assertEqual(report["link_graph"]["orphaned_routes"], [])
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "fixture"
+            shutil.copytree(SAFE_PATHS_FIXTURE, project)
+            expected = {"/", "/Lakewood/", "/תורה/", "/made_here/", "/about.html"}
+            write_contract(project, contract(sorted(expected)))
+            result = run_tool(project, "--no-atlas")
+            self.assertEqual(result.returncode, 1, result.stderr)
+            report = parse_result(result)
+            self.assertEqual(report["contract"]["status"], "loaded")
+            self.assertEqual({route["path"] for route in report["route_resolution"]["routes"]}, expected)
+            self.assertTrue(all(route["status"] == "resolved" for route in report["route_resolution"]["routes"]))
+            self.assertEqual(report["link_graph"]["broken_links"], [])
+            self.assertEqual(report["link_graph"]["orphaned_routes"], [])
 
 
 class RouteFamilyInitializerTests(unittest.TestCase):
@@ -1112,6 +1234,38 @@ class RouteFamilyReleaseGateTests(unittest.TestCase):
             )
         }
         self.assertIn("release-cultural-context-authority-ineligible", codes)
+
+    def test_committed_observation_fixtures_bind_current_runtime_bytes(self) -> None:
+        scripts = PACKAGE_ROOT / "skills" / "design-dna" / "scripts"
+        current = {
+            script.name: hashlib.sha256(script.read_bytes()).hexdigest()
+            for script in scripts.iterdir()
+            if script.is_file() and script.suffix in {".mjs", ".py"}
+        }
+        fixtures = sorted(
+            (
+                PACKAGE_ROOT
+                / "maintainer"
+                / "evals"
+                / "fixtures"
+                / "inputs"
+            ).glob("**/.design-dna/references/*-observation.json")
+        )
+        self.assertTrue(fixtures, "Expected committed route-family observation fixtures.")
+        for fixture in fixtures:
+            with self.subTest(fixture=fixture.relative_to(PACKAGE_ROOT).as_posix()):
+                payload = json.loads(fixture.read_text(encoding="utf-8"))
+                producer = payload.get("tool")
+                self.assertIn(producer, current)
+                self.assertEqual(
+                    current[producer],
+                    payload.get("producer_script_sha256"),
+                )
+                runtime = payload.get("runtime_identity")
+                self.assertIsInstance(runtime, dict)
+                for name, digest in runtime.items():
+                    if name in current:
+                        self.assertEqual(current[name], digest, name)
 
 
 if __name__ == "__main__":

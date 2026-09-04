@@ -1,6 +1,6 @@
 # Finish and polish
 
-Use this after the real path works and representative content is present.
+Use this after the real paths work and the complete in-scope content is present.
 Finish is the resolution of visible friction, weak craft, and unfinished
 decisions across the rendered system. It is not a final coat of Design DNA
 effects or a reason to neutralize accepted character.
@@ -9,14 +9,15 @@ effects or a reason to neutralize accepted character.
 
 - [Bind the candidate and intent](#bind-the-candidate-and-intent)
 - [Inspect the whole and the detail](#inspect-the-whole-and-the-detail)
-- [Tune the chosen creative logic](#tune-the-chosen-creative-logic)
+- [Tune only by correcting source fidelity](#tune-only-by-correcting-source-fidelity)
 - [Verify real conditions](#verify-real-conditions)
 - [Respect owner evidence](#respect-owner-evidence)
 - [Stop deliberately](#stop-deliberately)
 
 ## Bind the candidate and intent
 
-Record the exact build, route/state matrix, selected `creative_logic`,
+Record the exact build, complete manifest route/state matrix, selected
+reference ranks/observation hashes, source states, and component mappings,
 observable design decisions, previous accepted baseline, and reviewer
 relationship. Review the final implementation rather than a stale proof or
 idealized screenshot.
@@ -52,41 +53,44 @@ include:
 - copy, labels, claims, metadata, comments, placeholders, console, network,
   and release residue.
 
-This is an open review field, not a required aesthetic sequence. Add a
-project-specific lens when it can expose quality; omit an irrelevant one with
+This is a scoped review-condition set, not a producer-open aesthetic sequence. Add
+a source- or project-authority-bound lens when it can expose quality; omit an irrelevant one with
 an honest `not applicable` where a durable record expects a disposition.
 
 Fix shared causes in content, assets, layout, design decisions, components, or
 behavior before accumulating local patches. Keep optical exceptions and
 route-local work when their reason remains valid.
 
-## Tune the chosen creative logic
+## Tune only by correcting source fidelity
 
-Polish the candidate on its own terms. A singular, plural, restrained,
+Polish the candidate against its exact selected observations. A singular, plural, restrained,
 maximal, decorative, conventional, image-led, typographic, interactive,
-quiet, or deliberately dissonant direction can all be finished work.
+quiet, or deliberately dissonant direction can all be finished work only when
+the selected references supply it.
 
 For each material adjustment, record:
 
-| Decision or finding | Observed cause | Revision | Intended observation | Protected qualities | Rerender evidence |
+| Decision or finding | Observed source drift or cause | Source-mapped revision | Intended observation | Protected qualities | Rerender evidence |
 | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |
 
 Do not make every element explain a task. Atmosphere, ornament, beauty, humor,
 affiliation, and compositional pleasure can be legitimate. Do not make every
 element expressive either; familiar and ordinary forms may be exactly right.
-Judge the whole rendered relationship and the owner's brief.
+Judge the whole rendered relationship against the owner's brief and selected
+reference evidence; do not add an expressive element from taste.
 
 Do not require one premise, focal device, contrast pattern, opening shape,
 type system, pace change, removal test, or amount of visual unity. Do not
 rotate to a fashionable opposite because a current-pattern review names an
-ingredient. Familiar and unusual choices both need convincing execution and a
-project reason at the scale where they operate.
+ingredient. Familiar and unusual choices both need convincing execution and an
+exact source mapping at the scale where they operate.
 
 ## Verify real conditions
 
-Inspect relevant browsers and real devices when available, not only design
-files or one screenshot. Build a matrix proportionate to the actual surface:
+Inspect every supported browser/device class required by the project, not only
+design files or one screenshot. Cover every route/state/viewport in the
+authoritative manifest plus every additional applicable condition:
 viewports and containers, content lengths, data states, themes, locales,
 directionality, zoom, text enlargement, input methods, motion preferences,
 contrast modes, network/resource conditions, and failure/recovery behavior.
@@ -133,7 +137,7 @@ pending.
 Finish when:
 
 - the applicable tasks or invitations, observable design decisions, and
-  accepted creative logic hold across the reviewed matrix;
+  accepted source/state/component transfers hold across the reviewed matrix;
 - truth, rights, accessibility, function, cultural, performance, and
   production gates have the required evidence or explicit blockers;
 - high- and medium-impact findings have verified fixes or accountable

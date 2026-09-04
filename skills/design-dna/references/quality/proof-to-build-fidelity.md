@@ -10,7 +10,7 @@ pixels into every condition or forcing the selected proof into a fixed system.
 ## Contents
 
 - [Bind what the proof actually establishes](#bind-what-the-proof-actually-establishes)
-- [Extract an extensible decision model](#extract-an-extensible-decision-model)
+- [Extract the exact transfer model](#extract-the-exact-transfer-model)
 - [Bind decisions to implementation](#bind-decisions-to-implementation)
 - [Steer locally](#steer-locally)
 - [Reconcile the delta](#reconcile-the-delta)
@@ -28,11 +28,11 @@ When learning from an authorized reference, record what may be transferred and
 what identity, copy, asset, composition, or proprietary behavior must not be
 copied.
 
-## Extract an extensible decision model
+## Extract the exact transfer model
 
-Carry forward the selected candidate's `creative_logic` and consequential
-observable decisions. Do not translate the proof into mandatory categories it
-never used.
+Carry forward the selected candidate's exact source page/state/component
+mappings and consequential observable decisions. Project-authored prose cannot
+fill a missing mapping.
 
 | Decision ID | Proof evidence | Accepted decision | What should remain observable | Scope | Owner |
 | --- | --- | --- | --- | --- | --- |
@@ -86,7 +86,7 @@ For a requested change:
 5. inspect source and rendered behavior in the same conditions;
 6. run whole-page and shared-consumer regression where the change can spread.
 
-Regenerate broadly only when the creative logic itself has been reopened. Do
+Regenerate broadly only when the selected source/state/component transfer itself has been reopened. Do
 not preserve pixel parity when it breaks truth, real content, responsive
 behavior, accessibility, or function; record the justified adaptation.
 
@@ -96,8 +96,8 @@ Before calling the build faithful, verify that:
 
 - every accepted consequential decision is implemented, intentionally
   adapted, rejected, pending, or blocked with an owner;
-- the selected `creative_logic` remains recognizable in the exact conditions
-  where it was meant to operate;
+- every selected source/state/component transfer remains recognizable in the
+  exact conditions where it was meant to operate;
 - real content, media dimensions, states, and interactions replace proof-only
   assumptions where available;
 - relevant responsive, input, language, accessibility, preference, loading,

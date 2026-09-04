@@ -1,38 +1,48 @@
 # Creative freedom boundary
 
-Use this boundary whenever Design DNA influences a visual direction. Its job is
-to keep production rigor from becoming a replacement house style.
+Use this boundary whenever Design DNA influences a visual direction. It is a
+hard source-authority lock, not a permission slip for Codex, Claude, or any
+other producer to design from taste. For this owner there is no independent
+producer aesthetic lane: visible work is made only from the current brief,
+recorded brand authority, supplied work, or measured selected references.
 
 ## Contents
 
 - [Governing rule](#governing-rule)
 - [Classify constraints before directing](#classify-constraints-before-directing)
 - [Hard boundaries](#hard-boundaries)
-- [Open creative field](#open-creative-field)
-- [Use an extensible creative logic](#use-an-extensible-creative-logic)
+- [Reference-supplied creative field](#reference-supplied-creative-field)
+- [Use the exact source/state/component transfer contract](#use-the-exact-sourcestatecomponent-transfer-contract)
 - [Explore in proportion to uncertainty](#explore-in-proportion-to-uncertainty)
-- [Permit aesthetic autonomy](#permit-aesthetic-autonomy)
+- [Preserve source-supplied expression](#preserve-source-supplied-expression)
 - [Review after the direction exists](#review-after-the-direction-exists)
 - [Anti-convergence check](#anti-convergence-check)
 
 ## Governing rule
 
-Use low freedom only where an error would make the work untrue,
-inaccessible, unsafe, unauthorized, broken, misleading, or incompatible with
-an explicit project requirement. Keep aesthetic and expressive choices open
-because their fitness depends on the project and the rendered result.
+There is zero producer creative freedom for visible work. Every visible choice
+and relationship—including type, color, composition, spacing, controls,
+connective tissue, copy rhythm when it affects the visual experience, media
+treatment, motion, hover behavior, and responsive recomposition—must bind to
+the current brief, recorded brand authority, supplied artwork, or measured
+selected-reference evidence. If a choice has no such binding, it is blocked:
+research another suitable source or remove the choice. A producer may not fill
+an evidence gap with taste, convention, convenience, or a claim that the gap
+is part of “synthesis.”
 
-Design DNA does not require or prohibit a font, palette, style, geometry,
-density, ornament, layout family, media treatment, interaction, motion,
-section order, energy pattern, concept count, or degree of visual unity.
-Examples and recurring-pattern warnings are review vocabulary, not a menu,
-blacklist, reverse style guide, or prompt for an opposite-looking fashion.
+This package does not use a named-style blacklist, but that does not authorize
+any named style. A font, palette, geometry, density, ornament, layout family,
+media treatment, interaction, motion, section order, energy pattern, concept,
+or degree of visual unity is allowed only when current authority and measured
+reference evidence supply it. Review vocabulary, fashionable conventions, and
+prior Design DNA examples are never sources.
 
 The portable [assurance boundaries](../policy/absolutes.md) reserve low
 freedom for truth, rights, privacy, access, working behavior, evidence
-honesty, delivery authority, and explicit project contracts. They contain no
-portable taste policy. Treat an aesthetic constraint as inherited only when
-an accountable project or brand source actually establishes it.
+honesty, delivery authority, and explicit project contracts. This owner's
+dated source-fidelity rule additionally closes every visible aesthetic choice
+to producer invention. Treat an aesthetic constraint as inherited only when
+an accountable project or measured reference source actually establishes it.
 
 ## Classify constraints before directing
 
@@ -43,7 +53,7 @@ Record consequential constraints in one of these classes:
 | Non-negotiable | Truth, consent, rights, privacy, accessibility, security, legal, platform, or functional requirement | Satisfy it and preserve evidence. |
 | Inherited | Verified brand, system, content, repository, or owner-approved decision already in force | Preserve it within its stated scope; surface conflicts. |
 | Negotiated | A preference or tradeoff with an accountable decision owner | Keep alternatives reversible until disposition is recorded. |
-| Open | Aesthetic or expressive territory not settled by authority or functional evidence | Explore and decide for project fit and rendered quality. |
+| Reference-open | Aesthetic or expressive territory not yet settled by brand, system, supplied work, or selected evidence | Research exact-fit sources, compare source-bound alternatives, and do not implement until the visible relationship is traced. |
 
 Do not quietly promote a preference, prior Design DNA example, scanner
 finding, fashionable convention, or producer habit into a non-negotiable
@@ -67,12 +77,14 @@ Keep these evidence-bound:
 - honest reporting of what was generated, rendered, reviewed, accepted,
   installed, deployed, or left unverified.
 
-These boundaries define a safe field. They do not decide what that field must
-look or feel like.
+These boundaries define the conditions under which sourced work may ship. They
+do not create a fallback visual field for the producer to invent.
 
-## Open creative field
+## Reference-supplied creative field
 
-Unless project evidence closes them, leave these open:
+These dimensions are not a producer palette. A producer may use one only when
+the current brand, inherited system, supplied artwork, or measured selected
+reference supplies it:
 
 - typography, including common, system, niche, custom, display, variable,
   single-family, and multi-family approaches;
@@ -86,31 +98,32 @@ Unless project evidence closes them, leave these open:
   expressive interaction at all;
 - singular, plural, layered, local, restrained, maximal, decorative,
   familiar, experimental, historically referential, or deliberately
-  dissonant creative logic.
+  dissonant source transfer.
 
-High freedom is not arbitrary choice. Decisions should fit the brief,
-material, audience, owner preference, cultural context, production reality,
-and actual render. Their evidence may be functional, editorial, cultural,
-emotional, experiential, formal, or aesthetic. Not every legitimate choice
-reduces to a literal user task.
+Source range is not arbitrary choice. Select evidence that fits the brief,
+material, audience, owner requirement, cultural context, production reality,
+and actual content/task model. A legitimate source may contribute atmosphere,
+ceremony, humor, or formal tension without reducing to a literal user task, but
+the producer cannot invent, soften, replace, or extend that contribution from
+personal taste.
 
-## Use an extensible creative logic
+## Use the exact source/state/component transfer contract
 
-Record only the logic and decisions that genuinely organize this candidate.
-The record may be a short statement, several local rules, a sequence, a set of
-contrasts, or another form suited to the project.
+Record only decisions that bind to current measured source evidence. A local
+statement, rule, sequence, contrast, or project rationale cannot authorize a
+visible decision by itself.
 
-Use `creative_logic` as an extensible container, not a fixed taste schema:
+Use the authoritative route manifest and component-source map:
 
 | Field | Purpose |
 | --- | --- |
-| `logic_id` | Stable local identifier when the project needs one. |
-| `statement` | The candidate's own organizing proposition in plain language. |
-| `evidence` | Project material, reference decomposition, owner direction, specimen, render, or review supporting it. |
-| `decisions` | The consequential design decisions that express or test it. |
-| `limits` | Truth, access, production, maintenance, cultural, or owner boundaries that matter. |
-| `status` | Provisional, accepted, revised, rejected, or blocked. |
-| `extensions` | Any project-specific fields that improve understanding; empty by default. |
+| `route_key` | Exact authoritative route-manifest key. |
+| `source_mapping` | Selected rank, strong-N ID, canonical observation path, and exact observation SHA-256. |
+| `source_state_id` | Exact mapped state present in both wide and narrow observation evidence. |
+| `component` | Exact key from the complete rendered component census. |
+| Observable decision | The specific measured structure or behavior reproduced from that source page/state. |
+| Transfer evidence | Current build/run/manifest-bound wide and narrow rendered evidence, including target-specific interaction frames when applicable. |
+| Status | Provisional, accepted, revised, rejected, or blocked; status never replaces evidence. |
 
 No named aesthetic field or device is mandatory. Include project-specific
 descriptions only when they are true of the candidate and useful to its
@@ -122,46 +135,49 @@ Record consequential decisions with an observable model:
 | --- | --- | --- | --- | --- | --- | --- |
 |  | typography, composition, content, media, color, ornament, interaction, behavior, or another project concern |  |  | render, task, state, response, or maintenance evidence | relevant viewport, content, input, preference, fallback, or removal condition |  |
 
-The list is extensible. Omit irrelevant concerns and add project-specific ones.
-Do not complete a field by inventing a design move.
+Review conditions may follow the project, but the source/state/component fields
+stay exact. Do not complete a field by inventing a design move. Each visible decision names
+its source rank and evidence; if none exists, research it or remove it.
 
 ## Explore in proportion to uncertainty
 
-Explore enough materially different rendered possibilities to expose the
-consequential choice. Depth depends on uncertainty, stakes, reversibility,
-schedule, inherited authority, and what the decision owner needs to see. No
-fixed number of concepts or proofs applies across projects.
+Compare enough materially different source-bound possibilities to expose the
+consequential choice. The current project contract may set a minimum candidate
+pool, rejected candidates, recordings, or proofs; those are release floors,
+not reasons to select weak or random sources. No visible alternative may be
+supplied from producer taste.
 
-Alternatives are useful when they represent different answers to the brief,
-not when they merely replace copy, photography, palette, or font inside an
-unchanged system. One inherited direction may be sufficient for a bounded
-repair. A highly open identity may need a wider field. Record why the evidence
-was sufficient rather than manufacturing unusable options to satisfy a count.
+Alternatives are useful when different suitable references represent different
+answers to the brief, not when the producer merely replaces copy, photography,
+palette, or font inside an unchanged system. One inherited direction may be
+sufficient for a bounded repair. A greenfield site may need a wider candidate
+comparison. Record why the source evidence was sufficient rather than
+manufacturing unsourced options to satisfy a count.
 
-For greenfield, Showcase, or open-direction work, expose enough contrast to
-challenge the first plausible answer. Depending on the uncertainty, that may
-be a materially different rendered candidate, a focused system or route
-fragment, a reference decomposition, a content-order proof, or another
-decision artifact. Do not prescribe a universal candidate count; see
-[creative exploration](craft/creative-exploration.md).
+For greenfield, Showcase, or unresolved-direction work, expose the full
+source-bound candidate comparison required by the project contract before the
+first visual candidate. Challenge the first plausible answer with a materially
+different, brief-fit reference mapping or adapted route fragment. If the
+required research, comparison, or evidence is unavailable, direction is
+blocked; see [creative exploration](craft/creative-exploration.md).
 
-## Permit aesthetic autonomy
+## Preserve source-supplied expression
 
-An element or composition may create atmosphere, beauty, humor, affiliation,
-ceremony, tactile pleasure, genre, or formal tension without separately
-explaining information or causing an action. Review aesthetic work at the
-scale at which it operates: a field may be valuable as a whole even when one
-flourish has no independent task.
+An element or composition supplied by the selected reference grammar may
+create atmosphere, beauty, humor, affiliation, ceremony, tactile pleasure,
+genre, or formal tension without separately explaining information or causing
+an action. Review it at the scale at which it operates. This permits expressive
+source fidelity, not an unsourced producer flourish.
 
-Aesthetic autonomy never excuses false claims, inaccessible text, obstructed
+Source-supplied expression never excuses false claims, inaccessible text, obstructed
 controls, deceptive interaction, stolen assets, unacceptable performance, or
 misrepresentation.
 
 ## Review after the direction exists
 
 Do not prime initial direction work with a catalog of allegedly AI-looking
-ingredients. Establish the candidate from project evidence first. After a
-render exists, review outcomes for:
+ingredients. Establish the candidate from exact-fit project and reference
+evidence first. After a render exists, review outcomes for:
 
 - fitness to the brief, owner preference, audience, and cultural context;
 - visual quality in its own terms, including type, composition, crop,
@@ -173,17 +189,20 @@ render exists, review outcomes for:
 - repeated choices that have no project reason and may expose an unexamined
   producer or skill default.
 
-A design may pass with one idea, several local logics, deliberate ornament,
-familiar structure, no motion, several type voices, or extreme restraint. It
-may fail while following every named method in this skill if the rendered
-result is ugly, generic, incoherent, careless, or wrong for the owner.
+A source-bound design may pass with one idea, several local logics, deliberate
+ornament, familiar structure, no motion, several type voices, or extreme
+restraint when those things are actually evidenced. It may fail while
+following every named method in this skill if the rendered result is ugly,
+generic, incoherent, careless, or wrong for the owner. A failure does not grant
+permission to tune from taste; it reopens the source mapping, requires a
+different measured reference, or requires removal.
 
 Review specificity and realized ambition separately. Quiet, conventional,
 image-led, typographic, dense, cinematic, and restrained work can each be
-fully authored or underdeveloped. Set the ambition from the project, then
-judge whether the rendered content, media, depth, scale, rhythm, interaction,
-and finish realize that target. Absence of obvious defects is not proof of
-quality, but no universal richness or memorability device is required.
+fully resolved or underdeveloped. Select the ambition from exact-fit references,
+then judge whether the rendered content, media, depth, scale, rhythm,
+interaction, and finish reproduce that target. Absence of obvious defects is
+not proof of quality, but no universal richness or memorability device is required.
 
 ## Anti-convergence check
 

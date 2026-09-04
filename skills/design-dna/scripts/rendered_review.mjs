@@ -19,11 +19,11 @@ import {
   writeFile,
 } from "node:fs/promises";
 import http from "node:http";
-import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { browserExecutableIdentity, discoverBrowserExecutable as discoverSharedBrowser, resolvePlaywright } from "./playwright_resolver.mjs";
 
 const TOOL_NAME = "design-dna-rendered-review";
 const TOOL_VERSION = "3.0.0";
@@ -319,9 +319,13 @@ Options:
   --help                       Show this help without loading Playwright
 
 Playwright discovery:
-  Normal Node resolution, or DESIGN_DNA_PLAYWRIGHT_MODULE_DIR pointing to a
-  node_modules directory. Browser discovery uses Playwright's installed
-  Chromium, common Chrome/Edge locations, PATH, or --browser-executable.
+  An explicit absolute DESIGN_DNA_PLAYWRIGHT_MODULE_DIR (invalid paths fail
+  closed), then the target project's node_modules, a recognized source
+  checkout's maintainer/node_modules, then exact node_modules directories inside
+  the installed skill.
+  Browser discovery uses Playwright's installed Chromium, common Chrome/Edge
+  locations, PATH, or --browser-executable; a browser executable never replaces
+  the Playwright module prerequisite.
 
 Capture manifest v1:
   A strict JSON object with profiles and scenarios. Profiles declare the
@@ -379,7 +383,7 @@ function parseArgs(argv) {
     buildId: null,
     routes: [],
     captureManifest: null,
-    browserExecutable: null,
+    browserExecutable: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
     replace: false,
     timeoutMs: 30000,
     settleMs: 250,
@@ -2473,117 +2477,22 @@ async function startStaticServer(root, entryPath = "index.html") {
 }
 
 function loadPlaywright() {
-  const moduleDir = process.env.DESIGN_DNA_PLAYWRIGHT_MODULE_DIR;
   try {
-    let requireFrom;
-    if (moduleDir) {
-      const absolute = path.resolve(moduleDir);
-      requireFrom = createRequire(path.join(absolute, "__design_dna_loader__.cjs"));
-    } else {
-      requireFrom = createRequire(import.meta.url);
-    }
-    const playwright = requireFrom("playwright");
-    const packageMetadata = requireFrom("playwright/package.json");
-    if (!playwright?.chromium) {
-      throw new Error("resolved module does not expose chromium");
-    }
+    const loaded = resolvePlaywright({ moduleUrl: import.meta.url });
     return {
-      playwright,
-      version: String(packageMetadata.version ?? "unknown"),
-      source: moduleDir ? "environment-module-directory" : "normal-node-resolution",
+      playwright: loaded.playwright,
+      version: loaded.dependency.version,
+      source: loaded.source,
+      dependency: loaded.dependency,
     };
   } catch (error) {
     throw new RenderReviewError(
-      "playwright-unavailable",
-      "Playwright could not be loaded. Install it normally or set DESIGN_DNA_PLAYWRIGHT_MODULE_DIR to its node_modules directory.",
-      {
-        module_directory: moduleDir ? path.resolve(moduleDir) : null,
-        cause: String(error?.message ?? error),
-      },
+      error?.code || "playwright-unavailable",
+      String(error?.message || error),
+      error?.details || {},
       3,
     );
   }
-}
-
-function executableCandidates() {
-  const candidates = [];
-  if (process.platform === "win32") {
-    for (const base of [
-      process.env.PROGRAMFILES,
-      process.env["PROGRAMFILES(X86)"],
-      process.env.LOCALAPPDATA,
-      process.env.ProgramW6432,
-    ]) {
-      if (!base) continue;
-      candidates.push(
-        { name: "chrome", path: path.join(base, "Google", "Chrome", "Application", "chrome.exe") },
-        { name: "edge", path: path.join(base, "Microsoft", "Edge", "Application", "msedge.exe") },
-      );
-    }
-  } else if (process.platform === "darwin") {
-    candidates.push(
-      { name: "chrome", path: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
-      { name: "edge", path: "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" },
-      { name: "chromium", path: "/Applications/Chromium.app/Contents/MacOS/Chromium" },
-    );
-  }
-
-  const names =
-    process.platform === "win32"
-      ? ["chrome.exe", "msedge.exe", "chromium.exe"]
-      : ["google-chrome", "google-chrome-stable", "microsoft-edge", "chromium", "chromium-browser"];
-  for (const directory of (process.env.PATH ?? "").split(path.delimiter).filter(Boolean)) {
-    for (const name of names) {
-      candidates.push({ name, path: path.join(directory, name) });
-    }
-  }
-  return candidates;
-}
-
-async function regularFile(value) {
-  const info = await stat(value).catch(() => null);
-  return Boolean(info?.isFile());
-}
-
-async function discoverBrowser(chromium, explicit) {
-  if (explicit) {
-    const executable = path.resolve(explicit);
-    if (!(await regularFile(executable))) {
-      throw new RenderReviewError(
-        "browser-executable-invalid",
-        "--browser-executable must identify an existing regular file.",
-        { path: executable },
-        3,
-      );
-    }
-    return { path: executable, source: "explicit", name: path.basename(executable) };
-  }
-
-  let bundled = null;
-  try {
-    bundled = chromium.executablePath();
-  } catch {
-    bundled = null;
-  }
-  if (bundled && (await regularFile(bundled))) {
-    return { path: bundled, source: "playwright", name: "chromium" };
-  }
-
-  const seen = new Set();
-  for (const candidate of executableCandidates()) {
-    const normalized = normalizePathForComparison(candidate.path);
-    if (seen.has(normalized)) continue;
-    seen.add(normalized);
-    if (await regularFile(candidate.path)) {
-      return { path: path.resolve(candidate.path), source: "system-discovery", name: candidate.name };
-    }
-  }
-  throw new RenderReviewError(
-    "browser-unavailable",
-    "No Playwright Chromium, Chrome, Edge, or Chromium executable was found. Supply --browser-executable.",
-    {},
-    3,
-  );
 }
 
 function safeEventUrl(raw) {
@@ -5010,9 +4919,8 @@ async function run(options) {
     );
     const routes = capturePlan.routes;
     const loaded = loadPlaywright();
-    const browserExecutable = await discoverBrowser(
-      loaded.playwright.chromium,
-      options.browserExecutable,
+    const browserExecutable = browserExecutableIdentity(
+      discoverSharedBrowser(loaded.playwright, options.browserExecutable),
     );
     try {
       browser = await loaded.playwright.chromium.launch({
@@ -5157,12 +5065,14 @@ async function run(options) {
         architecture: process.arch,
         playwright_version: loaded.version,
         playwright_source: loaded.source,
+        playwright_entry_sha256: loaded.dependency.resolved_file_sha256,
         browser: {
           engine: "chromium",
           product_hint: browserExecutable.name,
           version: browser.version(),
           executable_source: browserExecutable.source,
           executable_name: path.basename(browserExecutable.path),
+          executable_sha256: browserExecutable.sha256,
         },
       },
       privacy: {

@@ -28,15 +28,16 @@ irrelevant fields; do not turn this capsule into a universal style prompt.
 - Non-negotiable constraints:
 - Inherited constraints and protected boundaries:
 - Negotiated decisions and status:
-- Open creative territory:
+- Reference-open visible relationships and required source evidence:
 
-## Selected `creative_logic`
+## Selected source/state/component transfer
 
-- `logic_id`, statement, evidence, limits, status, and extensions:
+- Route-manifest ID/SHA-256 and selected rank/ID/observation/SHA-256:
+- Exact mapped source state and current source frame/event evidence:
 
-| Decision ID | Accepted observable decision | Scope | Adaptation or limit | Evidence and owner |
-| --- | --- | --- | --- | --- |
-|  |  | systemic, route-local, component-local, one-off, or exception |  |  |
+| Decision ID | Route key and census component | Exact source/state mapping | Accepted observable transfer | Adaptation or limit | Build/run-bound evidence and owner |
+| --- | --- | --- | --- | --- | --- |
+|  |  | rank, ID, observation path/SHA-256, source state |  |  |  |
 
 ## Delivery context
 

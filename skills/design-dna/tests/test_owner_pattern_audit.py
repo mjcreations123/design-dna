@@ -146,7 +146,7 @@ class OwnerPatternAuditTests(unittest.TestCase):
     def complete_direction(self, payload: dict[str, object]) -> None:
         direction_path = self.project / ".design-dna" / "direction.md"
         direction_path.write_text(
-            "# Direction\n\nProject-derived organizing logic and exact decisions.\n",
+            "# Direction\n\nReference-sourced organizing logic and exact decisions.\n",
             encoding="utf-8",
         )
         payload["status"] = "direction-ready"

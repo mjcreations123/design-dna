@@ -7,17 +7,17 @@ premise, motion grammar, effect family, or amount of movement.
 
 ## Contents
 
-- [Define the temporal creative logic](#define-the-temporal-creative-logic)
-- [Compose time without a house recipe](#compose-time-without-a-house-recipe)
+- [Bind the temporal source logic](#bind-the-temporal-source-logic)
+- [Reproduce time without a house recipe](#reproduce-time-without-a-house-recipe)
 - [Build scroll stories and route transitions progressively](#build-scroll-stories-and-route-transitions-progressively)
 - [Specify behavior and failure](#specify-behavior-and-failure)
 - [Protect agency and access](#protect-agency-and-access)
 - [Budget the real runtime](#budget-the-real-runtime)
 - [Review the rendered experience](#review-the-rendered-experience)
 
-## Define the temporal creative logic
+## Bind the temporal source logic
 
-Classify the constraints before choosing effects:
+Classify the authority before reproducing effects:
 
 - **non-negotiable:** essential information and action remain available;
   input, focus, interruption, reduced-motion, and failure behavior are sound;
@@ -26,35 +26,36 @@ Classify the constraints before choosing effects:
   references, or product behavior the owner intends to keep;
 - **negotiated:** intensity, attention cost, pacing, novelty, and other choices
   that need owner or audience judgment;
-- **open:** choreography, style, duration, rhythm, dimensionality, temporal
-  structure, ornament, atmosphere, ceremony, play, and any other unconstrained
-  aesthetic choice.
+- **reference-open:** choreography, style, duration, rhythm, dimensionality,
+  temporal structure, ornament, atmosphere, ceremony, and play not yet settled
+  by current authority; research and measure exact-fit sources before use.
 
-Record the relevant `creative_logic`: what time contributes, what evidence
-supports it, which observable decisions express it, where it must yield, and
-which extensions remain open. Motion may confirm, connect, explain, reveal,
+Record the selected reference rank/observation/hash, exact source state and target, and mapped component transfer:
+what time contributes, what measured evidence supports it, which observable
+decisions reproduce it, and where it must yield. Motion may confirm, connect, explain, reveal,
 orient, dramatize, decorate, delight, establish atmosphere, create ritual,
 support play, or do something else the project can defend. Utility is not the
 only legitimate purpose.
 
-## Compose time without a house recipe
+## Reproduce time without a house recipe
 
 The experience may use one temporal language, several related languages,
 deliberate contrast, or chapter-specific one-offs. It may be linear,
 responsive, ambient, cyclical, interruptible, simultaneous, sparse,
 continuous, theatrical, or predominantly still. Spatial continuity,
 progressive understanding, direct manipulation, state transition, atmosphere,
-and other models may coexist when the rendered whole remains learnable and
-the combination serves the work.
+and other models may coexist only when selected fully recorded sources supply
+the combination and the rendered whole remains learnable.
 
 Storyboard the states and transitions that carry material risk or meaning.
 The needed record might include resting, triggering, intermediate, settled,
 reversed, cancelled, skipped, repeated, failed, and resumed conditions, but do
 not manufacture states or a fixed beat count solely to complete a template.
 
-Derive timing and motion properties from the creative logic, input mechanics,
-content, and runtime. Reusable tokens can protect recurring behavior; a
-commissioned sequence or singular event may use its own values. Fast, slow,
+Copy timing and motion properties from the selected recording and observation,
+then adapt only for input mechanics, content, access, and runtime. Reusable
+tokens can protect recurring source behavior; a commissioned sequence or
+singular event still binds its measured authority. Fast, slow,
 smooth, abrupt, elastic, mechanical, organic, silent, and spectacular motion
 can all be right. Review the actual sequence rather than treating an easing
 curve or effect name as a quality signal.
@@ -88,10 +89,10 @@ control, and the accountable owner accepts the tradeoff.
 
 CSS
 [scroll-driven animations](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll-driven_animations),
-JavaScript timelines, video, canvas, WebGL, and other runtimes are tools. Select
-them from the needed behavior and support evidence. Enhance from a complete
+JavaScript timelines, video, canvas, WebGL, and other runtimes are implementation
+tools. Select them to reproduce the mapped behavior within support evidence. Enhance from a complete
 source and default-CSS state; guard optional capabilities; keep event work
-bounded; and fail open when media, observation, animation, or code is absent.
+bounded; and degrade safely when media, observation, animation, or code is absent.
 
 For true multi-page work, same-origin
 [cross-document View Transitions](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API/Using)
@@ -112,15 +113,15 @@ near-zero duration is not automatically equivalent access.
 For each significant or unusual behavior, record only the fields needed to
 make it accountable. A useful ledger may include:
 
-| Behavior | Creative or user role | Trigger and inputs | States and interruption | Reduced/unsupported result | Runtime and failure | Evidence |
+| Behavior | Selected source rank/observation and user role | Trigger and inputs | States and interruption | Reduced/unsupported result | Runtime and failure | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |
 
 The ledger may document atmosphere, memorability, ceremony, rhythm, or play as
 well as task utility. It is not a quota and does not require an element to
 become static merely because its value is aesthetic. Findings should identify
-an actual mismatch, harm, broken state, unsupported cost, or lack of project
-rationale.
+source drift, an actual mismatch, harm, broken state, unsupported cost, or lack
+of exact reference authority.
 
 Keep feedback appropriately related to the action or state that caused it.
 Essential state changes must not be held hostage by a decorative sequence.
@@ -213,7 +214,7 @@ must not depend on pre-scrolling every hidden observer target. Bind compared
 evidence to the same build, route, state, viewport, browser, theme, locale, and
 content fixture.
 
-Ask whether the motion supports the declared creative logic, whether plural or
+Ask whether the motion reproduces the declared source/state/component transfer, whether plural or
 mixed temporal systems feel authored, whether agency and meaning survive
 failure and alternatives, and whether the runtime cost is acceptable. A
 fade-up, marquee, morph, parallax field, hover effect, typewriter sequence,

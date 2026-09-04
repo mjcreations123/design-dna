@@ -1,4 +1,4 @@
-# Asset integrity and art direction
+# Asset integrity and selected-source transfer
 
 Use this for logos, photography, illustration, video, audio, fonts, product
 imagery, maps, screenshots, generated media, and third-party embeds.
@@ -61,11 +61,31 @@ detail:
 - alt text, caption, transcript, or decorative decision;
 - source and output dimensions, format, and optimization.
 
-`art_direction` is optional and extensible. Omit it when the asset's
-`content_job`, delivery, and accessibility records already say what reviewers
-need. When a distinct creative decision needs a durable note, use a nonempty
-string or project-defined string keys; do not fill a standard subject, crop,
-palette, lighting, perspective, set-consistency, or other aesthetic checklist.
+The asset manifest does not accept a freeform visual-direction field.
+`content_job` records purpose; it is not visual authority. Every visible asset
+decision, including subject, medium, crop, palette, lighting, perspective, set
+continuity, responsive behavior, and motion, must instead appear in the
+preimplementation visible-decision source manifest with its exact selected
+rank, observation bytes, source state, source component or behavior, manifested
+route/state, and measured transfer. A project-defined note, owner-approval
+status, or otherwise valid provenance row cannot authorize an unsourced visual
+choice.
+
+The exact optional `source_mapping` object is:
+
+- `source_rank` and its matching `source_id` (`strong-N`);
+- canonical `.design-dna/references/strong-N-observation.json` path and exact
+  `observation_sha256`;
+- `source_state_id`, proven in both wide and narrow observation state cells;
+- `source_component_or_behavior` and a substantive `measured_transfer`;
+- project-relative generated `evidence_path` and exact `evidence_sha256`, where
+  that same path/hash/byte-count record appears in the bound observer's
+  canonical top-level `frame_dir` plus `frames[]` inventory.
+
+The observation must use the current observer schema, producer bytes, and
+runtime identities. Both the observation and evidence paths must be ordinary,
+in-project, non-linked files. Omit `source_mapping` only when the asset makes no
+visible decision; provenance, rights, and approval still apply independently.
 
 Interpret the delivery fields by type rather than forcing every asset into an
 image workflow:

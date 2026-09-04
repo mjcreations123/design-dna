@@ -54,8 +54,8 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PR
 ```
 
 The second command does not imply that a comparison with prior client work is
-authorized. It only makes the brief-native exploration and proof boundary
-inspectable.
+authorized. It only makes the brief-qualified, reference-backed exploration
+and proof boundary inspectable.
 
 Do not invoke this merely because a project is new, because a trend list names
 an ingredient, or because a previous site used a common visual choice. An
@@ -64,15 +64,17 @@ utility route can have a single honest direction.
 
 ## Work in roots, not reskins
 
-Before looking at polished examples, record three or more concept roots derived
-from the present brief. A supplied brand book, source packet, real product
-material, existing information architecture, or protected system constraint may
-be consulted first; those are current-project inputs, not borrowed style
-answers.
+Complete the brief-fit reference dossier before defining roots. Record three or
+more concept roots whose incompatible organizing relationships come from
+different qualified, fully traversed reference combinations and whose content
+counterparts exist truthfully in the present brief. A supplied brand book,
+source packet, real product material, existing information architecture, or
+protected system constraint remains authoritative, but it does not let the
+producer invent the missing visual answer.
 
 A root states all of these in project language:
 
-- its brief anchor and organizing logic;
+- its brief anchor, selected reference ranks/observation hashes, and copied organizing logic;
 - the first encounter and dominant content operation;
 - the body progression and visitor agency; and
 - the surface consequence caused by those decisions.
@@ -84,15 +86,15 @@ visitor agency. Record the exact pairwise challenge matrix. Replacing copy,
 imagery, color, typography, shapes, or motion inside an unchanged encounter is
 not an incompatible root.
 
-The record’s reference-order events make the sequence inspectable: the three
-roots are recorded before polished examples, reference decompositions, or
-post-hoc inspiration. This is not a ban on references; it prevents a polished
-reference from determining the entire candidate field before the brief has had
-a chance to speak.
+The record’s reference-order events make the sequence inspectable: brief-fit
+criteria are frozen first; qualified references are fully traversed and
+compared next; and the three source-backed roots are recorded before any root
+is rendered. Post-hoc inspiration cannot justify an existing root, and no root
+may precede its measured source evidence.
 
 ## Proof before broad implementation
 
-Build at least two small, rendered proof slices from two different roots before
+Build at least two small, rendered proof slices from two different source-backed roots before
 the full site starts. Each slice binds a path-bound schema-3
 `render-review.json` package, its frozen local source-manifest SHA-256, the
 exact build ID and route, and the exact wide and narrow renderer capture IDs.
@@ -105,8 +107,9 @@ relationship, or mobile recomposition. They are not required to be same-sized
 pages, themed mockups, or a portfolio of style boards.
 
 Select one root only after comparing it with a specific rendered rejected root.
-Record both the selection reason and why the rejected root fits the current
-brief less well. This keeps the choice project-led rather than novelty-led.
+Record both source combinations, their exact brief-fit evidence, and why the
+rejected combination fits the current brief less well. This keeps the choice
+reference-led rather than producer- or novelty-led.
 
 Do not begin broad implementation at `roots-ready` or `proof-ready`. Freeze the
 independent unprimed review, advance the record to `reviewed`, and explicitly
@@ -142,7 +145,7 @@ evidence. Do not relabel an independent review as that acceptance.
 The lifecycle is deliberately narrow:
 
 - `draft` — no project-specific roots claimed;
-- `roots-ready` — three incompatible brief-native roots, reference order, and
+- `roots-ready` — three incompatible brief-qualified reference-backed roots, reference order, and
   exact challenge matrix exist;
 - `proof-ready` — two different roots have narrow/wide rendered proof and a
   selected-versus-rejected decision with a zoned rationale-recorded time exists; and

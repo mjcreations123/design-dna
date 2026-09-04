@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "created_with": "design-dna 5.2.0",
   "record_status": "reviewed",
   "classification": "internal",
@@ -7,14 +7,16 @@
     "project_id": "copper-lab",
     "surface_scope": ["/"],
     "route_coverage": {
-      "mode": "representative",
+      "mode": "all-authoritative-manifest-routes",
       "rationale": "This single-route repair-intake proof is the only public encounter in the reviewed artifact.",
-      "discovered_route_map": [
+      "manifest": {"path": ".design-dna/route-manifest.json", "sha256": "__ROUTE_MANIFEST_SHA256__"},
+      "manifest_id": "manifest-project-contrast-001",
+      "routes": [
         {
+          "route_key": "home",
           "route": "/",
           "coverage": "captured",
-          "representative_route": null,
-          "equivalence_rationale": "The only discovered public route is directly reviewed at wide and narrow conditions."
+          "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"}
         }
       ]
     },
@@ -38,6 +40,7 @@
     "nontransferable_constraints": ["No invented turnaround promises."]
   },
   "selected_direction": {
+    "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
     "organizing_answer": "A repair bench that lets material evidence lead before the service invitation.",
     "opening_encounter": "A close material observation and a repair decision, not a marketing hero.",
     "dominant_content_unit": "A sequence of repair states with concrete decision points.",
@@ -46,6 +49,7 @@
     "observable_predictions": [
       {
         "id": "obs-001",
+        "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
         "decision": "The first screen makes a repair decision visible before a promotional claim.",
         "project_basis": "The supplied process notes make material diagnosis the visitor's first useful question.",
         "rendered_condition": "route=/; viewport=wide; state=default; capture=capture-wide",
@@ -58,6 +62,7 @@
     "first_answer_risk": "A generic services hero and feature grid would hide the evidence that makes this workshop credible.",
     "challenge_method": "counter-model",
     "challenging_answer": "A conventional service overview led by categories and proof modules.",
+    "challenging_source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
     "selection_reason": "The repair-bench model better preserves the source material and visitor decision.",
     "why_sufficient": "The two models changed the organizing answer before full implementation."
   },
@@ -67,6 +72,7 @@
     "axes": [
       {
         "axis": "information-structure-content-operation",
+        "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
         "group": "encounter",
         "status": "selected",
         "project_basis": "Repair is a sequence of observed states rather than a category catalogue.",
@@ -75,6 +81,7 @@
       },
       {
         "axis": "type-role-behavior",
+        "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
         "group": "surface-language",
         "status": "selected",
         "project_basis": "The workshop needs precise annotations beside material observations.",
@@ -202,7 +209,9 @@
     "captures": [
       {
         "id": "capture-wide",
+        "route_key": "home",
         "route": "/",
+        "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
         "viewport": {"id": "wide", "width": 320, "height": 240, "viewport_class": "wide"},
         "capture_mode": "full-page",
         "capture_state": "default",
@@ -212,7 +221,9 @@
       },
       {
         "id": "capture-narrow",
+        "route_key": "home",
         "route": "/",
+        "source_mapping": {"rank": 1, "id": "strong-1", "observation": ".design-dna/references/strong-1-observation.json", "sha256": "__SOURCE_OBSERVATION_SHA256__", "state_id": "rest"},
         "viewport": {"id": "narrow", "width": 240, "height": 320, "viewport_class": "narrow"},
         "capture_mode": "full-page",
         "capture_state": "default",

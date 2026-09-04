@@ -24,9 +24,9 @@ defaults:
 interpretation:
   - "Replace the owner and scope, review every concern, add or remove project-specific concerns, then change status to active."
   - "A disposition applies to the undesirable finding represented by its concern ID. truth_and_claims: prohibit means prohibit unsupported, fabricated, or misleading claim findings, while working_controls: prohibit means prohibit broken or misleading affordance findings."
-  - "These are scoped owner preferences and quality boundaries, not aesthetic doctrine or reliable detectors of AI authorship."
-  - "Do not add font, palette, component, layout, motion, ornament, or other ingredient allowlists or denylists. Record the project outcome or concern instead."
+  - "These are scoped owner preferences and quality boundaries, not an aesthetic recipe or reliable detector of AI authorship."
+  - "Do not add portable font, palette, component, layout, motion, ornament, or other ingredient recipes. Record exact source-bound project outcomes and concerns instead."
   - "Higher-priority safety, accessibility, factual, legal, brand, cultural, and explicit project requirements win."
-  - "Aesthetic ingredients remain open unless approved project authority closes them; judge the rendered combination and its project fit."
+  - "Unsettled aesthetic ingredients are reference-open, never producer-open: research exact-fit sources and do not implement until every visible relationship is bound to approved project authority or measured reference evidence."
   - "Owner defaults annotate scanner findings; they never suppress them."
   - "Exact owner-reviewed, fingerprint-bound, scoped, expiring allowlist records—not policy taste fields—handle exceptional source findings."

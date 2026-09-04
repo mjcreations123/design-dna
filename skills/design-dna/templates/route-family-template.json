@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "created_with": "__DESIGN_DNA_VERSION__",
   "classification": "internal",
   "study": {
@@ -21,12 +21,33 @@
       "path": "/",
       "title": "Replace with the route title",
       "user_job": "Replace with the job this route performs for a visitor.",
-      "creative_logic": "Describe this route in its own terms. A singular, plural, conventional, restrained, maximal, ornamental, or experimental logic may be valid.",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "component_sources": [
+        {
+          "component": "Replace with an exact component key from the final component census.",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "source_state_id": "rest",
+          "transfer": "Describe the exact visible structure or behavior copied for this component."
+        }
+      ],
       "observable_decisions": [
         {
           "decision": "Replace with a consequential rendered decision rather than a required design category.",
           "reason": "Explain why it suits this route, content, audience, and constraints.",
           "evidence": "Replace with a source, proof artifact, rendered observation, or explicit provisional limit.",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "source_state_id": "rest",
           "status": "provisional"
         }
       ],
@@ -48,17 +69,33 @@
       "path": "/route-b/",
       "title": "Replace with the second route title",
       "user_job": "Replace with the distinct job this route performs.",
-      "creative_logic": {
-        "logic_statement": "Describe the route without filling a standard list of typography, color, media, interaction, or energy fields.",
-        "project_specific_evidence": [
-          "Replace this key and value with whatever structure helps this project explain the decision."
-        ]
+      "source_mapping": {
+        "rank": 2,
+        "id": "strong-2",
+        "observation": ".design-dna/references/strong-2-observation.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
       },
+      "component_sources": [
+        {
+          "component": "Replace with an exact component key from the final component census.",
+          "source_rank": 2,
+          "source_id": "strong-2",
+          "source_observation": ".design-dna/references/strong-2-observation.json",
+          "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "source_state_id": "rest",
+          "transfer": "Describe the exact visible structure or behavior copied for this component."
+        }
+      ],
       "observable_decisions": [
         {
           "decision": "Replace with the decision that most distinguishes the rendered body from route-a.",
           "reason": "Explain why the difference belongs to the route job.",
           "evidence": "Replace with proof or mark the decision provisional.",
+          "source_rank": 2,
+          "source_id": "strong-2",
+          "source_observation": ".design-dna/references/strong-2-observation.json",
+          "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "source_state_id": "rest",
           "status": "provisional"
         }
       ],

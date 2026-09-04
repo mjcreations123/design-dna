@@ -3,39 +3,40 @@
 Use this when symbols, illustrations, marks, or pictorial controls communicate
 actions, navigation, state, categories, concepts, atmosphere, or identity.
 
-## Decide the role from context
+## Bind the role to context and source
 
 An icon can aid recognition, support scanning, preserve continuity, teach a
 metaphor, create character, carry ornament, or contribute to a larger visual
-language. Text, icon, image, gesture, or a combination may be the right form.
+language. Text, icon, image, gesture, or a combination may be used only when a
+qualified reference or supplied system carries that form.
 Consequential or unfamiliar actions still need a label or explanation that the
 intended audience can understand.
 
 Do not maintain an ingredient blacklist. Emoji, familiar library symbols,
 custom marks, detailed illustrations, text glyphs, animated symbols, and
-decorative motifs can all be valid. Judge whether their meaning, cultural
-implication, originality, rights, rendered quality, and frequency support the
-project's creative logic.
+decorative motifs do not fail by category. Require an exact selected source for
+their meaning, construction, cultural implication, rights, rendered quality,
+and frequency.
 
 ## Define the system that the work needs
 
-Document the relevant `creative_logic`, evidence, decisions, limits, and open
-extensions. Decide which properties should be shared and which may vary. Those
+Document the selected reference rank/observation/hash, source state, component mapping,
+decisions, and limits. Copy which properties are shared and which vary. Those
 properties might include construction, optical size, stroke, fill, material,
 color, dimensionality, animation, metaphor, or another project-specific
 quality, but there is no required inventory.
 
-One visual grammar is not universally preferable. A product may need a highly
+One visual grammar is not universally preferable. A selected source may supply a highly
 consistent control set, distinct families for different contexts, or a
 deliberate collision of symbolic languages. Coherence can come from role,
 placement, behavior, provenance, or art direction rather than identical
 geometry. Preserve useful irregularity and commissioned one-offs when their
 difference is meaningful.
 
-Select or create symbols for the real concepts. Do not ship a library's demo
-selection unchanged unless it genuinely fits. Custom work is not automatically
-better than an established symbol, and familiarity is not automatically
-generic.
+Use symbols from the selected reference, an approved supplied system, or an
+authorized commissioned asset for the real concepts. Do not ship a library's
+demo selection or create a producer mark. Custom work is eligible only as
+supplied/commissioned authority with its own source record.
 
 ## Make meaning and operation robust
 
@@ -64,7 +65,7 @@ supported themes, inputs, locales, states, and assistive technology.
 
 Ask whether users can recognize and operate the experience, whether decorative
 or expressive symbols feel intentional, and whether repeated or mixed icon
-families support the declared creative logic. Record concrete ambiguity,
+families reproduce the declared source mapping. Record concrete ambiguity,
 inconsistency, rights, rendering, or accessibility failures. Do not reject a
 symbol merely because it is popular, ornamental, custom, playful, or drawn in
 a different style from another family.

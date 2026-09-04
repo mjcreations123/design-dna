@@ -2,8 +2,9 @@
 
 Use the shared Design DNA workflow without duplicating rules in plugin metadata.
 
-- The owner's standing order in SKILL.md (no producer design, in any part;
-  one gate command; its verdict line quoted verbatim in the final report)
+- The owner's standing orders in SKILL.md (no producer design, no quality-
+  reducing shortcuts, required first-screen and final phases of one gate
+  program, and the final verdict line quoted verbatim)
   applies on this host exactly as written. There is no host-specific relief.
 - Invoke explicitly with `$design-dna`; natural-language discovery may also
   select it for relevant work.
@@ -12,8 +13,19 @@ Use the shared Design DNA workflow without duplicating rules in plugin metadata.
   materially improve the requested result.
 - For browser-capable work, inspect the actual route across relevant sizes,
   states, and input modes.
-- For a no-browser task, perform source and reasoning checks and label rendered
-  QA as not performed.
+- Before a task that requires packaged browser evidence, run the installed
+  `scripts/browser_preflight.mjs` from the target project (or the package
+  `manage_install.py doctor --host codex --browser-project ABSOLUTE_PROJECT`
+  command). It resolves only an explicit absolute module directory, the
+  project's exact `node_modules`, a recognized source checkout's pinned
+  maintainer modules, or exact `node_modules` directories inside the installed
+  skill. It never installs,
+  downloads, or globally scans. Its pass proves the operator process, not that
+  Codex loaded the skill; a failure keeps required rendered QA blocked.
+- For a no-browser task, perform safe source and reasoning checks, but keep any
+  website candidate whose required rendered QA cannot run blocked from
+  presentation. Do not replace a packaged check with homemade, hand-written,
+  lower-threshold, or deferred evidence.
 - Keep mutable direction, evidence, and review records project-local. Attribute
   owner decisions only when the owner made them; producer or automated evidence
   may remain explicitly provisional without becoming owner approval.

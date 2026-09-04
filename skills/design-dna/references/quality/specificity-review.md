@@ -19,7 +19,7 @@ or prohibit ingredients. Read the candidate before reading motif warnings.
 - [Reconcile commitments against the artifact](#reconcile-commitments-against-the-artifact)
 - [Audit copy and claims](#audit-copy-and-claims)
 - [Review typography without font policing](#review-typography-without-font-policing)
-- [Balance evidence, utility, and aesthetic autonomy](#balance-evidence-utility-and-aesthetic-autonomy)
+- [Balance evidence, utility, and source-supplied expression](#balance-evidence-utility-and-source-supplied-expression)
 - [Review media as a set](#review-media-as-a-set)
 - [Audit artifact credibility and cumulative intensity](#audit-artifact-credibility-and-cumulative-intensity)
 - [Inspect care and implementation residue](#inspect-care-and-implementation-residue)
@@ -47,7 +47,7 @@ Direct owner feedback comparing named artifacts authorizes that exact
 comparison; it does not authorize unrelated history mining.
 
 When the Project Contrast capability is active, bind the comparison to its
-brief-native counter-answer and exact rendered wide/narrow evidence. Review
+brief-qualified counter-reference combination and exact rendered wide/narrow evidence. Review
 the selected candidate before loading the closest sibling. An unexplained
 match at the encounter, content-operation, body-progression, or responsive
 level reopens that earliest decision. A different font, palette, photograph,
@@ -126,8 +126,8 @@ Specialized language is valid when the real subject and audience use it.
 ## Test the stated ambition
 
 Translate the brief and owner feedback into observable criteria. Bind them to
-the candidate's extensible `creative_logic` and review the candidate on those
-terms:
+the candidate's exact selected-source/state/component map,
+then review the candidate on those terms:
 
 - Does the rendered work deliver the requested character and level of finish?
 - Which project material and decisions create that result?
@@ -135,7 +135,7 @@ terms:
   details, and responsive states feel intentionally resolved?
 - Is the work relying on one dominant asset or effect in a way the project
   considers fragile, or is that dependency part of the approved direction?
-- When sibling routes should differ, do their creative logics produce
+- When sibling routes should differ, do their exact source/state/component mappings produce
   meaningful differences?
 - Does the result feel like a first generated arrangement, a producer habit,
   or a finished answer to this brief?
@@ -167,7 +167,8 @@ When the brief rejects generic work, use only the questions that fit the
 candidate. They test whether project material shaped the result; they are not
 authorship indicators and no answer is individually required.
 
-- Which structural decisions came from this content, task, or audience?
+- Which selected reference supplies each structural decision, and why does its
+  content/task/audience relationship fit this project?
 - Which conventions are preserved or changed, and why does that relationship
   serve the journey?
 - Does the page's sequence and rhythm fit the material? When an authorized
@@ -237,7 +238,8 @@ at actual sizes and widths. Verify rights, files, weights and styles, script
 coverage, glyphs, fallbacks, loading, and layout stability at the level needed
 for the project.
 
-Judge family choice, number of families, pairing or non-pairing, hierarchy,
+Judge the source-bound family system, number of families, pairing or
+non-pairing, hierarchy,
 measure, tracking, leading, width, weight, optical settings, punctuation, and
 wrap behavior as one rendered system. No family or numerical value fails
 merely because it is common, fashionable, unusual, compressed, or used by
@@ -253,17 +255,18 @@ reading, create a producer fingerprint, or imply meaning that is not there.
 Verify contrast, non-color meaning when meaning is conveyed, reflow,
 forced-colors behavior, and relevant motion preferences.
 
-## Balance evidence, utility, and aesthetic autonomy
+## Balance evidence, utility, and source-supplied expression
 
 For proof-shaped modules, data graphics, calculators, comparisons, or controls,
 verify the real content, decision, state, owner, limits, and fallback. Do not
 fabricate evidence or capability to justify visual complexity.
 
-Decorative and atmospheric work does not need to pretend to be evidence or a
-tool. It may justify itself through beauty, mood, identity, humor, affiliation,
-ceremony, or composition. Judge it at the scale where it operates and revise
-it when it is visually unsuccessful or obstructs truth, access, task,
-performance, or content.
+Decorative and atmospheric work supplied by the mapped reference grammar does
+not need to pretend to be evidence or a tool. It may serve beauty, mood,
+identity, humor, affiliation, ceremony, or composition without a separate
+utility claim. Judge it at the scale where it operates and revise its source
+mapping when it is visually unsuccessful or obstructs truth, access, task,
+performance, or content. This is not permission for a producer-made flourish.
 
 ## Review media as a set
 
@@ -273,11 +276,11 @@ factual boundaries, generated-media status, and replacement state. Preserve
 documentary variation when it matters; do not add fake imperfection to signal
 authenticity.
 
-Review media absence only against the actual brief and subject. If material
-recognition, atmosphere, place, product, people, or use is central, verify that
-the chosen visual approach conveys it. A no-photo direction is valid when
-deliberate and successful, not merely an unexplained consequence of missing
-assets.
+Review media absence only against the actual brief, selected references, and
+subject. If material recognition, atmosphere, place, product, people, or use is
+central, verify that the source-bound visual approach conveys it. A no-photo
+direction is valid only when the selected reference grammar, truth, and task
+support it, not merely as an unexplained consequence of missing assets.
 
 For generated media, inspect the final pixels and set-level continuity for
 text, logos, anatomy, geometry, repetition, light, shadows, reflections,

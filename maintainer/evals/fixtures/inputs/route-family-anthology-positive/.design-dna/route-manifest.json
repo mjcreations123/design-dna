@@ -1,0 +1,228 @@
+{
+  "schema_version": 2,
+  "manifest_id": "fixture-route-family-anthology-positive-manifest",
+  "viewports": [
+    {
+      "name": "wide",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "narrow",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routes": [
+    {
+      "key": "cover",
+      "url": "http://127.0.0.1:4173/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "field-notes",
+      "url": "http://127.0.0.1:4173/field-notes/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "timeline",
+      "url": "http://127.0.0.1:4173/timeline/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "listening-map",
+      "url": "http://127.0.0.1:4173/listening-map/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "data-room",
+      "url": "http://127.0.0.1:4173/data-room/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "oral-history",
+      "url": "http://127.0.0.1:4173/oral-history/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "object-catalog",
+      "url": "http://127.0.0.1:4173/object-catalog/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "night-walk",
+      "url": "http://127.0.0.1:4173/night-walk/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "workshop",
+      "url": "http://127.0.0.1:4173/workshop/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    },
+    {
+      "key": "visit",
+      "url": "http://127.0.0.1:4173/visit/",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    }
+  ]
+}

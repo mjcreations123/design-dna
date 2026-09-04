@@ -6,30 +6,33 @@ token, contrast-distribution, or layout recipe.
 
 ## Contents
 
-- [Start from the creative logic](#start-from-the-creative-logic)
+- [Start from the selected references](#start-from-the-selected-references)
 - [Give color accountable meaning](#give-color-accountable-meaning)
 - [Compose relationships rather than a silhouette](#compose-relationships-rather-than-a-silhouette)
 - [Review the rendered system](#review-the-rendered-system)
 
-## Start from the creative logic
+## Start from the selected references
 
-Classify the constraints before making aesthetic decisions:
+Classify the authority before implementing any aesthetic decision:
 
 - **non-negotiable:** truthful states, required contrast, non-color cues,
   legible controls, and any approved safety or accessibility requirement;
 - **inherited:** brand assets, environmental or product materials, established
   data semantics, and other supplied context that the owner intends to keep;
-- **negotiated:** qualities or conventions that may be interpreted with the
-  owner or accountable reviewer;
-- **open:** palette, material field, compositional language, intensity,
-  asymmetry, ornament, and any other choice not constrained above.
+- **owner-specified:** exact qualities or conventions explicitly required by
+  the accountable owner and compatible with the selected sources;
+- **reference-sourced:** palette, material field, compositional language,
+  intensity, asymmetry, ornament, and every other visible relationship copied
+  from selected, measured references. There is no producer-open aesthetic
+  category.
 
-Describe the relevant `creative_logic` in plain language: what the color and
-composition should communicate or enable, which evidence supports that
-direction, what decisions implement it, and where it must yield. A system may
-be monochrome or multicolor, sparse or layered, regular or irregular, quiet or
-exuberant, unified or intentionally plural. None of those ingredients proves
-quality by itself.
+Describe the exact selected-reference mapping in plain language: which source
+rank supplies each color role and compositional relationship, what measured
+evidence proves it, what truthful project content occupies it, and where the
+source relationship must yield to access, truth, or an explicit owner
+requirement. A system may be monochrome or multicolor, sparse or layered,
+regular or irregular, quiet or exuberant only when the selected sources carry
+that result. None of those ingredients authorizes a producer choice by itself.
 
 ## Give color accountable meaning
 
@@ -40,10 +43,10 @@ conflicting meanings for the same state, and provide a non-color cue whenever
 color carries essential information.
 
 Expressive color may be atmospheric, decorative, symbolic, narrative, or
-ceremonial without pretending to be semantic. It can be abundant or rare. The
-review question is whether its use supports the declared creative logic and
-the rendered whole, not whether it is reserved for a prescribed number of
-accents or placed only on a primary action.
+ceremonial without pretending to be semantic. It can be abundant or rare when
+the selected source carries that role. The review question is whether its use
+reproduces the recorded source relationship in the rendered whole, not whether
+it satisfies a producer preference or a prescribed number of accents.
 
 When the system depends on a color being scarce or role-bound, document that
 relationship in enforceable project language. "The sale color belongs to
@@ -65,12 +68,14 @@ screenshots, and ordinary displays as well as capable ones.
 
 ## Compose relationships rather than a silhouette
 
-Map the relationships the experience must communicate: sequence, proximity,
-comparison, interruption, hierarchy, simultaneity, uncertainty, action, or
-another project-specific relationship. Choose a composition that makes those
-relationships work. It may use alignment, collision, overlap, repetition,
-centering, fragmentation, dense fields, large voids, conventional flow, or a
-combination when those choices are intentional and usable.
+Map the relationships the experience must communicate, then identify which
+selected reference already carries each applicable sequence, proximity,
+comparison, interruption, hierarchy, simultaneity, uncertainty, or action.
+Reproduce that source composition with the project's truthful counterpart
+content and recorded measurements. Alignment, collision, overlap, repetition,
+centering, fragmentation, dense fields, large voids, or conventional flow may
+appear only when the mapped reference supplies them; if none does, research
+and select another source instead of composing a new answer.
 
 Do not require a universal scan path, focal point, balance model, container
 width set, section rhythm, or contrast allocation. An experience may invite
@@ -79,9 +84,9 @@ task-led interface, the next consequential state or action still needs to be
 findable. For an editorial or expressive experience, the entry condition and
 reading logic need to be learnable on their own terms.
 
-Optical corrections are legitimate. Encode recurring behavior when that makes
-maintenance safer, and document meaningful one-offs rather than erasing them
-to satisfy a token system.
+Reference-observed optical corrections are legitimate. Encode recurring source
+behavior when that makes maintenance safer, and document measured one-offs
+rather than replacing them with producer-selected normalization.
 
 For page-scale pacing, a band-sequence notation is a cheap authoring and
 review device: write the page as its sequence of grounds (for example
@@ -92,7 +97,8 @@ and it travels well into the handoff record.
 
 ## Review the rendered system
 
-Review without first naming familiar style ingredients. Ask:
+Review against the selected sources before naming familiar style ingredients.
+Ask:
 
 - What relationships, mood, identity, and action does the rendered composition
   actually communicate?
@@ -102,12 +108,13 @@ Review without first naming familiar style ingredients. Ask:
   have a defensible project role?
 - Does the work still make sense with realistic copy, data, media, missing
   assets, and interaction states?
-- Is an observed problem caused by the ingredient itself, or by its placement,
-  frequency, combination, execution, or mismatch with the creative logic?
+- Is an observed problem caused by the ingredient itself, or by drift in its
+  placement, frequency, combination, execution, or selected-source mapping?
 
 A repeated grid, centered passage, glow, gradient, stripe, neutral palette, or
-high-saturation field can all succeed. Record a finding only when the rendered
-relationship fails, the rationale is unsupported, or a hard requirement is
-violated. Verify on the routes, states, widths, themes, and assistive settings
-where the relevant risk can actually occur; do not impose a fixed screenshot
-or route quota.
+high-saturation field can all succeed when its source mapping and execution are
+proved. Record a finding when the rendered relationship drifts from its source,
+the project lacks truthful counterpart content, or a hard requirement is
+violated. Verify every applicable route, state, width, theme, and assistive
+setting in the authoritative route manifest; do not replace complete coverage
+with a representative screenshot.

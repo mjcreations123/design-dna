@@ -6,8 +6,8 @@ policies, knowledge bases, long-form editorial, and text-led product material.
 
 Mode describes the reading job, not an aesthetic. A reading surface may be
 restrained, exuberant, dense, spacious, image-led, typographic, decorative,
-experimental, or conventional when it remains appropriate to the corpus and
-audience.
+experimental, or conventional only when a qualified measured reference carries
+that reading system and it fits the real corpus and audience.
 
 ## Structure comprehension
 
@@ -26,16 +26,18 @@ content.
 
 ## Build the project's reading system
 
-- Use actual copy to establish type, measure, leading, hierarchy, rhythm,
-  density, and responsive behavior.
+- Use actual copy to test and adapt the selected reference's type, measure,
+  leading, hierarchy, rhythm, density, and responsive behavior.
 - Make semantic heading levels and content roles perceivable without requiring
   one visual treatment.
 - Give code, formulas, tables, notes, quotations, captions, metadata, figures,
-  and examples the relationships their content needs.
+  and examples the relationships supplied by selected references with
+  comparable content jobs.
 - Preserve selection, find, copy, deep links, print, citation, and assistive
   technology behavior where applicable.
-- Record the selected `creative_logic` and observable design decisions rather
-  than imposing calmness, minimalism, or a default editorial style.
+- Record the selected reference ranks, observation hashes, mapped source states,
+  census components, and observable transfer decisions rather than imposing
+  calmness, minimalism, or a producer's default editorial style.
 
 Reading comfort and accessibility are outcomes to verify with the real corpus;
 they are not a font family, spacing formula, palette, or degree of visual
@@ -57,12 +59,12 @@ restraint.
 ## Review
 
 Inspect whether hierarchy, typography, imagery, ornament, interaction, and
-effects support or intentionally shape the declared reading experience. A
+effects reproduce their source mappings and support the declared reading experience. A
 strong aesthetic is not interference by default, and restraint is not quality
 by default. Revise the rendered relationship when readers cannot comprehend,
 navigate, select, cite, or trust the content as intended.
 
-Test relevant outline and reading order, links, search, keyboard, focus, zoom,
-text spacing, print, copy/paste, overflow, content variation, translation,
-RTL, figures, captions, link purpose, citations, and stale or superseded
-states.
+Test every route/state/wide-narrow manifest cell plus applicable outline and
+reading order, links, search, keyboard, focus, zoom, text spacing, print,
+copy/paste, overflow, content variation, translation, RTL, figures, captions,
+link purpose, citations, and stale or superseded states.

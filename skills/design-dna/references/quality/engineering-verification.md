@@ -1,7 +1,10 @@
 # Engineering verification
 
-Use this before declaring substantial web work complete. Scale the gate to the
-change, but do not claim checks that were not run.
+Use this before declaring web work complete. Time, tokens, cost, convenience,
+demo/small/quick wording, or implementation difficulty may reduce delivered
+scope only; they cannot lower an applicable check. The legacy `quick` CLI
+identifier is reserved for an exact nonvisual mechanical repair that preserves
+every rendered decision. A missing required check blocks presentation.
 
 ## Contents
 
@@ -95,15 +98,17 @@ recoverable accepted state of consequential work.
 ## Create useful project records
 
 Capability classification controls the workflow; it does not by itself require
-persisting every possible record. Initialize a profile only when its durable
-records will preserve a consequential decision, evidence, or handoff. A small
-project may complete a rigorous Standard or Showcase loop with concise working
-notes and rendered evidence instead of a permanent internal dossier.
+persisting every possible optional record. Initialize every required record for
+the selected capability. A fresh public website always needs its Enterprise
+Candidate reference dossier, route manifest, first-screen gate, and final gate;
+small, demo, sample, quick, time, token, or cost wording never replaces them
+with concise notes.
 
 Initialize only records that preserve a consequential decision or evidence:
 
 ```text
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile standard --json
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile enterprise-candidate --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile showcase --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --profile range-study --json
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "PROJECT" --record direction --record handoff --json
@@ -208,8 +213,9 @@ owner-authorized cleanup; never use a broad `.design-dna*` deletion.
 
 The helper validates structure and safety; it does not prove that a record's
 claims or observations are complete or true. Review the substance and bind
-visual evidence to the tested build. If Python 3.10+ is unavailable, create the
-necessary records manually and disclose that helper validation did not run.
+visual evidence to the tested build. If Python 3.10+ is unavailable, do not
+hand-write a substitute for a generated or validated record; keep the affected
+website surface blocked from presentation until the required tool can run.
 
 Use `showcase` only when the brief expressly calls for a premium, showcase, or
 high-ambition answer, or when a rejected visual direction needs recovery; it
@@ -224,10 +230,11 @@ changes do not substitute for structural range or select Showcase.
 Use `high-risk` for consequential flows that need direction, visual review,
 claims, and user-validation records. The `--profile` values are request
 presets, not mutually exclusive completion claims: repeated initialization
-merges applicable capabilities, persists the canonical cumulative set, and
-normalizes away redundant Quick or Standard tiers. `quick` and `standard` keep
-completion requirements proportional; `substantial` and `greenfield` remain
-compatibility aliases for Standard initialization.
+merges applicable capabilities and persists the canonical cumulative set.
+`quick` remains only as a legacy identifier for an exact nonvisual mechanical
+repair with direct evidence that rendered decisions did not change; it cannot
+lower research, evidence, review, or gate requirements. `substantial` and
+`greenfield` remain compatibility aliases for Standard initialization.
 Add `handoff` explicitly only for a maintained product, shared system, or
 production-bound surface.
 
@@ -268,8 +275,9 @@ Run the project-supported equivalents of:
 - accessibility baseline;
 - performance checks proportional to changed assets or behavior.
 
-Do not introduce a new tool only to satisfy this list when the project has an
-established equivalent. Record unavailable checks and why.
+Do not introduce a homemade substitute when the project or skill has an
+established tool. Record unavailable optional checks and why; an unavailable
+required check blocks presentation of the affected surface.
 
 Use the narrowest meaningful command first, then the established broader suite
 when a shared contract or release boundary warrants it. A component test does
@@ -312,9 +320,11 @@ the evidence inspected; it is not a score for design quality.
 
 ## Run visual and interaction regression
 
-Use the established visual or browser test system when available. Otherwise
-perform a bounded manual comparison and preserve useful screenshots or notes.
-Cover the changed scope plus representative shared consumers.
+Use the established visual or browser test system. A bounded manual comparison
+may supplement it and preserve useful screenshots or notes, but cannot replace
+a required packaged capture, first-screen gate, final gate, or accessibility
+check. If required capability is unavailable, block presentation of the
+affected surface. Cover the changed scope plus representative shared consumers.
 
 Visual regression should consider:
 

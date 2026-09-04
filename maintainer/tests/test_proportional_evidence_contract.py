@@ -50,7 +50,7 @@ def write_png(path: Path, width: int, height: int) -> str:
 
 def compact_direction(
     *extra_sections: str,
-    include_project_logic: bool = True,
+    include_reference_logic: bool = True,
 ) -> str:
     sections = [
         "<!-- proportional-evidence-v1 -->",
@@ -77,13 +77,13 @@ def compact_direction(
         "## Owner and release state",
         "Build ordinary-17 is self-reviewed; owner acceptance remains pending before release.",
     ]
-    if include_project_logic:
+    if include_reference_logic:
         sections.extend((
-            "## Project-derived organizing logic",
-            "- Project evidence: The approved service packet groups choices by the commitment each customer is ready to make.",
-            "- Organizing logic: Let commitment deepen across the page so comparison precedes detail and no option borrows authority from another.",
+            "## Reference-sourced organizing logic",
+            "- Project evidence: The approved service packet binds reference selection to the real customer comparison task and truthful service constraints.",
+            "- Organizing logic: Selected reference ranks 1 and 2 map their adjacent comparison relationship and constraint-reveal sequence to this candidate.",
             "## Observable consequential design decisions",
-            "| Decision | Project reason or source | Observable consequence | Verification |",
+            "| Decision | Selected source rank and project-fit reason | Observable consequence | Verification |",
             "| --- | --- | --- | --- |",
             "| Keep the choice comparison adjacent to its constraints. | The approved packet treats eligibility and scope as part of each choice. | A visitor can compare an option and its constraint without crossing an unrelated section. | Inspect the rendered choice sequence with long approved copy at narrow and wide widths. |",
         ))
@@ -197,7 +197,7 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
             )
 
     def test_standard_direction_requires_logic_while_quick_repairs_are_exempt(self) -> None:
-        compact = compact_direction(include_project_logic=False)
+        compact = compact_direction(include_reference_logic=False)
         standard_failures = self.module.substantive_body_failures(
             "direction",
             compact,
@@ -205,7 +205,7 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
             evidence_contract=self.module.PROPORTIONAL_EVIDENCE_CONTRACT,
         )
         self.assertIn(
-            "missing required sections: Observable consequential design decisions, Project-derived organizing logic",
+            "missing required sections: Observable consequential design decisions, Reference-sourced organizing logic",
             standard_failures,
         )
         self.assertEqual(
@@ -219,14 +219,14 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
         )
 
         boilerplate = compact_direction(
-            "## Project-derived organizing logic",
+            "## Reference-sourced organizing logic",
             "- Project evidence: Use a clean modern design for this project.",
             "- Organizing logic: Use a clean modern design for this project.",
             "## Observable consequential design decisions",
-            "| Decision | Project reason or source | Observable consequence | Verification |",
+            "| Decision | Selected source rank and project-fit reason | Observable consequence | Verification |",
             "| --- | --- | --- | --- |",
             "| Make it clean and modern. | Make it clean and modern. | Make it clean and modern. | Make it clean and modern. |",
-            include_project_logic=False,
+            include_reference_logic=False,
         )
         boilerplate_failures = self.module.substantive_body_failures(
             "direction",
@@ -254,11 +254,14 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
             "test-version",
             ("standard",),
         )
-        for heading in self.module.PROJECT_DERIVED_DIRECTION_SECTIONS:
+        for heading in self.module.REFERENCE_SOURCED_DIRECTION_SECTIONS:
             self.assertNotIn(f"## {heading}", quick)
             self.assertIn(f"## {heading}", standard)
         self.assertNotIn("__REPLACE_WITH_A_CONSEQUENTIAL_DECISION__", quick)
-        self.assertIn("## Project-specific extensions", quick)
+        # The quick initializer retains the optional evidence area, renamed
+        # when the source-authority contract replaced the old freeform
+        # extension scaffold.  It must not expect an obsolete heading.
+        self.assertIn("## Additional source-bound evidence", quick)
 
     def test_applicable_range_and_cultural_evidence_is_required(self) -> None:
         failures = self.module.substantive_body_failures(
@@ -361,7 +364,7 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
         )
         self.assertEqual(
             standard["evidence_contract"]["direction_contract"],
-            "project-derived-organizing-logic-v1",
+            "reference-sourced-organizing-logic-v1",
         )
         self.assertEqual(
             [],
@@ -421,7 +424,7 @@ class ProportionalEvidenceContractTests(unittest.TestCase):
             )
             self.assertEqual(
                 [
-                    "state.json needs the current project-derived direction "
+                    "state.json needs the current reference-sourced direction "
                     "contract before readiness; run --migrate."
                 ],
                 self.module.readiness_failures(project),

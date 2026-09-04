@@ -152,8 +152,9 @@ shallow. Record the before/after evidence and rerun both the affected site
 review and the neutral-label comparison.
 
 Do not turn a cluster into an AI score, an authorship claim, a permanent style
-ban, or a novelty quota. The useful result is a contextual cause, a defensible
-revision, and a regression condition that protects creative freedom.
+ban, or a novelty quota. The useful result is a contextual cause, a
+source-mapped revision, and a regression condition that protects
+source-supplied expression without reopening producer design.
 
 ## Record human contextual disposition
 

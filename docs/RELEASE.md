@@ -1,10 +1,17 @@
 # Release procedure
 
+The current source identity is the `11.0.0` development candidate. Do not call
+it published or release-qualified until this procedure passes against its exact
+frozen bytes and the required external evidence is retained.
+
 ## 1. Freeze source
 
 - finish runtime, tooling, schema, evidence, fixture, documentation, and policy
   changes;
 - remove compiled caches and temporary artifacts;
+- invoke every in-tree Python script with `-B`, including the project gate, so
+  validation itself cannot recreate forbidden `__pycache__`, `.pyc`, or `.pyo`
+  residue after cleanup;
 - confirm version consistency across both plugin manifests, runtime release,
   compatibility records, and changelog;
 - confirm every dependency and evidence review date.
@@ -181,7 +188,7 @@ Record the custom-root limitation, or extend and review that contract before
 claiming the custom route is release-qualified.
 
 ```text
-python -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
+python -B -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
 npm --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm --prefix maintainer exec -- playwright install chromium
 python -B maintainer/scripts/build_sbom.py --plugin-root . --output maintainer/sbom.spdx.json

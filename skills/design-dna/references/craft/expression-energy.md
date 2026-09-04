@@ -13,15 +13,16 @@ Two axes frame every energy question. One asks whether the work is specific
 to its project; the other asks whether the requested ambition is fully
 realized. Avoiding generic tells by stripping away character can leave a
 thin result, while adding spectacle can leave a weak idea noisier. Set the
-target from the brief. When an owner asks for variety in a bold effect, keep
-the requested intensity comparable while varying the actual answer rather
-than merely repainting one mechanism.
+selection target from the brief, then choose references whose measured energy
+matches it. When an owner asks for variety in a bold effect, compare different
+exact-fit reference mechanisms at comparable intensity rather than repainting
+one mechanism or inventing another.
 
 ## Contents
 
 - [Turn request language into project evidence](#turn-request-language-into-project-evidence)
-- [Build expression from the subject](#build-expression-from-the-subject)
-- [Respect aesthetic autonomy](#respect-aesthetic-autonomy)
+- [Source expression for the subject](#source-expression-for-the-subject)
+- [Preserve source-supplied expression](#preserve-source-supplied-expression)
 - [Avoid both automatic restraint and automatic spectacle](#avoid-both-automatic-restraint-and-automatic-spectacle)
 - [Explore when the answer is uncertain](#explore-when-the-answer-is-uncertain)
 - [Adapt rather than flatten](#adapt-rather-than-flatten)
@@ -45,33 +46,36 @@ The requested effect can concern the whole experience or one local moment. It
 may be immediate, cumulative, subtle, polarizing, familiar, or deliberately
 hard to summarize. Do not force it into a fixed attention sequence.
 
-## Build expression from the subject
+## Source expression for the subject
 
-Expression may emerge from any fitting combination of content, language,
+Expression may emerge from any fitting, recorded combination of content, language,
 composition, typography, imagery, color, material, ornament, sound, motion,
 interaction, pacing, density, restraint, or convention. It may also come from
-one unusually clear task model or editorial judgment.
+one unusually clear task model or editorial judgment. The producer does not
+author that combination: select and measure references whose expression fits
+the brief, then map their relationships.
 
-Create or extend the candidate's `creative_logic` record. For each
-consequential expressive decision, state:
+Create the candidate's exact selected-source/state/component transfer record. For each
+consequential expressive source mapping, state:
 
-- what the decision is;
-- why it belongs to this project;
+- which selected reference and evidence supplies the decision;
+- why its content/task/audience/brand/operational relationship fits this project;
 - what should be observable in a render, task, state, or audience response;
 - how it changes under relevant content, size, input, language, preference,
   and failure conditions;
 - who can accept, revise, or remove it.
 
-Do not require several channels to validate one idea. Do not require one idea
+Do not require several channels to validate one source relationship. Do not require one idea
 to control every route. A coherent single-medium direction, several local
 logics, decorative abundance, conventional craft, or near-still restraint can
 all be correct.
 
-## Respect aesthetic autonomy
+## Preserve source-supplied expression
 
 Beauty, atmosphere, play, affiliation, ornament, ceremony, tactility, and
-formal surprise can be legitimate ends. A flourish need not carry a separate
-information task when the composition gives it a defensible aesthetic role.
+formal surprise can be legitimate ends when the selected reference grammar
+supplies them. A sourced flourish need not carry a separate information task;
+that does not authorize a producer-made flourish.
 
 Review aesthetic work at the scale at which it operates and against the
 brief's taste authority. Remove or revise it when it obstructs content or
@@ -86,21 +90,20 @@ type. Do not equate expression with size, saturation, novelty, ornament,
 motion, asymmetry, or complexity. Any of those choices may be excellent or
 awful depending on content, relationships, craft, and execution.
 
-When an owner rejects a result as boring, reopen the organizing decisions
-rather than adding detached effects. When an owner rejects a result as noisy,
-inspect hierarchy, relationships, and editing rather than applying a generic
-minimal style.
+When an owner rejects a result as boring or noisy, reopen the reference
+selection and mapped organizing relationships rather than adding detached
+effects, applying a generic inverse style, or tuning from producer taste.
 
 ## Explore when the answer is uncertain
 
 Use [creative exploration](creative-exploration.md) when different expressive
-answers could materially change the result. Develop enough distinct evidence
-to challenge the first default. Its form and count follow uncertainty and
-stakes: another rendered candidate may be useful, but a focused fragment,
-reference decomposition, content-order proof, or interaction study can expose
-the real choice more efficiently. A candidate is different because it
-proposes a different answer to the brief, not merely because its surface
-ingredients change.
+reference combinations could materially change the result. Develop enough
+source-bound evidence to challenge the first default. Its form and count follow
+uncertainty and stakes: another rendered mapping may be useful, but a focused
+adapted fragment, reference decomposition, content-order proof, or sourced
+interaction study can expose the real choice more efficiently. A candidate is
+different because its qualified references propose a different answer to the
+brief, not because the producer changes surface ingredients.
 
 Do not show reviewers a trend-warning list before their first perception pass.
 Negative vocabulary can make both maker and reviewer search for the listed
@@ -108,7 +111,7 @@ motifs instead of judging the candidate's own proposition.
 
 ## Adapt rather than flatten
 
-Preserve the creative logic across relevant widths, states, content lengths,
+Preserve the measured reference logic across relevant widths, states, content lengths,
 languages, input modes, motion preferences, loading conditions, and device
 capabilities. Preservation may mean transformation, substitution, reduction,
 or deliberate disappearance; it does not require pixel or effect parity.
@@ -123,7 +126,7 @@ Inspect the actual render before using recurring-pattern diagnostics. Choose
 tests that can answer this project's question, such as:
 
 - an unbriefed perception or recall review;
-- comparison with the stated owner reference or anti-trait;
+- comparison with the selected source capture, sequence, and measured system;
 - real-copy type and spacing review;
 - dominant-media removal when the identity should survive it;
 - static, reduced-motion, narrow, localized, or failure-state review;

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "reference_id": "strong-1",
+  "states": [
+    {
+      "id": "rest",
+      "url": "__REPLACE_WITH_EXACT_CANONICAL_REFERENCE_URL__",
+      "kind": "rest",
+      "trigger": {
+        "type": "none",
+        "target": "document",
+        "value": null
+      },
+      "expectation": "Initial settled reference route before any input."
+    },
+    {
+      "id": "__REPLACE_WITH_SOURCE_STATE_ID__",
+      "url": "__REPLACE_WITH_EXACT_CANONICAL_REFERENCE_URL__",
+      "kind": "interactive",
+      "trigger": {
+        "type": "__REPLACE_WITH_hover_focus_click_keyboard_input_url_OR_programmatic__",
+        "target": "__REPLACE_WITH_EXACT_REFERENCE_CSS_SELECTOR_OR_URL__",
+        "value": null
+      },
+      "expectation": "__REPLACE_WITH_SUBSTANTIVE_OBSERVED_SOURCE_STATE_EXPECTATION__"
+    }
+  ]
+}

@@ -3,38 +3,48 @@
 **A web-design skill for coding agents, built to turn project evidence into
 specific, resolved websites instead of interchangeable first drafts.**
 
-It is packaged for Claude Code and Codex. Point it at a project and it works
-the way a studio does: read the real material first, write an art direction the
-project actually implies, prove consequential decisions before propagating
-them, build, then *look at the rendered page* and review what is actually
-there. Host support is reported only from the current compatibility evidence;
-the package never treats a copied folder as proof of activation.
+It is packaged for Claude Code and Codex. Point it at a project and it reads the
+real material, turns the brief into explicit reference-fit criteria, visits and
+records qualified sites, reproduces the selected visual relationships, builds,
+then *looks at the rendered page* and reviews what is actually there. Host
+support is reported only from current compatibility evidence; the package
+never treats a copied folder as proof of activation.
 
-Five things make it different from a prompt that says "make it look nice":
+Six things make it different from a prompt that says "make it look nice":
 
-- **No house style.** There is no bundled palette, font pool, or hero recipe
-  to inherit. Project evidence shapes consequential organizing decisions;
-  familiar conventions may remain when they fit the task, established system,
-  audience, and maintenance reality.
+- **No producer-authored visual system.** Every visible layout, typeface,
+  color, control, spacing rule, motion, divider, navigation pattern, footer,
+  card, and mark must trace to a recorded, measured reference selected for the
+  actual brief. An unsourced component is removed or researched; the agent's
+  taste is not a source.
 - **It tests taste before scale.** For an open, high-visibility, owner-sensitive,
   or previously rejected direction, it uses a project-specific visual reference
   dossier, a rendered direction proof, and a first-impression surface-fidelity
   review. A clean technical build is not treated as proof that the result is
   beautiful, credible, or ready to show a client.
-- **It starts fresh public sites with positive visual evidence.** Enterprise
-  Candidate work creates a brief-weighted public-reference dossier with at
-  least six captured references from at least three sources, at least three
-  concrete counterexamples, a named synthesis with an elevation beyond the
-  set, and a final rendered closure. Public gallery entries may qualify;
-  restricted, paywalled, security-blocked, or unavailable material does not.
+- **It qualifies references before copying them.** Enterprise Candidate work
+  creates a brief-weighted dossier with at least eight serious compared
+  finalists (including at least two concrete rejections), at least six captured
+  strong references from at least three sources, and at least three concrete
+  counterexamples. Every
+  serious candidate is traversed across its complete relevant same-origin
+  experience, inner pages, interactions, ending/reset, and narrow
+  recomposition; dynamic candidates are recorded for at least 90 seconds at 15
+  fps and longer whenever traversal is incomplete. The agent must visit and
+  record each candidate, reject weak or inaccessible work, and
+  establish why the survivors fit this website's audience, business model,
+  content, customer tasks, required routes and states, material, and register.
+  Award or editorial curation is an eligibility floor, not proof of fit; random
+  gallery picks, genre-blind picks, and submission-feed padding do not qualify.
 - **It stops an unresolved direction from becoming the site.** A separate
   prebuild check runs before full-route propagation. Draft narrative records,
   untouched Range or Batch scaffolds, capability names without evidence, and
   an asset manifest with no usable asset cannot authorize broad
   implementation.
 - **It verifies by seeing.** Source review cannot establish rendered craft.
-  The evidence covers the project-relevant widths, states, preferences, and
-  failure conditions that can change the conclusion. The bundled Playwright
+  The evidence covers every route, state, and wide/narrow viewport in the
+  authoritative manifest plus the preferences and failure conditions that can
+  change the conclusion. The bundled Playwright
   reviewer records screenshots, computed-style and geometry observations,
   overflow, images, selected interactions, and bounded accessibility
   candidates; contrast, glyph-level font selection, assistive-technology
@@ -57,96 +67,39 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Candidate status:** `6.1.0` is not a release. Candidate source and package
+> **Development-candidate status:** `11.0.0` is not a release. Candidate source
+> and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
 > CI, signatures, and strict release qualification each need their own current
 > evidence. Any retained earlier host, install, route, test, or validation
-> records are historical inputs, not v6.0 qualification; see
+> records are historical inputs, not 11.0.0 qualification; see
 > [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
-specific, time-appropriate, coherent, truthful, and fully implemented. It keeps
-truth, rights, accessibility, working behavior, and explicit project authority
-strict while leaving typography, composition, media, color, ornament,
-interaction, and other aesthetic choices open. The skill helps an agent
-develop project-specific art direction, carry accepted decisions through
-responsive production code, and inspect the rendered result for generic
-defaulting, weak craft, unfinished behavior, accessibility failures, and
-release residue.
+specific, time-appropriate, coherent, truthful, and fully implemented. Version
+11.0.0 makes reference provenance the visual-authority boundary: the producer
+does not select a palette, typeface, layout, component, or interaction because
+it feels appropriate. It qualifies strong reference sites against the actual
+brief, records the whole behavior and relevant inner pages, measures the visual
+system, maps every visible build component to that evidence, and verifies the
+implemented routes at wide and narrow conditions.
 
-Version 6.0 keeps the 4.0 architecture—authority order, capability presets,
-the decision router, flows, verticals, cultural review, scripts, and the Range
-Study contract—while repairing the restrictive taste doctrine introduced in
-5.0. It limits hard policy to assurance boundaries such as truth, rights,
-privacy, accessibility, working behavior, evidence honesty, and delivery
-authority. Fonts, palettes, layouts, media, wording, ornament, motion, and
-other aesthetic ingredients remain project decisions. Its Batch Study protocol
-makes cross-project range testable without turning recurrence into a style
-blacklist, authorship score, or automatic aesthetic result. Its optional
-Connected Public Experience capability makes a project-level public continuity
-claim reviewable without treating a detailed site as a page-count or stack
-quota.
+Truth, rights, privacy, accessibility, working behavior, and delivery authority
+remain separate non-negotiable boundaries. Reference provenance never permits
+copying third-party identity, content, or assets without rights, and a passing
+mechanical check never becomes owner approval, production status, or proof of
+aesthetic quality.
 
-It carries forward the 4.0 Range Study contract for deliberately varied
-multi-route sites, and its cultural-context boundaries for place and community
-publications. Shared truth, navigation, access, and identity stay dependable
-while route bodies stay free to find materially different answers. There is no
-font-convergence policy and no fixed visual recipe; rendered comparison
-examines normalized geometry, topology, media and control density, and
-computed typography rather than treating font names, copy, palette, or image
-identity as aesthetic verdicts.
-
-Version 6.0 repairs the field-import candidate while retaining the useful core
-of **Project Contrast** for an unrelated public build that
-risks repeating a studio's safe answer and adds **Direction Challenge** as its
-deliberately stronger escalation. Project Contrast makes the agent derive a
-brief-native encounter, challenge the first organizing answer before code
-spreads, compare only owner-authorized nearest-sibling evidence, and resolve a
-wide/narrow collision test after rendering. It does not rotate fonts, colors,
-shapes, layouts, or effects. The point is different derivation, not random
-decoration. When the complaint is a repeated house style, the visual-grammar
-variance contract compares the actual authorized opening, type posture,
-actions, containers, backgrounds, route progression, and mobile behavior. It
-does not fail a site because another industry could theoretically use its
-layout, and it does not ban cards, panels, buttons, or underlines. Direction
-Challenge applies only for an explicit recurrence
-requirement or an explicitly requested high-ambition greenfield challenge. It
-records three or more incompatible brief-native roots before polished examples,
-proves two roots at wide and narrow conditions, and selects against a rendered
-rejected root with an independent unprimed view.
-Project Contrast binds an authorized closest sibling where recurrence is in
-scope. Candidate readiness is now separate from owner acceptance: a pending
-owner review does not strand an otherwise validated autonomous build, while a
-rejection or malformed acceptance claim still blocks the affected readiness.
-Neither capability supplies an automatic beauty, originality, authorship,
-owner-approval, or aesthetic pass.
-
-Version 6.0 also adds a contextual public-copy and voice pass, keeps private
-design rationale and backend taxonomy off visitor surfaces, removes unsupported
-named color/font convergence claims, corrects overbroad browser, form,
-responsive, performance, and JavaScript rules, and records every promoted or
-rejected external source with scope and provenance. Anti-slop is used as an
-evidence discipline, never as a punctuation, vocabulary, or visual-style ban.
-The source scanner now surfaces suspicious heading-adjacent micro-labels as
-non-gating review candidates with semantic exemptions and exact evidence. A
-separate browser-support contract prevents Chromium screenshots from becoming
-cross-engine or real-device claims, while asset review covers visible and
-embedded privacy data and custom composites route through current APG guidance
-without treating example code as production-ready.
-
-The 6.0 workflow adds an executable prebuild authorization boundary. Standard
-or stronger direction-stage Markdown must be substantive, `complete`, and
-hash-bound before the full route family is implemented. Physical or sensory
-work records an asset-led, inherited-system, or deliberately media-light
-posture; an owner request for photography or rich media selects Asset-led, and
-a physical/sensory media-light exception needs a project reason plus explicit,
-dated, hash-bound owner or client approval. Direction Challenge proof now binds
-each asset-led root to both its packaged media and implementation source and
-checks that the source actually uses the asset. Connected Public Experience
-must reach its direction-stage continuity contract before propagation, while
-final rendered and functional closure remains a later claim.
+The package retains its capability profiles, cultural review, public-copy and
+numeric-rhetoric checks, owner-rejection contract, Project Contrast, Direction
+Challenge, Range and Batch studies, and optional Connected Public Experience.
+Those records control scope and evidence; none lets the producer fill a visual
+gap with an original design. A prebuild boundary stops an unproven direction
+from spreading, and the final project gate binds provenance, route coverage,
+responsive structure, mechanisms, component sources, and the dossier to the
+same build before it is presented.
 
 Owner rejection also has a canonical, dependency-free contract. It binds the
 owner's first-party decision to the exact rejected public tree, records the
@@ -173,35 +126,36 @@ authorship from aesthetics, or promise that AI involvement is undetectable.
 Design DNA adds a repeatable operating system for:
 
 - discovering the project's real content, constraints, audience, and task;
-- researching project, category, cultural, technical, and adjacent creative
-  evidence in the mix needed for the actual decision;
-- exploring enough materially different, directly reviewable answers to expose
-  consequential uncertainty without manufacturing candidates to satisfy a
-  quota;
-- selecting a direction with rationale, recorded constraints, observable
-  design decisions, and a reversible checkpoint when the risk warrants one;
+- admitting only award- or editor-curated source pools, then visiting and
+  scoring individual sites for brief relevance before any reference is
+  selected; a gallery listing or industry tag is never enough;
+- recording enough strong, materially useful reference evidence that no random
+  site or single template silently controls the result;
+- selecting a source combination with a rationale, explicit copying limits,
+  measured values, component mappings, and a reversible proof checkpoint;
 - refusing broad implementation until the selected direction-stage records and
   applicable continuity, range, batch, media, contrast, and challenge contracts
   have passed the prebuild boundary;
-- translating requested visual and experiential qualities into
-  project-specific observations rather than a preset expression recipe;
-- recovering from an ugly or owner-rejected result by reopening the public
-  proposition, material presence, composition, hierarchy, or type behavior
-  rather than adding effects or swapping a fashionable ingredient;
+- translating requested visual and experiential qualities into explicit
+  reference-selection criteria rather than a producer-authored recipe;
+- recovering from an ugly or owner-rejected result by returning to research,
+  rejecting the failed source combination, and proving a better-qualified one
+  rather than adding unsourced effects or fashionable ingredients;
 - preserving an exact rejected public candidate and hash-bound first-party
   owner decision so the replacement honors the affected relationship cluster
   without inventing a permanent style prohibition;
-- carrying the chosen `creative_logic` through whatever combination of
-  typography, color, imagery, layout, motion, ornament, density, interaction,
-  convention, or restraint the work needs;
+- carrying the dossier's component-source map through typography, color,
+  imagery, layout, motion, ornament, density, interaction, and responsive
+  behavior, without filling gaps from producer taste;
 - proving the riskiest or most consequential decisions before broad
   propagation, using the route, fragment, flow, or comparison that best
   answers the uncertainty;
 - authoring a route-family record for a Range Study, proving real direct-entry
   routes, comparing meaningful route differences, and reviewing a matched
   route atlas;
-- separating reusable foundations, route-owned compositions, and justified
-  one-offs so creative range does not become random inconsistency;
+- separating nonvisual engineering foundations from reference-sourced route
+  compositions so range does not become random inconsistency or unsourced
+  producer design;
 - establishing cultural authority, terminology, representation, and human
   acceptance boundaries for culturally central community work;
 - handling local business, commerce, software, editorial, portfolio, travel,
@@ -219,8 +173,9 @@ quality guidance is loaded only when the task needs it.
 
 ## Choose assurance capabilities
 
-Design DNA scales its evidence and review to the work. Quick and Standard are
-proportional base presets. The project state stores a canonical cumulative
+Design DNA scales delivered scope, never evidence quality. `quick` is a legacy
+identifier reserved for an exact nonvisual mechanical repair; Standard is the
+base preset for every visible decision. The project state stores a canonical cumulative
 capability set: Showcase, Connected Public Experience, Project Contrast,
 Direction Challenge, Range Study, Batch Study, High-risk, and Asset-led can
 apply together without weakening one another. Redundant lower presets are
@@ -228,13 +183,13 @@ normalized away rather than retained as misleading extra assurances.
 
 | Capability preset | Use it for | Minimum assurance |
 | --- | --- | --- |
-| **Quick** | A bounded repair or low-risk change inside an established system. | Inspect context, preserve the system, implement changed states, and run affected checks. |
-| **Standard** | A new route, meaningful feature, or ordinary redesign. | Frame and direct the work, prove consequential decisions proportionately, implement, and complete rendered plus engineering review. |
+| **Mechanical repair (`quick` legacy identifier only)** | An exact nonvisual code or content-plumbing repair inside an established system that preserves every rendered decision. It is never a website-build, visual-change, demo, sample, small-job, hurry, time, token, or cost preset. | Prove the rendered system did not change and run every functional, accessibility, and engineering check the repair affects. Any visible change escalates to Standard and its applicable reference-led gates. |
+| **Standard** | A new route, meaningful feature, or ordinary redesign. | Frame the work, trace every visible decision to recorded references, retain the full dossier/recording/measurement requirement, implement, and complete the project gate plus rendered and engineering review. |
 | **Connected Public Experience** | Only when the brief explicitly asks for a detailed, connected, customer-facing, app-like, or client-demonstration experience, or its public promise depends on content, decisions, or state carrying between routes. | Before broad implementation, a resolved applicability decision, selected-root continuity model, truthful status crosswalk, meaningful path, handoffs, and rendered/functional proof plan; after implementation, exact direct-entry/recovery evidence. No page-count, admin, backend, database, funnel, or live-integration quota. |
-| **Showcase** | A brief expressly asks for premium, showcase, or high-ambition work; it needs rejected-direction recovery; or the owner explicitly requests that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Research the real decision and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; select and checkpoint when useful, deepen consequential decisions, and run adversarial review. |
-| **Project Contrast** | An unrelated public build needs to feel materially unlike recent studio work, or an owner says sites feel alike. | A brief-native counter-answer before broad implementation, owner-authorized closest-sibling context when available, and rendered wide/narrow collision review. It requires an explained encounter-level relationship, not a changed ingredient list. |
-| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately requests a high-ambition greenfield challenge. | Record three or more incompatible brief-native roots before polished examples; bind two roots to wide/narrow proof slices with their material posture and, for asset-led roots, the actual assets and implementation sources; select against a rendered rejected root and freeze an independent unprimed view. The record must be reviewed before broad implementation. |
-| **Range Study** | A multi-route brief explicitly asks pages to demonstrate meaningful creative range. | Keep dependable truth, navigation, access, and operations; author the route-family record; prove routes selected by uncertainty; verify real paths; and review a matched route atlas. |
+| **Showcase** | A brief expressly asks for premium, showcase, or high-ambition work; it needs rejected-direction recovery; or the owner explicitly requests that deeper direction challenge. High visibility or owner sensitivity alone does not select it. | Deepen brief-qualified reference research and create directly reviewable contrast sufficient to challenge the first source combination; build full alternatives when uncertainty, stakes, or owner choice justify them; then run adversarial rendered review. Showcase never authorizes the producer to invent the missing visual layer. |
+| **Project Contrast** | An unrelated public build needs to feel materially unlike recent studio work, or an owner says sites feel alike. | A different brief-fit reference combination before broad implementation, owner-authorized closest-sibling context when available, and rendered wide/narrow collision review. It requires an explained encounter-level relationship, not an arbitrary ingredient swap. |
+| **Direction Challenge** | An owner explicitly escalates recurrence, or deliberately requests a high-ambition greenfield challenge. | Record three or more incompatible reference-backed roots; bind two to wide/narrow proof slices with their source mappings and, for asset-led roots, the actual assets and implementation sources; select against a rendered rejected root and freeze an independent unprimed view. The record must be reviewed before broad implementation. |
+| **Range Study** | A multi-route brief explicitly asks pages to demonstrate meaningful creative range. | Keep dependable truth, navigation, access, and operations; map each route-owned visual composition to recorded references; verify real paths; and review a matched route atlas. |
 | **Batch Study** | A controlled evaluation uses at least three unrelated briefs to test whether the method transfers across sites. | Freeze and isolate briefs/builds; bind matched captures to successful renderer routes, profiles, capture modes, exact pixels, and public-build manifests; freeze capture-set-bound unprimed observations; complete a neutral-label whole-system review; then record a separate human contextual disposition. Protocol coverage and human closure remain distinct. |
 | **High-risk** | Identity, permissions, private data, money, regulated claims, consequential transactions, or difficult recovery. | Prioritize task, state, content, specialist, and real-user evidence; visual ambition cannot waive a safety or production gate. |
 | **Asset-led** | Physical or sensory recognition materially depends on media, the owner asks for photography/rich media, or imagery, video, audio, fonts, documents, maps, embeds, or generated media otherwise needs a durable record. | Before broad implementation, bind at least one usable asset in `.design-dna/assets.yml`; gate listed assets on type-specific provenance, rights, privacy, factual status, approval, delivery, accessibility, and generated-media evidence. |
@@ -263,15 +218,12 @@ frozen, a capture-set-bound human contextual disposition may establish
 reports `automatic_aesthetic_pass: false`. None of those fields is package
 release qualification or a replacement for accountable owner review.
 
-For substantial open or expressive work, exploration is not decoration around
-a first idea. Develop enough materially different evidence to expose the
-choice that matters; the appropriate number, fidelity, medium, and comparison
-shape depend on uncertainty, stakes, inherited authority, and the owner's
-decision needs. Candidates differ because they propose different answers to
-the brief, not because a fixed list of surface attributes changes. Record the
-selected `creative_logic` and consequential observable decisions, preserve a
-reversible checkpoint when useful, and deepen the proof that can prevent the
-most expensive propagation error.
+For substantial open or expressive work, research is not decoration around a
+first idea. Visit enough eligible sites to find multiple strong candidates,
+then keep only those that satisfy the project's recorded relevance criteria.
+The appropriate proof depth depends on uncertainty and stakes, but every
+visible result remains source-backed. Preserve a reversible checkpoint and
+deepen the proof before a weak or mismatched source combination propagates.
 
 ## Use it
 
@@ -279,8 +231,8 @@ For a direct personal installation, start with a short request:
 
 | Host | Example |
 | --- | --- |
-| Codex | `$design-dna Build a time-appropriate website for this coffee shop using the supplied facts and assets.` |
-| Claude Code | `/design-dna Build a time-appropriate website for this coffee shop using the supplied facts and assets.` |
+| Codex | `$design-dna Build this coffee-shop website using only recorded, measured references qualified for its real brief, plus the supplied facts and assets.` |
+| Claude Code | `/design-dna Build this coffee-shop website using only recorded, measured references qualified for its real brief, plus the supplied facts and assets.` |
 
 Design DNA selects the proportional assurance capabilities from the task. Say
 `Use Connected Public Experience` only when public content, decisions, or state
@@ -292,15 +244,15 @@ direction recovery. Say `Use Range Study` when a real multi-route site must
 demonstrate materially different page forms while retaining one usable family.
 
 Say `Use Project Contrast` when the site must be materially unlike recent
-unrelated studio work. The agent will not make it “different” by cycling
-through fonts or palettes; it will test a different public encounter and body
+unrelated studio work. The agent will research and prove a different
+brief-qualified reference combination, then test its public encounter and body
 organization against the smallest owner-authorized comparison evidence.
 
 Say `Use Direction Challenge` only when you explicitly want the stronger
 high-ambition challenge, or when an owner recurrence requirement activates it
-beside Project Contrast. It explores incompatible roots before the first
-polished answer takes over; it does not force every ordinary project through a
-three-concept presentation.
+beside Project Contrast. It compares incompatible reference-backed roots before
+one takes over; it does not force every ordinary project through a three-concept
+presentation or authorize producer-invented alternatives.
 
 Both host integrations are designed for relevant natural-language discovery,
 but actual automatic loading is host- and version-dependent and must be
@@ -328,12 +280,13 @@ prebuild gate before writing the full route family:
 
 ```text
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile enterprise-candidate
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest ".design-dna/route-manifest.json" --phase first-screen --route-key "<PRIMARY_ROUTE_KEY>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --mark-complete direction --binding-kind artifact --binding-id "<PROOF_ID>" --binding-path "<PROJECT_RELATIVE_PROOF_PATH>" --completion-owner "<REVIEWER>" --limitations "<KNOWN_LIMITS_OR_NONE_WITHIN_SCOPE>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
 ```
 
 Select only the additional records the brief actually needs. These forms are
-the current 6.0 initializer contract:
+the current initializer contract:
 
 ```text
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile connected-public-experience
@@ -355,7 +308,48 @@ records, unresolved packaged scaffolds, a Direction Challenge that has not
 reached reviewed cross-root proof, an applicable CPE record that has not
 reached direction-ready continuity, or an Asset-led direction with no usable
 bound asset. After implementation and rendered revision, `--check-ready` owns
-the separate final evidence boundary.
+the separate final evidence boundary. Before presenting any website result,
+run the single project gate against the authoritative route manifest for the
+exact immutable running build:
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FINAL_BUILD_ID>" --route-manifest ".design-dna/route-manifest.json" --phase final --prebuild-authorization "<EMITTED_PREBUILD_AUTHORIZATION_PATH>"
+```
+
+The manifest must enumerate every independently addressable route, required
+state, wide and narrow viewport, and selected-reference mapping; the gate
+rejects omissions, duplicates, collisions, redirect aliases, stale phase/tree identities, and mixed-build
+evidence. Quote the emitted `GATE PASS ...` or `GATE FAIL ...` line verbatim. A
+failure blocks presentation; if the command did not run, report "the gate did
+not run." Every in-tree Python script invocation uses `-B`, including this
+gate, so validation cannot create forbidden `__pycache__` or `.pyc` residue.
+
+The first-screen phase is authorization to continue building one mapped first
+screen. It is never post-build QA and cannot be presented as a finished
+prototype for a multi-route or full-site brief. Final presentation requires a
+new final build ID and the complete final gate over every authoritative route,
+state, wide/narrow profile, and derived short-height profile. Its generated
+browser evidence must close clipping, control collisions, fixed-rail overlap,
+responsive control loss, overlay inertness/stacking/initial focus/trap/Escape/
+return, ARIA state, keyboard, reduced motion, direct entry, stable reload,
+dead-end, dead-control, and primary experience-path findings. Source or DOM
+inspection may discover candidates; only the live rendered browser run clears
+them.
+
+Post-build provenance is equally strict. A reference-specific moving or
+interactive medium cannot be replaced by a static image; a font, mark, palette,
+component, or behavior cannot ship without its exact current selected
+observation/state/component binding. Builder notes, implementation narration,
+placeholder instructions, and other construction-facing copy fail the complete
+public-copy review. Reusing an observation or source map from another build is
+allowed only after its URL, bytes, producer/runtime hashes, relevant pages,
+states, recordings, and brief qualification are refreshed for the current
+route manifest; a stale convenient source record is no authority.
+
+There is no quick, demo, small-job, time, token, or cost exception. Those may
+remove a route or feature from the agreed deliverable before implementation;
+they never shorten research, lower recording quality, substitute a screenshot
+for traversal, omit an in-scope route/state, or weaken either gate.
 
 When an accountable owner rejects a result, preserve the exact rejected public
 tree and create `.design-dna/rejections/<REJECTION_ID>.json` from
@@ -397,8 +391,8 @@ First create an isolated Python environment and install the exact locked
 maintainer dependencies. On Windows PowerShell:
 
 ```text
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install --disable-pip-version-check --require-hashes -r maintainer\requirements-dev.lock
+python -B -m venv .venv
+.venv\Scripts\python.exe -B -m pip install --disable-pip-version-check --require-hashes -r maintainer\requirements-dev.lock
 .venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor
 .venv\Scripts\python.exe -B maintainer\scripts\manage_install.py sync --host all
 .venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor
@@ -407,8 +401,8 @@ python -m venv .venv
 On macOS or Linux:
 
 ```text
-python3 -m venv .venv
-.venv/bin/python -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
+python3 -B -m venv .venv
+.venv/bin/python -B -m pip install --disable-pip-version-check --require-hashes -r maintainer/requirements-dev.lock
 .venv/bin/python -B maintainer/scripts/manage_install.py doctor
 .venv/bin/python -B maintainer/scripts/manage_install.py sync --host all
 .venv/bin/python -B maintainer/scripts/manage_install.py doctor
@@ -420,6 +414,23 @@ states transactionally. The doctor reports missing, current, stale, external,
 or colliding filesystem discovery candidates; packaged plugins remain managed
 by their host. A candidate is not proof of plugin activation or current-session
 visibility.
+
+Browser evidence is a separate, explicit prerequisite: direct sync does not
+bundle `node_modules`, install Playwright, download Chromium, or alter global
+Node configuration. Before a browser-required task, verify the exact installed
+route against the actual project with:
+
+```text
+.venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
+```
+
+That read-only check launches a blank local browser only after a Playwright
+module resolves. It can use the project's existing `node_modules` automatically
+or an explicit absolute `DESIGN_DNA_PLAYWRIGHT_MODULE_DIR`; an invalid explicit
+directory fails closed. It is evidence about the operator process, not proof
+that Codex or Claude Code activated the skill. See
+[Installation and distribution](docs/INSTALLATION.md#browser-evidence-prerequisite)
+for the pinned package-checkout option and direct preflight command.
 
 The default direct routes preserve the short commands shown above:
 

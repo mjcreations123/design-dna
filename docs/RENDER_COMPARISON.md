@@ -28,9 +28,13 @@ path-bound, so copied or relocated evidence is rejected.
 
 ## Compare
 
-Use Node.js 20 or newer. The comparator loads Playwright through normal Node
-resolution. When Playwright lives in another `node_modules` directory, point
-`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` to that directory explicitly:
+Use Node.js 20 or newer. The comparator resolves an explicit absolute
+`DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` first (and fails closed if that explicit
+path is invalid), then the target project's exact `node_modules`, a recognized
+source checkout's `maintainer/node_modules`, and ordinary installed-skill Node
+resolution. It never installs or searches global module locations. Set the
+explicit variable only to an existing absolute `node_modules` directory when
+the project does not already provide Playwright:
 
 ```text
 node "<DESIGN_DNA_SKILL_ROOT>/scripts/compare_render_reviews.mjs" "BASELINE_REVIEW/render-review.json" "CANDIDATE_REVIEW/render-review.json" --output "COMPARISON_OUTPUT" --comparison-id "BUILD_A-vs-BUILD_B" --masks none
@@ -48,7 +52,8 @@ not required: the comparator reads its render-review schema from the installed
 skill tree.
 
 Supply `--browser-executable "FILE"` when browser discovery cannot find a local
-Chromium-family browser.
+Chromium-family browser. It selects the executable only after the Playwright
+module prerequisite resolves.
 
 ## Output and interpretation
 

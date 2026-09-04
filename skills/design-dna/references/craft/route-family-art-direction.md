@@ -5,14 +5,15 @@ editorial voices, or interaction models. Use **Range Study** when expressive
 range is itself part of the brief.
 
 Range is not a contest to maximize difference, and family is not permission
-to reskin the same page repeatedly. Each route should follow its content and
-visitor job while the site remains trustworthy and navigable.
+to reskin the same page repeatedly. Each route qualifies and follows an exact
+reference observation whose content job matches its own, while the site remains
+trustworthy and navigable.
 
 ## Contents
 
 - [Define the shared contract](#define-the-shared-contract)
 - [Use it beyond Range Study](#use-it-beyond-range-study)
-- [Let route jobs determine reuse](#let-route-jobs-determine-reuse)
+- [Let route jobs qualify source reuse](#let-route-jobs-qualify-source-reuse)
 - [Record the family without prescribing it](#record-the-family-without-prescribing-it)
 - [Prove real routes](#prove-real-routes)
 - [Create difference from purpose and material](#create-difference-from-purpose-and-material)
@@ -73,16 +74,16 @@ correct. When it dominates unrelated route bodies, treat that as a direction
 question to explain or reopen rather than as a reason to rotate fonts, colors,
 shapes, or effects.
 
-## Let route jobs determine reuse
+## Let route jobs qualify source reuse
 
 Distinguish:
 
 - **foundations:** reliable behavior and authority shared across the site;
-- **reusable design decisions:** tokens, components, content rules, or
-  relationships that genuinely serve several routes;
-- **route-local decisions:** compositions, type behavior, media treatments,
-  interactions, or editorial rules that belong to a route's material;
-- **one-offs:** deliberately local work with a named owner, fallback, and
+- **reusable source decisions:** measured tokens, components, content rules, or
+  relationships from a selected observation that genuinely serve several routes;
+- **route-local source decisions:** compositions, type behavior, media treatments,
+  interactions, or editorial rules bound to that route's selected observation;
+- **source one-offs:** measured local work with a named reference, fallback, and
   maintenance boundary when those are consequential.
 
 One optional vocabulary for this distinction is
@@ -98,29 +99,29 @@ different.
 
 For an explicit Range Study, create `.design-dna/route-family.json` when the
 installed schema and audit tooling are in use. Bind it to the exact study and
-candidate/build. Record the declared paths, shared contracts, direct-entry
-expectations, capture coverage, review status, and the consequential
-differences that the brief requires.
+candidate/build. Record the declared paths, exact selected reference
+rank/ID/observation/hash per route, shared contracts, direct-entry expectations,
+complete capture coverage, review status, and consequential source-mapped
+differences.
 
-For creative fields, use an extensible `creative_logic` and observable
-decision model rather than a fixed route menu. `creative_logic` may be one
-clear statement or a project-defined object whose keys follow the work; the
-object is not a hidden checklist to fill:
+For every visual field, use the exact route source mapping, source state,
+component-source row, and observable decision. Project-authored prose cannot
+create or extend a visual relationship:
 
-| Route | User or editorial job | `creative_logic` | Observable decisions | Relevant adaptations and fallbacks | Evidence and status |
+| Route | User or editorial job | Exact selected source/state | Census component and observable transfer | Relevant adaptations and fallbacks | Evidence and status |
 | --- | --- | --- | --- | --- | --- |
-|  |  | local statement and evidence | content, structure, composition, type, media, color, ornament, interaction, or another project concern | only conditions material to this route |  |
+|  |  | selected rank, observation hash, mapped relationship | source-bound content, structure, composition, type, media, color, ornament, or interaction | every declared route/state/viewport plus additional material conditions |  |
 
 A route need not demonstrate any named aesthetic device or prescribed page
-form. Add project-specific fields when they improve evaluation. Omit
-irrelevant fields rather than inventing differences.
+form. Add source-evidence fields when they improve evaluation. Omit irrelevant
+fields rather than inventing differences or connective design.
 
 Write differences as observations, not mood labels. State what changes in
 content order, spatial behavior, media use, interaction, reading, or another
 meaningful property and why the route requires it.
 
 An empty `deliberate_differences` list is valid when the closest routes should
-honestly reuse a decision. Record the reason in `creative_logic` or observable
+honestly reuse a source-bound decision. Record the reason in observable
 evidence; never invent novelty just to populate the list.
 
 The neutral route-family template records cultural acceptance as
@@ -161,7 +162,8 @@ declared family; no batch may stand in for an untested remainder.
 ## Create difference from purpose and material
 
 Start each route from its visitor question, content dependency, source
-material, and desired outcome. Choose the structure and expression afterward.
+material, and desired outcome, then qualify and bind references whose structure
+and expression already fit those needs.
 Some routes may correctly share a form because their jobs match. Others may
 need radically different bodies. Do not assign page types, interactions,
 palettes, or effects merely to satisfy a diversity quota.
@@ -170,27 +172,24 @@ Surface changes can be consequential when the medium itself changes the
 experience. Conversely, different colors, fonts, photographs, or animations
 do not prove range when the content order and encounter remain the same.
 
-For a commissioned Range Study, explore enough of the family early to test
-whether the requested breadth is real. The number and choice of early routes
-depend on project risk and uncertainty; no fixed early sample or route
-archetype is required.
+For a commissioned Range Study, map every planned route to qualified reference
+evidence before scaling and build enough early source-bound proof to test the
+riskiest relationships. Final evidence still covers the entire authoritative
+manifest; no early sample can stand in for an untested route.
 
 ## Adapt each route on its own terms
 
-Design responsive, reduced-motion, unsupported-runtime, and no-JavaScript
-outcomes where relevant to the route and stack. Preserve complete tasks,
-content, truth, and navigation. Creative adaptation may recompose, substitute,
-reduce, or remove an effect; it need not flatten every route into one centered
-stack or mimic desktop literally.
+Reproduce the selected reference's responsive and reduced-motion behavior, and
+bind unsupported-runtime and no-JavaScript outcomes where relevant to the route
+and stack. Preserve complete tasks, content, truth, and navigation. When access
+or runtime requires a change, use another qualified source with the needed
+adaptation rather than flattening every route into a producer-authored stack.
 
-Choose at least two capture widths because they expose this project's real
-layout risks, not because a universal desktop/mobile pair was prescribed.
-Give them project-meaningful IDs, use comparable exact widths across routes
-when family comparison matters, and add further widths only when they answer a
-specific responsive question. The packaged draft uses `null` widths rather
-than device-like numbers so it cannot anchor the choice; replace every null
-with an exact project-derived width before changing a route from `planned` or
-claiming readiness.
+Use every wide and narrow viewport in the authoritative route manifest and add
+further widths when a source or project condition can change the conclusion.
+Give them stable IDs and use exact comparable widths across routes. The
+packaged draft uses `null` widths so it cannot fake proof; replace every null
+from the manifest before changing a route from `planned` or claiming readiness.
 
 If the visual navigation container varies, preserve destination meaning and
 order, accessible name, current-page state, focus behavior, and menu mechanics.
@@ -220,5 +219,5 @@ the family before declaring range or polishing isolated pages. Review:
 
 Use pairwise grouping to locate the closest siblings, not to demand maximum
 difference between every pair. Fix sameness at the content model, structure,
-or creative logic when that is the cause. Do not add decorative novelty merely
+or source/state/component mapping when that is the cause. Do not add decorative novelty merely
 to move a route farther from another.

@@ -7,6 +7,8 @@
   "required": [
     "schema_version",
     "tool",
+    "producer_script_sha256",
+    "runtime_identity",
     "comparison_id",
     "created_at",
     "output_identity",
@@ -26,17 +28,19 @@
     "manual_review"
   ],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"const": 2},
     "tool": {
       "type": "object",
       "additionalProperties": false,
       "required": ["name", "version", "report_schema"],
       "properties": {
         "name": {"const": "design-dna-render-comparison"},
-        "version": {"const": "1.0.0"},
+        "version": {"const": "2.0.0"},
         "report_schema": {"const": "render-comparison.schema.json"}
       }
     },
+    "producer_script_sha256": {"$ref": "#/$defs/sha256"},
+    "runtime_identity": {"$ref": "#/$defs/runtime_identity"},
     "comparison_id": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
@@ -159,14 +163,15 @@
     "artifacts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["contact_sheet", "comparison_bytes"],
+      "required": ["contact_sheet", "comparison_bytes", "manifest"],
       "properties": {
         "contact_sheet": {"$ref": "#/$defs/html_artifact"},
         "comparison_bytes": {
           "type": "integer",
           "minimum": 1,
           "maximum": 536870912
-        }
+        },
+        "manifest": {"$ref": "#/$defs/artifact_manifest"}
       }
     },
     "manual_review": {
@@ -194,6 +199,27 @@
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "runtime_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compare_render_reviews.mjs", "playwright_resolver.mjs", "render-review.schema.json"],
+      "properties": {
+        "compare_render_reviews.mjs": {"$ref": "#/$defs/sha256"},
+        "playwright_resolver.mjs": {"$ref": "#/$defs/sha256"},
+        "render-review.schema.json": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifact_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "sha256", "count", "bytes"],
+      "properties": {
+        "algorithm": {"const": "sha256-canonical-artifact-list-v1"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "count": {"type": "integer", "minimum": 4, "maximum": 217},
+        "bytes": {"type": "integer", "minimum": 1, "maximum": 536870912}
+      }
     },
     "portable_path": {
       "type": "string",
@@ -225,7 +251,8 @@
         "product_hint",
         "version",
         "executable_source",
-        "executable_name"
+        "executable_name",
+        "executable_sha256"
       ],
       "properties": {
         "engine": {"const": "chromium"},
@@ -239,6 +266,10 @@
           "minLength": 1,
           "maxLength": 128,
           "not": {"pattern": "[/\\\\]"}
+        },
+        "executable_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -251,6 +282,7 @@
         "architecture",
         "playwright_version",
         "playwright_source",
+        "playwright_entry_sha256",
         "browser",
         "network_policy"
       ],
@@ -261,10 +293,13 @@
         "playwright_version": {"type": "string", "minLength": 1},
         "playwright_source": {
           "enum": [
-            "normal-node-resolution",
-            "environment-module-directory"
+            "environment-module-directory",
+            "project-local-node-modules",
+            "source-package-maintainer-node-modules",
+            "skill-local-node-modules"
           ]
         },
+        "playwright_entry_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "browser": {"$ref": "#/$defs/browser"},
         "network_policy": {
           "const": "offline-about-blank-data-png-decode-all-routed-requests-blocked"
@@ -305,11 +340,13 @@
         "execution.platform",
         "execution.architecture",
         "execution.playwright_version",
+        "execution.playwright_entry_sha256",
         "execution.browser.engine",
         "execution.browser.product_hint",
         "execution.browser.version",
         "execution.browser.executable_source",
-        "execution.browser.executable_name"
+        "execution.browser.executable_name",
+        "execution.browser.executable_sha256"
       ],
       "properties": {
         "report.tool.version": {"type": "string", "minLength": 1},
@@ -317,6 +354,7 @@
         "execution.platform": {"type": "string", "minLength": 1},
         "execution.architecture": {"type": "string", "minLength": 1},
         "execution.playwright_version": {"type": "string", "minLength": 1},
+        "execution.playwright_entry_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "execution.browser.engine": {"type": "string", "minLength": 1},
         "execution.browser.product_hint": {"type": "string", "minLength": 1},
         "execution.browser.version": {"type": "string", "minLength": 1},
@@ -327,6 +365,10 @@
         "execution.browser.executable_name": {
           "type": "string",
           "minLength": 1
+        },
+        "execution.browser.executable_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },

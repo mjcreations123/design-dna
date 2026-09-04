@@ -11,8 +11,9 @@ inferred from previous work.
 Use a non-negotiable constraint only when violating it would make the work
 untrue, inaccessible, unsafe, unauthorized, broken, misleading, or contrary
 to an explicit project requirement. Aesthetic, expressive, compositional, and
-interaction ingredients remain neutral and open unless project authority
-closes them.
+interaction ingredients remain neutral across projects, but the producer has
+no open design lane: each visible decision comes from verified brand/system
+authority, supplied artwork, or a selected measured reference.
 
 An observed pattern from another site is evidence to inspect the rendered
 combination. It is never enough to prohibit an ingredient in advance. A
@@ -60,6 +61,19 @@ preference or remembered criticism.
    every part, including layout, typefaces, colors and every component. It is
    a provenance requirement, not an ingredient blacklist: nothing is banned by
    name, and nothing ships without one.
+8. **No shortcuts where quality can be lost (Motty, 2026-09-04).** Time,
+   tokens, cost, convenience, elapsed effort, implementation difficulty, demo,
+   sample, small, quick, test, or hurry may reduce only the truthful delivered
+   scope. They never reduce reference eligibility, quality or exact brief-fit
+   qualification, count/source spread, complete same-origin traversal, the
+   90-second/15-fps recording floor, distinct wide/narrow evidence,
+   source-fidelity proof, component provenance, the first-screen gate, the
+   final gate, or whole-scope copy, functional, responsive, and access review.
+   If traversal exceeds the floor, increase the duration. Do not use a homemade
+   tool or hand-written generated-record substitute, defer required evidence,
+   lower a threshold, omit a route/state, reuse evidence, grant a waiver, or
+   justify an existing build after the fact. A missing required capability or
+   check blocks presentation of the affected surface.
 
 These boundaries are release-blocking only when they apply to the work and
 are violated. They do not turn optional evidence records, a particular

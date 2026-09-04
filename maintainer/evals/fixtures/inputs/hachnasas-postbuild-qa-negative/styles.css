@@ -1,0 +1,30 @@
+:root {
+  --invented-purple: #6f42c1;
+  --invented-lime: #c6ff39;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; color: #211735; }
+.control-rail { position: fixed; z-index: 90; inset: 0 0 auto; height: 76px; display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: var(--invented-purple); }
+.invented-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--invented-lime); font-size: 30px; font-weight: 900; }
+.rail-button { min-height: 44px; }
+.menu-panel { position: fixed; z-index: 20; inset: 0; padding: 100px 24px 24px; background: white; transform: translateY(-105%); transition: transform .2s ease; }
+.menu-panel.is-open { transform: translateY(0); }
+.menu-panel a, .menu-panel button { display: block; margin: 18px 0; }
+main { padding-top: 76px; }
+.hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 24px; padding: 24px; }
+.hero img { width: 100%; height: 70vh; object-fit: cover; background: #ddd; }
+.builder-note { color: #6f42c1; }
+.roles { padding: 64px 24px; }
+.role-card { filter: saturate(1); margin-right: 12px; }
+.role-card:hover, .dead-primary:hover { filter: saturate(1.08); }
+
+@media (max-width: 520px) {
+  .rail-button--view { display: none; }
+  .hero { grid-template-columns: 1fr; }
+}
+
+@media (max-height: 568px) {
+  .control-rail { height: 92px; }
+  .hero { padding-top: 8px; }
+}

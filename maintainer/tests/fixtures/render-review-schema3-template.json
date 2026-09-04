@@ -22,12 +22,14 @@
     "architecture": "x64",
     "playwright_version": "1.61.1",
     "playwright_source": "environment-module-directory",
+    "playwright_entry_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "browser": {
       "engine": "chromium",
       "product_hint": "chrome.exe",
       "version": "150.0.7871.187",
       "executable_source": "explicit",
-      "executable_name": "chrome.exe"
+      "executable_name": "chrome.exe",
+      "executable_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     }
   },
   "privacy": {

@@ -29,16 +29,25 @@ Record the source, retrieval date, transferable lesson, limitation, and what
 must not be copied. Use galleries and social platforms for discovery, not as
 proof of usability or truth.
 
-Do not make research a blocker when tools or access are unavailable. Disclose
-the limitation and use reversible decisions.
+Optional user research that cannot change the current decision need not block
+unrelated work; disclose the limitation and keep its inference reversible.
+Required reference qualification, complete traversal, measurement, rendered
+proof, or a quality-changing check does block presentation when its tool or
+access is unavailable. Do not replace it with simulated or hand-written
+evidence.
 
 For every fresh Enterprise Candidate public website, use the stricter
 [Reference-led direction](reference-led-direction.md) workflow instead. It
-requires a brief-weighted public-source dossier with at least six captured
-references from at least three sources, at least three counterexamples, and
-a selected synthesis with an elevation beyond the set before
-broad implementation. A gallery is discovery material, not proof of usability,
-truth, or permission to copy another brand.
+requires an exact audience/task/content/brand/operational selection brief;
+quality-gated discovery through curated or awarded sources; complete
+wide/narrow, page, progression, and state study of every serious finalist; a
+candidate comparison with concrete selection and rejection reasons; at least
+six strong references from at least three sources; at least three
+counterexamples; and a source-bound synthesis before the first visual
+candidate. A gallery is discovery material, not proof of brief fit, usability,
+truth, or permission to copy another brand. One selected reference supplies
+each route's dominant grammar; other mapped sources must remain compatible,
+and no visible relationship comes from producer taste.
 
 ## Establish hypotheses
 

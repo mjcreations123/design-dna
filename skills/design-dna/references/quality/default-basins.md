@@ -74,8 +74,8 @@ justified shared foundations.
 Inspect any cluster used mainly to signal premium, technical, editorial,
 friendly, futuristic, or handcrafted character. The cluster may involve
 palette, type posture, depth, blur, grain, motion, cropping, density, or
-ornament. Every ingredient remains open. Ask what project evidence chose the
-combination and whether it survives real content, states, and responsive
+ornament. Every ingredient is source-open, never producer-open. Ask which exact
+selected observation supplied the combination and whether it survives real content, states, and responsive
 conditions. Do not replace a familiar prestige code with a mandated minimalist
 or maximalist code.
 

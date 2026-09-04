@@ -7,9 +7,9 @@ allowing the range their real work needs.
 ## Contents
 
 - [Establish authority](#establish-authority)
-- [Separate constraints from open expression](#separate-constraints-from-open-expression)
+- [Separate inherited constraints from reference-open expression](#separate-inherited-constraints-from-reference-open-expression)
 - [Map brand relationships](#map-brand-relationships)
-- [Record an extensible creative system](#record-an-extensible-creative-system)
+- [Record exact source/state/component authority](#record-exact-sourcestatecomponent-authority)
 - [Verify recognition, expression, and use](#verify-recognition-expression-and-use)
 
 ## Establish authority
@@ -25,13 +25,13 @@ place, campaign, and component material before proposing change. For a
 greenfield concept, label provisional decisions and do not fabricate history,
 values, recognition, endorsement, or market position.
 
-## Separate constraints from open expression
+## Separate inherited constraints from reference-open expression
 
 Classify consequential decisions:
 
 | Decision or field | Class | Authority and scope | Change owner |
 | --- | --- | --- | --- |
-|  | non-negotiable, inherited, negotiated, or open |  |  |
+|  | non-negotiable, inherited, negotiated, or reference-open |  |  |
 
 Recognition may live in a name, mark, language, color relationship,
 composition, sound, behavior, material, or another approved property. Do not
@@ -50,7 +50,7 @@ co-brand contexts, record what actually applies:
 
 - which identity leads in each context and why;
 - required marks, naming, hierarchy, spacing, and legal treatment;
-- shared, negotiated, and independent expression fields;
+- shared, negotiated, and reference-supplied expression fields;
 - campaign lifespan, archive or sunset behavior, and ownership;
 - localization, cultural, representation, rights, and market constraints;
 - collision or legibility concerns when identities meet;
@@ -59,15 +59,15 @@ co-brand contexts, record what actually applies:
 Never infer partnership, certification, sponsorship, access, or endorsement
 from visual proximity.
 
-## Record an extensible creative system
+## Record exact source/state/component authority
 
-Use `creative_logic` and observable decisions rather than a fixed brand-style
+Use exact selected-source/state/component mappings and observable transfers rather than a producer-authored brand-style
 taxonomy:
 
-- `logic_id`, statement, evidence, limits, status, and project-specific
-  extensions;
+- route-manifest identity, selected observation bytes, mapped source state,
+  census component, target-specific evidence, limits, and status;
 - accepted recognition decisions and their scope;
-- open expression fields and who may decide them;
+- reference-open expression fields and who owns source selection;
 - reusable functional and visual relationships;
 - campaign-, route-, content-, or channel-local decisions;
 - intentional one-offs and optical exceptions;
@@ -80,10 +80,12 @@ taxonomy:
 |  |  |  |  | systemic, brand-local, campaign-local, route-local, one-off, or exception |  |
 
 Typography, composition, crop, image treatment, color, voice, iconography,
-illustration, texture, material, sound, motion, and interaction are all open
-unless the verified brand or functional contract closes them. Do not require a
-brand to demonstrate every field. Do not standardize expressive work into one
-neutral shell merely because its values can become tokens.
+illustration, texture, material, sound, motion, and interaction remain
+available, but any field not supplied by the verified brand/system requires a
+measured exact-fit reference before implementation. The producer does not fill
+that gap. Do not require a brand to demonstrate every field or standardize
+expressive work into one neutral shell merely because its values can become
+tokens.
 
 ## Verify recognition, expression, and use
 

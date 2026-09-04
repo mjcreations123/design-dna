@@ -63,7 +63,7 @@ owner preference, and cultural context. Category conventions and historical or
 fashionable references are allowed when they fit; they are not automatic
 defaults or automatic defects.
 
-Use an extensible `creative_logic` and observable decisions. The direction may
+Use exact selected-source/state/component mappings and observable transfer decisions. The direction may
 be quiet, exuberant, familiar, decorative, utilitarian, editorial, image-led,
 typographic, playful, historical, experimental, or something else. Do not
 require a predetermined font, palette, route silhouette, media count,

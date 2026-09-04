@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "created_with": "__DESIGN_DNA_VERSION__",
   "record_status": "draft",
   "classification": "internal",
@@ -7,9 +7,11 @@
     "project_id": null,
     "surface_scope": [],
     "route_coverage": {
-      "mode": "representative",
+      "mode": "all-authoritative-manifest-routes",
       "rationale": null,
-      "discovered_route_map": []
+      "manifest": null,
+      "manifest_id": null,
+      "routes": []
     },
     "trigger": [],
     "comparison_authority": {
@@ -25,6 +27,7 @@
     "nontransferable_constraints": []
   },
   "selected_direction": {
+    "source_mapping": null,
     "organizing_answer": null,
     "opening_encounter": null,
     "dominant_content_unit": null,
@@ -36,6 +39,7 @@
     "first_answer_risk": null,
     "challenge_method": null,
     "challenging_answer": null,
+    "challenging_source_mapping": null,
     "selection_reason": null,
     "why_sufficient": null
   },

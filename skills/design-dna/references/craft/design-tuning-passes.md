@@ -13,7 +13,7 @@ house treatment.
 
 - [Bind the feedback](#bind-the-feedback)
 - [Translate the request in context](#translate-the-request-in-context)
-- [Choose the change from the candidate](#choose-the-change-from-the-candidate)
+- [Trace the change to source evidence](#trace-the-change-to-source-evidence)
 - [Protect accepted work](#protect-accepted-work)
 - [Render and compare](#render-and-compare)
 - [Close or reopen](#close-or-reopen)
@@ -49,26 +49,32 @@ Record the tuning contract:
 |  |  | render, task, state, or audience response | accepted creative and hard constraints |  |
 
 If the request is actually a rejection of the organizing direction, return to
-[creative exploration](creative-exploration.md). A tuning pass cannot repair a
-premise the owner no longer accepts.
+[reference-led direction](../quality/reference-led-direction.md) and compare
+new exact-fit source combinations through [creative
+exploration](creative-exploration.md). A tuning pass cannot repair a premise
+the owner no longer accepts or invent its replacement.
 
-## Choose the change from the candidate
+## Trace the change to source evidence
 
-Inspect the candidate's `creative_logic` and observable decision ledger. Find
-the smallest coherent cause or group of causes whose revision can produce the
-requested observation. The relevant decision may involve content,
+Inspect the candidate's exact source/state/component map and observable
+decision ledger. Find the smallest coherent source relationship or group of
+relationships whose revision can produce the requested observation. The
+relevant mapping may involve content,
 composition, typography, media, color, material, ornament, interaction,
 motion, density, convention, responsiveness, or another project-specific
 concern.
 
-The list is open. Do not require a particular medium, a single cause, or a
-named tuning mode. Several coordinated decisions may need to change when they
-form one system; one local decision may be enough when the issue is bounded.
+The list is open, but the source boundary is not. Do not require a particular
+medium, a single cause, or a named tuning mode. Several coordinated mappings
+may need to change when they form one system; one local mapping may be enough
+when the issue is bounded. If no selected reference supplies the correction,
+research, compare, and measure another suitable source before implementing it.
 
-Preserve aesthetic autonomy. Atmosphere, beauty, humor, ornament, restraint,
-abundance, familiarity, and surprise can be legitimate goals. Revise them
-because the rendered relationship fails the brief, not because they lack a
-separate task or appear on a pattern list.
+Preserve source-supplied expression. Atmosphere, beauty, humor, ornament,
+restraint, abundance, familiarity, and surprise can be legitimate goals when
+the mapped reference supplies them. Revise them because the rendered
+relationship fails the brief, not because they lack a separate task or appear
+on a pattern list; never add one from producer taste.
 
 ## Protect accepted work
 
@@ -89,9 +95,10 @@ implemented.
 
 ## Render and compare
 
-Make the bounded coherent change, then compare the same relevant conditions.
-Use real content and media dimensions when available. Record intentional drift
-and inspect shared consumers when the cause is systemic.
+Make the bounded source-mapped change, then compare the same relevant
+conditions. Use real content and media dimensions when available. Record
+intentional drift from the previous mapping and inspect shared consumers when
+the cause is systemic.
 
 Choose evidence that can answer the tuning contract. It may include desktop
 and mobile renders, a reading specimen, a task state, a motion recording, a

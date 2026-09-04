@@ -12,7 +12,7 @@
 Use this short entry point before making the first visual candidate for a
 substantial new or materially redesigned web surface. It deliberately covers
 only the decisions that must exist before direction selection. Any early
-answer here is a provisional hypothesis, not committed creative logic. It does
+answer here is a provisional hypothesis, not a committed source transfer. It does
 not replace the later [process spine](../workflow.md), the rendered review, or
 the [preship gate](../../templates/preship-gate.md).
 
@@ -59,7 +59,7 @@ site with users, rankings, or integrations, read the
 [redesign contract](../flows/redesign.md) before proposing anything, so
 what must never change silently is known before direction work begins.
 
-Before committing selected creative logic, inspect the minimum repository and
+Before committing selected source/state/component mappings, inspect the minimum repository and
 existing-system context that could alter it: applicable routes, stack,
 protected integrations, current components/tokens, approved assets, and
 delivery constraints. Then reconcile the smallest project and category read
@@ -68,7 +68,10 @@ may be enough. Use current external research only when browsing is available,
 permitted, and an unanswered category or project question could change the
 encounter; do not fetch references merely to satisfy a research ritual. If the
 material remains insufficient, retain a reversible hypothesis and record the
-boundary rather than calling it selected.
+boundary rather than calling it selected. The fresh Enterprise Candidate rule
+below is not optional research theatre: its qualified reference study must
+complete before a first visual candidate, and unavailable access leaves that
+direction blocked rather than producer-designed.
 
 ## Plan connected public depth when it matters
 
@@ -104,7 +107,10 @@ use Operate mode; do not invent an empty admin surface.
 
 ## Select only the needed capability
 
-Choose Quick only for a bounded repair inside an established system. For a
+Use the legacy `quick` CLI identifier only for an exact nonvisual mechanical
+repair inside an established system that preserves every rendered decision.
+It cannot authorize new or changed visible design or lower any applicable
+research, gate, copy, function, responsive, or access review. For a
 fresh public-facing business, product, organization, place, creator, or
 campaign site, begin at **Standard plus Enterprise Candidate** and plan its
 full public rendered, engineering, media, interaction, and copy review. Public
@@ -121,14 +127,26 @@ failures after each attempt.
 
 For a fresh Enterprise Candidate public website, also read
 [Reference-led direction](reference-led-direction.md) and complete the
-project-local `reference-dossier.md` before broad implementation. Use the
-maintained public-source registry adaptively for this brief, not as a fixed
-gallery order. The dossier must establish at least six captured strong
-references from at least three sources, at least three visible
-counterexamples, a selected synthesis of at least four references, and one
-elevation beyond them. The floor keeps any single site from becoming the
-template. This required research is a direction input for fresh public
-work, not a generic search ritual for repairs or non-public surfaces.
+project-local `reference-dossier.md` before the first visual candidate. Define
+the exact audience/task/content/brand/operational selection brief first. Use
+only curated or awarded registry sources for discovery, then select by visible
+quality and exact fit rather than gallery order, accolade, random result,
+industry label, fashion, or ease of recreation. Study serious finalists across
+their complete legitimately accessible pages, states, and wide/narrow
+conditions; compare them; and record concrete selection and rejection reasons.
+The dossier must establish at least six strong references from at least three
+sources with distinct full-page wide/narrow evidence, at least three visible
+counterexamples, and a selected synthesis of at least four references. One
+selected source supplies each route's dominant grammar, and no visible part may
+come from producer taste. The floor keeps any single site from becoming the
+template; this is direction input for fresh public work, not a search ritual
+for repairs or non-public surfaces.
+
+The only implementation allowed before the prebuild hard stop is the primary
+first screen. Populate the full planned route manifest, render that key at both
+manifest viewport classes, and run `gate.py --phase first-screen --route-key
+<PRIMARY_KEY>`. Bind the passing `First-screen gate` record in the direction
+proof before adding a second section or route.
 
 Add **Showcase** only when the brief expressly calls for a premium, showcase,
 or high-ambition answer, or when a rejected visual premise needs direction
@@ -192,10 +210,12 @@ Ordinary open briefs may use proportionate exploration without activating it.
 
 ## Ground, select, then continue in phases
 
-After the required grounding supports it, state the project-derived creative
+After the required grounding supports it, state the reference-sourced creative
 logic in the form that fits this work: a visitor encounter, task relationship,
 content operation, atmosphere, spatial model, material premise, narrative,
-utility, or another truthful organizing answer. For Standard and stronger work,
+utility, or another truthful organizing answer. Name the selected references
+and transfer map that supply every visible relationship; do not add a producer
+idea between them. For Standard and stronger work,
 record the selected logic and one observable consequential decision in the
 [direction record](../../templates/direction-template.md). If Project Contrast
 or Direction Challenge applies, its initializer may create a truthful draft

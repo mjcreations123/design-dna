@@ -143,7 +143,7 @@ comprehension as applicable.
 
 ## Transfer the reasoning
 
-For a new project, create its own `creative_logic` and observable decision
+For a new project, create an exact selected-source/state/component transfer and observable decision
 record:
 
 | Decision | Project evidence | Expected observation | Adaptation or limit | Status/owner |

@@ -12,7 +12,7 @@ convert this into a universal aesthetic, novelty, energy, or AI score.
 
 ## Test identity
 
-- Candidate/build and `creative_logic.logic_id`:
+- Candidate/build, route-manifest ID, and selected source/state/component mapping:
 - Artifact path and SHA-256:
 - Route, state, viewport, theme, locale, input, and preference condition:
 - Reviewer and relationship:

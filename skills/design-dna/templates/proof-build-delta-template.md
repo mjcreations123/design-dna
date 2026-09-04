@@ -11,7 +11,7 @@ and visual-review records; it is not owner acceptance by itself.
 
 ## Identity
 
-- Project, source-packet, and selected `creative_logic` identity:
+- Project, source packet, route-manifest identity, and selected source/state/component mappings:
 - Selected candidate and proof build ID:
 - Proof artifact path and SHA-256:
 - Implementation build, commit, or artifact ID:
@@ -42,7 +42,7 @@ decision. Explain relevant omissions.
 
 ## Reconciliation
 
-- Selected `creative_logic` remains observable where intended:
+- Every selected source/state/component transfer remains observable where intended:
 - Real content, media dimensions, and behavior replace proof assumptions:
 - Responsive, input, language, preference, loading, failure, accessibility,
   and performance behavior confirmed where relevant:

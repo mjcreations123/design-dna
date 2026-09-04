@@ -28,6 +28,40 @@ export const EDGE_PX = 80;
 export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
   const vw = window.innerWidth, vh = window.innerHeight;
   const bodyBg = getComputedStyle(document.body).backgroundColor;
+  const roots = [document];
+  const capturedClosed = window.__designDnaCapturedShadowRoots || [];
+  capturedClosed.forEach((item) => { if (item?.root && !roots.includes(item.root)) roots.push(item.root); });
+  for (let rootIndex = 0; rootIndex < roots.length; rootIndex += 1) {
+    roots[rootIndex].querySelectorAll('*').forEach((element) => {
+      if (element.shadowRoot && !roots.includes(element.shadowRoot)) roots.push(element.shadowRoot);
+    });
+  }
+  const allElements = [...new Set(roots.flatMap((root) => [...root.querySelectorAll('*')]))];
+  const visible = (el) => {
+    const style = getComputedStyle(el), rect = el.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 &&
+      rect.width > 1 && rect.height > 1 && rect.bottom > 0 && rect.top < vh;
+  };
+  const visibleCanvases = allElements.filter((el) => el.tagName === 'CANVAS' && visible(el));
+  const visibleFrames = allElements.filter((el) => el.tagName === 'IFRAME' && visible(el));
+  const inspection = {
+    roots: roots.length,
+    open_or_captured_shadow_roots: roots.filter((root) => root.nodeType === 11).length,
+    pseudo_elements: 0,
+    visible_canvases: visibleCanvases.length,
+    visible_iframes: visibleFrames.length,
+    uninspectable: [
+      ...visibleCanvases.map(() => 'canvas-structure-requires-raster-semantic-evidence'),
+      ...visibleFrames.map(() => 'iframe-coordinate-space-not-projectable-by-structure-probe'),
+    ],
+  };
+
+  const pseudoStyles = (el) => ['::before', '::after'].map((pseudo) => ({ pseudo, style: getComputedStyle(el, pseudo) }))
+    .filter(({ style }) => style.display !== 'none' && Number(style.opacity) > 0 &&
+      (String(style.content || '') !== 'none' && String(style.content || '') !== 'normal' ||
+       style.backgroundImage !== 'none' || style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+       parseFloat(style.borderTopWidth) > 0 || style.boxShadow !== 'none'));
+  inspection.pseudo_elements = allElements.reduce((sum, element) => sum + pseudoStyles(element).length, 0);
 
   const isMedia = (el) => {
     if (!el) return false;
@@ -39,13 +73,18 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
   const hasOwnText = (el) => {
     if (!el) return false;
     for (const n of el.childNodes) if (n.nodeType === 3 && n.nodeValue.trim().length) return true;
-    return false;
+    return pseudoStyles(el).some(({ style }) => {
+      const content = String(style.content || '');
+      return content !== 'none' && content !== 'normal' && content !== '""' && content !== "''";
+    });
   };
   const paints = (el) => {
     if (!el || el === document.body || el === document.documentElement) return false;
     const c = getComputedStyle(el);
     if (c.backgroundColor && c.backgroundColor !== 'rgba(0, 0, 0, 0)' && c.backgroundColor !== bodyBg) return true;
     if (parseFloat(c.borderTopWidth) || parseFloat(c.borderBottomWidth)) return true;
+    if (pseudoStyles(el).some(({ style }) => style.backgroundImage !== 'none' ||
+        style.backgroundColor !== 'rgba(0, 0, 0, 0)' || parseFloat(style.borderTopWidth) > 0 || style.boxShadow !== 'none')) return true;
     return false;
   };
 
@@ -67,7 +106,11 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
     return false;
   };
   const at = (x, y) => {
-    const stack = document.elementsFromPoint(x, y);
+    const stack = [...document.elementsFromPoint(x, y)];
+    for (const root of roots) {
+      if (root === document || typeof root.elementsFromPoint !== 'function') continue;
+      try { stack.push(...root.elementsFromPoint(x, y)); } catch { /* fail-closed metadata comes from the census */ }
+    }
     let painted = 0;
     for (const el of stack) {
       if (el === document.body || el === document.documentElement) break;
@@ -95,7 +138,7 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
 
   // the largest thing actually on the first screen, and what kind it is
   let dominant = null, best = 0;
-  document.querySelectorAll('*').forEach((el) => {
+  allElements.forEach((el) => {
     const r = el.getBoundingClientRect();
     if (r.bottom <= 0 || r.top >= vh || r.width < 40 || r.height < 40) return;
     const w = Math.min(r.right, vw) - Math.max(r.left, 0);
@@ -112,7 +155,7 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
   // what lives against each edge of the first screen
   const band = (test) => {
     const kinds = new Set();
-    document.querySelectorAll('*').forEach((el) => {
+    allElements.forEach((el) => {
       const r = el.getBoundingClientRect();
       if (r.width < 8 || r.height < 8 || r.top > vh) return;
       if (!test(r)) return;
@@ -134,7 +177,7 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
     (cy === 0 ? r.top < EDGE * 2 : r.bottom > vh - EDGE * 2 && r.top < vh);
   const corners = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([cx, cy]) => {
     let found = 0;
-    document.querySelectorAll('*').forEach((el) => {
+    allElements.forEach((el) => {
       const r = el.getBoundingClientRect();
       if (r.width < 8 || r.height < 8 || r.top > vh) return;
       if (inCorner(r, cx, cy) && hasOwnText(el)) found = 1;
@@ -152,11 +195,32 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
       const xh = x.actualBoundingBoxAscent || 0;
       const adv = c.measureText('Handgloves 0123').width;
       const iw = c.measureText('I').width;
-      return { x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3), i_ratio: cap ? +(iw / cap).toFixed(3) : null };
+      const raster = document.createElement('canvas'); raster.width = 720; raster.height = 150;
+      const rc = raster.getContext('2d', { willReadFrequently: true });
+      rc.fillStyle = '#000'; rc.font = \`\${weight} 96px \${family}\`; rc.textBaseline = 'alphabetic';
+      const probe = 'Hamburgefontsiv 0123 Il1 @&?'; rc.fillText(probe, 4, 108);
+      const data = rc.getImageData(0, 0, raster.width, raster.height).data;
+      let hash = 2166136261, hash2 = 2654435769, ink = 0;
+      for (let i = 3; i < data.length; i += 4) {
+        if (!data[i]) continue;
+        const signal = ((i / 4) & 0xffff) ^ data[i];
+        ink += 1; hash ^= signal; hash = Math.imul(hash, 16777619);
+        hash2 ^= signal + ink; hash2 = Math.imul(hash2, 2246822519);
+      }
+      return {
+        x_ratio: cap ? +(xh / cap).toFixed(3) : null, advance: +(adv / 100).toFixed(3),
+        i_ratio: cap ? +(iw / cap).toFixed(3) : null,
+        lower_advance: +(c.measureText('abcdefghijklmnopqrstuvwxyz').width / 100).toFixed(3),
+        upper_advance: +(c.measureText('ABCDEFGHIJKLMNOPQRSTUVWXYZ').width / 100).toFixed(3),
+        digit_advance: +(c.measureText('0123456789').width / 100).toFixed(3),
+        punct_advance: +(c.measureText('.,:;!?@&()[]').width / 100).toFixed(3),
+        font_fingerprint: { raster: (hash >>> 0).toString(16).padStart(8, '0') + (hash2 >>> 0).toString(16).padStart(8, '0'), ink,
+          probe_width: +rc.measureText(probe).width.toFixed(3) },
+      };
     } catch (e) { return { x_ratio: null, advance: null }; }
   };
   let biggest = null, bigSize = 0;
-  document.querySelectorAll('h1,h2,h3,p,span,div,a,li').forEach((el) => {
+  allElements.filter((el) => el.matches('h1,h2,h3,p,span,div,a,li')).forEach((el) => {
     const r = el.getBoundingClientRect();
     if (r.top >= vh || r.bottom <= 0 || !hasOwnText(el)) return;
     const s = parseFloat(getComputedStyle(el).fontSize) || 0;
@@ -185,6 +249,7 @@ export const STRUCTURE_SCRIPT = `((GX, GY, EDGE) => {
   const display = roleOf(biggest);
 
   return {
+    inspection: { ...inspection, complete: inspection.uninspectable.length === 0 },
     viewport: { w: vw, h: vh },
     grid,
     shares: {
@@ -211,10 +276,9 @@ export function gridAgreement(a, b) {
   for (let y = 0; y < a.length; y += 1) {
     for (let x = 0; x < a[y].length; x += 1) {
       cells += 1;
-      // media and a painted box both read as "a filled area" to a viewer
-      const A = a[y][x] === 3 ? 2 : a[y][x];
-      const B = b[y][x] === 3 ? 2 : b[y][x];
-      if (A === B) same += 1;
+      // Media and a painted box are different design decisions. Treating them
+      // as equivalent let a colored rectangle pass for reference photography.
+      if (a[y][x] === b[y][x]) same += 1;
     }
   }
   return cells ? +(same / cells).toFixed(3) : 0;
@@ -228,23 +292,24 @@ const near = (a, b, tol) =>
 /**
  * Does the build's first screen resemble the reference's?
  *
- * Four independent tests. A build that passes fewer than three of them is not
- * a copy of that reference's structure, whatever its font sizes say.
+ * Four independent tests. All four are required: the old three-of-four rule
+ * let a build replace the dominant medium or composition and compensate with
+ * three coarse similarities.
  */
 export function diffStructure(build, ref) {
   const tests = [];
   const bd = build.dominant || {}, rd = ref.dominant || {};
   tests.push({
     name: 'dominant',
-    pass: bd.kind === rd.kind,
+    pass: bd.kind === rd.kind && near(bd.area_share, rd.area_share, 0.25),
     detail: `the largest thing on the first screen is ${bd.kind || 'nothing'} (<${bd.tag || '-'}>), the reference's is ${rd.kind || 'nothing'} (<${rd.tag || '-'}>)`,
   });
   const agree = gridAgreement(build.grid, ref.grid);
   tests.push({
     name: 'ink',
-    pass: agree >= 0.55,
+    pass: agree >= 0.7,
     value: agree,
-    detail: `where the ink sits agrees with the reference on ${Math.round(agree * 100)}% of the screen (floor 55%)`,
+    detail: `where media, text, surfaces and emptiness sit agrees on ${Math.round(agree * 100)}% of the screen (floor 70%)`,
   });
   const edgeScore = ['top', 'right', 'bottom', 'left'].reduce((n, side) => {
     const a = new Set(build.edges?.[side] || []);
@@ -259,7 +324,7 @@ export function diffStructure(build, ref) {
     (n, v, i) => n + (v === (ref.corners || [])[i] ? 1 : 0), 0) / 4;
   tests.push({
     name: 'edges',
-    pass: edgeScore >= 0.5 && cornerScore >= 0.5,
+    pass: edgeScore >= 0.65 && cornerScore >= 0.75,
     value: +((edgeScore + cornerScore) / 2).toFixed(2),
     detail: `what sits against the edges matches ${Math.round(edgeScore * 100)}% and the corners ${Math.round(cornerScore * 100)}%`,
   });
@@ -275,19 +340,20 @@ export function diffStructure(build, ref) {
   const typeScore = typeChecks.filter(Boolean).length / typeChecks.length;
   tests.push({
     name: 'type',
-    pass: typeScore >= 0.66,
+    pass: typeScore >= 0.8,
     value: +typeScore.toFixed(2),
     detail: `the type matches the reference on ${typeChecks.filter(Boolean).length} of ${typeChecks.length} proportions `
       + `(scale ${bt.scale} vs ${rt.scale}; display x-height ${bt.display?.x_ratio} vs ${rt.display?.x_ratio}; `
       + `width ${bt.display?.advance} vs ${rt.display?.advance}; case ${bt.display?.transform} vs ${rt.display?.transform})`,
   });
   const passed = tests.filter((t) => t.pass).length;
+  const pass = passed === tests.length;
   return {
-    pass: passed >= 3,
+    pass,
     passed,
     of: tests.length,
     tests,
-    verdict: passed >= 3
+    verdict: pass
       ? 'The first screen is built like the reference it names.'
       : 'The first screen does not resemble the reference it names: '
         + tests.filter((t) => !t.pass).map((t) => t.detail).join('; '),

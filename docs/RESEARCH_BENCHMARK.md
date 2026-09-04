@@ -31,7 +31,7 @@ implementation.
 | [Material 3 Expressive research](https://design.google/library/expressive-material-design-google-research) | Research / official | Expressive design can improve attention, emotional response, and usability when expression is purposeful and tested. | **Adopt:** project-defined expression evidence governed by audience, task, owner, and context. **Reject:** copying Material's visual language or translating expression into a preset intensity or medium. |
 | [Maze prototype-testing guidance](https://maze.co/guides/prototype-testing/) and [Figma AI usability testing](https://www.figma.com/resource-library/ai-usability-testing/) | Official | A concept is tested against measurable user tasks before visual confidence becomes implementation confidence. | **Adopt:** task success, misclick, path, time, and qualitative questions when the project risk warrants user evidence. **Reject:** synthetic prediction as a replacement for relevant human participants. |
 | [Mobbin](https://docs.mobbin.com/) and [Mobbin MCP](https://mobbin.com/mcp) | Official | Searchable shipped screens and full flows provide behavior and state references, not only attractive stills. | **Adopt:** use shipped-product references for flow and state questions. **Reject:** cloning a screen, stripping provenance, or treating prevalence as proof of fitness. |
-| [SiteInspire](https://www.siteinspire.com/) and [Godly](https://godly.design/) | Official product surfaces | Curated visual examples expand the art-direction search space. | **Adapt:** use as aesthetic stimuli and decompose exact relationships. **Reject:** using inspiration galleries as usability evidence or averaging fashionable motifs into a generic site. |
+| [Godly](https://godly.design/) | Official product surface | Curated visual examples can supply eligible discovery candidates. | **Adapt:** admit only individually accessible, quality-qualified, exact-brief-fit candidates and decompose their complete relationships. **Reject:** treating gallery inclusion as selection, using it as usability evidence, or averaging fashionable motifs into a generic site. SiteInspire is not in the active registry because the required public evidence path was not currently verifiable. |
 | [Impeccable](https://github.com/pbakaus/impeccable) | Maintainer | Durable product/design context, causal tuning passes, deterministic detectors, and one batched desktop/mobile repair loop. | **Adopt:** bounded visual iteration, natural-language tuning intents, and checks for recurring generator habits. **Adapt:** keep one Design DNA router rather than exposing a command swarm. **Reject:** importing its style bans as universal aesthetic law. |
 | [SuperDesign](https://github.com/superdesigndev/superdesign-skill) | Maintainer | Multiple visual directions and proof artifacts precede code; existing systems can be extracted rather than overwritten. | **Adopt:** proof-before-build and system ingestion. **Reject:** a required proprietary CLI, unbounded canvas generation, or reference reproduction without rights and transformation controls. |
 | [OpenDesign](https://github.com/manalkaff/opendesign) | Maintainer | One router loads focused specialists, scans incumbent systems, and verifies the result against the brief. | **Adopt:** progressive disclosure and brief-bound verification. **Adapt:** specialists remain internal references so Claude and Codex show one skill. |
@@ -90,19 +90,21 @@ fashionable feature.
 
 ## Design DNA synthesis
 
-### 1. Open expression contract
+### 1. Source-authority contract
 
-The engineering floor prevents breakage; it must not cap or predetermine the
-visual idea. Translate requested qualities into project-specific observations
-based on audience, task or invitation, owner preference, culture, content, and
-context. A directional word is evidence to interpret, not a volume knob or an
-instruction to use a particular medium.
+The engineering floor prevents breakage; it is not authority for a visual
+idea. Translate requested qualities into exact-fit source-selection criteria
+based on audience, task or invitation, owner requirement, culture, content,
+and context. A directional word helps qualify references; it never authorizes
+the producer to choose a medium or visual treatment.
 
-Record the candidate's extensible `creative_logic` and only the consequential
-observable decisions it actually makes. Expression may come from any medium,
-several local systems, convention, ornament, atmosphere, precision,
-abundance, restraint, or another fitting source. Judge the rendered whole
-rather than named devices or feature counts.
+Record the candidate's exact selected-source/state/component transfer map and
+consequential observable decisions. Expression
+may come from any medium, several local systems, convention, ornament,
+atmosphere, precision, abundance, or restraint only when the current brief,
+supplied work, established system, or selected measured references supply it.
+Judge the rendered whole against those sources rather than named devices or
+feature counts; there is no producer-open aesthetic lane.
 
 ### 2. Design-context capsule
 
@@ -135,14 +137,14 @@ Filename or folder names never establish visual authority by themselves.
 
 ### 4. Proof-to-build delta
 
-A visual proof can still collapse into a generic build. Carry the selected
-`creative_logic` and observable decisions into a transfer ledger. Record the
+A visual proof can still collapse into a generic build. Carry the exact
+selected-source/state/component mappings and observable decisions into a transfer ledger. Record the
 proof evidence, accepted decision, scope, implementation source, relevant
 adaptation, intentional deviation, and rendered comparison at the conditions
 that matter.
 
-The ledger is extensible; do not require every candidate to prove the same
-typography, crop, spatial, interaction, or responsive fields. Review the
+The ledger has an exact source/state/component core; add only applicable
+evidence conditions, never a producer-authored visual field. Review the
 **delta**, not merely whether the build resembles a screenshot. If an accepted
 decision or visitor outcome disappears without disposition, fidelity has
 failed even when surface ingredients match.
@@ -185,7 +187,7 @@ asset. Essential reading, control, and task completion remain available under
 the declared access and failure contract; that boundary does not create an
 aesthetic ban or require the strongest medium to survive deletion unchanged.
 
-### 8. Extensible reference evidence
+### 8. Decision-relevant reference evidence
 
 Give each reference the relevance the current decision needs. It may inform
 behavior, art direction, brand, subject, culture, physical material, content,

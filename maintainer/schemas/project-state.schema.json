@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://design-dna.local/schemas/project-state.schema.json",
   "title": "Design DNA project state manifest",
-  "description": "Schema-2 inventory. assurance_profiles is a cumulative capability set; evidence_contract keeps five universal proof anchors, requires project-derived organizing logic for non-Quick direction work, adds only applicable risk/capability gates, and permits project-specific extension records without prescribing aesthetic vocabulary. Every listed record participates in readiness.",
+  "description": "Schema-2 inventory. assurance_profiles is a cumulative capability set; evidence_contract keeps five universal proof anchors, requires reference-sourced organizing logic for non-Quick direction work, adds applicable risk/capability gates, and permits project-specific extension records. Every listed record participates in readiness.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "created_with", "created", "classification", "assurance_profiles", "records"],
@@ -12,50 +12,19 @@
     "created": {"type": "string", "format": "date"},
     "classification": {"const": "internal"},
     "assurance_profiles": {
-      "description": "Canonical cumulative capability set in runtime order; redundant weaker labels are omitted.",
-      "oneOf": [
-        {"const": ["quick"]},
-        {"const": ["standard"]},
-        {"const": ["showcase"]},
-        {"const": ["high-risk"]},
-        {"const": ["asset-led"]},
-        {"const": ["standard", "asset-led"]},
-        {"const": ["standard", "range-study"]},
-        {"const": ["showcase", "range-study"]},
-        {"const": ["showcase", "high-risk"]},
-        {"const": ["showcase", "asset-led"]},
-        {"const": ["high-risk", "asset-led"]},
-        {"const": ["range-study", "high-risk"]},
-        {"const": ["standard", "range-study", "asset-led"]},
-        {"const": ["showcase", "range-study", "high-risk"]},
-        {"const": ["showcase", "range-study", "asset-led"]},
-        {"const": ["showcase", "high-risk", "asset-led"]},
-        {"const": ["range-study", "high-risk", "asset-led"]},
-        {"const": ["showcase", "range-study", "high-risk", "asset-led"]},
-        {"const": ["standard", "batch-study"]},
-        {"const": ["showcase", "batch-study"]},
-        {"const": ["batch-study", "high-risk"]},
-        {"const": ["batch-study", "asset-led"]},
-        {"const": ["standard", "batch-study", "asset-led"]},
-        {"const": ["standard", "range-study", "batch-study"]},
-        {"const": ["showcase", "range-study", "batch-study"]},
-        {"const": ["showcase", "batch-study", "high-risk"]},
-        {"const": ["showcase", "batch-study", "asset-led"]},
-        {"const": ["batch-study", "high-risk", "asset-led"]},
-        {"const": ["range-study", "batch-study", "high-risk"]},
-        {"const": ["standard", "range-study", "batch-study", "asset-led"]},
-        {"const": ["showcase", "range-study", "batch-study", "high-risk"]},
-        {"const": ["showcase", "range-study", "batch-study", "asset-led"]},
-        {"const": ["showcase", "batch-study", "high-risk", "asset-led"]},
-        {"const": ["range-study", "batch-study", "high-risk", "asset-led"]},
-        {"const": ["showcase", "range-study", "batch-study", "high-risk", "asset-led"]}
-      ]
+      "description": "Canonical cumulative capability set in runtime order. Runtime validation enforces prerequisite expansion and ordering.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["quick", "standard", "enterprise-candidate", "showcase", "connected-public-experience", "direction-challenge", "project-contrast", "range-study", "batch-study", "high-risk", "asset-led"]
+      }
     },
     "records": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"enum": ["exploration", "taste-calibration", "direction", "direction-proof", "route-family", "batch-range", "visual-review", "claims", "assets", "user-validation", "handoff"]}
+      "items": {"enum": ["exploration", "taste-calibration", "reference-dossier", "route-manifest", "direction", "direction-proof", "route-family", "batch-range", "project-contrast", "direction-challenge", "connected-public-experience", "visual-review", "claims", "assets", "user-validation", "handoff"]}
     },
     "evidence_contract": {
       "description": "Versioned proportional evidence selection. Non-Quick state requires the current direction contract; omission remains tolerated only for backward-compatible Quick repair state. Current initialization always emits it.",
@@ -63,13 +32,13 @@
       "additionalProperties": false,
       "required": ["version", "universal_anchors", "direction_contract", "applicable_capabilities", "extension_records"],
       "properties": {
-        "version": {"const": 2},
+        "version": {"const": 3},
         "universal_anchors": {
           "const": ["identity-intent", "truth-provenance", "responsive-accessibility-function", "rendered-review", "owner-release-state"]
         },
         "direction_contract": {
-          "description": "Quick repairs may inherit an established organizing logic; every other assurance profile uses the free-form project-derived organizing-logic evidence contract.",
-          "enum": ["quick-repair-exempt", "project-derived-organizing-logic-v1"]
+          "description": "Quick is limited to nonvisual mechanical repair of an already-established system; every other assurance profile must use reference-sourced organizing logic.",
+          "enum": ["quick-repair-exempt", "reference-sourced-organizing-logic-v1"]
         },
         "applicable_capabilities": {
           "type": "array",
@@ -114,6 +83,35 @@
   },
   "allOf": [
     {
+      "if": {"properties": {"assurance_profiles": {"contains": {"const": "quick"}}}, "required": ["assurance_profiles"]},
+      "then": {"properties": {"assurance_profiles": {"const": ["quick"]}}}
+    },
+    {
+      "if": {"properties": {"assurance_profiles": {"contains": {"const": "enterprise-candidate"}}}, "required": ["assurance_profiles"]},
+      "then": {
+        "properties": {
+          "assurance_profiles": {"contains": {"const": "standard"}},
+          "records": {"allOf": [{"contains": {"const": "reference-dossier"}}, {"contains": {"const": "route-manifest"}}]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"assurance_profiles": {"contains": {"const": "showcase"}}}, "required": ["assurance_profiles"]},
+      "then": {"properties": {"assurance_profiles": {"allOf": [{"contains": {"const": "standard"}}, {"contains": {"const": "enterprise-candidate"}}]}}}
+    },
+    {
+      "if": {"properties": {"assurance_profiles": {"contains": {"const": "direction-challenge"}}}, "required": ["assurance_profiles"]},
+      "then": {"properties": {"assurance_profiles": {"allOf": [{"contains": {"const": "standard"}}, {"contains": {"const": "enterprise-candidate"}}, {"contains": {"const": "showcase"}}]}}}
+    },
+    {
+      "if": {"properties": {"assurance_profiles": {"contains": {"const": "project-contrast"}}}, "required": ["assurance_profiles"]},
+      "then": {"properties": {"assurance_profiles": {"allOf": [{"contains": {"const": "standard"}}, {"contains": {"const": "enterprise-candidate"}}]}}}
+    },
+    {
+      "if": {"properties": {"assurance_profiles": {"contains": {"enum": ["connected-public-experience", "range-study", "batch-study", "high-risk"]}}}, "required": ["assurance_profiles"]},
+      "then": {"properties": {"assurance_profiles": {"contains": {"const": "standard"}}}}
+    },
+    {
       "if": {
         "properties": {
           "assurance_profiles": {"const": ["quick"]}
@@ -134,7 +132,7 @@
         "properties": {
           "evidence_contract": {
             "properties": {
-              "direction_contract": {"const": "project-derived-organizing-logic-v1"}
+              "direction_contract": {"const": "reference-sourced-organizing-logic-v1"}
             }
           }
         }

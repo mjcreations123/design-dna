@@ -1,0 +1,25 @@
+{
+  "tool": "observe_reference.mjs",
+  "schema_version": 5,
+  "producer_script_sha256": "61f9aefd64a41266ce53496eff4bf01733a3da21fef9cee18feb9623a800ac2c",
+  "runtime_identity": {
+    "observe_reference.mjs": "61f9aefd64a41266ce53496eff4bf01733a3da21fef9cee18feb9623a800ac2c",
+    "structure_probe.mjs": "d9a65985329fda4914a946e998234fb00e27b9e65ef436164fed73e02afc8db6",
+    "browser_evidence.mjs": "e5ebf42bdd033b6a9993826c0402cd0e90c11c6a1d05cc09dfb69389911c0d82",
+    "playwright_resolver.mjs": "a38a6b0db61e04ca384673c01ab44cd97d1c709e88092bf947fe3fee3453c789"
+  },
+  "id": "strong-1",
+  "url": "https://fixture-reference.invalid/",
+  "states_by_viewport": {
+    "wide": {
+      "rest": {
+        "id": "rest"
+      }
+    },
+    "narrow": {
+      "rest": {
+        "id": "rest"
+      }
+    }
+  }
+}

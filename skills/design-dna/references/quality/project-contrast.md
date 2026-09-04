@@ -19,7 +19,7 @@ beautiful. It requires different **derivation**, not arbitrary decoration.
 - [What stays shared](#what-stays-shared)
 - [Derive before comparing](#derive-before-comparing)
 - [Use the record lifecycle](#use-the-record-lifecycle)
-- [Record a project-derived signature](#record-a-project-derived-signature)
+- [Record a source-mapped project signature](#record-a-source-mapped-project-signature)
 - [Separate public foundations from public shells](#separate-public-foundations-from-public-shells)
 - [Bind surface grammar to rendered evidence](#bind-surface-grammar-to-rendered-evidence)
 - [Challenge the first answer](#challenge-the-first-answer)
@@ -101,12 +101,13 @@ font-pairing, or route-shell behavior, use [visual-grammar
 variance](visual-grammar-variance.md) to inspect the rendered relationships.
 The comparison is against actual owner-authorized output, not an imagined test
 of whether another industry could occupy the layout. A design can be
-transferable and still be project-derived; it fails contrast when the same
+transferable and still be source-fit for the project; it fails contrast when the same
 producer grammar actually recurs without cause.
 
 ## Derive before comparing
 
-Start from the current project without viewing prior site output. Record only
+Start from the current project and qualify current visual references before
+viewing prior studio output. Record only
 the evidence that can change the public encounter:
 
 - visitor occasion, primary job, and the decision, understanding, or response
@@ -117,7 +118,7 @@ the evidence that can change the public encounter:
   inspect, transact, participate, or another project-specific operation;
 - relevant facts, rights, accessibility, system, brand, delivery, and
   maintenance constraints;
-- the proposed organizing answer in ordinary project language.
+- the proposed selected-reference combination and mapped organizing answer.
 
 Do not begin with a style name, component inventory, trend list, or the
 previous client's screenshots. A brief can honestly support a quiet, dense,
@@ -126,7 +127,7 @@ otherwise singular answer.
 
 ## Use the record lifecycle
 
-`project-contrast.json` begins as an explicit `draft`: project-derived fields
+`project-contrast.json` begins as an explicit `draft`: brief- and reference-derived fields
 are `null` or empty rather than plausible English placeholders. A draft is a
 truthful planning artifact, not a clean Project Contrast pass.
 
@@ -134,8 +135,8 @@ Move the record forward only as its evidence exists:
 
 - `draft` — no project-specific direction has been claimed yet;
 - `direction-ready` — the visitor occasion, source-to-encounter chain,
-  selected direction, counter-answer, signature basis, and three review prompts
-  are written in project language;
+  selected and counter reference mappings, signature basis, and three review
+  prompts bind exact selected ranks and observation hashes;
 - `proof-ready` — an exact candidate build, project-relevant render review,
   and wide/narrow captures are bound; and
 - `reviewed` — the unprimed and applicable paired review, counterfactual, and
@@ -162,11 +163,11 @@ explicit lifecycle draft and keeps a hash-bound migration entry. It deliberately
 does not guess how to reinterpret a partially completed legacy record; update
 that record with the accountable project owner instead.
 
-## Record a project-derived signature
+## Record a source-mapped project signature
 
 Before implementation spreads a plausible answer across a site, record the
-qualitative axes that materially shape this project. Give each selected axis a
-project-defined identifier and group it as either `encounter` or
+qualitative axes carried by the selected references and materially relevant to
+this project. Give each selected axis a local identifier and group it as either `encounter` or
 `surface-language`; the identifier is not chosen from a global catalog. The
 record is not a checklist that every site must fill or vary. An axis can refer
 to the current project's opening, information operation, spatial model,
@@ -273,12 +274,13 @@ actual, bounded image evidence for those visible public relationships.
 
 ## Challenge the first answer
 
-Name the likely first answer before it disappears into implementation. Create
-one **materially different counter-answer** from the same approved brief and
-source material when recurrence risk or direction uncertainty is high. It can
-be a content model, annotated wireframe, proof fragment, interaction prototype,
-reference decomposition, or representative route. Its form and fidelity follow
-the decision; no fixed candidate count applies.
+Name the likely first source combination before it disappears into
+implementation. Create one **materially different counter-answer** from another
+fully traversed, brief-qualified reference combination when recurrence risk or
+direction uncertainty is high. It may be a source-mapped content model, adapted
+proof fragment, interaction prototype, reference decomposition, or route. Every
+visible relationship binds the exact source observation; prose or an unsourced
+wireframe is not a counter-answer.
 
 The counter-answer must alter the encounter or the operation that structures
 the body. Examples of consequential differences include an entry through a
@@ -298,10 +300,10 @@ not a counter-answer. Record the concrete encounter, operation, or body model
 that changed. This is a narrow anti-fixation evidence rule, not a prescribed
 number of concepts or a visual-style requirement.
 
-Select for the project, not for strangeness. Record why the selected answer
-fits the visitor, material, task, voice, accessibility, production reality,
-and owner preference better than the counter-answer. Keep a reversible
-checkpoint until the riskiest representative slice has been rendered.
+Select for exact project fit, not strangeness or ease. Record why the selected
+reference combination fits the visitor, material, task, voice, accessibility,
+production reality, and owner requirement better than the counter-combination.
+Keep a reversible checkpoint until the required source-bound proof has passed.
 
 Before proof, write three concise, project-specific review prompts in the record:
 
@@ -334,7 +336,7 @@ Record one of these honest comparison positions:
 - `inherited-system`: repetition is required by an approved brand, product,
   platform, or maintenance system;
 - `not-authorized`: no history may be consulted; compare the selected answer
-  to the brief-native counter-answer and state the limitation;
+  to the brief-qualified counter-reference combination and state the limitation;
 - `not-applicable`: no meaningful cross-project comparison exists for the
   project scope.
 
@@ -374,7 +376,7 @@ comparison without importing client media into another project.
 
 ## Test the rendered encounter
 
-Build and render the representative route or state before broad propagation.
+Build and render the source-bound first-screen proof before broad propagation.
 Bind project-relevant wide and narrow captures to the exact candidate. Each
 accepted comparison claim uses the full wide/narrow pair for every route it
 names, and complete unprimed, paired, and owner review exposure names the full
@@ -515,30 +517,21 @@ transformation. They are not permanent required fields for unrelated briefs.
 
 ## Handle related systems and routes
 
-For a site with multiple route jobs, use the lighter route-owned body review
-before copying a page recipe. Keep semantic navigation and operating
+For a site with multiple route jobs, bind every route in the authoritative
+manifest to its exact selected reference observation before copying a page
+recipe. Keep semantic navigation and operating
 foundations predictable. Use Range Study when the brief explicitly claims
 meaningful expressive range across an anthology or a deliberately varied route
 family. Project Contrast does not require every route or client to differ in
 every visible dimension.
 
-Declare the public-route evidence boundary in `scope.route_coverage`:
-
-- `representative` for an explicitly representative route or state;
-- `all-discovered-public-routes` when every safely discovered static public
-  route is in the scope; or
-- `sampled-with-rationale` for a documented representative route sample.
-
-The audit discovers routes only from one unambiguous, ordinary static output
-root. It intentionally does not guess dynamic router, redirect, query, hash,
-or linked routes. Where static discovery is safe, map every discovered public
-route to either a direct captured wide/narrow pair or to one directly reviewed
-representative route. A representative mapping names why the two routes have
-the same job and system boundary; it cannot form a chain or merely say they
-look similar. `all-discovered-public-routes` permits only direct captures. A
-multi-route static output therefore cannot clear itself with an arbitrary
-two-route sample. This is coverage evidence, not a page-count or
-visual-difference quota.
+Declare `scope.route_coverage.mode` as `all-manifest-routes`. The authoritative
+route manifest lists every in-scope public route and every required state,
+including programmatic or unlinked routes that anchor discovery cannot infer.
+Each route receives its own direct wide/narrow capture pair and exact reference
+observation mapping. Equivalent jobs may share a selected source, but they may
+not share, alias, or substitute one route's evidence. Redirected, omitted,
+represented, or sampled routes do not close coverage.
 
 For several unrelated projects, Batch Study remains the controlled protocol:
 isolate brief/source packets and build contexts, freeze unprimed observations,

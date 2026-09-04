@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hachnasas Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="control-rail">
+    <div class="invented-mark">H</div>
+    <button class="rail-button rail-button--view" type="button">Change view</button>
+    <button class="rail-button menu-toggle" type="button">Menu</button>
+  </header>
+
+  <aside class="menu-panel" aria-hidden="true">
+    <a href="#roles">Roles</a>
+    <a href="#apply">Apply</a>
+    <button class="menu-close" type="button">Close</button>
+  </aside>
+
+  <main>
+    <section class="hero">
+      <img src="welcome-still.svg" alt="Volunteers welcoming a guest">
+      <div>
+        <p class="builder-note">This section uses our new component system and will become video later.</p>
+        <h1>Welcome begins here</h1>
+        <button class="dead-primary" type="button">Start helping</button>
+      </div>
+    </section>
+
+    <section id="roles" class="roles">
+      <h2>Choose a role</h2>
+      <button class="role-card" type="button" data-detail="driver-detail">Driver</button>
+      <div id="driver-detail" hidden>Drive a guest to an appointment.</div>
+      <button class="role-card" type="button" data-detail="host-detail">Host</button>
+      <div id="host-detail" hidden>Welcome a guest for a meal.</div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

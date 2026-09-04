@@ -1,0 +1,39 @@
+{
+  "schema_version": 2,
+  "manifest_id": "__REPLACE_WITH_IMMUTABLE_MANIFEST_ID__",
+  "viewports": [
+    {
+      "name": "wide",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "narrow",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "routes": [
+    {
+      "key": "home",
+      "url": "__REPLACE_WITH_CANONICAL_ABSOLUTE_ROUTE_URL__",
+      "mapped_reference_rank": 1,
+      "mapped_reference_id": "strong-1",
+      "mapped_reference_observation": ".design-dna/references/strong-1-observation.json",
+      "mapped_reference_sha256": "__REPLACE_WITH_OBSERVATION_SHA256__",
+      "states": [
+        {
+          "id": "rest",
+          "kind": "rest",
+          "trigger": {
+            "type": "none",
+            "target": "document",
+            "value": null
+          },
+          "expectation": "initial settled route",
+          "mapped_reference_state_id": "rest"
+        }
+      ]
+    }
+  ]
+}

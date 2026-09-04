@@ -42,7 +42,8 @@ must not become a generation checklist.
 - Unresolved blocked rows and their release impact:
 - Included rows rechecked after the final build:
 - Included rows missing either a visitor condition or factual/operational authority:
-- Inherited rows for a Quick repair, if any:
+- Inherited rows for an exact nonvisual mechanical repair using the legacy
+  `quick` CLI identifier, with proof that no visible decision changed:
 - Checks not performed and why:
 
 Do not use a completed row to imply that the site is live, legally reviewed,

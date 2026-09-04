@@ -34,6 +34,7 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 - [Public copy integrity closure](#public-copy-integrity-closure-required-for-public-candidates)
 - [Numeric rhetoric integrity closure](#numeric-rhetoric-integrity-closure-required-for-public-candidates)
 - [Reference-led direction closure](#reference-led-direction-closure-required-for-public-candidates)
+- [Final source-fidelity gate](#final-source-fidelity-gate)
 - [Connected public experience closure](#connected-public-experience-closure-when-selected)
 - [Preship and specificity closure](#preship-and-specificity-closure)
 - [Owner-pattern contract closure](#owner-pattern-contract-closure-when-selected)
@@ -55,12 +56,29 @@ canonical Project Contrast or Direction Challenge lifecycle record.
 | --- | --- | --- | --- |
 |  |  |  |  |
 
-One row can be enough for a small ordinary project. Add rows only for materially
-different routes, states, content, containers, inputs, languages, preferences,
-or failure conditions that actually apply. Each row binds a decodable PNG;
+Include every route/state/viewport cell declared by the authoritative route
+manifest, plus every additional content, input, language, preference, or
+failure condition that can change the conclusion. A small job or repeated page
+family does not waive a manifest cell. Each row binds a decodable PNG;
 structured reports, logs, DOM evidence, recordings, and manual observations
 remain separately typed evidence and cannot be renamed or substituted as a
 screenshot.
+
+## Mechanical repair invariance
+
+Required only when the legacy `quick` profile identifies an exact nonvisual
+mechanical repair. A demo, sample, small job, hurry request, limited budget, or
+visible change cannot use this profile. Capture the complete affected
+route/state set before and after the repair with the packaged schema-3 renderer,
+then run `compare_render_reviews.mjs`. Every affected route/state needs both a
+wide and a narrow comparison, a current baseline, and exact zero-pixel change.
+
+- Repair scope and affected routes/states:
+- Changed files and mechanical purpose:
+- Strictly nonvisual repair: yes / no
+- Authoritative Quick impact manifest:
+- Cross-build comparison identity, compatibility, changed captures, reviewer, and result, or `not performed`:
+- Cross-build decision:
 
 ## Review scope and capture rationale
 
@@ -140,13 +158,13 @@ actual candidate against the public reality the brief supports.
 - System finish: typography, spacing, hierarchy, controls, media, and ordinary
   content maintain a purposeful local system without forcing every route or
   section through one reusable spectacle.
-- Public-copy integrity: source/voice basis, representative high-attention
-  strings, deletion/swap/speaker result, repeated-pattern result,
+- Public-copy integrity: source/voice basis, complete visible and accessible
+  public corpus, deletion/swap/speaker result, repeated-pattern result,
   rendered-corpus coverage, numeric-rhetoric result, and remaining truth or
   approval limits.
 - Reference-led direction: completed project dossier, selected positive subset,
-  negative-counterevidence result, and the project-specific synthesis carried
-  into the final candidate.
+  negative-counterevidence result, and the exact selected-source combination
+  carried into the final candidate without producer-authored connective design.
 - Shared-cause rerun: identify the shared component/layout/media/content rule
   behind every material defect and record the family-wide rerender after
   revision.
@@ -230,30 +248,41 @@ the selected references; this closure confirms that the copy is visible in the
 render, that it holds together as one system, and that the rights boundary was
 kept.
 
-Record the dossier path, completion state, active-source access boundary,
-and selected positive ranks; the visitor-facing decisions that arose from
-the selected references and their project-specific adaptation; the observed
-weak relationships and the final result for the failure they were meant to
-prevent; the rights-boundary result for the reference's logo, name, copy, media,
-illustration, and code; the lineage result from placing the wide and narrow
-renders beside the selected reference captures; the wide and
-narrow review of the synthesis after every affected route body and state
-was rerendered; and the named decision that goes beyond every selected
-reference, as actually observed in the render; and the mechanism diff, the
-`compare_mechanisms.mjs` record that read the final build with the same
-harness as its references and found their mechanisms present, no device
-overused, and no skeleton; and the structure diff, the
-`compare_structure.mjs` record that compared the finished first screen with
-the first screen of the reference it names and found that it is built the same
-way. Each value below is required when this closure applies.
+Record the dossier path, completion state, active-source access boundary, and
+selected positive ranks; the candidate comparison and concrete selection or
+rejection reasons; the full pages, progression, states, and wide/narrow
+conditions studied; exact content-model, task, audience, brand, operational,
+responsive, rights, and access fit; the visitor-facing decisions copied from
+the selected references; the observed weak relationships and final result; the
+rights-boundary result for source identity, copy, media, illustration, and
+code; and the lineage result from placing the final wide and narrow renders
+beside the selected reference captures.
+
+Also record one dominant selected-reference grammar for every route and why
+supplementary sources remain coherent with it; the synthesis after every
+affected route/state was rerendered; the authoritative route manifest bound to
+the same immutable build ID; the final gate record produced from that exact
+manifest/build pair; the mechanism diff for actual dynamic claims; and
+the structure diff for every mapped route. A static signature is reviewed
+against wide/narrow captures plus structure/style evidence without invented
+motion. Execution may improve content completeness, access, responsive
+resilience, performance, maintainability, and finish, but this closure must not
+credit an unsourced visual or interaction decision as improvement. Each value
+below is required when this closure applies.
 
 - Dossier result: __REPLACE_WITH_DOSSIER_PATH_STATE_ACCESS_BOUNDARY_AND_SELECTED_RANKS__
+- Candidate selection result: __REPLACE_WITH_COMPARISON_SELECTION_AND_REJECTION_REASONS__
+- Complete-study result: __REPLACE_WITH_PAGES_PROGRESSION_STATES_AND_WIDE_NARROW_SCOPE__
+- Brief-fit result: __REPLACE_WITH_CONTENT_TASK_AUDIENCE_BRAND_OPERATIONAL_RESPONSIVE_RIGHTS_AND_ACCESS_FIT__
 - Positive synthesis: __REPLACE_WITH_THE_VISITOR_FACING_DECISIONS_DRAWN_FROM_THE_SELECTED_REFERENCES__
 - Negative counterevidence: __REPLACE_WITH_THE_OBSERVED_WEAK_RELATIONSHIPS_AND_THE_FINAL_RESULT__
 - Rights boundary: __REPLACE_WITH_THE_LOGO_NAME_COPY_MEDIA_AND_CODE_RESULT__
 - Lineage result: __REPLACE_WITH_WHETHER_A_DESIGNER_WOULD_SEE_THE_SITE_CAME_FROM_THE_SELECTED_SET_AND_WHERE__
 - Rendered result: __REPLACE_WITH_THE_WIDE_AND_NARROW_REVIEW_OF_THE_SYNTHESIS__
+- Dominant grammar result: __REPLACE_WITH_ONE_MAPPED_REFERENCE_RANK_PER_ROUTE_AND_COHERENCE_OF_CONTRIBUTORS__
 - Combination result: __REPLACE_WITH_WHICH_REFERENCE_SUPPLIED_WHICH_PART_AS_RENDERED__
+- Route manifest: __REPLACE_WITH_DESIGN_DNA_ROUTE_MANIFEST_JSON_PLUS_SHA256_AND_MATCHING_BUILD_ID__
+- Gate result: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_GATE_JSON_PLUS_SHA256__
 - Mechanism diff: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_MECHANISM_DIFF_JSON_PLUS_SHA256__
 - Structure diff: __REPLACE_WITH_DESIGN_DNA_EVIDENCE_STRUCTURE_DIFF_JSON_PLUS_SHA256__
 - Reference-led direction disposition: __REPLACE_WITH_KEEP_REVISE_REOPEN_DIRECTION_REJECT_OR_BLOCKED__
@@ -261,6 +290,23 @@ way. Each value below is required when this closure applies.
 | Review focus | Applicability or disposition | Rendered PNG path and SHA-256 | Reference synthesis, counterevidence, and rendered result |
 | --- | --- | --- | --- |
 | Reference-led direction | applicable / not-applicable / blocked |  |  |
+
+`Gate result` must identify the manifest hash and immutable build ID recorded
+above. A gate record from another manifest, build, route subset, state subset,
+or viewport set cannot close this review.
+
+## Final source-fidelity gate
+
+Required for every reference-led final record. Copy these values from the
+validated final `gate.json`; do not summarize them from memory.
+
+- Route manifest ID and binding:
+- Final build ID and tree SHA-256:
+- First-screen authorization binding:
+- Final gate binding:
+- Gate run ID and runtime identity SHA-256:
+- Exact coverage matrix result:
+- Verdict:
 
 ## Connected public experience closure (when selected)
 

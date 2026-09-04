@@ -22,24 +22,26 @@ reference owns the temporal and structural behavior.
 
 Feedback that appears and vanishes in a flash reads as a glitch; feedback
 that appears instantly for fast operations trains users to expect flicker.
-Two timing disciplines, both measured against the real operation:
+Two timing disciplines, both measured against the real operation and the exact
+selected interaction reference:
 
-- **Show-delay:** hold a pending indicator back briefly (a commonly
-  effective band is roughly 150 to 300 ms) so operations that finish
+- **Show-delay:** use the source-observed delay, adjusted only when real
+  operation timing or access requires it, so operations that finish
   fast never flash one.
-- **Minimum visible time:** once shown, keep it up long enough to be
-  perceived (roughly 300 to 500 ms) even if the operation finished
+- **Minimum visible time:** once shown, keep it up for the source-observed
+  perceivable duration even if the operation finished
   earlier, so completion reads as completion rather than flicker.
 
-The bands are starting points, not law; a long-running export and an
-inline toggle earn different treatments. What is not open: an indicator
+Generic bands are not visual authority; a long-running export and an inline
+toggle require task-fit shipped references. What is not open: an indicator
 that lies. Determinate progress only when real progress data exists;
 otherwise honest indeterminate pending, per the microcopy status rules.
 Never fabricate percentages or countdowns.
 
 ## Design the submit lifecycle
 
-A submit control is a small state machine, and every state is designed:
+A submit control is a small state machine. Bind every visible state to the
+selected shipped-product reference while preserving these functional truths:
 
 - **Ready:** enabled. Do not pre-disable submission to enforce validity;
   letting the attempt surface the validation errors is usually the more
@@ -68,17 +70,18 @@ no layout shift. A generic shimmer block that gets replaced by a
 different-shaped reality is worse than a plain pending state, and an
 endless shimmer over content that never arrives is a lie. Reserve
 dimensions for anything that loads late (media, embeds, dynamic regions)
-whether or not a skeleton is drawn. Spinners, skeletons, progressive
-content, and quiet inline pending are all valid instruments; choose by
-what the wait is for and how long it plausibly lasts.
+whether or not a skeleton is drawn. Use a spinner, skeleton, progressive
+content, or quiet inline pending only when the mapped reference carries that
+instrument for a comparable wait.
 
 ## Use optimism with a receipt
 
 Optimistic interfaces show the intended result before the server
-confirms. Use them where the operation almost always succeeds and the
-user's flow benefits; never for consequential state a person might act on
-before confirmation. The contract has three parts: show the optimistic
-state immediately, reconcile with the authoritative response, and on
+confirms. Use them only where the operation almost always succeeds, the
+user's flow benefits, and a selected shipped-product reference supplies the
+visible optimistic treatment; never for consequential state a person might act
+on before confirmation. The contract has three parts: show the source-mapped
+optimistic state immediately, reconcile with the authoritative response, and on
 failure either roll back visibly with an explanation or convert to a
 retry offer. A rollback the user never notices is state corruption from
 their side of the glass. Announce asynchronous outcomes through the

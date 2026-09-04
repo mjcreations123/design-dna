@@ -41,13 +41,18 @@ def run_python(script: Path, *arguments: str) -> subprocess.CompletedProcess[str
     )
 
 
-def write_png(path: Path, width: int, height: int) -> str:
+def write_png(
+    path: Path,
+    width: int,
+    height: int,
+    rgb: bytes = b"\x24\x68\xac",
+) -> str:
     def chunk(kind: bytes, data: bytes) -> bytes:
         checksum = binascii.crc32(kind)
         checksum = binascii.crc32(data, checksum) & 0xFFFFFFFF
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", checksum)
 
-    row = b"\x00" + (b"\x24\x68\xac" * width)
+    row = b"\x00" + (rgb * width)
     payload = (
         b"\x89PNG\r\n\x1a\n"
         + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
@@ -115,7 +120,13 @@ def schema3_source_snapshot(
     )
 
 
-def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
+def write_bound_schema3_render_review(
+    project: Path,
+    *,
+    relative_directory: str = "evidence/render-review",
+    build_id: str = "build-42",
+    source_files: dict[str, bytes] | None = None,
+) -> dict[str, object]:
     """Write a complete hash- and marker-bound Standard+ review fixture.
 
     This intentionally uses the same narrow schema-3 verifier that production
@@ -126,7 +137,7 @@ def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
     """
 
     adapter = schema3_adapter()
-    review_dir = project / "evidence" / "render-review"
+    review_dir = project / Path(relative_directory)
     review_dir.mkdir(parents=True, exist_ok=True)
     wide_path = review_dir / "wide.png"
     narrow_path = review_dir / "narrow.png"
@@ -139,11 +150,12 @@ def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
 
     source_snapshot, source_digest = schema3_source_snapshot(
         adapter,
-        {"index.html": b"<!doctype html><title>fixture build</title>\n"},
+        source_files
+        or {"index.html": b"<!doctype html><title>fixture build</title>\n"},
         entry_path="index.html",
     )
     output_identity = {
-        "id": "a" * 64,
+        "id": hashlib.sha256(build_id.encode("utf-8")).hexdigest(),
         "path_sha256": adapter.rendered_output_path_sha256(review_dir),
     }
     report_path = review_dir / "render-review.json"
@@ -199,7 +211,7 @@ def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
         "execution": {},
         "privacy": {},
         "build": {
-            "id": "build-42",
+            "id": build_id,
             "target_input": "fixture",
             "target_kind": "local-directory",
         },
@@ -284,7 +296,7 @@ def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
                 "bytes": len(report_payload),
             },
             "created_at": "2026-08-12T12:00:00+00:00",
-            "build_id_sha256": hashlib.sha256(b"build-42").hexdigest(),
+            "build_id_sha256": hashlib.sha256(build_id.encode("utf-8")).hexdigest(),
         }
         marker_payload = (json.dumps(marker, indent=2) + "\n").encode("utf-8")
         if len(marker_payload) == marker_bytes:
@@ -316,6 +328,10 @@ def write_bound_schema3_render_review(project: Path) -> dict[str, str]:
         "contact_digest": contact_digest,
         "wide_digest": wide_digest,
         "narrow_digest": narrow_digest,
+        "report_path": report_path,
+        "marker_path": marker_path,
+        "report": report,
+        "marker": marker,
     }
 
 
@@ -354,7 +370,7 @@ def filled_cell(
         "Limit or do-not-copy boundary": "Project-specific; no visual copying.",
         "Limits, authority, and do-not-copy boundary": "Project-specific and owner-bounded.",
         "Candidate ID": f"C-{row_number + 1:02d}",
-        "`creative_logic.statement`": "Arrange approved evidence around the visitor decision.",
+        "`mapped_relationship`": "Arrange the exact selected-source relationship around the visitor decision.",
         "Consequential observable decisions": "Decision-first hierarchy and evidence adjacency.",
         "Assumptions and limits": "Applies only to the approved content and tested route.",
         "Directly reviewable proof": f"candidate-{row_number + 1:02d} rendered artifact",
@@ -382,7 +398,7 @@ def filled_cell(
         "Decision ID": f"DEC-{row_number + 1:02d}",
         "Concern": "composition",
         "Decision": "Lead with the approved visitor choice and adjacent proof.",
-        "Project reason or source": (
+        "Selected source rank and project-fit reason": (
             "The approved service packet binds each choice to its eligibility constraint."
         ),
         "Observable consequence": (
@@ -599,17 +615,17 @@ def fill_substantive_template(record: str, text: str) -> str:
         "Comparison performed, partially performed, or not performed": (
             "performed; one project-specific candidate proof was reviewed"
         ),
-        "Selected candidate ID and `creative_logic`": "C-01; logic_id=logic-1",
+        "Selected candidate ID and source mapping": "C-01; source_mapping_id=source-map-1",
         "Selected proof identity and artifact": (
             "C-01; evidence/candidate-01.png plus sha256:" + ("0" * 64)
         ),
-        "`logic_id`": "logic-1",
-        "`statement`": "Arrange approved evidence around the visitor decision.",
-        "`evidence`": "Owner-approved source packet and rendered candidate proof.",
+        "`source_mapping_id`": "source-map-1",
+        "`mapped_relationship`": "Arrange the exact selected-source relationship around the visitor decision.",
+        "`source_evidence`": "Owner-approved source packet and rendered candidate proof.",
         "`limits`": "Applies only to the reviewed content, route, and conditions.",
         "`status`": "accepted",
         "`extensions`": "none",
-        "Candidate and `creative_logic.logic_id`": "C-01; logic-1",
+        "Candidate and source mapping ID": "C-01; source-map-1",
         "Reviewer, relationship, prior exposure, and date": (
             "reviewer-7; relationship=producer-self; exposure=unbriefed; "
             "date=2026-07-29"
@@ -658,6 +674,13 @@ def fill_substantive_template(record: str, text: str) -> str:
         "Artifact credibility disposition": "keep",
         "Owner disposition": "pending",
         "Release blockers": "none within the reviewed scope",
+        "Repair scope and affected routes/states": (
+            "Menu default state at wide and narrow viewports"
+        ),
+        "Changed files and mechanical purpose": (
+            "src/menu-state.ts repairs state plumbing without changing rendered output"
+        ),
+        "Strictly nonvisual repair": "yes",
         "Status": "not-required",
         "Claims still pending or prohibited": "none",
         "Scenario values visibly labeled": "yes; no scenario values are public",
@@ -865,6 +888,7 @@ def materialize_visual_review_evidence(
 def render_comparison_payload(
     *,
     candidate_build_id: str = "build-42",
+    exact_invariance: bool = False,
 ) -> dict[str, object]:
     environment = {
         "report.tool.version": "2.0.0",
@@ -872,11 +896,13 @@ def render_comparison_payload(
         "execution.platform": "win32",
         "execution.architecture": "x64",
         "execution.playwright_version": "1.58.2",
+        "execution.playwright_entry_sha256": "b" * 64,
         "execution.browser.engine": "chromium",
         "execution.browser.product_hint": "chrome",
         "execution.browser.version": "140.0.0",
         "execution.browser.executable_source": "system-discovery",
         "execution.browser.executable_name": "chrome.exe",
+        "execution.browser.executable_sha256": "a" * 64,
     }
 
     def compared_input(role: str, build_id: str) -> dict[str, object]:
@@ -912,13 +938,76 @@ def render_comparison_payload(
             "pixel_height": 10,
         }
 
-    capture_id = "route-01--default--mobile-390"
+    capture_specs = [
+        ("menu-narrow", 390, 844),
+    ]
+    if exact_invariance:
+        capture_specs.append(
+            ("menu-wide", 1440, 1000)
+        )
+    mismatch_pixels = 0 if exact_invariance else 100
+    comparisons = []
+    for index, (capture_id, width, height) in enumerate(capture_specs):
+        # Comparison artifacts are intentionally tiny; viewport identity is
+        # still wide/narrow, while decoded RGBA validation remains fast.
+        total = 100
+        comparisons.append({
+            "capture_id": capture_id,
+            "identity": {
+                "id": capture_id,
+                "route_id": "route-01",
+                "scenario_id": "default",
+                "profile_id": "mobile-390" if width <= 600 else "wide-1440",
+                "route_label": "Menu",
+                "state_label": "Default",
+                "viewport": {
+                    "width": width,
+                    "height": height,
+                    "device_scale_factor": 1,
+                },
+                "preferences": {"reduced_motion": "reduce"},
+                "review_mode": {"kind": "default"},
+                "interaction": {"kind": "none"},
+            },
+            "artifacts": {
+                "baseline": png(f"captures/baseline-{index}.png", "b"),
+                "actual": png(f"captures/actual-{index}.png", "c"),
+                "diff": png(f"captures/diff-{index}.png", "d"),
+            },
+            "metrics": {
+                "algorithm": "exact-decoded-rgba-v1",
+                "total_pixels": total,
+                "mismatch_pixels": mismatch_pixels,
+                "mismatch_pixel_ratio": mismatch_pixels / total,
+            },
+            "review_status": "human-accept-reject-required",
+        })
+    total_pixels = sum(
+        item["metrics"]["total_pixels"] for item in comparisons
+    )
+    total_mismatches = sum(
+        item["metrics"]["mismatch_pixels"] for item in comparisons
+    )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "tool": {
             "name": "design-dna-render-comparison",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "report_schema": "render-comparison.schema.json",
+        },
+        "producer_script_sha256": hashlib.sha256(
+            (PLUGIN / "skills" / "design-dna" / "scripts" / "compare_render_reviews.mjs").read_bytes()
+        ).hexdigest(),
+        "runtime_identity": {
+            "compare_render_reviews.mjs": hashlib.sha256(
+                (PLUGIN / "skills" / "design-dna" / "scripts" / "compare_render_reviews.mjs").read_bytes()
+            ).hexdigest(),
+            "playwright_resolver.mjs": hashlib.sha256(
+                (PLUGIN / "skills" / "design-dna" / "scripts" / "playwright_resolver.mjs").read_bytes()
+            ).hexdigest(),
+            "render-review.schema.json": hashlib.sha256(
+                (PLUGIN / "skills" / "design-dna" / "schemas" / "render-review.schema.json").read_bytes()
+            ).hexdigest(),
         },
         "comparison_id": "build-41-to-build-42",
         "created_at": "2026-07-29T12:00:00Z",
@@ -935,13 +1024,15 @@ def render_comparison_payload(
             "platform": "win32",
             "architecture": "x64",
             "playwright_version": "1.58.2",
-            "playwright_source": "normal-node-resolution",
+            "playwright_source": "skill-local-node-modules",
+            "playwright_entry_sha256": "b" * 64,
             "browser": {
                 "engine": "chromium",
                 "product_hint": "chrome",
                 "version": "140.0.0",
                 "executable_source": "system-discovery",
                 "executable_name": "chrome.exe",
+                "executable_sha256": "a" * 64,
             },
             "network_policy": (
                 "offline-about-blank-data-png-decode-all-routed-requests-blocked"
@@ -983,7 +1074,7 @@ def render_comparison_payload(
         },
         "compatibility": {
             "status": "compatible",
-            "capture_count": 1,
+            "capture_count": len(comparisons),
             "capture_contract_sha256": "8" * 64,
             "route_contract_sha256": "9" * 64,
             "capture_identity_sha256": "a" * 64,
@@ -996,45 +1087,15 @@ def render_comparison_payload(
             "age_days": 1,
             "warnings": [],
         },
-        "comparisons": [
-            {
-                "capture_id": capture_id,
-                "identity": {
-                    "id": capture_id,
-                    "route_id": "route-01",
-                    "scenario_id": "default",
-                    "profile_id": "mobile-390",
-                    "route_label": "Menu",
-                    "state_label": "Default",
-                    "viewport": {
-                        "width": 390,
-                        "height": 844,
-                        "device_scale_factor": 1,
-                    },
-                    "preferences": {"reduced_motion": "reduce"},
-                    "review_mode": {"kind": "default"},
-                    "interaction": {"kind": "none"},
-                },
-                "artifacts": {
-                    "baseline": png("captures/baseline.png", "b"),
-                    "actual": png("captures/actual.png", "c"),
-                    "diff": png("captures/diff.png", "d"),
-                },
-                "metrics": {
-                    "algorithm": "exact-decoded-rgba-v1",
-                    "total_pixels": 100,
-                    "mismatch_pixels": 1,
-                    "mismatch_pixel_ratio": 0.01,
-                },
-                "review_status": "human-accept-reject-required",
-            }
-        ],
+        "comparisons": comparisons,
         "summary": {
-            "capture_count": 1,
-            "changed_capture_count": 1,
-            "total_pixels": 100,
-            "mismatch_pixels": 1,
-            "mismatch_pixel_ratio": 0.01,
+            "capture_count": len(comparisons),
+            "changed_capture_count": (
+                0 if exact_invariance else len(comparisons)
+            ),
+            "total_pixels": total_pixels,
+            "mismatch_pixels": total_mismatches,
+            "mismatch_pixel_ratio": total_mismatches / total_pixels,
         },
         "artifacts": {
             "contact_sheet": {
@@ -1044,6 +1105,12 @@ def render_comparison_payload(
                 "bytes": 1024,
             },
             "comparison_bytes": 4096,
+            "manifest": {
+                "algorithm": "sha256-canonical-artifact-list-v1",
+                "sha256": "f" * 64,
+                "count": 1 + 3 * len(comparisons),
+                "bytes": 4096,
+            },
         },
         "manual_review": {
             "status": "required",
@@ -1089,15 +1156,201 @@ def materialize_render_comparison_evidence(
     *,
     payload: dict[str, object] | None = None,
 ) -> str:
-    comparison = payload or render_comparison_payload()
+    comparison = json.loads(json.dumps(payload or render_comparison_payload()))
     report_dir = project / "evidence" / "render-comparison"
     report_dir.mkdir(parents=True, exist_ok=True)
+    baseline_bound = write_bound_schema3_render_review(
+        project,
+        relative_directory="evidence/comparison-inputs/baseline",
+        build_id="build-41",
+        source_files={
+            "index.html": b"<!doctype html><title>fixture build</title>\n",
+            "build-info.txt": b"mechanical state revision 41\n",
+        },
+    )
+    candidate_id = comparison["inputs"]["candidate"]["build"]["id"]
+    candidate_bound = write_bound_schema3_render_review(
+        project,
+        relative_directory="evidence/comparison-inputs/candidate",
+        build_id=candidate_id,
+        source_files={
+            "index.html": b"<!doctype html><title>fixture build</title>\n",
+            "build-info.txt": b"mechanical state revision 42\n",
+        },
+    )
+    render_schema = (
+        PLUGIN / "skills" / "design-dna" / "schemas" / "render-review.schema.json"
+    )
+    render_schema_sha = hashlib.sha256(render_schema.read_bytes()).hexdigest()
+
+    def bind_input(role: str, bound: dict[str, object]) -> None:
+        source_report = bound["report"]
+        source_marker = bound["marker"]
+        source_path = bound["report_path"]
+        comparison["inputs"][role] = {
+            "role": role,
+            "report_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+            "report_bytes": source_path.stat().st_size,
+            "render_report_schema_sha256": render_schema_sha,
+            "output_identity": source_report["output_identity"],
+            "build": {
+                "id": source_report["build"]["id"],
+                "id_sha256": hashlib.sha256(
+                    source_report["build"]["id"].encode("utf-8")
+                ).hexdigest(),
+                "target_kind": source_report["build"]["target_kind"],
+                "source_manifest_sha256": source_report["source_snapshot"]["manifest"]["manifest_sha256"],
+            },
+            "captured_at": "2026-07-29T11:00:00Z",
+            "marker_created_at": source_marker["created_at"],
+            "execution_environment": comparison["inputs"][role]["execution_environment"],
+        }
+
+    bind_input("baseline", baseline_bound)
+    bind_input("candidate", candidate_bound)
+
+    artifact_rows: list[dict[str, object]] = []
+    for index, item in enumerate(comparison["comparisons"]):
+        pixel_width = 10
+        pixel_height = 10
+        baseline_path = report_dir / "captures" / f"baseline-{index}.png"
+        actual_path = report_dir / "captures" / f"actual-{index}.png"
+        diff_path = report_dir / "captures" / f"diff-{index}.png"
+        baseline_path.parent.mkdir(parents=True, exist_ok=True)
+        baseline_digest = write_png(baseline_path, pixel_width, pixel_height)
+        changed = item["metrics"]["mismatch_pixels"] > 0
+        actual_digest = write_png(
+            actual_path,
+            pixel_width,
+            pixel_height,
+            b"\xac\x68\x24" if changed else b"\x24\x68\xac",
+        )
+        diff_digest = write_png(
+            diff_path,
+            pixel_width,
+            pixel_height,
+            b"\xff\x00\x00" if changed else b"\x00\x00\x00",
+        )
+        records = {}
+        for role, path, digest in (
+            ("baseline", baseline_path, baseline_digest),
+            ("actual", actual_path, actual_digest),
+            ("diff", diff_path, diff_digest),
+        ):
+            relative = path.relative_to(report_dir).as_posix()
+            records[role] = {
+                "path": relative,
+                "sha256": digest,
+                "media_type": "image/png",
+                "bytes": path.stat().st_size,
+                "pixel_width": pixel_width,
+                "pixel_height": pixel_height,
+            }
+            artifact_rows.append(
+                {"path": relative, "bytes": path.stat().st_size, "sha256": digest}
+            )
+        item["artifacts"] = records
+        mismatch = pixel_width * pixel_height if changed else 0
+        item["metrics"] = {
+            "algorithm": "exact-decoded-rgba-v1",
+            "total_pixels": pixel_width * pixel_height,
+            "mismatch_pixels": mismatch,
+            "mismatch_pixel_ratio": mismatch / (pixel_width * pixel_height),
+        }
+
+    contact_path = report_dir / "comparison.html"
+    contact_path.write_text(
+        "<!doctype html><title>comparison fixture</title>\n",
+        encoding="utf-8",
+    )
+    contact_digest = hashlib.sha256(contact_path.read_bytes()).hexdigest()
+    contact = {
+        "path": "comparison.html",
+        "sha256": contact_digest,
+        "media_type": "text/html",
+        "bytes": contact_path.stat().st_size,
+    }
+    artifact_rows.append(
+        {"path": "comparison.html", "bytes": contact_path.stat().st_size, "sha256": contact_digest}
+    )
+    artifact_rows.sort(key=lambda entry: entry["path"])
+    canonical = json.dumps(
+        artifact_rows,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    artifact_manifest = {
+        "algorithm": "sha256-canonical-artifact-list-v1",
+        "sha256": hashlib.sha256(canonical).hexdigest(),
+        "count": len(artifact_rows),
+        "bytes": sum(entry["bytes"] for entry in artifact_rows),
+    }
+    comparison["artifacts"] = {
+        "contact_sheet": contact,
+        "comparison_bytes": artifact_manifest["bytes"],
+        "manifest": artifact_manifest,
+    }
+    total_pixels = sum(item["metrics"]["total_pixels"] for item in comparison["comparisons"])
+    mismatch_pixels = sum(item["metrics"]["mismatch_pixels"] for item in comparison["comparisons"])
+    comparison["summary"] = {
+        "capture_count": len(comparison["comparisons"]),
+        "changed_capture_count": sum(
+            item["metrics"]["mismatch_pixels"] > 0 for item in comparison["comparisons"]
+        ),
+        "total_pixels": total_pixels,
+        "mismatch_pixels": mismatch_pixels,
+        "mismatch_pixel_ratio": mismatch_pixels / total_pixels,
+    }
+    comparison["compatibility"]["capture_count"] = len(comparison["comparisons"])
+    compare_script = (
+        PLUGIN / "skills" / "design-dna" / "scripts" / "compare_render_reviews.mjs"
+    )
+    producer_sha = hashlib.sha256(compare_script.read_bytes()).hexdigest()
+    runtime_identity = {
+        "compare_render_reviews.mjs": producer_sha,
+        "playwright_resolver.mjs": hashlib.sha256(
+            (PLUGIN / "skills" / "design-dna" / "scripts" / "playwright_resolver.mjs").read_bytes()
+        ).hexdigest(),
+        "render-review.schema.json": render_schema_sha,
+    }
+    comparison["schema_version"] = 2
+    comparison["tool"]["version"] = "2.0.0"
+    comparison["producer_script_sha256"] = producer_sha
+    comparison["runtime_identity"] = runtime_identity
     report_path = report_dir / "render-comparison.json"
     report_path.write_text(
         json.dumps(comparison, indent=2) + "\n",
         encoding="utf-8",
     )
     report_digest = hashlib.sha256(report_path.read_bytes()).hexdigest()
+    marker = {
+        "schema_version": 2,
+        "marker_type": "design-dna-render-comparison-output",
+        "tool": {"name": "design-dna-render-comparison", "version": "2.0.0"},
+        "producer_script_sha256": producer_sha,
+        "runtime_identity": runtime_identity,
+        "output_identity": comparison["output_identity"],
+        "report": {
+            "path": "render-comparison.json",
+            "sha256": report_digest,
+            "bytes": report_path.stat().st_size,
+        },
+        "artifact_manifest": artifact_manifest,
+        "created_at": comparison["created_at"],
+        "comparison_id_sha256": hashlib.sha256(
+            comparison["comparison_id"].encode("utf-8")
+        ).hexdigest(),
+    }
+    (report_dir / ".design-dna-render-comparison.json").write_text(
+        json.dumps(marker, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    inputs = comparison["inputs"]
+    baseline_id = inputs["baseline"]["build"]["id"]
+    candidate_id = inputs["candidate"]["build"]["id"]
+    capture_count = comparison["summary"]["capture_count"]
+    changed_count = comparison["summary"]["changed_capture_count"]
     rendered = text.replace(
         (
             "- Cross-build comparison identity, compatibility, changed "
@@ -1110,12 +1363,12 @@ def materialize_render_comparison_evidence(
             "captures, reviewer, and result, or `not performed`: "
             "report=evidence/render-comparison/"
             f"render-comparison.json plus sha256:{report_digest}; "
-            "baseline=build-41; candidate=build-42; "
-            "capture_count=1; compatibility=compatible; "
-            "changed_capture_count=1; reviewer_relationship=producer-self"
+            f"baseline={baseline_id}; candidate={candidate_id}; "
+            f"capture_count={capture_count}; compatibility=compatible; "
+            f"changed_capture_count={changed_count}; reviewer_relationship=producer-self"
         ),
     )
-    return rendered.replace(
+    rendered = rendered.replace(
         (
             "- Cross-build decision: not performed; no accepted "
             "comparison baseline was designated for build-42"
@@ -1126,6 +1379,52 @@ def materialize_render_comparison_evidence(
             "confirmed the intended navigation correction"
         ),
     )
+
+    impact_path = project / ".design-dna" / "quick-impact.json"
+    impact_path.parent.mkdir(parents=True, exist_ok=True)
+    baseline_report = baseline_bound["report"]
+    candidate_report = candidate_bound["report"]
+    impact = {
+        "schema_version": 1,
+        "record_type": "design-dna-quick-impact",
+        "baseline_render_report": {
+            "path": baseline_bound["report_path"].relative_to(project).as_posix(),
+            "sha256": hashlib.sha256(baseline_bound["report_path"].read_bytes()).hexdigest(),
+        },
+        "candidate_render_report": {
+            "path": candidate_bound["report_path"].relative_to(project).as_posix(),
+            "sha256": hashlib.sha256(candidate_bound["report_path"].read_bytes()).hexdigest(),
+        },
+        "changed_files": [{
+            "path": "build-info.txt",
+            "change": "modified",
+            "baseline_sha256": baseline_report["source_snapshot"]["manifest"]["files"][0]["sha256"],
+            "candidate_sha256": candidate_report["source_snapshot"]["manifest"]["files"][0]["sha256"],
+            "mechanical_reason": "Updates only the nonvisual fixture state revision marker.",
+        }],
+        "authoritative_capture_ids": sorted(
+            item["capture_id"] for item in comparison["comparisons"]
+        ),
+    }
+    # Locate build-info.txt by path rather than relying on manifest order.
+    for role, report in (("baseline", baseline_report), ("candidate", candidate_report)):
+        row = next(
+            entry
+            for entry in report["source_snapshot"]["manifest"]["files"]
+            if entry["path"] == "build-info.txt"
+        )
+        impact["changed_files"][0][f"{role}_sha256"] = row["sha256"]
+    impact_path.write_text(json.dumps(impact, indent=2) + "\n", encoding="utf-8")
+    impact_binding = (
+        ".design-dna/quick-impact.json plus sha256:"
+        + hashlib.sha256(impact_path.read_bytes()).hexdigest()
+    )
+    rendered = re.sub(
+        r"(?m)^- Authoritative Quick impact manifest:.*$",
+        f"- Authoritative Quick impact manifest: {impact_binding}",
+        rendered,
+    )
+    return rendered
 
 
 def with_quality_assurance_profile(record: str, text: str) -> str:
@@ -2099,6 +2398,157 @@ class ProjectRecordIntegrityTests(unittest.TestCase):
                         record_path=record_path,
                     )
                 )
+            )
+
+    def test_quick_requires_exact_wide_and_narrow_visual_invariance(self) -> None:
+        module = load_initializer_module()
+        payload = render_comparison_payload(exact_invariance=True)
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            record_path = project / ".design-dna" / "visual-review.md"
+            record_path.parent.mkdir(parents=True)
+            text = materialize_visual_review_evidence(
+                project,
+                complete_visual_review(),
+            )
+            text = materialize_render_comparison_evidence(
+                project,
+                text,
+                payload=payload,
+            )
+            body = module.split_frontmatter_text(text, path=record_path)[2]
+            self.assertEqual(
+                [],
+                module.substantive_body_failures(
+                    "visual-review",
+                    body,
+                    project=project,
+                    record_path=record_path,
+                    required_assurance_profiles={"quick"},
+                    evidence_contract=module.PROPORTIONAL_EVIDENCE_CONTRACT,
+                    enforce_final_visual_binding=True,
+                ),
+            )
+
+            changed = render_comparison_payload(exact_invariance=False)
+            changed["comparisons"].append(
+                payload["comparisons"][1]
+            )
+            changed["compatibility"]["capture_count"] = 2
+            changed["summary"]["capture_count"] = 2
+            changed["summary"]["changed_capture_count"] = 1
+            changed["summary"]["total_pixels"] += payload["comparisons"][1]["metrics"]["total_pixels"]
+            changed["summary"]["mismatch_pixel_ratio"] = (
+                changed["summary"]["mismatch_pixels"]
+                / changed["summary"]["total_pixels"]
+            )
+            changed_text = materialize_visual_review_evidence(
+                project,
+                complete_visual_review(),
+            )
+            changed_text = materialize_render_comparison_evidence(
+                project,
+                changed_text,
+                payload=changed,
+            )
+            changed_body = module.split_frontmatter_text(
+                changed_text,
+                path=record_path,
+            )[2]
+            self.assertIn(
+                "Quick visual invariance requires zero changed captures and zero mismatched pixels",
+                module.substantive_body_failures(
+                    "visual-review",
+                    changed_body,
+                    project=project,
+                    record_path=record_path,
+                    required_assurance_profiles={"quick"},
+                    evidence_contract=module.PROPORTIONAL_EVIDENCE_CONTRACT,
+                    enforce_final_visual_binding=True,
+                ),
+            )
+
+    def test_quick_recomputes_decoded_pixels_when_report_claims_zero(self) -> None:
+        module = load_initializer_module()
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary) / "project"
+            record_path = project / ".design-dna" / "visual-review.md"
+            record_path.parent.mkdir(parents=True)
+            text = materialize_visual_review_evidence(
+                project,
+                complete_visual_review(),
+            )
+            body = module.split_frontmatter_text(
+                materialize_render_comparison_evidence(
+                    project,
+                    text,
+                    payload=render_comparison_payload(exact_invariance=True),
+                ),
+                path=record_path,
+            )[2]
+            report_dir = project / "evidence" / "render-comparison"
+            report_path = report_dir / "render-comparison.json"
+            old_report_sha = hashlib.sha256(report_path.read_bytes()).hexdigest()
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            actual = report["comparisons"][0]["artifacts"]["actual"]
+            actual_path = report_dir / actual["path"]
+            actual["sha256"] = write_png(
+                actual_path,
+                actual["pixel_width"],
+                actual["pixel_height"],
+                b"\xac\x68\x24",
+            )
+            actual["bytes"] = actual_path.stat().st_size
+            artifact_rows = [{
+                "path": report["artifacts"]["contact_sheet"]["path"],
+                "bytes": report["artifacts"]["contact_sheet"]["bytes"],
+                "sha256": report["artifacts"]["contact_sheet"]["sha256"],
+            }]
+            for comparison in report["comparisons"]:
+                artifact_rows.extend({
+                    "path": comparison["artifacts"][role]["path"],
+                    "bytes": comparison["artifacts"][role]["bytes"],
+                    "sha256": comparison["artifacts"][role]["sha256"],
+                } for role in ("baseline", "actual", "diff"))
+            artifact_rows.sort(key=lambda row: row["path"])
+            report["artifacts"]["manifest"] = {
+                "algorithm": "sha256-canonical-artifact-list-v1",
+                "sha256": hashlib.sha256(json.dumps(
+                    artifact_rows,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                ).encode("utf-8")).hexdigest(),
+                "count": len(artifact_rows),
+                "bytes": sum(row["bytes"] for row in artifact_rows),
+            }
+            report["artifacts"]["comparison_bytes"] = report["artifacts"]["manifest"]["bytes"]
+            report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            marker_path = report_dir / ".design-dna-render-comparison.json"
+            marker = json.loads(marker_path.read_text(encoding="utf-8"))
+            marker["artifact_manifest"] = report["artifacts"]["manifest"]
+            marker["report"] = {
+                "path": "render-comparison.json",
+                "sha256": hashlib.sha256(report_path.read_bytes()).hexdigest(),
+                "bytes": report_path.stat().st_size,
+            }
+            marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(
+                old_report_sha,
+                hashlib.sha256(report_path.read_bytes()).hexdigest(),
+            )
+            failures = module.substantive_body_failures(
+                "visual-review",
+                body,
+                project=project,
+                record_path=record_path,
+                required_assurance_profiles={"quick"},
+                evidence_contract=module.PROPORTIONAL_EVIDENCE_CONTRACT,
+                enforce_final_visual_binding=True,
+            )
+            self.assertTrue(
+                any("metrics do not match decoded pixels" in failure for failure in failures),
+                failures,
             )
 
     def test_cross_build_report_cannot_self_approve_or_drop_manual_review(

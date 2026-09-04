@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "created_with": "design-dna 4.0.0",
   "classification": "internal",
   "study": {
@@ -21,220 +21,570 @@
       "path": "/",
       "title": "Alder Reach: ten ways in",
       "user_job": "Understand the anthology and choose a useful route.",
-      "creative_logic": "Because this supplied document is the entry point, its already-built body exposes the ten direct destinations before a short fixture note. That observation is local to Alder Reach, not a recommended index pattern.",
       "observable_decisions": [
         {
           "decision": "Present the supplied route choices as the main body rather than hiding them behind a generic promotional introduction.",
           "reason": "The reader's immediate job is to understand the available documents and choose one.",
           "evidence": "index.html and its ten direct destination links.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The supplied ledger becomes one continuous numbered reading column while labels and destinations remain complete.",
       "reduced_motion_result": "The cover is an identical static document.",
       "no_javascript_result": "The complete contents and ordinary links remain available.",
       "closest_sibling": "visit",
-      "deliberate_differences": ["Cover prioritizes discovery rather than logistics.", "Cover exposes the route ledger before the short note; Visit groups preparation information."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Cover prioritizes discovery rather than logistics.",
+        "Cover exposes the route ledger before the short note; Visit groups preparation information."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "field-notes",
       "path": "/field-notes/",
       "title": "Field notes",
       "user_job": "Read short observations organized by place and time.",
-      "creative_logic": "The supplied observations stay attached to their stated time, place, and specimen context so a reader can move between individual notes without losing their local evidence.",
       "observable_decisions": [
         {
           "decision": "Keep metadata and specimen context adjacent to the note they qualify.",
           "reason": "Separating those labels would make the short observations ambiguous.",
           "evidence": "field-notes/index.html metadata, note entries, and specimen aside.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "Margin metadata moves above its related note without changing reading order.",
       "reduced_motion_result": "The journal is static and its anchors remain visible.",
       "no_javascript_result": "All entries and anchors remain available.",
       "closest_sibling": "oral-history",
-      "deliberate_differences": ["Field Notes contains observer-authored fragments; Oral History contains an alternating fictional conversation.", "Specimen context stays with entries while transcript notes stay with speakers."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Field Notes contains observer-authored fragments; Oral History contains an alternating fictional conversation.",
+        "Specimen context stays with entries while transcript notes stay with speakers."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "timeline",
       "path": "/timeline/",
       "title": "A made-up century",
       "user_job": "Follow the fictional settlement sequence in chronological order.",
-      "creative_logic": "Dates and source status organize this supplied account because sequence and comparison are the evidence the reader must inspect; the interface never presents the fictional plans as real archives.",
       "observable_decisions": [
         {
           "decision": "Place the fictional-source notice before dated material and provide both states of the plan comparison in text.",
           "reason": "Chronology must not obscure provenance or make the comparison depend on a control.",
           "evidence": "timeline/index.html source notice, dated entries, comparator, and text alternative.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The two plan states become sequential figures when the side-by-side control would no longer be useful.",
       "reduced_motion_result": "Both comparison states are shown without animation.",
       "no_javascript_result": "Both plans and every dated event remain visible.",
       "closest_sibling": "night-walk",
-      "deliberate_differences": ["Timeline organizes evidence by date; Night Walk follows a supplied sensory route.", "Timeline centers source status and plan comparison rather than scene-sized chapters."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Timeline organizes evidence by date; Night Walk follows a supplied sensory route.",
+        "Timeline centers source status and plan comparison rather than scene-sized chapters."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "listening-map",
       "path": "/listening-map/",
       "title": "A listening map",
       "user_job": "Choose a public listening point by sound and access needs.",
-      "creative_logic": "The accessible place list is complete on its own; the supplied diagram lets a reader explore the same fictional points spatially without making autoplay audio or a canvas the source of truth.",
       "observable_decisions": [
         {
           "decision": "Keep the complete place list before the optional map and update a labeled detail region from either entry method.",
           "reason": "Selection and access information must survive when the diagram or enhancement is unavailable.",
           "evidence": "listening-map/index.html place list, map controls, detail region, and access note.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The place list becomes primary and the diagram follows as optional context.",
       "reduced_motion_result": "Marker changes occur without animated travel.",
       "no_javascript_result": "The complete place list and descriptions remain visible.",
       "closest_sibling": "visit",
-      "deliberate_differences": ["Listening Map supports spatial selection; Visit supports sequenced preparation.", "Map detail changes in place while Visit exposes grouped static logistics."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Listening Map supports spatial selection; Visit supports sequenced preparation.",
+        "Map detail changes in place while Visit exposes grouped static logistics."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "data-room",
       "path": "/data-room/",
       "title": "The fictional count",
       "user_job": "Inspect a small labeled scenario dataset and its limitations.",
-      "creative_logic": "The supplied scenario values, filtering question, complete table, and methodology stay visibly connected so the visual comparison cannot outrun what the fixture data supports.",
       "observable_decisions": [
         {
           "decision": "Expose the data-status notice and complete table alongside the filtered visual comparison.",
           "reason": "A reader must be able to inspect every sample value and its limitation, with or without the enhancement.",
           "evidence": "data-room/index.html status notice, controls, bars, table, and methodology.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The value comparison changes orientation and the fully labeled table retains usable overflow.",
       "reduced_motion_result": "Values update immediately without interpolation.",
       "no_javascript_result": "All scenario categories appear in the table.",
       "closest_sibling": "object-catalog",
-      "deliberate_differences": ["Data Room compares sample values; Object Catalog compares supplied records.", "Methodology and filters replace material descriptions and accession notes."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Data Room compares sample values; Object Catalog compares supplied records.",
+        "Methodology and filters replace material descriptions and accession notes."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "oral-history",
       "path": "/oral-history/",
       "title": "One invented conversation",
       "user_job": "Read a clearly fictional transcript with speaker and context cues.",
-      "creative_logic": "Speaker identity, fictional status, dialogue, and its annotations remain bound in reading order; any topic highlight is optional and never removes the underlying transcript.",
       "observable_decisions": [
         {
           "decision": "Place the fictional context and speaker key before the dialogue and keep every passage source-visible.",
           "reason": "The reader must understand who is represented and that no real testimony is being claimed.",
           "evidence": "oral-history/index.html context, speaker key, transcript, annotations, and rights note.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "Speaker labels move above their passages when a side position no longer supports reading.",
       "reduced_motion_result": "Highlight changes are immediate.",
       "no_javascript_result": "The full transcript and notes remain visible.",
       "closest_sibling": "field-notes",
-      "deliberate_differences": ["Oral History centers dialogue; Field Notes centers separate observations.", "Speaker alternation replaces time-and-place note metadata."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Oral History centers dialogue; Field Notes centers separate observations.",
+        "Speaker alternation replaces time-and-place note metadata."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "object-catalog",
       "path": "/object-catalog/",
       "title": "Ten fictional objects",
       "user_job": "Compare catalog records by material, use, and condition.",
-      "creative_logic": "Accession metadata and material evidence lead this supplied collection; selection only adds records to a semantic comparison and never hides the complete catalog.",
       "observable_decisions": [
         {
           "decision": "Keep all object records visible and express selected comparisons in a semantic table.",
           "reason": "The reader's comparison must remain understandable without relying on position or a transient drawer.",
           "evidence": "object-catalog/index.html object records, selectors, comparison table, and care note.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "The index becomes a numbered list while the comparison remains a labeled table.",
       "reduced_motion_result": "The comparison opens without transform animation.",
       "no_javascript_result": "All records and a static comparison guide remain visible.",
       "closest_sibling": "data-room",
-      "deliberate_differences": ["Object Catalog uses accession records; Data Room uses a quantitative scenario dataset.", "Material and condition evidence replace chart controls and methodology."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Object Catalog uses accession records; Data Room uses a quantitative scenario dataset.",
+        "Material and condition evidence replace chart controls and methodology."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "night-walk",
       "path": "/night-walk/",
       "title": "Night walk",
       "user_job": "Follow a fictional route as a paced sensory narrative.",
-      "creative_logic": "The supplied sequence is encountered as successive places with grounded route annotations; abstract light supports the fictional text without impersonating documentary imagery or changing ordinary scroll behavior.",
       "observable_decisions": [
         {
           "decision": "Keep chapter order, route annotations, and the complete static sequence available while optional light changes follow view progress.",
           "reason": "Atmosphere may support the walk but cannot become the only carrier of sequence or location.",
           "evidence": "night-walk/index.html route preview, chapters, annotations, interlude, and exit.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "Long scene regions shorten and route annotations enter normal flow without removing text.",
       "reduced_motion_result": "Static scene fields retain sequence and contrast.",
       "no_javascript_result": "The complete linear story and ordinary links remain available.",
       "closest_sibling": "timeline",
-      "deliberate_differences": ["Night Walk follows a spatial sensory sequence; Timeline organizes fictional evidence by date.", "Scene-sized passages replace dated events and plan comparison."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Night Walk follows a spatial sensory sequence; Timeline organizes fictional evidence by date.",
+        "Scene-sized passages replace dated events and plan comparison."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "workshop",
       "path": "/workshop/",
       "title": "Repair bench",
       "user_job": "Complete a fictional four-step repair safely and recover from mistakes.",
-      "creative_logic": "The supplied procedure keeps outcome, tools, stop conditions, work steps, recovery, and completion evidence in task order; diagrams supplement rather than replace the written instructions.",
       "observable_decisions": [
         {
           "decision": "Place stop conditions before work begins and keep troubleshooting at the point where recovery is needed.",
           "reason": "A procedural reader must recognize unsafe or recoverable states before claiming completion.",
           "evidence": "workshop/index.html preparation, steps, warning, troubleshooting, and completion check.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "Tools and stop conditions remain before the first step; diagrams stack with their captions.",
       "reduced_motion_result": "No motion dependency exists.",
       "no_javascript_result": "Native details and the complete procedure remain available.",
       "closest_sibling": "visit",
-      "deliberate_differences": ["Workshop is a completion procedure; Visit is orientation and preparation.", "Safety interruption and troubleshooting replace grouped visit logistics."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Workshop is a completion procedure; Visit is orientation and preparation.",
+        "Safety interruption and troubleshooting replace grouped visit logistics."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     },
     {
       "id": "visit",
       "path": "/visit/",
       "title": "Plan a fictional visit",
       "user_job": "Check access, timing assumptions, and route links before visiting.",
-      "creative_logic": "The supplied notice, preparation questions, logistics, access checklist, source placeholder, and onward links stay in practical decision order; no decorative medium is needed for this fixture job.",
       "observable_decisions": [
         {
           "decision": "Keep the fictional notice and preparation questions before grouped logistics and access checks.",
           "reason": "A visitor should understand the limits of the fixture and what to verify before acting.",
           "evidence": "visit/index.html notice, questions, logistics, access checklist, and source placeholder.",
-          "status": "accepted"
+          "status": "accepted",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest"
         }
       ],
       "responsive_result": "Groups remain in task order with no horizontal dependency.",
       "reduced_motion_result": "No motion dependency exists.",
       "no_javascript_result": "All logistics and links remain available; browser print remains available.",
       "closest_sibling": "cover",
-      "deliberate_differences": ["Visit prioritizes practical preparation; Cover prioritizes route discovery.", "Grouped logistics replace the direct destination ledger."],
-      "capture_requirements": {"viewports": [{"id": "desktop", "width": 1440}, {"id": "mobile", "width": 390}]},
-      "review_status": "implemented"
+      "deliberate_differences": [
+        "Visit prioritizes practical preparation; Cover prioritizes route discovery.",
+        "Grouped logistics replace the direct destination ledger."
+      ],
+      "capture_requirements": {
+        "viewports": [
+          {
+            "id": "desktop",
+            "width": 1440
+          },
+          {
+            "id": "mobile",
+            "width": 390
+          }
+        ]
+      },
+      "review_status": "implemented",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+      },
+      "component_sources": [
+        {
+          "component": "tag:main",
+          "source_rank": 1,
+          "source_id": "strong-1",
+          "source_observation": ".design-dna/references/strong-1-observation.json",
+          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_state_id": "rest",
+          "transfer": "The route main content copies the exact selected reference state structure."
+        }
+      ]
     }
   ],
   "review": {

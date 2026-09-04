@@ -19,11 +19,11 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import unquote_to_bytes, urlsplit
 
 
-SCHEMA_VERSION = 1
-TOOL_VERSION = "1.7.0"
+SCHEMA_VERSION = 2
+TOOL_VERSION = "2.0.0"
 ARTIFACT_TYPE = "design-dna-project-contrast-audit"
 DEFAULT_CONTRACT = ".design-dna/project-contrast.json"
 DEFAULT_OUTPUT = ".design-dna/project-contrast-audit.json"
@@ -108,7 +108,7 @@ REVIEW_EXPOSURES = {
 UNPRIMED_EXPOSURE = "unprimed-candidate-captures-only"
 PAIRED_EXPOSURE = "paired-candidate-and-authorized-comparator-evidence"
 SIGNATURE_AXIS_GROUPS = {"encounter", "surface-language"}
-ROUTE_COVERAGE_ENTRY_KINDS = {"captured", "represented"}
+ROUTE_COVERAGE_ENTRY_KINDS = {"captured"}
 CLOSEST_SIBLING_SELECTION_STATUSES = {"draft", "selected", "not-applicable"}
 CLOSEST_SIBLING_SELECTION_SOURCE_KINDS = {
     "owner-authorized-ledger-snapshot",
@@ -116,8 +116,11 @@ CLOSEST_SIBLING_SELECTION_SOURCE_KINDS = {
 }
 OWNER_APPROVAL_STATUSES = {"draft", "owner-approved", "not-approved"}
 PAIRED_OUTCOME_RESULTS = {"not-interchangeable", "still-too-close", "inconclusive"}
-ROUTE_COVERAGE_MODES = {
-    "representative", "all-discovered-public-routes", "sampled-with-rationale",
+ROUTE_COVERAGE_MODES = {"all-authoritative-manifest-routes"}
+ROUTE_MANIFEST_STATE_KINDS = {"rest", "interactive", "system", "data"}
+ROUTE_MANIFEST_TRIGGER_TYPES = {
+    "none", "hover", "focus", "click", "keyboard", "input", "url",
+    "programmatic",
 }
 PUBLIC_SHELL_CLASSIFICATIONS = {
     "technical-foundation", "approved-public-system", "candidate-public-shell",
@@ -238,7 +241,7 @@ def runtime_schema_errors() -> list[dict[str, str]]:
     else:
         item_required = capture_required.get("items", {}).get("required")
         expected_capture_fields = {
-            "id", "route", "viewport", "capture_mode", "capture_state",
+            "id", "route_key", "route", "source_mapping", "viewport", "capture_mode", "capture_state",
             "candidate_build_id", "file", "render_review",
         }
         if not isinstance(item_required, list) or set(item_required) != expected_capture_fields:
@@ -308,10 +311,22 @@ def runtime_schema_errors() -> list[dict[str, str]]:
         "ownerApproval",
         "pairedOutcome",
         "routeCoverageMapEntry",
+        "sourceMapping",
     }
     if not isinstance(definitions, dict) or not required_definitions.issubset(definitions):
         errors.append(item("$schema.$defs", "runtime-schema-drift", "The packaged schema must define lifecycle, contrast-prompt, design-signature, and owner-review records."))
         return errors
+    source_mapping_schema = definitions.get("sourceMapping")
+    if (
+        not isinstance(source_mapping_schema, dict)
+        or set(source_mapping_schema.get("required", []))
+        != {"rank", "id", "observation", "sha256", "state_id"}
+    ):
+        errors.append(item(
+            "$schema.$defs.sourceMapping",
+            "runtime-schema-drift",
+            "The packaged source mapping must bind exact rank, identity, observation bytes, and observed state.",
+        ))
     lifecycle = definitions["lifecycleStatus"]
     if not isinstance(lifecycle, dict) or set(lifecycle.get("enum", [])) != LIFECYCLE_STATUSES:
         errors.append(item("$schema.$defs.lifecycleStatus", "runtime-schema-drift", "The packaged schema lifecycle states do not match the runtime validator."))
@@ -359,25 +374,29 @@ def runtime_schema_errors() -> list[dict[str, str]]:
                 "runtime-schema-drift",
                 "The packaged schema must expose the optional hash-bound closest-sibling selection record.",
             ))
+    route_coverage_definition = definitions.get("routeCoverage", {})
     route_coverage_properties = (
-        definitions.get("routeCoverage", {}).get("properties")
+        route_coverage_definition.get("properties")
         if isinstance(definitions, dict)
         else None
     )
     route_map_schema = (
-        route_coverage_properties.get("discovered_route_map")
+        route_coverage_properties.get("routes")
         if isinstance(route_coverage_properties, dict)
         else None
     )
     route_map_items = route_map_schema.get("items") if isinstance(route_map_schema, dict) else None
     if (
-        not isinstance(route_map_items, dict)
+        not isinstance(route_coverage_definition, dict)
+        or set(route_coverage_definition.get("required", []))
+        != {"mode", "rationale", "manifest", "manifest_id", "routes"}
+        or not isinstance(route_map_items, dict)
         or route_map_items.get("$ref") != "#/$defs/routeCoverageMapEntry"
     ):
         errors.append(item(
-            "$schema.$defs.routeCoverage.discovered_route_map",
+            "$schema.$defs.routeCoverage.routes",
             "runtime-schema-drift",
-            "The packaged schema must expose the optional discovered-route coverage map.",
+            "The packaged schema must expose the authoritative direct-route coverage map.",
         ))
     shell_properties = (
         definitions.get("sharedPublicShell", {}).get("properties")
@@ -703,6 +722,38 @@ def valid_file_ref(
     digest = result.get("sha256")
     if not isinstance(digest, str) or SHA256_PATTERN.fullmatch(digest) is None:
         errors.append(item(f"{path}.sha256", "invalid-sha256", "Expected an exact lowercase SHA-256 digest."))
+    return result
+
+
+def valid_source_mapping(
+    errors: list[dict[str, str]], value: object, path: str,
+) -> dict[str, Any] | None:
+    result = exact_object(errors, value, path, {"rank", "id", "observation", "sha256", "state_id"})
+    if result is None:
+        return None
+    rank = result.get("rank")
+    source_id = result.get("id")
+    observation = result.get("observation")
+    digest = result.get("sha256")
+    state_id = result.get("state_id")
+    if not isinstance(rank, int) or isinstance(rank, bool) or rank < 1:
+        errors.append(item(f"{path}.rank", "invalid-source-rank", "Expected a positive selected-reference rank."))
+    match = re.fullmatch(r"strong-([1-9][0-9]*)", source_id or "") if isinstance(source_id, str) else None
+    if match is None:
+        errors.append(item(f"{path}.id", "invalid-source-id", "Expected a strong-N observation identity."))
+    elif isinstance(rank, int) and int(match.group(1)) != rank:
+        errors.append(item(path, "source-rank-id-mismatch", "Source rank must equal the strong-N observation identity."))
+    expected_observation = (
+        f".design-dna/references/{source_id}-observation.json"
+        if isinstance(source_id, str)
+        else None
+    )
+    if observation != expected_observation:
+        errors.append(item(f"{path}.observation", "invalid-source-observation", "Expected an exact project-relative observation path."))
+    if not isinstance(digest, str) or SHA256_PATTERN.fullmatch(digest) is None:
+        errors.append(item(f"{path}.sha256", "invalid-source-sha256", "Expected the exact observation SHA-256."))
+    if not isinstance(state_id, str) or re.fullmatch(r"[a-z][a-z0-9-]{0,63}", state_id) is None:
+        errors.append(item(f"{path}.state_id", "invalid-source-state", "Expected an exact observed source-state ID."))
     return result
 
 
@@ -1156,7 +1207,7 @@ def validate_lifecycle_stage(root: dict[str, Any], errors: list[dict[str, str]])
             errors.append(item("$.design_signature.selection_status", "lifecycle-signature-unresolved", f"{record_status} requires either selected axes or an explicit not-applicable position."))
         lifecycle_text_required(errors, signature.get("selection_basis"), "$.design_signature.selection_basis", record_status)
         if selection_status == "selected" and not selected_signature_axes(signature):
-            errors.append(item("$.design_signature.axes", "lifecycle-signature-unresolved", f"{record_status} selected a signature without a selected project-derived axis."))
+            errors.append(item("$.design_signature.axes", "lifecycle-signature-unresolved", f"{record_status} selected a signature without an exact source-bound axis."))
         axes = signature.get("axes")
         if selection_status == "selected" and isinstance(axes, list):
             for index, axis in enumerate(axes):
@@ -1327,9 +1378,10 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
     if root is None:
         return errors, None
     if root.get("schema_version") != SCHEMA_VERSION:
-        errors.append(item("$.schema_version", "unsupported-version", "schema_version must equal 1."))
+        errors.append(item("$.schema_version", "unsupported-version", "schema_version must equal 2."))
     add_if_bad_string(errors, root.get("created_with"), "$.created_with", maximum=200)
     valid_enum(errors, root.get("record_status"), "$.record_status", LIFECYCLE_STATUSES)
+    is_draft = root.get("record_status") == "draft"
     valid_enum(errors, root.get("classification"), "$.classification", {"internal", "confidential"})
 
     scope = exact_object(
@@ -1346,50 +1398,52 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
             errors,
             scope.get("route_coverage"),
             "$.scope.route_coverage",
-            {"mode", "rationale"},
-            {"discovered_route_map"},
+            {"mode", "rationale", "manifest", "manifest_id", "routes"},
+            set(),
         )
         if route_coverage is not None:
             valid_enum(errors, route_coverage.get("mode"), "$.scope.route_coverage.mode", ROUTE_COVERAGE_MODES)
             add_if_bad_draftable_string(errors, route_coverage.get("rationale"), "$.scope.route_coverage.rationale")
-            route_map = route_coverage.get("discovered_route_map")
-            if route_map is not None:
-                seen_map_routes: set[str] = set()
-                if not isinstance(route_map, list) or len(route_map) > MAX_STATIC_ROUTE_FILES:
+            if route_coverage.get("manifest") is not None or not is_draft:
+                manifest_ref = valid_file_ref(errors, route_coverage.get("manifest"), "$.scope.route_coverage.manifest")
+                if isinstance(manifest_ref, dict) and manifest_ref.get("path") != ".design-dna/route-manifest.json":
                     errors.append(item(
-                        "$.scope.route_coverage.discovered_route_map",
-                        "invalid-array",
-                        "Expected zero through 512 discovered-route coverage records.",
+                        "$.scope.route_coverage.manifest.path",
+                        "route-manifest-path-invalid",
+                        "Project Contrast must bind the canonical .design-dna/route-manifest.json authority.",
                     ))
-                else:
-                    for index, entry in enumerate(route_map):
-                        label = f"$.scope.route_coverage.discovered_route_map[{index}]"
-                        record = exact_object(
-                            errors,
-                            entry,
-                            label,
-                            {"route", "coverage", "representative_route", "equivalence_rationale"},
-                        )
-                        if record is None:
-                            continue
-                        route = record.get("route")
-                        if valid_route(errors, route, f"{label}.route") and isinstance(route, str):
-                            if route in seen_map_routes:
-                                errors.append(item(
-                                    f"{label}.route",
-                                    "duplicate-route-coverage-map",
-                                    "Each discovered route may have only one declared coverage mapping.",
-                                ))
-                            seen_map_routes.add(route)
-                        valid_enum(errors, record.get("coverage"), f"{label}.coverage", ROUTE_COVERAGE_ENTRY_KINDS)
-                        representative_route = record.get("representative_route")
-                        if representative_route is not None:
-                            valid_route(errors, representative_route, f"{label}.representative_route")
-                        add_if_bad_draftable_string(
-                            errors,
-                            record.get("equivalence_rationale"),
-                            f"{label}.equivalence_rationale",
-                        )
+            manifest_id = route_coverage.get("manifest_id")
+            if (manifest_id is not None or not is_draft) and (
+                not isinstance(manifest_id, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}", manifest_id) is None
+            ):
+                errors.append(item("$.scope.route_coverage.manifest_id", "invalid-manifest-id", "Expected the authoritative route-manifest identity."))
+            route_map = route_coverage.get("routes")
+            seen_map_routes: set[str] = set()
+            seen_map_keys: set[str] = set()
+            if not isinstance(route_map, list) or (not route_map and not is_draft) or len(route_map) > MAX_STATIC_ROUTE_FILES:
+                errors.append(item(
+                    "$.scope.route_coverage.routes",
+                    "invalid-array",
+                    "Expected 1 through 512 directly captured authoritative-route records.",
+                ))
+            else:
+                for index, entry in enumerate(route_map):
+                    label = f"$.scope.route_coverage.routes[{index}]"
+                    record = exact_object(errors, entry, label, {"route_key", "route", "coverage", "source_mapping"})
+                    if record is None:
+                        continue
+                    route_key = record.get("route_key")
+                    if valid_id(errors, route_key, f"{label}.route_key") and isinstance(route_key, str):
+                        if route_key in seen_map_keys:
+                            errors.append(item(f"{label}.route_key", "duplicate-route-coverage-key", "Each manifest route key may appear only once."))
+                        seen_map_keys.add(route_key)
+                    route = record.get("route")
+                    if valid_route(errors, route, f"{label}.route") and isinstance(route, str):
+                        if route in seen_map_routes:
+                            errors.append(item(f"{label}.route", "duplicate-route-coverage-map", "Each authoritative route may appear only once."))
+                        seen_map_routes.add(route)
+                    valid_enum(errors, record.get("coverage"), f"{label}.coverage", ROUTE_COVERAGE_ENTRY_KINDS)
+                    valid_source_mapping(errors, record.get("source_mapping"), f"{label}.source_mapping")
         trigger = scope.get("trigger")
         if isinstance(trigger, list):
             observed: set[str] = set()
@@ -1432,9 +1486,11 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
 
     direction = exact_object(
         errors, root.get("selected_direction"), "$.selected_direction",
-        {"organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state", "observable_predictions"},
+        {"source_mapping", "organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state", "observable_predictions"},
     )
     if direction is not None:
+        if direction.get("source_mapping") is not None or not is_draft:
+            valid_source_mapping(errors, direction.get("source_mapping"), "$.selected_direction.source_mapping")
         for key in ("organizing_answer", "opening_encounter", "dominant_content_unit", "body_progression", "ending_or_next_state"):
             add_if_bad_draftable_string(errors, direction.get(key), f"$.selected_direction.{key}")
         predictions = direction.get("observable_predictions")
@@ -1444,7 +1500,7 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
         elif isinstance(predictions, list):
             for index, prediction in enumerate(predictions):
                 label = f"$.selected_direction.observable_predictions[{index}]"
-                record = exact_object(errors, prediction, label, {"id", "decision", "project_basis", "rendered_condition", "expected_observation", "status"})
+                record = exact_object(errors, prediction, label, {"id", "source_mapping", "decision", "project_basis", "rendered_condition", "expected_observation", "status"})
                 if record is None:
                     continue
                 identifier = record.get("id")
@@ -1454,6 +1510,9 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                     seen_prediction_ids.add(identifier)
                 for key in ("decision", "project_basis", "rendered_condition", "expected_observation"):
                     add_if_bad_string(errors, record.get(key), f"{label}.{key}")
+                prediction_mapping = valid_source_mapping(errors, record.get("source_mapping"), f"{label}.source_mapping")
+                if prediction_mapping is not None and prediction_mapping != direction.get("source_mapping"):
+                    errors.append(item(f"{label}.source_mapping", "prediction-source-mismatch", "Every visual prediction must bind the selected direction's exact source observation."))
                 valid_enum(errors, record.get("status"), f"{label}.status", PREDICTION_STATUSES)
 
     signature = exact_object(
@@ -1472,7 +1531,7 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                 label = f"$.design_signature.axes[{index}]"
                 record = exact_object_with_optional(
                     errors, axis, label,
-                    {"axis", "status", "project_basis", "decision", "observable_effect"},
+                    {"axis", "source_mapping", "status", "project_basis", "decision", "observable_effect"},
                     {"group"},
                 )
                 if record is None:
@@ -1490,10 +1549,13 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                 if group is not None:
                     valid_enum(errors, group, f"{label}.group", SIGNATURE_AXIS_GROUPS)
                 valid_enum(errors, record.get("status"), f"{label}.status", SIGNATURE_AXIS_STATUSES)
+                axis_mapping = valid_source_mapping(errors, record.get("source_mapping"), f"{label}.source_mapping")
+                if direction is not None and axis_mapping is not None and axis_mapping != direction.get("source_mapping"):
+                    errors.append(item(f"{label}.source_mapping", "axis-source-mismatch", "Project basis alone cannot authorize a visual axis; it must bind the selected exact source observation."))
                 for key in ("project_basis", "decision", "observable_effect"):
                     add_if_bad_string(errors, record.get(key), f"{label}.{key}")
             if signature.get("selection_status") == "selected" and not axes:
-                errors.append(item("$.design_signature.axes", "selected-signature-without-axis", "A selected signature needs at least one project-derived axis."))
+                errors.append(item("$.design_signature.axes", "selected-signature-without-axis", "A selected signature needs at least one exact source-bound axis."))
             if signature.get("selection_status") == "not-applicable" and axes:
                 errors.append(item("$.design_signature.axes", "not-applicable-signature-has-axis", "A not-applicable signature selection must not include axes."))
             if signature.get("selection_status") == "draft" and axes:
@@ -1501,13 +1563,19 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
 
     exploration = exact_object(
         errors, root.get("exploration"), "$.exploration",
-        {"first_answer_risk", "challenge_method", "challenging_answer", "selection_reason", "why_sufficient"},
+        {"first_answer_risk", "challenge_method", "challenging_answer", "challenging_source_mapping", "selection_reason", "why_sufficient"},
     )
     if exploration is not None:
         for key in ("first_answer_risk", "challenging_answer", "selection_reason", "why_sufficient"):
             add_if_bad_draftable_string(errors, exploration.get(key), f"$.exploration.{key}")
         if exploration.get("challenge_method") is not None:
             valid_enum(errors, exploration.get("challenge_method"), "$.exploration.challenge_method", CHALLENGE_METHODS)
+        challenge_mapping = exploration.get("challenging_source_mapping")
+        if exploration.get("challenge_method") == "not-needed":
+            if challenge_mapping is not None:
+                errors.append(item("$.exploration.challenging_source_mapping", "unexpected-challenge-source", "not-needed exploration cannot carry a challenging source mapping."))
+        elif exploration.get("challenge_method") is not None:
+            valid_source_mapping(errors, challenge_mapping, "$.exploration.challenging_source_mapping")
 
     comparison = exact_object_with_optional(
         errors, root.get("comparison"), "$.comparison",
@@ -1749,7 +1817,7 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                     capture,
                     label,
                     {
-                        "id", "route", "viewport", "capture_mode", "capture_state",
+                        "id", "route_key", "route", "source_mapping", "viewport", "capture_mode", "capture_state",
                         "candidate_build_id", "file", "render_review",
                     },
                 )
@@ -1761,6 +1829,8 @@ def validate_contract_payload(payload: object) -> tuple[list[dict[str, str]], di
                         errors.append(item(f"{label}.id", "duplicate-id", "Capture IDs must be unique."))
                     seen_captures.add(identifier)
                 valid_route(errors, record.get("route"), f"{label}.route")
+                valid_id(errors, record.get("route_key"), f"{label}.route_key")
+                valid_source_mapping(errors, record.get("source_mapping"), f"{label}.source_mapping")
                 valid_viewport(errors, record.get("viewport"), f"{label}.viewport")
                 valid_enum(errors, record.get("capture_mode"), f"{label}.capture_mode", CAPTURE_MODES)
                 valid_enum(errors, record.get("capture_state"), f"{label}.capture_state", CAPTURE_STATES)
@@ -2236,7 +2306,10 @@ def rendered_capture_route_path(value: object) -> str | None:
         return None
     if not parsed.scheme or not parsed.netloc or parsed.query or parsed.fragment:
         return None
-    route = parsed.path or "/"
+    try:
+        route = unquote_to_bytes(parsed.path or "/").decode("utf-8", "strict")
+    except UnicodeDecodeError:
+        return None
     return route if valid_rendered_project_route(route) else None
 
 
@@ -2730,7 +2803,6 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
         return finalize_report(report)
     if record_status == "direction-ready":
         add_gap(gaps, "project-contrast-direction-ready", "Project Contrast direction is recorded, but a rendered proof and review are still required before readiness.")
-        return finalize_report(report)
 
     budget = EvidenceBudget()
     verified: list[dict[str, object]] = []
@@ -2758,6 +2830,246 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
     comparators: list[dict[str, Any]] = comparison["comparators"]
     captures: list[dict[str, Any]] = evidence["captures"]
     route_discovery = discover_static_public_routes(root)
+    manifest_routes: dict[str, dict[str, Any]] = {}
+    try:
+        current_observer_sha256 = hashlib.sha256(
+            Path(__file__).with_name("observe_reference.mjs").read_bytes()
+        ).hexdigest()
+        current_structure_sha256 = hashlib.sha256(
+            Path(__file__).with_name("structure_probe.mjs").read_bytes()
+        ).hexdigest()
+        current_browser_evidence_sha256 = hashlib.sha256(
+            Path(__file__).with_name("browser_evidence.mjs").read_bytes()
+        ).hexdigest()
+        current_resolver_sha256 = hashlib.sha256(
+            Path(__file__).with_name("playwright_resolver.mjs").read_bytes()
+        ).hexdigest()
+    except OSError as exc:
+        current_observer_sha256 = None
+        current_structure_sha256 = None
+        current_browser_evidence_sha256 = None
+        current_resolver_sha256 = None
+        findings.append(finding("observer-runtime-unreadable", str(exc), blocking=True))
+    manifest_verification = verify(route_coverage["manifest"], "scope.route_coverage.manifest")
+    if manifest_verification is not None:
+        try:
+            manifest_relative = portable_path(route_coverage["manifest"]["path"], "scope.route_coverage.manifest.path")
+            manifest_path = project_file(root, manifest_relative, "scope.route_coverage.manifest.path")
+            manifest_payload = json.loads(stable_read(manifest_path, "scope.route_coverage.manifest").decode("utf-8"))
+            if (
+                not isinstance(manifest_payload, dict)
+                or set(manifest_payload) != {"schema_version", "manifest_id", "viewports", "routes"}
+                or manifest_payload.get("schema_version") != 2
+                or manifest_payload.get("manifest_id") != route_coverage["manifest_id"]
+                or not isinstance(manifest_payload.get("routes"), list)
+                or not manifest_payload["routes"]
+            ):
+                raise AuditError("route-manifest-invalid", "Route coverage manifest is not the exact schema-2 authoritative manifest it declares.")
+            viewport_names: set[str] = set()
+            valid_viewports: list[tuple[int, int]] = []
+            raw_viewports = manifest_payload.get("viewports")
+            if not isinstance(raw_viewports, list) or not raw_viewports:
+                raise AuditError("route-manifest-invalid", "The authoritative route manifest needs a nonempty viewport matrix.")
+            for viewport_index, viewport in enumerate(raw_viewports):
+                if (
+                    not isinstance(viewport, dict)
+                    or set(viewport) != {"name", "width", "height"}
+                    or not isinstance(viewport.get("name"), str)
+                    or re.fullmatch(r"[a-z][a-z0-9-]{0,31}", viewport["name"]) is None
+                    or viewport["name"] in viewport_names
+                    or type(viewport.get("width")) is not int
+                    or type(viewport.get("height")) is not int
+                    or not 280 <= viewport["width"] <= 3840
+                    or not 480 <= viewport["height"] <= 4320
+                ):
+                    raise AuditError("route-manifest-invalid", f"Authoritative viewport {viewport_index} is invalid or duplicated.")
+                viewport_names.add(viewport["name"])
+                valid_viewports.append((viewport["width"], viewport["height"]))
+            if not any(width >= 1280 for width, _height in valid_viewports) or not any(
+                width <= 430 for width, _height in valid_viewports
+            ):
+                raise AuditError("route-manifest-invalid", "The authoritative route manifest must include wide and narrow viewports.")
+            manifest_urls: set[tuple[tuple[str, str, int], str]] = set()
+            manifest_origins: set[tuple[str, str, int]] = set()
+            for manifest_index, route in enumerate(manifest_payload["routes"]):
+                expected = {"key", "url", "mapped_reference_rank", "mapped_reference_id", "mapped_reference_observation", "mapped_reference_sha256", "states"}
+                if (
+                    not isinstance(route, dict)
+                    or set(route) != expected
+                    or not isinstance(route.get("key"), str)
+                    or re.fullmatch(r"[a-z][a-z0-9-]{0,47}", route["key"]) is None
+                ):
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {manifest_index} has an invalid exact field set.")
+                route_key = route["key"]
+                if route_key in manifest_routes:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route key {route_key!r} is duplicated.")
+                route_path = rendered_capture_route_path(route.get("url"))
+                route_origin = rendered_capture_origin(route.get("url"))
+                if route_path is None or route_origin is None:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} has no normalized URL path.")
+                route_identity = (route_origin, route_path)
+                if route_identity in manifest_urls:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} duplicates another normalized route URL.")
+                manifest_urls.add(route_identity)
+                manifest_origins.add(route_origin)
+                raw_states = route.get("states")
+                if not isinstance(raw_states, list) or not raw_states:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} has no typed source-state mappings.")
+                state_ids: set[str] = set()
+                mapped_state_ids: set[str] = set()
+                rest_state_id: str | None = None
+                for state_index, state in enumerate(raw_states):
+                    if not isinstance(state, dict) or set(state) != {
+                        "id", "kind", "trigger", "expectation", "mapped_reference_state_id",
+                    }:
+                        raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} state {state_index} has an invalid exact field set.")
+                    state_id = state.get("id")
+                    trigger = state.get("trigger")
+                    mapped_state_id = state.get("mapped_reference_state_id")
+                    if (
+                        not isinstance(state_id, str)
+                        or re.fullmatch(r"[a-z][a-z0-9-]{0,47}", state_id) is None
+                        or state_id in state_ids
+                        or state.get("kind") not in ROUTE_MANIFEST_STATE_KINDS
+                        or not isinstance(trigger, dict)
+                        or set(trigger) != {"type", "target", "value"}
+                        or trigger.get("type") not in ROUTE_MANIFEST_TRIGGER_TYPES
+                        or not isinstance(trigger.get("target"), str)
+                        or not trigger["target"].strip()
+                        or not (trigger.get("value") is None or isinstance(trigger.get("value"), str))
+                        or not isinstance(state.get("expectation"), str)
+                        or len(state["expectation"].strip()) < 12
+                        or not isinstance(mapped_state_id, str)
+                        or re.fullmatch(r"[a-z][a-z0-9-]{0,63}", mapped_state_id) is None
+                        or (state_id != "rest" and state.get("kind") == "rest")
+                    ):
+                        raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} state {state_index} is invalid, duplicated, or underspecified.")
+                    state_ids.add(state_id)
+                    mapped_state_ids.add(mapped_state_id)
+                    if state_id == "rest":
+                        if (
+                            state.get("kind") != "rest"
+                            or state.get("trigger") != {"type": "none", "target": "document", "value": None}
+                            or state.get("expectation") != "initial settled route"
+                            or mapped_state_id != "rest"
+                        ):
+                            raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} rest state is not the exact canonical contract.")
+                        rest_state_id = mapped_state_id
+                if rest_state_id is None:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} lacks the canonical rest state.")
+                if raw_states[0] != {
+                    "id": "rest",
+                    "kind": "rest",
+                    "trigger": {"type": "none", "target": "document", "value": None},
+                    "expectation": "initial settled route",
+                    "mapped_reference_state_id": "rest",
+                }:
+                    raise AuditError("route-manifest-invalid", f"Authoritative route {route_key!r} must begin with the exact canonical rest state.")
+                source_mapping = {
+                    "rank": route.get("mapped_reference_rank"),
+                    "id": route.get("mapped_reference_id"),
+                    "observation": route.get("mapped_reference_observation"),
+                    "sha256": route.get("mapped_reference_sha256"),
+                    "state_id": rest_state_id,
+                }
+                source_errors: list[dict[str, str]] = []
+                valid_source_mapping(source_errors, source_mapping, f"manifest.routes[{manifest_index}].source_mapping")
+                if source_errors:
+                    raise AuditError("route-manifest-invalid", source_errors[0]["message"])
+                observation_result = verify(
+                    {"path": source_mapping["observation"], "sha256": source_mapping["sha256"]},
+                    f"manifest.routes[{manifest_index}].mapped_reference_observation",
+                )
+                if observation_result is None:
+                    continue
+                observation_relative = portable_path(source_mapping["observation"], f"manifest.routes[{manifest_index}].mapped_reference_observation")
+                observation_path = project_file(root, observation_relative, f"manifest.routes[{manifest_index}].mapped_reference_observation")
+                observation = json.loads(stable_read(observation_path, f"manifest.routes[{manifest_index}].mapped_reference_observation").decode("utf-8"))
+                states_by_viewport = observation.get("states_by_viewport") if isinstance(observation, dict) else None
+                if (
+                    not isinstance(observation, dict)
+                    or observation.get("tool") != "observe_reference.mjs"
+                    or type(observation.get("schema_version")) is not int
+                    or observation["schema_version"] < 5
+                    or current_observer_sha256 is None
+                    or observation.get("producer_script_sha256") != current_observer_sha256
+                    or current_structure_sha256 is None
+                    or current_browser_evidence_sha256 is None
+                    or current_resolver_sha256 is None
+                    or not isinstance(observation.get("runtime_identity"), dict)
+                    or observation["runtime_identity"].get("observe_reference.mjs") != current_observer_sha256
+                    or observation["runtime_identity"].get("structure_probe.mjs") != current_structure_sha256
+                    or observation["runtime_identity"].get("browser_evidence.mjs") != current_browser_evidence_sha256
+                    or observation["runtime_identity"].get("playwright_resolver.mjs") != current_resolver_sha256
+                    or observation.get("id") != source_mapping["id"]
+                    or not isinstance(states_by_viewport, dict)
+                    or any(
+                        not isinstance(states_by_viewport.get(profile), dict)
+                        or not mapped_state_ids.issubset(states_by_viewport[profile])
+                        for profile in ("wide", "narrow")
+                    )
+                ):
+                    raise AuditError("route-observation-invalid", f"Authoritative route {route_key!r} does not bind a current exact observation record.")
+                manifest_routes[route_key] = {
+                    "key": route_key,
+                    "path": route_path,
+                    "source_mapping": source_mapping,
+                    "source_state_ids": mapped_state_ids,
+                }
+            if len(manifest_origins) != 1:
+                raise AuditError("route-manifest-invalid", "Every authoritative route must share one exact build origin.")
+        except (AuditError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+            code = exc.code if isinstance(exc, AuditError) else "route-manifest-unreadable"
+            message = exc.message if isinstance(exc, AuditError) else str(exc)
+            findings.append(finding(code, message, blocking=True))
+    if manifest_routes:
+        manifest_paths = {record["path"] for record in manifest_routes.values()}
+        if scope_routes != manifest_paths:
+            findings.append(finding(
+                "route-scope-manifest-mismatch",
+                "scope.surface_scope must equal every authoritative manifest route exactly; missing or sampled routes are forbidden.",
+                blocking=True,
+            ))
+        declared_route_map = {
+            entry.get("route_key"): entry
+            for entry in route_coverage.get("routes", [])
+            if isinstance(entry, dict) and isinstance(entry.get("route_key"), str)
+        }
+        if set(declared_route_map) != set(manifest_routes):
+            findings.append(finding(
+                "route-coverage-manifest-keys-mismatch",
+                "Route coverage must contain exactly one captured row for every authoritative manifest route key.",
+                blocking=True,
+            ))
+        for route_key, expected in manifest_routes.items():
+            declared = declared_route_map.get(route_key)
+            if not isinstance(declared, dict):
+                continue
+            if declared.get("route") != expected["path"] or declared.get("coverage") != "captured" or declared.get("source_mapping") != expected["source_mapping"]:
+                findings.append(finding(
+                    "route-coverage-manifest-binding-mismatch",
+                    f"Route coverage row {route_key!r} does not exactly match its manifest path and reference mapping.",
+                    blocking=True,
+                ))
+        allowed_source_mappings = []
+        for expected in manifest_routes.values():
+            base_mapping = dict(expected["source_mapping"])
+            for state_id in expected["source_state_ids"]:
+                allowed_source_mappings.append({**base_mapping, "state_id": state_id})
+        selected_mapping = payload["selected_direction"]["source_mapping"]
+        if selected_mapping not in allowed_source_mappings:
+            findings.append(finding(
+                "selected-direction-source-not-authoritative",
+                "The selected direction must bind one exact authoritative manifest reference page, observation bytes, and observed state.",
+                blocking=True,
+            ))
+        challenging_mapping = payload["exploration"].get("challenging_source_mapping")
+        if challenging_mapping is not None and challenging_mapping not in allowed_source_mappings:
+            findings.append(finding(
+                "challenging-direction-source-not-authoritative",
+                "The challenging answer must bind one exact authoritative manifest reference page, observation bytes, and observed state.",
+                blocking=True,
+            ))
 
     if record_status == "proof-ready":
         add_gap(gaps, "project-contrast-proof-ready", "Project Contrast proof is recorded, but a reviewed lifecycle state is still required before readiness.")
@@ -2801,6 +3113,29 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
     for index, capture in enumerate(captures):
         label = f"evidence.captures[{index}]"
         route = capture["route"]
+        manifest_route = manifest_routes.get(capture["route_key"])
+        capture_mapping = capture["source_mapping"]
+        mapping_matches = False
+        if isinstance(manifest_route, dict) and isinstance(capture_mapping, dict):
+            expected_base = dict(manifest_route["source_mapping"])
+            expected_base.pop("state_id", None)
+            observed_base = dict(capture_mapping)
+            observed_state_id = observed_base.pop("state_id", None)
+            mapping_matches = (
+                manifest_route["path"] == route
+                and observed_base == expected_base
+                and observed_state_id in manifest_route["source_state_ids"]
+                and (
+                    (capture["capture_state"] == "default" and observed_state_id == "rest")
+                    or (capture["capture_state"] == "interaction" and observed_state_id != "rest")
+                )
+            )
+        if not mapping_matches:
+            findings.append(finding(
+                "capture-route-manifest-binding-mismatch",
+                f"{label} does not bind the exact authoritative route key, path, reference observation bytes, and corresponding observed state.",
+                blocking=True,
+            ))
         if route not in scope_routes:
             findings.append(finding("capture-route-out-of-scope", f"{label}.route is not declared in scope.surface_scope.", blocking=True))
         if candidate_build_id is not None and capture["candidate_build_id"] != candidate_build_id:
@@ -2983,127 +3318,69 @@ def audit_payload(root: Path, payload: dict[str, Any]) -> dict[str, object]:
             for narrow_capture in narrow
         )
 
-    discovered_routes = set(route_discovery["routes"])
-    if route_discovery["status"] == "discovered":
-        covered_discovered_routes = scope_routes & discovered_routes
-        missing_discovered_routes = discovered_routes - scope_routes
-        coverage_mode = route_coverage["mode"]
-        if coverage_mode == "all-discovered-public-routes" and missing_discovered_routes:
+    # The route manifest, rather than static discovery or producer-authored
+    # sampling, is the complete authority boundary. Every authoritative route
+    # must be directly reviewed and every row must retain its exact manifest
+    # reference mapping.
+    authoritative_routes = {
+        record["path"]
+        for record in manifest_routes.values()
+        if isinstance(record, dict) and isinstance(record.get("path"), str)
+    }
+    raw_route_map = route_coverage.get("routes")
+    route_map: dict[str, dict[str, Any]] = {}
+    if isinstance(raw_route_map, list):
+        for entry in raw_route_map:
+            if isinstance(entry, dict) and isinstance(entry.get("route"), str):
+                route_map[entry["route"]] = entry
+
+    if record_status == "reviewed":
+        missing_map_routes = authoritative_routes - set(route_map)
+        if missing_map_routes:
             add_gap(
                 gaps,
-                "route-coverage-missing-discovered-routes",
-                "all-discovered-public-routes omits static public routes: " + ", ".join(sorted(missing_discovered_routes)),
+                "route-coverage-map-missing-authoritative-routes",
+                "Every authoritative manifest route needs a direct captured mapping: "
+                + ", ".join(sorted(missing_map_routes)),
             )
-        elif coverage_mode in {"representative", "sampled-with-rationale"}:
-            has_explicit_route_map = isinstance(
-                route_coverage.get("discovered_route_map"), list
-            ) and bool(route_coverage.get("discovered_route_map"))
+        extra_map_routes = set(route_map) - authoritative_routes
+        if extra_map_routes:
+            findings.append(finding(
+                "route-coverage-map-route-not-authoritative",
+                "Route coverage mappings name routes outside the authoritative manifest: "
+                + ", ".join(sorted(extra_map_routes)),
+                blocking=True,
+            ))
+        for route in sorted(authoritative_routes & set(route_map)):
+            entry = route_map[route]
+            manifest_record = next(
+                (
+                    record
+                    for record in manifest_routes.values()
+                    if isinstance(record, dict) and record.get("path") == route
+                ),
+                None,
+            )
             if (
-                len(discovered_routes) > 1
-                and len(covered_discovered_routes) < 2
-                and not has_explicit_route_map
+                entry.get("coverage") != "captured"
+                or route not in scope_routes
+                or not route_has_verified_wide_narrow_pair(route)
             ):
                 add_gap(
                     gaps,
-                    "route-coverage-representative-too-narrow",
-                    "The static output exposes multiple public routes, but the declared representative/sample scope covers fewer than two of them. Expand the review scope or record all discovered public routes.",
+                    "route-coverage-authoritative-route-unreviewed",
+                    f"Authoritative route {route} lacks its direct hash-bound wide/narrow review pair.",
                 )
-            if not covered_discovered_routes:
-                add_gap(
-                    gaps,
-                    "route-coverage-no-discovered-route",
-                    "The declared representative/sample scope does not include any discovered static public route.",
-                )
-        # Static discovery allows a stronger, honest sample boundary than an
-        # arbitrary pair of routes: every discovered route must either be
-        # directly captured or name one directly captured representative with
-        # a disclosed job/system-equivalence rationale. This does not infer
-        # route jobs from file names or turn coverage into a page-count rule.
-        if record_status == "reviewed":
-            raw_route_map = route_coverage.get("discovered_route_map")
-            route_map: dict[str, dict[str, Any]] = {}
-            if not isinstance(raw_route_map, list):
-                raw_route_map = []
-            for entry in raw_route_map:
-                if isinstance(entry, dict) and isinstance(entry.get("route"), str):
-                    route_map[entry["route"]] = entry
-            missing_map_routes = discovered_routes - set(route_map)
-            if missing_map_routes:
-                add_gap(
-                    gaps,
-                    "route-coverage-map-missing-discovered-routes",
-                    "Every safely discovered static public route needs a captured or reviewed-representative mapping: " + ", ".join(sorted(missing_map_routes)),
-                )
-            extra_map_routes = set(route_map) - discovered_routes
-            if extra_map_routes:
+            if (
+                not isinstance(manifest_record, dict)
+                or entry.get("route_key") != manifest_record.get("key")
+                or entry.get("source_mapping") != manifest_record.get("source_mapping")
+            ):
                 findings.append(finding(
-                    "route-coverage-map-route-not-discovered",
-                    "Route coverage mappings name routes outside the safely discovered static public output: " + ", ".join(sorted(extra_map_routes)),
+                    "route-coverage-authoritative-binding-mismatch",
+                    f"Authoritative route {route} does not retain its exact manifest route key and reference mapping.",
                     blocking=True,
                 ))
-            for route in sorted(discovered_routes & set(route_map)):
-                entry = route_map[route]
-                coverage = entry.get("coverage")
-                representative = entry.get("representative_route")
-                rationale = entry.get("equivalence_rationale")
-                if coverage == "captured":
-                    if route not in scope_routes or not route_has_verified_wide_narrow_pair(route):
-                        add_gap(
-                            gaps,
-                            "route-coverage-captured-route-unreviewed",
-                            f"Discovered route {route} is marked captured but lacks a directly bound verified wide/narrow review pair.",
-                        )
-                    if representative is not None:
-                        findings.append(finding(
-                            "route-coverage-captured-route-has-representative",
-                            f"Discovered route {route} is marked captured and cannot also point to a representative route.",
-                            blocking=True,
-                        ))
-                elif coverage == "represented":
-                    if not isinstance(representative, str) or representative == route:
-                        add_gap(
-                            gaps,
-                            "route-coverage-representative-missing",
-                            f"Discovered route {route} must name a different directly reviewed representative route.",
-                        )
-                        continue
-                    representative_entry = route_map.get(representative)
-                    representative_captured = (
-                        isinstance(representative_entry, dict)
-                        and representative_entry.get("coverage") == "captured"
-                        and representative in scope_routes
-                        and route_has_verified_wide_narrow_pair(representative)
-                    )
-                    if not representative_captured:
-                        add_gap(
-                            gaps,
-                            "route-coverage-representative-unreviewed",
-                            f"Discovered route {route} names {representative!r} as its representative, but that route is not directly reviewed with a verified wide/narrow pair.",
-                        )
-                    if not text_ok(rationale):
-                        add_gap(
-                            gaps,
-                            "route-coverage-equivalence-rationale-missing",
-                            f"Discovered route {route} needs a project-specific job/system-equivalence rationale for using representative {representative!r}.",
-                        )
-                else:
-                    add_gap(
-                        gaps,
-                        "route-coverage-map-unresolved",
-                        f"Discovered route {route} has no captured or represented coverage decision.",
-                    )
-            if coverage_mode == "all-discovered-public-routes":
-                represented_routes = [
-                    route
-                    for route, entry in route_map.items()
-                    if isinstance(entry, dict) and entry.get("coverage") == "represented"
-                ]
-                if represented_routes:
-                    add_gap(
-                        gaps,
-                        "route-coverage-all-routes-represented",
-                        "all-discovered-public-routes cannot clear a route through a representative mapping: " + ", ".join(sorted(represented_routes)),
-                    )
 
     if authority_status == "not-authorized" and comparators:
         findings.append(finding("unauthorized-comparator", "The contract declares comparators despite not-authorized comparison status.", blocking=True))

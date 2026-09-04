@@ -95,10 +95,10 @@ content sequence with new topics, pictures, type, and color and call it range.
 Likewise, do not force difference merely to fill a quota when two routes serve
 the same kind of reading or task.
 
-For each route, use an extensible `creative_logic` record and observable
-decisions:
+For each route, use exact selected-source/state/component mappings and observable
+transfer decisions:
 
-| Route | Visitor or editorial job | Evidence and content dependency | Creative logic and decisions | Adaptation, authority, and status |
+| Route | Visitor or editorial job | Evidence and content dependency | Exact source/state/component transfer | Adaptation, authority, and status |
 | --- | --- | --- | --- | --- |
 |  |  |  | composition, type, media, color, material, ornament, interaction, sequence, or another project concern |  |
 

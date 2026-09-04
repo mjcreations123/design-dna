@@ -26,7 +26,7 @@ applicable.
 |  |  |  |  |  |  |
 
 - Relevant trigger, lifecycle, control, and cleanup behavior:
-- Creative logic and any temporal or spatial roles:
+- Exact selected source/state/component mapping and temporal or spatial roles:
 - Frequency and expected cumulative use:
 - Interruption, cancellation, reverse navigation, and stale-state behavior:
 - Pointer, touch, keyboard, focus, and assistive-technology path:

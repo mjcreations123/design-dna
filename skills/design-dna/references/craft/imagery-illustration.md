@@ -9,27 +9,28 @@ appropriate rights, accessible treatment, and rendered quality.
 
 ## Contents
 
-- [Choose the media logic](#choose-the-media-logic)
+- [Bind the media logic](#bind-the-media-logic)
 - [Direct the set at the level it needs](#direct-the-set-at-the-level-it-needs)
 - [Protect documentary credibility](#protect-documentary-credibility)
 - [Use generated media within authority](#use-generated-media-within-authority)
 - [Design responsive and failure behavior](#design-responsive-and-failure-behavior)
 - [Review](#review)
 
-## Choose the media logic
+## Bind the media logic
 
 Media may provide documentary evidence, product recognition, explanation,
 orientation, narrative, atmosphere, identity, affiliation, beauty, ornament,
 or formal structure. A work may combine these roles or be intentionally
 media-light. Decorative media does not need an independent information task,
-but it still belongs to the creative logic and must not obstruct the
-experience.
+but its role, scale, crop, sequence, and behavior must still come from a
+selected reference and must not obstruct the experience.
 
-Record the consequential decisions in the candidate's `creative_logic`:
+Record the consequential decisions in the component-source map and observable
+decision ledger:
 
 | Decision | Why it belongs | What should be observable | Truth or rights boundary | Adaptation or fallback |
 | --- | --- | --- | --- | --- |
-|  | project, aesthetic, editorial, cultural, audience, or production evidence | rendered role, relationship, sequence, crop, or response |  | relevant width, state, preference, loading, failure, or replacement condition |
+|  | selected source rank plus exact project, editorial, cultural, audience, or production fit | rendered role, relationship, sequence, crop, or response copied from that source |  | relevant width, state, preference, loading, failure, or replacement condition |
 
 Possible sources include approved first-party assets, commissioned work,
 licensed material, owner-authorized generated media, illustration, data
@@ -37,10 +38,10 @@ graphics, a capture plan, or a deliberately type- or object-led direction.
 These are options, not an ordered preference list.
 
 When the subject or brief depends on material recognition, atmosphere, scale,
-use, people, or place, verify that the chosen media approach actually conveys
-what the visitor needs. “No photos were supplied” does not settle the design;
-either obtain an authorized path, change the direction deliberately, or record
-  the unresolved dependency.
+use, people, or place, verify that the source-mapped media approach actually
+conveys what the visitor needs. “No photos were supplied” does not settle the
+design; obtain an authorized asset path, reject the incompatible source and
+research another qualified source, or keep the dependency unresolved.
 
 Do not let a missing asset plan quietly turn a material subject into a text-only
 interface experiment. Conversely, do not paste unrelated stock or generated
@@ -52,7 +53,8 @@ scaling it across the site.
 
 ## Direct the set at the level it needs
 
-Define whatever is consequential for this project, which may include:
+Copy and measure whatever is consequential in the selected references and
+truthful project assets, which may include:
 
 - subject, depicted claim, and factual boundaries;
 - image or sequence roles and content coverage;
@@ -87,9 +89,10 @@ status and fitting detail, not simulated imperfection.
 
 ## Use generated media within authority
 
-Generated media is allowed when the owner authorizes it and its role,
-representation, and disclosure are honest. It may be documentary-ineligible
-for one project and entirely appropriate illustration for another.
+Generated media is allowed when the owner authorizes it, its role and visual
+relationships are mapped to selected references, and its representation and
+disclosure are honest. Authorization to generate media does not authorize the
+producer to invent its art direction.
 
 - Do not depict a real feature, person, location, product, menu item, view, or
   event inaccurately while presenting it as fact.
@@ -130,7 +133,8 @@ Review every generated set for:
   it; accidental contradiction is not.
 
 No generated-media prompt recipe or required shot trio applies globally.
-Create the images and variety this candidate needs.
+Create only the images and variations required by the candidate's mapped
+source roles and truthful content; do not improvise an unreferenced set.
 
 ### Generated video and external media services
 

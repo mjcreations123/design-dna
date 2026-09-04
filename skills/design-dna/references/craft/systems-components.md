@@ -30,9 +30,9 @@ responses, not scope tiers or a required abstraction stack.
 
 Do not create a registry, package, token alias, variant, or governance ceremony
 without a current consumer or a named, funded near-term need. Conversely, do
-not withhold useful structure merely to keep a system visually simple. Scale
-process to risk while preserving working states, accessibility, and rendered
-verification.
+not withhold useful structure merely to keep a system visually simple. Tooling
+may scale to risk only when every applicable working state, accessibility check,
+source mapping, manifest cell, and rendered verification remains complete.
 
 ## Inherit before inventing
 
@@ -45,9 +45,11 @@ For an existing product:
 3. Reuse working conventions.
 4. Change foundations only when the benefit and migration path are clear.
 
-For greenfield work, define the system the real routes and intended maintenance
-need. It may be spare, rich, route-specific, layered, or deliberately plural.
-Do not build abstractions solely for hypothetical screens.
+For greenfield work, reproduce the system relationships supplied by each
+route's exact selected reference observation and scope reuse to real routes and
+intended maintenance. It may be spare, rich, route-specific, layered, or plural
+only when those sources carry it. Do not invent abstractions for hypothetical
+screens or connective visual design.
 
 ## Establish sources of truth
 
@@ -58,7 +60,7 @@ and deployed interface may each be authoritative for different decisions.
 | Concern | Record |
 | --- | --- |
 | Product facts and public copy | Approved source, accountable owner, locale, and review date where material. |
-| Brand and art direction | Approved direction, assets, permitted transformations, and known exceptions. |
+| Brand and art direction | Approved brand authority plus exact selected reference ranks, observations, measurements, permitted transformations, and known exceptions. |
 | Tokens and components | Canonical implementation, supported variants, consumers, and maintainer. |
 | Interaction and responsive behavior | Executable implementation, behavioral specification, or accepted rendered evidence. |
 | Release state | Exact revision or build, environment, and known deviations. |
@@ -72,7 +74,7 @@ surface the conflict to the accountable owner.
 
 ## Structure token tiers
 
-Make the token model traceable and fit for its consumers. Reference,
+Make the token model traceable to selected measured references and fit for its consumers. Reference,
 semantic, component, contextual, and instance values are available patterns,
 not required tiers; a project may combine, rename, omit, or extend them. Some
 systems benefit from semantic roles across themes, while expressive route
@@ -87,7 +89,7 @@ visually named value when that is the clearest truthful model.
 
 ## Keep public grammar provisional until it earns reuse
 
-Treat the first route's visible shell as a project experiment, not as a
+Treat the first route's visible shell as a source-bound proof, not as a
 studio-wide answer waiting to be copied. A CSS variable, component, or
 well-executed first route does not become an identity token merely because it
 exists. Keep the following concerns distinct, even if one implementation file
@@ -114,16 +116,18 @@ habit. Conversely, do not force a proven shared identity decision back into a
 local one merely to create surface variation.
 
 When starting an unrelated public project, inherit technical and approved
-identity foundations deliberately, then derive its public grammar from the new
-brief, material, audience, and task. A local grammar can use components or
+identity foundations deliberately, then copy its public grammar from newly
+qualified references selected for the brief, material, audience, and task. A local grammar can use components or
 custom properties without being promoted. This preserves maintainability
 without allowing the first polished shell to silently become every later
 site's organizing answer.
 
 ## Theme dependencies deliberately
 
-Framework and library defaults are valid inputs, not automatic art direction.
-Review the aspects that materially affect this project, which may include:
+Framework and library defaults are implementation inputs, never art direction.
+Replace every visible default with its selected-reference mapping unless the
+default itself is part of an approved inherited system. Review all affected
+aspects, which may include:
 
 - palette and semantic tokens;
 - font and type scale;
@@ -134,13 +138,15 @@ Review the aspects that materially affect this project, which may include:
 - focus, error, selection, and disabled states;
 - motion and reduced-motion behavior.
 
-Do not mechanically keep or replace every default. Make the decisions that
-matter to project voice, task, access, and maintainability.
+Do not mechanically keep or replace every default. Use the exact selected
+source for visible decisions and the project contract for task, access, and
+maintainability.
 
 ## Design component contracts
 
-For each component, define only the contract its consumers and risks need. That
-may include:
+For each component, first bind its exact selected reference rank, observation,
+measured values, and applicable states; then define the implementation contract
+its consumers and risks need. That may include:
 
 - purpose and content model;
 - anatomy and semantic structure;
@@ -246,14 +252,15 @@ family, or interaction contract. At each useful checkpoint:
 
 1. record the revision or build and the intended scope;
 2. inspect affected consumers and dependencies;
-3. render representative states and containers;
+3. render every affected declared state and container at the manifest widths;
 4. compare visual, interaction, accessibility, and content behavior with the
    accepted baseline;
 5. accept, revise, or revert before broadening the change.
 
 Use the project's existing versioning, branch, preview, or artifact mechanism.
-Do not require heavyweight infrastructure for a small change, but do not
-overwrite the only known-good state of consequential shared work.
+Infrastructure may stay proportional only when it produces the same required
+proof; a small change never permits weaker coverage or overwriting the only
+known-good state of consequential shared work.
 
 ## Hand off a usable system
 

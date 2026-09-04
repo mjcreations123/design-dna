@@ -5,6 +5,25 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 11.0.0 - Development candidate
+
+This candidate is a contract and runtime hardening release. It removes
+contradictory producer-design escape hatches, strengthens brief-qualified
+reference research, closes gate and evidence gaps found in the 10.x audits,
+and repairs cross-host release identity. Retained attestations, manifests, and
+SBOMs from earlier trees remain historical until they are regenerated against
+the final frozen 11.0.0 bytes.
+
+- CHANGED the runtime, both plugin manifests, and compatibility matrix to one
+  11.0.0 identity. Current-version documentation calls it a development
+  candidate, not a published or qualified release.
+- CHANGED compatibility notes so old installer, route, plugin-validation, and
+  test records cannot be read as current-tree proof.
+- FIXED the public-source registry regression test so the deliberately removed
+  SiteInspire source cannot be silently restored by a stale assertion.
+- CHANGED operator guidance to use Python `-B` for in-tree scripts, including
+  the project gate, so validation does not create forbidden bytecode residue.
+
 ## 10.1.0
 
 A build passed every gate in 10.0.0 (provenance, structure, and after this

@@ -47,12 +47,15 @@ framing, or decorative `01 / 02 / 03` rhythm.
 
 Read [Reference-led direction](reference-led-direction.md) before choosing the
 first public visual candidate. Complete the project-local `reference-dossier.md`
-with at least six captured strong references from at least three sources, at
-least three brief-specific counterexamples, a selected synthesis of at least
-four references, and one elevation beyond them. A publicly visible
-gallery entry is eligible even when no live URL works; a restricted entry is
-not. The research should produce one project-derived direction, not a collage
-or a reproduced brand page.
+with the exact audience/task/content/brand/operational selection brief; a
+side-by-side candidate comparison and concrete rejection reasons; at least six
+strong references from at least three sources; distinct full-page wide and
+narrow captures plus truthful motion/static evidence for each strong row; at
+least three brief-specific counterexamples; and a selected synthesis of at
+least four references. A publicly visible gallery entry is eligible only for
+what it exposes; a restricted entry is not. One selected source supplies the
+dominant grammar for each route, compatible mapped sources supply supporting
+moments, and no visible part comes from producer taste.
 
 Initialize the evidence lane before broad implementation. For an ordinary new
 public build, use the Enterprise Candidate profile:
@@ -67,6 +70,13 @@ When another selected profile already creates the `direction` and
 separate obligation. For example, an owner-required Direction Challenge uses
 its own profile plus this evidence capability. This composes review rigor; it
 does not prescribe visual style.
+
+Before a second section or route is implemented, render the primary first
+screen at the manifest's wide and narrow viewports and run `gate.py --phase
+first-screen --route-key <PRIMARY_KEY>` against the full planned route
+manifest. Bind the passing `.design-dna/evidence/first-screen-gate.json` as
+`First-screen gate` in the direction proof. A missing or failing record is a
+prebuild hard stop; the final gate cannot substitute for it later.
 
 ## Plan the composition and media before the route family spreads
 
@@ -135,11 +145,14 @@ the following prompts to name observed causes:
    invented “X reasons,” “Y steps,” and decorative counters rather than merely
    changing `01` to `1` or spelling the number out.
 8. **Reference-led direction.** Is the completed dossier built from eligible
-   public evidence, at least six captured references from at least three
-   sources, and at least three
-   observed counterexamples? Does the final candidate express a coherent
-   project-specific synthesis rather than a generic template, visual collage,
-   or copied brand surface?
+   public evidence selected for this exact audience, task, content model,
+   brand, and operating reality rather than accolade or convenience? Were
+   serious candidates studied across complete accessible pages, states, and
+   wide/narrow conditions, with selection and rejection reasons recorded? Do
+   at least six references from at least three sources, and at least three
+   observed counterexamples, support one coherent dominant grammar per route
+   without a generic template, visual collage, copied brand surface, or
+   producer-designed connective tissue?
 
 Record the disposition in the Enterprise Candidate section of
 `visual-review.md`. A producer may perform this review, but label it honestly

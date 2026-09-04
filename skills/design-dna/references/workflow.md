@@ -9,6 +9,25 @@ exists. Scale it down for a component, mechanical change, or review-only
 request. Create artifacts only when they preserve a consequential decision or
 useful evidence.
 
+## 2026-09-04 no-shortcuts rule
+
+Time, tokens, cost, convenience, elapsed effort, implementation difficulty,
+and labels such as demo, sample, small, quick, test, or hurry may reduce only
+the truthful delivered scope. They never reduce reference eligibility,
+quality/exact-fit qualification, required count or source spread, complete
+same-origin traversal, the 90-second/15-fps recording floor, distinct
+wide/narrow evidence, component/source provenance, source-fidelity proof, the
+first-screen hard gate, the final gate, or whole-scope copy, functional,
+responsive, and accessibility review. If complete traversal exceeds the
+recording floor, increase the duration.
+
+No homemade tool or hand-written generated-record substitute, lower threshold,
+deferred required evidence, omitted route/state, reused capture, waiver, or
+post-hoc justification is acceptable. A missing required source, capability,
+tool, or check blocks presentation of the affected surface. Reduce scope by
+removing what cannot be proved, never by weakening how retained work is
+researched, implemented, or verified.
+
 ## Contents
 
 1. Preflight
@@ -42,8 +61,9 @@ Before changing code:
    routes and do not impose a primary mode when that distinction adds no value.
 7. Select the proportional base and applicable capabilities from
    [Direction start](quality/direction-start.md): fresh public work starts at
-   Standard with full public rendered review, while Showcase is reserved for
-   an expressly premium, showcase, high-ambition, or direction-recovery brief.
+   Standard plus Enterprise Candidate with the reference dossier and full
+   public rendered review, while Showcase is reserved for an expressly premium,
+   showcase, high-ambition, or direction-recovery brief.
    Then add every applicable Project Contrast, Direction Challenge, Range
    Study, Batch Study, High-risk, and Asset-led capability from `SKILL.md`.
    These capabilities may coexist; the state normalizes redundant lower
@@ -80,7 +100,7 @@ Before changing code:
 Do not replace the stack, design system, or working integration merely because
 another tool is more familiar.
 
-Preflight can narrow a first hypothesis, but it cannot commit creative logic.
+Preflight can narrow a first hypothesis, but it cannot commit a visible source transfer.
 Complete this minimum repository/system inspection and the proportional
 grounding in section 3 before treating a direction as selected, advancing a
 record to `direction-ready`, or spreading it through broad implementation.
@@ -131,19 +151,20 @@ encounter:
 For an explicit Range Study, create `.design-dna/route-family.json` from the
 [route-family template](../templates/route-family-template.json). Define the
 shared foundation and every route's job, direct path, closest sibling,
-observable decisions, responsive result, fallbacks, captures, and review state
-before scaling. Replace the template's unresolved capture widths with values
-derived from this project's real responsive risks. Record typography, media,
-motion, color, or interaction only
-when it is consequential; do not make every route perform difference through
-the same fields.
+  exact selected-reference rank/observation/hash mapping, observable decisions,
+  responsive result, fallbacks, captures, and review state before scaling.
+  Replace unresolved capture widths with the authoritative route manifest's
+  wide/narrow values. Record typography, media, motion, color, or interaction
+  only when it is consequential and copied from the mapped source; do not make
+  every route perform difference through the same fields.
 
 When Project Contrast is selected for an unlike-recent-work request, create
 `.design-dna/project-contrast.json` through the initializer before broad
-implementation. Begin from the current brief and source packet, not a gallery
-of prior output. State the visitor occasion, public job, subject material or
-operating reality, and the proposed organizing answer. Challenge that first
-answer with one materially different answer that changes the encounter,
+  implementation. Begin from the current brief and a newly completed exact-fit
+  reference comparison, not a gallery of prior studio output. State the visitor
+  occasion, public job, subject material or operating reality, and the proposed
+  selected-reference mapping. Challenge that first source combination with one
+  materially different qualified combination that changes the encounter,
 content operation, or body progression rather than only its palette, type
 family, imagery, ornament, or effect. Then, and only when the accountable
 owner has authorized it, inspect the smallest useful closest-sibling evidence.
@@ -152,11 +173,11 @@ differences. An approved existing brand or product system may use the
 inherited-system disposition; a new unrelated public surface may not close
 contrast by random variation or unexplained cosmetic substitution. Keep the
 record honestly staged: `draft` while its fields are unresolved,
-`direction-ready` once the brief-derived encounter, counter-answer, signature,
+  `direction-ready` once the brief-and-reference-derived encounter, counter-answer, signature,
 and structural/surface-language prompts exist, `proof-ready` once exact
 candidate and wide/narrow evidence are bound, and `reviewed` only after the
 applicable review/disposition is recorded. For an owner recurrence requirement,
-the signature must contain a nonempty project-selected encounter-axis set and
+  the signature must contain a nonempty source-mapped encounter-axis set and
 surface-language-axis set. Those evidence groups are not a style quota or a
 list of ingredients that must differ.
 
@@ -183,8 +204,9 @@ multi-root high-ambition greenfield concept challenge, add
 `.design-dna/direction-challenge.json` through the same initializer and read
 [Direction Challenge](quality/direction-challenge.md). A premium or
 high-ambition website alone remains Showcase.
-Before polished examples or broad implementation, record three incompatible
-brief-native roots and an exact pairwise matrix; then render wide and narrow
+After freezing brief-fit criteria, fully traverse and compare qualified
+references, then record three incompatible reference-backed roots and an exact
+pairwise matrix; render wide and narrow
 proof slices from two different roots. Select the direction against a rendered
 rejected root, freeze an independent unprimed observation, advance the record
 to `reviewed`, and explicitly set its implementation boundary to
@@ -288,16 +310,28 @@ untrusted.
 | Product UI | Real flows, permissions, content model, data states, technical constraints, research, analytics, support findings. |
 | Place-based business | Owner-confirmed facts, authentic product/space material, service rhythm, local context, accessibility and visit information. |
 | Place or community publication | Current primary civic and institutional sources, credible archives, authentic licensed media, publication stance, time-sensitive operating links, and cultural-review authority. |
-| New visual direction | A small current reference set with a written transferable lesson and explicit non-copying boundary. |
+| New visual direction | A quality-gated, exact-brief-fit current reference set with measured transferable relationships and explicit rights boundaries. |
 
-For current greenfield public work, study enough current category, adjacent,
-and project-local material to understand the relevant field when browsing is
-available and allowed. The useful set can be small or broad depending on
-uncertainty; it need not contain fixed reference categories or counts. Record
-the retrieval date, attribute-level lesson, repeated category mean when one is
-actually observed, and what must not be copied.
+For a fresh Enterprise Candidate public website, use [Reference-led
+direction](quality/reference-led-direction.md) before the first visual
+candidate. Define the selection brief from the audience, visitor tasks,
+truthful content model and states, brand authority, operating reality, route
+jobs, material/media needs, accessibility, performance, maintenance, rights,
+and access. Discover only through registry sources marked `award` or `curated`,
+then rank by quality and exact brief fit. Curation makes a candidate eligible;
+it does not make it suitable.
 
-Before committing selected creative logic, combine the minimum repository and
+Open every serious finalist at wide and narrow widths and study its complete
+legitimately accessible experience: entry and home, relevant inner pages,
+navigation, content/task progression, material interaction and media states,
+and ending/reset/recovery behavior. Compare candidates side by side and record
+concrete selection and rejection reasons. Same-industry status is neither
+necessary nor sufficient; an adjacent or unrelated field needs a specific
+content-model, task, audience, brand, operational, route, and responsive
+transfer rationale. Never select by random result, gallery order, accolade
+alone, fashionable surface, visual novelty, or ease of recreation.
+
+Before committing selected source/state/component mappings, combine the minimum repository and
 system inspection from preflight with enough project and category grounding to
 answer the questions that could materially change the encounter. The approved
 brief, existing system, and supplied sources can satisfy this read. External
@@ -305,10 +339,18 @@ research is not required when it is unavailable, unauthorized, or cannot change
 the decision; do not browse merely to produce a research artifact. If a
 material question remains unresolved, record the boundary and keep the
 direction reversible rather than advancing it as selected or `direction-ready`.
+This fallback does not waive the fresh Enterprise Candidate contract above:
+without its eligible, complete, brief-fit reference evidence, no first public
+visual candidate or producer-authored substitute may proceed.
 
-Do not copy layouts, wording, distinctive interaction, assets, logos, or brand
-identifiers. Do not treat awards, likes, pins, or engagement as proof of
-usability or correctness.
+For this owner's work, copy front-end design only through the measured,
+capture-bound transfer map: layout, typography, palette, controls, spacing,
+media treatment, interaction, and responsive transformation all need a selected
+source. Do not reproduce a source's brand identifiers, wording, photographs,
+illustrations, code, or distinctive whole page. Do not treat awards, likes,
+pins, or engagement as proof of suitability, usability, or correctness. If a
+source cannot fit the current truth, rights, access, brand, or operating
+constraints, reject it instead of filling the gap with producer design.
 
 Use the [creative exploration method](craft/creative-exploration.md) when the
 direction is open, high-ambition, owner-sensitive, or previously rejected.
@@ -332,8 +374,8 @@ evidence, not automated proof of independence.
 
 ## 4. Calibrate and direct
 
-Only after the grounding in section 3 supports it, settle the selected creative
-logic. Any opening, root, or organizing answer noted earlier remains a
+Only after the grounding and required reference evidence in section 3 support
+it, settle the selected source mapping. Any opening, root, or organizing answer noted earlier remains a
 provisional hypothesis; it cannot justify broad implementation or a
 `direction-ready` record by itself.
 
@@ -349,23 +391,23 @@ evidence. A broad adjective by itself is not a direction.
 Identify the project material, user job, cultural and category context,
 intended response, consequential unknowns, and requested ambition. Notice the
 first plausible default and any fashionable substitute, but do not feed a list
-of disliked motifs into the design prompt. Describe the selected creative
-logic in the form it actually takes: one premise, several local systems,
-atmosphere, convention, ornament, collage, narrative, utility, or another
-project-fitting structure. No universal unity model is required.
+of disliked motifs into the design prompt. Describe the selected references'
+mapped logic in the form it actually takes. One premise, several local systems,
+atmosphere, convention, ornament, collage, narrative, or utility may appear only
+when the measured sources carry it. No universal unity model or producer fill
+is permitted.
 
-For a visual-capability sample, a public surface whose brief expressly calls
-for premium or high-ambition work, or a recovered direction, make a concise
-project read and a reference dossier before the main
-surface hardens. Research actual project material and relevant current visual
-relationships rather than browsing only for names of styles. The result must
-answer whether the proposed first view is a credible, desirable public
-encounter for this subject—not merely a different-looking demonstration of the
-agent's process.
+For every fresh public website, complete the reference dossier and candidate
+comparison before the first visual candidate. For a visual-capability sample,
+an expressly premium or high-ambition surface, or a recovered direction, deepen
+that same brief-fit study rather than replacing it with style-name browsing.
+The result must show why the selected sources serve this exact content, task,
+audience, brand, and operating reality, not merely that they are prestigious or
+different looking.
 
 When Project Contrast is active, make the likely first answer visible before
-implementation and create a brief-native counter-answer without loading prior
-site output. The counter-answer must change an encounter-level relationship,
+implementation and create a brief-qualified counter-reference combination
+without loading prior studio output. The counter-answer must change an encounter-level relationship,
 such as entry model, content operation, body progression, or task path. It is
 not a color, font, photo, surface, or animation swap. Only after the required
 grounding supports a selection may the Project Contrast record advance to
@@ -381,10 +423,12 @@ instruction to rotate type, palette, geometry, or motion.
 For a Range Study, write the family boundary explicitly: which truth,
 navigation, access, identity, and operating rules remain stable; which
 decisions belong to route jobs; and which one-offs are justified. Choose proof
-routes from consequential uncertainty and useful contrast, not from fixed
+routes from consequential uncertainty and useful contrast for the early proof,
+not from fixed
 restrained, expressive, or discovery archetypes. Material difference must be
 visible in the rendered bodies and cannot be established only by replacing
-copy, color, or photographs.
+copy, color, or photographs. Final review and the project gate still cover
+every route/state/viewport cell in the authoritative manifest.
 
 For any multi-route public project, make a small route-body map before copying
 a page recipe: each independently addressable route's visitor occasion,
@@ -409,7 +453,7 @@ continue.
 
 For a consequential open direction, explore enough materially different
 evidence to challenge the first plausible answer. The right form may be one
-deeply developed reference-bound proof, quick fragments focused on separate
+deeply developed reference-bound proof, focused fragments that fully answer separate
 unknowns, several like-for-like candidates, or competing route bodies. Avoid
 mistaking copy, palette, font, photograph, or decoration swaps on unchanged
 geometry for a new direction.
@@ -440,8 +484,10 @@ organizing logic in project language plus at least one observable
 consequential decision. It also records the material/media and public-copy
 boundary that applies before implementation. This is an evidence floor, not a
 style taxonomy: the logic and decision may use any structure or medium the
-project supports. A bounded Quick repair may inherit the established logic and
-omit those anchors.
+  project supports. An exact nonvisual mechanical repair using the legacy
+  `quick` CLI identifier may inherit the established logic only when a direct
+  rendered comparison proves every visible decision stayed unchanged; it may
+  not omit an applicable quality or verification boundary.
 
 ## 5. Proof the system
 
@@ -476,6 +522,21 @@ together. The number and character of those routes follows project risk, not a
 fixed early sample. Lock the route-family record before completing dependent
 routes.
 
+For reference-led public work, populate the full planned
+`.design-dna/route-manifest.json`, render only the primary first screen, and run
+the source-fidelity hard stop before a second section or route exists:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest .design-dna/route-manifest.json --phase first-screen --route-key <PRIMARY_KEY>
+```
+
+It executes the named route at both manifest viewport classes while binding
+the full manifest hash and writes
+`.design-dna/evidence/first-screen-gate.json`. Bind that path and hash under the
+exact `First-screen gate` label in `direction-proof.md`. A missing or failing
+record blocks broad implementation; a final gate cannot retroactively replace
+this prebuild proof.
+
 Before leaving proof for broad implementation, run:
 
 ```text
@@ -497,7 +558,7 @@ then rerun the gate.
 ## 6. Implement
 
 After `--check-prebuild` succeeds, build the truthful user path and accepted
-creative logic at coherent depth before proliferating incidental variations.
+selected source/state/component transfer at coherent depth before proliferating incidental variations.
 
 - Centralize values and behavior when reuse, consistency, maintenance, or an
   established system makes that useful; keep deliberate scoped one-offs when
@@ -517,6 +578,12 @@ creative logic at coherent depth before proliferating incidental variations.
   correct direct entry, reload, title, current-page state, history, and
   canonical or indexing intent. Do not count hash sections, query variants,
   aliases, or redirects as additional pages.
+- Maintain one `.design-dna/route-manifest.json` from the packaged
+  [route-manifest template](../templates/route-manifest-template.json). Give
+  every route one unique key and normalized URL, map it to its selected
+  reference rank, declare `rest` plus every applicable `hover`, `focus`, or
+  `open-details` state, and include at least one wide and one narrow viewport.
+  Do not maintain a second route list for the Design DNA gate.
 - For a Batch Study, declare a non-overlapping future build root while a case is
   `planned`; neither initialization nor audit creates it. Keep its captures
   empty and its review pending or not-run. Once built, keep the site in that
@@ -696,6 +763,14 @@ have not evaluated the relevant task.
 
 Before delivery:
 
+- run the final source-fidelity gate against the authoritative route manifest,
+  a distinct immutable final build identity, and the exact append-only
+  first-screen authorization:
+  `python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project
+  "<PROJECT_ROOT>" --build-id "<FINAL_BUILD_ID>" --route-manifest
+  .design-dna/route-manifest.json --phase final --prebuild-authorization
+  "<EMITTED_PREBUILD_AUTHORIZATION_PATH>"`; require the proof/final IDs and
+  trees to differ, bind the resulting gate record, and quote its verdict line verbatim;
 - run the applicable [preship gate](../templates/preship-gate.md) on the
   rendered output; a violated assurance boundary blocks the corresponding
   completion or release claim;
@@ -788,6 +863,7 @@ Possible records:
   handoff.md
   launch-completeness.md      # conditional public launch/delivery decisions
   placeholders.md             # optional register when unresolved material or behavior exists
+  route-manifest.json         # authoritative Design DNA route/state/viewport/reference map
   owner-policy.yml            # optional, owner-approved governance
   owner-pattern-review.json   # required when the owner-pattern-contract trigger is active
   state.json
@@ -817,5 +893,8 @@ If browser, screenshot, test, or network capabilities are unavailable:
 1. Perform the applicable source and reasoning review.
 2. Identify the exact checks that could not be performed.
 3. Do not claim a rendered, measured, independent, or user review occurred.
-4. Leave a focused follow-up list for an environment that can perform the
-   missing checks.
+4. Keep the affected website surface blocked from presentation; do not use a
+   manual, deferred, lower-threshold, or hand-written substitute for a required
+   packaged result.
+5. Leave a focused follow-up list for an environment that can perform the
+   missing checks, or remove the unprovable surface from the delivered scope.

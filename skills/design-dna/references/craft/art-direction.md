@@ -4,14 +4,15 @@ Use this for greenfield work, redesigns, or any change that establishes or
 substantially alters visual character. Art direction should make this project
 more itself; it should not make every project look like Design DNA.
 
-Read the [creative freedom boundary](../creative-freedom.md) before choosing a
-direction.
+Read the [creative freedom boundary](../creative-freedom.md) before selecting
+references. It preserves a broad source field but gives the producer no
+independent aesthetic lane.
 
 ## Contents
 
 - [Start from project authority and material](#start-from-project-authority-and-material)
-- [Research relationships, not looks to copy](#research-relationships-not-looks-to-copy)
-- [Form a project-specific creative logic](#form-a-project-specific-creative-logic)
+- [Research exact-fit designs to copy](#research-exact-fit-designs-to-copy)
+- [Form an exact source/state/component transfer](#form-an-exact-sourcestatecomponent-transfer)
 - [Keep the public surface true to the encounter](#keep-the-public-surface-true-to-the-encounter)
 - [Choose media deliberately](#choose-media-deliberately)
 - [Set ambition in the project's own terms](#set-ambition-in-the-projects-own-terms)
@@ -30,50 +31,56 @@ Establish:
 - truth, rights, privacy, accessibility, performance, localization, and
   functional boundaries;
 - owner preferences and rejections, without widening their scope;
-- open creative territory.
+- visible relationships that remain unsourced and therefore require research.
 
 Use a plain public-comprehension statement when rapid orientation matters. A
 narrative, art, editorial, or entertainment experience may deliberately delay
 full explanation when visitors can still orient and continue.
 
 Classify each consequential constraint as non-negotiable, inherited,
-negotiated, or open. Do not let internal skill vocabulary or a producer's
+negotiated, or reference-open. Do not let internal skill vocabulary or a producer's
 favorite treatment become an invisible requirement.
 
-## Research relationships, not looks to copy
+## Research exact-fit designs to copy
 
-Inspect current category behavior, project-specific material, and useful
-adjacent creative fields when browsing is available and the decision warrants
-it. Record dates, roles, transferable relationships, and copying limits.
+For a fresh public site, follow [reference-led
+direction](../quality/reference-led-direction.md) before the first visual
+candidate. Define the audience/task/content/brand/operational selection brief;
+discover through curated or awarded sources; study every serious candidate's
+complete accessible pages, states, and wide/narrow transformations; compare
+quality and exact fit; and record selection plus rejection reasons. Record
+dates, roles, measured transferable relationships, and copying limits.
 
-Research may reveal conventions worth preserving, assumptions worth testing,
-local practices, content structures, image roles, material qualities,
-interaction expectations, or formal possibilities. Do not turn a reference
-collection into a style average. Do not treat whatever is common as forbidden
-or whatever is rare as better.
+Research supplies the visible design: hierarchy, composition, typography,
+color, controls, spacing, media treatment, interaction, progression, and
+responsive behavior. One selected reference supplies each route's dominant
+grammar; compatible references may supply mapped moments. Do not average the
+set into a producer style, and do not treat whatever is common as forbidden or
+whatever is rare as better.
 
-If research is unavailable, state the boundary and keep unverified decisions
-reversible.
+If optional contextual research is unavailable, state the boundary and keep
+unverified nonvisual decisions reversible. If the required reference-led
+research, traversal, measurement, or gate cannot run, the affected website
+candidate remains blocked from presentation; do not invent or hand-build a
+substitute direction.
 
-## Form a project-specific creative logic
+## Form an exact source/state/component transfer
 
-A direction is an answer expressed through consequential relationships among
-content and form. It may be governed by one proposition, several local rules,
+A direction is an answer copied and adapted from consequential relationships
+among content and form in the selected sources. It may be governed by one proposition, several local rules,
 an editorial sequence, an interaction model, an image world, typographic
 behavior, ornament, restraint, or another fitting logic. It is not a style
 label or list of effects.
 
-Record the candidate in an extensible `creative_logic` container:
+Record the candidate in an exact selected-source/state/component transfer map:
 
 | Field | Record |
 | --- | --- |
-| `logic_id` | Stable local identifier when useful. |
-| `statement` | What this candidate proposes in project language. |
-| `evidence` | Material, reference decomposition, owner direction, specimen, render, or review. |
-| `decisions` | Consequential content, composition, type, media, color, material, ornament, interaction, or behavior decisions. |
-| `limits` | Relevant boundaries and removal, adaptation, or maintenance conditions. |
-| `status` | Provisional, accepted, revised, rejected, or blocked. |
-| `extensions` | Project-specific information; no required aesthetic fields. |
+| Route and component | Exact manifest route key and rendered census component key. |
+| Source | Selected rank/ID, observation path/SHA-256, and mapped source state. |
+| Decision | The measured composition, type, media, color, material, ornament, interaction, or behavior reproduced. |
+| Evidence | Current source frame/event and build wide/narrow proof bound to build, run, manifest, and producer bytes. |
+| Limits and status | Relevant rights, content, access, adaptation, maintenance, and accepted/revised/rejected/blocked status. |
 
 Use an observable decision ledger:
 
@@ -82,7 +89,8 @@ Use an observable decision ledger:
 |  |  | project, audience, aesthetic, cultural, editorial, or production evidence | render, task, state, or audience response | relevant content, size, input, preference, fallback, or maintenance condition |  |
 
 No named aesthetic field or device is mandatory. Record candidate-specific
-descriptions only when the candidate genuinely uses them.
+descriptions only when the mapped references genuinely use them. Every visible
+decision names its source; an unsourced decision is researched or removed.
 
 ## Keep the public surface true to the encounter
 
@@ -98,7 +106,7 @@ surface for the real subject and audience, or merely recognizes the device used
 to make the sample feel different. Compare the public proposition, hierarchy,
 media role, type behavior, composition, and interaction with the project's
 stated encounter. If the answer is weak, generic, artificial, or ugly, reopen
-the creative logic. Do not preserve a rejected premise by adding more labels,
+the selected transfer. Do not preserve a rejected premise by adding more labels,
 decorative systems, effects, or a different palette.
 
 For high-visibility, owner-sensitive, or previously rejected work, use
@@ -109,12 +117,14 @@ not a new house style.
 ## Choose media deliberately
 
 When media materially shapes recognition, evidence, atmosphere, or the owner’s
-requested quality, decide how the project will obtain and use it. Possible
+requested quality, use the selected reference grammar to determine its visible
+role and treatment, then decide how the project will obtain it. Possible
 paths include approved first-party material, commissioned or licensed work,
 owner-authorized generated media, illustration, data graphics, a capture plan,
 or a deliberately type- or object-led treatment.
 
-These are possibilities, not a required hierarchy. The choice must respect
+These are content/asset acquisition possibilities, not a second visual-design
+path or required hierarchy. The choice must respect
 truth, rights, privacy, representation, disclosure, crop, access, performance,
 and the difference between documentary evidence and illustration. “No photos
 were supplied” is a production fact, not by itself an art direction.
@@ -122,19 +132,20 @@ were supplied” is a production fact, not by itself an art direction.
 ## Set ambition in the project's own terms
 
 Translate words such as current, premium, expressive, playful, cinematic,
-quiet, archival, or bold into project-specific observations and failure
-conditions. Do not map them automatically to type categories, palettes,
-motion, whitespace, density, or layout shapes.
+quiet, archival, or bold into project-specific reference-selection criteria
+and failure conditions. Do not map them automatically to type categories,
+palettes, motion, whitespace, density, or layout shapes from producer taste.
 
 The desired quality may arise from precision, abundance, directness, image
 casting, language, pacing, service design, interaction, material, ornament,
-restraint, or another source. It may be distributed across the experience or
-concentrated locally. Judge the result against the brief and actual render,
-not a universal ladder from restrained to expressive.
+restraint, or another relationship the qualified references supply. It may be
+distributed across the experience or concentrated locally. Judge the result
+against the brief, source evidence, and actual render, not a universal ladder
+from restrained to expressive.
 
-When the owner rejects the ambition level, reopen the creative logic. Do not
-patch boredom with detached effects or patch exuberance with an automatic
-minimal theme.
+When the owner rejects the ambition level, reopen the reference selection and
+transfer map. Do not patch boredom with detached effects or patch exuberance
+with an automatic minimal theme.
 
 ## Protect cultural and temporal specificity
 
@@ -157,11 +168,12 @@ fashion.
 ## Prove and select
 
 Use [creative exploration](creative-exploration.md) when consequential
-uncertainty remains. Render the part that can settle the decision, with real
+uncertainty remains. Compare different qualified reference combinations and
+render the adapted part that can settle the decision, with real
 copy and representative content or media where available. The number and form
 of alternatives should match the stakes; no universal quota applies.
 
-Choose for project fit, visual quality, owner preference, truth, cultural
+Choose the source combination for project fit, visual quality, owner preference, truth, cultural
 care, usability, accessibility, feasibility, and maintenance in the
 proportions relevant to the work. Keep evidence identity and a reversible
 checkpoint when the assurance level warrants them.

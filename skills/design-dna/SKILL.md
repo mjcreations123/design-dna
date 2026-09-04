@@ -1,6 +1,6 @@
 ---
 name: design-dna
-description: Builds, redesigns, polishes, and visually reviews websites and web UIs that must feel specific, current, non-generic, and production-quality. Use for landing pages, multi-page sites, place and community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, and components; requests to avoid AI-looking, vibe-coded, templated, cookie-cutter, accidentally dated, or time-incongruent design; feedback that a result feels plain, boring, under-designed, too safe, or visually weak; complaints about ugly or unstyled typography; and public copy that sounds generic, robotic, over-explained, construction-facing, or littered with random decorative labels, micro-text, or symbols. Apply when art direction, visual systems, content hierarchy, culturally central representation, responsive behavior, rendered quality, copy voice, or typography materially matters. Pair with specialist skills for deep security, SEO, legal, backend, deployment, or compliance.
+description: Builds, redesigns, polishes, and visually reviews specific, current, non-generic websites and web UIs using only qualified measured references and approved project authority—never producer-authored visible design. Use for landing pages, multi-page sites, place/community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, and components; requests avoiding AI-looking, vibe-coded, templated, cookie-cutter, dated, or time-incongruent design; feedback that work feels plain, boring, under-designed, too safe, ugly, weak, or unstyled; and generic, robotic, over-explained, construction-facing, or label-heavy public copy. Apply when art direction, visual systems, content hierarchy, culturally central representation, responsiveness, rendered quality, copy voice, or typography materially matters. Pair with specialist skills for security, SEO, legal, backend, deployment, or compliance.
 ---
 
 # Design DNA
@@ -8,10 +8,11 @@ description: Builds, redesigns, polishes, and visually reviews websites and web 
 ## Contents
 
 [the standing order](#the-owners-standing-order-no-producer-design) |
+[no shortcuts](#2026-09-04-no-shortcuts-quality-floor) |
 [boundaries](#assurance-boundaries-come-first) |
 [quality axes](#separate-specificity-from-ambition) |
 [authority](#resolve-authority) | [classify](#classify-the-work) |
-[creative freedom](#preserve-creative-freedom) |
+[source authority](#preserve-source-authority-without-adding-producer-design) |
 [invariants](#keep-these-invariants) |
 [direction start](#start-direction-progressively) |
 [router](#load-guidance-only-for-the-decision-now) |
@@ -64,20 +65,102 @@ What it means, mechanically:
   minutes. If there is still no time to run the gate, there is no time to
   build; say so and stop. A build made without the gate is the producer's
   design by definition, which is forbidden, so it is not delivered.
-- One command runs every gate:
-  `python "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --url <each route>
-  [--substitute FROM=TO --match .design-dna/evidence/typeface-match.json]`.
-  It extracts the build's computed styles, counts its components, checks
-  provenance, structure, mechanisms and signature transfer, validates the
-  dossier, and writes `.design-dna/evidence/gate.json` with one verdict line.
+- One gate program has two mandatory phases against the same authoritative
+  [route-manifest file and complete planned route mapping](templates/route-manifest-template.json).
+  Keep the manifest's immutable `manifest_id`; it never contains a build ID.
+  Use distinct immutable proof and final build IDs. Before a second
+  section or broad implementation, run it with `--phase first-screen
+  --route-key <PRIMARY_KEY>`; it checks that mapped route at both manifest
+  viewport classes and writes `.design-dna/evidence/first-screen-gate.json`.
+  It writes an append-only authorization record alongside the first-screen gate.
+  At completion, run the same command with `--phase final` and the emitted
+  `--prebuild-authorization` path; it checks every manifest route/state/viewport
+  and writes `.design-dna/evidence/gate.json`. Both commands require `--project
+  "<PROJECT_ROOT>" --build-id` for their distinct immutable builds and
+  `--route-manifest .design-dna/route-manifest.json`; the manifest has its own
+  immutable `manifest_id`. A failing or missing first-screen phase blocks broad implementation;
+  a failing or missing final phase blocks presentation.
 - The final message to the owner quotes that verdict line verbatim
   (`GATE PASS ...` or `GATE FAIL ...`). If the gate did not run, the message
   says "the gate did not run" in those words. A finished-looking page
   presented without that line is a lie of omission.
 
 This applies to every producer on every host that loads this skill, Claude
-and Codex alike. It is not a style blacklist: nothing is banned by name. It is
-a provenance requirement: nothing ships without a name.
+and Codex alike. It is not a style blacklist, because named styles are not the
+unit of enforcement; it is a hard source-fidelity lock. Nothing visible ships
+without a current brief, brand, supplied-work, or measured-reference binding,
+and an unbound choice is a release-blocking failure.
+
+## 2026-09-04 no-shortcuts quality floor
+
+Motty's standing order is that quality may never be traded for agent
+convenience. Time, token budget, cost, elapsed effort, implementation
+difficulty, a demo or sample label, “quick,” “small,” “just a test,” and
+“hurry” may reduce only the truthful delivered scope: fewer routes, less copy,
+or a smaller feature set agreed by the brief. They never reduce the quality or
+evidence required for anything that remains in scope.
+
+For every visual surface in scope, do not reduce reference eligibility,
+quality or brief-fit qualification, reference/source spread, complete
+same-origin traversal, the recorder floor of 90 seconds at 15 fps, distinct
+wide and narrow captures, measured component/source provenance, the
+source-fidelity proof, the first-screen hard gate, the complete final gate, or
+the whole-scope public-copy, functional, responsive, and accessibility review.
+Create each reference's exact state list from
+`templates/reference-state-contract-template.json` and pass it to both the
+schema-4 recorder and schema-5 observer. The recorder records wide and narrow
+separately for at least 90 seconds at 15 fps; if recursive routes, declared
+states, scroll surfaces, or hover targets remain incomplete, it fails and must
+be rerun with a greater duration until coverage is complete. Never declare the
+floor itself sufficient; any remaining coverage gap blocks the reference.
+
+Before broad implementation, create and hash-bind
+`.design-dna/visible-decision-sources.json` from the packaged template. It
+enumerates every planned layout, typeface, color, control, transition, content
+pattern, and effect; binds each decision to exact manifested routes/states and
+an immutable PNG in the cited schema-5 observer's canonical frame inventory;
+the observation envelope or a hand-written local file is not visual evidence.
+It forbids placeholders, generic scaffolds, and fallback design. Its planned
+IDs equal its sourced rows. A later visible
+decision or scaffold finding invalidates the proof until the manifest and
+first-screen authorization are regenerated.
+
+Use accessible page code, DOM, route configuration, loaded assets, and browser
+state hooks as a coverage aid to discover routes, controls, state logic,
+animation hooks, media, and interactions that a manual pass might miss. Then
+reconcile that inventory with the live wide/narrow rendered study. Code or a
+DOM node never substitutes for opening the route, exercising the state, and
+recording its actual browser result.
+
+When a required rendered-evidence script needs Playwright, first run the
+installed `scripts/browser_preflight.mjs` against the actual project with
+`--project-root ABSOLUTE_PROJECT --launch`. It discovers only an explicit
+absolute module directory, the project’s exact `node_modules`, a recognized
+source checkout's pinned maintainer modules, or exact `node_modules`
+directories inside the installed skill; it never installs, downloads, or
+globally searches. An unavailable
+preflight blocks that rendered claim. Its pass proves only the local operator
+process and blank-browser launch, never host activation or finished QA.
+
+The schema-5 observer and schema-4 recorder must also emit generated
+`rendered_qa_by_viewport` for every visited page and authored state. It checks
+wide/narrow clipping, collisions, fixed-rail obstruction, exact semantic
+control identity, hidden/dead controls, state ARIA, and the complete overlay
+lifecycle: closed descendants removed from operation, real background
+inertness (not `aria-hidden` alone), stacking/hit testing, initial focus,
+forward/back focus trap, Escape closure, and focus return. It also records
+keyboard paths, reduced-motion behavior, direct deep links, reloads, and
+non-terminal dead ends. Missing generated evidence or any unresolved selected-
+source defect blocks transfer; prose cannot clear it.
+
+Use the packaged tools and canonical templates. A homemade substitute,
+hand-written replacement for a generated record, deferred required check,
+lower threshold, omitted route/state, reused capture, unsupported waiver, or
+post-hoc dossier written to justify an existing build is a failure, not a
+shortcut. When a required capability, source, tool, or check is unavailable,
+the affected surface remains blocked and is not presented as a website
+candidate. Shrink scope only by removing the unprovable surface from the
+deliverable, never by weakening how it is researched, built, or verified.
 
 ## Assurance boundaries come first
 
@@ -100,9 +183,12 @@ canonical record is absent or expressly delegates to it. Read the applicable
 record before the direction exists.
 It is the accountable owner's own dated record, so the constraints in it are
 traced and enforceable pre-render for that owner's work, unlike a trend list.
-It closes only the ingredients it names, for that owner only; everything else
-stays open. If no such file exists, proceed without one and do not
-reconstruct its contents from memory.
+It closes the additional failure relationships it names, for that owner only.
+Everything else still remains closed to producer invention by the standing
+source-authority rule: it must come from the brief, supplied work, an
+established approved system, or selected measured references. If no such file
+exists, proceed without inventing one and do not reconstruct its contents from
+memory.
 
 An owner record may reference the host-neutral machine contract at
 `~/.design-dna/owner-pattern-contract.json`. When that active contract applies,
@@ -130,20 +216,21 @@ one. Neither richness nor restraint is the default, and distinctiveness does
 not compensate for theatricality, implausibility, or visitor-irrelevant design
 performance.
 
-Set energy, density, media, scale, motion, and surprise from the brief,
-audience, content, genre, owner preference, and production reality. Avoiding
-generic signals by stripping everything away is not a solution, and adding
-effects to a weak direction is not a solution. When feedback says "boring,"
-"too plain," or "not enough pizzazz," inspect the rendered organizing cause
-and raise the relevant ambition. When it says "noisy" or "confusing," edit
-the relevant hierarchy and relationships. Do not map either response to a
-universal style recipe.
+Use the brief, audience, content, genre, owner requirements, and production
+reality to select references whose recorded energy, density, media, scale,
+motion, and surprise fit, then reproduce those relationships. The producer
+does not raise or lower ambition by adding or removing effects from taste.
+When feedback says “boring,” “too plain,” “not enough pizzazz,” “noisy,” or
+“confusing,” reopen the reference selection or transfer relationship that
+caused the result and rerender it. Do not map either response to a universal
+style recipe or an unsourced correction.
 
-For an open or consequential direction, externalize enough contrast to
-challenge the first plausible answer. The useful evidence may be a second
-composition, a focused fragment, a reference decomposition, a content model,
-or a full rendered alternative. Its form and count follow uncertainty and
-stakes; no fixed concept quota applies.
+For an open or consequential direction, compare enough source-bound
+alternatives to challenge the first plausible reference combination. The
+useful evidence may be a second reference mapping, a focused adapted fragment,
+a reference decomposition, a content model, or a full rendered alternative.
+Every visible alternative remains traceable to selected evidence; its form and
+count follow uncertainty and stakes, with no fixed concept quota.
 
 ## Resolve authority
 
@@ -153,7 +240,8 @@ stakes; no fixed concept quota applies.
    requirements. A project-local policy may add exact constraints when its
    owner, source, date, scope, and exception path are recorded.
 3. The task, surface mode, content, stack, and delivery constraints.
-4. Project evidence and documented rationale.
+4. Project evidence and documented rationale for truth, task, and source fit;
+   rationale alone is never visual authority.
 5. Bundled [publisher defaults](policy/owner-defaults.yml), then heuristics.
 
 When same-tier sources conflict, preserve an established approved
@@ -165,20 +253,20 @@ unresolved choice would materially change the result.
 | Scope | Required process |
 | --- | --- |
 | New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. A fresh public-facing representation starts at Standard plus Enterprise Candidate with the full public rendered-review rigor, including the captured reference dossier; add Showcase only when its brief calls for it. For multiple independently addressable routes, name each route's body job before one page recipe spreads across them. |
-| Component or meaningful visual change | Inherit the system, define the component's job and states, test changed behavior. |
+| Component or meaningful visual change | Inherit its exact approved source/system relationships, bind every changed visible decision to recorded evidence, define the component's job and states, and test the changed behavior. |
 | Visual or UX review | Inspect rendered and source evidence; report observed causes and unperformed checks. |
-| Mechanical or purely functional change | Preserve the visual system, verify proportionately. |
+| Mechanical or purely functional change | Preserve every rendered decision and run all affected functional, access, engineering, and exact before/after visual-invariance checks. Any pixel change escalates to the applicable visual workflow. |
 
 Capability presets are cumulative; adding one cannot remove another:
 
 | Preset | Use when | Minimum |
 | --- | --- | --- |
-| Quick | Bounded repair in an established system, low risk. Never a fresh build, however small: "quick", "demo" and "just a test" do not select this preset; see the standing order. | Inspect context, preserve the system, implement changed states, run affected checks plus the preship gate on the touched surface. |
+| Mechanical repair (`quick` legacy CLI identifier only) | Exact nonvisual code/content plumbing repair in an established system that preserves every rendered decision. It is never a website-build, component-design, visual-change, demo, sample, small-job, hurry, time, token, or cost preset. | Prove the rendered system did not change and run every functional, access, and engineering check the repair affects. Any new or changed visible decision escalates to Standard plus the applicable reference-led gates; `quick` cannot lower research, capture, review, or gate rigor. |
 | Standard | New route, meaningful feature, ordinary redesign. | Frame, direct, prove consequential decisions, implement, full rendered plus engineering review, artifact-credibility review for a public proposition, full preship gate. |
-| Enterprise Candidate | Every fresh public website, unless the task is an explicitly bounded repair or non-public surface. | Standard plus category-appropriate public topology, intentional media/composition planning, fully considered key states, and a rendered wide/narrow review that must close obvious first-draft defects before preview. It does not claim a financial valuation, require an oversized scope, prescribe a style, or automatically select Showcase. |
+| Enterprise Candidate | Every fresh public website, unless the task is an explicitly bounded repair or non-public surface. | Standard plus category-appropriate public topology, reference-mapped media/composition, fully considered key states, and a rendered wide/narrow review that must close obvious first-draft defects before preview. It does not claim a financial valuation, require an oversized scope, prescribe a style, or automatically select Showcase. |
 | Showcase | The brief expressly calls for premium, showcase, high-ambition work, or direction recovery after a rejected visual answer. | Research and externalize directly reviewable contrast sufficient to challenge the first default; build full alternatives when uncertainty, stakes, or owner choice justify them; deepen risk-selected proof, polish, adversarial review, owner acceptance kept separate. |
-| Project Contrast | The owner says this work must differ from recent authorized work, says sites feel alike, or declares an owner-scoped recurrence requirement. | Before broad implementation, create a truthful `draft` record, settle it to `direction-ready` from grounded project evidence, challenge the first answer with an organizing alternative, and record why the selected encounter differs from the closest authorized comparator. Bind wide/narrow proof at `proof-ready`; only a reviewed record can support the comparison claim. This is not a font, color, or novelty quota. |
-| Direction Challenge | The owner explicitly activates a three-root recurrence escalation or expressly asks for a multi-root high-ambition greenfield concept challenge. A premium or high-ambition site alone remains Showcase. | Before broad implementation, record three or more incompatible brief-native roots before polished examples, bind two different roots to path-bound schema-3 wide/narrow rendered proof slices, choose one against an explicitly rendered rejected root, freeze the independent unprimed view, advance the record to `reviewed`, and explicitly open its `broad-implementation` boundary. The schema is review evidence, not a site architecture, style catalog, rotation schedule, or ingredient quota. |
+| Project Contrast | The owner says this work must differ from recent authorized work, says sites feel alike, or declares an owner-scoped recurrence requirement. | Before broad implementation, create a truthful `draft` record, settle it to `direction-ready` from brief-qualified selected-reference evidence, challenge the first source combination with another qualified reference combination, and record why the selected encounter differs from the closest authorized comparator. Bind wide/narrow proof at `proof-ready`; only a reviewed record can support the comparison claim. This is not a font, color, or novelty quota. |
+| Direction Challenge | The owner explicitly activates a three-root recurrence escalation or expressly asks for a multi-root high-ambition greenfield concept challenge. A premium or high-ambition site alone remains Showcase. | Before broad implementation, record three or more incompatible brief-qualified, reference-backed roots before polished examples, bind two different roots to path-bound schema-3 wide/narrow rendered proof slices, choose one against an explicitly rendered rejected root, freeze the independent unprimed view, advance the record to `reviewed`, and explicitly open its `broad-implementation` boundary. The schema is review evidence, not a site architecture, style catalog, rotation schedule, or ingredient quota. |
 | Range Study | A multi-route brief explicitly requiring meaningful creative range. | Shared foundations stay dependable; route-family record before scaling; proof routes chosen by uncertainty; matched route atlas review. |
 | Batch Study | A controlled evaluation of at least three unrelated website briefs. | Freeze independent briefs and source packets; record human-auditable implementation isolation; resolve capture and contact-sheet data handling for built cases; bind each capture to its rendered route, profile, exact public-build manifest, and capture mode; freeze capture-set-bound site observations before sibling output or diagnostics; record the neutral-label whole-system first observation only after those reviews are frozen; then record a later capture-set-bound human contextual disposition that closes material findings separately from protocol coverage; keep planned and correctly blocked cases separate. It is an evaluation method, not evidence that fictional specimens are a client-ready portfolio or a substitute for owner taste review. |
 | High-risk | Consequential transactions, identity, money, regulated claims. | Task, state, and specialist evidence first; visual ambition cannot waive a safety gate. |
@@ -208,220 +296,88 @@ repeated feedback.
 
 For every fresh Enterprise Candidate public website, read
 [Reference-led direction](references/quality/reference-led-direction.md) before
-the first visual candidate, and initialize the project with
-`--profile enterprise-candidate` so the prebuild gate can hold it. Start from
-Selection is QUALITY FIRST and register second. Take candidates only from
-sources whose entries are there because a jury or an editor chose them, which
-the registry marks `award` or `curated`; an open submission feed may be browsed
-but cannot supply a selected reference. A listing on a submission feed means
-somebody sent it in, not that it is good, and filtering a bulk feed by register
-produces register-matched mediocrity: six faithful copies of forgettable sites
-make a forgettable site. Record what each selected site won, or why that
-source's editor chose it.
+the first visual candidate and initialize with `--profile
+enterprise-candidate`. That reference owns the detailed research, capture,
+comparison, measurement, transfer, and review procedure; do not preload its
+implementation detail for unrelated decisions.
 
-Selection is QUALITY FIRST and register second. Take candidates only from
-sources whose entries are there because a jury or an editor chose them, which
-the registry marks `award` or `curated`; an open submission feed may be browsed
-but cannot supply a selected reference. A listing on a submission feed means
-somebody sent it in, not that it is good, and filtering a bulk feed by register
-produces register-matched mediocrity: six faithful copies of forgettable sites
-make a forgettable site. Record what each selected site won, or why that
-source's editor chose it.
+The non-negotiable selection contract is **quality-gated and brief-fit
+ranked**. Begin with a project-specific selection brief covering the audience,
+visitor tasks, truthful content model and states, brand constraints, operating
+reality, route jobs, material/media needs, accessibility, performance,
+maintenance, rights, and access. Discover candidates through sources the
+registry marks `award` or `curated`, but never treat an accolade, source label,
+gallery order, fashionable surface, random result, superficial industry match,
+visual novelty, or ease of recreation as evidence of suitability. A reference
+from the same, adjacent, or unrelated field is eligible only when its concrete
+content, task, audience, brand, and operational relationships transfer to this
+website without fiction or producer invention.
 
-the maintained public source registry, weight eligible sources by this brief,
-pick references from any genre for their design and never by the client's
-industry, and record at least six strong individual references drawn from at
-least three sources, plus at least three project-specific counterexamples.
-The floor exists so that no single site becomes the template; it is not a
-target, and it is never met by padding: judge every candidate with your own
-eyes first and drop a thin, dated, or ugly site on sight, because a listing
-means someone submitted it, not that it is good.
+Before selection, study every serious candidate as a complete accessible
+experience at wide and narrow widths: entry and home, relevant inner pages,
+navigation, the full content/task progression, applicable hover, focus, press,
+open, scroll, transition, media, ending, reset, error, and recovery states.
+Record a side-by-side candidate comparison, why each selection fits this exact
+brief, and the concrete rejection reason for every non-selected finalist.
+Record at least six strong references from at least three active sources, with
+no source supplying more than half, plus at least three project-specific
+counterexamples. The floor prevents one site becoming the template; never pad
+it with a merely eligible or visually impressive but mismatched site.
 
-The references are where the site's front-end design comes from, and every
-project gets new research. Watch each one with the packaged harness
-(`scripts/observe_reference.mjs`, schema 3): it drives the page with real
-wheel gestures, reads every element against the viewport rather than against
-the scroll position, and records the site's mechanisms as numbers: what holds
-in the viewport and for how many pixels, what travels through it, what swaps,
-what reveals, what parallaxes at what rate, what follows the pointer, how long
-a hover takes. It also records the STRUCTURE of the reference's first screen:
-which kind of thing fills it, where the ink sits over a sampled grid, what is
-against each edge and in each corner, and the proportions of its type. A still
-is kept for composition and is never evidence of what a site does. The harness also scores the site, and the gate drops a thin one
-on its own: fewer than three distinct mechanisms, or scroll choreography on
-less than half of its depth, is not a reference. Answer one question before
-any structural note, and record it in the row's `Signature` cell as what the
-site does, with a verb: if a stranger were shown this site, what would they
-say they noticed? A cell that names a subject, a palette or a mood is refused.
-Then hold every part you plan to take to the same test. If a thousand
-strangers would not name it, it is not the takeaway. A reference contributes its memorable whole and not a convenient
-scrap: the build must carry that named signature, and a transfer that takes
-only a palette value, a font category, a background, or one generic animation
-fails the standard even though it names a source. Two mechanisms hold that,
-because prose about signatures did not. `scripts/check_signature_transfer.mjs`
-reads each reference's mechanisms in the order the harness ranked them and
-refuses a `Signature` cell that names anything but the loudest thing that site
-does; a site's buttons really do fill with colour under the pointer, and
-writing that down is a small true thing recorded in place of the large one,
-after which the reference contributes a small true thing. Then the dossier's
-`Signature transfer` table applies the deletion test, one row per selected
-reference: cover its row and name what a stranger would notice is gone. The
-answer must name a component the build ships and an arrangement or a behaviour,
-because a ground, a radius, a size or a control dimension is exactly what
-survives when a reference was sampled instead of copied. If the honest answer
-is that nothing anyone would name would go, that reference was not selected,
-it was listed; cut it, or go back and take its signature properly. Most often that answer is
-something the page does, which is why behavior is read and captured first,
-but a signature can equally be a typographic composition, a photographic
-treatment, or a color relationship, and a site that barely moves is a strong
-reference when its signature is strong. Record all the good parts to take,
-behavior first and then the rest (what the page does as it scrolls, its
-interaction and transitions, its signature moment, then media treatment,
-composition, how its color behaves, type posture and scale, shapes) and the
-parts to leave.
+Every strong row binds distinct full-page wide and narrow captures, the pages
+and states actually studied, and the packaged recording, observation, and
+computed-style evidence available for that source. A signature is the dominant
+relationship a visitor would notice. Prefix it `motion:` only when the observed
+experience supports a dynamic signature and name its trigger and sequence;
+prefix it `static:` when composition, typography, media treatment, or color
+relationship is dominant and bind that claim to the wide/narrow captures plus
+structure/style evidence. Never invent motion or force a static signature into
+a verb. A motion-quality floor may reject a motion claim; it cannot disqualify
+an excellent static source.
 
-Map a selected subset of at least four references, at least three of them
-motion rows, into a design transfer map and design the site as one thing: the
-palette and at most two typefaces TAKEN FROM THE MEASURED REFERENCES, one
-rhythm where each section flows into the next, and one designed motion
-language carrying the selected references' recorded mechanisms into named
-routes. The hues are not the producer's to pick. Where the client has recorded
-brand colors, those are the brand's; where the client has none, which is every
-demo and every spec build, the hues come from the colors the extractor
-measured on the selected references, and "the brand's palette" is not a
-licence to invent one. The typefaces are families the extractor measured on a
-selected reference, self-hosted where the license allows. When a reference's
-family cannot be licensed, the substitute is not chosen by anyone:
-`scripts/match_typeface.mjs` measures open-licence candidates exactly the way
-the observation measured the reference (x-height ratio, advance width and the
-width of the capital I, in the same engine) and ranks them; rank one is the substitute, recorded in
-`.design-dna/evidence/typeface-match.json`, and
-`check_style_provenance.mjs --substitute FROM=TO --match` refuses any pair
-that record did not rank first. One build picked Cormorant Garamond by
-matching an x-height by hand; another paired Fraunces with Inter because they
-read as right for the brief. Both were the producer's face on every headline,
-and the second happened on the day the owner forbade it. Observe inner pages, not only home pages. Every real site has more than one,
-and a producer holding only home-page captures can only copy a home page; it
-will design every inner page it builds while believing it is still copying.
-The gate requires at least two observed inner pages across the selected
-references.
+Select at least four references from at least two sources for the transfer map.
+One selected source supplies the dominant visual grammar for each route;
+additional references may supply only compatible, explicitly mapped moments.
+The combination must preserve the dominant source's coherent hierarchy,
+composition, color behavior, type system, control language, progression,
+interaction/motion posture, and narrow recomposition. Every visible component
+names the exact source capture,
+structure, and measured values it reproduces. No component, connective tissue,
+typeface, hue, control, icon, or motion may be supplied from producer taste.
+Use recorded client brand values where they exist; otherwise use measured
+reference values. Use a measured reference typeface where licensed; otherwise
+use only the rank-one result from `scripts/match_typeface.mjs`. If the source
+cannot be adapted truthfully, accessibly, legally, or operationally, reject the
+source rather than redesigning it from memory.
 
-RECORD IT, THEN NARRATE EVERY EVENT. Before a strong row is written, run
-`scripts/record_reference.mjs` on the reference: it drives a real cursor over
-every interactive thing on the first screen with a dwell on each, scrolls in
-steps hovering what arrives, follows one internal link so the page
-transition and an inner page are on tape, differences the video frame by
-frame, and keeps only the moments where the screen changed: one event per
-hover, click or scroll step that changed something, one per run of quiet
-travel, and one per change the page made on its own, each as a sheet of
-four frames (before, during, after, settled) with the percent of the screen
-that changed, where, and how long it took to settle. Then write the
-sequence read by hand: one line per event, saying what the cursor did, what
-scrolled, what changed, and an inventory of what the site DOES with
-magnitudes. The dossier's `Sequence reads` section binds both and the
-validator counts the lines against the events. Thirty events cost minutes;
-three hundred contact sheets cost the afternoon the owner refused to pay for,
-and most of them showed nothing changing. The
-harness's mechanism numbers are a cross-check on that reading, never a
-substitute for it: a producer given only the numbers read them, opened one
-rest frame of forty-one, and built a photograph inside a dotted line while
-the site it cited was growing its navigation to half the viewport under the
-pointer, decoding labels beside the cursor, assembling a quote word by word,
-and zooming its whole sheet out to a card between pages. The owner's own
-sixty-second recording held nineteen behaviours the build had never seen.
+Render and compare the primary first screen at wide and narrow widths before a
+second section exists. The manifest already contains the full planned route
+set; run the hard stop on the primary key and do not proceed unless it passes:
 
-A mechanism TYPE is a category, not the moment. `record_reference.mjs`
-prints and records every `<video>` element present at load, by position and
-size, because a "photograph" that is really a looping video (a chair
-swiveling, smoke off a candle) changes too slowly and too locally to cross
-an event threshold and reads as a still if nobody is told to look for it;
-treat every listed `video_elements` entry as a standing instruction to
-narrate that spot as video, not photo, in the sequence read. The same
-failure hits small things: a mascot or icon that tracks the cursor is
-exactly as nameable as a hero photograph and much easier to under-describe
-as "a faint response near the cursor" instead of the headline mechanism it
-is (`observe_reference.mjs` now probes small media elements and checks
-pointer-follow at three scroll depths, but the read still has to call it
-what it is). And a build that cites a harness-approved mechanism type is not
-proof the SPECIFIC thing chosen was the signature: "swap" covers both an
-ambient autoplay cross-fade and a slideshow gated behind a long scroll the
-visitor has to force through by hand, and only one of those is what a
-stranger would name. Re-watch the actual recording — medium (photo or
-video), trigger (timer or scroll/hover/click), and how much the visitor has
-to do to see the next state — before writing what a mechanism IS, not just
-which category the harness sorted it into.
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest .design-dna/route-manifest.json --phase first-screen --route-key <PRIMARY_KEY>
+```
 
-Never build from a picture. Alongside the behavior harness, run
-`scripts/extract_reference_styles.mjs` on every selected reference: it drives
-the live page and reads its actual computed type, color, control geometry,
-transitions, radii, borders, section grounds and spacing out of the CSS. The
-dossier binds that record and every number a component row claims to reproduce
-is checked against it, so a value nobody measured cannot be written down. Given
-only a screenshot a producer reports what a screenshot carries, guesses the
-rest, and believes the whole time that it is copying.
+Bind `.design-dna/evidence/first-screen-gate.json` as `First-screen gate` in
+the direction proof, and bind the emitted append-only prebuild-authorization
+path and SHA-256. At completion, the authoritative schema-2
+`.design-dna/route-manifest.json` lists every route once by unique normalized
+key and URL, its exact selected reference ID/observation/SHA-256, and every
+applicable typed rest, interactive, system, and data state with a trigger and
+expected result. It defines at least one wide and one narrow viewport. Run the
+final packaged gate against a distinct immutable final build identity and that
+exact predecessor authorization:
 
-Every component that ships has a source line in the dossier's
-`Component sources` table naming the capture FRAME that shows it, the
-STRUCTURE it takes, and the recorded values it reproduces: first screen, layout grid, display typeface, text
-typeface, color behavior, section rhythm, navigation, buttons, rows and lists,
-footer, scroll behavior, hover behavior, and anything else on the page. The
-structure column must say how the part is arranged, not what size it is,
-because a build can reproduce every font size on a reference and still be the
-producer's own layout. The two typefaces come from a reference, never from the
-producer. Any other component with no source is the producer's own design,
-and that does not ship: not with permission, not as a placeholder, not in a
-demo. The validator refuses the phrase `owner-approved` anywhere in the table
-(10.0.0, on the owner's order). A part no reference shows is a part to observe
-on a reference, or a part to cut.
-The frame column is opened by the validator, because a source line is prose
-and prose is free: one build cited a footer to a site whose footer it had
-never looked at. And the required rows are a floor, not the list. The dossier
-binds `scripts/scan_build_components.mjs`, which counts every component the
-finished build actually renders, and a component with no row does not ship. Sections that fade up on scroll are not a motion
-language; that is the default every generated site ships. When the build is
-finished, two packaged checks read it with the same eyes as its references and
-the visual review binds both. `scripts/compare_mechanisms.mjs` asks whether the
-references' mechanisms arrived; a build that lost them, leans on one device, or
-is a skeleton under its styling does not pass. `scripts/compare_structure.mjs`
-asks whether each route is built the way the reference page it names is built,
-comparing which kind of thing fills the screen, where the ink sits, what is
-against the edges and corners, and the proportions of the type. It takes its
-route list from the census, so a producer cannot compare the one screen it
-copied and leave the pages it invented unread.
-`scripts/check_style_provenance.mjs` reads the build's own computed system
-with the same extractor the references were read with and asks of every color,
-typeface, size, radius and transition in it: which reference did this come
-from? An untraceable typeface, an untraceable LOUD color, or a traced share
-below the floor is a fail, and the finding names the value and where it sits.
-Every gate before these proved the producer had looked at a reference; these
-are the only ones that ask whether the result resembles it.
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FINAL_BUILD_ID>" --route-manifest .design-dna/route-manifest.json --phase final --prebuild-authorization "<EMITTED_PREBUILD_AUTHORIZATION_PATH>"
+```
 
-RUN THEM ON THE FIRST SCREEN, BEFORE A SECOND SECTION EXISTS. This is the
-order, not a preference. Run `compare_structure.mjs` and
-`check_style_provenance.mjs` against the first screen the moment it renders,
-and do not write a second section until both pass. A gate at the end of a
-build is a gate that arrives after the design has been made, defended and
-documented, and what it produces then is a better dossier rather than a better
-site. One build reached its final review with a first screen whose ink agreed
-with the reference it cited on 3% of the screen, having cited a full-bleed
-video and built a typographic layout on a flat ground; the comparator was
-packaged, correct, and scheduled to run after everything was already built.
-Render the first screen at wide and narrow width and put it in
-front of the owner before any other route exists. Name the COMBINATION: which
-reference supplies which part, and why no single one of them is this build. Do
-not name a decision of your own. What makes a build its own is the combination
-of what several strong references already do, never a new idea the producer
-had; the field that used to ask for one got one, and the owner had to point out
-that it was the producer designing again. Before any review chain or gate,
-scroll the candidate, place its renders beside the selected captures, and
-confirm it is beautiful, shows its lineage, flows as one design, and would
-give a stranger something to name; a candidate that fails returns to the
-transfer map.
-The rights boundary is the only limit on copying: never reuse a reference's
-logo, name, copy, photographs, illustrations, or code. A public gallery entry
-can qualify even when no live website exists. Do not use inaccessible
-material, treat a gallery listing as proof of quality, or expose the research
-process on the customer-facing site.
+The proof and final build IDs and trees must be distinct; the manifest itself
+has a stable `manifest_id` and cannot be rewritten to hide chronology. Do not
+replace the manifest with hand-picked `--url` arguments; omitted routes,
+states, or viewport classes are a failed gate, not reduced scope. The final review compares each mapped
+route and state with its cited reference evidence and confirms source lineage,
+brief fit, complete experience, rights, and dominant-grammar coherence.
 
 A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
 at least Standard plus [taste calibration](references/craft/taste-calibration.md),
@@ -473,18 +429,18 @@ guidance pulls in different directions, the assurance boundaries and explicit
 project contract win first; then the primary job governs composition while a
 secondary mode adds only its applicable requirements.
 
-## Preserve creative freedom
+## Preserve source authority without adding producer design
 
-Keep low-freedom rules for truth, rights, privacy, safety, accessibility,
-working behavior, repository constraints, and explicit owner and brand
-requirements. Keep aesthetic decisions high-freedom: there is no global font, palette, style,
-geometry, ornament, layout, interaction, motion, section-order, or
-concept-count whitelist or blacklist. Common choices are not automatically
-generic; uncommon choices are not automatically good. A fitting direction
-may be singular, plural, restrained, maximal, decorative, conventional,
-historically referential, or deliberately dissonant. Read
-[creative freedom](references/creative-freedom.md) before imposing an
-aesthetic rule that did not come from the project or its assurance boundaries.
+Keep truth, rights, privacy, safety, accessibility, working behavior,
+repository constraints, and explicit owner and brand requirements closed to
+improvisation. Under this owner's standing order, every aesthetic decision is
+also closed to producer invention: the only available visual range comes from
+the current brief, recorded brand constraints, supplied work, and selected
+measured references. There is no producer-owned font, palette, style,
+geometry, ornament, layout, interaction, motion, section-order, or concept
+lane. Read [creative freedom](references/creative-freedom.md) as a hard
+source-authority lock: an unbound visible choice blocks implementation and
+release; it never authorizes an unsourced aesthetic choice.
 
 ## Keep these invariants
 
@@ -504,8 +460,8 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   authorizes live operation. A demo control works locally, explains its state,
   or is removed; it does not silently impersonate a live integration.
 - Treat typography as a designed system. Use the
-  [typography](references/craft/typography.md) protocol to choose, deliver,
-  and verify the roles the project actually needs. No family category,
+  [typography](references/craft/typography.md) protocol to assign, deliver,
+  and verify the source-bound roles the project actually needs. No family category,
   pairing count, hosting method, or shortlist size is globally required.
 - Make a deliberate media decision for every build. When physical or sensory
   recognition matters, test whether the selected photography, illustration,
@@ -542,18 +498,23 @@ aesthetic rule that did not come from the project or its assurance boundaries.
   framing; do not use text to fill an otherwise empty layout.
 - For Enterprise Candidate public builds, complete the project-local
   `reference-dossier.md` before broad implementation. It must bind the active
-  public source context, at least six captured strong references from at
-  least three sources, each bound to a schema-2 observation with a mechanism
-  sheet that passes the thin-site score, at least three weak/mismatched
-  counterexamples, a selected synthesis of at least four references of which
-  three recorded motion, a component-sources table covering every shipping
-  part with no producer-designed row, a signature-transfer row per selected reference that survives the
-  deletion test, a sequence read per selected reference with a line for
-  every event of its recording, and the combination that makes it its own. It must also bind
+  public source context; the exact brief-fit frame; the compared candidate pool
+  with concrete selection and rejection reasons; at least six captured strong
+  references from at least three sources; distinct full-page wide and narrow
+  captures for every strong row; truthful schema-5 wide/narrow observation and
+  schema-4 recording or static evidence, each bound to its producer identity;
+  the pages, states, and complete experience studied; at least three
+  weak/mismatched counterexamples; and a selected synthesis of at least four
+  references from at least two sources. It also needs a component-sources table
+  covering every shipping part with no producer-designed row, a
+  signature-transfer row per selected reference that survives the deletion
+  test, and a sequence read for every recorded dynamic reference. It must bind
   a passing `check_style_provenance.mjs` record and a passing
   `compare_structure.mjs` record for the FIRST SCREEN, both dated before the
-  second section was written, and again for every route at completion. The finished build binds a
-  passing `scripts/gate.py` record (`.design-dna/evidence/gate.json`), and the
+  second section was written, and again for every mapped route at completion.
+  The finished build binds the authoritative `route-manifest.json` and a passing
+  `scripts/gate.py` record (`.design-dna/evidence/gate.json`) for the same
+  immutable build ID, and the
   final message to the owner quotes its verdict line verbatim. A
   dossier whose comparator records are all dated at the end of the build is a
   dossier written to justify a finished design. Reference material is a decision input, not a visual
@@ -625,16 +586,17 @@ aesthetic rule that did not come from the project or its assurance boundaries.
 - When Project Contrast is active, settle the selected opening, dominant
   content operation, and body progression against a materially different
   counter-answer before propagating code. For an owner recurrence requirement,
-  select a nonempty project-derived axis set that includes an encounter axis and
+  select a nonempty brief-and-reference-derived axis set that includes an encounter axis and
   a surface-language axis, then write a project-specific structural/encounter
-  prompt and surface-language prompt. Neither is a list of ingredients that
-  must differ. A same-project rejected candidate is useful rejection evidence,
+  prompt and surface-language prompt. These prompts test the selected source
+  mappings; they do not authorize a new visible answer. Neither is a list of
+  ingredients that must differ. A same-project rejected candidate is useful rejection evidence,
   but it cannot replace the authorized cross-project closest sibling required
   to test recurrence among unrelated builds. If that nearest sibling remains close after noun,
   dominant-media, accent, and motion removal, reopen the earliest shared
   organizing decision rather than rotate a font, palette, effect, or shape.
-- When Direction Challenge is active, record three or more roots before
-  polished examples except supplied brand or source material; prove at least
+- When Direction Challenge is active, record three or more brief-qualified,
+  reference-backed roots before polished examples; prove at least
   two roots with path-bound schema-3 wide/narrow slices; and select the chosen root
   against an explicitly rejected rendered root. This escalation is evidence
   for the current owner-triggered or explicitly multi-root high-ambition
@@ -685,16 +647,20 @@ start](references/quality/direction-start.md) before making the first visual
 candidate. It covers the compact pre-direction decisions: non-negotiable
 boundaries, factual and delivery framing, proportional capability selection,
 and the exact trigger for Project Contrast or Direction Challenge. Any early
-direction at this point is a provisional hypothesis, not committed creative
-logic. Before settling it or advancing a record to `direction-ready`, inspect
-the minimum repository/system context and project/category material that could
+nonvisual direction statement at this point is a provisional hypothesis about
+source fit, not permission to render producer-authored visual decisions. Before
+settling it or advancing a record to `direction-ready`, inspect the complete
+relevant repository/system context and project/category material that could
 materially change the encounter. Use project-provided evidence when it is
 enough; research current external material only when it is available,
 permitted, and could change the decision. Do not fetch material merely to
 perform research theatre. Do not preload the whole workflow merely to select a
-direction.
+direction. A fresh Enterprise Candidate public website is the explicit
+exception: its quality-gated, brief-fit reference research is mandatory before
+the first visual candidate, and unavailable evidence leaves direction blocked
+rather than authorizing producer design.
 
-Once grounding supports the selected creative logic, load only the phase of
+Once grounding supports the selected reference mapping, load only the phase of
 [the workflow](references/workflow.md) that is now needed: proof,
 implementation, rendered revision, user validation, or delivery. The workflow
 retains the detailed requirements for each phase and the project-local records
@@ -759,18 +725,18 @@ scan every row as a generation prompt. Return here after the decision closes.
 
 ## Coordinate specialists
 
-Design DNA owns project-specific art direction, content hierarchy, visual
+Design DNA governs source-traced art direction, content hierarchy, visual
 coherence, responsive composition, and rendered finish. A specialist skill
 owns its narrower domain. Combine conclusions at the boundary: a specialist
 never introduces an unrelated visual system, and visual polish never waives
 a specialist gate. Satisfy the stricter safety, truth, access, and
 operational requirement, then preserve the chosen direction within it.
 
-When **Frontend Design** is also active, Design DNA determines the
-project-derived encounter and any Project Contrast evidence boundary;
-Frontend Design translates that direction into intentional interface choices.
-Neither skill may replace the brief-native decision with a reusable color,
-type, component, or anti-default recipe.
+When **Frontend Design** is also active, Design DNA binds the
+reference-sourced encounter and any Project Contrast evidence boundary;
+Frontend Design may implement only the visible choices carried by those bound
+sources. Neither skill may replace them with a reusable color, type, component,
+anti-default recipe, or producer-authored connective design.
 
 ## Bound readiness and evidence
 
@@ -810,8 +776,10 @@ each materially distinct reviewed body, with real wide and narrow captures for
 each applicable body. Bind the first-impression/surface-fidelity,
 adversarial-specificity, and preship closures to exact emitted PNGs. This is
 evidence of what was reviewed, not an aesthetic score, fixed viewport count,
-or recipe. Quick remains proportionate direct rendered review; legacy records
-remain migratable and must be honestly reopened where new final-build evidence
+or recipe. The legacy `quick` identifier applies only to an exact nonvisual
+mechanical repair whose direct rendered comparison proves no visible decision
+changed; any visual difference escalates to the full applicable workflow.
+Legacy records remain migratable and must be honestly reopened where new final-build evidence
 was never recorded. When a reviewed Direction Challenge proof build differs
 from the final reviewed build, bind the hash-checked proof-to-build delta ledger
 with the changed decisions before readiness can be claimed.
@@ -833,28 +801,38 @@ rendered observations. The owner need not approve ordinary polish iterations;
 ask only when a missing business, brand, cultural, truth, or delivery decision
 would materially change the candidate.
 
-If Python 3.10+ or another capability is unavailable, perform every safe
-manual equivalent that still answers the claim, name the checks not run, and
-do not broaden the result. A manual visual review may improve and accurately
-describe an agent-reviewed candidate; it does not fabricate the package's
-schema-3 renderer record or close a formal readiness gate that explicitly
-requires that record. Keep working through the remaining safe phases and label
-only the blocked proof. The scanner supplies bounded source-review prompts;
-the rendered proofs in the preship gate are never replaced by it.
+If Python 3.10+ or another required capability is unavailable, the affected
+website surface is blocked from presentation. Safe manual inspection may help
+diagnose or prepare a future rerun, but it cannot substitute for the packaged
+tool, generated record, schema-3 renderer evidence, first-screen gate, final
+gate, or formal readiness record. Name the missing capability and continue only
+with work that does not depend on it. Scope may shrink by removing the blocked
+surface from the deliverable; the evidence threshold for retained work does not
+shrink. The scanner supplies bounded prompts and never replaces rendered proof.
 
 ## The gate, restated
 
 Nothing is presented as done until the applicable
 [preship gate](templates/preship-gate.md) passes on the rendered output. Bind
-the exact build and risk-selected route, width, state, preference, typography,
-content, media, access, and engineering evidence. A violated assurance
+the exact build and every route, state, and wide/narrow viewport declared by
+the authoritative manifest, plus any additional risk-selected preference,
+typography, content, media, access, and engineering evidence. A violated assurance
 boundary blocks the corresponding completion or release claim. Missing
 optional evidence is disclosed in scope; it does not become a fabricated
 pass, a taste rule, or a reason to invent records.
 
-And the one command: `python "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --url
-<each route>` runs every packaged check against the running build and writes
-`.design-dna/evidence/gate.json`. Its verdict line is quoted verbatim in the
-final message to the owner. Without a passing gate there is no build to
+And the one command is:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FINAL_BUILD_ID>" --route-manifest .design-dna/route-manifest.json --phase final --prebuild-authorization "<EMITTED_PREBUILD_AUTHORIZATION_PATH>"
+```
+
+It runs every packaged check against the manifest's complete route, state, and
+wide/narrow viewport set, requires a distinct proof/final build identity and
+the exact append-only first-screen predecessor, and writes
+`.design-dna/evidence/gate.json`. Its verdict line is quoted verbatim in
+the final message to the owner. Without a passing gate there is no build to
 present, because whatever was made without it is the producer's design, and
-the owner has forbidden that in every part.
+the owner has forbidden that in every part. This final phase does not replace
+the required earlier `--phase first-screen --route-key <PRIMARY_KEY>` pass and
+its bound `First-screen gate` record.
