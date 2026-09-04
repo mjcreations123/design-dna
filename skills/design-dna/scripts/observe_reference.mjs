@@ -111,7 +111,11 @@ export const TAG_PROBES = `(() => {
   const sel = 'section,article,div,figure,img,video,canvas,h1,h2,h3,p,ul,ol,li,a';
   document.querySelectorAll(sel).forEach((el) => {
     const r = el.getBoundingClientRect();
-    if (r.width < 120 || r.height < 56) return;
+    // a mascot, a logo mark or a cursor-following icon is exactly as
+    // significant as a hero photograph and much smaller; the 120x56 floor
+    // exists to skip inline text noise, not to make small media invisible.
+    const isSmallMedia = ['IMG', 'VIDEO', 'CANVAS', 'SVG'].includes(el.tagName) && r.width >= 12 && r.height >= 12;
+    if (!isSmallMedia && (r.width < 120 || r.height < 56)) return;
     if (!el.hasAttribute('data-dna-probe')) el.setAttribute('data-dna-probe', String(i += 1));
   });
   return i;
@@ -356,25 +360,40 @@ export async function mechanismPass(page) {
   const derived = deriveMechanisms(ticks);
   const last = ticks[ticks.length - 1];
   const scroller = last.y > 0 ? "document" : (last.inner ? `inner:${last.inner.cls || "element"}` : "none");
-  // pointer follow: anything whose transform tracks the pointer without hover
+  // pointer follow: anything whose transform tracks the pointer without hover.
+  // Tested at more than one scroll depth: a mascot that only lives partway
+  // down the page (not in the first screen) is invisible to a check pinned
+  // at the top, and a small icon relies on TAG_PROBES' small-media allowance.
   let pointerFollow = null;
-  try {
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.waitForTimeout(400);
-    await page.mouse.move(200, 300);
-    await page.waitForTimeout(350);
-    const a = await page.evaluate(SAMPLE_PROBES);
-    await page.mouse.move(1200, 600, { steps: 12 });
-    await page.waitForTimeout(350);
-    const b = await page.evaluate(SAMPLE_PROBES);
-    for (const [id, v] of Object.entries(b.els)) {
-      const p = a.els[id];
-      if (p && p.tf !== v.tf && v.top > -50 && v.top < 900) {
-        pointerFollow = { tag: v.tag, cls: v.cls, sample: v.txt.slice(0, 36) };
-        break;
+  const docHeight = await page.evaluate(() => document.documentElement.scrollHeight).catch(() => 0);
+  for (const fraction of [0, 0.4, 0.75]) {
+    if (pointerFollow) break;
+    try {
+      await page.evaluate((y) => window.scrollTo(0, y), Math.round(docHeight * fraction));
+      await page.waitForTimeout(400);
+      await page.evaluate(TAG_PROBES);
+      await page.mouse.move(200, 300);
+      await page.waitForTimeout(350);
+      const a = await page.evaluate(SAMPLE_PROBES);
+      await page.mouse.move(1200, 600, { steps: 12 });
+      await page.waitForTimeout(350);
+      const b = await page.evaluate(SAMPLE_PROBES);
+      for (const [id, v] of Object.entries(b.els)) {
+        const p = a.els[id];
+        if (!p) continue;
+        // a custom cursor or mascot as often moves by re-laying-out its
+        // top/left as by a CSS transform; a transform-only check missed a
+        // canvas-based cursor follower entirely because it moves via
+        // getBoundingClientRect position, not `transform`.
+        const moved = Math.hypot(v.top - p.top, v.left - p.left);
+        if ((p.tf !== v.tf || moved > 8) && v.top > -50 && v.top < 900) {
+          pointerFollow = { tag: v.tag, cls: v.cls, w: v.w, h: v.h, moved_px: Math.round(moved), sample: v.txt.slice(0, 36) };
+          break;
+        }
       }
-    }
-  } catch (e) { pointerFollow = null; }
+    } catch (e) { /* try the next depth */ }
+  }
+  await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
   if (pointerFollow) {
     derived.mechanisms.push({ type: "pointer-follow", ...pointerFollow, detail: "its transform changed as the pointer crossed the screen" });
   }
@@ -393,6 +412,48 @@ export async function mechanismPass(page) {
     },
     wheel_ticks: ticks.length - 1,
   };
+}
+
+// A "photograph" that is actually a looping/autoplaying <video> is one of
+// the most common misses in a hand-written sequence read: the frame-diff
+// tooling only ever compares scroll positions, so a video that quietly plays
+// in place, unrelated to scroll or hover (a swiveling chair, smoke off a
+// candle, a fireplace), never triggers a scroll-hold or hover mechanism at
+// all. This checks the DOM directly instead of relying on any diff: real
+// playback progress on a real <video> element proves it, at whatever size
+// and wherever on the page it currently sits.
+async function checkAmbientVideo(page) {
+  const before = await page.evaluate(() =>
+    [...document.querySelectorAll("video")].map((v) => {
+      const r = v.getBoundingClientRect();
+      return {
+        src: (v.currentSrc || v.src || "").slice(-60),
+        t: v.currentTime,
+        loop: v.loop,
+        autoplay: v.autoplay,
+        muted: v.muted,
+        paused: v.paused,
+        w: Math.round(r.width),
+        h: Math.round(r.height),
+        visible: r.bottom > 0 && r.top < 900,
+      };
+    })
+  ).catch(() => []);
+  if (!before.length) return [];
+  await page.waitForTimeout(1200);
+  const afterT = await page.evaluate(() => [...document.querySelectorAll("video")].map((v) => v.currentTime)).catch(() => []);
+  const found = [];
+  before.forEach((v, i) => {
+    if (!v.visible || v.w < 40 || v.h < 40) return;
+    const advanced = (afterT[i] || 0) > v.t + 0.15;
+    if (advanced || (!v.paused && (v.loop || v.autoplay))) {
+      found.push({
+        type: "at-rest", tag: "video", w: v.w, h: v.h, loop: v.loop, autoplay: v.autoplay, src: v.src,
+        detail: `a ${v.w}x${v.h} video plays on its own${v.loop ? ", looped" : ""}, not a static photograph`,
+      });
+    }
+  });
+  return found;
 }
 
 async function main() {
@@ -456,8 +517,12 @@ async function main() {
     // screen is a photograph with the wordmark pushed into the corners.
     const firstScreen = await page.evaluate(STRUCTURE_SCRIPT);
 
+    // --- is anything on the first screen actually a video, not a photo
+    const ambientVideos = await checkAmbientVideo(page);
+
     // --- the mechanism pass
     const mech = await mechanismPass(page);
+    mech.mechanisms.push(...ambientVideos);
 
     // --- scroll holds (schema 1 evidence, kept): arrival vs settled frames
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -480,6 +545,17 @@ async function main() {
         type: "scroll-hold", step: i, moved, frames: [a.seq, b.seq],
         detail: moved ? "Content changed while the page sat still here, so something animated into place." : "Nothing changed while the page sat still here.",
       });
+      mech.mechanisms.push(...(await checkAmbientVideo(page)));
+    }
+    // one line per distinct video, not one per scroll step it was visible on
+    {
+      const seenVideo = new Set();
+      for (let i = mech.mechanisms.length - 1; i >= 0; i -= 1) {
+        const m = mech.mechanisms[i];
+        if (m.tag !== "video") continue;
+        const k = `${m.src}|${m.w}x${m.h}`;
+        if (seenVideo.has(k)) mech.mechanisms.splice(i, 1); else seenVideo.add(k);
+      }
     }
 
     // --- hover: real pointer over real interactive elements, with timing

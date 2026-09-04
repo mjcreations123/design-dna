@@ -5,6 +5,66 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 10.1.0
+
+A build passed every gate in 10.0.0 (provenance, structure, and after this
+release's own mid-build fix, mechanisms and signature transfer) and the
+owner still rejected three of its four references outright. His words,
+2026-09-04: on the reference the build read correctly enough to cite for a
+photo-swap and a corner frame, "That's a hideous-looking website... There's
+a reason why this website is not on any awards website. It's terrible." On
+the one the build read as an ambient marquee: "you just got a few photos,
+and when I was looking at those photos, they were locked. I had to scroll
+past a bunch of scrolls until the photo moved, and it was just terrible the
+way you copied that one" — its actual signature was a cursor-following bee
+and looping ambient video the harness never recorded, because the harness
+checked pointer-follow by CSS `transform` only (the bee moves by
+`top`/`left`) and had no check for a `<video>` element at all. On a third:
+"you definitely took the sidewalk and not the Niagara Falls" — the dossier's
+own `check_signature_transfer.mjs`, built specifically to stop this, had
+correctly matched the stated signature against the harness's top-ranked
+mechanism TYPE for that reference; matching a category is not the same
+question as picking the right specific thing within it, and passing the
+script was mistaken for having gotten it right.
+
+- FIXED `observe_reference.mjs` pointer-follow check: it compared only the
+  `transform` computed style between two cursor positions, so an element
+  that tracks the cursor via `top`/`left` (a common pattern for a custom
+  cursor or mascot canvas) was invisible to it. Now compares position
+  (`Math.hypot` of top/left delta) as well as transform.
+- ADDED pointer-follow testing at three scroll depths (0%, 40%, 75% of page
+  height), not only at the top of the page, so a mascot or interactive
+  element that only lives partway down a page is not missed.
+- ADDED `checkAmbientVideo()` to `observe_reference.mjs`: queries the DOM
+  directly for `<video>` elements and confirms real playback progress
+  (`currentTime` advancing), run at load and after every scroll-hold step.
+  A "photograph" that is really a looping video reads as a still to every
+  frame-diff check in this skill, because the diffs compare scroll
+  positions and ambient video motion is unrelated to scroll; this checks
+  the DOM fact instead of inferring it from a diff.
+- CHANGED `TAG_PROBES` in `observe_reference.mjs`: `img`/`video`/`canvas`/
+  `svg` elements as small as 12x12px are now probed (previously floored at
+  120x56 for every element). A cursor-following mascot or a small logo mark
+  was structurally invisible to every mechanism check at the old floor;
+  generic containers and text keep the 120x56 floor so inline noise is
+  still excluded.
+- CHANGED `record_reference.mjs`: default `--fps` raised 10 to 15, and the
+  output manifest now includes `video_elements` (every `<video>` tag
+  present at load, with position and size), surfaced loudly on stdout too,
+  so a producer is told up front which "photographs" to narrate as video
+  rather than discovering it by eye in a frame sheet or not discovering it
+  at all.
+- CLARIFIED `SKILL.md`: a mechanism TYPE (reveal/swap/pinned) is a category,
+  not the moment, and a build can cite a harness-approved type while having
+  picked the wrong specific thing, or the wrong medium and pacing entirely
+  (an ambient autoplay effect and a slideshow gated behind a forced scroll
+  can both score as "swap"). Re-watch the actual recording's medium and
+  trigger before writing what a mechanism IS.
+- These are detection-floor fixes, not a lowered bar: a reference that fails
+  every one of them still contributes nothing, and a producer still owes
+  the "what would a stranger name" judgment the harness's numbers were
+  always a cross-check on, never a replacement for.
+
 ## 10.0.0
 
 The owner's standing order, in his words on 2026-09-03: "Your own designs is

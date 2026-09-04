@@ -330,6 +330,27 @@ pointer, decoding labels beside the cursor, assembling a quote word by word,
 and zooming its whole sheet out to a card between pages. The owner's own
 sixty-second recording held nineteen behaviours the build had never seen.
 
+A mechanism TYPE is a category, not the moment. `record_reference.mjs`
+prints and records every `<video>` element present at load, by position and
+size, because a "photograph" that is really a looping video (a chair
+swiveling, smoke off a candle) changes too slowly and too locally to cross
+an event threshold and reads as a still if nobody is told to look for it;
+treat every listed `video_elements` entry as a standing instruction to
+narrate that spot as video, not photo, in the sequence read. The same
+failure hits small things: a mascot or icon that tracks the cursor is
+exactly as nameable as a hero photograph and much easier to under-describe
+as "a faint response near the cursor" instead of the headline mechanism it
+is (`observe_reference.mjs` now probes small media elements and checks
+pointer-follow at three scroll depths, but the read still has to call it
+what it is). And a build that cites a harness-approved mechanism type is not
+proof the SPECIFIC thing chosen was the signature: "swap" covers both an
+ambient autoplay cross-fade and a slideshow gated behind a long scroll the
+visitor has to force through by hand, and only one of those is what a
+stranger would name. Re-watch the actual recording — medium (photo or
+video), trigger (timer or scroll/hover/click), and how much the visitor has
+to do to see the next state — before writing what a mechanism IS, not just
+which category the harness sorted it into.
+
 Never build from a picture. Alongside the behavior harness, run
 `scripts/extract_reference_styles.mjs` on every selected reference: it drives
 the live page and reads its actual computed type, color, control geometry,

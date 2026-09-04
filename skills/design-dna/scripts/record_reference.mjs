@@ -40,14 +40,22 @@
  *     behaviour inventory the producer then writes by hand.
  *
  * Full frames at --fps stay in <id>-frames/ for anyone who wants to look
- * between the events. Nobody has to.
+ * between the events. Nobody has to, except for one case that has to: a
+ * "photograph" that is really a looping video (a swiveling chair, smoke off
+ * a candle) changes too slowly and too locally to cross the event threshold,
+ * so it produces no events at all and reads as a still. The output manifest
+ * lists every `<video>` element the page had at load, with its position and
+ * size, specifically so the narrator is told to go watch that spot in the
+ * full frame sheet rather than assume it is a photograph. Raise --fps for a
+ * site suspected of this (20-30 catches slow ambient motion the default
+ * misses).
  *
  * ffmpeg must be on PATH (or given with --ffmpeg). Without it there are no
  * frames, and without frames there is nothing to narrate, so it fails loudly.
  *
  * Usage:
  *   node record_reference.mjs --url https://example.test/ --id strong-1 \
- *     --out .design-dna/references [--seconds 90] [--fps 10] \
+ *     --out .design-dna/references [--seconds 90] [--fps 15] \
  *     [--browser-executable FILE] [--ffmpeg FILE]
  */
 import { createHash } from "node:crypto";
@@ -81,7 +89,7 @@ const MAX_SPONTANEOUS = 12;
 
 function parseArgs(argv) {
   const out = {
-    url: null, id: null, out: null, seconds: 90, fps: 10,
+    url: null, id: null, out: null, seconds: 90, fps: 15,
     browser: process.env.CHROME || undefined, ffmpeg: process.env.FFMPEG || "ffmpeg",
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -380,7 +388,7 @@ function buildEvents(log, small, signal, fps, width, height, duration) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.url || !args.id || !args.out) {
-    console.error("record_reference.mjs --url URL --id strong-N --out DIR [--seconds 90] [--fps 10]");
+    console.error("record_reference.mjs --url URL --id strong-N --out DIR [--seconds 90] [--fps 15]");
     process.exit(2);
   }
   const probe = spawnSync(args.ffmpeg, ["-version"], { encoding: "utf8" });
@@ -408,6 +416,21 @@ async function main() {
     pages.push(page.url());
     await page.mouse.move(60, VIEWPORT.height - 80);
     await sleep(INTRO_WAIT_MS);
+
+    // named up front so the narrator is told which "photographs" are really
+    // video before writing a single event line, rather than discovering it
+    // by eye in a frame sheet after the fact (or not discovering it at all)
+    const videoElements = await page.evaluate(() =>
+      [...document.querySelectorAll("video")].map((v) => {
+        const r = v.getBoundingClientRect();
+        return {
+          src: (v.currentSrc || v.src || "").slice(-80),
+          loop: v.loop, autoplay: v.autoplay, muted: v.muted,
+          top: Math.round(r.top), left: Math.round(r.left),
+          w: Math.round(r.width), h: Math.round(r.height),
+        };
+      })
+    ).catch(() => []);
 
     // the first screen, slowly, everything a hand would reach for
     const first = await findTargets(page, 0, VIEWPORT.height);
@@ -539,6 +562,7 @@ async function main() {
       event_files: eventFiles,
       quiet: quiet.map((q) => ({ kind: q.kind, target: q.target, t: round1(q.t), magnitude_pct: q.magnitude_pct })),
       video: { file: `${args.id}-recording.webm`, sha256: sha256(webm) },
+      video_elements: videoElements,
       pages_visited: pages,
       cursor_path: log,
       difference_signal: { fps: args.fps, small: { width: SMALL_WIDTH, height: smallHeight }, pct: signal.map(round2) },
@@ -568,6 +592,13 @@ async function main() {
       `${eventFiles.length} events (${quiet.length} quiet hovers dropped), ` +
       `${log.filter((l) => l.action === "hover").length} hovers, ${pages.length} page(s) -> ${out}`
     );
+    if (videoElements.length) {
+      console.error(
+        `${args.id}: ${videoElements.length} <video> element(s) present at load ` +
+        `(${videoElements.map((v) => `${v.w}x${v.h} at (${v.left},${v.top})`).join("; ")}) ` +
+        "-- these are NOT photographs; watch that spot in the frame sheet and narrate it as video."
+      );
+    }
   }
 }
 
