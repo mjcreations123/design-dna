@@ -328,6 +328,16 @@ initial, scroll, pointer and media sample now journals an observed event. The
 scan is explicitly bounded by the controller's five-minute hard cap, while the
 separate 60-second silence watchdog still fails a truly stuck browser call.
 
+95. Scroll-surface discovery treated any class containing `scroll` as a
+required transform scroller and treated all transform changes after wheel input
+as wheel progress. On Avoca this promoted ordinary `scroll-trigger` reveal
+targets and three continuously moving announcement-marquee tracks into scroll
+containers; the first marquee exhausted 240 ticks and the next consumed 167.
+Required transform surfaces now need an exact container signal. Broad clipped
+transform candidates receive a passive causality sample, so autonomous motion
+is retained as motion but is not traversed or counted as a wheel-controlled
+surface. Native and proven transform containers remain fully traversed.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG

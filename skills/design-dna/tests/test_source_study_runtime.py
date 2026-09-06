@@ -391,6 +391,35 @@ class PackagedSourceCaptureTests(unittest.TestCase):
         self.assertIn("pointer-follow-sample", value["phases"])
         self.assertIn("ambient-video-check", value["phases"])
 
+    def test_scroll_traversal_distinguishes_containers_reveals_and_autonomous_marquees(self):
+        value = self.browser_json("""
+          await page.evaluate(()=>{document.body.innerHTML=`
+            <style>@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-240px)}}</style>
+            <div style="overflow:hidden;width:320px;height:40px"><div class="marquee-track" style="width:1800px;height:40px;animation:ticker .6s linear infinite"><span>Autonomous ticker</span></div></div>
+            <section class="scroll-trigger animate--slide-in" style="height:900px;transform:translateY(20px)">Reveal target, not a scroll container</section>
+            <div class="scroll-container" style="overflow:hidden;width:320px;height:160px"><div class="controlled-track" style="height:640px">Wheel-controlled content</div></div>`;
+            let offset=0;const container=document.querySelector('.scroll-container'),track=document.querySelector('.controlled-track');
+            container.addEventListener('wheel',()=>{offset=Math.min(480,offset+160);track.style.transform='translateY(-'+offset+'px)';});
+          });
+          await page.waitForTimeout(120);
+          const discovered=await m.discoverScrollSurfaces(page);
+          const traversal=await m.traverseScrollSurfaces(page,{maxTicks:20,settleMs:40});
+          const byHint=Object.fromEntries(traversal.surfaces.map(item=>[item.selector_hint||item.id,item]));
+          return {hints:discovered.map(item=>item.selector_hint||item.id),complete:traversal.complete,byHint};
+        """)
+        self.assertNotIn("section.scroll-trigger animate--slide-in", value["hints"])
+        self.assertIn("div.marquee-track", value["byHint"], value)
+        marquee = value["byHint"]["div.marquee-track"]
+        self.assertTrue(marquee["complete"])
+        self.assertEqual("autonomous-transform-not-scroll-surface", marquee["disposition"])
+        self.assertEqual(0, marquee["ticks"])
+        controlled = value["byHint"]["div.scroll-container"]
+        self.assertTrue(controlled["required"])
+        self.assertTrue(controlled["progressed"])
+        self.assertTrue(controlled["complete"])
+        self.assertLess(controlled["ticks"], 20)
+        self.assertTrue(value["complete"])
+
     def test_page_safe_claim_and_disclosure_aria_never_authorize_dangerous_actions(self):
         value = self.browser_json("""
           await page.evaluate(()=>{document.body.innerHTML=`

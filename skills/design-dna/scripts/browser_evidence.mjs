@@ -2200,7 +2200,14 @@ export async function discoverScrollSurfaces(page) {
       if (rect.width < 20 || rect.height < 20 || style.display === "none" || style.visibility === "hidden") continue;
       const nativeY = element.scrollHeight > element.clientHeight + 2 && /(auto|scroll|overlay)/.test(style.overflowY);
       const nativeX = element.scrollWidth > element.clientWidth + 2 && /(auto|scroll|overlay)/.test(style.overflowX);
-      const explicit = element.matches("[data-scroll],[data-scroll-container],[data-lenis],[data-scroll-section],[class*='scroll' i]");
+      // "scroll-trigger" and data-scroll sections usually describe reveal
+      // targets, not containers that consume wheel input. Treat only exact
+      // container signals as required transform surfaces; broader transformed
+      // and clipped candidates remain heuristic until wheel causality is
+      // measured below.
+      const classTokens = [...element.classList].map((token) => token.toLowerCase());
+      const explicit = element.hasAttribute('data-scroll-container') || element.hasAttribute('data-lenis') ||
+        classTokens.some((token) => /^(?:scroll-container|scroll-wrapper|smooth-scroll(?:-container)?|locomotive-scroll|lenis|horizontal-scroll|vertical-scroll)$/.test(token));
       const transformed = style.transform !== "none";
       const parentStyle = element.parentElement ? getComputedStyle(element.parentElement) : null;
       const clipped = parentStyle && /(hidden|clip|auto|scroll)/.test(`${parentStyle.overflow} ${parentStyle.overflowX} ${parentStyle.overflowY}`);
@@ -2214,6 +2221,7 @@ export async function discoverScrollSurfaces(page) {
         kind: nativeY || nativeX ? "native" : "transform",
         axis: nativeY ? "y" : nativeX ? "x" : "wheel",
         required: Boolean(nativeY || nativeX || explicit),
+        discovery_basis: nativeY || nativeX ? 'native-overflow' : explicit ? 'explicit-transform-container' : 'transformed-clipped-overflow',
         selector_hint: `${element.tagName.toLowerCase()}.${typeof element.className === "string" ? element.className.trim().slice(0, 60) : ""}`,
       });
     }
@@ -2251,6 +2259,11 @@ async function surfaceSample(page, surface) {
   }, surface);
 }
 
+function surfaceSampleChanged(before, after) {
+  return Boolean(before && after &&
+    (after.x !== before.x || after.y !== before.y || after.fingerprint !== before.fingerprint));
+}
+
 /** Drive every discovered scroll surface to its terminal state with real wheel input. */
 export async function traverseScrollSurfaces(page, options = {}) {
   const surfaces = await discoverScrollSurfaces(page);
@@ -2266,6 +2279,26 @@ export async function traverseScrollSurfaces(page, options = {}) {
       records.push({ ...surface, complete: false, reason: "surface-disappeared", ticks: 0, progressed: false });
       continue;
     }
+    // A clipped transform can be a carousel/virtual scroller, but it can also
+    // be a marquee that moves forever without wheel input. Prove that a broad
+    // heuristic candidate is quiet before spending the traversal budget on
+    // it. Autonomous motion remains captured by the mechanism observer; it is
+    // not misrepresented as an independent scroll surface.
+    if (surface.kind === "transform" && !surface.required) {
+      await page.waitForTimeout(Math.min(Math.max(settleMs, 80), 250));
+      const passive = await surfaceSample(page, surface);
+      if (!passive) {
+        records.push({ ...surface, complete: false, reason: "surface-disappeared", ticks: 0, progressed: false });
+        continue;
+      }
+      if (surfaceSampleChanged(before, passive)) {
+        records.push({ ...surface, ticks: 0, progressed: false, terminal: true, complete: true,
+          reason: null, disposition: "autonomous-transform-not-scroll-surface", autonomous_motion_observed: true,
+          final: { x: passive.x, y: passive.y, max_x: passive.max_x, max_y: passive.max_y } });
+        continue;
+      }
+      before = passive;
+    }
     let noProgress = 0;
     let progressed = false;
     let terminal = false;
@@ -2280,7 +2313,7 @@ export async function traverseScrollSurfaces(page, options = {}) {
       ticks += 1;
       const after = await surfaceSample(page, surface);
       if (!after) break;
-      const changed = after.x !== before.x || after.y !== before.y || after.fingerprint !== before.fingerprint;
+      const changed = surfaceSampleChanged(before, after);
       if (changed) { progressed = true; noProgress = 0; } else noProgress += 1;
       if (options.onTick) await options.onTick(surface, ticks, after, changed);
       const atNativeEnd = surface.kind !== "transform" &&
