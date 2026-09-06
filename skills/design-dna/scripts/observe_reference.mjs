@@ -469,16 +469,28 @@ export function deriveMechanisms(ticks) {
 
 // The whole mechanism pass on an open page, shared with compare_mechanisms.mjs
 // so a build is read by exactly the same eyes as its references.
-export async function mechanismPass(page) {
+export async function mechanismPass(page, options = {}) {
+  const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+  const reportProgress = async (phase, detail = {}) => {
+    if (!onProgress) return;
+    await onProgress({ phase, ...detail });
+  };
   await page.evaluate(TAG_PROBES);
   const ticks = [];
   ticks.push(await page.evaluate(SAMPLE_PROBES));
+  await reportProgress('initial-sample', { samples: ticks.length });
   const scrollTraversal = await traverseScrollSurfaces(page, {
     maxTicks: 240,
     settleMs: TICK_SETTLE_MS,
-    onTick: async () => {
+    onTick: async (surface, tick) => {
       await page.evaluate(TAG_PROBES);
       ticks.push(await page.evaluate(SAMPLE_PROBES));
+      await reportProgress('scroll-sample', {
+        surface_id: surface.id,
+        surface_kind: surface.kind,
+        tick,
+        samples: ticks.length,
+      });
     },
   });
   const derived = deriveMechanisms(ticks);
@@ -528,13 +540,20 @@ export async function mechanismPass(page) {
           break;
         }
       }
-    } catch (e) { /* try the next depth */ }
+      await reportProgress('pointer-follow-sample', { depth_fraction: fraction });
+    } catch (e) {
+      // A controller failure must reach its source-study boundary. Treating it
+      // as a routine pointer-probe miss would keep a terminated study alive.
+      if (String(e?.code || '').startsWith('source-study-')) throw e;
+      /* try the next depth */
+    }
   }
   await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
   if (pointerFollow) {
     derived.mechanisms.push({ type: "pointer-follow", ...pointerFollow, detail: "its transform changed as the pointer crossed the screen" });
   }
   derived.mechanisms.push(...await checkAmbientVideo(page));
+  await reportProgress('ambient-video-check', { videos: derived.mechanisms.filter((item) => item.tag === 'video').length });
   const allTypeCounts = { ...derived.typeCounts };
   for (const mechanism of derived.mechanisms) {
     if (!(mechanism.type in allTypeCounts)) allTypeCounts[mechanism.type] = 0;
@@ -560,6 +579,27 @@ export async function mechanismPass(page) {
     wheel_ticks: ticks.length - 1,
     scroll_traversal: scrollTraversal,
   };
+}
+
+// A mechanism pass can legitimately inspect hundreds of scroll positions. It
+// must journal each completed measured sample while it runs: the watchdog must
+// still stop an actually silent page or a hung browser call, but must not call
+// a progressing survey a stall merely because its final report is not ready.
+async function boundedMechanismPass(page, sourceStudy, profile, phase) {
+  const run = () => mechanismPass(page, {
+    onProgress: async (progress) => {
+      sourceStudy?.markEvent({ profile, kind: 'mechanism-pass', phase, ...progress });
+    },
+  });
+  if (!sourceStudy) return run();
+  return sourceStudy.step(`mechanism-pass:${profile}:${phase}`, run, {
+    // The measured scan permits 240 settled scroll positions plus pointer and
+    // media checks. The controller's hard five-minute cap encloses that known
+    // complete scope; the independent silence watchdog still aborts a hang.
+    timeout_ms: 300_000,
+    detail: { profile, phase },
+    abort: async () => { await page.context().close().catch(() => {}); },
+  });
 }
 
 // A "photograph" that is actually a looping/autoplaying <video> is one of
@@ -841,7 +881,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     await requireAddressableSourceStructure(page, profile);
     const structure = await page.evaluate(STRUCTURE_SCRIPT);
     if (!structure || !structure.dominant) throw new Error(`${profile} ${url}: first-screen structure is empty.`);
-    const sheet = await mechanismPass(page);
+    const sheet = await boundedMechanismPass(page, sourceStudy, profile, 'recursive-site');
     if (!sheet.scroll_traversal?.complete) {
       const gaps = (sheet.scroll_traversal?.surfaces || []).filter((item) => !item.complete).map((item) => `${item.kind}:${item.selector_hint || item.id}:${item.reason}`);
       throw new Error(`${profile} ${url}: incomplete scroll traversal (${gaps.join(", ")}).`);
@@ -989,7 +1029,7 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence,
         { before: beforeFrame, after: afterFrame, settled: settledFrame });
       const structure = await page.evaluate(STRUCTURE_SCRIPT);
       if (!structure || !structure.dominant) throw new Error(`${viewport.name}/${state.id}: source-state first screen is empty.`);
-      const sheet = await mechanismPass(page);
+      const sheet = await boundedMechanismPass(page, sourceStudy, viewport.name, 'source-state');
       if (!sheet.scroll_traversal?.complete) throw new Error(`${viewport.name}/${state.id}: source-state scroll traversal is incomplete.`);
       if (application.trigger_evidence?.mechanism) {
         sheet.mechanisms = finalizeMechanisms([...sheet.mechanisms, application.trigger_evidence.mechanism]);
@@ -1383,7 +1423,7 @@ async function observeMain(args) {
     const narrowFirstScreen = await narrowPage.evaluate(STRUCTURE_SCRIPT);
     const narrowFrame = await shotOn(narrowPage, "narrow-rest", "narrow first screen at rest", { width: 390, height: 844 });
     const narrowFrameFile = narrowFrame.file;
-    const narrowMechanism = await mechanismPass(narrowPage);
+    const narrowMechanism = await boundedMechanismPass(narrowPage, sourceStudy, 'narrow', 'primary-rest');
     let narrowSurfaceReport;
     try {
       narrowSurfaceReport = await drainSourceSurfaceWatch(narrowSurfaceWatch, {
@@ -1400,7 +1440,7 @@ async function observeMain(args) {
     const ambientVideos = await checkAmbientVideo(page);
 
     // --- the mechanism pass
-    const mech = await mechanismPass(page);
+    const mech = await boundedMechanismPass(page, sourceStudy, 'wide', 'primary-rest');
     mech.mechanisms.push(...ambientVideos);
 
     // --- scroll holds across every native/transform surface, with no sampled

@@ -377,6 +377,20 @@ class PackagedSourceCaptureTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         return json.loads(result.stdout)
 
+    def test_mechanism_pass_emits_measured_progress_during_scroll_sampling(self):
+        value = self.browser_json(f"""
+          const observer=await import({json.dumps((SCRIPTS / 'observe_reference.mjs').as_uri())});
+          await page.evaluate(()=>{{document.body.innerHTML='<main style="height:4200px"><a href="#details" style="display:block;margin-top:1600px">Measured link</a><p id="details" style="margin-top:1200px">Measured destination</p></main>';}});
+          const progress=[];
+          const sheet=await observer.mechanismPass(page,{{onProgress:async(entry)=>progress.push(entry)}});
+          return {{complete:sheet.scroll_traversal.complete,phases:progress.map(entry=>entry.phase),scroll:progress.filter(entry=>entry.phase==='scroll-sample').length}};
+        """)
+        self.assertTrue(value["complete"])
+        self.assertIn("initial-sample", value["phases"])
+        self.assertGreater(value["scroll"], 0)
+        self.assertIn("pointer-follow-sample", value["phases"])
+        self.assertIn("ambient-video-check", value["phases"])
+
     def test_page_safe_claim_and_disclosure_aria_never_authorize_dangerous_actions(self):
         value = self.browser_json("""
           await page.evaluate(()=>{document.body.innerHTML=`

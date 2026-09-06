@@ -321,6 +321,13 @@ an accessible commerce page. Discovery and each candidate preflight now run as
 bounded controller steps that record progress or fail with a typed step error;
 they do not reduce target coverage, target limits or loop bounds.
 
+94. A full measured mechanism scan could cover up to 240 settled scroll
+positions without recording any durable controller progress. Avoca therefore
+looked silent at narrow rest even while the scan was advancing. Each completed
+initial, scroll, pointer and media sample now journals an observed event. The
+scan is explicitly bounded by the controller's five-minute hard cap, while the
+separate 60-second silence watchdog still fails a truly stuck browser call.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG
