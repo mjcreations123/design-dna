@@ -408,9 +408,12 @@ experience at wide and narrow widths: entry and home, relevant inner pages,
 navigation, the full content/task progression, applicable hover, focus, press,
 open, scroll, transition, media, ending, reset, error, and recovery states.
 The observer studies the primary route, every authored-state route, and inner
-routes in discovery order. `--max-inner-routes` defaults to the 1000-route
-safety ceiling. A lower resource cap may stop research but never qualifies
-unvisited routes: any remaining route makes the study incomplete.
+routes in discovery order up to `--max-inner-routes` (default 6, minimum 2),
+records the rest as unvisited beside the cap and the count of inner routes it
+actually visited, and derives its budget from that scope. The validator
+accepts that record only when the cap was reached by inner routes; the
+primary and authored-state routes never count toward it. Raise the cap when a
+brief depends on deeper routes (owner decision, 2026-09-06).
 Record a side-by-side candidate comparison, why each selection fits this exact
 brief, and the concrete rejection reason for every non-selected finalist.
 Determine the reference count from the project's route, component, and behavior

@@ -7,6 +7,14 @@ behavior.
 
 ## 12.1.0 - Development candidate
 
+Owner decision (2026-09-06, Motty: "get this thing working"): the declared
+inner-route scope stands. `--max-inner-routes` defaults to 6 again and the
+validator accepts a reached cap with every remaining route recorded, while
+Codex's stricter rule survives: the primary and authored-state routes never
+count toward the cap, and the record must carry `inner_routes_visited`. The
+complete-coverage reading recorded in the review corrections below is
+superseded by this decision.
+
 Review corrections:
 
 - Resource ceilings no longer qualify incomplete route coverage. The default

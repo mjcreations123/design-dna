@@ -24,8 +24,8 @@ The default no-progress bound is 60 seconds and a screenshot is bounded to 30
 seconds. The observer's total budget is derived from its declared route
 scope: 90 minutes for the primary route with its passes, scroll-hold
 traversal and states, plus 8 minutes for each route at both profiles, so the
-total budget is clamped to a four-hour hard ceiling. The default route
-ceiling is 1000. Resource bounds never establish complete coverage.
+total budget is clamped to a four-hour hard ceiling; the default inner-route
+cap of six gives about two and a half hours on a rich site.
 The recorder's budget is 60 minutes
 default; its 90-second-per-profile minimum remains required and its requested
 dwell is capped at 600 seconds per profile to reserve processing time within
@@ -35,11 +35,16 @@ census walks every discovered target) and may end a run earlier. Those bounds
 stop the attempt and preserve incomplete evidence; they never turn a partial
 source into a qualified one.
 
-The observer studies the primary route, every authored-state route, and
-discovered inner routes. `--max-inner-routes` is a resource ceiling (default
-1000, minimum 2). Remaining discovered routes are recorded as unvisited and
-make the study ineligible, even when the declared ceiling was reached.
-Authored-state routes never substitute for missing inner-route coverage.
+Inner routes are a declared scope, not a timeout. The observer studies the
+primary route, every authored-state route, and inner routes in discovery
+order up to `--max-inner-routes` (default 6, never below 2, because the dossier
+needs two observed inner pages); every remaining discovered route is recorded
+as `unvisited_urls` beside the cap and `inner_routes_visited`, and the
+validator accepts that record only when the cap was reached by inner routes.
+The primary and authored-state routes never count toward it. A timeout or a
+resource limit never qualifies an unvisited route. Owner decision 2026-09-06:
+without a declared scope a home page that links to fifteen routes cannot be
+qualified at all; raise the cap when a brief depends on deeper routes.
 
 Use one active study per source. Do not fan out duplicate observers while an
 earlier attempt is still running. Before another attempt, inspect its progress

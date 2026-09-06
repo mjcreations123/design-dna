@@ -14328,7 +14328,14 @@ def selected_cohort_failures(project: Path, *, mapping_payload: dict[str, object
 
 
 def discovery_route_scope_complete(entry: object) -> bool:
-    """Every discovered route must be visited; resource caps cannot grant coverage."""
+    """A profile's recursive discovery is complete when every discovered
+    same-origin route was visited, or when the observer declared an inner-route
+    cap, actually visited that many INNER routes (the primary and authored-state
+    routes never count toward it), and recorded every remaining discovered
+    route as unvisited. A reached cap is a declared scope with its boundary in
+    the record; a resource limit or a timeout is not, and never qualifies an
+    unvisited route. Owner decision 2026-09-06: without this, a reference whose
+    home page links to fifteen routes cannot be qualified at all."""
     if not isinstance(entry, dict):
         return False
     discovered = entry.get("discovered_urls")
@@ -14339,7 +14346,21 @@ def discovery_route_scope_complete(entry: object) -> bool:
         return False
     if len(set(discovered)) != len(discovered) or len(set(visited)) != len(visited):
         return False
-    return set(discovered) == set(visited) and entry.get("unvisited_urls", []) == []
+    unvisited = entry.get("unvisited_urls", [])
+    if set(discovered) == set(visited) and unvisited == []:
+        return True
+    cap = entry.get("inner_route_cap")
+    inner_visited = entry.get("inner_routes_visited")
+    if isinstance(cap, bool) or not isinstance(cap, int) or cap < 2:
+        return False
+    if isinstance(inner_visited, bool) or not isinstance(inner_visited, int) or inner_visited < cap:
+        return False
+    if not isinstance(unvisited, list) or any(not isinstance(url, str) or not url for url in unvisited):
+        return False
+    visited_set, unvisited_set = set(visited), set(unvisited)
+    if visited_set & unvisited_set or (visited_set | unvisited_set) != set(discovered):
+        return False
+    return len(visited_set) >= inner_visited + 1
 
 
 def reference_dossier_failures(

@@ -2,23 +2,23 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "12.1.0",
-  "distribution_sha256": "36f795eb3c51bf075876131c9b69ca031bc27182efbc49c918dc9c5279e2e3c3",
-  "content_sha256": "656d2ac693a1071f7f119bdb2b78c55ac53b2523358938f28d2d106952737f3f",
+  "distribution_sha256": "5322f0157e7b877747fafe14f2ec7fdb6999cfbbd9667c32544b19d8f0ad6592",
+  "content_sha256": "772189f16c6e0b8a41014bc64e2d4104241f4c55b30fb47cd4c46e4233525ab5",
   "codex_plugin_manifest_sha256": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
   "claude_plugin_manifest_sha256": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-  "sbom_sha256": "75ae8f41f881aba076e2527c443c5fefe2be633107096b5eae3ea166797b61de",
+  "sbom_sha256": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe",
   "compatibility_matrix_sha256": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "36f795eb3c51bf075876131c9b69ca031bc27182efbc49c918dc9c5279e2e3c3",
-    "runtime": "656d2ac693a1071f7f119bdb2b78c55ac53b2523358938f28d2d106952737f3f",
+    "distribution_tree": "5322f0157e7b877747fafe14f2ec7fdb6999cfbbd9667c32544b19d8f0ad6592",
+    "runtime": "772189f16c6e0b8a41014bc64e2d4104241f4c55b30fb47cd4c46e4233525ab5",
     "codex_plugin_manifest": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
     "claude_plugin_manifest": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-    "sbom": "75ae8f41f881aba076e2527c443c5fefe2be633107096b5eae3ea166797b61de",
+    "sbom": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe",
     "compatibility_matrix": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "8bfa939092fee3e73122213e2ec588bb6b112f80e68a3fd8d0a361c6719a4004",
-    "distribution_docs": "1d4f2cb369167eaffc11a7e2743b4ffb791404682d3eb69008b1284c75c00f05",
+    "distribution_docs": "f4f5f53b2ec8ccdd81e36cd16c9ca5076370b5f419ef5d9b38e9e971523d3b92",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,14 +26,14 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "5ef13f08f6e9b6993b3df53a70ff82279a298c49446bcd8e0958b469f0a0af95",
-  "generated_at": "2026-09-06T22:46:35.857478+00:00",
+  "release_sha256": "195d19a3588a04c81fee3bed265b7b85a565d1cb7170d69d77b934720d33664c",
+  "generated_at": "2026-09-06T22:53:21.983052+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 64790,
-      "sha256": "1f9d0c8b6649614cc7b63b445447b150100d431f35f2755e2d36a86c67e61354"
+      "size": 65011,
+      "sha256": "4872ecb8ba8bddea03707633a19e183c040decc8de44e459a1f0fe2a1e0c2bc4"
     },
     {
       "path": "agents",
@@ -392,8 +392,8 @@
     {
       "path": "references/quality/bounded-source-study.md",
       "type": "file",
-      "size": 9877,
-      "sha256": "b73dc9cf8a6405b9c9f3f8b5114d7f94f61867222c1be38cb04e32a147c8224d"
+      "size": 10261,
+      "sha256": "935c568065f99ebbb39451e353c6c73482613b5f45c9d5f5040be20b4df25ab8"
     },
     {
       "path": "references/quality/browser-support.md",
@@ -890,8 +890,8 @@
     {
       "path": "scripts/init_project_state.py",
       "type": "file",
-      "size": 1298469,
-      "sha256": "ecaf932fb906bfc3dffc54e021d2f15de0b8a93db82e213ea3b972e19c525cd7"
+      "size": 1299690,
+      "sha256": "05b6c5db14c2e36bdf3f9e72ca9876648f1a1c224df29fdd7efa64ccd6c68a6e"
     },
     {
       "path": "scripts/legacy_maintenance.py",
@@ -914,8 +914,8 @@
     {
       "path": "scripts/observe_reference.mjs",
       "type": "file",
-      "size": 124763,
-      "sha256": "52037b12ef355b5c58c867393cd75e5ac0b874e98ef8108dd16559f73ceba39f"
+      "size": 124940,
+      "sha256": "277f68a51021a5715d7c6bd81acd440f4f8ceb2fe9cd4e675c9340bd352a01da"
     },
     {
       "path": "scripts/owner_pattern_audit.py",
@@ -1412,8 +1412,8 @@
     {
       "path": "tests/test_inner_route_scope.py",
       "type": "file",
-      "size": 3066,
-      "sha256": "027c5f78ed74cae75fbd0679d36eca869936bc75693ef9569202a5d015e84974"
+      "size": 3802,
+      "sha256": "b19b458cc35e849cbbb09045069d7f14e07882e345dceb3e55a0afe1c5548554"
     },
     {
       "path": "tests/test_legacy_maintenance.py",
@@ -1576,8 +1576,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 115979,
-      "sha256": "42405b1ee00f6b0ae7e9f3d2260274386abba46c0c48b0f77891d96e9d234f68"
+      "size": 116456,
+      "sha256": "29221ab3aa5ca9fe6c729fb3cb24e3624745a2b002032f8721efac2e1939c7e2"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -3917,7 +3917,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "75ae8f41f881aba076e2527c443c5fefe2be633107096b5eae3ea166797b61de"
+      "sha256": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe"
     },
     {
       "path": "maintainer/schemas",
@@ -4654,8 +4654,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 64790,
-      "sha256": "1f9d0c8b6649614cc7b63b445447b150100d431f35f2755e2d36a86c67e61354"
+      "size": 65011,
+      "sha256": "4872ecb8ba8bddea03707633a19e183c040decc8de44e459a1f0fe2a1e0c2bc4"
     },
     {
       "path": "skills/design-dna/agents",
@@ -5014,8 +5014,8 @@
     {
       "path": "skills/design-dna/references/quality/bounded-source-study.md",
       "type": "file",
-      "size": 9877,
-      "sha256": "b73dc9cf8a6405b9c9f3f8b5114d7f94f61867222c1be38cb04e32a147c8224d"
+      "size": 10261,
+      "sha256": "935c568065f99ebbb39451e353c6c73482613b5f45c9d5f5040be20b4df25ab8"
     },
     {
       "path": "skills/design-dna/references/quality/browser-support.md",
@@ -5512,8 +5512,8 @@
     {
       "path": "skills/design-dna/scripts/init_project_state.py",
       "type": "file",
-      "size": 1298469,
-      "sha256": "ecaf932fb906bfc3dffc54e021d2f15de0b8a93db82e213ea3b972e19c525cd7"
+      "size": 1299690,
+      "sha256": "05b6c5db14c2e36bdf3f9e72ca9876648f1a1c224df29fdd7efa64ccd6c68a6e"
     },
     {
       "path": "skills/design-dna/scripts/legacy_maintenance.py",
@@ -5536,8 +5536,8 @@
     {
       "path": "skills/design-dna/scripts/observe_reference.mjs",
       "type": "file",
-      "size": 124763,
-      "sha256": "52037b12ef355b5c58c867393cd75e5ac0b874e98ef8108dd16559f73ceba39f"
+      "size": 124940,
+      "sha256": "277f68a51021a5715d7c6bd81acd440f4f8ceb2fe9cd4e675c9340bd352a01da"
     },
     {
       "path": "skills/design-dna/scripts/owner_pattern_audit.py",
@@ -6034,8 +6034,8 @@
     {
       "path": "skills/design-dna/tests/test_inner_route_scope.py",
       "type": "file",
-      "size": 3066,
-      "sha256": "027c5f78ed74cae75fbd0679d36eca869936bc75693ef9569202a5d015e84974"
+      "size": 3802,
+      "sha256": "b19b458cc35e849cbbb09045069d7f14e07882e345dceb3e55a0afe1c5548554"
     },
     {
       "path": "skills/design-dna/tests/test_legacy_maintenance.py",

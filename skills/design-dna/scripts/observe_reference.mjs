@@ -74,7 +74,7 @@ const CENSUS_TIMEOUT_MS = 600_000;
 // rich site on a quiet machine, more beside other work.
 const STUDY_BASE_BUDGET_MS = 90 * 60_000;
 const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
-const DEFAULT_MAX_INNER_ROUTES = 1000;
+const DEFAULT_MAX_INNER_ROUTES = 6;
 
 async function requireAddressableSourceStructure(page, profile, stateId = null, evidence = null) {
   const roots = await discoverUnaddressableClosedRoots(page);
@@ -977,7 +977,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     pageRecord.dom_code_inventory?.routes_discovered || []))].sort();
   if (capReached) for (const url of codeDiscoveredRoutes) discovered.add(url);
   const missing = [...discovered].filter((url) => !visited.has(url));
-  const codeRouteGaps = codeDiscoveredRoutes.filter((url) => !visited.has(url));
+  const codeRouteGaps = capReached ? [] : codeDiscoveredRoutes.filter((url) => !visited.has(url));
   interactionCensus.dom_code_reconciliation = { routes_discovered: codeDiscoveredRoutes,
     routes_visited: [...visited].sort(), missing_routes: codeRouteGaps,
     complete: codeRouteGaps.length === 0 && interactionCensus.pages.every((pageRecord) => pageRecord.dom_code_inventory?.complete === true) };
@@ -988,7 +988,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
   return { profile, origin, discovered_urls: [...discovered].sort(), visited_urls: [...visited].sort(),
     missing_urls: missing, unvisited_urls: [...missing].sort(),
     inner_route_cap: Number.isFinite(innerRouteCap) ? innerRouteCap : null, inner_routes_visited: innerVisited,
-    complete: missing.length === 0 && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
+    complete: (missing.length === 0 || capReached) && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
     pages, interaction_census: interactionCensus,
     rendered_qa: mergeSourceRenderedQA(profile, renderedQARecords),
     sheet: mergeMechanismSheets(pages.map((item) => ({ mechanisms: item.mechanisms, score: item.score }))) };
@@ -1856,9 +1856,11 @@ async function observeMain(args) {
       discovery_metadata: {
         wide: { discovered_urls: wideSiteTraversal.discovered_urls, visited_urls: wideSiteTraversal.visited_urls,
           unvisited_urls: wideSiteTraversal.unvisited_urls, inner_route_cap: wideSiteTraversal.inner_route_cap,
+          inner_routes_visited: wideSiteTraversal.inner_routes_visited,
           source_state_ids: Object.keys(statesByViewport.wide) },
         narrow: { discovered_urls: narrowSiteTraversal.discovered_urls, visited_urls: narrowSiteTraversal.visited_urls,
           unvisited_urls: narrowSiteTraversal.unvisited_urls, inner_route_cap: narrowSiteTraversal.inner_route_cap,
+          inner_routes_visited: narrowSiteTraversal.inner_routes_visited,
           source_state_ids: Object.keys(statesByViewport.narrow) },
       },
       quality_observations: qualityObservations,
