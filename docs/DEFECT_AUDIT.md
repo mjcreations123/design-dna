@@ -349,6 +349,13 @@ visible fixed viewport overlays remain continuously watched.
 
 ## Verification and remaining boundaries
 
+The later 12.1.0 review corrections supersede historical installation and
+qualification claims in this report. Route caps cannot qualify missing
+coverage; failed/concurrent callback attempts consume the capture budget;
+browser cleanup uses an owned Chromium PID; ambiguous consent retains its
+typed handoff; failed target discovery and occluded hover fallbacks fail
+explicitly. See the current changelog for verification scope.
+
 Verification includes adverse cases and usable positive paths: actual PNG
 capture, responsive proof rendering, a full two-profile recorder, actual glyph
 font checks, installed-path execution, and strict maintenance callbacks on

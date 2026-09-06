@@ -42,6 +42,37 @@ def node_json(expression: str, module: str = "source_study_controller.mjs"):
 
 @unittest.skipUnless(NODE, "Node is required for packaged source runtime")
 class SourceStudyControllerRuntimeTests(unittest.TestCase):
+    def test_hover_fallback_refuses_an_occluded_target(self):
+        value = node_json("""
+          let moves=0;
+          const target={hover:async()=>{throw new Error('occluded');},boundingBox:async()=>({x:10,y:10,width:40,height:40}),evaluate:async()=>false};
+          const page={viewportSize:()=>({width:200,height:200}),mouse:{move:async()=>moves++}};
+          let refused=false;try{await m.hoverWithPointerFallback(target,page,1);}catch{refused=true;}
+          process.stdout.write(JSON.stringify({refused,moves}));
+        """, "browser_evidence.mjs")
+        self.assertTrue(value["refused"])
+        self.assertEqual(0, value["moves"])
+
+    def test_owned_browser_kill_fallback_uses_actual_chromium_pid(self):
+        value = node_json("""
+          const {resolvePlaywright,discoverBrowserExecutable}=await import('./skills/design-dna/scripts/playwright_resolver.mjs');
+          const pw=resolvePlaywright({moduleUrl:import.meta.url}).playwright;
+          const executable=discoverBrowserExecutable(pw);
+          const browser=await m.launchOwnedBrowser(pw.chromium,{executablePath:executable.file||executable.path||executable});
+          const session=await browser.newBrowserCDPSession();
+          const info=await session.send('SystemInfo.getProcessInfo');
+          const pid=info.processInfo.find(item=>item.type==='browser').id;await session.detach();
+          const originalClose=browser.close.bind(browser);
+          browser.close=()=>new Promise(()=>{});
+          const outcome=await m.closeBrowserBounded(browser,50);
+          await new Promise(resolve=>setTimeout(resolve,250));
+          let alive=true;try{process.kill(pid,0);}catch(error){alive=error.code!=='ESRCH';}
+          browser.close=originalClose; await originalClose().catch(()=>{});
+          process.stdout.write(JSON.stringify({outcome,alive}));
+        """, "browser_evidence.mjs")
+        self.assertTrue(value["outcome"]["killed"])
+        self.assertFalse(value["alive"])
+
     def test_native_navigation_does_not_require_disclosure_aria_but_widgets_still_do(self):
         value = node_json("""
           const target={kind:'route-link',tag:'a',semantic_state:{aria_expanded:null,aria_pressed:null,aria_controls:null},
@@ -477,6 +508,32 @@ class PackagedSourceCaptureTests(unittest.TestCase):
         self.assertTrue(value["claimed"]["click"]["ignored_page_safe_claim"])
         self.assertEqual("side-effect-blocked", value["blocker"])
         self.assertEqual(0, value["effects"])
+
+    def test_failed_concurrent_callback_captures_consume_attempt_cap(self):
+        value = self.browser_json(f"""
+          const watcher=await import({json.dumps((SCRIPTS / 'source_surface_watch.mjs').as_uri())});
+          let attempts=0;
+          const watch=await watcher.startSourceSurfaceWatch(page,{{captureCallbackEvidence:async()=>{{
+            attempts++;await new Promise(resolve=>setTimeout(resolve,25));throw new Error('fixture capture failed');
+          }}}});
+          try {{
+            await page.evaluate(async(id)=>{{await Promise.all(Array.from({{length:12}},(_,i)=>
+              window.__designDnaSourceSurfaceCallbackV1({{watch_id:id,event:{{event_id:'fixture-'+i,kind:'surface-css-animation-event'}}}})));}},watch.id);
+            return {{attempts,skipped:watch.callbackEvents.filter(item=>item.callback_evidence?.skipped).length}};
+          }} finally {{await watcher.stopSourceSurfaceWatch(watch);}}
+        """)
+        self.assertEqual(4, value["attempts"])
+        self.assertEqual(8, value["skipped"])
+
+    def test_ambiguous_consent_preserves_handoff_error(self):
+        value = self.browser_json(f"""
+          const recorder=await import({json.dumps((SCRIPTS / 'record_reference.mjs').as_uri())});
+          await page.evaluate(()=>{{document.body.innerHTML='<div role="dialog" aria-label="Cookie consent"><button>Accept all cookies</button></div>';}});
+          try {{await recorder.requireSafeConsent(page);return {{unexpected:true}};}}
+          catch(error) {{return {{code:error.code,message:error.message}};}}
+        """)
+        self.assertEqual("consent-handoff-required", value["code"])
+        self.assertNotIn("browser is not defined", value["message"])
 
     def test_custom_drag_and_registered_touch_controls_are_explicit_unresolved_gestures(self):
         value = self.browser_json("""

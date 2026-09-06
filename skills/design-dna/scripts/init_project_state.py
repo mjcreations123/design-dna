@@ -14328,27 +14328,18 @@ def selected_cohort_failures(project: Path, *, mapping_payload: dict[str, object
 
 
 def discovery_route_scope_complete(entry: object) -> bool:
-    """A profile's recursive discovery is complete when every discovered
-    same-origin route was visited, or when the observer declared an inner-route
-    cap, visited the primary route plus at least that many inner routes, and
-    recorded every remaining discovered route as unvisited. A cap is a declared
-    scope with its boundary in the record; a timeout is not."""
+    """Every discovered route must be visited; resource caps cannot grant coverage."""
     if not isinstance(entry, dict):
         return False
     discovered = entry.get("discovered_urls")
     visited = entry.get("visited_urls")
     if not isinstance(discovered, list) or not discovered or not isinstance(visited, list) or not visited:
         return False
-    if discovered == visited:
-        return True
-    cap = entry.get("inner_route_cap")
-    unvisited = entry.get("unvisited_urls")
-    if isinstance(cap, bool) or not isinstance(cap, int) or cap < 2 or not isinstance(unvisited, list):
+    if any(not isinstance(url, str) or not url for url in discovered + visited):
         return False
-    visited_set, unvisited_set = set(visited), set(unvisited)
-    if visited_set & unvisited_set or (visited_set | unvisited_set) != set(discovered):
+    if len(set(discovered)) != len(discovered) or len(set(visited)) != len(visited):
         return False
-    return len(visited_set) >= cap + 1
+    return set(discovered) == set(visited) and entry.get("unvisited_urls", []) == []
 
 
 def reference_dossier_failures(

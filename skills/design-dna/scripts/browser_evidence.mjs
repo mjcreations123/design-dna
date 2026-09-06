@@ -1,6 +1,7 @@
 /** Shared, fail-closed browser evidence helpers. */
 
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 
 export const sha256Bytes = (value) => createHash("sha256").update(value).digest("hex");
 export const sha256 = sha256Bytes;
@@ -84,12 +85,18 @@ export async function hoverWithPointerFallback(target, page, timeout = 5000) {
     return { mode: 'locator' };
   } catch (error) {
     if (String(error?.code || '').startsWith('source-study-')) throw error;
-    const box = await target.boundingBox().catch(() => null);
+    const box = await raceBound(target.boundingBox({ timeout: 3000 }), 3500, 'hover-fallback-box');
     if (!box || box.width < 1 || box.height < 1) throw error;
     const viewport = page.viewportSize() || { width: 1440, height: 900 };
     const x = box.x + box.width / 2, y = box.y + box.height / 2;
     if (x < 0 || y < 0 || x > viewport.width || y > viewport.height) throw error;
-    await page.mouse.move(x, y);
+    const hit = await raceBound(target.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      const top = element.ownerDocument.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return top === element || element.contains(top);
+    }, undefined, { timeout: 3000 }), 3500, 'hover-fallback-hit-test');
+    if (!hit) throw error;
+    await raceBound(page.mouse.move(x, y), 5000, 'hover-fallback-pointer');
     return { mode: 'pointer', reason: String(error?.message || error).split('\n')[0].slice(0, 160) };
   }
 }
@@ -2553,6 +2560,25 @@ export function aggregateServedContent(probes) {
  * down mid-screenshot) must not keep the process, and its machine-wide
  * source-study slot, alive forever: after the bound the browser process is
  * killed and the outcome is returned, never hidden. */
+const ownedBrowserProcesses = new WeakMap();
+
+export async function launchOwnedBrowser(chromium, options) {
+  const browser = await chromium.launch(options);
+  try {
+    const session = await browser.newBrowserCDPSession();
+    try {
+      const info = await raceBound(session.send('SystemInfo.getProcessInfo'), 5000, 'browser-process-identity');
+      const processInfo = info.processInfo.filter((item) => item.type === 'browser');
+      if (processInfo.length !== 1 || !Number.isInteger(processInfo[0].id) || processInfo[0].id <= 0) throw new Error('Browser process identity unavailable');
+      ownedBrowserProcesses.set(browser, processInfo[0].id);
+    } finally { await session.detach(); }
+    return browser;
+  } catch (error) {
+    await closeBrowserBounded(browser);
+    throw error;
+  }
+}
+
 export async function closeBrowserBounded(browser, timeoutMs = 15000) {
   if (!browser) return { closed: false, reason: 'no-browser' };
   let timer;
@@ -2564,7 +2590,15 @@ export async function closeBrowserBounded(browser, timeoutMs = 15000) {
   const outcome = await Promise.race([close, timeout]);
   clearTimeout(timer);
   if (!outcome.closed) {
-    try { browser.process()?.kill('SIGKILL'); outcome.killed = true; }
+    try {
+      const pid = ownedBrowserProcesses.get(browser);
+      if (!pid) throw new Error('No owned browser PID recorded; refusing to guess a process');
+      if (process.platform === 'win32') {
+        const result = spawnSync('taskkill.exe', ['/PID', String(pid), '/T', '/F'], { timeout: 5000, windowsHide: true, encoding: 'utf8' });
+        if (result.error || result.status !== 0) throw result.error || new Error(result.stderr || 'Owned browser tree termination failed');
+      } else process.kill(pid, 'SIGKILL');
+      outcome.killed = true;
+    }
     catch (error) { outcome.killed = false; outcome.kill_error = String(error?.message || error).slice(0, 200); }
   }
   return outcome;

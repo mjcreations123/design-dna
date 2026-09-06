@@ -38,7 +38,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { STRUCTURE_SCRIPT } from "./structure_probe.mjs";
 import { applyManifestState, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, discoverUnaddressableClosedRoots, inferAndReconcileStates, installDomInspection, interactionCensusIncompleteError, mergeSourceGestureInventories, mergeSourceRenderedQA, navigateExact, normalizeHttpUrl,
-  traverseScrollSurfaces, validateManifestState, closeBrowserBounded, scrollIntoViewBounded } from "./browser_evidence.mjs";
+  traverseScrollSurfaces, validateManifestState, closeBrowserBounded, launchOwnedBrowser, scrollIntoViewBounded } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, sourceStudyFailureStatus } from "./source_study_controller.mjs";
@@ -74,7 +74,7 @@ const CENSUS_TIMEOUT_MS = 600_000;
 // rich site.
 const STUDY_BASE_BUDGET_MS = 60 * 60_000;
 const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
-const DEFAULT_MAX_INNER_ROUTES = 6;
+const DEFAULT_MAX_INNER_ROUTES = 1000;
 
 async function requireAddressableSourceStructure(page, profile, stateId = null, evidence = null) {
   const roots = await discoverUnaddressableClosedRoots(page);
@@ -977,7 +977,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     pageRecord.dom_code_inventory?.routes_discovered || []))].sort();
   if (capReached) for (const url of codeDiscoveredRoutes) discovered.add(url);
   const missing = [...discovered].filter((url) => !visited.has(url));
-  const codeRouteGaps = capReached ? [] : codeDiscoveredRoutes.filter((url) => !visited.has(url));
+  const codeRouteGaps = codeDiscoveredRoutes.filter((url) => !visited.has(url));
   interactionCensus.dom_code_reconciliation = { routes_discovered: codeDiscoveredRoutes,
     routes_visited: [...visited].sort(), missing_routes: codeRouteGaps,
     complete: codeRouteGaps.length === 0 && interactionCensus.pages.every((pageRecord) => pageRecord.dom_code_inventory?.complete === true) };
@@ -988,7 +988,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
   return { profile, origin, discovered_urls: [...discovered].sort(), visited_urls: [...visited].sort(),
     missing_urls: missing, unvisited_urls: [...missing].sort(),
     inner_route_cap: Number.isFinite(innerRouteCap) ? innerRouteCap : null, inner_routes_visited: innerVisited,
-    complete: (missing.length === 0 || capReached) && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
+    complete: missing.length === 0 && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
     pages, interaction_census: interactionCensus,
     rendered_qa: mergeSourceRenderedQA(profile, renderedQARecords),
     sheet: mergeMechanismSheets(pages.map((item) => ({ mechanisms: item.mechanisms, score: item.score }))) };
@@ -1155,7 +1155,7 @@ async function captureProofSource(args, stateContract, loaded, browserDependency
     frames.push({ ...row, profile, label }); study.markFrame(row); return row;
   };
   try {
-    browser = await loaded.playwright.chromium.launch({ executablePath: browserDependency.file });
+    browser = await launchOwnedBrowser(loaded.playwright.chromium, { executablePath: browserDependency.file });
     for (const viewport of [{ name: 'wide', width: 1440, height: 900 }, { name: 'narrow', width: 390, height: 844 }]) {
       const profile = viewport.name;
       const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
@@ -1291,7 +1291,7 @@ async function captureProofSource(args, stateContract, loaded, browserDependency
       frames.map((frame) => ({ ...frame, file: path.basename(frame.file) })), runtimeIdentity, terminal);
     throw Object.assign(error, { source_study: terminal.source_study, source_study_progress: terminal.source_study_progress,
       source_study_failure: terminal.source_study_failure, failure_report: failure });
-  } finally { await browser?.close().catch(() => {}); }
+  } finally { await closeBrowserBounded(browser); }
 }
 
 async function main() {
@@ -1329,7 +1329,7 @@ async function observeMain(args) {
   const navigations = [];
   let n = 0;
 
-  const browser = await pw.chromium.launch(
+  const browser = await launchOwnedBrowser(pw.chromium,
     { executablePath: browserExecutable }
   );
   const context = await browser.newContext({
@@ -1340,7 +1340,7 @@ async function observeMain(args) {
   const page = await context.newPage();
   const sourceStudy = createSourceStudyController({
     output_dir: args.outDir, id: args.id, producer: 'observe_reference.mjs', source_kind: 'public-source',
-    limits: { max_total_elapsed_ms: STUDY_BASE_BUDGET_MS + STUDY_PER_ROUTE_BUDGET_MS * (1 + args.maxInnerRoutes) },
+    limits: { max_total_elapsed_ms: Math.min(14_400_000, STUDY_BASE_BUDGET_MS + STUDY_PER_ROUTE_BUDGET_MS * (1 + args.maxInnerRoutes)) },
     required_completion_artifact_kinds: ['frame'],
     abort: async () => { await context.close().catch(() => {}); },
     partial_evidence: () => ({

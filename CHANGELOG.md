@@ -7,6 +7,25 @@ behavior.
 
 ## 12.1.0 - Development candidate
 
+Review corrections:
+
+- Resource ceilings no longer qualify incomplete route coverage. The default
+  inner-route ceiling is 1000; any unvisited route keeps the source ineligible.
+  Authored-state routes cannot substitute for missing inner routes.
+- Browser launch records its actual Chromium PID through CDP. A failed close
+  terminates that owned process (and its tree on Windows); it never calls the
+  unavailable Playwright `browser.process()` method.
+- Animation callback capture attempts reserve their budget before awaiting,
+  including failed and concurrent captures. Real surface appearances continue
+  to require evidence.
+- Ambiguous recorder consent preserves `consent-handoff-required`; browser
+  cleanup belongs to the caller rather than an undefined local variable.
+- Failed hover-target discovery is a failure, not an empty inventory. Pointer
+  fallback checks occlusion and bounds its geometry and pointer operations.
+
+The earlier route-cap acceptance described below is superseded by these
+corrections. Full release qualification requires fresh attestations.
+
 Runtime repair. The 12.0.0 candidate could not finish observing a reference
 whose first screen is a full-screen animated overlay (House of Honey), and a
 failed observation could hang the process while holding a machine-wide runner

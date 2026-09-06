@@ -266,9 +266,10 @@ async function registerCallback(page, watchId, options) {
             callbackEvidence = { skipped: 'callback-capture-cap', cap: SOURCE_SURFACE_CALLBACK_CAPTURE_CAP,
               captured_callbacks: watch.callbackCaptures, kind };
           } else {
+            // Reserve before awaiting: failed and concurrent attempts count.
+            watch.callbackCaptures += 1;
             try {
               callbackEvidence = await capture(label, eventPage);
-              if (generatedEvidence(callbackEvidence)) watch.callbackCaptures += 1;
             } catch (error) {
               // A callback frame that cannot be taken must not end the study.
               // The drain decides whether this event kind can stand without it.

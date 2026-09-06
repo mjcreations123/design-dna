@@ -24,9 +24,9 @@ The default no-progress bound is 60 seconds and a screenshot is bounded to 30
 seconds. The observer's total budget is derived from its declared route
 scope: 60 minutes for the primary route with its passes, scroll-hold
 traversal and states, plus 8 minutes for each route at both profiles, so the
-default inner-route cap of six gives 116 minutes, under a four-hour hard
-ceiling. A rich reference is an afternoon's study, not a coffee break; the
-alternative was a certain timeout. The recorder keeps its 30-minute
+total budget is clamped to a four-hour hard ceiling. The default route
+ceiling is 1000. Resource bounds never establish complete coverage.
+The recorder keeps its 30-minute
 default; its 90-second-per-profile minimum remains required and its requested
 dwell is capped at 600 seconds per profile to reserve processing time within
 the whole-command budget. Per-step bounds are derived from each step's own
@@ -35,14 +35,11 @@ census walks every discovered target) and may end a run earlier. Those bounds
 stop the attempt and preserve incomplete evidence; they never turn a partial
 source into a qualified one.
 
-Inner routes are a declared scope, not a timeout. The observer studies the
-primary route, every authored-state route, and inner routes in discovery
-order up to `--max-inner-routes` (default 6, never below 2, because the dossier
-needs two observed inner pages); every remaining discovered route is recorded
-as `unvisited_urls` beside the cap, and the validator accepts that record only
-when the cap was actually reached. A home page that links to fifteen routes is
-studied in about two hours, not over a working day. Raise the cap when a brief
-depends on deeper routes.
+The observer studies the primary route, every authored-state route, and
+discovered inner routes. `--max-inner-routes` is a resource ceiling (default
+1000, minimum 2). Remaining discovered routes are recorded as unvisited and
+make the study ineligible, even when the declared ceiling was reached.
+Authored-state routes never substitute for missing inner-route coverage.
 
 Use one active study per source. Do not fan out duplicate observers while an
 earlier attempt is still running. Before another attempt, inspect its progress

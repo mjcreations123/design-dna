@@ -69,7 +69,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { applyManifestState, canonicalJson, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, inferAndReconcileStates, installDomInspection, interactionCensusDiagnostic, mergeSourceGestureInventories, mergeSourceRenderedQA,
-  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded, hoverWithPointerFallback, scrollIntoViewBounded, raceBound } from "./browser_evidence.mjs";
+  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded, launchOwnedBrowser, hoverWithPointerFallback, scrollIntoViewBounded, raceBound } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, DEFAULT_SOURCE_STUDY_LIMITS, sourceStudyFailureStatus, sourceStudyPreflightFailure } from "./source_study_controller.mjs";
@@ -536,13 +536,12 @@ async function classifyScopedConsent(page) {
 
 /** The running recording is the generated evidence source. `captureEvidence`
  * returns video timestamps which processProfile binds to immutable frames. */
-async function requireSafeConsent(page, options = {}) {
+export async function requireSafeConsent(page, options = {}) {
   const result = await classifyScopedConsent(page);
   if (!result.present) return { present: false, dismissed: false };
   if (!result.eligible) {
     const error = new Error(`Consent-like dialog requires owner-safe handoff before recording; no automatic choice was made (${result.reason || 'ambiguous-consent'}).`);
     error.code = 'consent-handoff-required'; error.consent_candidate = result;
-    await closeBrowserBounded(browser);
     throw error;
   }
   const capture = options.captureEvidence;
@@ -579,7 +578,7 @@ async function markPointerTargets(frame) {
       if (!element.dataset.dnaRecordPointer) element.dataset.dnaRecordPointer = String(++sequence);
     }
     window.__dnaRecordPointer = sequence;
-  }), 5_000, 'pointer-target-marking').catch(() => {});
+  }), 5_000, 'pointer-target-marking');
 }
 
 // A visible-only hover pass runs at every scroll position. On a page whose
@@ -594,7 +593,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
   for (const frame of page.frames()) {
     if (truncated) break;
     await markPointerTargets(frame);
-    const targets = await raceBound(frame.locator(selector).all(), 5_000, 'hover-target-listing').catch(() => []);
+    const targets = await raceBound(frame.locator(selector).all(), 5_000, 'hover-target-listing');
     for (const target of targets) {
       if (visibleOnly && Date.now() - passStarted > VISIBLE_HOVER_PASS_MS) { truncated = true; break; }
       let identity = null;
@@ -1307,7 +1306,7 @@ async function recordMain(args) {
   const browserDependency = loadBrowserDependency(loaded, args.browser);
   const executable = browserDependency.file;
   const browserSha256 = browserDependency.sha256;
-  const browser = await playwright.chromium.launch({ executablePath: executable });
+  const browser = await launchOwnedBrowser(playwright.chromium, { executablePath: executable });
   let profiles, activeRun = null;
   try {
     profiles = [];
