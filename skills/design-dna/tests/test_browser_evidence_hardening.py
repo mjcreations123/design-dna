@@ -503,6 +503,56 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
         self.assertEqual([], result["events"])
         self.assertTrue(all(inventory == [] for inventory in result["inventories"]), result)
 
+    def test_identical_magnetic_anchors_keep_distinct_hover_identity_without_weakening_loop_guard(self) -> None:
+        module_root = SKILL.parents[1] / "maintainer" / "node_modules"
+        if not module_root.is_dir():
+            self.skipTest("the maintained Playwright runtime is unavailable")
+        observer = (SCRIPTS / "observe_reference.mjs").resolve().as_uri()
+        resolver = (SCRIPTS / "playwright_resolver.mjs").resolve().as_uri()
+        controller = (SCRIPTS / "source_study_controller.mjs").resolve().as_uri()
+        program = f"""
+          import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+          import {{ hoverTargetIdentity }} from {json.dumps(observer)};
+          import {{ resolvePlaywright, discoverBrowserExecutable }} from {json.dumps(resolver)};
+          import {{ createSourceStudyController }} from {json.dumps(controller)};
+          const loaded = resolvePlaywright({{ moduleUrl: import.meta.url }});
+          const entry = discoverBrowserExecutable(loaded.playwright);
+          const browser = await loaded.playwright.chromium.launch({{ executablePath: entry.file || entry.path || entry }});
+          const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dna-hover-identity-'));
+          try {{
+            const page = await browser.newPage();
+            await page.setContent('<nav>' + Array.from({{length:6}}, () => '<a class="magnetic">Shop</a>').join('') + '</nav>');
+            const anchors = await page.locator('a').all();
+            const identities = await Promise.all(anchors.map((anchor) => anchor.evaluate(hoverTargetIdentity)));
+            const study = createSourceStudyController({{ output_dir: root, id: 'distinct-targets', producer: 'fixture.mjs',
+              limits: {{ max_consecutive_target_repeats: 3, max_total_target_visits_per_key: 12, max_repeated_target_edge_visits: 6 }} }});
+            for (const identity of identities) study.markTarget(`wide|primary-hover|fixture|${{identity}}`);
+            const target_count = study.state.counters.targets;
+            study.terminate('fixture-finished', 'Synthetic controller cleanup.');
+            const repeated = createSourceStudyController({{ output_dir: path.join(root, 'repeat'), id: 'same-target', producer: 'fixture.mjs',
+              limits: {{ max_consecutive_target_repeats: 3, max_total_target_visits_per_key: 12, max_repeated_target_edge_visits: 6 }} }});
+            let loop_code = null;
+            try {{ for (let index = 0; index < 4; index += 1) repeated.markTarget(`wide|primary-hover|fixture|${{identities[0]}}`); }}
+            catch (error) {{ loop_code = error.code || null; }}
+            process.stdout.write(JSON.stringify({{ identities, target_count, loop_code }}));
+          }} finally {{ await browser.close(); fs.rmSync(root, {{ recursive:true, force:true }}); }}
+        """
+        env = os.environ.copy()
+        env["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"] = str(module_root)
+        done = subprocess.run([NODE, "--input-type=module", "-e", program], capture_output=True,
+                              text=True, encoding="utf-8", env=env, timeout=60)
+        if done.returncode:
+            self.fail(done.stderr or done.stdout)
+        result = json.loads(done.stdout)
+        self.assertEqual(6, len(set(result["identities"])), result)
+        self.assertNotIn("a|||", result["identities"])
+        self.assertEqual(6, result["target_count"])
+        self.assertEqual("source-study-repeated-target-loop", result["loop_code"])
+        observer_text = (SCRIPTS / "observe_reference.mjs").read_text(encoding="utf-8")
+        self.assertIn("hover-discovery:wide-primary", observer_text)
+        self.assertIn("hover-preflight:wide-primary", observer_text)
+        self.assertIn("for (const [candidateOrdinal, { frame, el }] of targets.entries())", observer_text)
+
     def test_early_to_normal_surface_watch_has_one_timestamp_lineage(self) -> None:
         module_root = SKILL.parents[1] / "maintainer" / "node_modules"
         if not module_root.is_dir():

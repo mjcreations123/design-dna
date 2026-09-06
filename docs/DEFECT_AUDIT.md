@@ -307,6 +307,20 @@ evidence is recorded below when the source tree is frozen.
     a callback. A live public-page probe now drains cleanly; local static,
     streamed construction and visible-transient regressions cover the boundary.
 
+92. The wide hover observer reduced distinct anchors to their tag, optional
+ID, optional custom interaction ID and classes. Repeated magnetic links with
+none of those values all became `a|||`, falsely tripping the bounded target
+loop after a few legitimate targets. Hover identity now includes a source-owned
+ancestor/sibling structural path and frame URL. Distinct repeated links remain
+fully covered; revisiting the same exact node still trips the same loop guard.
+
+93. Hover target discovery and preflight could spend more than the source
+study's no-progress interval before the first eligible target was recorded.
+Avoca reached wide/narrow rest captures then failed with zero targets despite
+an accessible commerce page. Discovery and each candidate preflight now run as
+bounded controller steps that record progress or fail with a typed step error;
+they do not reduce target coverage, target limits or loop bounds.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG

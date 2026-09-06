@@ -293,6 +293,29 @@ export function firstScreenSheet(sheet, viewportHeight = 900) {
   return { mechanisms, score: { ...(sheet?.score || {}), type_instances: typeInstances } };
 }
 
+/**
+ * Return a source-owned DOM identity without marking or changing the page.
+ * Repeated components can have identical tags, classes and empty labels; the
+ * ancestor/sibling path keeps their hover coverage distinct. The study loop
+ * guard still sees an exact repeat of the same node as the same target.
+ */
+export function hoverTargetIdentity(node) {
+  if (!node || node.nodeType !== 1 || !node.tagName) return null;
+  const parts = [];
+  let cursor = node;
+  for (let depth = 0; cursor && cursor.nodeType === 1 && depth < 80; depth += 1) {
+    let ordinal = 1;
+    for (let sibling = cursor.previousElementSibling; sibling; sibling = sibling.previousElementSibling) ordinal += 1;
+    parts.push(`${cursor.tagName.toLowerCase()}:${ordinal}`);
+    const root = cursor.getRootNode?.();
+    cursor = cursor.parentElement || root?.host || null;
+  }
+  if (!parts.length) return null;
+  const tag = node.tagName.toLowerCase();
+  const authored = node.id || node.getAttribute('data-dna-interaction-id') || '';
+  return `${tag}|${authored}|${parts.reverse().join('>')}`;
+}
+
 // Turn the per-tick samples into named mechanisms with numbers a build can
 // reproduce. The page's own motion each tick is the median movement of every
 // visible probe, so a site that never changes scrollY still reads correctly.
@@ -1419,21 +1442,36 @@ async function observeMain(args) {
     let hoverTried = 0;
     let hoverFailed = 0;
     const hoverDurations = [];
-    const targets = (await Promise.all(page.frames().map((frame) =>
-      frame.locator("a, button, [role=button], li, article, figure, img").all()))).flat();
-    for (const el of targets) {
-      let box = null;
-      try {
-        if (!(await el.isVisible())) continue;
-        await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(120);
-        box = await el.boundingBox();
-      } catch (e) { box = null; }
+    const targets = await sourceStudy.step('hover-discovery:wide-primary', async () => {
+      const perFrame = await Promise.all(page.frames().map(async (frame) => {
+        const locators = await frame.locator("a, button, [role=button], li, article, figure, img").all();
+        return locators.map((el) => ({ frame, el }));
+      }));
+      return perFrame.flat();
+    }, {
+      timeout_ms: 30_000, detail: { phase: 'primary-hover' },
+      abort: async () => { await context.close().catch(() => {}); },
+    });
+    for (const [candidateOrdinal, { frame, el }] of targets.entries()) {
+      const box = await sourceStudy.step('hover-preflight:wide-primary', async () => {
+        try {
+          if (!(await el.isVisible())) return null;
+          await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(120);
+          return await el.boundingBox();
+        } catch { return null; }
+      }, {
+        timeout_ms: 10_000, detail: { ordinal: candidateOrdinal + 1 },
+        abort: async () => { await context.close().catch(() => {}); },
+      });
       if (!box || box.width < 24 || box.height < 24) continue;
       hoverTried += 1;
-      const targetKey = await sourceStudy.step('target-identity:wide-primary-hover', () => el.evaluate((node) => {
-        const classes = typeof node.className === 'string' ? node.className.split(/\s+/).filter(Boolean).sort().join('.') : '';
-        return `${node.tagName.toLowerCase()}|${node.id || ''}|${node.getAttribute('data-dna-interaction-id') || ''}|${classes}`;
-      }), { timeout_ms: 10_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); } });
+      const targetIdentity = await sourceStudy.step('target-identity:wide-primary-hover', () => el.evaluate(hoverTargetIdentity), {
+        timeout_ms: 10_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); },
+      });
+      if (typeof targetIdentity !== 'string' || !targetIdentity) {
+        throw new Error('A visible hover target did not retain a source-owned structural identity.');
+      }
+      const targetKey = `${frame.url()}|${targetIdentity}`;
       sourceStudy.markTarget(`wide|primary-hover|${targetKey}`, { ordinal: hoverTried });
       try {
         await page.mouse.move(4, 4);
