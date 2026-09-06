@@ -22,11 +22,11 @@ not evidence that missing source coverage was completed.
 
 The default no-progress bound is 60 seconds and a screenshot is bounded to 30
 seconds. The observer's total budget is derived from its declared route
-scope: 60 minutes for the primary route with its passes, scroll-hold
+scope: 90 minutes for the primary route with its passes, scroll-hold
 traversal and states, plus 8 minutes for each route at both profiles, so the
 total budget is clamped to a four-hour hard ceiling. The default route
 ceiling is 1000. Resource bounds never establish complete coverage.
-The recorder keeps its 30-minute
+The recorder's budget is 60 minutes
 default; its 90-second-per-profile minimum remains required and its requested
 dwell is capped at 600 seconds per profile to reserve processing time within
 the whole-command budget. Per-step bounds are derived from each step's own

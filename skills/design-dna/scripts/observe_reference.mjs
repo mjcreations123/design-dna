@@ -60,10 +60,10 @@ const TICK_SETTLE_MS = 650;
 // 240 positions x (650ms settle + up to ~2.1s loaded work) + pointer/media checks.
 const MECHANISM_PASS_TIMEOUT_MS = 240 * 2_750 + 60_000;
 // The scroll-hold traversal takes two bounded screenshots and one hold per
-// position: measured 5.4s per position inside a quiet study and up to 9s
-// beside a recording on the same machine, for up to 240 positions. The
-// silence watchdog, not this number, catches a hung page.
-const SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * (HOLD_MS + 9_000) + 60_000;
+// position: measured 5.4s per position inside a quiet study and 10-12.5s
+// beside a recording and a test run on the same machine, for up to 240
+// positions. The silence watchdog, not this number, catches a hung page.
+const SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * (HOLD_MS + 14_000) + 60_000;
 // An interaction census walks every discovered target on a page; the silence
 // watchdog, not this number, catches a hung page.
 const CENSUS_TIMEOUT_MS = 600_000;
@@ -71,8 +71,8 @@ const CENSUS_TIMEOUT_MS = 600_000;
 // route with its states, plus each inner route at both profiles.
 // The primary route alone carries both mechanism passes, the scroll-hold
 // traversal, the authored states and their censuses: about an hour on a
-// rich site.
-const STUDY_BASE_BUDGET_MS = 60 * 60_000;
+// rich site on a quiet machine, more beside other work.
+const STUDY_BASE_BUDGET_MS = 90 * 60_000;
 const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
 const DEFAULT_MAX_INNER_ROUTES = 1000;
 

@@ -590,40 +590,59 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
   const selector = 'a[href],button,[role="button"],input,select,textarea,summary,[onclick],[tabindex],[data-dna-record-pointer]';
   const passStarted = Date.now();
   let truncated = false;
+  const vw = page.viewportSize()?.width || 0, vh = page.viewportSize()?.height || 0;
   for (const frame of page.frames()) {
     if (truncated) break;
     await markPointerTargets(frame);
-    const targets = await raceBound(frame.locator(selector).all(), 5_000, 'hover-target-listing');
-    for (const target of targets) {
-      if (visibleOnly && Date.now() - passStarted > VISIBLE_HOVER_PASS_MS) { truncated = true; break; }
-      let identity = null;
-      try {
-        if (!(await raceBound(target.isVisible(), 3_000, 'hover-target-visibility'))) continue;
-        identity = await target.evaluate((element) => {
-          window.__dnaRecordTarget = Number(window.__dnaRecordTarget || 0);
+    // One round trip lists every target the page has RIGHT NOW with its
+    // identity, box and visibility. A target the page has since replaced is
+    // simply absent from the list, instead of a stale locator that waits out
+    // its whole bound; on a carousel-heavy page that cost 20s per position.
+    let listing = [];
+    try {
+      listing = await raceBound(frame.evaluate((sel) => {
+        window.__dnaRecordTarget = Number(window.__dnaRecordTarget || 0);
+        return [...document.querySelectorAll(sel)].map((element) => {
           if (!element.dataset.dnaRecordTarget) element.dataset.dnaRecordTarget = String(++window.__dnaRecordTarget);
+          const r = element.getBoundingClientRect();
+          const cs = getComputedStyle(element);
+          const visible = r.width >= 1 && r.height >= 1 && cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) > 0;
           return { id: element.dataset.dnaRecordTarget, tag: element.tagName.toLowerCase(),
-            text: (element.getAttribute('aria-label') || element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200) };
-        }, undefined, { timeout: 1500 });
-        const key = `${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}`;
-        coverage.discovered.add(key);
-        if (coverage.hovered.has(key)) continue;
-        sourceStudy?.markTarget(`${profile}|hover|${key}`, { profile, visible_only: visibleOnly });
-        if (clock.over()) return false;
-        // A locator whose element the page has since replaced waits 30s by
-        // default; the target list is a snapshot, so every wait is bounded.
-        let box = await target.boundingBox({ timeout: 3000 });
-        if (visibleOnly && (!box || box.x + box.width <= 0 || box.y + box.height <= 0 ||
-            box.x >= (page.viewportSize()?.width || 0) || box.y >= (page.viewportSize()?.height || 0))) continue;
-        if (!visibleOnly) { await scrollIntoViewBounded(target, 5000); box = await target.boundingBox({ timeout: 3000 }); }
+            text: (element.getAttribute('aria-label') || element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200),
+            box: { x: r.left, y: r.top, width: r.width, height: r.height }, visible };
+        });
+      }, selector), 5_000, 'hover-target-listing');
+    } catch (error) {
+      if (String(error?.code || '').startsWith('source-study-')) throw error;
+      sourceStudy?.markEvent({ profile, kind: 'hover-listing-failed', frame_url: frame.url(),
+        reason: String(error?.message || error).split('\n')[0].slice(0, 180) });
+      continue;
+    }
+    for (const item of listing) {
+      if (visibleOnly && Date.now() - passStarted > VISIBLE_HOVER_PASS_MS) { truncated = true; break; }
+      if (!item.visible) continue;
+      const key = `${normalizeHttpUrl(page.url())}|${frame.url()}|${item.id}`;
+      coverage.discovered.add(key);
+      if (coverage.hovered.has(key)) continue;
+      let box = item.box;
+      const onScreen = box.x + box.width > 0 && box.y + box.height > 0 && box.x < vw && box.y < vh;
+      if (visibleOnly && !onScreen) continue;
+      sourceStudy?.markTarget(`${profile}|hover|${key}`, { profile, visible_only: visibleOnly });
+      if (clock.over()) return false;
+      const target = frame.locator(`[data-dna-record-target="${item.id}"]`).first();
+      try {
+        if (!visibleOnly && !onScreen) {
+          await scrollIntoViewBounded(target, 5000);
+          box = (await target.boundingBox({ timeout: 3000 })) || box;
+        }
         if (!box || box.width < 1 || box.height < 1) continue;
         const entry = { action: "hover", profile, page_url: page.url(), t_start: clock.now(),
           x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2),
-          target: `${identity.tag} ${identity.text}`.trim() };
+          target: `${item.tag} ${item.text}`.trim() };
         // An unactionable target is a recorded outcome for that target, never
         // a study failure: the step returns the outcome instead of throwing.
         const hoverOnce = async () => {
-          try { return await hoverWithPointerFallback(target, page, 4000); }
+          try { return await hoverWithPointerFallback(target, page, 5000); }
           catch (error) {
             if (String(error?.code || '').startsWith('source-study-')) throw error;
             return { mode: null, reason: String(error?.message || error).split('\n')[0].slice(0, 180) };
@@ -631,9 +650,6 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         };
         const hoverOutcome = sourceStudy
           ? await sourceStudy.step(`hover:${profile}`, hoverOnce, {
-            // The locator hover may spend its whole 4s bound retrying an
-            // unstable target before the pointer fallback runs; the step must
-            // enclose both, or a slow hover tears the whole recording down.
             timeout_ms: 20_000, detail: { target_key: key }, abort: async () => { await page.context().close().catch(() => {}); },
           })
           : await hoverOnce();
@@ -651,16 +667,15 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
       } catch (error) {
         if (String(error?.code || '').startsWith('source-study-')) throw error;
         const reason = String(error?.message || error).split('\n')[0].slice(0, 180);
-        if (identity) coverage.hover_failures.set(`${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}`, reason);
-        // A target the page replaced under us is a recorded decision, and a
-        // recorded decision is progress; a page of them must not read as
-        // silence to the watchdog.
-        sourceStudy?.markEvent({ profile, kind: 'hover-unactionable', target_key: identity ? `${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}` : null, reason });
+        coverage.hover_failures.set(key, reason);
+        // A target that failed under us is a recorded decision, and a recorded
+        // decision is progress; a page of them must not read as silence.
+        sourceStudy?.markEvent({ profile, kind: 'hover-unactionable', target_key: key, reason });
       }
     }
   }
   // The end of a pass is measured work even when every remaining target was
-  // skipped without a journal line of its own.
+  // already hovered or skipped without a journal line of its own.
   sourceStudy?.markEvent({ profile, kind: 'hover-pass-complete', visible_only: visibleOnly, hovered: coverage.hovered.size,
     failures: coverage.hover_failures.size, truncated, elapsed_ms: Date.now() - passStarted });
   return !clock.over();
@@ -766,7 +781,9 @@ async function runProfile(browser, args, stateContract, viewport) {
     // Every screencast frame is journaled (measured about 66 per second on a
     // busy page), so the default 100k event budget is a few minutes, not a
     // recording. The ceiling is the hard limit.
-    limits: { max_progress_events: 200_000 },
+    // Two profiles, each with its dwell, hovers, traversal, censuses and QA,
+    // measured at 15-25 minutes together on a rich site; the ceiling is 4h.
+    limits: { max_progress_events: 200_000, max_total_elapsed_ms: 3_600_000 },
     required_completion_artifact_kinds: ['frame', 'video'],
     abort: async () => { await context.close().catch(() => {}); },
     partial_evidence: () => ({

@@ -54,8 +54,8 @@ class SourceStudyControllerRuntimeTests(unittest.TestCase):
         self.assertEqual(0, value["moves"])
 
     def test_owned_browser_kill_fallback_uses_actual_chromium_pid(self):
-        value = node_json("""
-          const {resolvePlaywright,discoverBrowserExecutable}=await import('./skills/design-dna/scripts/playwright_resolver.mjs');
+        value = node_json("const RESOLVER_URI=" + json.dumps((SCRIPTS / "playwright_resolver.mjs").as_uri()) + ";" + """
+          const {resolvePlaywright,discoverBrowserExecutable}=await import(RESOLVER_URI);
           const pw=resolvePlaywright({moduleUrl:import.meta.url}).playwright;
           const executable=discoverBrowserExecutable(pw);
           const browser=await m.launchOwnedBrowser(pw.chromium,{executablePath:executable.file||executable.path||executable});

@@ -51,7 +51,7 @@ slot, which then blocked every later observation on the machine.
   (default 6, minimum 2) studies the primary route, every authored-state
   route, and inner routes in discovery order up to the cap, records the rest
   as `unvisited_urls` beside the cap, and derives its study budget from that
-  scope (60 min for the primary route + 8 min per route; hard ceiling raised
+  scope (90 min for the primary route + 8 min per route; hard ceiling raised
   to four hours). The
   validator accepts the record only when the cap was reached. Before this, a
   home page linking to fifteen routes meant hours per reference and a certain
@@ -68,6 +68,12 @@ slot, which then blocked every later observation on the machine.
   streaming frames for a quarter of an hour. Locator reads on the recorder's
   and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
   locator whose element the page has replaced otherwise waits 30 s each.
+- The recorder's hover pass lists a frame's live targets in one in-page round
+  trip and hovers only visible targets not yet hovered, by a fresh locator on
+  the target's own id. It used to walk a snapshot of nth-locators and wait out
+  a bound on every one the page had since replaced, at every scroll position:
+  240 positions could never fit any budget on a carousel-heavy page. The
+  recorder's study budget is 60 minutes.
 - The recorder's per-frame pointer-target marking and target listing are
   bounded (5 s), a hover target's identity read is bounded at 1.5 s, and the
   visible-only hover pass that runs at every scroll position is capped at
