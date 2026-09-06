@@ -578,7 +578,7 @@ async function markPointerTargets(frame) {
       if (!element.dataset.dnaRecordPointer) element.dataset.dnaRecordPointer = String(++sequence);
     }
     window.__dnaRecordPointer = sequence;
-  }), 5_000, 'pointer-target-marking');
+  }), 30_000, 'pointer-target-marking');
 }
 
 // A visible-only hover pass runs at every scroll position. On a page whose
@@ -611,7 +611,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
             text: (element.getAttribute('aria-label') || element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200),
             box: { x: r.left, y: r.top, width: r.width, height: r.height }, visible };
         });
-      }, selector), 5_000, 'hover-target-listing');
+      }, selector), 30_000, 'hover-target-listing');
     } catch (error) {
       if (String(error?.code || '').startsWith('source-study-')) throw error;
       sourceStudy?.markEvent({ profile, kind: 'hover-listing-failed', frame_url: frame.url(),

@@ -56,7 +56,10 @@ function navigationError(code, message, navigation = null) {
  * cost 30 s of silence and a page of them stalled a recording for minutes. */
 /** Race a browser call against a bound. page.evaluate and the mouse have no
  * timeout option of their own; a page whose main thread is busy answers
- * neither, and the study must see a typed failure, not silence. */
+ * neither, and the study must see a typed failure, not silence. The bounds
+ * are generous on purpose: a heavy page on a loaded machine can take ten
+ * seconds to answer and still be alive, and the 60s silence watchdog is the
+ * real guard. These bounds turn a hang into a named failure, not slowness. */
 export async function raceBound(promise, ms, label) {
   let timer;
   const timeout = new Promise((_, reject) => {
@@ -2314,7 +2317,7 @@ async function surfaceSample(page, surface) {
       rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
       fingerprint: JSON.stringify(geometry),
     };
-  }, surface), 10_000, 'surface-sample');
+  }, surface), 45_000, 'surface-sample');
 }
 
 function surfaceSampleChanged(before, after) {
@@ -2364,9 +2367,9 @@ export async function traverseScrollSurfaces(page, options = {}) {
     while (ticks < maxTicks && !deadline()) {
       const x = Math.max(2, Math.min((page.viewportSize()?.width || 1440) - 2, before.rect.left + before.rect.width / 2));
       const y = Math.max(2, Math.min((page.viewportSize()?.height || 900) - 2, before.rect.top + before.rect.height / 2));
-      await raceBound(page.mouse.move(x, y), 5_000, 'traversal-mouse-move');
+      await raceBound(page.mouse.move(x, y), 30_000, 'traversal-mouse-move');
       const delta = Math.max(500, Math.round((page.viewportSize()?.height || 900) * 0.72));
-      await raceBound(page.mouse.wheel(surface.axis === "x" ? delta : 0, surface.axis === "x" ? 0 : delta), 10_000, 'traversal-wheel');
+      await raceBound(page.mouse.wheel(surface.axis === "x" ? delta : 0, surface.axis === "x" ? 0 : delta), 30_000, 'traversal-wheel');
       await page.waitForTimeout(settleMs);
       ticks += 1;
       const after = await surfaceSample(page, surface);

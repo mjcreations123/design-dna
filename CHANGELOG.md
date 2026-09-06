@@ -89,7 +89,7 @@ slot, which then blocked every later observation on the machine.
   their anchors every second, stale locators otherwise cost their whole bound
   at every position and the recording could not finish.
 - The scroll traversal's surface sample, mouse move and wheel, and the
-  recorder's visibility checks are raced against bounds (3-10 s) so a page
+  recorder's target listing are raced against generous bounds (30-45 s) so a page
   whose main thread stops answering produces a typed failure naming the
   call; the end of every hover pass is journaled as progress.
 - The observer's hover phase records a target the page replaced or refused
