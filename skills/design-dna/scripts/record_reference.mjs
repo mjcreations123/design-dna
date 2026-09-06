@@ -641,7 +641,13 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         log.push(entry); coverage.hovered.add(key); coverage.hover_failures.delete(key);
         sourceStudy?.markEvent({ profile, kind: 'hover', target_key: key });
       } catch (error) {
-        if (identity) coverage.hover_failures.set(`${page.url()}|${frame.url()}|${identity.id}`, String(error).slice(0, 180));
+        if (String(error?.code || '').startsWith('source-study-')) throw error;
+        const reason = String(error?.message || error).split('\n')[0].slice(0, 180);
+        if (identity) coverage.hover_failures.set(`${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}`, reason);
+        // A target the page replaced under us is a recorded decision, and a
+        // recorded decision is progress; a page of them must not read as
+        // silence to the watchdog.
+        sourceStudy?.markEvent({ profile, kind: 'hover-unactionable', target_key: identity ? `${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}` : null, reason });
       }
     }
   }

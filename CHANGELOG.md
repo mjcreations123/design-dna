@@ -49,6 +49,9 @@ slot, which then blocked every later observation on the machine.
   streaming frames for a quarter of an hour. Locator reads on the recorder's
   and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
   locator whose element the page has replaced otherwise waits 30 s each.
+- A hover target the page replaced under the recorder is a recorded decision
+  (`hover-unactionable`), which is progress; a page of them no longer reads as
+  silence. The DOM scroll fallback is bounded too.
 - Every scroll-into-view before a hover or census input is bounded (5 s,
   then a plain DOM scroll). Playwright's actionability wait never settles on
   an element inside an autoplaying region; on House of Honey each such target

@@ -59,7 +59,9 @@ export async function scrollIntoViewBounded(target, timeout = 5000) {
     return { mode: 'locator' };
   } catch (error) {
     if (String(error?.code || '').startsWith('source-study-')) throw error;
-    await target.evaluate((element) => element.scrollIntoView({ block: 'center', inline: 'center' }));
+    // The DOM fallback must not inherit the 30s default wait of a locator
+    // whose element the page has since replaced.
+    await target.evaluate((element) => element.scrollIntoView({ block: 'center', inline: 'center' }), undefined, { timeout: 2000 });
     return { mode: 'dom', reason: String(error?.message || error).split('\n')[0].slice(0, 160) };
   }
 }
