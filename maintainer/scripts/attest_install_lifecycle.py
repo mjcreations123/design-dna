@@ -45,6 +45,7 @@ from common import (
     assert_no_reparse_path,
     emit,
     load_json,
+    publish_new_json,
     strict_format_checker,
 )
 
@@ -896,7 +897,7 @@ def main() -> int:
                     "Attestations are immutable; use --check or remove it deliberately.",
                     output,
                 )
-            atomic_write_json(output, live)
+            publish_new_json(output, live)
         emit({
             "ok": True,
             "check": bool(args.check),

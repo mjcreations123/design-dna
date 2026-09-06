@@ -80,7 +80,7 @@ jobs:
       - name: Verify source recording encoder
         run: ffmpeg -version
       - name: Run and attest unit and adversarial tests with zero unwaived skips
-        run: python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json"
+        run: python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json" --diagnostic-output "${{ runner.temp }}/design-dna-test-diagnostic.json"
       - name: Validate evidence
         run: python -B maintainer/scripts/validate_evidence.py --plugin-root .
       - name: Check internal links
@@ -99,6 +99,7 @@ jobs:
           path: |
             ${{ runner.temp }}/design-dna-test-attestation.json
             ${{ runner.temp }}/design-dna-package-audit.json
+            ${{ runner.temp }}/design-dna-test-diagnostic.json
           if-no-files-found: error
           retention-days: 30
 

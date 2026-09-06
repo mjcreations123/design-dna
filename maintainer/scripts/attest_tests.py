@@ -220,11 +220,13 @@ from common import (
     emit,
     is_within,
     load_json,
+    publish_new_json,
     reject_compiled_python_residue,
     strict_format_checker,
 )
 from test_platform_applicability import extract_report, validate_test_applicability
 from suite_process import SuiteRunUnavailable, run_spooled_suite
+from test_run_diagnostics import TestRunCapture
 
 
 RELEASE_TEST_RUNNER = "maintainer/scripts/run_release_tests.py"
@@ -1153,11 +1155,12 @@ def run_exact_suite(
         timeout=TEST_SUITE_TIMEOUT_SECONDS, redact=lambda value: redact_known_local_paths(value, plugin_root))
 
 
-def create_attestation(
+def _create_attestation(
     plugin_root: Path,
     *,
     runner: Runner = run_exact_suite,
     skip_waiver_path: Path | None = None,
+    _capture: TestRunCapture | None = None,
 ) -> dict[str, object]:
     plugin_root = absolute(plugin_root)
     assert_no_reparse_path(plugin_root)
@@ -1169,6 +1172,8 @@ def create_attestation(
         )
     before = attested_input_hashes(plugin_root)
     dependencies = pinned_dependencies(plugin_root)
+    if _capture is not None:
+        _capture.bind_inputs(before, dependencies)
     command = [sys.executable, *UNITTEST_ARGUMENTS]
     started_at = utc_now()
     started = time.monotonic()
@@ -1240,6 +1245,37 @@ def create_attestation(
             "stderr_bytes": len(stderr.encode("utf-8")),
         },
     }
+
+
+def create_attestation(
+    plugin_root: Path,
+    *,
+    runner: Runner = run_exact_suite,
+    skip_waiver_path: Path | None = None,
+    diagnostic_output: Path | None = None,
+    _capture: TestRunCapture | None = None,
+) -> dict[str, object]:
+    """Retain exact run output if any later attestation check rejects it."""
+    plugin_root = absolute(plugin_root)
+    capture = _capture or TestRunCapture(
+        plugin_root,
+        redact_paths=lambda value: redact_known_local_paths(value, plugin_root),
+        protected=validated_test_execution_inputs(plugin_root),
+        output=diagnostic_output,
+    )
+    try:
+        return _create_attestation(
+            plugin_root,
+            runner=lambda root, command: capture.capture(runner, root, command),
+            skip_waiver_path=skip_waiver_path,
+            _capture=capture,
+        )
+    except Exception as exc:
+        try:
+            exc.rejection_diagnostic = capture.retain(exc)
+        except Exception as retention_error:
+            exc.diagnostic_retention_error = capture.redact(str(retention_error))
+        raise
 
 
 def validate_record(record: object, schema_path: Path) -> None:
@@ -1320,6 +1356,11 @@ def main() -> int:
     parser.add_argument("--plugin-root", type=Path, default=default_plugin)
     parser.add_argument("--output", type=Path)
     parser.add_argument(
+        "--diagnostic-output",
+        type=Path,
+        help="New, immutable redacted failure-diagnostic JSON outside all attested inputs; never a test attestation.",
+    )
+    parser.add_argument(
         "--skip-waiver-file",
         type=Path,
         help=(
@@ -1328,6 +1369,7 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    capture = None
     try:
         plugin_root = absolute(args.plugin_root)
         output = absolute(
@@ -1351,9 +1393,17 @@ def main() -> int:
                 output,
             )
         require_new_attestation_output(output)
+        capture = TestRunCapture(
+            plugin_root,
+            redact_paths=lambda value: redact_known_local_paths(value, plugin_root),
+            protected=protected,
+            output=args.diagnostic_output,
+            attestation_output=output,
+        )
         record = create_attestation(
             plugin_root,
             skip_waiver_path=args.skip_waiver_file,
+            _capture=capture,
         )
         validate_record(
             record,
@@ -1371,17 +1421,35 @@ def main() -> int:
                 "Attested inputs changed before the record could be written.",
                 plugin_root / "maintainer",
             )
-        atomic_write_json(output, record)
+        if record["result"]["status"] == "passed":
+            verify_skip_waiver_record(
+                plugin_root, record["skip_waiver"], record["inputs"], record["result"]
+            )
+        publish_new_json(output, record)
         emit({
             "ok": record["result"]["status"] == "passed",
             "output": str(output),
             "record": record,
         })
         return 0 if record["result"]["status"] == "passed" else 1
-    except ToolFailure as exc:
-        failure = {"ok": False, "failures": [exc.issue.as_dict()]}
+    except Exception as exc:
+        issue = exc.issue.as_dict() if isinstance(exc, ToolFailure) else {
+            "code": "test-attestation-postprocessing-unavailable",
+            "message": type(exc).__name__,
+        }
+        failure = {"ok": False, "failures": [issue]}
         if isinstance(exc, SuiteRunUnavailable) and exc.diagnostic is not None:
             failure["incomplete_diagnostic"] = exc.diagnostic
+        if capture is not None:
+            try:
+                diagnostic = capture.retain(exc)
+                if diagnostic is not None:
+                    failure["rejection_diagnostic"] = diagnostic
+            except Exception as retention_error:
+                failure["diagnostic_retention_error"] = capture.redact(str(retention_error))
+            # Rejection reasons can contain schema excerpts of child output.
+            # Sanitize those as well as the retained streams before logging.
+            failure["failures"] = [capture.redact_issue(item) for item in failure["failures"]]
         emit(failure)
         return 2
 

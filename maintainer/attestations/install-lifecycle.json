@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "record_type": "design-dna-install-lifecycle-attestation",
-  "created_at": "2026-09-06T11:33:32Z",
+  "created_at": "2026-09-06T16:52:06Z",
   "package": "design-dna",
   "release_version": "12.0.0",
   "inputs": {
@@ -15,8 +15,8 @@
     "files": {
       "attestor": {
         "path": "maintainer/scripts/attest_install_lifecycle.py",
-        "sha256": "648b77b522e1af7a50310edc33040c68ffff3d26c698a8a9bf4fbda36b2da531",
-        "bytes": 30036
+        "sha256": "709ff6120421005fbd1ec8f43cf6457ab1cc002cd283e39b9871afb19ccc8527",
+        "bytes": 30057
       },
       "manager": {
         "path": "maintainer/scripts/manage_install.py",
@@ -30,8 +30,8 @@
       },
       "common": {
         "path": "maintainer/scripts/common.py",
-        "sha256": "6b04e6b84b2297705cc270d6f4049053dd92e5ef2a652b36f938b754207cc15c",
-        "bytes": 16473
+        "sha256": "af7b3fe6fb5bd60337bef67c687ca24de37029257319f5d015b4008e4c2b9ad0",
+        "bytes": 20040
       },
       "operation_schema": {
         "path": "maintainer/schemas/install-operation.schema.json",
@@ -84,7 +84,7 @@
       "command": "install",
       "source_role": "prior-fixture",
       "source_sha256": "1d4a26c87fa2573f30491aa00ba3c7f5e498d665568f099414a808eefafe6a4a",
-      "operation_record_sha256": "59c9ce9de749138fbe847af1d0bb058569462f4a052a2c0b5c94dd0ee4eeff84",
+      "operation_record_sha256": "628341d1039c69140c8b9df197b6df6c70b1461f8fe136758d844a01f17cb437",
       "semantic_record_sha256": "71cec0346c75467562d8480c9617dde8b2e2b80a03c155324bf539a669e9614a",
       "operation_schema_valid": true,
       "operation": {
@@ -136,7 +136,7 @@
       "command": "update",
       "source_role": "release-runtime",
       "source_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
-      "operation_record_sha256": "595809eb04fe32d903d52a3a88ae5899687efcf73e9c38430fb143d917436a16",
+      "operation_record_sha256": "347b94bd7430a5fa67f01876839c2d3acd19ded813c1faebf236a6237ca1ed9d",
       "semantic_record_sha256": "2d82fa8e1b5982125be46e0f1593e9819b7f56ca36d47f766982a75b0c6844f5",
       "operation_schema_valid": true,
       "operation": {
@@ -188,7 +188,7 @@
       "command": "rollback",
       "source_role": "release-runtime",
       "source_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
-      "operation_record_sha256": "a78bd3f82f6ec462a0acd0a458a7161b11d8676d1622d119883f19c714e2927e",
+      "operation_record_sha256": "26d36591c390be22a3076eb1ba702400130deebe91e30761eb1a61e731aef4f3",
       "semantic_record_sha256": "a506a49c55eca27026aca59325f042380d04b63e19654ecc8e25863aba228a5c",
       "operation_schema_valid": true,
       "operation": {
@@ -240,7 +240,7 @@
       "command": "uninstall",
       "source_role": "release-runtime",
       "source_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
-      "operation_record_sha256": "f2f33987c4c5490128fbeb1418b2545e66a02b3c61b70e16b198c7a46e90a499",
+      "operation_record_sha256": "e8107ceff6a6c549e99d100d84965cef68b9e5d7a579e1c7d6285abf9c5afaba",
       "semantic_record_sha256": "ff8a1b610b36e79aa8afd081eb6290e5ac5ec4158a697e0756e0d78912838fe8",
       "operation_schema_valid": true,
       "operation": {

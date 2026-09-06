@@ -7,6 +7,7 @@ import json
 import os
 import re
 import stat
+import tempfile
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -500,6 +501,81 @@ def load_json(path: Path) -> object:
         return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicates)
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise ToolFailure("invalid-json", str(exc), path) from exc
+
+
+def _publish_file_no_replace(temporary: Path, destination: Path) -> None:
+    """Atomically reserve the new name; never fall back to replacement."""
+    if os.name == "nt":
+        # Windows rename rejects an existing destination, unlike POSIX rename.
+        os.rename(temporary, destination)
+    else:
+        # Link creation is atomic and fails with EEXIST on a competing name.
+        # Both names share a parent/filesystem. Remove only our owned name.
+        os.link(temporary, destination, follow_symlinks=False)
+        temporary.unlink()
+
+
+def publish_new_json(path: Path, payload: object) -> None:
+    """Publish immutable JSON exactly once, retaining failed unpublished bytes.
+
+    This is intentionally separate from mutable atomic-write APIs. No target
+    is deleted or replaced, including when another writer wins during a long
+    verification run. Unsupported no-replace filesystem operations fail closed.
+    """
+    path = absolute(path)
+    assert_no_reparse_path(path)
+    assert_no_reparse_path(path.parent)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    assert_no_reparse_path(path.parent)
+    parent_before = path.parent.stat()
+    data = (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".unpublished.tmp", dir=path.parent,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        assert_no_reparse_path(temporary, stop=path.parent)
+        prepared = temporary.stat()
+        if not stat.S_ISREG(prepared.st_mode) or prepared.st_nlink != 1:
+            raise OSError("The owned temporary publication is not a single-link ordinary file.")
+        if temporary.read_bytes() != data:
+            raise OSError("The owned temporary publication changed before publication.")
+        assert_no_reparse_path(path, stop=path.parent)
+        assert_no_reparse_path(path.parent)
+        parent_after = path.parent.stat()
+        if (parent_before.st_dev, parent_before.st_ino) != (parent_after.st_dev, parent_after.st_ino):
+            raise OSError("The publication parent changed before publication.")
+        _publish_file_no_replace(temporary, path)
+        assert_no_reparse_path(path)
+        published = path.stat()
+        if (
+            not stat.S_ISREG(published.st_mode)
+            or published.st_nlink != 1
+            or (published.st_dev, published.st_ino) != (prepared.st_dev, prepared.st_ino)
+            or path.read_bytes() != data
+        ):
+            raise OSError("The published file is not the exact single-link owned file.")
+    except (OSError, ToolFailure) as exc:
+        # Never unlink the destination, and never discard an unpublished
+        # temporary file that may be the only recoverable validated payload.
+        retained = os.path.lexists(temporary)
+        message = (
+            f"Immutable publication failed: {exc}. "
+            + (f"Owned unpublished bytes retained at {temporary}." if retained
+               else "No temporary name remains; the destination was not removed or replaced.")
+        )
+        failure = ToolFailure(
+            "immutable-publication-exists" if isinstance(exc, FileExistsError)
+            else "immutable-publication-failed",
+            message,
+            path,
+        )
+        failure.recovery_path = str(temporary) if retained else None
+        raise failure from exc
 
 
 def emit(payload: dict[str, object]) -> None:

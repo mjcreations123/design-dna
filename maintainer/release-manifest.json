@@ -2,32 +2,32 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "12.0.0",
-  "distribution_sha256": "f1730ffe1e4bdb1efe9cdc59ce3a6afacf2075a4b62d0f4d7712f190e7070edf",
+  "distribution_sha256": "81d43fde0615dfd1667ed6da94b20384a024d985f0711aa58dfcd5a07715dedb",
   "content_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
   "codex_plugin_manifest_sha256": "c315fbf672ab7cc527ee56aa4232bfbcd3c11d9888b2f3d5e9b5d6d6f2c1fb99",
   "claude_plugin_manifest_sha256": "7e9778acf10afd4d18399a4c9b703ebe038c10788fea5fa0382efb78d8f4c845",
-  "sbom_sha256": "82a053335f73e117dba1b045e1ac9d932f637bd1ece3d1b7a839b8c1217c10d4",
-  "compatibility_matrix_sha256": "3e9314c45a3a938982aa482cf7abed93fa778cc3def944f041e3760a11904fc2",
+  "sbom_sha256": "57ac0ac84ed42b7f4a7cffff536842b2952a5771183cc07f2529b2f2c9452a82",
+  "compatibility_matrix_sha256": "6416081ac7cfe1a49f5d08ea782757847667fdcb8590c3a5be85d5095f8a99bf",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "f1730ffe1e4bdb1efe9cdc59ce3a6afacf2075a4b62d0f4d7712f190e7070edf",
+    "distribution_tree": "81d43fde0615dfd1667ed6da94b20384a024d985f0711aa58dfcd5a07715dedb",
     "runtime": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
     "codex_plugin_manifest": "c315fbf672ab7cc527ee56aa4232bfbcd3c11d9888b2f3d5e9b5d6d6f2c1fb99",
     "claude_plugin_manifest": "7e9778acf10afd4d18399a4c9b703ebe038c10788fea5fa0382efb78d8f4c845",
-    "sbom": "82a053335f73e117dba1b045e1ac9d932f637bd1ece3d1b7a839b8c1217c10d4",
-    "compatibility_matrix": "3e9314c45a3a938982aa482cf7abed93fa778cc3def944f041e3760a11904fc2",
+    "sbom": "57ac0ac84ed42b7f4a7cffff536842b2952a5771183cc07f2529b2f2c9452a82",
+    "compatibility_matrix": "6416081ac7cfe1a49f5d08ea782757847667fdcb8590c3a5be85d5095f8a99bf",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "a169146d26b6cfba8f581739ff0cd588f20bbd15aa38de363890af3a21abac09",
-    "distribution_docs": "9566909900aa37cbfa08a52eb8f4a8cbb06dfdc459dabbae0995f857d5fd30ba",
+    "compatibility_verification": "796e2aa2e9067d91031be316f4c3ad5a00656c366ce9e330149e3bff8e0e3aae",
+    "distribution_docs": "2b0e7f29e812cce90b0866ffd93ed78d7e7a34d7ca062c9351d53e1101ad51c8",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
-    "maintainer_tooling": "f5b651939b68fdffce94d980c3a52b47802e8983541d0e9f11b04b002fefc780",
+    "maintainer_tooling": "3af8e84275a08c8bdb651a9e48d40f2e1d9cee7c361398949cdf32ea21b528fa",
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
-    "tests": "d43dd0d48e9771f1ef2eda429dc465fc6e77d569cdf5ea15f669038910a525c1"
+    "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "723afe600fb792bdf07832fca0f5ef0453781eac2ec63731835cf8818c58cea4",
-  "generated_at": "2026-09-06T15:23:48.742400+00:00",
+  "release_sha256": "1765573ad335ad6943619166bf835170bc0da5f37aa7fdedd12c1f2ac3a82fb5",
+  "generated_at": "2026-09-06T16:57:39.215186+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -1540,8 +1540,8 @@
     {
       "path": ".github/workflows/ci.yml",
       "type": "file",
-      "size": 6372,
-      "sha256": "9216426c25df36e86de7e591a33e6658af4af541892ea183a03992e2f3192c4c"
+      "size": 6508,
+      "sha256": "87b16f224af92838b7d176a15f7ab0d4f47430e579c263bb2ecfa81475c46d42"
     },
     {
       "path": ".github/workflows/evidence-review.yml",
@@ -1618,8 +1618,8 @@
     {
       "path": "docs/DEFECT_AUDIT.md",
       "type": "file",
-      "size": 18652,
-      "sha256": "98faa55a1991114f0e8528a2cea84e3cfe41352c07031b54af7bc6f411385e92"
+      "size": 23022,
+      "sha256": "1c8e0f7e655f645eda4c2122513c9222640dbfd1185c4c08ba0286a576d800cd"
     },
     {
       "path": "docs/EVALUATION.md",
@@ -1660,8 +1660,8 @@
     {
       "path": "docs/RELEASE.md",
       "type": "file",
-      "size": 28735,
-      "sha256": "4f2dd7d308699c0bbd7d0ea120e5546e0e3503c141b8d0fe11913200bfcc2588"
+      "size": 30434,
+      "sha256": "540a760603cc40c00551cc76a4228228197ed4b63b22eba569772ba6c096a8de"
     },
     {
       "path": "docs/RENDER_COMPARISON.md",
@@ -1697,25 +1697,19 @@
       "path": "maintainer/attestations/codex-plugin-validation.json",
       "type": "file",
       "size": 3544,
-      "sha256": "28ecbc096cd9c6f02c89f486044d1278667dbb61df0f9df8ef00b9a4011d7246"
+      "sha256": "4f00b222c76559afd5126afd2bc4c79f8b176c3b7692f54a000a9c22fc228539"
     },
     {
       "path": "maintainer/attestations/install-lifecycle.json",
       "type": "file",
       "size": 12362,
-      "sha256": "f464b6c5e1dc65cb32f9183e6946f2d841efc825ba83df455527ba1d23022b05"
+      "sha256": "9e3c4d416181722d4b669f2095fd34f3221ccdf92dc9e8e550c8f7b3cfd597e4"
     },
     {
       "path": "maintainer/attestations/route-verification.json",
       "type": "file",
       "size": 1360,
-      "sha256": "f808b2477eed33e3b7cbf3e9e916a4cc5fed5648f8507847817f425b340b2700"
-    },
-    {
-      "path": "maintainer/attestations/test-attestation.json",
-      "type": "file",
-      "size": 256094,
-      "sha256": "50189072cfbced4e873da50b7c07bb4460c0fe502d93277d431c420b8c3bf1d2"
+      "sha256": "797ff8f5a42c8824ca0c019301a95d933575a08568c2c29cc41a2e0742fde580"
     },
     {
       "path": "maintainer/compatibility",
@@ -1738,8 +1732,8 @@
     {
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
-      "size": 12097,
-      "sha256": "3e9314c45a3a938982aa482cf7abed93fa778cc3def944f041e3760a11904fc2"
+      "size": 12385,
+      "sha256": "6416081ac7cfe1a49f5d08ea782757847667fdcb8590c3a5be85d5095f8a99bf"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -3905,7 +3899,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "82a053335f73e117dba1b045e1ac9d932f637bd1ece3d1b7a839b8c1217c10d4"
+      "sha256": "57ac0ac84ed42b7f4a7cffff536842b2952a5771183cc07f2529b2f2c9452a82"
     },
     {
       "path": "maintainer/schemas",
@@ -4144,26 +4138,26 @@
     {
       "path": "maintainer/scripts/attest_codex_plugin.py",
       "type": "file",
-      "size": 37867,
-      "sha256": "e9176ff7619b15b439a0e921b1ccc2dab00bf54bc377faac754575a7df853566"
+      "size": 37888,
+      "sha256": "0edb580f8a2cd059dd97a59ddd3d607e67ee043993abb8a771cd8a42835b5faa"
     },
     {
       "path": "maintainer/scripts/attest_install_lifecycle.py",
       "type": "file",
-      "size": 30036,
-      "sha256": "648b77b522e1af7a50310edc33040c68ffff3d26c698a8a9bf4fbda36b2da531"
+      "size": 30057,
+      "sha256": "709ff6120421005fbd1ec8f43cf6457ab1cc002cd283e39b9871afb19ccc8527"
     },
     {
       "path": "maintainer/scripts/attest_signatures.py",
       "type": "file",
-      "size": 33303,
-      "sha256": "63b23faa39f720d9940cd82d9c443a1b5ee5e2d72ae061a4c62134135520c7dd"
+      "size": 33324,
+      "sha256": "8fbdeeefbc99e5af3e9e4f139eea1073b71b38ec7dd3bfb3adbf5d9a25952b69"
     },
     {
       "path": "maintainer/scripts/attest_tests.py",
       "type": "file",
-      "size": 53020,
-      "sha256": "4a1c64a774ed7664c7aa226e06ed890a559615c1889b4b96f9b0e19e9b231e09"
+      "size": 55791,
+      "sha256": "26aa5d530d6f0d462d2da3d934634a910720956f9cfe1d80baa9f415d8726c4d"
     },
     {
       "path": "maintainer/scripts/audit_package.py",
@@ -4198,8 +4192,8 @@
     {
       "path": "maintainer/scripts/common.py",
       "type": "file",
-      "size": 16473,
-      "sha256": "6b04e6b84b2297705cc270d6f4049053dd92e5ef2a652b36f938b754207cc15c"
+      "size": 20040,
+      "sha256": "af7b3fe6fb5bd60337bef67c687ca24de37029257319f5d015b4008e4c2b9ad0"
     },
     {
       "path": "maintainer/scripts/detect_routes.py",
@@ -4240,8 +4234,8 @@
     {
       "path": "maintainer/scripts/run_release_tests.py",
       "type": "file",
-      "size": 16013,
-      "sha256": "8cbd78d186488a3385ab0f1dde7d9a089bb22b8ac0e332241b81b75c7e5455d6"
+      "size": 17306,
+      "sha256": "b77c5210e596bab474f1e120377bafd8d64c2e4df01805518a98f60dbfc30d90"
     },
     {
       "path": "maintainer/scripts/suite_process.py",
@@ -4266,6 +4260,12 @@
       "type": "file",
       "size": 5722,
       "sha256": "6c1baab9d7aa505f5c5a1590420434e21afc10e50779432664464331bd3e58d3"
+    },
+    {
+      "path": "maintainer/scripts/test_run_diagnostics.py",
+      "type": "file",
+      "size": 12448,
+      "sha256": "9baf0f04468dcd32243bef0343e164e7384c15981f918c99db244f433514f800"
     },
     {
       "path": "maintainer/scripts/validate_evidence.py",
@@ -4430,6 +4430,12 @@
       "sha256": "58ebea335557f9c9342f13efd1a2aa76f375c2cac01e6a70986be2eec1685eab"
     },
     {
+      "path": "maintainer/tests/test_immutable_publication.py",
+      "type": "file",
+      "size": 9857,
+      "sha256": "b32194e98c6c7533446a8d2aa7173a034b221033d3e37c6b146a5228fe03264d"
+    },
+    {
       "path": "maintainer/tests/test_install_lifecycle_attestation.py",
       "type": "file",
       "size": 8231,
@@ -4464,6 +4470,12 @@
       "type": "file",
       "size": 4732,
       "sha256": "c1a742562b3883a838e75fce0a9b386dfc7b11fbcc25207ebef811e6152d76c4"
+    },
+    {
+      "path": "maintainer/tests/test_postrun_diagnostics.py",
+      "type": "file",
+      "size": 19580,
+      "sha256": "d15d0fbc249a58f3f66ec3d0a629b7adb92a057aab4146c0831c121200f4251e"
     },
     {
       "path": "maintainer/tests/test_project_contrast.py",
@@ -4504,14 +4516,26 @@
     {
       "path": "maintainer/tests/test_release_proofs.py",
       "type": "file",
-      "size": 128361,
-      "sha256": "dc67c8249673080c9475f301b6e409aa3a6f330faa9b44d4765b748b0d898b7f"
+      "size": 128802,
+      "sha256": "61a8e1e0fecb1a2e4acf4346479778a49cc6721447460a3c12916dbbefc2014d"
     },
     {
       "path": "maintainer/tests/test_release_signatures.py",
       "type": "file",
       "size": 14799,
       "sha256": "9ca68c2b2c7acbad1f22a73df3ebd13de5f84fe2db9439106025df3a3d80127c"
+    },
+    {
+      "path": "maintainer/tests/test_release_temp_paths.py",
+      "type": "file",
+      "size": 2929,
+      "sha256": "823e953d03b32d57b73758c440596d8f5df7d53cc25dd4ecc5316e7079824dae"
+    },
+    {
+      "path": "maintainer/tests/test_release_test_identity.py",
+      "type": "file",
+      "size": 7729,
+      "sha256": "ec5c9f672532d8cd722c56159a5cfcce008f0b36aa7a0872a6b078582a435a75"
     },
     {
       "path": "maintainer/tests/test_render_comparison.py",

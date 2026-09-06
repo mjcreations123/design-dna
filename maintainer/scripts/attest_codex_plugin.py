@@ -46,6 +46,7 @@ from common import (
     emit,
     is_within,
     load_json,
+    publish_new_json,
     strict_format_checker,
 )
 
@@ -1121,7 +1122,7 @@ def main() -> int:
                     output,
                 )
             live = create_attestation(plugin_root, args.validator)
-            atomic_write_json(output, live)
+            publish_new_json(output, live)
         emit({
             "ok": True,
             "check": bool(args.check),

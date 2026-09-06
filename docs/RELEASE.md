@@ -71,6 +71,13 @@ applicability marker ambiguous. Its full diagnostics and actual aggregate
 counts remain available. Null or ambiguous applicability can never support a
 passing attestation or release qualification.
 
+The release runner prints each ordinary test's public `id()` explicitly.
+Do not infer its identity from `str(test)`: Python 3.10 uses a different
+display format and can omit the method from the parenthesized name. This
+normalization changes neither execution nor verdicts. Nonstandard fixture or
+subtest descriptions remain intact; unparseable evidence is rejected rather
+than assigned a guessed test identity.
+
 The full-suite ceiling is 20,700 seconds (345 minutes); the CI test job allows
 360 minutes, reserving 15 minutes for setup and retained artifacts within the
 current [GitHub-hosted job limit](https://docs.github.com/en/actions/reference/limits).
@@ -89,6 +96,25 @@ blocks completion and retains incomplete diagnostics. In that case raw private
 logs remain in place and the redacted copies are explicitly incomplete
 snapshots, not stable completed streams. Normal completed streams still undergo
 all ordinary attestation validation and hashing.
+
+Completed processes also retain diagnostics if later result parsing,
+applicability, input identity, schema validation or output publication rejects
+their evidence. The ordinary local command creates a new private diagnostic
+only on such a rejection and reports its path and hash. For an explicit stable
+CI destination, add `--diagnostic-output "<NEW_DIAGNOSTIC_JSON>"`; the file must
+not already exist, overlap an attested input or the attestation output, or pass
+through a linked/shared destination. Its parent must already be a safe
+directory. CI uploads that exact redacted JSON, never a raw spool directory.
+
+This diagnostic distinguishes completed execution from validated evidence.
+It always retains `attestation_validated: false`, `release_eligible: false`
+and `tests_run: null`; it is not a passing or failed test attestation and cannot
+qualify a release. Output before process startup or unavailable/unverified
+bytes cannot be invented. Export failure remains explicit. Redaction covers
+known credentials and local paths in untrusted content while preserving fixed
+metadata, source identities and stream hash bindings. Short-secret and
+placeholder collisions must not corrupt those records. This is not a promise
+to recognize arbitrary unknown or deliberately encoded secrets.
 
 Waivers conform to
 `maintainer/schemas/test-skip-waivers.schema.json`, bind the exact attested

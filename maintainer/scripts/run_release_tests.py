@@ -53,8 +53,10 @@ del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 import os
 import json
 import platform
+import re
 import sys
 import sysconfig
+import tempfile
 import time
 import unittest
 from contextlib import contextmanager
@@ -315,6 +317,33 @@ def _write_aggregate_summary(
     return successful
 
 
+class ReleaseTextTestResult(unittest.TextTestResult):
+    """Emit actual test IDs independently of version-specific TestCase strings."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.native_executed = set()
+
+    def getDescription(self, test):
+        identity = test.id()
+        if isinstance(identity, str) and re.fullmatch(
+            r"[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*", identity
+        ):
+            # Python 3.10's str(test) omits the method from the parenthesized
+            # name. Serialize the public identity used by discovery/tracking,
+            # rather than reconstructing a method from a version-specific log.
+            return f"{identity.rsplit('.', 1)[-1]} ({identity})"
+        # Class/module fixture errors and parameterized subtests can have
+        # non-identifier descriptions. Preserve them; never invent a plain ID
+        # or let an unparseable result become an attestable pass.
+        return super().getDescription(test)
+
+    def startTest(self, test):
+        if test.id() in WINDOWS_NATIVE_TEST_IDS:
+            self.native_executed.add(test.id())
+        super().startTest(test)
+
+
 def run_release_suites(plugin_root: Path) -> bool:
     """Discover and run each root before exposing the next root's modules.
 
@@ -325,23 +354,21 @@ def run_release_suites(plugin_root: Path) -> bool:
     fixture or hide an error.  Run each discovered suite immediately, then
     evict only release-test modules before discovering the next root.
 
-    Root-local ``TextTestRunner`` output remains verbatim for diagnostic IDs.
+    Root-local results emit the actual public test IDs on every supported
+    Python version, while keeping real verdicts and diagnostic text intact.
     A final aggregate summary gives the attester one authoritative count and
     exit outcome across both isolated roots.
     """
 
+    # The OS temp allocator can return an intrinsic alias (for example macOS
+    # /var -> /private/var). Tests own these newly allocated directories, so
+    # give them canonical paths before they become evidence/project roots.
+    # This changes neither caller-supplied paths nor their strict link checks.
+    tempfile.tempdir = str(Path(tempfile.gettempdir()).resolve(strict=True))
     roots = release_test_roots(plugin_root)
     results: list[unittest.TestResult] = []
     discovered_ids, excluded_ids = [], []
     system = platform.system()
-    class NativeTrackingResult(unittest.TextTestResult):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.native_executed = set()
-        def startTest(self, test):
-            if test.id() in WINDOWS_NATIVE_TEST_IDS:
-                self.native_executed.add(test.id())
-            super().startTest(test)
     started = time.monotonic()
     with _plugin_root_import_context(plugin_root):
         for root, relative in zip(roots, TEST_ROOTS, strict=True):
@@ -361,7 +388,7 @@ def run_release_suites(plugin_root: Path) -> bool:
                 unittest.TextTestRunner(
                     verbosity=2,
                     descriptions=False,
-                    resultclass=NativeTrackingResult,
+                    resultclass=ReleaseTextTestResult,
                 ).run(suite)
             )
             _forget_modules_from(roots)

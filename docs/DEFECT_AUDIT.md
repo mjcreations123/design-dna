@@ -247,6 +247,55 @@ evidence is recorded below when the source tree is frozen.
     result through its separate exact-host attestation. It does not claim a new
     portable local-proof protocol or substitute that result for remote CI.
 
+84. Python 3.10's default unittest display omitted the method from the
+    parenthesized identity, unlike the newer interpreter used locally. The
+    skipped-test and native-execution verifiers therefore received ambiguous
+    or incomplete identities. The release runner now emits each ordinary
+    test's actual public `id()` independently of that display format. Real
+    failures, skipped tests and native tracking are unchanged; nonstandard
+    class-fixture/subtest descriptions are not turned into invented plain IDs.
+
+85. A completed test process could lose its detailed output when later result
+    parsing, applicability, source, schema or publication checks rejected it.
+    All three initial Python 3.10 CI jobs returned only a skip-identity error
+    and no retained test artifact. Rejected output now has a durable private
+    diagnostic by default and an explicit redacted JSON destination for CI.
+    It remains non-release evidence with unknown validated test counts;
+    unsafe destinations and unverified stream bytes cannot be exported as a
+    successful artifact. Existing timeout and process-cleanup checks remain.
+
+86. The first diagnostic-redaction correction could alter fixed record keys,
+    source identities and status markers when a credential value was short,
+    or repeatedly expand a placeholder that matched a configured secret.
+    Redaction now operates on untrusted content, preserves producer-owned
+    metadata and uses a collision-free, repeat-stable marker. Actual isolated
+    CLI cases cover short values and placeholder collisions as well as normal
+    credentials and private paths. Unknown arbitrary encodings are not claimed
+    to be perfectly recognizable.
+
+87. The command-line attester could publish an `OK` result containing unwaived
+    skipped tests, even though a later release audit would reject it. The CLI
+    now verifies the exact waiver policy before publishing a would-be pass;
+    the raw-record API still preserves truthful failed-run diagnostics.
+
+88. Checking that an attestation output did not exist before a long run did
+    not prevent the final replacement operation from overwriting a file
+    created meanwhile. The four immutable attestation CLIs now use atomic
+    create-only publication. Competing output survives, a losing writer's
+    prepared bytes remain recoverable, and mutable journals/reports retain
+    their existing update behavior.
+
+89. macOS fixture allocations inherited `/var` temporary-directory aliases,
+    triggering strict project-path rejection and inconsistent containment
+    comparisons across many tests. The release test process now canonicalizes
+    its own allocator root before creating fixtures. Explicit caller-provided
+    project aliases remain rejected; no source/evidence link rule is waived.
+
+90. A redaction regression rejected the username substring anywhere in its
+    complete record. On GitHub's `runner` account this falsely matched valid
+    `EvalRunnerV3Tests` metadata. The test now verifies the exact sanitized
+    disclosure text while retaining legitimate protocol identifiers.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG
@@ -274,6 +323,25 @@ canonical files, along with 15 canonical CI-import/platform checks. The latter
 use explicitly synthetic provider records to test the verifier; they are not
 successful remote GitHub runs. These focused results still do not replace the
 new complete current-source attestation.
+
+The subsequent exact local run ending `2026-09-06T15:23:00Z` passed all
+1,386 tests with zero failures, errors or skips. Its clean development audit
+and verified installation parity were committed and pushed as `ade0558`.
+The initial remote Python 3.10 jobs then exposed the reporting issues above;
+their missing detailed output cannot be reconstructed. Follow-on changes
+require fresh current-source verification, not relabeling that earlier pass.
+
+For the owner's local Windows skill test, the complete installed runtime
+remains byte-identical to that 1,386-test pass: tree identity
+`5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a`.
+The subsequent changes are maintainer verification/reporting code and tests,
+not website-building code. Across the affected checks, 117 tests passed: the
+combined invocation had 115 passing tests and one import-only working-directory
+error; that module's two tests then passed from the repository root. These
+focused results are not a replacement or relabeling of a complete current
+package attestation. Renewed whole-package and cross-platform qualification
+remains pending. The local website test must still follow every applicable
+source-study, construction, first-screen, final-gate and review requirement.
 
 The authoritative current local results are in `maintainer/attestations/`:
 `test-attestation.json`, `install-lifecycle.json`, `route-verification.json`,

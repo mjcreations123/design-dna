@@ -68,6 +68,7 @@ def make_attestation_fixture(root: Path) -> Path:
         "run_release_tests.py",
         "test_platform_applicability.py",
         "suite_process.py",
+        "test_run_diagnostics.py",
         "run_evals.py",
         "attest_tests.py",
         "build_manifest.py",
@@ -261,7 +262,7 @@ def make_release_runner_fixture(
     if include_attester:
         # Importing the attester as a release test library exercises the
         # runner's real import context rather than a mock of it.
-        script_names.extend(("attest_tests.py", "build_manifest.py", "common.py", "suite_process.py", "run_evals.py"))
+        script_names.extend(("attest_tests.py", "build_manifest.py", "common.py", "suite_process.py", "run_evals.py", "test_run_diagnostics.py"))
     for name in script_names:
         shutil.copy2(SCRIPTS / name, scripts / name)
     write_native_identity_fixture(tests)
@@ -2039,7 +2040,14 @@ class TestAttestationTests(unittest.TestCase):
             self.assertNotIn(str(plugin), serialized)
             self.assertNotIn(str(Path.home()), serialized)
             self.assertNotIn(sys.executable, serialized)
-            self.assertNotIn(Path.home().name.casefold(), serialized.casefold())
+            # A username such as "runner" can also be legitimate protocol
+            # vocabulary (EvalRunnerV3Tests). Verify the actual disclosures,
+            # not an unrelated substring anywhere in the complete record.
+            self.assertEqual(
+                "plugin=<PLUGIN_ROOT>\nhome=<HOME>\npython=<PYTHON_EXECUTABLE>\n"
+                "reference=https://example.test/home/example\n",
+                record["output"]["stdout"],
+            )
             self.assertIn("<PLUGIN_ROOT>", record["output"]["stdout"])
             self.assertIn("<HOME>", record["output"]["stdout"])
             self.assertIn(

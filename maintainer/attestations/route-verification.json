@@ -2,7 +2,7 @@
   "schema_version": 3,
   "record_type": "design-dna-route-verification",
   "status": "passed",
-  "verified_at": "2026-09-06T11:36:42.926201Z",
+  "verified_at": "2026-09-06T16:54:30.786618Z",
   "canonical": "skills/design-dna",
   "scan_scope": {
     "basis": "explicit-filesystem-root-scan",

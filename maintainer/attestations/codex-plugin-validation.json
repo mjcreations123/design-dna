@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "record_type": "design-dna-codex-plugin-validation-attestation",
-  "created_at": "2026-09-06T11:33:14Z",
+  "created_at": "2026-09-06T16:51:34Z",
   "package": "design-dna",
   "release_version": "12.0.0",
   "validator": {
@@ -66,8 +66,8 @@
     "files": {
       "attestor": {
         "path": "maintainer/scripts/attest_codex_plugin.py",
-        "sha256": "e9176ff7619b15b439a0e921b1ccc2dab00bf54bc377faac754575a7df853566",
-        "bytes": 37867
+        "sha256": "0edb580f8a2cd059dd97a59ddd3d607e67ee043993abb8a771cd8a42835b5faa",
+        "bytes": 37888
       },
       "cache_preflight": {
         "path": "maintainer/scripts/cache_preflight.py",
@@ -76,8 +76,8 @@
       },
       "common": {
         "path": "maintainer/scripts/common.py",
-        "sha256": "6b04e6b84b2297705cc270d6f4049053dd92e5ef2a652b36f938b754207cc15c",
-        "bytes": 16473
+        "sha256": "af7b3fe6fb5bd60337bef67c687ca24de37029257319f5d015b4008e4c2b9ad0",
+        "bytes": 20040
       },
       "attestation_schema": {
         "path": "maintainer/schemas/codex-plugin-validation-attestation.schema.json",
