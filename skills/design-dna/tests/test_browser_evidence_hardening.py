@@ -397,6 +397,112 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
         self.assertEqual(49, added[0]["members"])
         self.assertLessEqual(len(result["events"]), 2, result)
 
+    def test_hidden_lexical_dialogs_do_not_become_early_candidates_before_visibility(self) -> None:
+        """Static cart/mobile dialog markup is not an autonomous appearance."""
+        module_root = SKILL.parents[1] / "maintainer" / "node_modules"
+        if not module_root.is_dir():
+            self.skipTest("the maintained Playwright runtime is unavailable")
+        watcher = (SCRIPTS / "source_surface_watch.mjs").resolve().as_uri()
+        resolver = (SCRIPTS / "playwright_resolver.mjs").resolve().as_uri()
+        program = f"""
+          import {{ resolvePlaywright, discoverBrowserExecutable }} from {json.dumps(resolver)};
+          import {{ armEarlySourceSurfaceWatch, adoptEarlySourceSurfaceWatch, startSourceSurfaceWatch,
+            drainSourceSurfaceWatch, stopSourceSurfaceWatch }} from {json.dumps(watcher)};
+          const loaded = resolvePlaywright({{ moduleUrl: import.meta.url }});
+          const entry = discoverBrowserExecutable(loaded.playwright);
+          const browser = await loaded.playwright.chromium.launch({{ executablePath: entry.file || entry.path || entry }});
+          const finish = (value, code = 0) => process.stdout.write(JSON.stringify(value), () => {{
+            browser.close().catch(() => {{}}); setTimeout(() => process.exit(code), 20);
+          }});
+          try {{
+            const page = await browser.newPage({{ viewport: {{ width: 900, height: 600 }} }});
+            const html = `<main>Farm source fixture</main>
+              <aside id="cart" role="dialog" aria-modal="true" style="visibility:hidden;position:fixed;inset:0;z-index:99">Cart</aside>
+              <aside id="mobile-menu" role="dialog" aria-modal="true" style="visibility:hidden;position:fixed;inset:0;z-index:98">Menu</aside>`;
+            const early = await armEarlySourceSurfaceWatch(page, {{ baseline: {{ video_t_s: 0 }},
+              captureEvidence: async (label) => ({{ label, video_t_s: 0 }}) }});
+            await page.goto('data:text/html,' + encodeURIComponent(html));
+            await page.waitForTimeout(100);
+            const initialWatch = await adoptEarlySourceSurfaceWatch(page, early, {{ baseline: {{ video_t_s: 1 }},
+              captureEvidence: async (label) => ({{ label, video_t_s: 1 }}) }});
+            await page.waitForTimeout(100);
+            const initial = await drainSourceSurfaceWatch(initialWatch); await stopSourceSurfaceWatch(initialWatch);
+            const shownWatch = await startSourceSurfaceWatch(page, {{ ambientSelectors: ['#cart'], baseline: {{ video_t_s: 2 }},
+              captureEvidence: async (label) => ({{ label, video_t_s: 2 }}) }});
+            await page.evaluate(() => {{ document.querySelector('#cart').style.visibility = 'visible'; }});
+            await page.waitForTimeout(100);
+            const shown = await drainSourceSurfaceWatch(shownWatch); await stopSourceSurfaceWatch(shownWatch);
+            finish({{
+              initialEvents: initial.events.map((event) => ({{ kind:event.kind, id:event.surface?.id, selector:event.selector }})),
+              initialInventories: initial.animation_samples.map((sample) => sample.candidate_inventory),
+              shownEvents: shown.events.map((event) => ({{ kind:event.kind, id:event.surface?.id, selector:event.selector }})),
+            }});
+          }} catch (error) {{ finish({{ error: String(error?.message || error), code:error?.code || null }}, 1); }}
+        """
+        env = os.environ.copy()
+        env["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"] = str(module_root)
+        done = subprocess.run([NODE, "--input-type=module", "-e", program], capture_output=True,
+                              text=True, encoding="utf-8", env=env, timeout=60)
+        if done.returncode:
+            self.fail(done.stderr or done.stdout)
+        result = json.loads(done.stdout)
+        self.assertNotIn("error", result)
+        self.assertEqual([], result["initialEvents"])
+        self.assertTrue(all(inventory == [] for inventory in result["initialInventories"]), result)
+        appeared = [event for event in result["shownEvents"] if event["kind"] == "autonomous-surface-appeared"]
+        self.assertEqual([{"kind": "autonomous-surface-appeared", "id": "cart", "selector": "#cart"}], appeared)
+        self.assertNotIn("mobile-menu", [event["id"] for event in result["shownEvents"]])
+
+    def test_early_watcher_ignores_unsettled_dialog_markup_hidden_before_dom_ready(self) -> None:
+        """A streamed, unstyled setup dialog is not a visitor-facing transient."""
+        module_root = SKILL.parents[1] / "maintainer" / "node_modules"
+        if not module_root.is_dir():
+            self.skipTest("the maintained Playwright runtime is unavailable")
+        watcher = (SCRIPTS / "source_surface_watch.mjs").resolve().as_uri()
+        resolver = (SCRIPTS / "playwright_resolver.mjs").resolve().as_uri()
+        program = f"""
+          import http from 'node:http';
+          import {{ resolvePlaywright, discoverBrowserExecutable }} from {json.dumps(resolver)};
+          import {{ armEarlySourceSurfaceWatch, adoptEarlySourceSurfaceWatch,
+            drainSourceSurfaceWatch, stopSourceSurfaceWatch }} from {json.dumps(watcher)};
+          const server = http.createServer((request, response) => {{
+            response.writeHead(200, {{ 'content-type': 'text/html' }});
+            response.write('<main>streaming source fixture</main><div id="setup-dialog" role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:99">setup</div>');
+            setTimeout(() => response.end('<style>#setup-dialog{{visibility:hidden;opacity:0}}</style>'), 120);
+          }});
+          await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+          const loaded = resolvePlaywright({{ moduleUrl: import.meta.url }});
+          const entry = discoverBrowserExecutable(loaded.playwright);
+          const browser = await loaded.playwright.chromium.launch({{ executablePath: entry.file || entry.path || entry }});
+          const finish = (value, code = 0) => process.stdout.write(JSON.stringify(value), () => {{
+            browser.close().catch(() => {{}}); server.close(); setTimeout(() => process.exit(code), 20);
+          }});
+          let early = null; let watch = null;
+          try {{
+            const page = await browser.newPage({{ viewport: {{ width: 900, height: 600 }} }});
+            const captureEvidence = async (label) => ({{ label, video_t_s: 0 }});
+            early = await armEarlySourceSurfaceWatch(page, {{ baseline: {{ video_t_s: 0 }}, captureEvidence }});
+            await page.goto(`http://127.0.0.1:${{server.address().port}}/`, {{ waitUntil: 'domcontentloaded' }});
+            watch = await adoptEarlySourceSurfaceWatch(page, early, {{ baseline: {{ video_t_s: 1 }}, captureEvidence }}); early = null;
+            await page.waitForTimeout(100);
+            const report = await drainSourceSurfaceWatch(watch); await stopSourceSurfaceWatch(watch); watch = null;
+            const computed = await page.evaluate(() => {{ const style = getComputedStyle(document.querySelector('#setup-dialog')); return {{ visibility: style.visibility, opacity: style.opacity }}; }});
+            finish({{ events: report.events, inventories: report.animation_samples.map((sample) => sample.candidate_inventory), computed }});
+          }} catch (error) {{ finish({{ error: String(error?.message || error), code: error?.code || null }}, 1); }}
+          finally {{ if (watch) await stopSourceSurfaceWatch(watch).catch(() => {{}}); if (early) await stopSourceSurfaceWatch(early).catch(() => {{}}); }}
+        """
+        env = os.environ.copy()
+        env["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"] = str(module_root)
+        done = subprocess.run([NODE, "--input-type=module", "-e", program], capture_output=True,
+                              text=True, encoding="utf-8", env=env, timeout=60)
+        if done.returncode:
+            self.fail(done.stderr or done.stdout)
+        result = json.loads(done.stdout)
+        self.assertNotIn("error", result)
+        self.assertEqual({"visibility": "hidden", "opacity": "0"}, result["computed"])
+        self.assertEqual([], result["events"])
+        self.assertTrue(all(inventory == [] for inventory in result["inventories"]), result)
+
     def test_early_to_normal_surface_watch_has_one_timestamp_lineage(self) -> None:
         module_root = SKILL.parents[1] / "maintainer" / "node_modules"
         if not module_root.is_dir():

@@ -276,7 +276,8 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
       document_url: location.href, started_at_ms: performance.now(), timeline_origin_ms: performance.now(), events: [], sequence: 0,
       identity_sequence: 0, sample_interval_ms: interval, animation_samples: [], sample_gap_failures: [], animation_events: [],
       mutation_batches: [], tail_mutations: [], observer: null, shadow_observers: [], shadow_roots: [], observed_roots: new WeakSet(),
-      timer: null, listeners: [], seen: new Set(), surface_ids: new WeakMap(), emitted_keys: new Set(), restore_attach_shadow: null, sample: null };
+      timer: null, listeners: [], seen: new Set(), surface_ids: new WeakMap(), emitted_keys: new Set(), restore_attach_shadow: null,
+      document_ready: document.readyState !== 'loading', sample: null };
     state.timeline_origin_ms = state.started_at_ms;
     const roots = () => {
       // Declarative roots are discovered by the browser, not attachShadow.
@@ -304,8 +305,25 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
     };
     const visible = (element) => {
       if (!element.isConnected) return false;
-      const style = getComputedStyle(element), box = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 1 && box.height > 1;
+      let cursor = element, depth = 0;
+      while (cursor && depth++ < 80) {
+        const style = getComputedStyle(cursor);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) <= 0) return false;
+        cursor = cursor.parentElement || cursor.getRootNode?.().host || null;
+      }
+      const box = element.getBoundingClientRect();
+      return box.width > 1 && box.height > 1;
+    };
+    // Server/framework construction can momentarily attach unstyled dialog
+    // markup before its hiding CSS or hydration state exists. It is not an
+    // observed visitor-facing appearance. Once DOMContentLoaded fires, keep
+    // ordinary immediate mutation coverage for real visible transients.
+    const observable = (element) => state.document_ready && visible(element);
+    const detachedPotentiallyVisible = (element) => {
+      if (!(element instanceof Element) || element.isConnected) return false;
+      const inline = String(element?.getAttribute?.('style') || '');
+      if (/display\s*:\s*none(?:\s*!important)?\s*(?:;|$)|visibility\s*:\s*(?:hidden|collapse)(?:\s*!important)?\s*(?:;|$)|opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/i.test(inline)) return false;
+      return surfaceKind(element, true).geometric;
     };
     const surfaceKind = (element, detached = false) => {
       if (!(element instanceof Element)) return { relevant: false, lexical: false, geometric: false };
@@ -367,7 +385,7 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
       const elapsed = Math.round(performance.now() - state.timeline_origin_ms), prior = state.animation_samples.at(-1);
       if (prior && elapsed - prior.elapsed_ms > interval * 2) state.sample_gap_failures.push({ from_elapsed_ms: prior.elapsed_ms, to_elapsed_ms: elapsed, gap_ms: elapsed - prior.elapsed_ms, maximum_ms: interval * 2, reason, watch_phase: 'early' });
       const animations = allAnimations(), active = animations.filter((animation) => animation.playState === 'running').length;
-      const candidates = roots().flatMap((root) => [...root.querySelectorAll('*')]).filter((element) => surfaceKind(element).relevant && visible(element));
+      const candidates = roots().flatMap((root) => [...root.querySelectorAll('*')]).filter((element) => surfaceKind(element).relevant && observable(element));
       const candidateInventory = [...new Map(candidates.map((element) => {
         const owner = owningSurface(element);
         return [identity(owner), { owner_id: identity(owner), selector: declaredSelector(owner), surface: describe(owner, surfaceKind(owner), !owner.isConnected) }];
@@ -380,7 +398,7 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
       }
       for (const animation of animations) {
         const target = animation.effect?.target;
-        if (target instanceof Element && animation.playState === 'running') emit('surface-waapi-active', target, { animation_name: animation.animationName || null, play_state: animation.playState });
+        if (target instanceof Element && animation.playState === 'running' && observable(owningSurface(target))) emit('surface-waapi-active', target, { animation_name: animation.animationName || null, play_state: animation.playState });
       }
     };
     state.sample = sample;
@@ -390,18 +408,18 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
         const row = { type: record.type, attribute: record.attributeName || null, old_value: record.oldValue || null, added: [], removed: [], target: null };
         if (record.target instanceof Element) {
           const owner = owningSurface(record.target), kind = surfaceKind(owner, !owner.isConnected);
-          if (kind.relevant || state.surface_ids.has(record.target)) {
+          if ((kind.relevant && observable(owner)) || state.seen.has(identity(owner))) {
             row.target = describe(owner, kind, !owner.isConnected);
             emit('surface-attribute-mutation', record.target, { attribute: record.attributeName || null, old_value: record.oldValue || null, mutation_batch: batch.batch_id }, !record.target.isConnected);
           }
         }
         for (const node of record.addedNodes || []) for (const element of descendants(node)) {
           const owner = owningSurface(element), kind = surfaceKind(owner, !owner.isConnected);
-          if (kind.relevant) { row.added.push(describe(element, surfaceKind(element, !element.isConnected), !element.isConnected)); emit('surface-node-added', element, { mutation_batch: batch.batch_id }, !element.isConnected); }
+          if (kind.relevant && (observable(owner) || detachedPotentiallyVisible(owner))) { row.added.push(describe(element, surfaceKind(element, !element.isConnected), !element.isConnected)); emit('surface-node-added', element, { mutation_batch: batch.batch_id }, !element.isConnected); }
         }
         for (const node of record.removedNodes || []) for (const element of descendants(node)) {
           const owner = owningSurface(element), kind = surfaceKind(owner, true);
-          if (kind.relevant || state.surface_ids.has(element)) { row.removed.push(describe(element, surfaceKind(element, true), true)); emit('surface-node-removed', element, { mutation_batch: batch.batch_id }, true); }
+          if (state.seen.has(identity(owner)) || detachedPotentiallyVisible(owner)) { row.removed.push(describe(element, surfaceKind(element, true), true)); emit('surface-node-removed', element, { mutation_batch: batch.batch_id }, true); }
         }
         if (row.target || row.added.length || row.removed.length) batch.records.push(row);
       }
@@ -429,9 +447,10 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
     };
     state.observer = new MutationObserver(handle); state.observer.observe(document, { subtree: true, childList: true, attributes: true, attributeOldValue: true, attributeFilter: ['class','style','hidden','aria-hidden','aria-modal','aria-disabled','inert','open'] });
     for (const type of ['animationstart','animationend','animationcancel','transitionrun','transitionstart','transitionend','transitioncancel']) {
-      const listener = (event) => { const target = event.target instanceof Element ? event.target : null, pseudo = event.pseudoElement || null; if (!target) return; const owner = owningSurface(target), kind = surfaceKind(owner, !owner.isConnected); if (!kind.relevant && !pseudo) return; const detail = { event_type: type, animation_name: event.animationName || null, property_name: event.propertyName || null, pseudo_element: pseudo }; state.animation_events.push({ elapsed_ms: Math.round(performance.now() - state.timeline_origin_ms), ...detail, target: describe(owner, kind, !owner.isConnected) }); emit(pseudo ? 'surface-pseudo-animation-event' : 'surface-css-animation-event', target, detail, !target.isConnected); };
+      const listener = (event) => { const target = event.target instanceof Element ? event.target : null, pseudo = event.pseudoElement || null; if (!target) return; const owner = owningSurface(target), kind = surfaceKind(owner, !owner.isConnected); if ((!kind.relevant && !pseudo) || (!observable(owner) && !state.seen.has(identity(owner)))) return; const detail = { event_type: type, animation_name: event.animationName || null, property_name: event.propertyName || null, pseudo_element: pseudo }; state.animation_events.push({ elapsed_ms: Math.round(performance.now() - state.timeline_origin_ms), ...detail, target: describe(owner, kind, !owner.isConnected) }); emit(pseudo ? 'surface-pseudo-animation-event' : 'surface-css-animation-event', target, detail, !target.isConnected); };
       document.addEventListener(type, listener, true); state.listeners.push({ type, listener });
     }
+    if (!state.document_ready) document.addEventListener('DOMContentLoaded', () => { state.document_ready = true; if (!state.stopped) sample('dom-content-loaded'); }, { once: true });
     state.timer = setInterval(() => sample('timer'), interval); sample('init'); registry[id] = state; window.__designDnaEarlySourceSurfaceWatches = registry;
 };
 
@@ -573,8 +592,21 @@ export async function startSourceSurfaceWatch(page, options = {}) {
       return all;
     };
     const visible = (element) => {
-      const style = getComputedStyle(element), box = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 1 && box.height > 1;
+      if (!element.isConnected) return false;
+      let cursor = element, depth = 0;
+      while (cursor && depth++ < 80) {
+        const style = getComputedStyle(cursor);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || Number(style.opacity) <= 0) return false;
+        cursor = cursor.parentElement || cursor.getRootNode?.().host || null;
+      }
+      const box = element.getBoundingClientRect();
+      return box.width > 1 && box.height > 1;
+    };
+    const detachedPotentiallyVisible = (element) => {
+      if (!(element instanceof Element) || element.isConnected) return false;
+      const inline = String(element?.getAttribute?.('style') || '');
+      if (/display\s*:\s*none(?:\s*!important)?\s*(?:;|$)|visibility\s*:\s*(?:hidden|collapse)(?:\s*!important)?\s*(?:;|$)|opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/i.test(inline)) return false;
+      return surfaceKind(element, true).geometric;
     };
     const text = (element) => (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 240);
     const composedFlags = (element) => {
@@ -677,7 +709,7 @@ export async function startSourceSurfaceWatch(page, options = {}) {
       })).values()];
       state.animation_samples.push({ elapsed_ms: elapsed, active_animations: activeAnimations, reason, candidate_inventory: candidateInventory });
       for (const element of candidates) {
-        const key = identity(element);
+        const key = identity(owningSurface(element));
         if (state.seen.has(key)) continue;
         state.seen.add(key);
         emit('autonomous-surface-appeared', element, { reason });
@@ -685,7 +717,7 @@ export async function startSourceSurfaceWatch(page, options = {}) {
       const animations = typeof document.getAnimations === 'function' ? document.getAnimations() : [];
       for (const animation of animations) {
         const target = animation.effect?.target;
-        if (target instanceof Element && animation.playState === 'running') emit('surface-waapi-active', target, {
+        if (target instanceof Element && animation.playState === 'running' && visible(owningSurface(target))) emit('surface-waapi-active', target, {
           animation_name: animation.animationName || null, play_state: animation.playState,
         });
       }
@@ -699,22 +731,22 @@ export async function startSourceSurfaceWatch(page, options = {}) {
         const entry = { type: record.type, attribute: record.attributeName || null, old_value: record.oldValue || null,
           added: [], removed: [], target: null };
         if (record.target instanceof Element) {
-          const kind = surfaceKind(record.target);
-          if (kind.relevant || state.surface_ids.has(record.target)) {
-            entry.target = describe(record.target, kind, !record.target.isConnected);
+          const owner = owningSurface(record.target), kind = surfaceKind(owner, !owner.isConnected);
+          if ((kind.relevant && visible(owner)) || state.seen.has(identity(owner))) {
+            entry.target = describe(owner, kind, !owner.isConnected);
             emit('surface-attribute-mutation', record.target, { attribute: record.attributeName || null, old_value: record.oldValue || null }, !record.target.isConnected);
           }
         }
         for (const node of record.addedNodes || []) for (const element of collectDescendants(node)) {
-          const kind = surfaceKind(element, !element.isConnected);
-          if (!kind.relevant) continue;
-          entry.added.push(describe(element, kind, !element.isConnected));
+          const owner = owningSurface(element), kind = surfaceKind(owner, !element.isConnected);
+          if (!kind.relevant || (!visible(owner) && !detachedPotentiallyVisible(owner))) continue;
+          entry.added.push(describe(element, surfaceKind(element, !element.isConnected), !element.isConnected));
           emit('surface-node-added', element, { mutation_batch: batch.batch_id }, !element.isConnected);
         }
         for (const node of record.removedNodes || []) for (const element of collectDescendants(node)) {
-          const kind = surfaceKind(element, true);
-          if (!kind.relevant && !state.surface_ids.has(element)) continue;
-          entry.removed.push(describe(element, kind, true));
+          const owner = owningSurface(element), kind = surfaceKind(owner, true);
+          if (!state.seen.has(identity(owner)) && !detachedPotentiallyVisible(owner)) continue;
+          entry.removed.push(describe(element, surfaceKind(element, true), true));
           emit('surface-node-removed', element, { mutation_batch: batch.batch_id }, true);
         }
         if (entry.target || entry.added.length || entry.removed.length) batch.records.push(entry);
@@ -742,12 +774,12 @@ export async function startSourceSurfaceWatch(page, options = {}) {
         const target = event.target instanceof Element ? event.target : null;
         const pseudo = event.pseudoElement || null;
         if (!target) return;
-        const kind = surfaceKind(target);
-        if (!kind.relevant && !pseudo) return;
+        const owner = owningSurface(target), kind = surfaceKind(owner, !owner.isConnected);
+        if ((!kind.relevant && !pseudo) || (!visible(owner) && !state.seen.has(identity(owner)))) return;
         const record = { event_type: type, animation_name: event.animationName || null,
           property_name: event.propertyName || null, pseudo_element: pseudo };
         state.animation_events.push({ elapsed_ms: Math.round(performance.now() - state.timeline_origin_ms), ...record,
-          target: describe(target, kind, !target.isConnected) });
+          target: describe(owner, kind, !owner.isConnected) });
         emit(pseudo ? 'surface-pseudo-animation-event' : 'surface-css-animation-event', target, record, !target.isConnected);
       };
       root.addEventListener(type, listener, true); state.listeners.push({ root, type, listener });

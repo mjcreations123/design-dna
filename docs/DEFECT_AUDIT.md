@@ -296,6 +296,17 @@ evidence is recorded below when the source tree is frozen.
     `EvalRunnerV3Tests` metadata. The test now verifies the exact sanitized
     disclosure text while retaining legitimate protocol identifiers.
 
+91. The source-surface watcher sampled hidden dialogs correctly, but its
+    mutation ledger still promoted lexical dialog markup while a source was
+    constructing or hydrating the page. From The Farm's cart and mobile-menu
+    overlays consequently created ambiguous early events even though their
+    settled computed state was `visibility:hidden`, `opacity:0` and no
+    geometric signal. The watcher now treats pre-DOMContentLoaded unstyled
+    construction as non-visitor-facing, filters invisible mutation/animation
+    surfaces, and retains an explicitly geometric fixed surface removed before
+    a callback. A live public-page probe now drains cleanly; local static,
+    streamed construction and visible-transient regressions cover the boundary.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG
