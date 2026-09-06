@@ -69,7 +69,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { applyManifestState, canonicalJson, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, inferAndReconcileStates, installDomInspection, interactionCensusDiagnostic, mergeSourceGestureInventories, mergeSourceRenderedQA,
-  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded, hoverWithPointerFallback, scrollIntoViewBounded } from "./browser_evidence.mjs";
+  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded, hoverWithPointerFallback, scrollIntoViewBounded, raceBound } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, DEFAULT_SOURCE_STUDY_LIMITS, sourceStudyFailureStatus, sourceStudyPreflightFailure } from "./source_study_controller.mjs";
@@ -590,7 +590,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
     for (const target of targets) {
       let identity = null;
       try {
-        if (!(await target.isVisible())) continue;
+        if (!(await raceBound(target.isVisible(), 3_000, 'hover-target-visibility'))) continue;
         identity = await target.evaluate((element) => {
           window.__dnaRecordTarget = Number(window.__dnaRecordTarget || 0);
           if (!element.dataset.dnaRecordTarget) element.dataset.dnaRecordTarget = String(++window.__dnaRecordTarget);
@@ -651,6 +651,10 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
       }
     }
   }
+  // The end of a pass is measured work even when every remaining target was
+  // skipped without a journal line of its own.
+  sourceStudy?.markEvent({ profile, kind: 'hover-pass-complete', visible_only: visibleOnly, hovered: coverage.hovered.size,
+    failures: coverage.hover_failures.size });
   return !clock.over();
 }
 
