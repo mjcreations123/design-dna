@@ -92,6 +92,11 @@ slot, which then blocked every later observation on the machine.
   recorder's visibility checks are raced against bounds (3-10 s) so a page
   whose main thread stops answering produces a typed failure naming the
   call; the end of every hover pass is journaled as progress.
+- The observer's hover phase records a target the page replaced or refused
+  (`hover-unactionable`) and continues; it fails the observation only when no
+  visible target at all could be hovered. One replaced carousel anchor out of
+  seven used to end a 60-minute study after every other phase had passed. The
+  identity read is bounded (3 s) instead of waiting out the locator default.
 - The observer's hover preflight bounds its box read (2 s) and its step
   encloses the scroll wait and fallback (20 s); its hover step encloses two
   bounded screenshots (75 s). A replaced carousel anchor cost a 30 s box read

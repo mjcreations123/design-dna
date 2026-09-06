@@ -2,23 +2,23 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "12.1.0",
-  "distribution_sha256": "5322f0157e7b877747fafe14f2ec7fdb6999cfbbd9667c32544b19d8f0ad6592",
-  "content_sha256": "772189f16c6e0b8a41014bc64e2d4104241f4c55b30fb47cd4c46e4233525ab5",
+  "distribution_sha256": "342fa4cfd3e5774a7831e74d3c3dafdc9325fffcf7495928c243c26b25334805",
+  "content_sha256": "e206544df843e24e1a7a8f490804b810ab8b3bee0f81cd89f58ffdac0ad2ef62",
   "codex_plugin_manifest_sha256": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
   "claude_plugin_manifest_sha256": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-  "sbom_sha256": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe",
+  "sbom_sha256": "a49ca0d6c15a18b8ce253af6250eb2c2738fee2f9e138b7556f846d0b9878dd0",
   "compatibility_matrix_sha256": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "5322f0157e7b877747fafe14f2ec7fdb6999cfbbd9667c32544b19d8f0ad6592",
-    "runtime": "772189f16c6e0b8a41014bc64e2d4104241f4c55b30fb47cd4c46e4233525ab5",
+    "distribution_tree": "342fa4cfd3e5774a7831e74d3c3dafdc9325fffcf7495928c243c26b25334805",
+    "runtime": "e206544df843e24e1a7a8f490804b810ab8b3bee0f81cd89f58ffdac0ad2ef62",
     "codex_plugin_manifest": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
     "claude_plugin_manifest": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-    "sbom": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe",
+    "sbom": "a49ca0d6c15a18b8ce253af6250eb2c2738fee2f9e138b7556f846d0b9878dd0",
     "compatibility_matrix": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "8bfa939092fee3e73122213e2ec588bb6b112f80e68a3fd8d0a361c6719a4004",
-    "distribution_docs": "f4f5f53b2ec8ccdd81e36cd16c9ca5076370b5f419ef5d9b38e9e971523d3b92",
+    "distribution_docs": "586130505dba7c1c8eeda33f42b3411a2fec13a19c629f5cb6bea03c09746b3e",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,8 +26,8 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "195d19a3588a04c81fee3bed265b7b85a565d1cb7170d69d77b934720d33664c",
-  "generated_at": "2026-09-06T22:53:21.983052+00:00",
+  "release_sha256": "165568a1cb7bd481ddf0fb36bc659099a1110a4949545625ce78d2d6b3165f19",
+  "generated_at": "2026-09-06T22:57:53.426463+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -914,8 +914,8 @@
     {
       "path": "scripts/observe_reference.mjs",
       "type": "file",
-      "size": 124940,
-      "sha256": "277f68a51021a5715d7c6bd81acd440f4f8ceb2fe9cd4e675c9340bd352a01da"
+      "size": 126037,
+      "sha256": "0824e335cb918c4a0d505b3af84a9c684b7c37511a9c6cff61c6e0259268530e"
     },
     {
       "path": "scripts/owner_pattern_audit.py",
@@ -1576,8 +1576,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 116456,
-      "sha256": "29221ab3aa5ca9fe6c729fb3cb24e3624745a2b002032f8721efac2e1939c7e2"
+      "size": 116842,
+      "sha256": "088c4f1de770d122ac628a51849e14b02fce35c11eb45e6827857975d2c48c2f"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -3917,7 +3917,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "180caa1d4c41c2658e82f219fdaf252a088bb71b20521fac75c9cc20ffc0cdfe"
+      "sha256": "a49ca0d6c15a18b8ce253af6250eb2c2738fee2f9e138b7556f846d0b9878dd0"
     },
     {
       "path": "maintainer/schemas",
@@ -5536,8 +5536,8 @@
     {
       "path": "skills/design-dna/scripts/observe_reference.mjs",
       "type": "file",
-      "size": 124940,
-      "sha256": "277f68a51021a5715d7c6bd81acd440f4f8ceb2fe9cd4e675c9340bd352a01da"
+      "size": 126037,
+      "sha256": "0824e335cb918c4a0d505b3af84a9c684b7c37511a9c6cff61c6e0259268530e"
     },
     {
       "path": "skills/design-dna/scripts/owner_pattern_audit.py",

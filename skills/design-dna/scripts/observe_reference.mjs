@@ -1583,13 +1583,18 @@ async function observeMain(args) {
       });
       if (!box || box.width < 24 || box.height < 24) continue;
       hoverTried += 1;
-      const targetIdentity = await sourceStudy.step('target-identity:wide-primary-hover', () => el.evaluate(hoverTargetIdentity), {
-        // Two bounded screenshots (up to 30s each under load), a 650ms dwell
-        // and three bounded style reads.
-        timeout_ms: 75_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); },
+      const targetIdentity = await sourceStudy.step('target-identity:wide-primary-hover',
+        () => el.evaluate(hoverTargetIdentity, undefined, { timeout: 3000 }).catch(() => null), {
+        timeout_ms: 10_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); },
       });
       if (typeof targetIdentity !== 'string' || !targetIdentity) {
-        throw new Error('A visible hover target did not retain a source-owned structural identity.');
+        // The page replaced this element between listing and reading it (a
+        // carousel slide, a re-rendered menu). That is a recorded outcome for
+        // this target, not the end of the observation.
+        hoverFailed += 1;
+        interactions.push({ type: "hover-unactionable", ordinal: hoverTried, reason: "target replaced before its identity could be read" });
+        sourceStudy.markEvent({ profile: 'wide', kind: 'hover-unactionable', ordinal: hoverTried, reason: 'identity-lost' });
+        continue;
       }
       const targetKey = `${frame.url()}|${targetIdentity}`;
       sourceStudy.markTarget(`wide|primary-hover|${targetKey}`, { ordinal: hoverTried });
@@ -1622,9 +1627,21 @@ async function observeMain(args) {
           frames: [before.seq, after.seq], transition: duration,
           detail: moved ? "The page responded to the pointer." : "Nothing responded to the pointer here." });
         sourceStudy.markEvent({ profile: 'wide', kind: 'hover', target_key: targetKey, moved });
-      } catch { hoverFailed += 1; }
+      } catch (error) {
+        // A controller decision must reach the study boundary; anything else
+        // (a replaced element, a refused pointer) is recorded for this target.
+        if (String(error?.code || '').startsWith('source-study-')) throw error;
+        hoverFailed += 1;
+        const reason = String(error?.message || error).slice(0, 180);
+        interactions.push({ type: "hover-unactionable", target: targetKey, reason });
+        sourceStudy.markEvent({ profile: 'wide', kind: 'hover-unactionable', target_key: targetKey, reason });
+      }
     }
-    if (hoverFailed) throw new Error(`${hoverFailed} of ${hoverTried} visible hover targets could not be completely observed.`);
+    // Refused or replaced targets are in the record. The observation fails
+    // only when nothing at all could be hovered on a page that offered targets.
+    if (hoverTried > 0 && hoverFailed === hoverTried) {
+      throw new Error(`none of ${hoverTried} visible hover targets could be observed; every one was replaced or refused.`);
+    }
     if (hoverDurations.length) {
       const ms = Math.round(median(hoverDurations.map((d) => d.ms)));
       mech.mechanisms.push({
