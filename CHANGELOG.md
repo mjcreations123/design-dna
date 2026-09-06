@@ -49,6 +49,10 @@ slot, which then blocked every later observation on the machine.
   streaming frames for a quarter of an hour. Locator reads on the recorder's
   and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
   locator whose element the page has replaced otherwise waits 30 s each.
+- The observer's hover preflight bounds its box read (2 s) and its step
+  encloses the scroll wait and fallback (20 s); its hover step encloses two
+  bounded screenshots (75 s). A replaced carousel anchor cost a 30 s box read
+  inside a 10 s step and tore the study down after the traversal had passed.
 - A hover target the page replaced under the recorder is a recorded decision
   (`hover-unactionable`), which is progress; a page of them no longer reads as
   silence. The DOM scroll fallback is bounded too.

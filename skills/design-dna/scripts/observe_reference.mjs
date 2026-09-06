@@ -1574,16 +1574,19 @@ async function observeMain(args) {
         try {
           if (!(await el.isVisible())) return null;
           await scrollIntoViewBounded(el, 5000); await page.waitForTimeout(120);
-          return await el.boundingBox();
+          return await el.boundingBox({ timeout: 2000 });
         } catch { return null; }
       }, {
-        timeout_ms: 10_000, detail: { ordinal: candidateOrdinal + 1 },
+        // isVisible + a 5s scroll wait + its 2s DOM fallback + a 2s box read.
+        timeout_ms: 20_000, detail: { ordinal: candidateOrdinal + 1 },
         abort: async () => { await context.close().catch(() => {}); },
       });
       if (!box || box.width < 24 || box.height < 24) continue;
       hoverTried += 1;
       const targetIdentity = await sourceStudy.step('target-identity:wide-primary-hover', () => el.evaluate(hoverTargetIdentity), {
-        timeout_ms: 10_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); },
+        // Two bounded screenshots (up to 30s each under load), a 650ms dwell
+        // and three bounded style reads.
+        timeout_ms: 75_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); },
       });
       if (typeof targetIdentity !== 'string' || !targetIdentity) {
         throw new Error('A visible hover target did not retain a source-owned structural identity.');
