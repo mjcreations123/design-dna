@@ -325,9 +325,18 @@ const EARLY_SOURCE_WATCH_INIT = ({ id, selectors, callback, interval }) => {
       if (/display\s*:\s*none(?:\s*!important)?\s*(?:;|$)|visibility\s*:\s*(?:hidden|collapse)(?:\s*!important)?\s*(?:;|$)|opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/i.test(inline)) return false;
       return surfaceKind(element, true).geometric;
     };
+    const lexicalSurfaceSignal = (element) => {
+      if (element.matches('[role="dialog"],dialog,[aria-modal="true"],[data-ff-el="modal"]')) return true;
+      const names = [element.id || '', ...element.classList].map((value) => String(value).toLowerCase());
+      return names.some((value) => {
+        const surface = /(?:^|[-_])(modal|overlay|interstitial|survey|gate)(?:$|[-_])/.test(value);
+        const activator = /(?:^|[-_])(opener|trigger|toggle|button|link|launcher|thumbnail)(?:$|[-_])/.test(value);
+        return surface && !activator;
+      });
+    };
     const surfaceKind = (element, detached = false) => {
       if (!(element instanceof Element)) return { relevant: false, lexical: false, geometric: false };
-      const lexical = element.matches('[role="dialog"],dialog,[aria-modal="true"],[data-ff-el="modal"],[class*="modal" i],[class*="overlay" i],[class*="interstitial" i],[class*="gate" i],[id*="modal" i],[id*="overlay" i],[id*="interstitial" i],[id*="survey" i],[id*="gate" i]');
+      const lexical = lexicalSurfaceSignal(element);
       if (detached || !element.isConnected) {
         const inline = String(element.getAttribute('style') || '');
         const geometric = /position\s*:\s*(?:fixed|sticky)/i.test(inline) && /(?:inset|width|height)\s*:/i.test(inline);
@@ -608,6 +617,15 @@ export async function startSourceSurfaceWatch(page, options = {}) {
       if (/display\s*:\s*none(?:\s*!important)?\s*(?:;|$)|visibility\s*:\s*(?:hidden|collapse)(?:\s*!important)?\s*(?:;|$)|opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/i.test(inline)) return false;
       return surfaceKind(element, true).geometric;
     };
+    const lexicalSurfaceSignal = (element) => {
+      if (element.matches('[role="dialog"],dialog,[aria-modal="true"],[data-ff-el="modal"]')) return true;
+      const names = [element.id || '', ...element.classList].map((value) => String(value).toLowerCase());
+      return names.some((value) => {
+        const surface = /(?:^|[-_])(modal|overlay|interstitial|survey|gate)(?:$|[-_])/.test(value);
+        const activator = /(?:^|[-_])(opener|trigger|toggle|button|link|launcher|thumbnail)(?:$|[-_])/.test(value);
+        return surface && !activator;
+      });
+    };
     const text = (element) => (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 240);
     const composedFlags = (element) => {
       let cursor = element, ariaHidden = false, inert = false, disabled = false, depth = 0;
@@ -629,7 +647,7 @@ export async function startSourceSurfaceWatch(page, options = {}) {
     };
     const surfaceKind = (element, disconnected = false) => {
       if (!(element instanceof Element)) return { relevant: false, lexical: false, geometric: false };
-      const lexical = element.matches('[role="dialog"],dialog,[aria-modal="true"],[data-ff-el="modal"],[class*="modal" i],[class*="overlay" i],[class*="interstitial" i],[class*="gate" i],[id*="modal" i],[id*="overlay" i],[id*="interstitial" i],[id*="survey" i],[id*="gate" i]');
+      const lexical = lexicalSurfaceSignal(element);
       if (disconnected || !element.isConnected) {
         const inline = String(element.getAttribute('style') || '');
         const inlineCover = /position\s*:\s*(?:fixed|sticky)/i.test(inline) && /(?:inset|width|height)\s*:/i.test(inline);

@@ -338,6 +338,15 @@ transform candidates receive a passive causality sample, so autonomous motion
 is retained as motion but is not traversed or counted as a wheel-controlled
 surface. Native and proven transform containers remain fully traversed.
 
+96. Autonomous-surface discovery treated any class containing `modal` as a
+modal surface. A static Shopify `<modal-opener>` product-media control was
+therefore reported as an unsolicited ambient modal even though it never
+inserted, removed or displayed a dialog. Lexical surface matching now requires
+a dialog semantic or a boundary-delimited modal/overlay/interstitial token and
+excludes opener, trigger, toggle, button, link, launcher and thumbnail roles.
+Static activators remain interaction-census targets; real dialog roots and
+visible fixed viewport overlays remain continuously watched.
+
 ## Verification and remaining boundaries
 
 Verification includes adverse cases and usable positive paths: actual PNG

@@ -453,6 +453,52 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
         self.assertEqual([{"kind": "autonomous-surface-appeared", "id": "cart", "selector": "#cart"}], appeared)
         self.assertNotIn("mobile-menu", [event["id"] for event in result["shownEvents"]])
 
+    def test_static_modal_opener_is_an_interaction_target_not_an_autonomous_surface(self) -> None:
+        module_root = SKILL.parents[1] / "maintainer" / "node_modules"
+        if not module_root.is_dir():
+            self.skipTest("the maintained Playwright runtime is unavailable")
+        watcher = (SCRIPTS / "source_surface_watch.mjs").resolve().as_uri()
+        resolver = (SCRIPTS / "playwright_resolver.mjs").resolve().as_uri()
+        program = f"""
+          import {{ resolvePlaywright, discoverBrowserExecutable }} from {json.dumps(resolver)};
+          import {{ armEarlySourceSurfaceWatch, adoptEarlySourceSurfaceWatch,
+            drainSourceSurfaceWatch, stopSourceSurfaceWatch }} from {json.dumps(watcher)};
+          const loaded = resolvePlaywright({{ moduleUrl: import.meta.url }});
+          const entry = discoverBrowserExecutable(loaded.playwright);
+          const browser = await loaded.playwright.chromium.launch({{ executablePath: entry.file || entry.path || entry }});
+          const finish = (value, code = 0) => process.stdout.write(JSON.stringify(value), () => {{
+            browser.close().catch(() => {{}}); setTimeout(() => process.exit(code), 20);
+          }});
+          let watch = null;
+          try {{
+            const page = await browser.newPage({{ viewport: {{ width: 390, height: 844 }} }});
+            const captureEvidence = async (label) => ({{ label, video_t_s: 0 }});
+            const early = await armEarlySourceSurfaceWatch(page, {{ ambientSelectors: ['#offer'], baseline: {{ video_t_s: 0 }}, captureEvidence }});
+            const html = '<main style="height:2400px"><modal-opener class="product__modal-opener product__modal-opener--image" style="display:block;width:360px;height:360px;margin-top:1500px"><button type="button">Open media 1 in modal</button></modal-opener></main>';
+            await page.goto('data:text/html,' + encodeURIComponent(html));
+            await page.waitForTimeout(100);
+            watch = await adoptEarlySourceSurfaceWatch(page, early, {{ ambientSelectors: ['#offer'], baseline: {{ video_t_s: 1 }}, captureEvidence }});
+            await page.waitForTimeout(100);
+            await page.evaluate(() => {{ const dialog=document.createElement('div'); dialog.id='offer'; dialog.setAttribute('role','dialog'); dialog.setAttribute('aria-modal','true'); dialog.style.cssText='position:fixed;inset:0;z-index:20;background:white'; dialog.textContent='Real offer dialog'; document.body.append(dialog); }});
+            await page.waitForTimeout(100);
+            const report = await drainSourceSurfaceWatch(watch); await stopSourceSurfaceWatch(watch); watch = null;
+            finish({{ events: report.events.map((event) => ({{ kind:event.kind, tag:event.surface?.tag, id:event.surface?.id, selector:event.selector }})),
+              inventories: report.animation_samples.flatMap((sample) => sample.candidate_inventory).map((item) => item.surface?.tag) }});
+          }} catch (error) {{ finish({{ error: String(error?.message || error), code:error?.code || null }}, 1); }}
+          finally {{ if (watch) await stopSourceSurfaceWatch(watch).catch(() => {{}}); }}
+        """
+        env = os.environ.copy()
+        env["DESIGN_DNA_PLAYWRIGHT_MODULE_DIR"] = str(module_root)
+        done = subprocess.run([NODE, "--input-type=module", "-e", program], capture_output=True,
+                              text=True, encoding="utf-8", env=env, timeout=60)
+        if done.returncode:
+            self.fail(done.stderr or done.stdout)
+        result = json.loads(done.stdout)
+        self.assertNotIn("error", result)
+        self.assertNotIn("modal-opener", result["inventories"])
+        self.assertTrue(all(event["tag"] != "modal-opener" for event in result["events"]), result)
+        self.assertTrue(any(event["id"] == "offer" and event["selector"] == "#offer" for event in result["events"]), result)
+
     def test_early_watcher_ignores_unsettled_dialog_markup_hidden_before_dom_ready(self) -> None:
         """A streamed, unstyled setup dialog is not a visitor-facing transient."""
         module_root = SKILL.parents[1] / "maintainer" / "node_modules"
