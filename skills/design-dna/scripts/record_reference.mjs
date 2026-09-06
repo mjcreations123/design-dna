@@ -570,7 +570,7 @@ async function requireSafeConsent(page, options = {}) {
 }
 
 async function markPointerTargets(frame) {
-  await frame.evaluate(() => {
+  await raceBound(frame.evaluate(() => {
     let sequence = Number(window.__dnaRecordPointer || 0);
     const roots = [document];
     for (let index = 0; index < roots.length; index += 1) roots[index].querySelectorAll('*').forEach((element) => { if (element.shadowRoot) roots.push(element.shadowRoot); });
@@ -579,15 +579,24 @@ async function markPointerTargets(frame) {
       if (!element.dataset.dnaRecordPointer) element.dataset.dnaRecordPointer = String(++sequence);
     }
     window.__dnaRecordPointer = sequence;
-  }).catch(() => {});
+  }), 5_000, 'pointer-target-marking').catch(() => {});
 }
+
+// A visible-only hover pass runs at every scroll position. On a page whose
+// carousels replace their anchors every second, a stale locator costs its
+// whole bound; the pass is capped per position and the cap is journaled.
+const VISIBLE_HOVER_PASS_MS = 20_000;
 
 async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly = false, sourceStudy = null) {
   const selector = 'a[href],button,[role="button"],input,select,textarea,summary,[onclick],[tabindex],[data-dna-record-pointer]';
+  const passStarted = Date.now();
+  let truncated = false;
   for (const frame of page.frames()) {
+    if (truncated) break;
     await markPointerTargets(frame);
-    const targets = await frame.locator(selector).all();
+    const targets = await raceBound(frame.locator(selector).all(), 5_000, 'hover-target-listing').catch(() => []);
     for (const target of targets) {
+      if (visibleOnly && Date.now() - passStarted > VISIBLE_HOVER_PASS_MS) { truncated = true; break; }
       let identity = null;
       try {
         if (!(await raceBound(target.isVisible(), 3_000, 'hover-target-visibility'))) continue;
@@ -596,7 +605,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
           if (!element.dataset.dnaRecordTarget) element.dataset.dnaRecordTarget = String(++window.__dnaRecordTarget);
           return { id: element.dataset.dnaRecordTarget, tag: element.tagName.toLowerCase(),
             text: (element.getAttribute('aria-label') || element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200) };
-        }, undefined, { timeout: 3000 });
+        }, undefined, { timeout: 1500 });
         const key = `${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}`;
         coverage.discovered.add(key);
         if (coverage.hovered.has(key)) continue;
@@ -654,7 +663,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
   // The end of a pass is measured work even when every remaining target was
   // skipped without a journal line of its own.
   sourceStudy?.markEvent({ profile, kind: 'hover-pass-complete', visible_only: visibleOnly, hovered: coverage.hovered.size,
-    failures: coverage.hover_failures.size });
+    failures: coverage.hover_failures.size, truncated, elapsed_ms: Date.now() - passStarted });
   return !clock.over();
 }
 

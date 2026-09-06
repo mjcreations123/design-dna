@@ -49,6 +49,12 @@ slot, which then blocked every later observation on the machine.
   streaming frames for a quarter of an hour. Locator reads on the recorder's
   and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
   locator whose element the page has replaced otherwise waits 30 s each.
+- The recorder's per-frame pointer-target marking and target listing are
+  bounded (5 s), a hover target's identity read is bounded at 1.5 s, and the
+  visible-only hover pass that runs at every scroll position is capped at
+  20 s per position with the cap journaled. On a page whose carousels replace
+  their anchors every second, stale locators otherwise cost their whole bound
+  at every position and the recording could not finish.
 - The scroll traversal's surface sample, mouse move and wheel, and the
   recorder's visibility checks are raced against bounds (3-10 s) so a page
   whose main thread stops answering produces a typed failure naming the
