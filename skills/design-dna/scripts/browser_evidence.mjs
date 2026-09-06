@@ -43,6 +43,43 @@ function navigationError(code, message, navigation = null) {
  * Navigate without silently measuring an error page, redirect target, or SPA
  * rewrite. Every HTTP hop and its status is retained in the returned record.
  */
+/** Hover a target with the locator's actionability checks, and when those
+ * checks refuse a visible element that never settles (an autoplaying media
+ * region, a marquee), move the real pointer to the element's center instead.
+ * Both are a real pointer over the element; the mode is returned so the
+ * record says which one happened. */
+/** Scroll a target into view with a bound. Playwright's scrollIntoViewIfNeeded
+ * waits for the element to be stable, and a target inside a continuously
+ * animating region never is; after the bound the element is scrolled with a
+ * plain DOM call, which needs no stability. Without this, one such target
+ * cost 30 s of silence and a page of them stalled a recording for minutes. */
+export async function scrollIntoViewBounded(target, timeout = 5000) {
+  try {
+    await target.scrollIntoViewIfNeeded({ timeout });
+    return { mode: 'locator' };
+  } catch (error) {
+    if (String(error?.code || '').startsWith('source-study-')) throw error;
+    await target.evaluate((element) => element.scrollIntoView({ block: 'center', inline: 'center' }));
+    return { mode: 'dom', reason: String(error?.message || error).split('\n')[0].slice(0, 160) };
+  }
+}
+
+export async function hoverWithPointerFallback(target, page, timeout = 5000) {
+  try {
+    await target.hover({ timeout });
+    return { mode: 'locator' };
+  } catch (error) {
+    if (String(error?.code || '').startsWith('source-study-')) throw error;
+    const box = await target.boundingBox().catch(() => null);
+    if (!box || box.width < 1 || box.height < 1) throw error;
+    const viewport = page.viewportSize() || { width: 1440, height: 900 };
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    if (x < 0 || y < 0 || x > viewport.width || y > viewport.height) throw error;
+    await page.mouse.move(x, y);
+    return { mode: 'pointer', reason: String(error?.message || error).split('\n')[0].slice(0, 160) };
+  }
+}
+
 export async function navigateExact(page, requestedUrl, options = {}) {
   const requested = normalizeHttpUrl(requestedUrl);
   let response;
@@ -527,7 +564,7 @@ export async function applyManifestState(page, state, options = {}) {
   const before = await visualSnapshot(page, trigger.target);
   const expectedDuration = await transitionDurationMs(page, trigger.target);
   const started = Date.now();
-  if (trigger.type === "hover") await target.hover({ timeout: 5000 });
+  if (trigger.type === "hover") await hoverWithPointerFallback(target, page, 5000);
   else if (trigger.type === "focus") await target.focus({ timeout: 5000 });
   else if (trigger.type === "click") await target.click({ timeout: 5000 });
   else if (trigger.type === "keyboard") {
@@ -1490,7 +1527,7 @@ export async function captureInteractionCensus(page, options = {}) {
           workingPage = isolated.page; workingLocator = isolated.locator; workingSelector = isolated.selector;
         }
         stage = 'scroll-into-view';
-        await workingLocator.scrollIntoViewIfNeeded();
+        await scrollIntoViewBounded(workingLocator, 5000);
         beforePageUrl = normalizeHttpUrl(workingPage.url());
         stage = 'evidence-before';
         beforeFrame = await capture(`${targetId}-${inputKind}-before`, workingPage);
@@ -1560,7 +1597,7 @@ export async function captureInteractionCensus(page, options = {}) {
           probe, evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame } });
       } finally { if (isolated) await isolated.page.close().catch(() => {}); }
     };
-    if (target.hoverable) await exercise('hover', null, async (item) => { await item.hover({ timeout: 5000 }); });
+    if (target.hoverable) await exercise('hover', null, async (item, actionPage) => { await hoverWithPointerFallback(item, actionPage, 5000); });
     if (target.focusable) await exercise('focus', null, async (item) => { await item.focus({ timeout: 5000 }); });
     if (target.focusable) await exercise('focus-traversal', 'Tab', async (item, actionPage) => {
       await item.focus({ timeout: 5000 }); await actionPage.keyboard.press('Tab');

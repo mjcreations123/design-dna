@@ -22,9 +22,11 @@ not evidence that missing source coverage was completed.
 
 The default no-progress bound is 60 seconds and a screenshot is bounded to 30
 seconds. The observer's total budget is derived from its declared route
-scope: 15 minutes for the primary route and its states plus 8 minutes for each
-route at both profiles, so the default inner-route cap of six gives 71
-minutes, under a four-hour hard ceiling. The recorder keeps its 30-minute
+scope: 60 minutes for the primary route with its passes, scroll-hold
+traversal and states, plus 8 minutes for each route at both profiles, so the
+default inner-route cap of six gives 116 minutes, under a four-hour hard
+ceiling. A rich reference is an afternoon's study, not a coffee break; the
+alternative was a certain timeout. The recorder keeps its 30-minute
 default; its 90-second-per-profile minimum remains required and its requested
 dwell is capped at 600 seconds per profile to reserve processing time within
 the whole-command budget. Per-step bounds are derived from each step's own
@@ -39,7 +41,7 @@ order up to `--max-inner-routes` (default 6, never below 2, because the dossier
 needs two observed inner pages); every remaining discovered route is recorded
 as `unvisited_urls` beside the cap, and the validator accepts that record only
 when the cap was actually reached. A home page that links to fifteen routes is
-studied for about an hour, not for a working day. Raise the cap when a brief
+studied in about two hours, not over a working day. Raise the cap when a brief
 depends on deeper routes.
 
 Use one active study per source. Do not fan out duplicate observers while an

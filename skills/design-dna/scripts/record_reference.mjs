@@ -69,7 +69,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { applyManifestState, canonicalJson, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, inferAndReconcileStates, installDomInspection, interactionCensusDiagnostic, mergeSourceGestureInventories, mergeSourceRenderedQA,
-  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded } from "./browser_evidence.mjs";
+  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded, hoverWithPointerFallback, scrollIntoViewBounded } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, DEFAULT_SOURCE_STUDY_LIMITS, sourceStudyFailureStatus, sourceStudyPreflightFailure } from "./source_study_controller.mjs";
@@ -605,16 +605,31 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         let box = await target.boundingBox();
         if (visibleOnly && (!box || box.x + box.width <= 0 || box.y + box.height <= 0 ||
             box.x >= (page.viewportSize()?.width || 0) || box.y >= (page.viewportSize()?.height || 0))) continue;
-        if (!visibleOnly) { await target.scrollIntoViewIfNeeded(); box = await target.boundingBox(); }
+        if (!visibleOnly) { await scrollIntoViewBounded(target, 5000); box = await target.boundingBox(); }
         if (!box || box.width < 1 || box.height < 1) continue;
         const entry = { action: "hover", profile, page_url: page.url(), t_start: clock.now(),
           x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2),
           target: `${identity.tag} ${identity.text}`.trim() };
-        if (sourceStudy) {
-          await sourceStudy.step(`hover:${profile}`, () => target.hover({ timeout: 5000 }), {
+        // An unactionable target is a recorded outcome for that target, never
+        // a study failure: the step returns the outcome instead of throwing.
+        const hoverOnce = async () => {
+          try { return await hoverWithPointerFallback(target, page, 5000); }
+          catch (error) {
+            if (String(error?.code || '').startsWith('source-study-')) throw error;
+            return { mode: null, reason: String(error?.message || error).split('\n')[0].slice(0, 180) };
+          }
+        };
+        const hoverOutcome = sourceStudy
+          ? await sourceStudy.step(`hover:${profile}`, hoverOnce, {
             timeout_ms: 10_000, detail: { target_key: key }, abort: async () => { await page.context().close().catch(() => {}); },
-          });
-        } else await target.hover({ timeout: 5000 });
+          })
+          : await hoverOnce();
+        if (!hoverOutcome.mode) {
+          coverage.hover_failures.set(key, hoverOutcome.reason);
+          sourceStudy?.markEvent({ profile, kind: 'hover-unactionable', target_key: key, reason: hoverOutcome.reason });
+          continue;
+        }
+        entry.hover_mode = hoverOutcome.mode;
         await sleep(HOVER_DWELL_MS);
         entry.t_end = clock.now();
         await page.mouse.move(2, 2); await sleep(HOVER_SETTLE_MS); entry.t_left = clock.now();
@@ -725,6 +740,10 @@ async function runProfile(browser, args, stateContract, viewport) {
   const sourceStudy = createSourceStudyController({
     output_dir: args.out, id: `${args.id}-study`, profile: viewport.name, producer: 'record_reference.mjs', source_kind: 'public-source',
     started_epoch_ms: args.sourceStudyStartedAt,
+    // Every screencast frame is journaled (measured about 66 per second on a
+    // busy page), so the default 100k event budget is a few minutes, not a
+    // recording. The ceiling is the hard limit.
+    limits: { max_progress_events: 200_000 },
     required_completion_artifact_kinds: ['frame', 'video'],
     abort: async () => { await context.close().catch(() => {}); },
     partial_evidence: () => ({

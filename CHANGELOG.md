@@ -32,10 +32,24 @@ slot, which then blocked every later observation on the machine.
   (default 6, minimum 2) studies the primary route, every authored-state
   route, and inner routes in discovery order up to the cap, records the rest
   as `unvisited_urls` beside the cap, and derives its study budget from that
-  scope (15 min + 8 min per route; hard ceiling raised to four hours). The
+  scope (60 min for the primary route + 8 min per route; hard ceiling raised
+  to four hours). The
   validator accepts the record only when the cap was reached. Before this, a
   home page linking to fifteen routes meant hours per reference and a certain
   timeout; the 12.0.0 candidate could not observe such a site at all.
+- A hover over a visible element that never settles (House of Honey's
+  autoplaying video player) failed Playwright's stability check, and the
+  recorder turned that into a study failure. Both producers now fall back to
+  moving the real pointer to the element's center and record `hover_mode`;
+  a target that still cannot be hovered is a recorded outcome, not a
+  terminated study.
+- Every scroll-into-view before a hover or census input is bounded (5 s,
+  then a plain DOM scroll). Playwright's actionability wait never settles on
+  an element inside an autoplaying region; on House of Honey each such target
+  cost 30 s of silence while screencast frames kept the watchdog quiet, and
+  the recorder stalled for twelve minutes on one page. The recorder's
+  progress-event budget is the hard 200k, because it journals every screencast
+  frame (about 66 per second on a busy page).
 - The scroll-hold traversal and the interaction censuses in both producers
   carried fixed three-minute bounds; they are derived from their scope now.
 - The mechanism pass's bound is derived from its declared scope (240 settled

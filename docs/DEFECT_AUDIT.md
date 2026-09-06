@@ -432,6 +432,11 @@ was refused as `source-study-stale-runner-lease`. The documented recovery
   required discovered == visited. `houseofhoney.com` links to fifteen routes
   from its home page alone. Inner routes are now a declared, recorded scope
   (`--max-inner-routes`, default 6) and the budget is derived from it.
+- Unbounded `scrollIntoViewIfNeeded()` before hovers and census inputs, and a
+  hover step that terminated the study when Playwright refused an unstable
+  (autoplaying) target; screencast frame events kept the no-progress watchdog
+  quiet during the stall. Bounded with DOM fallbacks; hover falls back to a
+  real pointer move; the recorder's event budget is the hard ceiling.
 - The scroll-hold traversal's and the censuses' fixed three-minute bounds are
   derived from their scope.
 - The mechanism pass carried a fixed five-minute bound that its own declared

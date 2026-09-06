@@ -38,7 +38,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { STRUCTURE_SCRIPT } from "./structure_probe.mjs";
 import { applyManifestState, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, discoverUnaddressableClosedRoots, inferAndReconcileStates, installDomInspection, interactionCensusIncompleteError, mergeSourceGestureInventories, mergeSourceRenderedQA, navigateExact, normalizeHttpUrl,
-  traverseScrollSurfaces, validateManifestState, closeBrowserBounded } from "./browser_evidence.mjs";
+  traverseScrollSurfaces, validateManifestState, closeBrowserBounded, scrollIntoViewBounded } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, sourceStudyFailureStatus } from "./source_study_controller.mjs";
@@ -60,15 +60,19 @@ const TICK_SETTLE_MS = 650;
 // 240 positions x (650ms settle + up to ~2.1s loaded work) + pointer/media checks.
 const MECHANISM_PASS_TIMEOUT_MS = 240 * 2_750 + 60_000;
 // The scroll-hold traversal takes two bounded screenshots and one hold per
-// position (measured 5.4s per position inside a loaded study), for up to 240
-// positions.
-const SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * (HOLD_MS + 4_500) + 60_000;
+// position: measured 5.4s per position inside a quiet study and up to 9s
+// beside a recording on the same machine, for up to 240 positions. The
+// silence watchdog, not this number, catches a hung page.
+const SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * (HOLD_MS + 9_000) + 60_000;
 // An interaction census walks every discovered target on a page; the silence
 // watchdog, not this number, catches a hung page.
 const CENSUS_TIMEOUT_MS = 600_000;
 // The study budget is derived from its declared route scope: the primary
 // route with its states, plus each inner route at both profiles.
-const STUDY_BASE_BUDGET_MS = 15 * 60_000;
+// The primary route alone carries both mechanism passes, the scroll-hold
+// traversal, the authored states and their censuses: about an hour on a
+// rich site.
+const STUDY_BASE_BUDGET_MS = 60 * 60_000;
 const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
 const DEFAULT_MAX_INNER_ROUTES = 6;
 
@@ -1569,7 +1573,7 @@ async function observeMain(args) {
       const box = await sourceStudy.step('hover-preflight:wide-primary', async () => {
         try {
           if (!(await el.isVisible())) return null;
-          await el.scrollIntoViewIfNeeded(); await page.waitForTimeout(120);
+          await scrollIntoViewBounded(el, 5000); await page.waitForTimeout(120);
           return await el.boundingBox();
         } catch { return null; }
       }, {
