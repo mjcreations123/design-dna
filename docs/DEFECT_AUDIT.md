@@ -407,3 +407,37 @@ arbitrary write access from ignoring every tool. These checks validate their
 explicit evidence contracts and expose violations. Human quality judgments,
 owner acceptance, host-native behavior, remote CI, and publication status must
 be reported only from the evidence actually obtained.
+
+## 12.1.0 repairs (2026-09-06)
+
+Found by running the 12.0.0 observer against a live reference
+(`houseofhoney.com`, whose first screen is a full-screen animated overlay)
+three times: each run declared `source-study-screenshot-timeout` on a
+per-event callback frame, the timeout handler closed the browser context
+mid-study, `browser.close()` never returned, and the process sat holding a
+machine-wide runner slot, after which every later observation on the machine
+was refused as `source-study-stale-runner-lease`. The documented recovery
+("recover only that exact stale lease") had no packaged command.
+
+- Callback frames are advisory and bounded outside the controller; a surface
+  that appears is still captured and before/after frames are still required.
+- Browser close is bounded with a process kill fallback; both producers exit
+  after their result is written.
+- `scripts/source_study_leases.mjs` is the packaged inspect/recover command;
+  acquisition is unchanged and still never removes a lease.
+- Verified by a complete `observe_reference.mjs` run on the same reference
+  with the same state contract; see the 12.1.0 changelog entry.
+- The recursive site study visited every same-origin route at both profiles
+  with a full study each, inside a fixed 30-minute budget, and the validator
+  required discovered == visited. `houseofhoney.com` links to fifteen routes
+  from its home page alone. Inner routes are now a declared, recorded scope
+  (`--max-inner-routes`, default 6) and the budget is derived from it.
+- The scroll-hold traversal's and the censuses' fixed three-minute bounds are
+  derived from their scope.
+- The mechanism pass carried a fixed five-minute bound that its own declared
+  scope (240 settled positions) exceeds on a rich site inside the study; the
+  bound is now derived from that scope.
+- `tests/test_reference_dossier.py` was effectively unrunnable: one test took
+  253 s, 108 s of it hashing the same fixture frames eighteen times. One
+  top-level validation now reads each bound file once; nothing is kept
+  across validations.

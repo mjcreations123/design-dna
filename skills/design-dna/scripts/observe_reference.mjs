@@ -38,7 +38,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { STRUCTURE_SCRIPT } from "./structure_probe.mjs";
 import { applyManifestState, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, discoverUnaddressableClosedRoots, inferAndReconcileStates, installDomInspection, interactionCensusIncompleteError, mergeSourceGestureInventories, mergeSourceRenderedQA, navigateExact, normalizeHttpUrl,
-  traverseScrollSurfaces, validateManifestState } from "./browser_evidence.mjs";
+  traverseScrollSurfaces, validateManifestState, closeBrowserBounded } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, sourceStudyFailureStatus } from "./source_study_controller.mjs";
@@ -57,6 +57,20 @@ const HOLD_MS = 900;
 // parallax shows up as a trend across samples rather than a single jump
 const TICK_PX = 700;
 const TICK_SETTLE_MS = 650;
+// 240 positions x (650ms settle + up to ~2.1s loaded work) + pointer/media checks.
+const MECHANISM_PASS_TIMEOUT_MS = 240 * 2_750 + 60_000;
+// The scroll-hold traversal takes two bounded screenshots and one hold per
+// position (measured 5.4s per position inside a loaded study), for up to 240
+// positions.
+const SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * (HOLD_MS + 4_500) + 60_000;
+// An interaction census walks every discovered target on a page; the silence
+// watchdog, not this number, catches a hung page.
+const CENSUS_TIMEOUT_MS = 600_000;
+// The study budget is derived from its declared route scope: the primary
+// route with its states, plus each inner route at both profiles.
+const STUDY_BASE_BUDGET_MS = 15 * 60_000;
+const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
+const DEFAULT_MAX_INNER_ROUTES = 6;
 
 async function requireAddressableSourceStructure(page, profile, stateId = null, evidence = null) {
   const roots = await discoverUnaddressableClosedRoots(page);
@@ -81,7 +95,7 @@ function emitFailure(code, message, details = null) {
 function parseArgs(argv) {
   const out = { url: null, id: null, outDir: null,
     browserExecutable: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
-    label: null, stateContract: null, proofSource: false, sourceState: null };
+    label: null, stateContract: null, proofSource: false, sourceState: null, maxInnerRoutes: DEFAULT_MAX_INNER_ROUTES };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--url") out.url = argv[++i];
@@ -89,12 +103,13 @@ function parseArgs(argv) {
     else if (a === "--out") out.outDir = argv[++i];
     else if (a === "--label") out.label = argv[++i];
     else if (a === "--state-contract") out.stateContract = argv[++i];
+    else if (a === "--max-inner-routes") out.maxInnerRoutes = Number(argv[++i]);
     else if (a === "--proof-source") out.proofSource = true;
     else if (a === "--state") out.sourceState = argv[++i];
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
     else if (a === "--help" || a === "-h") {
       process.stdout.write(
-        "observe_reference.mjs --url URL --id ID --out DIR --state-contract FILE [--proof-source --state ID] [--label TEXT] [--browser-executable FILE]\n"
+        "observe_reference.mjs --url URL --id ID --out DIR --state-contract FILE [--max-inner-routes N] [--proof-source --state ID] [--label TEXT] [--browser-executable FILE]\n"
       );
       process.exit(0);
     } else fail("unknown-argument", `Unrecognized argument: ${a}`);
@@ -103,6 +118,9 @@ function parseArgs(argv) {
   if (!out.id || !/^[a-z][a-z0-9-]{0,47}$/.test(out.id)) fail("invalid-id", "--id must be a short lowercase slug, e.g. strong-1.");
   if (!out.outDir) fail("invalid-out", "--out must name a directory.");
   if (!out.stateContract) fail("state-contract-required", "--state-contract is required; source states may not be auto-named or guessed.");
+  if (!Number.isInteger(out.maxInnerRoutes) || out.maxInnerRoutes < 2) {
+    fail("invalid-max-inner-routes", "--max-inner-routes must be an integer of at least 2; the dossier needs at least two observed inner pages.");
+  }
   if (out.proofSource !== Boolean(out.sourceState)) fail("proof-state-required", "--proof-source requires one exact --state ID; --state is unavailable in public-source mode.");
   return out;
 }
@@ -594,9 +612,12 @@ async function boundedMechanismPass(page, sourceStudy, profile, phase) {
   if (!sourceStudy) return run();
   return sourceStudy.step(`mechanism-pass:${profile}:${phase}`, run, {
     // The measured scan permits 240 settled scroll positions plus pointer and
-    // media checks. The controller's hard five-minute cap encloses that known
-    // complete scope; the independent silence watchdog still aborts a hang.
-    timeout_ms: 300_000,
+    // media checks. One position costs the 650ms settle plus its probes, about
+    // 0.8s alone and 2-4s beside a surface watch or a loaded machine (measured
+    // on houseofhoney.com: 99s standalone, over 300s inside the study), so the
+    // cap must enclose 240 loaded positions, not five minutes. The independent
+    // silence watchdog still aborts an actually hung page within 60s.
+    timeout_ms: MECHANISM_PASS_TIMEOUT_MS,
     detail: { profile, phase },
     abort: async () => { await page.context().close().catch(() => {}); },
   });
@@ -819,10 +840,15 @@ export function mergeInteractionCensuses(profile, censuses) {
     truncated: false, missing, complete: missing.length === 0 && censuses.every((census) => census.complete && census.truncated === false) };
 }
 
-async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, captureEvidence, notes, sourceStudy = null) {
+async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, captureEvidence, notes, sourceStudy = null, innerRouteCap = Infinity) {
   const origin = new URL(primaryUrl).origin;
   const queue = [...new Set([normalizeHttpUrl(primaryUrl), ...authoredStates.map((state) => normalizeHttpUrl(state.url))])];
   const discovered = new Set(queue), visited = new Set();
+  // The primary route and every authored-state route are always studied. Inner
+  // routes are studied in discovery order up to the declared cap; the rest are
+  // recorded as unvisited so the boundary is part of the record, not a timeout.
+  const seedRoutes = new Set(queue);
+  let innerVisited = 0;
   const pages = [];
   const interactionCensuses = [];
   const renderedQARecords = [];
@@ -830,6 +856,10 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     if (discovered.size > 1000) throw new Error(`${profile}: more than 1000 recursive same-origin pages were discovered; traversal cannot be claimed complete.`);
     const url = queue.shift();
     if (visited.has(url)) continue;
+    if (!seedRoutes.has(url)) {
+      if (innerVisited >= innerRouteCap) continue;
+      innerVisited += 1;
+    }
     sourceStudy?.markRoute(url, { profile, phase: 'recursive-site' });
     const ambientSelectors = authoredStates.filter((state) => state.trigger?.type === 'ambient').map((state) => state.trigger.target);
     const earlyBaseline = await captureEvidence(`${profile}-early-before-navigation`, page);
@@ -902,7 +932,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
         captureEvidence };
       const interactionCensus = sourceStudy
         ? await sourceStudy.step(`interaction-census:${profile}:recursive-site`, () => captureInteractionCensus(page, censusOptions), {
-          timeout_ms: 180_000, detail: { url, pass: censusPass }, abort: async () => { await page.context().close().catch(() => {}); },
+          timeout_ms: CENSUS_TIMEOUT_MS, detail: { url, pass: censusPass }, abort: async () => { await page.context().close().catch(() => {}); },
         })
         : await captureInteractionCensus(page, censusOptions);
       if (!interactionCensus.complete || interactionCensus.truncated) {
@@ -937,11 +967,13 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
       throw error;
     }
   }
-  const missing = [...discovered].filter((url) => !visited.has(url));
+  const capReached = Number.isFinite(innerRouteCap) && innerVisited >= innerRouteCap;
   const interactionCensus = mergeInteractionCensuses(profile, interactionCensuses);
   const codeDiscoveredRoutes = [...new Set(interactionCensus.pages.flatMap((pageRecord) =>
     pageRecord.dom_code_inventory?.routes_discovered || []))].sort();
-  const codeRouteGaps = codeDiscoveredRoutes.filter((url) => !visited.has(url));
+  if (capReached) for (const url of codeDiscoveredRoutes) discovered.add(url);
+  const missing = [...discovered].filter((url) => !visited.has(url));
+  const codeRouteGaps = capReached ? [] : codeDiscoveredRoutes.filter((url) => !visited.has(url));
   interactionCensus.dom_code_reconciliation = { routes_discovered: codeDiscoveredRoutes,
     routes_visited: [...visited].sort(), missing_routes: codeRouteGaps,
     complete: codeRouteGaps.length === 0 && interactionCensus.pages.every((pageRecord) => pageRecord.dom_code_inventory?.complete === true) };
@@ -950,13 +982,17 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     interactionCensus.complete = false;
   }
   return { profile, origin, discovered_urls: [...discovered].sort(), visited_urls: [...visited].sort(),
-    missing_urls: missing, complete: missing.length === 0 && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
+    missing_urls: missing, unvisited_urls: [...missing].sort(),
+    inner_route_cap: Number.isFinite(innerRouteCap) ? innerRouteCap : null, inner_routes_visited: innerVisited,
+    complete: (missing.length === 0 || capReached) && pages.every((item) => item.scroll_traversal.complete) && interactionCensus.complete,
     pages, interaction_census: interactionCensus,
     rendered_qa: mergeSourceRenderedQA(profile, renderedQARecords),
     sheet: mergeMechanismSheets(pages.map((item) => ({ mechanisms: item.mechanisms, score: item.score }))) };
 }
 
-async function captureSourceStates(browser, contract, viewport, captureEvidence, notes, sourceStudy = null) {
+async function captureSourceStates(browser, contract, viewport, captureEvidence, notes, sourceStudy = null, captureCallbackEvidence = null) {
+  const softCallback = typeof captureCallbackEvidence === 'function'
+    ? (label, targetPage) => captureCallbackEvidence(targetPage, label) : undefined;
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   await installDomInspection(context);
   const page = await context.newPage();
@@ -969,6 +1005,7 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence,
       const earlyWatch = await armEarlySourceSurfaceWatch(page, {
         ambientSelectors, baseline: earlyBaseline, labelPrefix: `${viewport.name}-${state.id}-early-autonomous-surface`,
         captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+        captureCallbackEvidence: softCallback ? (label, targetPage = page) => softCallback(label, targetPage) : undefined,
       });
       const navigation = sourceStudy
         ? await sourceStudy.step(`navigate:${viewport.name}:source-state`, () => navigateExact(page, state.url), {
@@ -989,6 +1026,7 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence,
         authorizedConsent: consent.dismissed ? [consent] : [],
         labelPrefix: `${viewport.name}-${state.id}-autonomous-surface`,
         captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+        captureCallbackEvidence: softCallback ? (label, targetPage = page) => softCallback(label, targetPage) : undefined,
       });
       let surfaceWatchClosed = false, closedSurfaceWatchReport = null;
       const closeSurfaceWatch = async (error = null) => {
@@ -1047,7 +1085,7 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence,
          captureEvidence: (label, evidencePage = page) => captureEvidence(evidencePage, `${viewport.name}-${state.id}-${label}`) };
        const interactionCensus = sourceStudy
          ? await sourceStudy.step(`interaction-census:${viewport.name}:source-state`, () => captureInteractionCensus(page, censusOptions), {
-           timeout_ms: 180_000, detail: { state_id: state.id, url: state.url }, abort: async () => { await context.close().catch(() => {}); },
+           timeout_ms: CENSUS_TIMEOUT_MS, detail: { state_id: state.id, url: state.url }, abort: async () => { await context.close().catch(() => {}); },
          })
          : await captureInteractionCensus(page, censusOptions);
        for (const target of interactionCensus.pages.flatMap((pageRecord) => pageRecord.targets)) {
@@ -1298,6 +1336,7 @@ async function observeMain(args) {
   const page = await context.newPage();
   const sourceStudy = createSourceStudyController({
     output_dir: args.outDir, id: args.id, producer: 'observe_reference.mjs', source_kind: 'public-source',
+    limits: { max_total_elapsed_ms: STUDY_BASE_BUDGET_MS + STUDY_PER_ROUTE_BUDGET_MS * (1 + args.maxInnerRoutes) },
     required_completion_artifact_kinds: ['frame'],
     abort: async () => { await context.close().catch(() => {}); },
     partial_evidence: () => ({
@@ -1325,6 +1364,36 @@ async function observeMain(args) {
     const frame = await shotOn(targetPage, kind, note, viewport);
     return { ...frame, file: `${path.basename(frameDir)}/${frame.file}` };
   };
+  // Per-event callback frames are advisory context for a surface the watch
+  // already brackets with before/after frames. They are bounded here without
+  // the study controller: a slow frame on a full-screen animated overlay
+  // records a typed failure and the study continues. The buffer is written
+  // only on success, so a late frame never leaves an unledgered file.
+  const SOFT_CALLBACK_SHOT_MS = 12_000;
+  const softEvidenceShot = async (targetPage, kind, note, viewport) => {
+    n += 1;
+    const safeKind = String(kind).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+    const file = `${args.id}-${String(n).padStart(5, "0")}-${safeKind}.png`;
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(Object.assign(new Error(`callback frame exceeded ${SOFT_CALLBACK_SHOT_MS}ms`),
+        { code: 'callback-capture-timeout' })), SOFT_CALLBACK_SHOT_MS);
+    });
+    const pending = targetPage.screenshot();
+    pending.catch(() => {});
+    try {
+      const buf = await Promise.race([pending, timeout]);
+      fs.writeFileSync(path.join(frameDir, file), buf);
+      const rec = { seq: n, kind: safeKind, file, bytes: buf.length, sha256: sha(buf), viewport, note: note || null };
+      frames.push(rec);
+      sourceStudy.markFrame({ file: `${path.basename(frameDir)}/${file}`, sha256: rec.sha256, kind: safeKind });
+      return { ...rec, file: `${path.basename(frameDir)}/${file}` };
+    } catch (error) {
+      notes.push({ kind: 'callback-capture-failed', label: safeKind, code: error?.code || 'callback-capture-failed',
+        message: String(error?.message || error).slice(0, 300) });
+      throw error;
+    } finally { clearTimeout(timer); }
+  };
 
   try {
     const primaryAmbientSelectors = stateContract.payload.states.filter((state) => state.trigger?.type === 'ambient').map((state) => state.trigger.target);
@@ -1332,6 +1401,7 @@ async function observeMain(args) {
     const primaryEarlyWatch = await armEarlySourceSurfaceWatch(page, {
       ambientSelectors: primaryAmbientSelectors, baseline: primaryEarlyBaseline, labelPrefix: 'wide-primary-early-autonomous-surface',
       captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'wide early source-surface evidence', { width: 1440, height: 900 }),
+      captureCallbackEvidence: (label, targetPage = page) => softEvidenceShot(targetPage, label, 'wide early source-surface evidence', { width: 1440, height: 900 }),
     });
     sourceStudy.markRoute(args.url, { profile: 'wide', phase: 'primary-rest' });
     const primaryNavigation = await sourceStudy.step('navigate:wide:primary-rest', () => navigateExact(page, args.url), {
@@ -1351,6 +1421,7 @@ async function observeMain(args) {
       ambientSelectors: primaryAmbientSelectors, baseline: primarySurfaceBaseline,
       authorizedConsent: primaryConsent.dismissed ? [primaryConsent] : [], labelPrefix: 'wide-primary-autonomous-surface',
       captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'wide source-surface evidence', { width: 1440, height: 900 }),
+      captureCallbackEvidence: (label, targetPage = page) => softEvidenceShot(targetPage, label, 'wide source-surface evidence', { width: 1440, height: 900 }),
     });
     const closePrimarySurfaceWatch = async (phase) => {
       if (!primarySurfaceWatch) return null;
@@ -1401,6 +1472,7 @@ async function observeMain(args) {
     const narrowEarlyWatch = await armEarlySourceSurfaceWatch(narrowPage, {
       ambientSelectors: primaryAmbientSelectors, baseline: narrowEarlyBaseline, labelPrefix: 'narrow-primary-early-autonomous-surface',
       captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'narrow early source-surface evidence', { width: 390, height: 844 }),
+      captureCallbackEvidence: (label, targetPage = narrowPage) => softEvidenceShot(targetPage, label, 'narrow early source-surface evidence', { width: 390, height: 844 }),
     });
     sourceStudy.markRoute(args.url, { profile: 'narrow', phase: 'primary-rest' });
     const narrowNavigation = await sourceStudy.step('navigate:narrow:primary-rest', () => navigateExact(narrowPage, args.url), {
@@ -1419,6 +1491,7 @@ async function observeMain(args) {
       ambientSelectors: primaryAmbientSelectors, baseline: narrowSurfaceBaseline,
       authorizedConsent: narrowConsent.dismissed ? [narrowConsent] : [], labelPrefix: 'narrow-primary-autonomous-surface',
       captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'narrow source-surface evidence', { width: 390, height: 844 }),
+      captureCallbackEvidence: (label, targetPage = narrowPage) => softEvidenceShot(targetPage, label, 'narrow source-surface evidence', { width: 390, height: 844 }),
     });
     const narrowFirstScreen = await narrowPage.evaluate(STRUCTURE_SCRIPT);
     const narrowFrame = await shotOn(narrowPage, "narrow-rest", "narrow first screen at rest", { width: 390, height: 844 });
@@ -1462,7 +1535,7 @@ async function observeMain(args) {
        });
        sourceStudy.markEvent({ profile: 'wide', kind: 'scroll-hold', surface: surface.id, tick });
        mech.mechanisms.push(...(await checkAmbientVideo(page)));
-    } }), { timeout_ms: 180_000, detail: { phase: 'primary-scroll' }, abort: async () => { await context.close().catch(() => {}); } });
+    } }), { timeout_ms: SCROLL_TRAVERSAL_TIMEOUT_MS, detail: { phase: 'primary-scroll' }, abort: async () => { await context.close().catch(() => {}); } });
     if (!scrollHoldTraversal.complete) throw new Error("Scroll-hold capture did not fully traverse every scroll surface.");
     // one line per distinct video, not one per scroll step it was visible on
     {
@@ -1581,6 +1654,7 @@ async function observeMain(args) {
           labelPrefix: 'wide-transition-early-autonomous-surface',
           captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label,
             'wide transition early source-surface evidence', { width: 1440, height: 900 }),
+          captureCallbackEvidence: (label, targetPage = page) => softEvidenceShot(targetPage, label, 'wide transition early source-surface evidence', { width: 1440, height: 900 }),
         });
         sourceStudy.markRoute(href, { profile: 'wide', phase: 'primary-transition' });
         const transitionNavigation = await sourceStudy.step('navigate:wide:primary-transition', () => navigateExact(page, href, { timeout: 45000 }), {
@@ -1595,6 +1669,7 @@ async function observeMain(args) {
           labelPrefix: 'wide-transition-autonomous-surface',
           captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label,
             'wide transition source-surface evidence', { width: 1440, height: 900 }),
+          captureCallbackEvidence: (label, targetPage = page) => softEvidenceShot(targetPage, label, 'wide transition source-surface evidence', { width: 1440, height: 900 }),
         });
         await page.waitForTimeout(260);
         const during = await shot("transition-during", "shortly after navigation started");
@@ -1639,17 +1714,19 @@ async function observeMain(args) {
 
     const statesByViewport = {
       wide: await captureSourceStates(browser, stateContract.payload, { name: "wide", width: 1440, height: 900 },
-        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 1440, height: 900 }), notes, sourceStudy),
+        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 1440, height: 900 }), notes, sourceStudy,
+        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 1440, height: 900 })),
       narrow: await captureSourceStates(browser, stateContract.payload, { name: "narrow", width: 390, height: 844 },
-        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 390, height: 844 }), notes, sourceStudy),
+        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 390, height: 844 }), notes, sourceStudy,
+        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 390, height: 844 })),
     };
     const wideSiteTraversal = await studyRecursiveSite(page, args.url, "wide", stateContract.payload.states,
-      (label, evidencePage = page) => boundEvidenceShot(evidencePage, `wide-${label}`, "wide interaction-census evidence", { width: 1440, height: 900 }), notes, sourceStudy);
+      (label, evidencePage = page) => boundEvidenceShot(evidencePage, `wide-${label}`, "wide interaction-census evidence", { width: 1440, height: 900 }), notes, sourceStudy, args.maxInnerRoutes);
     const narrowSiteContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
     await installDomInspection(narrowSiteContext);
     const narrowSitePage = await narrowSiteContext.newPage();
     const narrowSiteTraversal = await studyRecursiveSite(narrowSitePage, args.url, "narrow", stateContract.payload.states,
-      (label, evidencePage = narrowSitePage) => boundEvidenceShot(evidencePage, `narrow-${label}`, "narrow interaction-census evidence", { width: 390, height: 844 }), notes, sourceStudy);
+      (label, evidencePage = narrowSitePage) => boundEvidenceShot(evidencePage, `narrow-${label}`, "narrow interaction-census evidence", { width: 390, height: 844 }), notes, sourceStudy, args.maxInnerRoutes);
     await narrowSiteContext.close();
     if (!wideSiteTraversal.complete || !narrowSiteTraversal.complete) throw new Error("Recursive wide+narrow site traversal is incomplete.");
 
@@ -1771,8 +1848,10 @@ async function observeMain(args) {
       captures_by_viewport: capturesByViewport,
       discovery_metadata: {
         wide: { discovered_urls: wideSiteTraversal.discovered_urls, visited_urls: wideSiteTraversal.visited_urls,
+          unvisited_urls: wideSiteTraversal.unvisited_urls, inner_route_cap: wideSiteTraversal.inner_route_cap,
           source_state_ids: Object.keys(statesByViewport.wide) },
         narrow: { discovered_urls: narrowSiteTraversal.discovered_urls, visited_urls: narrowSiteTraversal.visited_urls,
+          unvisited_urls: narrowSiteTraversal.unvisited_urls, inner_route_cap: narrowSiteTraversal.inner_route_cap,
           source_state_ids: Object.keys(statesByViewport.narrow) },
       },
       quality_observations: qualityObservations,
@@ -1852,15 +1931,21 @@ async function observeMain(args) {
     const summary = error?.census_diagnostic
       ? `${String(error.message)} Review the generated incomplete-census report; it is not selection evidence.`
       : String(error?.message || error).slice(0, 1000);
-    await browser.close().catch(() => {});
+    await closeBrowserBounded(browser);
     // Propagate only after retaining the failure artifact. The outer main()
     // finally owns both leases; process.exit here would strand its live slots.
     throw Object.assign(error, { message: summary, failure_report: failureReport });
   } finally {
-    await browser.close().catch(() => {});
+    await closeBrowserBounded(browser);
   }
 }
 
+function scheduleExitAfterSettle() {
+  // The study settled and both leases are released. If a stuck browser
+  // handle still keeps the event loop alive, exit with the recorded code;
+  // unref() means a clean run never waits on this timer.
+  setTimeout(() => process.exit(process.exitCode ?? 0), 3000).unref();
+}
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (invokedDirectly) main().catch((error) => emitFailure(error?.code || 'observation-failed', String(error?.message || error), {
   ...(error?.terminal_details || {}),
@@ -1869,4 +1954,4 @@ if (invokedDirectly) main().catch((error) => emitFailure(error?.code || 'observa
       failures: error.census_diagnostic.failures.length } : null,
   failure_report: error?.failure_report || null, source_study: error?.source_study || null,
   source_study_progress: error?.source_study_progress || null, source_study_failure: error?.source_study_failure || null,
-}));
+})).finally(scheduleExitAfterSettle);

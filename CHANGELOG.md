@@ -5,6 +5,56 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 12.1.0 - Development candidate
+
+Runtime repair. The 12.0.0 candidate could not finish observing a reference
+whose first screen is a full-screen animated overlay (House of Honey), and a
+failed observation could hang the process while holding a machine-wide runner
+slot, which then blocked every later observation on the machine.
+
+- Per-event callback frames on the source surface watch are advisory: taken
+  outside the study controller with a 12 s bound, capped at four per watch for
+  animation-tick events, and recorded as a typed skip or capture failure
+  instead of terminating the study. A surface that appears is still always
+  captured, and before/after frames are still required for every event.
+- `browser.close()` is bounded (15 s) and falls back to killing the browser
+  process. `observe_reference.mjs` and `record_reference.mjs` exit after their
+  result is written even if a stuck handle keeps the event loop alive, so
+  leases are released on every path.
+- Added `scripts/source_study_leases.mjs --list | --recover`, the packaged
+  explicit recovery the 12.0.0 docs promised. Acquisition still never removes
+  a lease; recovery removes only a lease whose owner PID is provably gone,
+  after a second probe and a token re-check, and appends a recovery log.
+- Reference floors are a combination again: at least four strong references,
+  three selected, one selected motion row, from at least two qualified
+  sources. Two sites is a pair, not a combination.
+- Inner routes are a declared scope: `observe_reference.mjs --max-inner-routes N`
+  (default 6, minimum 2) studies the primary route, every authored-state
+  route, and inner routes in discovery order up to the cap, records the rest
+  as `unvisited_urls` beside the cap, and derives its study budget from that
+  scope (15 min + 8 min per route; hard ceiling raised to four hours). The
+  validator accepts the record only when the cap was reached. Before this, a
+  home page linking to fifteen routes meant hours per reference and a certain
+  timeout; the 12.0.0 candidate could not observe such a site at all.
+- The scroll-hold traversal and the interaction censuses in both producers
+  carried fixed three-minute bounds; they are derived from their scope now.
+- The mechanism pass's bound is derived from its declared scope (240 settled
+  scroll positions at a measured 0.8 s alone and 2-4 s inside the study on a
+  loaded machine) instead of a fixed five minutes that a rich site exceeded on
+  its own; the 60 s silence watchdog remains the hang guard.
+- Within one top-level dossier validation the validator reads each bound
+  file once (a hash table scoped to that call, keyed on exact stat identity).
+  One validation hashed the same few thousand recording frames eighteen
+  times; a single dossier test took 253 s and the packaged suite could not
+  finish on the maintainer's machine. Nothing is remembered across
+  validations, so a same-size rewrite with a restored mtime is still re-read
+  by the next call.
+- `tests/test_browser_evidence_hardening.py` no longer depends on the working
+  directory.
+- The owner's global `CLAUDE.md` / `AGENTS.md` gate instruction named a
+  `--url` flag the gate does not have; corrected to the real
+  `--project / --build-id / --route-manifest / --phase` form.
+
 ## 12.0.0 - Development candidate
 
 Major revision of source evidence, construction authorization, and internal

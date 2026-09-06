@@ -407,6 +407,10 @@ Before selection, study every serious candidate as a complete accessible
 experience at wide and narrow widths: entry and home, relevant inner pages,
 navigation, the full content/task progression, applicable hover, focus, press,
 open, scroll, transition, media, ending, reset, error, and recovery states.
+The observer studies the primary route, every authored-state route, and inner
+routes in discovery order up to `--max-inner-routes` (default 6), records the
+rest as unvisited beside the cap, and derives its budget from that scope; raise
+the cap when a brief depends on deeper routes.
 Record a side-by-side candidate comparison, why each selection fits this exact
 brief, and the concrete rejection reason for every non-selected finalist.
 Determine the reference count from the project's route, component, and behavior

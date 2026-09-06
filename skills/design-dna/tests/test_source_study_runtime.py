@@ -204,6 +204,34 @@ class SourceStudyControllerRuntimeTests(unittest.TestCase):
         self.assertTrue(value["unchanged"])
         self.assertFalse(value["failure"]["detail"]["automatic_recovery"])
 
+    def test_explicit_recovery_removes_only_a_provably_dead_owner(self):
+        cli = json.dumps(str(SCRIPTS / "source_study_leases.mjs"))
+        value = node_json(f"const CLI={cli};" + """
+          const fs=await import('node:fs'),os=await import('node:os'),path=await import('node:path'),child=await import('node:child_process');
+          const root=fs.mkdtempSync(path.join(os.tmpdir(),'dna-lease-recovery-'));
+          const stopped=child.spawnSync(process.execPath,['-e',''],{encoding:'utf8'}).pid;
+          const leases=path.join(root,'leases');fs.mkdirSync(leases);
+          const dead=JSON.stringify({schema_version:1,pid:stopped,token:'dead-owner',id:'dead',producer:'fixture.mjs'});
+          const live=JSON.stringify({schema_version:1,pid:process.pid,token:'live-owner',id:'live',producer:'fixture.mjs'});
+          fs.writeFileSync(path.join(leases,'runner-1.json'),dead);fs.writeFileSync(path.join(leases,'runner-2.json'),live);
+          try {
+            const before=m.inspectSourceStudyLeases({lease_root:leases}).slots.map(s=>s.state);
+            const listed=JSON.parse(child.spawnSync(process.execPath,[CLI,'--list','--lease-root',leases],{encoding:'utf8'}).stdout);
+            const recovered=m.recoverStaleSourceStudyLeases({lease_root:leases});
+            const after=m.inspectSourceStudyLeases({lease_root:leases}).slots.map(s=>s.state);
+            const log=fs.existsSync(recovered.recovery_log)?fs.readFileSync(recovered.recovery_log,'utf8').trim().split('\\n').length:0;
+            process.stdout.write(JSON.stringify({before,listed:listed.slots.map(s=>s.state),recoveredSlots:recovered.recovered.map(s=>s.slot),
+              keptSlots:recovered.kept.map(s=>s.slot),after,liveUnchanged:fs.readFileSync(path.join(leases,'runner-2.json'),'utf8')===live,log}));
+          }finally{fs.rmSync(root,{recursive:true,force:true});}
+        """)
+        self.assertEqual(["stale-owner", "active-owner"], value["before"])
+        self.assertEqual(value["before"], value["listed"])
+        self.assertEqual([1], value["recoveredSlots"])
+        self.assertEqual([2], value["keptSlots"])
+        self.assertEqual(["free", "active-owner"], value["after"])
+        self.assertTrue(value["liveUnchanged"])
+        self.assertEqual(1, value["log"])
+
     def test_profile_transition_does_not_reset_command_deadline(self):
         value = node_json("""
           const fs=await import('node:fs'),os=await import('node:os'),path=await import('node:path');

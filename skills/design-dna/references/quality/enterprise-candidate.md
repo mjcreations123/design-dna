@@ -52,7 +52,7 @@ side-by-side candidate comparison and concrete rejection reasons; a documented
 count/coverage rationale and multiple qualified references from multiple sources; distinct full-page wide and
 narrow captures plus truthful motion/static evidence for each strong row; at
 least three brief-specific counterexamples; and a selected synthesis of at
-least two qualified references, with more whenever coverage requires them. A publicly visible gallery entry is eligible only for
+least four qualified references from at least two sources, with more whenever coverage requires them; two sites is a pair, not a combination. A publicly visible gallery entry is eligible only for
 what it exposes; a restricted entry is not. One selected source supplies the
 dominant grammar for each route, compatible mapped sources supply supporting
 moments, and no visible part comes from producer taste.

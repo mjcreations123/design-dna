@@ -69,7 +69,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { applyManifestState, canonicalJson, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, inferAndReconcileStates, installDomInspection, interactionCensusDiagnostic, mergeSourceGestureInventories, mergeSourceRenderedQA,
-  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState } from "./browser_evidence.mjs";
+  navigateExact, normalizeHttpUrl, traverseScrollSurfaces, validateManifestState, closeBrowserBounded } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
 import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, DEFAULT_SOURCE_STUDY_LIMITS, sourceStudyFailureStatus, sourceStudyPreflightFailure } from "./source_study_controller.mjs";
@@ -542,7 +542,7 @@ async function requireSafeConsent(page, options = {}) {
   if (!result.eligible) {
     const error = new Error(`Consent-like dialog requires owner-safe handoff before recording; no automatic choice was made (${result.reason || 'ambiguous-consent'}).`);
     error.code = 'consent-handoff-required'; error.consent_candidate = result;
-    await browser.close().catch(() => {});
+    await closeBrowserBounded(browser);
     throw error;
   }
   const capture = options.captureEvidence;
@@ -828,7 +828,7 @@ async function runProfile(browser, args, stateContract, viewport) {
         context: { phase: 'recording', source_state_id: stateId || baselineState?.id || null, pass },
         captureEvidence: (label, targetPage = page) => captureInteractionEvidence(label, targetPage, stateId) };
       const census = await sourceStudy.step(`interaction-census:${viewport.name}:recording`, () => captureInteractionCensus(page, censusOptions), {
-        timeout_ms: 180_000, detail: { page_url: pageUrl, state_id: stateId || baselineState?.id || null, pass },
+        timeout_ms: RECORDER_CENSUS_TIMEOUT_MS, detail: { page_url: pageUrl, state_id: stateId || baselineState?.id || null, pass },
         abort: async () => { await context.close().catch(() => {}); },
       });
       interactionCensuses.push(census);
@@ -878,7 +878,7 @@ async function runProfile(browser, args, stateContract, viewport) {
           await hoverAllTargets(page, log, clock, coverage, viewport.name, true, sourceStudy);
           event.t_end = clock.now(); log.push(event);
           sourceStudy.markEvent({ profile: viewport.name, kind: 'scroll', surface: surface.id, tick });
-        } }), { timeout_ms: 180_000, detail: { url: targetUrl }, abort: async () => { await context.close().catch(() => {}); } });
+        } }), { timeout_ms: RECORDER_SCROLL_TRAVERSAL_TIMEOUT_MS, detail: { url: targetUrl }, abort: async () => { await context.close().catch(() => {}); } });
       scrollTraversals.push({ url: targetUrl, ...traversal });
       const applicableStates = stateContract.states.filter((state) => normalizeHttpUrl(state.url) === targetUrl);
       const stateInventory = await inferAndReconcileStates(page, applicableStates);
@@ -1285,7 +1285,7 @@ async function recordMain(args) {
       }
     throw error;
   }
-  finally { await browser.close().catch(() => {}); }
+  finally { await closeBrowserBounded(browser); }
   const complete = profiles.every((profile) => profile.coverage.complete);
   const capturesByViewport = Object.fromEntries(profiles.map((profile) => [profile.profile,
     { file: profile.source_entry_capture.file, bytes: profile.source_entry_capture.bytes,
@@ -1391,6 +1391,18 @@ async function recordMain(args) {
   if (!complete) process.exitCode = 1;
 }
 
+// Bounds derived from scope, not from a fixed number: an interaction census
+// walks every discovered target, and a scroll traversal may take 240 settled
+// positions with per-position evidence. The silence watchdog catches a hang.
+const RECORDER_CENSUS_TIMEOUT_MS = 600_000;
+const RECORDER_SCROLL_TRAVERSAL_TIMEOUT_MS = 240 * 5_500 + 60_000;
+
+function scheduleExitAfterSettle() {
+  // The recording settled and both leases are released. If a stuck browser
+  // handle still keeps the event loop alive, exit with the recorded code;
+  // unref() means a clean run never waits on this timer.
+  setTimeout(() => process.exit(process.exitCode ?? 0), 3000).unref();
+}
 const invokedDirectly = process.argv[1]
   && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (invokedDirectly) main().catch((error) => {
@@ -1402,4 +1414,4 @@ if (invokedDirectly) main().catch((error) => {
     source_study_failure: error.source_study_failure || null,
     original_cause: error.original_cause || null } }, null, 2) + "\n");
   process.exitCode = 2;
-});
+}).finally(scheduleExitAfterSettle);

@@ -40,7 +40,10 @@ export const HARD_SOURCE_STUDY_LIMITS = Object.freeze({
   max_no_progress_ms: 300_000,
   max_step_ms: 300_000,
   max_screenshot_ms: 120_000,
-  max_total_elapsed_ms: 2_700_000,
+  // A complete study of a reference with six inner routes at two profiles
+  // costs well over an hour; the producer derives its budget from its declared
+  // route scope and this is the ceiling that derivation may reach.
+  max_total_elapsed_ms: 14_400_000,
   max_progress_events: 200_000,
   max_routes: 5_000,
   max_targets: 50_000,
@@ -586,7 +589,7 @@ export function acquireSourceStudyOutputLease(options) {
   }
   throw sourceStudyPreflightFailure(options, ownerAlive === false ? 'source-study-stale-output-lease' : 'source-study-output-busy',
     ownerAlive === false
-      ? `Source-study output for ${options.id} retains a stale lease. No lease was removed and no browser started; inspect the exact owner and recover the lease separately, or use a fresh output directory.`
+      ? `Source-study output for ${options.id} retains a stale lease. No lease was removed and no browser started; inspect the exact owner and recover the lease separately ("node scripts/source_study_leases.mjs --recover --output-lock <lock file>"), or use a fresh output directory.`
       : `Source-study output for ${options.id} is owned by another command; no browser or second evidence writer was started.`,
     { output_lock: file, observed_owner: owner, observed_owner_alive: ownerAlive, automatic_recovery: false });
 }
@@ -633,7 +636,67 @@ export function acquireSourceStudyRunnerLease(options) {
   }
   const stale = active.some((owner) => owner.observed_owner_alive === false);
   throw sourceStudyPreflightFailure(options, stale ? 'source-study-stale-runner-lease' : 'source-study-concurrency-limited',
-    stale ? 'The machine-wide source-study slots include a stale lease. No lease was removed and no browser launched; inspect and recover the exact stale lease separately.'
+    stale ? 'The machine-wide source-study slots include a stale lease. No lease was removed and no browser launched; inspect and recover the exact stale lease separately: "node scripts/source_study_leases.mjs --list", then "--recover" for a provably dead owner.'
       : 'Two source-study runner slots are occupied or have unverified ownership. No browser was launched; finish or inspect those runs before retrying.',
     { maximum_active_runners: 2, active_runners: active, automatic_recovery: false });
+}
+
+function describeSourceStudyLeaseFile(file, slot = null) {
+  if (!fs.existsSync(file)) return { slot, lease_file: file, state: 'free' };
+  try {
+    const stat = fs.lstatSync(file);
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.nlink !== 1) {
+      return { slot, lease_file: file, state: 'unverified-owner', reason: 'not a single-link ordinary file' };
+    }
+    const existing = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!Number.isInteger(existing.pid) || existing.pid < 1 || !existing.token) {
+      return { slot, lease_file: file, state: 'unverified-owner', reason: 'malformed owner record' };
+    }
+    let alive = true;
+    try { process.kill(existing.pid, 0); } catch (probe) { alive = probe.code !== 'ESRCH'; }
+    return { slot, lease_file: file, pid: existing.pid, id: existing.id || null, producer: existing.producer || null,
+      started_at: existing.started_at || null, token: existing.token,
+      observed_owner_alive: alive, state: alive ? 'active-owner' : 'stale-owner' };
+  } catch (error) {
+    return { slot, lease_file: file, state: 'unverified-owner', reason: String(error?.message || error).slice(0, 200) };
+  }
+}
+
+/** Read-only inspection of the machine-wide runner slots (and any named
+ * output locks). Nothing is created or removed. */
+export function inspectSourceStudyLeases(options = {}) {
+  const leaseRoot = options.lease_root || path.join(os.tmpdir(), 'design-dna-source-study-runners-v1');
+  const slots = [];
+  for (let slot = 1; slot <= 2; slot += 1) slots.push(describeSourceStudyLeaseFile(path.join(leaseRoot, `runner-${slot}.json`), slot));
+  const outputLocks = (options.output_locks || []).map((file) => describeSourceStudyLeaseFile(path.resolve(file)));
+  return { lease_root: leaseRoot, maximum_active_runners: 2, slots, output_locks: outputLocks };
+}
+
+/** Explicit recovery of leases whose owner PID is provably gone. Acquisition
+ * never does this. The owner is probed a second time and the file's token is
+ * re-read immediately before unlink, so a fresh owner that raced into the
+ * slot is never removed. Every removal is appended to a recovery log. */
+export function recoverStaleSourceStudyLeases(options = {}) {
+  const inspection = inspectSourceStudyLeases(options);
+  const recovered = [], kept = [];
+  for (const lease of [...inspection.slots, ...inspection.output_locks]) {
+    if (lease.state !== 'stale-owner') { kept.push(lease); continue; }
+    let alive = true;
+    try { process.kill(lease.pid, 0); } catch (probe) { alive = probe.code !== 'ESRCH'; }
+    if (alive) { kept.push({ ...lease, state: 'active-owner', observed_owner_alive: true }); continue; }
+    try {
+      const current = JSON.parse(fs.readFileSync(lease.lease_file, 'utf8'));
+      if (current.token !== lease.token) { kept.push({ ...lease, state: 'replaced-during-recovery' }); continue; }
+      fs.rmSync(lease.lease_file);
+      recovered.push({ ...lease, state: 'recovered' });
+    } catch (error) {
+      kept.push({ ...lease, state: 'recovery-failed', reason: String(error?.message || error).slice(0, 200) });
+    }
+  }
+  const log = path.join(inspection.lease_root, 'recovery-log.jsonl');
+  if (recovered.length) {
+    fs.mkdirSync(inspection.lease_root, { recursive: true });
+    fs.appendFileSync(log, JSON.stringify({ at: new Date().toISOString(), by_pid: process.pid, recovered }) + '\n');
+  }
+  return { ...inspection, recovered, kept, recovery_log: log };
 }

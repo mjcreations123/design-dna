@@ -1,4 +1,4 @@
-# Local host diagnostics — 12.0.0 candidate
+# Local host diagnostics — 12.1.0 candidate
 
 Recorded 2026-09-06 UTC on Windows. These are deliberately bounded local
 diagnostics, not protected host-evaluation or rendered-review promotion records.

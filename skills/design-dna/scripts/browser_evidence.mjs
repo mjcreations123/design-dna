@@ -2497,3 +2497,24 @@ export function aggregateServedContent(probes) {
     inconsistent_reloads: inconsistent, sha256: sha256Bytes(Buffer.from(canonicalJson(bindings), "utf8")),
     complete: inconsistent.length === 0 };
 }
+
+/** Close a Playwright browser within a bound. A hung close (a context torn
+ * down mid-screenshot) must not keep the process, and its machine-wide
+ * source-study slot, alive forever: after the bound the browser process is
+ * killed and the outcome is returned, never hidden. */
+export async function closeBrowserBounded(browser, timeoutMs = 15000) {
+  if (!browser) return { closed: false, reason: 'no-browser' };
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => resolve({ closed: false, reason: 'close-timeout', timeout_ms: timeoutMs }), timeoutMs);
+  });
+  const close = browser.close().then(() => ({ closed: true }),
+    (error) => ({ closed: false, reason: 'close-error', message: String(error?.message || error).slice(0, 300) }));
+  const outcome = await Promise.race([close, timeout]);
+  clearTimeout(timer);
+  if (!outcome.closed) {
+    try { browser.process()?.kill('SIGKILL'); outcome.killed = true; }
+    catch (error) { outcome.killed = false; outcome.kill_error = String(error?.message || error).slice(0, 200); }
+  }
+  return outcome;
+}

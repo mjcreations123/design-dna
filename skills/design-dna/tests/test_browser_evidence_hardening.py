@@ -1776,7 +1776,7 @@ class ProducerContractTests(unittest.TestCase):
         value = node_value(
             "record_reference.mjs",
             "(async () => {"
-            "const fs=await import('node:fs'); const os=await import('node:os'); const path=await import('node:path'); const study=await import(new URL('./skills/design-dna/scripts/source_study_controller.mjs',import.meta.url));"
+            f"const fs=await import('node:fs'); const os=await import('node:os'); const path=await import('node:path'); const study=await import({json.dumps((SCRIPTS / 'source_study_controller.mjs').resolve().as_uri())});"
             "const limits={max_no_progress_ms:50,max_step_ms:1000,max_screenshot_ms:1000,max_total_elapsed_ms:1000,max_progress_events:1000,max_routes:10,max_targets:10,max_target_edges:10,max_consecutive_target_repeats:3,max_total_target_visits_per_key:5,max_repeated_target_edge_visits:5}; const activeLimits={...limits,max_no_progress_ms:200};"
             "const root=fs.mkdtempSync(path.join(os.tmpdir(),'dna-postprocess-')); const child=process.execPath;"
             "try { const active=study.createSourceStudyController({output_dir:path.join(root,'active'),id:'active',producer:'record_reference.mjs',limits:activeLimits,partial_evidence:()=>null});"
@@ -1790,6 +1790,31 @@ class ProducerContractTests(unittest.TestCase):
         self.assertEqual("source-study-no-progress", value["silentCode"])
         self.assertEqual("failed", value["silentStatus"])
         self.assertTrue(value["failure"])
+
+    def test_callback_frames_are_advisory_only_for_animation_ticks(self) -> None:
+        value = node_value(
+            "source_surface_watch.mjs",
+            "(() => { const frame = { file: 'x.png', bytes: 10, sha256: 'ab' };"
+            " const skip = { skipped: 'callback-capture-cap', cap: m.SOURCE_SURFACE_CALLBACK_CAPTURE_CAP };"
+            " const failed = { capture_failed: { code: 'callback-capture-timeout', message: 'slow' } };"
+            " const evented = (kind, callback) => ({ kind, evidence: { before: frame, callback, after: frame } });"
+            " return { cap: m.SOURCE_SURFACE_CALLBACK_CAPTURE_CAP,"
+            " animationSkip: m.callbackEvidenceAcceptable(evented('surface-css-animation-event', skip)),"
+            " animationFailed: m.callbackEvidenceAcceptable(evented('surface-waapi-active', failed)),"
+            " animationFrame: m.callbackEvidenceAcceptable(evented('surface-pseudo-animation-event', frame)),"
+            " appearedSkip: m.callbackEvidenceAcceptable(evented('autonomous-surface-appeared', skip)),"
+            " appearedFailed: m.callbackEvidenceAcceptable(evented('autonomous-surface-appeared', failed)),"
+            " appearedNull: m.callbackEvidenceAcceptable(evented('autonomous-surface-appeared', null)),"
+            " animationNull: m.callbackEvidenceAcceptable(evented('surface-css-animation-event', null)) }; })()",
+        )
+        self.assertEqual(4, value["cap"])
+        self.assertTrue(value["animationSkip"])
+        self.assertTrue(value["animationFailed"])
+        self.assertTrue(value["animationFrame"])
+        self.assertFalse(value["appearedSkip"])
+        self.assertFalse(value["appearedFailed"])
+        self.assertFalse(value["appearedNull"])
+        self.assertFalse(value["animationNull"])
 
     def test_undocumented_late_autonomous_surface_is_a_source_failure(self) -> None:
         report = {

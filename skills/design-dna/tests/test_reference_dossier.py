@@ -3206,18 +3206,30 @@ class ReferenceDossierTests(unittest.TestCase):
             self.assertTrue(any("exactly the selected" in item for item in problems), problems)
 
     def test_two_distinct_qualified_sources_with_real_coverage_can_pass_without_count_padding(self) -> None:
+        # Two SOURCES is the floor; the strong set itself is four or more sites.
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            sources = [DEFAULT_SOURCES[0], DEFAULT_SOURCES[2]]
+            strong = [fixture.strong_row(rank, source=sources[(rank - 1) % 2]) for rank in (1, 2, 3, 4)]
+            compared = [fixture.candidate_row(rank, source=sources[(rank - 1) % 2], selected=True) for rank in (1, 2, 3)]
+            compared.append(fixture.candidate_row(4, source=sources[1], selected=False))
+            compared.append(fixture.candidate_row(5, source=DEFAULT_SOURCES[4], selected=False, host="rejected-five.example.test"))
+            components = []
+            for index, name in enumerate(REQUIRED_COMPONENTS):
+                rank = 1 if name in {"first screen", "display typeface"} or name in BEHAVIOUR_COMPONENTS else 2
+                components.append(f"| {name} | {rank} | {SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else f'strong-{rank}-frames/strong-{rank}-001-rest.png'} | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |")
+            body = fixture.body(selected="1, 2, 3", strong_rows=strong, candidate_rows=compared, component_rows=components)
+            self.assertEqual([], fixture.failures(body))
+
+    def test_two_strong_references_are_a_pair_not_a_combination(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)
             sources = [DEFAULT_SOURCES[0], DEFAULT_SOURCES[2]]
             strong = [fixture.strong_row(rank, source=sources[rank - 1]) for rank in (1, 2)]
             compared = [fixture.candidate_row(rank, source=sources[rank - 1], selected=True) for rank in (1, 2)]
             compared.append(fixture.candidate_row(3, source=DEFAULT_SOURCES[4], selected=False, host="rejected-three.example.test"))
-            components = []
-            for index, name in enumerate(REQUIRED_COMPONENTS):
-                rank = 1 if name in {"first screen", "display typeface"} or name in BEHAVIOUR_COMPONENTS else 2
-                components.append(f"| {name} | {rank} | {SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else f'strong-{rank}-frames/strong-{rank}-001-rest.png'} | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |")
-            body = fixture.body(selected="1, 2", strong_rows=strong, candidate_rows=compared, component_rows=components)
-            self.assertEqual([], fixture.failures(body))
+            body = fixture.body(selected="1, 2", strong_rows=strong, candidate_rows=compared)
+            self.assertTrue(fixture.failures(body))
 
     def test_selected_candidate_review_blocks_generic_self_flags_and_mismatch_in_v2(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

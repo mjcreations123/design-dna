@@ -16,6 +16,8 @@ from __future__ import annotations
 import argparse
 import binascii
 import errno
+import contextlib
+import contextvars
 import hashlib
 import importlib.util
 import json
@@ -1952,7 +1954,43 @@ def assert_safe_tree(root: Path) -> None:
                 )
 
 
+# One top-level validation re-reads the same artifact many times: every
+# section that binds a recording ledger hashes every frame in it, eighteen
+# times over for one dossier. Within ONE validation call each file is read
+# once; the table lives only for that call and is keyed on the file's exact
+# stat identity (path, device, inode, size, mtime in nanoseconds), so a file
+# that changes during the call is hashed again. Nothing is remembered across
+# validations: metadata is never content identity between calls, and a
+# same-size rewrite with a restored mtime is re-read by the next validation.
+_VALIDATION_HASH_SCOPE: contextvars.ContextVar[dict | None] = contextvars.ContextVar(
+    "design_dna_validation_hash_scope", default=None
+)
+
+
+@contextlib.contextmanager
+def _validation_hash_scope():
+    if _VALIDATION_HASH_SCOPE.get() is not None:
+        yield
+        return
+    token = _VALIDATION_HASH_SCOPE.set({})
+    try:
+        yield
+    finally:
+        _VALIDATION_HASH_SCOPE.reset(token)
+
+
 def file_sha256(path: Path) -> tuple[int, str]:
+    memo = _VALIDATION_HASH_SCOPE.get()
+    key = None
+    if memo is not None:
+        try:
+            stat = os.stat(path)
+            key = (str(path), stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns)
+            cached = memo.get(key)
+            if cached is not None:
+                return cached
+        except OSError:
+            key = None
     digest = hashlib.sha256()
     size = 0
     try:
@@ -1969,7 +2007,10 @@ def file_sha256(path: Path) -> tuple[int, str]:
             str(exc),
             path=path,
         ) from exc
-    return size, digest.hexdigest()
+    result = (size, digest.hexdigest())
+    if key is not None and memo is not None:
+        memo[key] = result
+    return result
 
 
 def verify_png_artifact(path: Path) -> tuple[int, int]:
@@ -6055,13 +6096,17 @@ REFERENCE_ENTRY_ACCESS = {
     "authorized-account",
 }
 # The reference count is a floor with a reason, not a quota: enough
-# independent sources that no single site becomes the template.
-REFERENCE_MINIMUM_STRONG = 2
-REFERENCE_MINIMUM_CANDIDATES = 3
+# independent sources that no single site becomes the template. Two sites is
+# a pair, not a combination; the owner's standing rule (2026-09-02) is four
+# or more, and a build that combines three still reads as its sources. The
+# floor is never met by padding: a candidate that fails the brief or the
+# mechanism gate is rejected, and the producer keeps researching.
+REFERENCE_MINIMUM_STRONG = 4
+REFERENCE_MINIMUM_CANDIDATES = 5
 REFERENCE_MINIMUM_REJECTED_CANDIDATES = 1
 REFERENCE_MINIMUM_SOURCES = 2
 REFERENCE_MINIMUM_NEGATIVE = 3
-REFERENCE_MINIMUM_SELECTED = 2
+REFERENCE_MINIMUM_SELECTED = 3
 REFERENCE_MINIMUM_SELECTED_SOURCES = 2
 REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 # Two held scroll positions is the floor at which a producer can tell an
@@ -6073,9 +6118,10 @@ REFERENCE_OBSERVATION_SCHEMA = 5
 # Below that it is a thin site, and a thin reference teaches a thin design.
 REFERENCE_MECHANISM_MIN_DISTINCT = 3
 REFERENCE_MECHANISM_MIN_COVERAGE = 0.5
-# Most of the selected set has to do something; a build cannot take its
-# behavior from references that have none.
-REFERENCE_MINIMUM_SELECTED_MOTION = 0
+# The selected set has to do something; a build cannot take its behavior
+# from references that have none. A site that barely moves can still be
+# selected for its signature, but not the whole set.
+REFERENCE_MINIMUM_SELECTED_MOTION = 1
 # A signature is what a site does. A cell with none of these is describing a
 # subject, a palette or a mood, which is the sidewalk and not the falls.
 REFERENCE_SIGNATURE_VERBS = re.compile(
@@ -14096,9 +14142,7 @@ def route_manifest_reference_failures(
                 visited_urls = discovery_entry.get("visited_urls")
                 source_state_ids = discovery_entry.get("source_state_ids")
                 if (
-                    not isinstance(discovered_urls, list)
-                    or not discovered_urls
-                    or discovered_urls != visited_urls
+                    not discovery_route_scope_complete(discovery_entry)
                     or not isinstance(source_state_ids, list)
                     or set(source_state_ids) != contract_ids
                 ):
@@ -14283,7 +14327,48 @@ def selected_cohort_failures(project: Path, *, mapping_payload: dict[str, object
         return [f"Selected source cohort is not ready for construction: {exc}"]
 
 
+def discovery_route_scope_complete(entry: object) -> bool:
+    """A profile's recursive discovery is complete when every discovered
+    same-origin route was visited, or when the observer declared an inner-route
+    cap, visited the primary route plus at least that many inner routes, and
+    recorded every remaining discovered route as unvisited. A cap is a declared
+    scope with its boundary in the record; a timeout is not."""
+    if not isinstance(entry, dict):
+        return False
+    discovered = entry.get("discovered_urls")
+    visited = entry.get("visited_urls")
+    if not isinstance(discovered, list) or not discovered or not isinstance(visited, list) or not visited:
+        return False
+    if discovered == visited:
+        return True
+    cap = entry.get("inner_route_cap")
+    unvisited = entry.get("unvisited_urls")
+    if isinstance(cap, bool) or not isinstance(cap, int) or cap < 2 or not isinstance(unvisited, list):
+        return False
+    visited_set, unvisited_set = set(visited), set(unvisited)
+    if visited_set & unvisited_set or (visited_set | unvisited_set) != set(discovered):
+        return False
+    return len(visited_set) >= cap + 1
+
+
 def reference_dossier_failures(
+    body: str,
+    *,
+    project: Path,
+    record_path: Path,
+    selection_only: bool = False,
+) -> list[str]:
+    """Validate captured, source-spread, brief-fit reference research.
+
+    One validation reads each bound file once; see _validation_hash_scope.
+    """
+    with _validation_hash_scope():
+        return _reference_dossier_failures_uncached(
+            body, project=project, record_path=record_path, selection_only=selection_only,
+        )
+
+
+def _reference_dossier_failures_uncached(
     body: str,
     *,
     project: Path,

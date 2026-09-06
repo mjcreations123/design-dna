@@ -20,6 +20,26 @@ export const SOURCE_SURFACE_EVENT_KINDS = new Set([
   'surface-pseudo-animation-event', 'surface-waapi-active',
   'surface-state-updated', 'uninspectable-cross-origin-frame',
 ]);
+// Animation ticks on one surface repeat. After this many per-event callback
+// frames on a watch, later animation-kind events keep their before/after
+// frames and record a typed skip instead of another full screenshot. A
+// surface that APPEARS is always captured.
+export const SOURCE_SURFACE_CALLBACK_CAPTURE_CAP = 4;
+export const SOURCE_SURFACE_ANIMATION_EVENT_KINDS = new Set([
+  'surface-css-animation-event', 'surface-pseudo-animation-event', 'surface-waapi-active',
+]);
+/** A callback frame is advisory for an animation tick the watch already
+ * brackets with before/after frames; a typed cap-skip or a typed capture
+ * failure is acceptable there and nowhere else. */
+export function callbackEvidenceAcceptable(event) {
+  const callback = event?.evidence?.callback;
+  if (generatedEvidence(callback)) return true;
+  if (!SOURCE_SURFACE_ANIMATION_EVENT_KINDS.has(event?.kind)) return false;
+  if (!callback || typeof callback !== 'object') return false;
+  if (callback.skipped === 'callback-capture-cap' && Number.isInteger(callback.cap)) return true;
+  if (callback.capture_failed && typeof callback.capture_failed.code === 'string') return true;
+  return false;
+}
 // 50ms is stricter than the recorder's 15fps / 66.67ms floor. The watcher is
 // source evidence, so a delayed timer sample is recorded and fails rather
 // than quietly stretching a claimed continuous interval.
@@ -202,7 +222,7 @@ export function sourceSurfaceWatchFailures(report) {
         !(event.surface === null || (typeof event.surface === 'object' && !Array.isArray(event.surface))) ||
         !event.detail || typeof event.detail !== 'object' || Array.isArray(event.detail) ||
         !event.evidence || typeof event.evidence !== 'object' ||
-        !generatedEvidence(event.evidence.before) || !generatedEvidence(event.evidence.callback) ||
+        !generatedEvidence(event.evidence.before) || !callbackEvidenceAcceptable(event) ||
         !generatedEvidence(event.evidence.after)) {
       failures.push(`source surface event ${event?.event_id || '(unnamed)'} lacks the exact event/evidence contract`);
       continue;
@@ -238,11 +258,24 @@ async function registerCallback(page, watchId, options) {
       if (!watch) return;
       const work = (async () => {
         let callbackEvidence = null;
-        if (typeof watch.captureEvidence === 'function') {
-          callbackEvidence = await watch.captureEvidence(
-            `${watch.labelPrefix || 'autonomous-surface'}-${payload.event?.event_id || 'unknown'}-callback`,
-            eventPage,
-          );
+        const kind = payload.event?.kind || null;
+        const label = `${watch.labelPrefix || 'autonomous-surface'}-${payload.event?.event_id || 'unknown'}-callback`;
+        const capture = typeof watch.captureCallbackEvidence === 'function' ? watch.captureCallbackEvidence : watch.captureEvidence;
+        if (typeof capture === 'function') {
+          if (SOURCE_SURFACE_ANIMATION_EVENT_KINDS.has(kind) && watch.callbackCaptures >= SOURCE_SURFACE_CALLBACK_CAPTURE_CAP) {
+            callbackEvidence = { skipped: 'callback-capture-cap', cap: SOURCE_SURFACE_CALLBACK_CAPTURE_CAP,
+              captured_callbacks: watch.callbackCaptures, kind };
+          } else {
+            try {
+              callbackEvidence = await capture(label, eventPage);
+              if (generatedEvidence(callbackEvidence)) watch.callbackCaptures += 1;
+            } catch (error) {
+              // A callback frame that cannot be taken must not end the study.
+              // The drain decides whether this event kind can stand without it.
+              callbackEvidence = { capture_failed: { code: error?.code || 'callback-capture-failed',
+                message: String(error?.message || error).slice(0, 300) }, kind };
+            }
+          }
         }
         watch.callbackEvents.push({ event_id: payload.event?.event_id || null, callback_evidence: callbackEvidence });
       })();
@@ -252,10 +285,16 @@ async function registerCallback(page, watchId, options) {
     PAGE_CALLBACK_REGISTRIES.set(page, registry);
   }
   const existing = registry.watches.get(watchId);
-  if (existing) return { registry, ...existing };
+  if (existing) {
+    if (typeof options.captureEvidence === 'function') existing.captureEvidence = options.captureEvidence;
+    if (typeof options.captureCallbackEvidence === 'function') existing.captureCallbackEvidence = options.captureCallbackEvidence;
+    if (options.labelPrefix) existing.labelPrefix = options.labelPrefix;
+    return { registry, ...existing };
+  }
   const callbackEvents = [], callbackPending = [];
-  registry.watches.set(watchId, { callbackEvents, callbackPending,
-    captureEvidence: options.captureEvidence, labelPrefix: options.labelPrefix });
+  registry.watches.set(watchId, { callbackEvents, callbackPending, callbackCaptures: 0,
+    captureEvidence: options.captureEvidence, captureCallbackEvidence: options.captureCallbackEvidence,
+    labelPrefix: options.labelPrefix });
   return { registry, callbackEvents, callbackPending };
 }
 
