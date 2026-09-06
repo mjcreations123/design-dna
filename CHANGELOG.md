@@ -85,6 +85,10 @@ slot, which then blocked every later observation on the machine.
   streaming frames for a quarter of an hour. Locator reads on the recorder's
   and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
   locator whose element the page has replaced otherwise waits 30 s each.
+- The recorder dedupes hover targets by what they are (frame, tag, text,
+  size), not by the node id a re-rendering page hands out anew at every scroll
+  position; its per-position hover pass is capped at 6 s and the locator
+  stability wait before the pointer fallback is 1.5 s (2 s in the census).
 - The recorder's hover pass lists a frame's live targets in one in-page round
   trip and hovers only visible targets not yet hovered, by a fresh locator on
   the target's own id. It used to walk a snapshot of nth-locators and wait out

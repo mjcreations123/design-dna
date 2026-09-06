@@ -2,23 +2,23 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "12.1.0",
-  "distribution_sha256": "023c4b5c749f244b00270519b70e12cf7573be3e5072b39300b5a9a1140103e7",
-  "content_sha256": "b2ebc302923abc76e14e4613e2310cf73836c3784fd81b9c590ba8db7dee8124",
+  "distribution_sha256": "a2343c805e475d59fe5985ee67b2e007f5fe5a86cb9f1b2abb33cce9a8ce5eed",
+  "content_sha256": "750c8354e88eb2a18997d8d5fa2ddfa71a532a14351eb836484aa45d25a9a966",
   "codex_plugin_manifest_sha256": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
   "claude_plugin_manifest_sha256": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-  "sbom_sha256": "8633bf0bdb3dd81f68ff52f0df7ecbf3d038a1aa7d3f3a37023665aaf0c81dda",
+  "sbom_sha256": "a3619a076e668d2a4fbb512778c86a32837867a45da4625715bffec13dfbe141",
   "compatibility_matrix_sha256": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "023c4b5c749f244b00270519b70e12cf7573be3e5072b39300b5a9a1140103e7",
-    "runtime": "b2ebc302923abc76e14e4613e2310cf73836c3784fd81b9c590ba8db7dee8124",
+    "distribution_tree": "a2343c805e475d59fe5985ee67b2e007f5fe5a86cb9f1b2abb33cce9a8ce5eed",
+    "runtime": "750c8354e88eb2a18997d8d5fa2ddfa71a532a14351eb836484aa45d25a9a966",
     "codex_plugin_manifest": "b82cc03613019f37b69273016fe6b667a458e5e62e5d00797ba32f0d21c8e8bf",
     "claude_plugin_manifest": "cc4c30aea6a9a5d7e177476e8365560967980d5727a88d686e3657e3f2efa860",
-    "sbom": "8633bf0bdb3dd81f68ff52f0df7ecbf3d038a1aa7d3f3a37023665aaf0c81dda",
+    "sbom": "a3619a076e668d2a4fbb512778c86a32837867a45da4625715bffec13dfbe141",
     "compatibility_matrix": "04fcdbdab54c9b3b59abf44588ac89ee098d37cbffc1afd84559c45414002c1e",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "8bfa939092fee3e73122213e2ec588bb6b112f80e68a3fd8d0a361c6719a4004",
-    "distribution_docs": "dee6078ae794d8e36fb1177f603a986c1c12feb52a8a202ac31ca9782787fbb1",
+    "distribution_docs": "f98a9a9edcf41cd19042b16ffe42ef64454643701419f03c6078a6992c6163fc",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,8 +26,8 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "d8515b665bce3fd66ea5f30cdd53761ea7461395ef29cb1383ac266ebf67c9f0",
-  "generated_at": "2026-09-06T23:26:22.446917+00:00",
+  "release_sha256": "c702f9d5f572936c61dcc8c96efb77a350257e412a3fac3c9fb4493bf31e47d2",
+  "generated_at": "2026-09-06T23:49:06.371924+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -759,7 +759,7 @@
       "path": "scripts/browser_evidence.mjs",
       "type": "file",
       "size": 178228,
-      "sha256": "355408e1c7e275b82ab6ed4f171f9268479a9d7e0b117ee1061b45e6e558dcf2"
+      "sha256": "ca1e232a7202f1b3791280f93a7fb5a66e24c146dcca33608cfa4d622462fe3b"
     },
     {
       "path": "scripts/browser_preflight.mjs",
@@ -956,8 +956,8 @@
     {
       "path": "scripts/record_reference.mjs",
       "type": "file",
-      "size": 95771,
-      "sha256": "b391b90bb77ef5dd571b544a1fd87d8583eae79a241660f90be9d0ebe99a7056"
+      "size": 96407,
+      "sha256": "8e0cef586a79aebc4eeb29f88a6f8be1432809cfcbac66081d129aa6ebb76ee0"
     },
     {
       "path": "scripts/rendered_font_delivery.mjs",
@@ -1576,8 +1576,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 117404,
-      "sha256": "bf183653f300114b8dedd6519606762915c991516650b1740069d9a5f0c6195d"
+      "size": 117704,
+      "sha256": "95135c3e2159d86c19c5afed68e6090ee83b252f04e8f7af98629cda895367e7"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -3917,7 +3917,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "8633bf0bdb3dd81f68ff52f0df7ecbf3d038a1aa7d3f3a37023665aaf0c81dda"
+      "sha256": "a3619a076e668d2a4fbb512778c86a32837867a45da4625715bffec13dfbe141"
     },
     {
       "path": "maintainer/schemas",
@@ -5381,7 +5381,7 @@
       "path": "skills/design-dna/scripts/browser_evidence.mjs",
       "type": "file",
       "size": 178228,
-      "sha256": "355408e1c7e275b82ab6ed4f171f9268479a9d7e0b117ee1061b45e6e558dcf2"
+      "sha256": "ca1e232a7202f1b3791280f93a7fb5a66e24c146dcca33608cfa4d622462fe3b"
     },
     {
       "path": "skills/design-dna/scripts/browser_preflight.mjs",
@@ -5578,8 +5578,8 @@
     {
       "path": "skills/design-dna/scripts/record_reference.mjs",
       "type": "file",
-      "size": 95771,
-      "sha256": "b391b90bb77ef5dd571b544a1fd87d8583eae79a241660f90be9d0ebe99a7056"
+      "size": 96407,
+      "sha256": "8e0cef586a79aebc4eeb29f88a6f8be1432809cfcbac66081d129aa6ebb76ee0"
     },
     {
       "path": "skills/design-dna/scripts/rendered_font_delivery.mjs",

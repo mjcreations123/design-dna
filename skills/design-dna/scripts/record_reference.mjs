@@ -584,7 +584,7 @@ async function markPointerTargets(frame) {
 // A visible-only hover pass runs at every scroll position. On a page whose
 // carousels replace their anchors every second, a stale locator costs its
 // whole bound; the pass is capped per position and the cap is journaled.
-const VISIBLE_HOVER_PASS_MS = 20_000;
+const VISIBLE_HOVER_PASS_MS = 6_000;
 
 async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly = false, sourceStudy = null) {
   const selector = 'a[href],button,[role="button"],input,select,textarea,summary,[onclick],[tabindex],[data-dna-record-pointer]';
@@ -624,6 +624,11 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
       const key = `${normalizeHttpUrl(page.url())}|${frame.url()}|${item.id}`;
       coverage.discovered.add(key);
       if (coverage.hovered.has(key)) continue;
+      // A page that re-renders its anchors hands out new ids for the same
+      // control at every scroll position; the control is the same and has
+      // been hovered. Dedupe by what it is, not by which node carries it.
+      const contentKey = `${frame.url()}|${item.tag}|${item.text}|${Math.round(item.box.width)}x${Math.round(item.box.height)}`;
+      if (coverage.hoveredContent?.has(contentKey)) { coverage.hovered.add(key); continue; }
       let box = item.box;
       const onScreen = box.x + box.width > 0 && box.y + box.height > 0 && box.x < vw && box.y < vh;
       if (visibleOnly && !onScreen) continue;
@@ -642,7 +647,9 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         // An unactionable target is a recorded outcome for that target, never
         // a study failure: the step returns the outcome instead of throwing.
         const hoverOnce = async () => {
-          try { return await hoverWithPointerFallback(target, page, 5000); }
+          // An element not stable within 1.5s will not be stable in 5s either;
+          // the pointer fallback covers it.
+          try { return await hoverWithPointerFallback(target, page, 1500); }
           catch (error) {
             if (String(error?.code || '').startsWith('source-study-')) throw error;
             return { mode: null, reason: String(error?.message || error).split('\n')[0].slice(0, 180) };
@@ -663,6 +670,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         entry.t_end = clock.now();
         await page.mouse.move(2, 2); await sleep(HOVER_SETTLE_MS); entry.t_left = clock.now();
         log.push(entry); coverage.hovered.add(key); coverage.hover_failures.delete(key);
+        (coverage.hoveredContent ||= new Set()).add(contentKey);
         sourceStudy?.markEvent({ profile, kind: 'hover', target_key: key });
       } catch (error) {
         if (String(error?.code || '').startsWith('source-study-')) throw error;

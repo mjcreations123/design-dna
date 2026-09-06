@@ -1621,7 +1621,7 @@ export async function captureInteractionCensus(page, options = {}) {
           probe, evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame } });
       } finally { if (isolated) await isolated.page.close().catch(() => {}); }
     };
-    if (target.hoverable) await exercise('hover', null, async (item, actionPage) => { await hoverWithPointerFallback(item, actionPage, 5000); });
+    if (target.hoverable) await exercise('hover', null, async (item, actionPage) => { await hoverWithPointerFallback(item, actionPage, 2000); });
     if (target.focusable) await exercise('focus', null, async (item) => { await item.focus({ timeout: 5000 }); });
     if (target.focusable) await exercise('focus-traversal', 'Tab', async (item, actionPage) => {
       await item.focus({ timeout: 5000 }); await actionPage.keyboard.press('Tab');
