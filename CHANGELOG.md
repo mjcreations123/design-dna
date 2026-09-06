@@ -7,6 +7,15 @@ behavior.
 
 ## 12.1.0 - Development candidate
 
+Owner directive (2026-09-06, Motty: a website should take minutes, not half
+an hour): the study is cut to what the dossier needs. A non-required
+transform strip is measured on eight wheel steps in the mechanism pass and
+two in the frame traversals (recorded on the surface as `tick_cap`); the
+rest state reuses the primary pass at its viewport (`reused_from`); the
+inner-route default is two. Nothing measured is invented: a strip's motion
+is in the mechanism sheet as numbers, the hold frames show the page held
+still, and the counts are in the record.
+
 Owner decision (2026-09-06, Motty: "get this thing working"): the declared
 inner-route scope stands. `--max-inner-routes` defaults to 6 again and the
 validator accepts a reached cap with every remaining route recorded, while

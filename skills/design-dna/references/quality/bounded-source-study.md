@@ -24,8 +24,11 @@ The default no-progress bound is 60 seconds and a screenshot is bounded to 30
 seconds. The observer's total budget is derived from its declared route
 scope: 90 minutes for the primary route with its passes, scroll-hold
 traversal and states, plus 8 minutes for each route at both profiles, so the
-total budget is clamped to a four-hour hard ceiling; the default inner-route
-cap of six gives about two and a half hours on a rich site.
+total budget is clamped to a four-hour hard ceiling. Gallery strips are
+measured on eight wheel steps in the mechanism pass and two in the frame
+traversals (recorded as `tick_cap`), the rest state reuses the primary pass,
+and the default inner-route cap is two, so a rich reference is studied in
+tens of minutes on a quiet machine, not hours.
 The recorder's budget is 60 minutes
 default; its 90-second-per-profile minimum remains required and its requested
 dwell is capped at 600 seconds per profile to reserve processing time within
@@ -37,7 +40,7 @@ source into a qualified one.
 
 Inner routes are a declared scope, not a timeout. The observer studies the
 primary route, every authored-state route, and inner routes in discovery
-order up to `--max-inner-routes` (default 6, never below 2, because the dossier
+order up to `--max-inner-routes` (default 2, never below 2, because the dossier
 needs two observed inner pages); every remaining discovered route is recorded
 as `unvisited_urls` beside the cap and `inner_routes_visited`, and the
 validator accepts that record only when the cap was reached by inner routes.

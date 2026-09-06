@@ -2331,6 +2331,10 @@ export async function traverseScrollSurfaces(page, options = {}) {
   const records = [];
   const deadline = options.deadline || (() => false);
   const maxTicks = options.maxTicks || 240;
+  // A non-required transform strip (a gallery, a marquee-like carousel) is
+  // measured on the first few wheel steps; the rest of its length repeats the
+  // same mechanism. The cap is recorded on the surface as tick_cap.
+  const maxTransformTicks = options.maxTransformTicks ?? Infinity;
   const settleMs = options.settleMs ?? 180;
   for (const surface of surfaces) {
     await resetSurface(page, surface);
@@ -2363,6 +2367,7 @@ export async function traverseScrollSurfaces(page, options = {}) {
     let noProgress = 0;
     let progressed = false;
     let terminal = false;
+    let capped = false;
     let ticks = 0;
     while (ticks < maxTicks && !deadline()) {
       const x = Math.max(2, Math.min((page.viewportSize()?.width || 1440) - 2, before.rect.left + before.rect.width / 2));
@@ -2385,11 +2390,17 @@ export async function traverseScrollSurfaces(page, options = {}) {
         before = after;
         break;
       }
+      if (surface.kind === "transform" && !surface.required && ticks >= maxTransformTicks) {
+        terminal = true;
+        capped = true;
+        before = after;
+        break;
+      }
       before = after;
     }
     const complete = terminal && !deadline() && (!surface.required || progressed ||
       (surface.kind !== "transform" && before.max_x === 0 && before.max_y === 0));
-    records.push({ ...surface, ticks, progressed, terminal, complete,
+    records.push({ ...surface, ticks, progressed, terminal, complete, tick_cap: capped ? maxTransformTicks : null,
       reason: complete ? null : deadline() ? "time-budget-ended" : ticks >= maxTicks ? "tick-cap-before-terminal" : "no-wheel-progress",
       final: before ? { x: before.x, y: before.y, max_x: before.max_x, max_y: before.max_y } : null });
   }

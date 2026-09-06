@@ -74,7 +74,7 @@ const CENSUS_TIMEOUT_MS = 600_000;
 // rich site on a quiet machine, more beside other work.
 const STUDY_BASE_BUDGET_MS = 90 * 60_000;
 const STUDY_PER_ROUTE_BUDGET_MS = 8 * 60_000;
-const DEFAULT_MAX_INNER_ROUTES = 6;
+const DEFAULT_MAX_INNER_ROUTES = 2;
 
 async function requireAddressableSourceStructure(page, profile, stateId = null, evidence = null) {
   const roots = await discoverUnaddressableClosedRoots(page);
@@ -503,6 +503,7 @@ export async function mechanismPass(page, options = {}) {
   await reportProgress('initial-sample', { samples: ticks.length });
   const scrollTraversal = await traverseScrollSurfaces(page, {
     maxTicks: 240,
+    maxTransformTicks: 8,
     settleMs: TICK_SETTLE_MS,
     onTick: async (surface, tick) => {
       await page.evaluate(TAG_PROBES);
@@ -994,7 +995,7 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     sheet: mergeMechanismSheets(pages.map((item) => ({ mechanisms: item.mechanisms, score: item.score }))) };
 }
 
-async function captureSourceStates(browser, contract, viewport, captureEvidence, notes, sourceStudy = null, captureCallbackEvidence = null) {
+async function captureSourceStates(browser, contract, viewport, captureEvidence, notes, sourceStudy = null, captureCallbackEvidence = null, priorRestSheet = null) {
   const softCallback = typeof captureCallbackEvidence === 'function'
     ? (label, targetPage) => captureCallbackEvidence(targetPage, label) : undefined;
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
@@ -1071,7 +1072,12 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence,
         { before: beforeFrame, after: afterFrame, settled: settledFrame });
       const structure = await page.evaluate(STRUCTURE_SCRIPT);
       if (!structure || !structure.dominant) throw new Error(`${viewport.name}/${state.id}: source-state first screen is empty.`);
-      const sheet = await boundedMechanismPass(page, sourceStudy, viewport.name, 'source-state');
+      // The rest state at the primary URL is the page the primary pass just
+      // measured at this viewport; repeating that pass costs minutes and adds
+      // nothing. The reuse is recorded on the sheet.
+      const sheet = (state.id === 'rest' && priorRestSheet && priorRestSheet.scroll_traversal?.complete)
+        ? { ...priorRestSheet, mechanisms: [...priorRestSheet.mechanisms], score: { ...priorRestSheet.score, type_instances: { ...priorRestSheet.score.type_instances } }, reused_from: 'primary-rest' }
+        : await boundedMechanismPass(page, sourceStudy, viewport.name, 'source-state');
       if (!sheet.scroll_traversal?.complete) throw new Error(`${viewport.name}/${state.id}: source-state scroll traversal is incomplete.`);
       if (application.trigger_evidence?.mechanism) {
         sheet.mechanisms = finalizeMechanisms([...sheet.mechanisms, application.trigger_evidence.mechanism]);
@@ -1524,7 +1530,10 @@ async function observeMain(args) {
     // first-N cutoff. Any surface that does not reach a terminal state blocks.
     let scrollMoved = 0;
     let steps = 0;
-    const scrollHoldTraversal = await sourceStudy.step('scroll-traversal:wide-primary', () => traverseScrollSurfaces(page, { maxTicks: 240, settleMs: 120,
+    // Hold frames show what the PAGE looks like held still at each scroll
+    // position; a gallery strip's motion is in the mechanism sheet as numbers,
+    // so a strip contributes two positions here, not sixteen.
+    const scrollHoldTraversal = await sourceStudy.step('scroll-traversal:wide-primary', () => traverseScrollSurfaces(page, { maxTicks: 240, maxTransformTicks: 2, settleMs: 120,
       onTick: async (surface, tick) => {
        steps += 1;
        sourceStudy.markTarget(`wide|scroll|${surface.id}|${tick}`, { phase: 'primary-scroll', surface: surface.id, tick });
@@ -1739,10 +1748,10 @@ async function observeMain(args) {
     const statesByViewport = {
       wide: await captureSourceStates(browser, stateContract.payload, { name: "wide", width: 1440, height: 900 },
         (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 1440, height: 900 }), notes, sourceStudy,
-        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 1440, height: 900 })),
+        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 1440, height: 900 }), mech),
       narrow: await captureSourceStates(browser, stateContract.payload, { name: "narrow", width: 390, height: 844 },
         (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 390, height: 844 }), notes, sourceStudy,
-        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 390, height: 844 })),
+        (targetPage, label) => softEvidenceShot(targetPage, label, "source state callback evidence", { width: 390, height: 844 }), narrowMechanism),
     };
     const wideSiteTraversal = await studyRecursiveSite(page, args.url, "wide", stateContract.payload.states,
       (label, evidencePage = page) => boundEvidenceShot(evidencePage, `wide-${label}`, "wide interaction-census evidence", { width: 1440, height: 900 }), notes, sourceStudy, args.maxInnerRoutes);

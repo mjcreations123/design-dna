@@ -928,7 +928,7 @@ async function runProfile(browser, args, stateContract, viewport) {
       }
       videoElements.push(...await collectVideos(page, viewport.name));
       await hoverAllTargets(page, log, clock, coverage, viewport.name, false, sourceStudy);
-      const traversal = await sourceStudy.step(`scroll-traversal:${viewport.name}`, () => traverseScrollSurfaces(page, { maxTicks: 240, settleMs: SCROLL_PAUSE_MS,
+      const traversal = await sourceStudy.step(`scroll-traversal:${viewport.name}`, () => traverseScrollSurfaces(page, { maxTicks: 240, maxTransformTicks: 2, settleMs: SCROLL_PAUSE_MS,
         deadline: clock.over,
         onTick: async (surface, tick, sample) => {
           sourceStudy.markTarget(`${viewport.name}|scroll|${targetUrl}|${surface.id}|${tick}`, { phase: 'recording-scroll', tick });

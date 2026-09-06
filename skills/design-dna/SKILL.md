@@ -408,7 +408,7 @@ experience at wide and narrow widths: entry and home, relevant inner pages,
 navigation, the full content/task progression, applicable hover, focus, press,
 open, scroll, transition, media, ending, reset, error, and recovery states.
 The observer studies the primary route, every authored-state route, and inner
-routes in discovery order up to `--max-inner-routes` (default 6, minimum 2),
+routes in discovery order up to `--max-inner-routes` (default 2, minimum 2),
 records the rest as unvisited beside the cap and the count of inner routes it
 actually visited, and derives its budget from that scope. The validator
 accepts that record only when the cap was reached by inner routes; the
