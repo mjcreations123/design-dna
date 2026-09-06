@@ -432,6 +432,10 @@ was refused as `source-study-stale-runner-lease`. The documented recovery
   required discovered == visited. `houseofhoney.com` links to fifteen routes
   from its home page alone. Inner routes are now a declared, recorded scope
   (`--max-inner-routes`, default 6) and the budget is derived from it.
+- Screencast frame events counted as study progress, so a stalled recorder
+  never tripped the silence watchdog; locator reads on replaced elements
+  waited 30 s each. Frames no longer advance the watchdog; locator reads on
+  hover targets are bounded.
 - Unbounded `scrollIntoViewIfNeeded()` before hovers and census inputs, and a
   hover step that terminated the study when Playwright refused an unstable
   (autoplaying) target; screencast frame events kept the no-progress watchdog

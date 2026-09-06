@@ -43,6 +43,12 @@ slot, which then blocked every later observation on the machine.
   moving the real pointer to the element's center and record `hover_mode`;
   a target that still cannot be hovered is a recorded outcome, not a
   terminated study.
+- A screencast frame no longer resets the study's silence watchdog: frames
+  are journaled and counted, but only measured work is progress, so a stuck
+  recorder now fails within 60 s with a truthful no-progress code instead of
+  streaming frames for a quarter of an hour. Locator reads on the recorder's
+  and observer's hover targets (evaluate, boundingBox) are bounded to 3 s; a
+  locator whose element the page has replaced otherwise waits 30 s each.
 - Every scroll-into-view before a hover or census input is bounded (5 s,
   then a plain DOM scroll). Playwright's actionability wait never settles on
   an element inside an autoplaying region; on House of Honey each such target

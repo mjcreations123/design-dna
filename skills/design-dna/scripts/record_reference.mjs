@@ -596,16 +596,18 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
           if (!element.dataset.dnaRecordTarget) element.dataset.dnaRecordTarget = String(++window.__dnaRecordTarget);
           return { id: element.dataset.dnaRecordTarget, tag: element.tagName.toLowerCase(),
             text: (element.getAttribute('aria-label') || element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 200) };
-        });
+        }, undefined, { timeout: 3000 });
         const key = `${normalizeHttpUrl(page.url())}|${frame.url()}|${identity.id}`;
         coverage.discovered.add(key);
         if (coverage.hovered.has(key)) continue;
         sourceStudy?.markTarget(`${profile}|hover|${key}`, { profile, visible_only: visibleOnly });
         if (clock.over()) return false;
-        let box = await target.boundingBox();
+        // A locator whose element the page has since replaced waits 30s by
+        // default; the target list is a snapshot, so every wait is bounded.
+        let box = await target.boundingBox({ timeout: 3000 });
         if (visibleOnly && (!box || box.x + box.width <= 0 || box.y + box.height <= 0 ||
             box.x >= (page.viewportSize()?.width || 0) || box.y >= (page.viewportSize()?.height || 0))) continue;
-        if (!visibleOnly) { await scrollIntoViewBounded(target, 5000); box = await target.boundingBox(); }
+        if (!visibleOnly) { await scrollIntoViewBounded(target, 5000); box = await target.boundingBox({ timeout: 3000 }); }
         if (!box || box.width < 1 || box.height < 1) continue;
         const entry = { action: "hover", profile, page_url: page.url(), t_start: clock.now(),
           x: Math.round(box.x + box.width / 2), y: Math.round(box.y + box.height / 2),

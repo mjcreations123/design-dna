@@ -246,9 +246,16 @@ export class SourceStudyController {
     fs.appendFileSync(this.eventFile, `${JSON.stringify(entry)}\n`, 'utf8');
     this.state.progress_event_count = entry.sequence;
     this.state.tail_event_sha256 = entry.sha256;
-    this.state.last_progress_at = entry.at;
-    this.state.last_progress_epoch_ms = now;
-    this.state.last_progress_kind = kind;
+    // A screencast frame proves the compositor is alive, not that the study
+    // advanced: a recorder stuck in a locator wait kept streaming frames for
+    // twelve minutes while the silence watchdog stayed quiet. Frames are
+    // journaled and counted, but only measured work resets the watchdog.
+    const advances = !(kind === 'event-observed' && detail?.kind === 'recorded-source-frame');
+    if (advances) {
+      this.state.last_progress_at = entry.at;
+      this.state.last_progress_epoch_ms = now;
+      this.state.last_progress_kind = kind;
+    }
     const snapshot = this.writeSnapshot();
     if (!snapshot.ok) {
       const error = typedError('source-study-snapshot-commit-failed',

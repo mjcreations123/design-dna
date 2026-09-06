@@ -1598,7 +1598,7 @@ async function observeMain(args) {
         const style = getComputedStyle(item), box = item.getBoundingClientRect();
         return [style.color, style.backgroundColor, style.transform, style.opacity, style.filter, style.clipPath,
           Math.round(box.left), Math.round(box.top), Math.round(box.width), Math.round(box.height)];
-        }));
+        }), undefined, { timeout: 3000 });
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
         await page.waitForTimeout(650);
         const after = await shot("hover-after", "pointer over an interactive element");
@@ -1606,14 +1606,14 @@ async function observeMain(args) {
         const style = getComputedStyle(item), box = item.getBoundingClientRect();
         return [style.color, style.backgroundColor, style.transform, style.opacity, style.filter, style.clipPath,
           Math.round(box.left), Math.round(box.top), Math.round(box.width), Math.round(box.height)];
-        }));
+        }), undefined, { timeout: 3000 });
         const moved = JSON.stringify(beforeStyles) !== JSON.stringify(afterStyles);
         if (moved) hoverMoved += 1;
         const duration = await el.evaluate((node) => {
           const c = getComputedStyle(node);
           const d = c.transitionDuration.split(",").map((s) => parseFloat(s) * (s.trim().endsWith("ms") ? 1 : 1000));
           return { ms: Math.max(...d, 0), easing: c.transitionTimingFunction, property: c.transitionProperty };
-        });
+        }, undefined, { timeout: 3000 });
         if (moved && duration.ms > 0) hoverDurations.push(duration);
         interactions.push({ type: "hover", moved, page_hash_changed: before.sha256 !== after.sha256,
           frames: [before.seq, after.seq], transition: duration,
