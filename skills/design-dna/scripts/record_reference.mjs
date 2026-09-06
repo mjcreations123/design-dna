@@ -613,7 +613,7 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         // An unactionable target is a recorded outcome for that target, never
         // a study failure: the step returns the outcome instead of throwing.
         const hoverOnce = async () => {
-          try { return await hoverWithPointerFallback(target, page, 5000); }
+          try { return await hoverWithPointerFallback(target, page, 4000); }
           catch (error) {
             if (String(error?.code || '').startsWith('source-study-')) throw error;
             return { mode: null, reason: String(error?.message || error).split('\n')[0].slice(0, 180) };
@@ -621,7 +621,10 @@ async function hoverAllTargets(page, log, clock, coverage, profile, visibleOnly 
         };
         const hoverOutcome = sourceStudy
           ? await sourceStudy.step(`hover:${profile}`, hoverOnce, {
-            timeout_ms: 10_000, detail: { target_key: key }, abort: async () => { await page.context().close().catch(() => {}); },
+            // The locator hover may spend its whole 4s bound retrying an
+            // unstable target before the pointer fallback runs; the step must
+            // enclose both, or a slow hover tears the whole recording down.
+            timeout_ms: 20_000, detail: { target_key: key }, abort: async () => { await page.context().close().catch(() => {}); },
           })
           : await hoverOnce();
         if (!hoverOutcome.mode) {
