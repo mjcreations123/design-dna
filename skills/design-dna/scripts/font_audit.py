@@ -142,6 +142,14 @@ GENERIC_FAMILIES = {
     "sans-serif", "serif", "system-ui", "ui-monospace", "ui-rounded",
     "ui-sans-serif", "ui-serif",
 }
+# Named platform families are checked by rendered QA for the actual host.
+# This is not permission to choose them; provenance must still bind the face.
+PLATFORM_FAMILIES = {
+    "arial", "helvetica", "helvetica neue", "times new roman", "times",
+    "courier new", "courier", "georgia", "verdana", "tahoma", "trebuchet ms",
+    "segoe ui", "calibri", "cambria", "consolas", "palatino", "palatino linotype",
+    "lucida grande", "lucida sans unicode", "-apple-system", "blinkmacsystemfont",
+}
 
 
 class AuditError(RuntimeError):
@@ -1927,6 +1935,22 @@ def collect_findings(
         primary = families[0].casefold()
         contracts = faces_by_family.get(primary)
         if not contracts:
+            delivery = any(
+                contract.get("complete") is True and primary in {
+                    str(value).casefold() for value in [contract.get("family"),
+                        *(contract.get("details", {}).get("families", []) or [])]
+                    if value
+                }
+                for contract in delivery_contracts
+            )
+            if primary not in PLATFORM_FAMILIES and not delivery:
+                findings.append(finding(
+                    "declared-font-without-delivery", "high", "bounded-static-inventory",
+                    str(usage["file"]), int(usage["line"]),
+                    "The named primary family has no font-face or complete delivery contract; its declaration can silently render a fallback.",
+                    "Deliver the licensed source face or the verified rank-one substitute, then verify actual rendered glyph fonts.",
+                    {"family": families[0]},
+                ))
             continue
         weight = usage["normalized_weight"]
         if weight is not None and not any(

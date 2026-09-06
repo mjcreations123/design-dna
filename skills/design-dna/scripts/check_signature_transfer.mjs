@@ -14,7 +14,9 @@ import {
 
 const TOOL_NAME = "check_signature_transfer.mjs";
 const SCHEMA_VERSION = PRODUCER_OUTPUT_SCHEMA_VERSION;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+import { firstScreenManifest } from "./construction_phase.mjs";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const SCRIPT_DIR = path.dirname(SCRIPT_PATH);
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const scriptHash = (name) => createHash("sha256").update(fs.readFileSync(path.join(SCRIPT_DIR, name))).digest("hex");
@@ -132,7 +134,7 @@ catch (error) { fail("dossier-unreadable", `${args.dossier}: ${error.message}`);
 let manifest, mappedByRoute;
 try {
   manifest = loadRouteManifest(args.manifest);
-  mappedByRoute = bindSuppliedObservations(manifest, args.observations, scriptHash("observe_reference.mjs"));
+  mappedByRoute = bindSuppliedObservations(manifest, args.observations, scriptHash("observe_reference.mjs"), { allowExtras: true });
 } catch (error) {
   fail("manifest-reference-binding-invalid", String(error).slice(0, 500));
 }
@@ -141,6 +143,47 @@ const mechanism = readJson(args.mechanismDiff, "mechanism-unreadable");
 const structure = readJson(args.structureDiff, "structure-unreadable");
 const styles = readJson(args.styleProvenance, "style-unreadable");
 const census = readJson(args.census, "census-unreadable");
+if (args.onlyRank !== null && census.first_screen_only === true) manifest = firstScreenManifest(manifest, census.route_filter || []);
+// A schema-2 construction binding carries the exact source contribution that
+// the older dossier table describes in prose.  Keep this optional for legacy
+// fixtures, but never let a real gate silently ignore it when it is present.
+const constructionBindingPath = path.join(path.dirname(path.resolve(args.manifest)), "visible-decision-sources.json");
+let constructionBinding = null;
+if (fs.existsSync(constructionBindingPath)) {
+  try { constructionBinding = JSON.parse(fs.readFileSync(constructionBindingPath, "utf8")); }
+  catch { fail("construction-binding-unreadable", "visible-decision-sources.json is unreadable while checking signature transfer."); }
+  if (constructionBinding?.schema_version === 2) {
+    const reconciliation = census.visible_decision_reconciliation;
+    if (!reconciliation || reconciliation.complete !== true || !Array.isArray(reconciliation.construction_findings) ||
+        reconciliation.construction_findings.length) {
+      fail("construction-binding-census-incomplete", "The component census has unresolved construction binding findings; fix exact route/state/viewport/component cells before signature transfer.");
+    }
+    if (!Array.isArray(constructionBinding.source_contribution_scope) || !Array.isArray(constructionBinding.decisions)) {
+      fail("construction-binding-invalid", "Construction binding v2 lacks source contribution scope or decision rows.");
+    }
+    const byDecision = new Map(constructionBinding.decisions.map((item) => [item?.decision_id, item]));
+    for (const contribution of constructionBinding.source_contribution_scope) {
+      const carriers = contribution?.signature_carrier_decision_ids;
+      if (!Array.isArray(carriers) || !carriers.length || carriers.some((id) => !byDecision.has(id))) {
+        fail("construction-signature-carrier-missing", `Selected source ${contribution?.source_reference_id || "(unknown)"} has no exact construction signature carrier.`);
+      }
+      if (contribution.signature_kind === "motion" && !carriers.some((id) => byDecision.get(id)?.dominant_behavior_carrier)) {
+        fail("construction-dominant-behavior-omitted", `Selected motion source ${contribution.source_reference_id} has no exact source-target/build-component behavior carrier.`);
+      }
+      if (contribution.signature_kind === "static" && !carriers.some((id) => {
+        const decision = byDecision.get(id);
+        return decision?.category === "layout";
+      })) {
+        fail("construction-static-signature-thin", `Selected static source ${contribution.source_reference_id} contributes only a low-material surface; bind its arrangement or source-specific effect.`);
+      }
+      const carrierRoutes = new Set(carriers.flatMap((id) => (byDecision.get(id)?.bindings || []).map((cell) => cell.route_key)));
+      if (!Array.isArray(contribution.dominant_route_keys) || contribution.dominant_route_keys.length !== carrierRoutes.size ||
+          contribution.dominant_route_keys.some((key) => !carrierRoutes.has(key))) {
+        fail("construction-signature-route-mismatch", `Source ${contribution.source_reference_id}'s claimed dominant routes differ from its actual carrier bindings.`);
+      }
+    }
+  }
+}
 for (const [name, record, tool] of [
   ["mechanism", mechanism, "compare_mechanisms.mjs"], ["structure", structure, "compare_structure.mjs"],
   ["style", styles, "check_style_provenance.mjs"], ["census", census, "scan_build_components.mjs"],
@@ -243,6 +286,25 @@ const isSelected = (rank) => selectedRanks.size ? selectedRanks.has(rank) : true
 if (args.onlyRank !== null && (!Number.isInteger(args.onlyRank) || args.onlyRank < 1 || !isSelected(args.onlyRank))) {
   fail("only-rank-invalid", "--only-rank must name a selected strong reference.");
 }
+if (constructionBinding?.schema_version === 2) {
+  const requiredRanks = new Set(args.onlyRank === null ? selectedRanks : [args.onlyRank]);
+  if (!requiredRanks.size) {
+    fail("construction-selected-ranks-missing", "Construction binding v2 needs the dossier's selected positive ranks before source contribution can be certified.");
+  }
+  const expectedSourceIds = new Set([...requiredRanks].map((rank) => `strong-${rank}`));
+  const contributions = (constructionBinding.source_contribution_scope || []).filter((row) => args.onlyRank === null || row.selected_rank === args.onlyRank);
+  const contributionIds = new Set(contributions.map((item) => item?.source_reference_id));
+  if (contributionIds.size !== contributions.length || contributionIds.size !== expectedSourceIds.size ||
+      [...expectedSourceIds].some((id) => !contributionIds.has(id)) || [...contributionIds].some((id) => !expectedSourceIds.has(id))) {
+    fail("construction-source-contribution-spread", "Construction binding v2 must provide one explicit source contribution/carrier for every selected positive rank; old dossier tables cannot cover an omitted source.");
+  }
+  for (const contribution of contributions) {
+    const expectedRank = Number(String(contribution.source_reference_id).replace(/^strong-/, ""));
+    if (contribution.selected_rank !== expectedRank) {
+      fail("construction-source-contribution-rank", `Construction contribution ${contribution.source_reference_id} has a mismatched selected_rank.`);
+    }
+  }
+}
 
 const components = firstTable(sectionOf(dossierBody, "Component sources"));
 const componentRankColumn = components.headers.findIndex((header) => /source rank/i.test(header));
@@ -291,6 +353,31 @@ for (const binding of mappedByRoute.values()) {
     ...observationSummary(binding.payload, args.onlyRank !== null),
   });
 }
+if (constructionBinding?.schema_version === 2) {
+  const projectRoot = path.dirname(path.dirname(path.resolve(args.manifest)));
+  const supplied = new Set(args.observations.map((file) => path.resolve(file)));
+  for (const source of constructionBinding.source_observations || []) {
+    if (!source || typeof source.id !== "string" || typeof source.path !== "string" || !SHA256_RE.test(source.sha256 || "")) {
+      fail("construction-supplemental-source-invalid", "Construction binding has an invalid supplemental source observation row.");
+    }
+    const file = path.resolve(projectRoot, source.path);
+    if (!supplied.has(file) || !fs.existsSync(file) || sha256(file) !== source.sha256) {
+      fail("construction-supplemental-source-drift", `Construction source ${source.id} is missing, was not supplied to signature transfer, or drifted.`);
+    }
+    if (observationBySha.has(source.sha256)) continue;
+    const payload = readJson(file, "construction-supplemental-observation-unreadable");
+    const rankMatch = source.id.match(/^strong-([1-9][0-9]*)$/);
+    if (payload?.tool !== "observe_reference.mjs" || payload?.id !== source.id || !rankMatch ||
+        payload.producer_script_sha256 !== scriptHash("observe_reference.mjs")) {
+      fail("construction-supplemental-source-invalid", `Construction source ${source.id} is not a current exact observer record.`);
+    }
+    observationBySha.set(source.sha256, {
+      rank: Number(rankMatch[1]), id: source.id, observation: source.path,
+      sha256: source.sha256, url: payload.url, file, payload,
+      ...observationSummary(payload, args.onlyRank !== null),
+    });
+  }
+}
 
 function boundObservationFromStrongRow(row, rank) {
   const cell = String(row[observedEvidenceColumn] || "");
@@ -313,6 +400,32 @@ function mechanismCarriesComponent(mechanismValue, component) {
   return false;
 }
 
+function constructionContributionFor(sourceId) {
+  if (constructionBinding?.schema_version !== 2) return null;
+  return (constructionBinding.source_contribution_scope || []).find((item) => item?.source_reference_id === sourceId) || null;
+}
+
+function constructionCarrierEvidence(sourceId) {
+  const contribution = constructionContributionFor(sourceId);
+  if (!contribution) return { contribution: null, decisions: [], cells: [], complete: false };
+  const ids = new Set(contribution.signature_carrier_decision_ids || []);
+  const proofIds = args.onlyRank !== null ? new Set(constructionBinding.proof_isolation?.decision_ids || constructionBinding.planned_decision_ids) : null;
+  const decisions = (constructionBinding.decisions || []).filter((item) => ids.has(item?.decision_id) && (!proofIds || proofIds.has(item.decision_id)));
+  const cells = decisions.flatMap((decision) => (decision.bindings || []).filter((binding) => !proofIds ||
+    manifest.routes.some((route) => route.key === binding.route_key && route.states.some((state) => state.id === binding.state_id))).map((binding) => {
+    const check = (census.checks || []).find((item) => item?.route_key === binding.route_key &&
+      item?.viewport === binding.viewport && item?.state_id === binding.state_id);
+    const directRoot = (check?.decision_roots || []).some((row) => row?.decision_id === decision.decision_id &&
+      (row.roots || []).some((root) => root?.direct === true && root?.component_key === binding.component_key &&
+        root?.component_id === decision.component_id));
+    const interaction = (census.interaction_inventory?.cells || []).find((item) => item?.route_key === binding.route_key &&
+      item?.viewport === binding.viewport && item?.state_id === binding.state_id);
+    return { decision, binding, check, directRoot, interaction };
+  }));
+  const complete = cells.length > 0 && cells.every((cell) => cell.check?.pass === true && cell.directRoot);
+  return { contribution, decisions, cells, complete };
+}
+
 const verdicts = [];
 for (const row of strong.rows) {
   const rank = Number((row[rankColumn] || "").trim());
@@ -321,6 +434,10 @@ for (const row of strong.rows) {
   const signature = (row[signatureColumn] || "").trim();
   const modeMatch = signature.match(/^(motion|static):\s*(.+)$/i);
   const observed = boundObservationFromStrongRow(row, rank), componentRows = citations.get(rank) || [];
+  const constructionCarrier = constructionCarrierEvidence(`strong-${rank}`);
+  const supplementalConstructionSource = Boolean(
+    constructionCarrier.contribution && ![...mappedByRoute.values()].some((binding) => binding.id === `strong-${rank}`)
+  );
   const transfer = transferByRank.get(rank) || null;
   const carrier = transfer?.carrier || "";
   const carrierCensus = censusByName.get(carrier) || null;
@@ -339,6 +456,8 @@ for (const row of strong.rows) {
     loudest_weight: observed?.loudest ? mechanismWeight(observed.loudest) : 0,
     scroll_coverage: observed?.scrollCoverage || null,
     mapped_mechanism_cells: mechanismChecks.length, mapped_structure_cells: structureChecks.length,
+    construction_supplemental: supplementalConstructionSource,
+    construction_carrier_cells: constructionCarrier.cells.length,
   };
   const failures = [];
   if (selected && !observed) failures.push("the Strong references row does not bind an exact manifest-mapped observation path and SHA-256");
@@ -350,7 +469,7 @@ for (const row of strong.rows) {
   if (selected && carrier && !censusNames.has(carrier)) failures.push(`signature carrier ${carrier} is not an exact component key in the bound census`);
   if (selected && carrier && !componentRows.includes(carrier)) failures.push(`signature carrier ${carrier} has no Component sources row citing rank ${rank}`);
   if (selected && modeMatch?.[2].trim().length < 12) failures.push("signature description is too vague to identify a grammar");
-  if (selected && observed && modeMatch?.[1].toLowerCase() === "motion") {
+  if (selected && observed && modeMatch?.[1].toLowerCase() === "motion" && !supplementalConstructionSource) {
     const named = claimedTypes(modeMatch[2]);
     result.signature_names = [...named];
     if (!observed.loudest) failures.push("motion: was claimed but the observation records no mechanism");
@@ -377,13 +496,34 @@ for (const row of strong.rows) {
       failures.push(`${check.route_key}/${check.viewport} does not render dominant ${observed.loudest?.type}`);
     }
   }
-  if (selected && observed && modeMatch?.[1].toLowerCase() === "static") {
+  if (selected && observed && modeMatch?.[1].toLowerCase() === "static" && !supplementalConstructionSource) {
     if (observed.strongMotion) failures.push(`static: contradicts dominant measured motion ${observed.loudest?.type} (weight ${result.loudest_weight})`);
     if (!structureChecks.length) failures.push("no build route is mapped to this static reference");
     const profiles = new Set(structureChecks.filter((check) => check.pass).map((check) => check.width <= 430 ? "narrow" : "wide"));
     if (!profiles.has("wide") || !profiles.has("narrow")) failures.push("mapped structure does not pass at both wide and narrow profiles");
     if (carrier && !structureChecks.some((check) => carrierRoutes.has(check.route_key))) failures.push(`signature carrier ${carrier} is not present on a structurally matched route`);
     if (!styles.ok) failures.push("style provenance did not pass");
+  }
+  if (selected && observed && supplementalConstructionSource) {
+    if (!constructionCarrier.complete) {
+      failures.push("supplemental construction source has no direct wide/narrow rendered carrier cell");
+    }
+    if (modeMatch?.[1].toLowerCase() === "motion") {
+      const motionDecision = constructionCarrier.decisions.find((decision) => decision?.dominant_behavior_carrier);
+      if (!motionDecision) failures.push("supplemental motion signature has no exact source-target/build-component carrier");
+      else if (!constructionCarrier.cells.every((cell) => {
+        const carrier = motionDecision.dominant_behavior_carrier;
+        return cell.decision?.decision_id !== motionDecision.decision_id ||
+          (cell.interaction?.complete === true && (cell.interaction.target_components || []).some((key) =>
+            key === carrier.build_component_key || String(key).endsWith(`|${carrier.build_component_key}`)));
+      })) {
+        failures.push("supplemental motion signature carrier has no complete build trigger evidence at every bound viewport/state");
+      }
+    }
+    if (modeMatch?.[1].toLowerCase() === "static" && !constructionCarrier.decisions.some((decision) =>
+      decision?.category === "layout")) {
+      failures.push("supplemental static source contributes no arrangement, type system, content pattern, or effect carrier");
+    }
   }
   result.status = selected ? (failures.length ? "fail" : "pass") : "listed";
   result.failures = failures;
@@ -395,6 +535,7 @@ const record = {
   tool: TOOL_NAME, schema_version: SCHEMA_VERSION, producer_script_sha256: PRODUCER_SCRIPT_SHA256,
   runtime_identity: {
     "check_signature_transfer.mjs": PRODUCER_SCRIPT_SHA256,
+    "construction_phase.mjs": scriptHash("construction_phase.mjs"),
     "observe_reference.mjs": scriptHash("observe_reference.mjs"),
     "compare_mechanisms.mjs": scriptHash("compare_mechanisms.mjs"),
     "compare_structure.mjs": scriptHash("compare_structure.mjs"),

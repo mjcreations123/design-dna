@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "planned_source_map": ".design-dna/planned-maintenance-map.json",
+  "baseline_census": ".design-dna/evidence/maintenance-baselines/REPLACE_WITH_UNIQUE_RUN_ID/component-census.json",
+  "planned_changes": [
+    {
+      "path": "__REPLACE_WITH_EXACT_EXISTING_SOURCE_FILE__",
+      "operation": "modify",
+      "component_ids": ["__REPLACE_WITH_SOURCE_BOUND_COMPONENT_ID__"]
+    }
+  ]
+}

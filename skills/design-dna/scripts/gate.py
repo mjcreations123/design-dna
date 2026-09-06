@@ -12,6 +12,9 @@ Usage:
       [--phase first-screen --route-key home | --phase final] \
       [--substitute "Reference Face=Matched Face"] [--match FILE] \
       [--browser-executable FILE] [--dry-run]
+
+  python gate.py --project DIR --build-id PROOF_BUILD_ID \
+      --phase proof-slice --proof-slice .design-dna/proof-slice.json
 """
 
 from __future__ import annotations
@@ -42,7 +45,7 @@ def sha256_of(path: Path) -> str:
 
 
 def runtime_identity() -> dict[str, str]:
-    files = [Path(__file__).resolve(), SCRIPTS / "init_project_state.py", *sorted(SCRIPTS.glob("*.mjs"))]
+    files = [*sorted(SCRIPTS.glob("*.py")), *sorted(SCRIPTS.glob("*.mjs"))]
     return {file.name: sha256_of(file) for file in files}
 
 
@@ -176,6 +179,7 @@ def load_visible_decision_source_manifest(
             route_manifest=route_manifest,
             route_manifest_path=route_manifest_path,
             proof_identity=proof_identity or "",
+            require_construction_v2=True,
         )
     )
     proof_fields = validator.semicolon_fields(proof_identity or "")
@@ -493,13 +497,218 @@ def write_prebuild_authorization(
     return payload
 
 
+def run_proof_slice_gate(args: argparse.Namespace) -> int:
+    """Validate one non-public source-faithful proof slice without authorization.
+
+    This intentionally does not load a public route manifest, dossier,
+    construction journal, or standard first-screen predecessor.  A passing
+    record is evidence of a bounded internal specimen only, never permission
+    to build another section, release a site, or enter public synthesis.
+    """
+
+    project = Path(args.project).resolve()
+    validator = load_validator()
+    checked_at = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+    run_id = secrets.token_hex(16)
+    proof_path = resolve_project_path(project, str(args.proof_slice or ""))
+    failures: list[str] = []
+    payload: dict | None = None
+    if validator is None or not hasattr(validator, "proof_slice_manifest_failures"):
+        failures.append("the packaged proof-slice validator is unavailable")
+    elif not proof_path.is_relative_to(project) or not proof_path.is_file():
+        failures.append("proof-slice manifest is missing or outside the project")
+    else:
+        try:
+            candidate = json.loads(proof_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"proof-slice manifest is unreadable: {exc}")
+            candidate = None
+        if not isinstance(candidate, dict):
+            failures.append("proof-slice manifest must be a JSON object")
+        else:
+            payload = candidate
+            failures.extend(validator.proof_slice_manifest_failures(project, payload, build_id=args.build_id))
+
+    implementation = payload.get("implementation") if isinstance(payload, dict) else None
+    built = False
+    if isinstance(implementation, dict):
+        relative = implementation.get("source_file")
+        candidate = resolve_project_path(project, str(relative or ""))
+        try:
+            built = (
+                candidate.is_file()
+                and candidate.is_relative_to(project)
+                and isinstance(implementation.get("source_file_sha256"), str)
+                and sha256_of(candidate) == implementation["source_file_sha256"]
+            )
+        except OSError:
+            built = False
+    static_source_valid = not failures
+    statuses = {
+        "proof_slice_built": "unverified",
+        "proof_slice_render": "did-not-run",
+        "proof_slice_gate": "did-not-run",
+        "standard_first_screen_gate": "did-not-run",
+        "final_site": "not-applicable",
+        "public_eligibility": "ineligible",
+    }
+    rendered_record: Path | None = None
+    rendered_payload: dict | None = None
+    build_record: Path | None = None
+    build_payload: dict | None = None
+    if not failures and not args.dry_run and isinstance(implementation, dict):
+        proof_id = payload.get("proof_slice_id") if isinstance(payload, dict) else "invalid-proof-slice"
+        safe_proof_id = proof_id if isinstance(proof_id, str) and re.fullmatch(r"[a-z][a-z0-9-]{2,63}", proof_id) else "invalid-proof-slice"
+        output = project / ".design-dna" / "evidence" / "proof-slice-runs" / safe_proof_id
+        output.mkdir(parents=True, exist_ok=True)
+        source_path = resolve_project_path(project, implementation["source_file"])
+        output_path = resolve_project_path(project, implementation["build_output_path"])
+        build_record = output / f"{args.build_id}-{run_id}-build.json"
+        if not output_path.is_relative_to(project) or output_path == source_path:
+            failures.append("proof-slice controlled build output is unsafe or aliases its source file")
+        else:
+            build_code, build_stdout, build_stderr = run_node(
+                SCRIPTS / "build_proof_slice.mjs",
+                ["--manifest", str(proof_path), "--source", str(source_path), "--output", str(output_path), "--record", str(build_record)],
+                project,
+            )
+            build_payload = last_json(build_stdout)
+            expected_source = {"path": str(source_path.resolve()), "sha256": implementation["source_file_sha256"]}
+            expected_component_text = sorted(
+                [
+                    {"component_id": component.get("component_id"), "text_sha256": component.get("content", {}).get("build_text_sha256")}
+                    for component in payload.get("visible_components", []) if isinstance(component, dict)
+                ],
+                key=lambda item: str(item["component_id"]),
+            )
+            if (
+                build_code != 0
+                or not build_record.is_file()
+                or not isinstance(build_payload, dict)
+                or build_payload.get("tool") != "build_proof_slice.mjs"
+                or build_payload.get("schema_version") != 1
+                or build_payload.get("producer_script_sha256") != sha256_of(SCRIPTS / "build_proof_slice.mjs")
+                or build_payload.get("source") != expected_source
+                or build_payload.get("components") != expected_component_text
+                or not isinstance(build_payload.get("output"), dict)
+                or build_payload["output"].get("path") != str(output_path.resolve())
+                or not output_path.is_file()
+                or build_payload["output"].get("bytes") != output_path.stat().st_size
+                or build_payload["output"].get("sha256") != sha256_of(output_path)
+            ):
+                failures.append("proof-slice controlled build did not emit an exact current source-to-output artifact: " + (build_stderr or build_stdout).strip())
+            else:
+                statuses["proof_slice_built"] = "built"
+        rendered_record = output / f"{args.build_id}-{run_id}-render.json"
+        if not failures:
+            command = [
+                "--url", implementation["proof_url"], "--manifest", str(proof_path),
+                "--build-record", str(build_record), "--out", str(rendered_record),
+            ]
+            if args.browser_executable:
+                command.extend(["--browser-executable", args.browser_executable])
+            code, stdout, stderr = run_node(SCRIPTS / "scan_proof_slice.mjs", command, project)
+            rendered_payload = last_json(stdout)
+            if (
+                code != 0
+                or not rendered_record.is_file()
+                or not isinstance(rendered_payload, dict)
+                or rendered_payload.get("pass") is not True
+                or not isinstance(rendered_payload.get("checks"), list)
+                or len(rendered_payload["checks"]) != 2
+            ):
+                statuses["proof_slice_render"] = "fail"
+                failures.append(
+                    "proof-slice rendered wide/narrow scan failed: "
+                    + (json.dumps(rendered_payload.get("checks"), ensure_ascii=False) if isinstance(rendered_payload, dict) else (stderr or stdout).strip())
+                )
+            else:
+                statuses["proof_slice_render"] = "pass"
+    elif args.dry_run:
+        failures.append("proof-slice rendered wide/narrow scan did not run in --dry-run; static source facts are unverified and nonadvance.")
+    if statuses["proof_slice_render"] == "pass" and not failures:
+        statuses["proof_slice_gate"] = "pass"
+    elif statuses["proof_slice_render"] == "did-not-run" and args.dry_run:
+        statuses["proof_slice_gate"] = "unverified"
+    else:
+        statuses["proof_slice_gate"] = "fail"
+    verdict = (
+        "PROOF-SLICE GATE PASS: one rendered wide+narrow internal-unverified source-faithful first-screen specimen is bounded; standard first-screen and final site gates did not run."
+        if statuses["proof_slice_gate"] == "pass" else "PROOF-SLICE GATE FAIL: " + " || ".join(failures)
+    )
+    record = {
+        "tool": TOOL_NAME,
+        "schema_version": 1,
+        "record_type": "design-dna-proof-slice-gate",
+        "producer_script_sha256": sha256_of(Path(__file__).resolve()),
+        "runtime_identity": runtime_identity(),
+        "checked_at": checked_at,
+        "project": str(project),
+        "build_id": args.build_id,
+        "run_id": run_id,
+        "phase": "proof-slice",
+        "proof_slice_manifest": (
+            {"path": proof_path.relative_to(project).as_posix(), "sha256": sha256_of(proof_path)}
+            if proof_path.is_file() and proof_path.is_relative_to(project) else None
+        ),
+        "rendered_proof": (
+            {"path": rendered_record.relative_to(project).as_posix(), "sha256": sha256_of(rendered_record)}
+            if rendered_record is not None and rendered_record.is_file() else None
+        ),
+        "controlled_build": (
+            {"path": build_record.relative_to(project).as_posix(), "sha256": sha256_of(build_record)}
+            if build_record is not None and build_record.is_file() else None
+        ),
+        "statuses": statuses,
+        "failures": failures,
+        "pass": statuses["proof_slice_gate"] == "pass",
+        "verdict": verdict,
+        "owner_order": "Internal proof only: no public selection, standard first-screen authorization, final-site authorization, release, sync, or push follows from this record.",
+    }
+    if args.dry_run:
+        print(json.dumps(record, indent=2))
+        return 0 if record["pass"] else 1
+    proof_id = payload.get("proof_slice_id") if isinstance(payload, dict) else "invalid-proof-slice"
+    safe_proof_id = proof_id if isinstance(proof_id, str) and re.fullmatch(r"[a-z][a-z0-9-]{2,63}", proof_id) else "invalid-proof-slice"
+    output = project / ".design-dna" / "evidence" / "proof-slice-runs" / safe_proof_id
+    output.mkdir(parents=True, exist_ok=True)
+    gate_file = output / f"{args.build_id}-{run_id}.json"
+    with gate_file.open("x", encoding="utf-8", newline="\n") as handle:
+        json.dump(record, handle, indent=2)
+        handle.write("\n")
+    print(json.dumps({**record, "record": gate_file.relative_to(project).as_posix()}, indent=2))
+    return 0 if record["pass"] else 1
+
+
+def run_with_project_lock(args: argparse.Namespace, action) -> int:
+    """Serialize evidence writers without treating lock metadata as site code."""
+    if args.dry_run:
+        return action()
+    project = Path(args.project).absolute()
+    validator = load_validator()
+    if validator is None:
+        print("GATE FAIL project-lock: packaged lock validator unavailable")
+        return 1
+    try:
+        if not project.is_dir():
+            raise ValueError("project root does not exist")
+        validator.assert_no_reparse_ancestors(project)
+        with validator.ProjectMutationLock(project, f"gate-{args.phase}"):
+            return action()
+    except (validator.StateError, OSError, ValueError) as exc:
+        print(f"GATE FAIL gate-operation: {getattr(exc, 'code', type(exc).__name__)}: {exc}")
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="gate.py", description=__doc__.split("\n\n")[0])
     parser.add_argument("--project", default=".", help="project root holding .design-dna/")
     parser.add_argument("--build-id", required=True, help="immutable ID for the exact build under test")
-    parser.add_argument("--route-manifest", required=True, help="authoritative JSON route/reference/state/viewport manifest")
-    parser.add_argument("--phase", choices=("first-screen", "final"), default="final",
-                        help="first-screen writes a separate prebuild gate; final checks the complete site")
+    parser.add_argument("--route-manifest", default=None, help="authoritative JSON route/reference/state/viewport manifest")
+    parser.add_argument("--phase", choices=("proof-slice", "first-screen", "final", "maintenance"), default="final",
+                        help="proof-slice is a separate internal specimen gate; first-screen writes standard prebuild authorization; final checks the complete site")
+    parser.add_argument("--proof-slice", default=None,
+                        help="typed internal .design-dna/proof-slice.json required only by --phase proof-slice")
     parser.add_argument("--route-key", default=None, help="manifest route key required by --phase first-screen")
     parser.add_argument("--prebuild-authorization", default=None,
                         help="latest append-only first-screen authorization; required by --phase final")
@@ -514,18 +723,31 @@ def main() -> int:
 
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}", args.build_id):
         parser.error("--build-id must be an immutable 8-128 character identifier")
+    if args.phase == "proof-slice":
+        if not args.proof_slice:
+            parser.error("--phase proof-slice requires --proof-slice")
+        if args.route_manifest or args.route_key or args.prebuild_authorization or args.substitute or args.match:
+            parser.error("--phase proof-slice is separate from route-manifest, standard first-screen authorization, substitutions, and final-site inputs")
+        return run_with_project_lock(args, lambda: run_proof_slice_gate(args))
+    if not args.route_manifest:
+        parser.error("--route-manifest is required by standard first-screen and final gates")
+    if args.proof_slice:
+        parser.error("--proof-slice is valid only with --phase proof-slice")
     if args.phase == "final" and not args.prebuild_authorization:
         parser.error("--phase final requires --prebuild-authorization")
-    if args.phase == "first-screen" and args.prebuild_authorization:
+    if args.phase in {"first-screen", "maintenance"} and args.prebuild_authorization:
         parser.error("--prebuild-authorization is valid only with --phase final")
 
+    return run_with_project_lock(args, lambda: run_standard_gate(args, run_id, authorization_id, checked_at))
+
+
+def run_standard_gate(args, run_id, authorization_id, checked_at) -> int:
     project = Path(args.project).resolve()
     dna = project / ".design-dna"
     references = dna / "references"
     evidence = dna / "evidence"
     dossier = dna / "reference-dossier.md"
     manifest_path = resolve_project_path(project, args.route_manifest)
-    evidence.mkdir(parents=True, exist_ok=True)
     runtime_before = runtime_identity()
     validator_module = load_validator()
 
@@ -583,6 +805,22 @@ def main() -> int:
             )
         return True, f"{len(bindings)} generated interaction frames hash-bound"
 
+    if validator_module is None:
+        step("direction-prerequisites", False, "packaged direction prerequisite validator unavailable")
+    else:
+        prerequisite_failures = validator_module.prebuild_failures(
+            # Final construction has a different tree from its first screen;
+            # validate that immutable predecessor in the authorization branch.
+            project, require_first_screen=False, require_construction=False,
+        )
+        prerequisite_failures.extend(validator_module.owner_recurrence_integration_failures(
+            project / ".design-dna", require_resolved=True,
+        ))
+        prerequisite_failures.extend(validator_module.owner_pattern_contract_failures(project, phase="prebuild"))
+        step("direction-prerequisites", not prerequisite_failures,
+             "all applicable direction, contrast, challenge, connected-experience and owner-pattern prerequisites are resolved"
+             if not prerequisite_failures else " | ".join(prerequisite_failures), failures=prerequisite_failures)
+
     ranks_all = strong_ranks(references)
     ranks = selected_ranks(dossier) or ranks_all
     if not ranks_all:
@@ -634,7 +872,7 @@ def main() -> int:
             active_routes = list(manifest["routes"])
         step("route-manifest", True,
              f"{len(manifest['routes'])} exact route(s), {len(manifest['viewports'])} viewport(s)",
-             record=manifest_path if args.phase == "final" else None)
+             record=manifest_path if args.phase in {"final", "maintenance"} else None)
     except ValueError as exc:
         step("route-manifest", False, str(exc), record=manifest_path if manifest_path.is_file() else None)
 
@@ -661,6 +899,67 @@ def main() -> int:
             if not visible_failures else " | ".join(visible_failures),
             record=visible_decision_path if visible_decision_path.is_file() else None,
         )
+        if args.phase == "first-screen" and isinstance(visible_decision_payload, dict):
+            try:
+                phase_module = validator_module.load_bundled_source_module("_design_dna_construction_phase", SCRIPTS / "construction_phase.py")
+                active_routes = phase_module.derive_first_screen_routes(manifest, visible_decision_payload, [args.route_key])
+                step("first-screen-phase-plan", True, "active states derive only from the immutable pre-code proof decision subset; full planned routes remain bound")
+            except (AttributeError, ValueError, TypeError, KeyError) as exc:
+                step("first-screen-phase-plan", False, str(exc))
+        construction_failures: list[str] = []
+        construction_entry: Path | None = None
+        if (
+            isinstance(visible_decision_payload, dict)
+            and validator_module is not None
+            and hasattr(validator_module, "construction_authorization_failures")
+        ):
+            construction_failures = validator_module.construction_authorization_failures(
+                project,
+                visible_decision_payload,
+                route_manifest_path=manifest_path,
+                dossier_path=dossier,
+            )
+            auth = visible_decision_payload.get("construction_authorization")
+            if isinstance(auth, dict) and isinstance(auth.get("entry_path"), str):
+                construction_entry = resolve_project_path(project, auth["entry_path"])
+        else:
+            construction_failures = [
+                "the packaged construction-binding journal validator is unavailable"
+            ]
+        step(
+            "construction-authorization",
+            not construction_failures,
+            "pre-code source bindings and append-only journal match current project"
+            if not construction_failures else " | ".join(construction_failures),
+            record=construction_entry if construction_entry is not None and construction_entry.is_file() else None,
+        )
+        if isinstance(visible_decision_payload, dict) and validator_module is not None:
+            controls = validator_module.load_bundled_source_module("_design_dna_implementation_control", SCRIPTS / "implementation_control.py")
+            prohibited_changes = controls.prohibition_failures(project, visible_decision_payload, validator_module)
+            step("implementation-prohibition", not prohibited_changes,
+                 "no broad source changes after a failed first-screen gate" if not prohibited_changes else " | ".join(prohibited_changes),
+                 failures=prohibited_changes)
+        if args.phase == "first-screen":
+            isolation_failures: list[str] = []
+            if (
+                isinstance(visible_decision_payload, dict)
+                and validator_module is not None
+                and hasattr(validator_module, "first_screen_construction_isolation_failures")
+            ):
+                isolation_failures = validator_module.first_screen_construction_isolation_failures(
+                    project,
+                    visible_decision_payload,
+                    route_manifest=manifest,
+                    route_key=str(args.route_key or ""),
+                )
+            else:
+                isolation_failures = ["the packaged first-screen source-tree isolation validator is unavailable"]
+            step(
+                "proof-isolation",
+                not isolation_failures,
+                "only declared primary proof source/region changes exist"
+                if not isolation_failures else " | ".join(isolation_failures),
+            )
 
     if args.substitute and not args.match:
         default_match = evidence / "typeface-match.json"
@@ -700,6 +999,12 @@ def main() -> int:
                 not auth_failures,
                 "append-only predecessor chain ready" if not auth_failures else " | ".join(auth_failures),
             )
+        elif args.phase == "maintenance":
+            workflow = validator_module.load_bundled_source_module("_design_dna_maintenance_workflow", SCRIPTS / "maintenance_workflow.py")
+            maintenance_failures = workflow.check(project, visible_decision_payload, validator_module)
+            step("maintenance-baseline", not maintenance_failures,
+                 "audited existing baseline and frozen change scope verified" if not maintenance_failures else " | ".join(maintenance_failures),
+                 failures=maintenance_failures)
         else:
             authorization_path = resolve_project_path(project, args.prebuild_authorization)
             auth_failures, authorization_payload, authorization_sha256 = validate_prebuild_authorization(
@@ -734,6 +1039,7 @@ def main() -> int:
         }, indent=2))
         return 0 if not reasons else 1
 
+    evidence.mkdir(parents=True, exist_ok=True)
     phase_evidence = evidence
     manifest_snapshot: Path | None = None
     dossier_snapshot: Path | None = None
@@ -787,6 +1093,23 @@ def main() -> int:
     candidate_dossier: str | None = None
 
     if not reasons and manifest is not None:
+        font_record = phase_evidence / f"{prefix}font-delivery.json"
+        font_command = [sys.executable, "-I", "-S", "-B", str(SCRIPTS / "font_audit.py"), str(project)]
+        try:
+            font_run = subprocess.run(font_command, cwd=str(project), capture_output=True,
+                                      text=True, encoding="utf-8", errors="replace", timeout=90)
+            font_payload = json.loads(font_run.stdout)
+            font_record.write_text(json.dumps(font_payload, indent=2) + "\n", encoding="utf-8")
+            font_findings = [item for item in font_payload.get("findings", [])
+                             if item.get("severity") in {"high", "medium"}]
+            font_ok = (font_run.returncode == 0 and font_payload.get("source_integrity_complete") is True and not font_findings)
+            step("font-delivery", font_ok, "font inventory, delivery and bound provenance contain no unresolved errors"
+                 if font_ok else json.dumps(font_findings or font_payload, ensure_ascii=False), font_command,
+                 font_record, findings=font_findings)
+        except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
+            step("font-delivery", False, f"font delivery audit failed: {exc}", font_command)
+
+    if not reasons and manifest is not None:
         cmd = ["--manifest", str(manifest_path), "--build-id", args.build_id, "--run-id", run_id, "--out", str(census)]
         for route in active_routes:
             cmd += ["--route-key", route["key"]]
@@ -820,6 +1143,14 @@ def main() -> int:
         step("census", ok, str(payload.get("verdict") or (so or se).strip()[-400:] or f"exit {code}"),
              ["node", "scan_build_components.mjs", *cmd], census, identity=identity_note,
              interaction_frames=frames_note)
+        if census.is_file() and isinstance(visible_decision_payload, dict):
+            content_module = validator_module.load_bundled_source_module("_design_dna_content_transfer", SCRIPTS / "content_transfer.py")
+            content_failures = content_module.content_transfer_failures(project, visible_decision_payload,
+                json.loads(census.read_text(encoding="utf-8")))
+            step("content-transfer", not content_failures, "rendered project copy, source roles, line rhythm and section connections match pre-code authority"
+                 if not content_failures else " | ".join(content_failures), failures=content_failures,
+                 record=resolve_project_path(project, visible_decision_payload["content_transfer"]["path"])
+                 if isinstance(visible_decision_payload.get("content_transfer"), dict) else None)
 
         for route in active_routes:
             for viewport in manifest["viewports"]:
@@ -860,6 +1191,8 @@ def main() -> int:
             cmd += ["--match", args.match]
         for route in active_routes:
             cmd += ["--route-key", route["key"]]
+        if args.phase == "first-screen":
+            cmd += ["--first-screen"]
         cmd += ["--build-id", args.build_id, "--run-id", run_id, *manifest_binding_args, "--out", str(provenance)]
         code, so, se = run_node(SCRIPTS / "check_style_provenance.mjs", cmd, project)
         payload = last_json(so) or {}
@@ -983,7 +1316,7 @@ def main() -> int:
             else "direct aggregate checks disagree on served response bytes",
         )
 
-        if args.phase == "final":
+        if args.phase in {"final", "maintenance"}:
             digests = {entry["path"]: entry["sha256"] for entry in evidence_hashes if entry["path"].startswith(".design-dna/")}
             body = dossier.read_text(encoding="utf-8", errors="replace")
             candidate_dossier, rebound = rebind_dossier(body, digests)
@@ -993,11 +1326,17 @@ def main() -> int:
             else:
                 failures = validator.reference_dossier_failures(candidate_dossier, project=project, record_path=dossier)
                 step("dossier", not failures,
-                     "0 failures" if not failures else f"{len(failures)} failure(s): " + " | ".join(failures[:6]))
+                     "0 failures" if not failures else f"{len(failures)} failure(s): " + " | ".join(failures), failures=failures)
         else:
             step("dossier-binding", dossier.is_file(),
                  "normalized dossier core bound for prebuild; circular gate line excluded")
 
+    if args.phase == "maintenance" and validator_module is not None and isinstance(visible_decision_payload, dict):
+        workflow = validator_module.load_bundled_source_module("_design_dna_maintenance_workflow", SCRIPTS / "maintenance_workflow.py")
+        maintenance_failures = workflow.check(project, visible_decision_payload, validator_module, current_scan=census, final=True)
+        step("maintenance-complete-delta", not maintenance_failures,
+             "the exact scoped delta and its new full census are verified" if not maintenance_failures else " | ".join(maintenance_failures),
+             failures=maintenance_failures)
     build_after = tree_identity(project)
     build_stable = build_before == build_after
     step("build-stability", build_stable,
@@ -1030,7 +1369,7 @@ def main() -> int:
                 })
     verdict = (
         f"GATE PASS: {args.phase} {len(steps)} checks passed for build {args.build_id} across {len(coverage_matrix)} route/viewport cells."
-        if passed else "GATE FAIL: " + " || ".join(reasons[:10])
+        if passed else "GATE FAIL: " + " || ".join(reasons)
     )
     served_content_identity = next(
         (
@@ -1072,6 +1411,11 @@ def main() -> int:
                 "sha256": visible_decision_sha256,
             }
             if visible_decision_sha256
+            else None
+        ),
+        "construction_authorization": (
+            visible_decision_payload.get("construction_authorization")
+            if isinstance(visible_decision_payload, dict)
             else None
         ),
         "visible_decision_snapshot": (
@@ -1122,20 +1466,25 @@ def main() -> int:
         "match": args.match,
         "rebound": sorted(set(rebound)) if passed else [],
         "steps": steps,
+        "failures": list(reasons),
+        "delivery_status": "gate-passed" if passed else "blocked",
+        "scoped_change_verified": passed and args.phase == "maintenance",
+        "new_site_approval": False,
+        "deliverable_link_allowed": passed and args.phase == "final",
         "pass": passed,
         "verdict": verdict,
         "owner_order": "The producer's own design is forbidden in every part. A build without this exact passing gate record is not delivered.",
     }
-    gate_file = evidence / ("first-screen-gate.json" if args.phase == "first-screen" else "gate.json")
+    gate_file = evidence / ("first-screen-gate.json" if args.phase == "first-screen" else "maintenance-gate.json" if args.phase == "maintenance" else "gate.json")
     immutable_gate_file = (
         phase_evidence / "gate.json"
         if args.phase == "first-screen"
-        else gate_file
+        else evidence / "gate-runs" / run_id / "gate.json"
     )
+    immutable_gate_file.parent.mkdir(parents=True, exist_ok=True)
     gate_bytes = json.dumps(record, indent=2) + "\n"
-    if args.phase == "first-screen":
-        with immutable_gate_file.open("x", encoding="utf-8", newline="\n") as handle:
-            handle.write(gate_bytes)
+    with immutable_gate_file.open("x", encoding="utf-8", newline="\n") as handle:
+        handle.write(gate_bytes)
     gate_file.write_text(gate_bytes, encoding="utf-8")
     if passed and args.phase == "first-screen":
         try:
@@ -1160,11 +1509,45 @@ def main() -> int:
             failure = f"authorization-write: {exc}"
             reasons.append(failure)
             record["pass"] = False
-            record["verdict"] = "GATE FAIL: " + " || ".join(reasons[:10])
+            record["verdict"] = "GATE FAIL: " + " || ".join(reasons)
             record["steps"].append({"name": "authorization-write", "pass": False, "verdict": str(exc)})
             gate_bytes = json.dumps(record, indent=2) + "\n"
             immutable_gate_file.write_text(gate_bytes, encoding="utf-8")
             gate_file.write_text(gate_bytes, encoding="utf-8")
+    if passed and args.phase != "maintenance" and isinstance(visible_decision_payload, dict):
+        try:
+            if validator_module is None or not hasattr(validator_module, "append_construction_journal_entry"):
+                raise RuntimeError("the packaged construction journal appender is unavailable")
+            journal_action = validator_module.append_construction_journal_entry(
+                project,
+                entry_kind=("first-screen-authorized" if args.phase == "first-screen" else "final-freeze"),
+                manifest_path=manifest_path,
+                dossier_path=dossier,
+                visible_payload=visible_decision_payload,
+            )
+        except Exception as exc:
+            passed = False
+            failure = f"construction-journal-write: {exc}"
+            reasons.append(failure)
+            record["pass"] = False
+            record["verdict"] = "GATE FAIL: " + " || ".join(reasons)
+            gate_bytes = json.dumps(record, indent=2) + "\n"
+            immutable_gate_file.write_text(gate_bytes, encoding="utf-8")
+            gate_file.write_text(gate_bytes, encoding="utf-8")
+    record["failures"] = list(reasons)
+    record["delivery_status"] = "gate-passed" if passed else "blocked"
+    record["deliverable_link_allowed"] = passed and args.phase == "final"
+    record["scoped_change_verified"] = passed and args.phase == "maintenance"
+    if not passed and validator_module is not None:
+        # Keep the final failure disposition and its inventory immutable.
+        gate_bytes = json.dumps(record, indent=2) + "\n"
+        immutable_gate_file.write_text(gate_bytes, encoding="utf-8")
+        gate_file.write_text(gate_bytes, encoding="utf-8")
+        try:
+            controls = validator_module.load_bundled_source_module("_design_dna_implementation_control", SCRIPTS / "implementation_control.py")
+            controls.write_prohibition(project, immutable_gate_file, record, validator_module)
+        except Exception as exc:
+            print(f"implementation-prohibition-write failed; build remains blocked: {exc}", file=sys.stderr)
     print(record["verdict"])
     print(f"record: {gate_file.relative_to(project)} sha256:{sha256_of(gate_file)}")
     if passed and args.phase == "first-screen":

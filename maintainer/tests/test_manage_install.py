@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from unittest import mock
 from pathlib import Path
+from directory_link_fixtures import make_directory_link, remove_directory_link
 
 
 MAINTAINER = Path(__file__).resolve().parents[1]
@@ -76,6 +77,10 @@ class ManageInstallTests(unittest.TestCase):
             command.extend(extra)
         environment = dict(os.environ)
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        # A fixture's project/module boundary must not inherit the real CI or
+        # developer browser bundle. Explicit test overrides remain supported.
+        environment.pop("DESIGN_DNA_PLAYWRIGHT_MODULE_DIR", None)
+        environment.pop("DESIGN_DNA_BROWSER_EXECUTABLE", None)
         if environment_overrides:
             environment.update(environment_overrides)
         completed = subprocess.run(
@@ -185,8 +190,11 @@ class ManageInstallTests(unittest.TestCase):
             encoding="utf-8",
         )
         (package / "index.js").write_text(
-            "module.exports={chromium:{executablePath:()=>'',launch:async()=>({"
-            "version:()=> 'fixture-browser',newPage:async()=>({goto:async()=>{},close:async()=>{}}),close:async()=>{}})}};\n",
+            "module.exports={chromium:{executablePath:()=>'',launch:async()=>{let running=false;return {"
+            "version:()=> 'fixture-browser',newPage:async()=>({goto:async()=>{},screencast:{"
+            "start:async({onFrame})=>{if(running)throw Error('already started');running=true;onFrame({timestamp:Date.now()});},"
+            "stop:async()=>{if(!running)throw Error('not started');running=false;}},"
+            "close:async()=>{if(running)throw Error('recording was not stopped');}}),close:async()=>{running=false;}}}}};\n",
             encoding="utf-8",
         )
 
@@ -198,14 +206,15 @@ class ManageInstallTests(unittest.TestCase):
         project.mkdir()
         self.write_fake_playwright(project)
 
-        completed, payload = self.command(
-            "doctor",
-            extra=["--browser-project", str(project)],
-            environment_overrides={
-                "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
-                "NODE_PATH": "",
-            },
-        )
+        with mock.patch.dict(os.environ, {"DESIGN_DNA_PLAYWRIGHT_MODULE_DIR": str(self.root / "unrelated-host-modules")}):
+            completed, payload = self.command(
+                "doctor",
+                extra=["--browser-project", str(project)],
+                environment_overrides={
+                    "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
+                    "NODE_PATH": "",
+                },
+            )
 
         self.assertEqual(0, completed.returncode, payload)
         preflight = payload["hosts"][0]["browser_preflight"]
@@ -223,14 +232,15 @@ class ManageInstallTests(unittest.TestCase):
         project = self.root / "browser-project"
         project.mkdir()
 
-        completed, payload = self.command(
-            "doctor",
-            extra=["--browser-project", str(project)],
-            environment_overrides={
-                "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
-                "NODE_PATH": "",
-            },
-        )
+        with mock.patch.dict(os.environ, {"DESIGN_DNA_PLAYWRIGHT_MODULE_DIR": str(self.root / "unrelated-host-modules")}):
+            completed, payload = self.command(
+                "doctor",
+                extra=["--browser-project", str(project)],
+                environment_overrides={
+                    "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
+                    "NODE_PATH": "",
+                },
+            )
 
         self.assertEqual(1, completed.returncode, payload)
         preflight = payload["hosts"][0]["browser_preflight"]
@@ -953,38 +963,15 @@ class ManageInstallTests(unittest.TestCase):
         external = self.root / "external"
         external.mkdir()
         link = self.source / "linked"
+        make_directory_link(link, external)
         try:
-            os.symlink(external, link, target_is_directory=True)
-        except (OSError, NotImplementedError):
-            flagged = self.source / "simulated-redirect"
-            flagged.mkdir()
-            module_name = "design_dna_manage_install_test_module"
-            specification = importlib.util.spec_from_file_location(module_name, SCRIPT)
-            self.assertIsNotNone(specification)
-            self.assertIsNotNone(specification.loader)
-            module = importlib.util.module_from_spec(specification)
-            sys.modules[module_name] = module
-            try:
-                specification.loader.exec_module(module)
-                real_is_reparse = module.is_reparse
-
-                def simulated_is_reparse(path: Path) -> bool:
-                    if module.path_key(path) == module.path_key(flagged):
-                        return True
-                    return real_is_reparse(path)
-
-                with mock.patch.object(module, "is_reparse", side_effect=simulated_is_reparse):
-                    with self.assertRaises(module.ManagerError) as raised:
-                        module.validate_design_dna_tree(self.source)
-                self.assertEqual("reparse-point-refused", raised.exception.code)
-                self.assertEqual(str(flagged), raised.exception.path)
-            finally:
-                sys.modules.pop(module_name, None)
-            return
-        completed, payload = self.command("doctor")
-        self.assertEqual(2, completed.returncode)
-        self.assertEqual("reparse-point-refused", payload["errors"][0]["code"])
-        self.assert_valid_schema(payload)
+            completed, payload = self.command("doctor")
+            self.assertEqual(2, completed.returncode)
+            self.assertEqual("reparse-point-refused", payload["errors"][0]["code"])
+            self.assert_valid_schema(payload)
+        finally:
+            remove_directory_link(link)
+        self.assertTrue(external.is_dir())
 
     def test_all_hosts_install_to_only_the_two_supported_direct_routes(self) -> None:
         completed, payload = self.command("install", host="all")

@@ -48,11 +48,11 @@ framing, or decorative `01 / 02 / 03` rhythm.
 Read [Reference-led direction](reference-led-direction.md) before choosing the
 first public visual candidate. Complete the project-local `reference-dossier.md`
 with the exact audience/task/content/brand/operational selection brief; a
-side-by-side candidate comparison and concrete rejection reasons; at least six
-strong references from at least three sources; distinct full-page wide and
+side-by-side candidate comparison and concrete rejection reasons; a documented
+count/coverage rationale and multiple qualified references from multiple sources; distinct full-page wide and
 narrow captures plus truthful motion/static evidence for each strong row; at
 least three brief-specific counterexamples; and a selected synthesis of at
-least four references. A publicly visible gallery entry is eligible only for
+least two qualified references, with more whenever coverage requires them. A publicly visible gallery entry is eligible only for
 what it exposes; a restricted entry is not. One selected source supplies the
 dominant grammar for each route, compatible mapped sources supply supporting
 moments, and no visible part comes from producer taste.
@@ -149,7 +149,7 @@ the following prompts to name observed causes:
    brand, and operating reality rather than accolade or convenience? Were
    serious candidates studied across complete accessible pages, states, and
    wide/narrow conditions, with selection and rejection reasons recorded? Do
-   at least six references from at least three sources, and at least three
+   multiple qualified references from multiple discovery sources, and at least three
    observed counterexamples, support one coherent dominant grammar per route
    without a generic template, visual collage, copied brand surface, or
    producer-designed connective tissue?

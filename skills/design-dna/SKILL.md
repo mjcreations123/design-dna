@@ -61,14 +61,17 @@ What it means, mechanically:
 - There is no reduced-rigor mode. "Quick", "small", "just a test", "a demo",
   "whatever's easiest" and "hurry up" shrink the page count and the copy.
   They never shrink the reference count, the recordings, the measurements,
-  the dossier or the gate. The recorder exists so that watching a site costs
-  minutes. If there is still no time to run the gate, there is no time to
-  build; say so and stop. A build made without the gate is the producer's
-  design by definition, which is forbidden, so it is not delivered.
+  the dossier or the gate for a public build. When research is blocked, use
+  only the separately bounded internal proof-slice workflow described below,
+  if its own exact source evidence is available. A missing or failed gate
+  leaves the requested website blocked. Gate results measure recorded
+  compliance; they do not establish who authored a design.
 - One gate program has two mandatory phases against the same authoritative
   [route-manifest file and complete planned route mapping](templates/route-manifest-template.json).
   Keep the manifest's immutable `manifest_id`; it never contains a build ID.
-  Use distinct immutable proof and final build IDs. Before a second
+  Use distinct immutable proof and final build IDs. First create the schema-2
+  construction binding and append-only pre-code journal; without both, no
+  visible proof source file is permitted. Before a second
   section or broad implementation, run it with `--phase first-screen
   --route-key <PRIMARY_KEY>`; it checks that mapped route at both manifest
   viewport classes and writes `.design-dna/evidence/first-screen-gate.json`.
@@ -78,12 +81,19 @@ What it means, mechanically:
   and writes `.design-dna/evidence/gate.json`. Both commands require `--project
   "<PROJECT_ROOT>" --build-id` for their distinct immutable builds and
   `--route-manifest .design-dna/route-manifest.json`; the manifest has its own
-  immutable `manifest_id`. A failing or missing first-screen phase blocks broad implementation;
+  immutable `manifest_id`. The first-screen result is an isolated,
+  source-faithful proof slice, never a local-only substitute for the requested
+  website or evidence concealment for an unsupported design. A failing or missing first-screen phase blocks broad implementation;
   a failing or missing final phase blocks presentation.
 - The final message to the owner quotes that verdict line verbatim
   (`GATE PASS ...` or `GATE FAIL ...`). If the gate did not run, the message
   says "the gate did not run" in those words. A finished-looking page
   presented without that line is a lie of omission.
+- Before presenting a website as deliverable, run
+  `python -B "<SKILL_ROOT>/scripts/delivery_status.py" --project "<PROJECT_ROOT>"`.
+  This read-only helper rechecks complete current readiness; a stored pass,
+  first-screen result, or maintenance result cannot unlock a finished-site link.
+  Its output does not establish deployment, live operation, or owner approval.
 
 This applies to every producer on every host that loads this skill, Claude
 and Codex alike. It is not a style blacklist, because named styles are not the
@@ -110,20 +120,95 @@ Create each reference's exact state list from
 `templates/reference-state-contract-template.json` and pass it to both the
 schema-4 recorder and schema-5 observer. The recorder records wide and narrow
 separately for at least 90 seconds at 15 fps; if recursive routes, declared
-states, scroll surfaces, or hover targets remain incomplete, it fails and must
-be rerun with a greater duration until coverage is complete. Never declare the
-floor itself sufficient; any remaining coverage gap blocks the reference.
+states, scroll surfaces, or hover targets remain incomplete within the
+controller's fixed study bounds, preserve the
+typed partial artifact and stop that run. Diagnose the named missing coverage
+before any fresh attempt; repeated unchanged failures do not justify another
+identical run. Never declare the recording floor sufficient; any remaining
+coverage gap blocks public selection. Read
+[bounded source study and internal proofs](references/quality/bounded-source-study.md)
+for progress, retries, proof-only evidence, and reporting boundaries.
 
-Before broad implementation, create and hash-bind
-`.design-dna/visible-decision-sources.json` from the packaged template. It
-enumerates every planned layout, typeface, color, control, transition, content
-pattern, and effect; binds each decision to exact manifested routes/states and
-an immutable PNG in the cited schema-5 observer's canonical frame inventory;
-the observation envelope or a hand-written local file is not visual evidence.
-It forbids placeholders, generic scaffolds, and fallback design. Its planned
-IDs equal its sourced rows. A later visible
-decision or scaffold finding invalidates the proof until the manifest and
-first-screen authorization are regenerated.
+If a source changes without visitor input, record it as a schema-2
+source-only `ambient` state with one exact appearing-element selector and its
+observed bounded wait. The observer must generate before/appearance/settled
+evidence or fail. Never add `ambient` to a build route manifest or invent a
+popup because a reference happened to show one; transfer is optional and, when
+selected, uses an explicit source-mapped system/programmatic state driver.
+
+Before any visible implementation, create and hash-bind the schema-2
+construction-binding `.design-dna/visible-decision-sources.json` from the
+packaged template. It enumerates every planned layout, typeface, color,
+control, transition, content pattern, effect, asset role, and dominant
+behavior carrier. Every row names one exact rendered component root and one
+route/state/**viewport** cell, binds an immutable observer frame and exact
+source-state hash, and names source-computed style values. A parent `body`,
+`main`, grid, or card wrapper cannot inherit a binding for independently
+painted text, media, controls, pseudo-elements, navigation, or footer content:
+those descendants need their own direct `data-design-dna-decision-id` rows.
+`component_id` must equal the direct root's actual
+`data-design-dna-component`, with `component_key: component:<component_id>`;
+it is not detached metadata. Bind material category-specific computed
+properties rather than a generic token, exact wide+narrow settled evidence for
+every transferred or omitted source state, and an explicit contribution/carrier
+for every selected positive rank. A pseudo binding carries its source pseudo
+selector/profile/state/property/value. Each visible asset binds a manifest
+`runtime_output` whose served URL path, bytes, and SHA-256 equal the rendered
+response; a derivative additionally needs its immutable source-to-output
+transformation record. A dominant carrier binds source target, trigger, state,
+recorder event metadata, build target, and settled outcome.
+
+Then, before that first visible source file, run:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --begin-construction
+```
+
+It writes an append-only pre-code baseline and binds it back into the
+construction manifest. A fresh project whose implementation roots already
+contain visible source is honestly marked legacy-audit and cannot claim a new
+source-led proof until its actual current census is fully bound. A hand-written
+journal, a screenshot, an observer envelope, a DOM node, or a post-hoc dossier
+is not visual authority. Use `--check-construction` before starting or
+resuming a proof slice. A later source/manifest/binding change invalidates the
+authorization; reopen the research and create a new source-bound proof rather
+than fitting citations to code that already exists.
+
+## Internal proof-slice exception (never public authorization)
+
+When the current brief and one generated proof-source observation are ready
+but the public reference study is still pending, a single local first-screen
+specimen may use the separate
+[`proof-slice-template.json`](templates/proof-slice-template.json):
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<PROOF_BUILD_ID>" --phase proof-slice --proof-slice ".design-dna/proof-slice.json"
+```
+
+It requires a current brief; a generated, non-public `source_kind:
+proof-slice` observation rather than a screenshot; exact wide/narrow source
+state and settled arrangement frames; source/style/media maps for every
+mounted component; one local render URL; and the visible text `Internal
+unverified proof slice — not for public release` on the sole root. It runs a
+controlled pinned-parser build from the bound static JSX source immediately
+before local wide/narrow browser scans. The build record binds source input,
+generated output, served response bytes, component recognition text, computed
+style tuples, media/crop, one-region boundary, and absence of route links.
+
+Its status is intentionally four-way: `proof slice built`, `proof-slice gate`,
+`standard first-screen gate`, and `final site`. A proof-slice pass is internal
+evidence only. It creates no prebuild authorization, cannot enter public
+source selection, and cannot unlock broad implementation, release, sync, or
+push. Use schema-2 construction plus standard `--phase first-screen` and
+`--phase final` for any public site.
+
+When an owner-pattern contract applies, complete its direction review before
+the construction baseline and keep every controlled failure relationship bound
+to a source component/section boundary. The contract does not authorize a
+generic inverse chassis, a freehand connective section, or a renamed token.
+The output state stays honest: an isolated proof is internal evidence, a
+legacy audit is blocked, a failing check is incomplete, and only a final gate
+can support a finished-site claim.
 
 Use accessible page code, DOM, route configuration, loaded assets, and browser
 state hooks as a coverage aid to discover routes, controls, state logic,
@@ -250,6 +335,11 @@ unresolved choice would materially change the result.
 
 ## Classify the work
 
+For an existing site with visible code, use
+[scoped maintenance](references/quality/scoped-maintenance.md) when the change
+preserves its route scope. Freeze a current full census and the exact planned
+delta before editing. Do not pretend existing history was a code-free start.
+
 | Scope | Required process |
 | --- | --- |
 | New build, visual redesign, or route family | Preflight, direct, proof, implement, complete rendered plus engineering review. A fresh public-facing representation starts at Standard plus Enterprise Candidate with the full public rendered-review rigor, including the captured reference dossier; add Showcase only when its brief calls for it. For multiple independently addressable routes, name each route's body job before one page recipe spreads across them. |
@@ -319,10 +409,17 @@ navigation, the full content/task progression, applicable hover, focus, press,
 open, scroll, transition, media, ending, reset, error, and recovery states.
 Record a side-by-side candidate comparison, why each selection fits this exact
 brief, and the concrete rejection reason for every non-selected finalist.
-Record at least six strong references from at least three active sources, with
-no source supplying more than half, plus at least three project-specific
-counterexamples. The floor prevents one site becoming the template; never pad
-it with a merely eligible or visually impressive but mismatched site.
+Determine the reference count from the project's route, component, and behavior
+coverage, and record the rationale. A public build requires multiple qualified
+live references selected from multiple active discovery sources, with no
+discovery source supplying more than half, plus at least three project-specific
+counterexamples. A single site cannot supply the whole design. Do not pad the
+set to reach six, ten, or another number, and do not reduce per-source rigor.
+
+Owner clarification, 2026-09-05: this coverage-justified multi-source rule
+supersedes older six/ten positive-reference minima in historical owner notes
+and prior skill revisions. The requirements for qualified whole-source study,
+meaningful contributions, discovery breadth, and counterexamples still apply.
 
 Every strong row binds distinct full-page wide and narrow captures, the pages
 and states actually studied, and the packaged recording, observation, and
@@ -335,7 +432,7 @@ structure/style evidence. Never invent motion or force a static signature into
 a verb. A motion-quality floor may reject a motion claim; it cannot disqualify
 an excellent static source.
 
-Select at least four references from at least two sources for the transfer map.
+Select multiple qualified references from at least two discovery sources for the transfer map.
 One selected source supplies the dominant visual grammar for each route;
 additional references may supply only compatible, explicitly mapped moments.
 The combination must preserve the dominant source's coherent hierarchy,
@@ -499,12 +596,12 @@ release; it never authorizes an unsourced aesthetic choice.
 - For Enterprise Candidate public builds, complete the project-local
   `reference-dossier.md` before broad implementation. It must bind the active
   public source context; the exact brief-fit frame; the compared candidate pool
-  with concrete selection and rejection reasons; at least six captured strong
-  references from at least three sources; distinct full-page wide and narrow
+  with concrete selection and rejection reasons and a count/coverage rationale;
+  multiple qualified references from multiple sources; distinct full-page wide and narrow
   captures for every strong row; truthful schema-5 wide/narrow observation and
   schema-4 recording or static evidence, each bound to its producer identity;
   the pages, states, and complete experience studied; at least three
-  weak/mismatched counterexamples; and a selected synthesis of at least four
+  weak/mismatched counterexamples; and a selected synthesis of multiple
   references from at least two sources. It also needs a component-sources table
   covering every shipping part with no producer-designed row, a
   signature-transfer row per selected reference that survives the deletion
@@ -831,8 +928,9 @@ It runs every packaged check against the manifest's complete route, state, and
 wide/narrow viewport set, requires a distinct proof/final build identity and
 the exact append-only first-screen predecessor, and writes
 `.design-dna/evidence/gate.json`. Its verdict line is quoted verbatim in
-the final message to the owner. Without a passing gate there is no build to
-present, because whatever was made without it is the producer's design, and
-the owner has forbidden that in every part. This final phase does not replace
+the final message to the owner. Without a passing final gate the requested
+website remains blocked and is not linked as a successful deliverable. An
+internal proof slice may be shown only with its explicit unverified status
+and its own gate result. This final phase does not replace
 the required earlier `--phase first-screen --route-key <PRIMARY_KEY>` pass and
 its bound `First-screen gate` record.

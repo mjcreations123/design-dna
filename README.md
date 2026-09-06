@@ -23,14 +23,14 @@ Six things make it different from a prompt that says "make it look nice":
   review. A clean technical build is not treated as proof that the result is
   beautiful, credible, or ready to show a client.
 - **It qualifies references before copying them.** Enterprise Candidate work
-  creates a brief-weighted dossier with at least eight serious compared
-  finalists (including at least two concrete rejections), at least six captured
-  strong references from at least three sources, and at least three concrete
+  creates a brief-weighted dossier with an evidence-supported number of
+  compared finalists, a meaningful rejected alternative, multiple qualified
+  references from multiple discovery sources, and at least three concrete
   counterexamples. Every
   serious candidate is traversed across its complete relevant same-origin
   experience, inner pages, interactions, ending/reset, and narrow
   recomposition; dynamic candidates are recorded for at least 90 seconds at 15
-  fps and longer whenever traversal is incomplete. The agent must visit and
+  fps within bounded study attempts. Incomplete coverage blocks selection. The agent must visit and
   record each candidate, reject weak or inaccessible work, and
   establish why the survivors fit this website's audience, business model,
   content, customer tasks, required routes and states, material, and register.
@@ -67,19 +67,19 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Development-candidate status:** `11.0.0` is not a release. Candidate source
+> **Development-candidate status:** `12.0.0` is not a qualified release. Candidate source
 > and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
 > CI, signatures, and strict release qualification each need their own current
 > evidence. Any retained earlier host, install, route, test, or validation
-> records are historical inputs, not 11.0.0 qualification; see
+> records are historical inputs, not 12.0.0 qualification; see
 > [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
 specific, time-appropriate, coherent, truthful, and fully implemented. Version
-11.0.0 makes reference provenance the visual-authority boundary: the producer
+12.0.0 makes reference provenance the visual-authority boundary: the producer
 does not select a palette, typeface, layout, component, or interaction because
 it feels appropriate. It qualifies strong reference sites against the actual
 brief, records the whole behavior and relevant inner pages, measures the visual
@@ -280,6 +280,8 @@ prebuild gate before writing the full route family:
 
 ```text
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile enterprise-candidate
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --begin-construction
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-construction
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest ".design-dna/route-manifest.json" --phase first-screen --route-key "<PRIMARY_ROUTE_KEY>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --mark-complete direction --binding-kind artifact --binding-id "<PROOF_ID>" --binding-path "<PROJECT_RELATIVE_PROOF_PATH>" --completion-owner "<REVIEWER>" --limitations "<KNOWN_LIMITS_OR_NONE_WITHIN_SCOPE>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
@@ -302,7 +304,13 @@ base profile, then add the canonical asset record and capability. The printed
 asset example is schema-valid but intentionally not release-ready; replace its
 demonstration values with the exact approved project files and provenance.
 
-`--check-prebuild` is permission to propagate the chosen direction, not a final
+`--begin-construction` is the append-only pre-code boundary for a complete
+schema-2 visible-decision binding. It blocks a project that already contains
+visible source from pretending its research came first; that project remains a
+legacy audit until its actual rendered census is source-bound. Every direct
+rendered component, viewport/state cell, asset role, and dominant source
+behavior needs its own binding; a wrapper ID cannot source a generic header,
+CTA, card, footer, pseudo-element, or media descendant. `--check-prebuild` is permission to propagate the chosen direction, not a final
 quality or release pass. It fails closed on draft or unbound direction-stage
 records, unresolved packaged scaffolds, a Direction Challenge that has not
 reached reviewed cross-root proof, an applicable CPE record that has not
@@ -311,6 +319,19 @@ bound asset. After implementation and rendered revision, `--check-ready` owns
 the separate final evidence boundary. Before presenting any website result,
 run the single project gate against the authoritative route manifest for the
 exact immutable running build:
+
+For one non-public source-faithful specimen before public research is complete,
+use the distinct proof-slice path instead of `--phase first-screen`:
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<PROOF_BUILD_ID>" --phase proof-slice --proof-slice ".design-dna/proof-slice.json"
+```
+
+It requires a local wide/narrow browser render, generated proof-source state
+and arrangement frames, exact component/style/media maps, and a visible
+internal-unverified label. Its record cannot authorize public construction or
+release; it reports proof-slice, standard first-screen, and final-site status
+separately.
 
 ```text
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FINAL_BUILD_ID>" --route-manifest ".design-dna/route-manifest.json" --phase final --prebuild-authorization "<EMITTED_PREBUILD_AUTHORIZATION_PATH>"
@@ -558,9 +579,10 @@ those tools are absent; source cleanliness is never promoted into visual proof.
 
 Use `-B` as shown. Compiled Python artifacts are excluded from identity hashes
 and forbidden in executable runtime and maintainer trees.
-The attested suite has a fixed one-hour safety ceiling because it exercises
-real browser and interrupted-filesystem lifecycle cases; a timeout remains an
-unavailable result, never a pass.
+The attested suite has a fixed 5-hour-45-minute safety ceiling for its complete
+fresh-byte reference, browser and interrupted-filesystem lifecycle checks. A
+timeout remains an unavailable result, never a pass; no checks are dropped or
+waived to fit the budget.
 
 ## Proof and release boundary
 

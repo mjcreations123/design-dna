@@ -18,8 +18,11 @@ quality/exact-fit qualification, required count or source spread, complete
 same-origin traversal, the 90-second/15-fps recording floor, distinct
 wide/narrow evidence, component/source provenance, source-fidelity proof, the
 first-screen hard gate, the final gate, or whole-scope copy, functional,
-responsive, and accessibility review. If complete traversal exceeds the
-recording floor, increase the duration.
+responsive, and accessibility review. Complete traversal remains required,
+but every source attempt must terminate within its configured controller
+bounds. Preserve partial evidence and diagnose the named blocker before
+retrying. Follow [bounded source study](quality/bounded-source-study.md)
+when a source stalls or only an internal proof specimen can be supported.
 
 No homemade tool or hand-written generated-record substitute, lower threshold,
 deferred required evidence, omitted route/state, reused capture, waiver, or
@@ -523,8 +526,17 @@ fixed early sample. Lock the route-family record before completing dependent
 routes.
 
 For reference-led public work, populate the full planned
-`.design-dna/route-manifest.json`, render only the primary first screen, and run
-the source-fidelity hard stop before a second section or route exists:
+`.design-dna/route-manifest.json` **and complete schema-2
+`visible-decision-sources.json` before any visible implementation**. Run the
+generated pre-code baseline first:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --begin-construction
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-construction
+```
+
+Only then render the isolated primary first screen and run the source-fidelity
+hard stop before a second section or route exists:
 
 ```text
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest .design-dna/route-manifest.json --phase first-screen --route-key <PRIMARY_KEY>
@@ -559,6 +571,13 @@ then rerun the gate.
 
 After `--check-prebuild` succeeds, build the truthful user path and accepted
 selected source/state/component transfer at coherent depth before proliferating incidental variations.
+
+Every newly visible component remains a direct construction binding: it names
+an exact source component/state/viewport/frame and uses its own direct
+`data-design-dna-decision-id`. Do not make a generic shell and add bindings
+afterward. A proof build is bounded source-faithful evidence only; hiding it,
+serving it locally, or calling it a demo never turns unsupported design into
+compliant construction.
 
 - Centralize values and behavior when reuse, consistency, maintenance, or an
   established system makes that useful; keep deliberate scoped one-offs when

@@ -1,6 +1,6 @@
 # Design DNA quick start
 
-This guide describes the `11.0.0` development candidate. The version label is
+This guide describes the `12.0.0` development candidate. The version label is
 source identity, not release qualification; see the compatibility matrix and
 release procedure for current evidence.
 
@@ -23,14 +23,14 @@ public-facing site representing a business, product, organization, place,
 creator, or campaign begins at Standard plus Enterprise Candidate, including
 full public rendered, engineering, media, interaction, and whole-corpus
 copy-integrity review, including rendered density and numeric-rhetoric review.
-  It also begins with a required public-reference dossier: at least eight serious
-  compared finalists including at least two concrete rejections, at least six
-  captured references from at least three sources, at least three visible
+  It also begins with a required public-reference dossier: an evidence-supported
+  comparison including a meaningful rejected alternative, multiple qualified
+  references from multiple discovery sources, at least three visible
   counterexamples, and a component-level combination of the selected references. Before
   selection, the agent must traverse each serious candidate's complete relevant
   same-origin experience, inner pages, interactions, ending/reset, and narrow
   recomposition. Dynamic candidates are recorded for at least 90 seconds at 15
-  fps and longer whenever traversal is incomplete. The agent must prove why it fits this
+  fps within bounded attempts; incomplete traversal blocks selection. The agent must prove why it fits this
 website's audience, business model, customer tasks, content, required routes
 and states, available material, constraints, and register. Award or editorial
 curation is only the eligibility floor. Random gallery picks, genre-blind
@@ -183,6 +183,8 @@ complete, and bound to that proof.
 
 ```text
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --profile enterprise-candidate
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --begin-construction
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-construction
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<FIRST_SCREEN_BUILD_ID>" --route-manifest ".design-dna/route-manifest.json" --phase first-screen --route-key "<PRIMARY_ROUTE_KEY>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --mark-complete direction --binding-kind artifact --binding-id "<PROOF_ID>" --binding-path "<PROJECT_RELATIVE_PROOF_PATH>" --completion-owner "<REVIEWER>" --limitations "<KNOWN_LIMITS_OR_NONE_WITHIN_SCOPE>"
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --check-prebuild
@@ -197,6 +199,28 @@ Use only the opt-in initializer forms that match the brief:
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --project "<PROJECT_ROOT>" --record assets --evidence-capability asset-led
 <PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" --print-asset-example
 ```
+
+Before writing any visible source for reference-led public work, complete the
+schema-2 visible-decision binding and run `--begin-construction`; run
+`--check-construction` before a proof or resumed construction. The generated
+append-only baseline rejects post-hoc research over existing visible code and
+the scanner rejects wrapper-inherited, unbound component/media/control
+surfaces. A first-screen proof remains an internal source-faithful slice, not a
+finished local preview.
+
+If public reference selection is still pending but one generated proof-source
+study is exact, use the separate non-public proof-slice gate—not the standard
+first-screen gate:
+
+```text
+<PYTHON> -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<PROOF_BUILD_ID>" --phase proof-slice --proof-slice ".design-dna/proof-slice.json"
+```
+
+The proof-slice manifest binds a current brief, proof-source wide/narrow state
+and arrangement frames, every mounted component's source/style/media map, and
+one local render URL. The gate records browser evidence at both profiles and
+requires the visible internal-unverified label. It does not write a standard
+prebuild authorization, select a public source, or authorize broad work.
 
 For Asset-led work, initialize the applicable base profile first, then run the
 incremental `--record assets --evidence-capability asset-led` command. The

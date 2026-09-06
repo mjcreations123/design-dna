@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "record_type": "design-dna-visible-decision-source-manifest",
   "created_at": "__REPLACE_WITH_ISO_8601_TIMEZONE_TIMESTAMP__",
   "proof_build_id": "__REPLACE_WITH_FIRST_SCREEN_PROOF_BUILD_ID__",
@@ -15,116 +15,116 @@
       "sha256": "__REPLACE_WITH_OBSERVATION_SHA256__"
     }
   ],
+  "construction_authorization": {
+    "journal_id": null,
+    "entry_path": null,
+    "entry_sha256": null
+  },
+  "proof_isolation": {
+    "primary_route_key": "home",
+    "source_files": [
+      "__REPLACE_WITH_PRIMARY_PROOF_SOURCE_FILE__.tsx"
+    ],
+    "region_component_id": "home-hero",
+    "decision_ids": ["home-wide-rest-hero-layout"]
+  },
   "planned_decision_ids": [
-    "home-rest-layout",
-    "home-rest-typeface",
-    "home-rest-color",
-    "home-rest-control",
-    "home-rest-transition",
-    "home-rest-content-pattern",
-    "home-rest-effect"
+    "home-wide-rest-hero-layout"
   ],
   "decisions": [
     {
-      "decision_id": "home-rest-layout",
+      "decision_id": "home-wide-rest-hero-layout",
       "category": "layout",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_RELATIONSHIP__",
-      "route_keys": [
-        "home"
+      "component_id": "home-hero",
+      "source_mapping": {
+        "rank": 1,
+        "id": "strong-1",
+        "observation": ".design-dna/references/strong-1-observation.json",
+        "sha256": "__REPLACE_WITH_OBSERVATION_SHA256__",
+        "source_component_key": "__REPLACE_WITH_EXACT_OBSERVED_SOURCE_COMPONENT_KEY__",
+        "source_selector": "__REPLACE_WITH_EXACT_OBSERVED_SOURCE_SELECTOR__",
+        "source_recording": {
+          "path": ".design-dna/references/strong-1-recording.json",
+          "sha256": "__REPLACE_WITH_SOURCE_RECORDING_SHA256__",
+          "ledger_path": ".design-dna/references/strong-1-artifacts.json",
+          "ledger_sha256": "__REPLACE_WITH_SOURCE_ARTIFACT_LEDGER_SHA256__"
+        }
+      },
+      "bindings": [
+        {
+          "route_key": "home",
+          "viewport": "wide",
+          "state_id": "rest",
+          "component_key": "component:home-hero",
+          "evidence": {
+            "path": "__REPLACE_WITH_GENERATED_WIDE_SOURCE_FRAME_PATH__",
+            "sha256": "__REPLACE_WITH_GENERATED_WIDE_SOURCE_FRAME_SHA256__"
+          },
+          "source_state": {
+            "id": "rest",
+            "sha256": "__REPLACE_WITH_CANONICAL_SOURCE_STATE_SHA256__"
+          }
+        }
       ],
-      "state_ids": [
-        "rest"
-      ],
-      "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_COMPONENT_OR_BEHAVIOR__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+      "style_provenance": {
+        "record": {
+          "path": ".design-dna/references/strong-1-styles.json",
+          "sha256": "__REPLACE_WITH_SOURCE_STYLE_RECORD_SHA256__"
+        },
+        "properties": [
+          "__REPLACE_WITH_EXACT_COMPUTED_CSS_PROPERTY__"
+        ],
+        "measured_values": [
+          "__REPLACE_WITH_EXACT_COMPUTED_SOURCE_VALUE__"
+        ],
+        "tuples": [
+          {
+            "viewport": "wide",
+            "state_id": "rest",
+            "source_state_id": "rest",
+            "source_selector": "__REPLACE_WITH_EXACT_OBSERVED_SOURCE_SELECTOR__",
+            "source_component_key": "__REPLACE_WITH_EXACT_OBSERVED_SOURCE_COMPONENT_KEY__",
+            "property": "__REPLACE_WITH_EXACT_COMPUTED_CSS_PROPERTY__",
+            "source_value": "__REPLACE_WITH_EXACT_SOURCE_COMPONENT_PROPERTY_VALUE__",
+            "build_value": "__REPLACE_WITH_EXACT_BUILD_COMPONENT_PROPERTY_VALUE__"
+          }
+        ]
       },
+      "asset_role_binding": null,
+      "dominant_behavior_carrier": null,
+      "pseudo_bindings": [],
       "disposition": "required"
-    },
+    }
+  ],
+  "source_state_dispositions": [
     {
-      "decision_id": "home-rest-typeface",
-      "category": "typeface",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_TYPE_RELATIONSHIP__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
       "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_TYPE_COMPONENT__",
+      "source_state_id": "rest",
+      "disposition": "transfer",
+      "reason": "__REPLACE_WITH_EXACT_SOURCE_STATE_TRANSFER_OR_OMISSION_REASON__",
       "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
+        "wide": {
+          "path": "__REPLACE_WITH_EXACT_WIDE_SOURCE_STATE_SETTLED_FRAME_PATH__",
+          "bytes": "__REPLACE_WITH_EXACT_WIDE_SOURCE_STATE_SETTLED_FRAME_BYTES__",
+          "sha256": "__REPLACE_WITH_EXACT_WIDE_SOURCE_STATE_SETTLED_FRAME_SHA256__"
+        },
+        "narrow": {
+          "path": "__REPLACE_WITH_EXACT_NARROW_SOURCE_STATE_SETTLED_FRAME_PATH__",
+          "bytes": "__REPLACE_WITH_EXACT_NARROW_SOURCE_STATE_SETTLED_FRAME_BYTES__",
+          "sha256": "__REPLACE_WITH_EXACT_NARROW_SOURCE_STATE_SETTLED_FRAME_SHA256__"
+        }
       },
-      "disposition": "required"
-    },
+      "absence_assertion": "not applicable when transfer; omit requires: no rendered carrier"
+    }
+  ],
+  "source_contribution_scope": [
     {
-      "decision_id": "home-rest-color",
-      "category": "color",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_SURFACE_AND_COLOR_RELATIONSHIP__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
       "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_COLOR_COMPONENT__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
-      },
-      "disposition": "required"
-    },
-    {
-      "decision_id": "home-rest-control",
-      "category": "control",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_CONTROL_AND_STATE__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
-      "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_CONTROL_BEHAVIOR__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
-      },
-      "disposition": "required"
-    },
-    {
-      "decision_id": "home-rest-transition",
-      "category": "transition",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_TRANSITION_AND_STATE__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
-      "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_TRANSITION_BEHAVIOR__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
-      },
-      "disposition": "required"
-    },
-    {
-      "decision_id": "home-rest-content-pattern",
-      "category": "content-pattern",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_CONTENT_RELATIONSHIP__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
-      "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_CONTENT_PATTERN__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
-      },
-      "disposition": "required"
-    },
-    {
-      "decision_id": "home-rest-effect",
-      "category": "effect",
-      "planned_surface": "__REPLACE_WITH_EXACT_VISIBLE_EFFECT_AND_STATE__",
-      "route_keys": ["home"],
-      "state_ids": ["rest"],
-      "source_reference_id": "strong-1",
-      "source_component_or_behavior": "__REPLACE_WITH_MEASURED_SOURCE_EFFECT_BEHAVIOR__",
-      "evidence": {
-        "path": "__REPLACE_WITH_GENERATED_OBSERVER_CAPTURE_OR_STATE_FRAME_PATH__",
-        "sha256": "__REPLACE_WITH_GENERATED_FRAME_SHA256__"
-      },
+      "selected_rank": 1,
+      "dominant_route_keys": ["home"],
+      "signature_carrier_decision_ids": ["home-wide-rest-hero-layout"],
+      "signature_kind": "static",
+      "deletion_test": "__REPLACE_WITH_THE_SOURCE_SIGNATURE_ARRANGEMENT_OR_BEHAVIOR_A_STRANGER_WOULD_LOSE__",
       "disposition": "required"
     }
   ],
@@ -150,6 +150,7 @@
     "placeholders_allowed": false,
     "generic_scaffold_allowed": false,
     "fallback_design_allowed": false,
+    "wrapper_inheritance_allowed": false,
     "unsourced_decisions": []
   }
 }

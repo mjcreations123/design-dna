@@ -87,6 +87,23 @@ runtime identities. Both the observation and evidence paths must be ordinary,
 in-project, non-linked files. Omit `source_mapping` only when the asset makes no
 visible decision; provenance, rights, and approval still apply independently.
 
+For a schema-2 construction binding, an asset used visibly also has an exact
+`asset_role_binding`: its `ASSET-NNN` ID, immutable `assets.yml` SHA-256, rendered media kind, source media
+kind, and role are cross-checked against this row and the rendered media
+inventory. Put `data-design-dna-asset-id` on the actual media owner. A video,
+moving welcome medium, or interactive asset observed in a selected source does
+not become a generic still image after the source mapping is recorded. A
+generated/planned-public asset must appear only after the source binding and
+pre-code construction baseline; an asset record or owner approval does not
+authorize an unsourced crop, subject, motion, lighting, or visual role.
+
+The `assets.yml` row must also declare `runtime_output`: the exact served URL
+path, response bytes, and SHA-256. A direct copy must equal the pre-code source
+file byte-for-byte. A derivative must name a hash-bound transformation record
+under `.design-dna/evidence/asset-transformations/` whose source and output
+objects match both hashes and byte counts. A valid `ASSET-NNN` cannot be used
+to launder a different served file with a convenient role or crop.
+
 Interpret the delivery fields by type rather than forcing every asset into an
 image workflow:
 

@@ -30,7 +30,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -59,7 +59,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -67,7 +67,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -87,7 +87,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -116,7 +116,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -124,7 +124,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -144,7 +144,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -173,7 +173,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -181,7 +181,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -201,7 +201,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -230,7 +230,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -238,7 +238,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -258,7 +258,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -287,7 +287,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -295,7 +295,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -315,7 +315,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -344,7 +344,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -352,7 +352,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -372,7 +372,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -401,7 +401,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -409,7 +409,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -429,7 +429,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -458,7 +458,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -466,7 +466,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -486,7 +486,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -515,7 +515,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -523,7 +523,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }
@@ -543,7 +543,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest"
         }
       ],
@@ -572,7 +572,7 @@
         "rank": 1,
         "id": "strong-1",
         "observation": ".design-dna/references/strong-1-observation.json",
-        "sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d"
+        "sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4"
       },
       "component_sources": [
         {
@@ -580,7 +580,7 @@
           "source_rank": 1,
           "source_id": "strong-1",
           "source_observation": ".design-dna/references/strong-1-observation.json",
-          "source_sha256": "e4433457134acdffe4e8a938d15b7e07660fc682e472479ba4a45b1ea7a5088d",
+          "source_sha256": "38ef29c8459eaf1644a5f4ae4240de9709806c005056f06254fa7200c4ab37e4",
           "source_state_id": "rest",
           "transfer": "The route main content copies the exact selected reference state structure."
         }

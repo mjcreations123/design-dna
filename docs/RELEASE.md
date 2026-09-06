@@ -1,6 +1,6 @@
 # Release procedure
 
-The current source identity is the `11.0.0` development candidate. Do not call
+The current source identity is the `12.0.0` development candidate. Do not call
 it published or release-qualified until this procedure passes against its exact
 frozen bytes and the required external evidence is retained.
 
@@ -16,6 +16,27 @@ frozen bytes and the required external evidence is retained.
   compatibility records, and changelog;
 - confirm every dependency and evidence review date.
 
+After the runtime is frozen, refresh and check only the four explicitly
+synthetic `.invalid` route-contract fixtures before generating the SBOM or test
+attestation:
+
+```text
+python -B maintainer/scripts/refresh_route_contract_fixtures.py --plugin-root . --write
+python -B maintainer/scripts/refresh_route_contract_fixtures.py --plugin-root . --check
+```
+
+The updater's allowlist is `route-family-anthology-positive`,
+`route-family-broken-orphan-negative`, `route-family-recolor-negative`, and
+`route-family-safe-paths-positive` under `maintainer/evals/fixtures/inputs`.
+It refreshes only their minimal `fixture-reference.invalid` observation stubs
+and exact route-manifest/route-family source hashes. Each stub is explicitly
+marked synthetic, non-generated, and ineligible for public source selection;
+no recording, browser capture, or controller evidence is created. All target
+files are checked before writes. A real URL, unknown observation tree,
+redirecting link, external hardlink, or conflicting consumer hash blocks the
+whole refresh. Do not use this helper on real source evidence: recapture that
+evidence with its actual producer.
+
 ## 2. Validate
 
 Run the complete test suite on every supported operating system and Python
@@ -26,11 +47,48 @@ tests.
 The strict audit derives the required release matrix from the `test` job in
 `.github/workflows/ci.yml` and matches it one-for-one to Python CI contract
 entries in `maintainer/compatibility/matrix.yml`. Every derived OS/Python entry
-must have `package_audit` and `unit_tests` marked `passed` and backed by a valid
-retained CI import. A local pass does not satisfy a remote matrix entry.
+must have both `package_audit` and `unit_tests` verified from a valid retained
+CI import. Frozen source flags alone never establish a result, and a local
+pass does not satisfy a remote matrix entry.
 
 Skipped release tests require a current named waiver, exact test and environment
 identity, rationale, expiry, and compensating evidence.
+
+The release runner separately records platform applicability before execution.
+Exactly four native Windows Job Object/process-termination tests are selected
+and must execute on every Windows matrix entry. Linux and macOS omit only
+those exact IDs as `not_applicable_test_ids`; they are neither executed nor
+reported as passing or skipped. The current policy hash, host platform,
+discovered/selected/executed counts, excluded IDs, and actually executed native
+IDs are retained in `test_applicability` and the hashed runner output. Required
+Windows CI coverage remains mandatory for release; a Linux/macOS pass cannot
+replace it. Every other skip retains the ordinary failure/waiver rules, and
+imported CI matrix evidence still requires zero skips.
+
+A failed suite can retain `test_applicability: null` when an import error
+prevented native-test discovery or captured child-runner output made its
+applicability marker ambiguous. Its full diagnostics and actual aggregate
+counts remain available. Null or ambiguous applicability can never support a
+passing attestation or release qualification.
+
+The full-suite ceiling is 20,700 seconds (345 minutes); the CI test job allows
+360 minutes, reserving 15 minutes for setup and retained artifacts within the
+current [GitHub-hosted job limit](https://docs.github.com/en/actions/reference/limits).
+Earlier one- and two-hour attempts did not complete the full fresh-byte checks.
+Timing an identical fixture outside OneDrive did not improve it; profiling
+identified repeated file reads, hashes and source validation as the main cost.
+No tests are dropped or waived to meet the bound. The attester announces private live
+stdout/stderr spool paths once, without adding messages to the child's exact
+streams. A timeout or execution-management failure retains redacted partial
+logs and an explicitly incomplete diagnostic outside the package, never a
+passing test attestation. Owned Windows-job/POSIX-process-group cleanup is
+bounded; deliberate escape from a POSIX group is outside that containment
+boundary. Parent exit alone never proves a POSIX group empty. Unverifiable
+group emptiness, including unreaped processes in a deficient host environment,
+blocks completion and retains incomplete diagnostics. In that case raw private
+logs remain in place and the redacted copies are explicitly incomplete
+snapshots, not stable completed streams. Normal completed streams still undergo
+all ordinary attestation validation and hashing.
 
 Waivers conform to
 `maintainer/schemas/test-skip-waivers.schema.json`, bind the exact attested
@@ -143,7 +201,7 @@ any relevant source or evidence edit.
 ### Promote evidence and finalize
 
 1. import each authenticated successful matrix artifact as described below;
-2. update only the matching CI compatibility statuses and import timestamps;
+2. retain each exact canonical CI import without changing the frozen matrix;
 3. complete the controlled host/model evaluations, pass the predeclared
    [evaluation reliability qualification](../maintainer/evals/QUALIFICATION.md)
    gate with public development/regression evidence plus an external protected
@@ -159,12 +217,13 @@ any relevant source or evidence edit.
    in place;
 8. run the development and strict release audits.
 
-The CI import files and their matching compatibility status changes are
-evidence-only edits expected after the candidate run; they must be present
-before the final release manifest is generated. The final manifest replaces
-the provisional candidate manifest. Any later edit to the attested runtime,
-tests, tooling, schemas, requirements, or workflow invalidates the retained CI
-binding and restarts this sequence.
+CI import files are derived evidence expected after the candidate run; they
+must be present before the final release manifest is generated. The audit
+derives verified results from those exact canonical imports without changing
+the declared compatibility matrix. The final manifest replaces the provisional
+candidate manifest. Any later edit to the attested runtime, tests, tooling,
+schemas, requirements, workflow, documentation, or compatibility source policy
+invalidates the retained CI binding and requires new current CI evidence.
 
 ### Exact pre-CI local sequence
 
@@ -173,6 +232,14 @@ with the absolute current home directory, using the platform's normal path
 separators. On Windows PowerShell, use `npm.cmd` in place of `npm` if script
 execution policy blocks `npm.ps1`. A fresh Linux runner may add `--with-deps`
 to the Playwright install command:
+
+Use the pinned maintainer virtual environment for every Python command below.
+Create it with `python -m venv .venv` if absent. On Windows, replace `python`
+with `.venv/Scripts/python.exe`; on POSIX use `.venv/bin/python`. Install the
+hash-locked requirements through that same interpreter. A system Python whose
+pip falls back to user installation is insufficient: the isolated attester
+deliberately does not load user-site packages. Do not weaken isolation to make
+an unprepared interpreter pass.
 
 The copy-ready route proof below intentionally matches the distributed
 compatibility contract: Codex at `<HOME>/.agents` and Claude Code at
@@ -208,6 +275,11 @@ Update the local compatibility record only from those completed proofs. Keep
 package, host activation, behavioral, rendered, and remote-matrix checks
 non-passed until their own qualifying evidence exists. The compatibility file
 is a test-attestation input, so make this edit **before** the final test run.
+Keep the portable candidate's local `unit_tests` declaration `pending`; the
+separate final local attestation records its actual result on the exact
+interpreter and platform. Do not change that declaration after the run and
+invalidate its input binding. A local pass does not substitute for any required
+remote matrix result.
 Then run:
 
 ```text
@@ -227,7 +299,8 @@ claims; rebuild it after any later proof changes.
 
 Commit this passing candidate, run the remote matrix, retain and import the
 authenticated evidence, complete the required evaluation records, and update
-compatibility only from those records.
+non-CI compatibility claims only from those records. Any such source edit
+requires new current CI evidence; retaining derived CI imports alone does not.
 
 ### Exact post-CI finalization
 
@@ -358,7 +431,7 @@ package-audit JSON together for 30 days. It also retains the separate
 rendered-browser log. Retention does not automatically promote any
 compatibility status.
 
-Before changing an OS/Python compatibility status from
+To establish a verified OS/Python result while keeping its source declaration
 `declared_not_observed`, an accountable maintainer must:
 
 1. download the artifact through the authenticated repository workflow and
@@ -371,11 +444,19 @@ Before changing an OS/Python compatibility status from
 4. create
    `maintainer/compatibility/archive/ci-runs/<environment-id>/import.json`
    conforming to `maintainer/schemas/ci-run-import.schema.json`;
-5. cite the workflow, import record, retained ZIP, and both extracted evidence
-   files from the matching environment record;
-6. change only the two verified checks to `passed`, set `checked_at` equal to
-   the import timestamp, regenerate the final release manifest, and rerun the
-   audit.
+5. retain the import at that exact environment-specific path, including its
+   workflow identity, timestamp, ZIP and extracted-proof bindings;
+6. leave the matrix's declared statuses, timestamps and evidence unchanged,
+   regenerate the final release manifest, and rerun the audit.
+
+For these frozen declarations, the audit creates only a temporary verification
+view from the canonical import and runs the complete import checks before
+counting any result. `verified_imports` and `passed_entries` report successful
+derived verification; `status_passed_entries` reports only explicit source
+flags and is not release authority. Missing, malformed or invalid imports
+cannot establish a pass. Any explicitly published `passed` matrix claim still
+must satisfy its original citation and timestamp obligations; the audit never
+silently repairs such claims.
 
 The verifier recomputes the workflow, artifact, and extracted-file hashes,
 requires the service digest to equal the retained ZIP digest, checks the exact
@@ -388,9 +469,9 @@ current rendered-browser log is diagnostic evidence, not a schema-qualified
 `rendered_review` promotion record.
 
 A passing badge, screenshot, copied log, artifact filename, or hand-authored
-status alone is not immutable run evidence. Do not change the current
-`declared_not_observed` statuses until the corresponding external runs and
-retained records actually exist.
+status alone is not immutable run evidence. Keep the frozen declarations
+unchanged and report remote success only when the corresponding external runs
+and retained records pass current verification.
 
 ## 6. Publish
 

@@ -27,6 +27,7 @@ build is an omission the gate will flag.
 - [Capture what you looked at](#capture-what-you-looked-at)
 - [Take the good parts into one design](#take-the-good-parts-into-one-design)
 - [Give every component a source](#give-every-component-a-source)
+- [Lock construction before writing the first visible component](#lock-construction-before-writing-the-first-visible-component)
 - [Rebuild the first screen from its mapped reference](#rebuild-the-first-screen-from-the-references-screen)
 - [Never build from a picture](#never-build-from-a-picture)
 - [Study the whole source](#study-the-whole-source-not-only-the-screen-you-captured)
@@ -149,8 +150,11 @@ gallery order. Record the controls and why they fit, plus plausible alternate
 paths checked. Status-based routes may help discovery but cannot be the whole
 pool or substitute for studying the work itself.
 
-Record at least six strong individual references, drawn from at least three
-active sources, with no single source supplying more than half of the rows.
+Record multiple qualified individual references, drawn from multiple active
+discovery sources, with no discovery source supplying more than half of the rows.
+The count follows documented route/component/behavior coverage and fit; neither
+six nor ten is a required target. At least two independent live references and
+two discovery sources are necessary to avoid a single-site template.
 Among live sites, no two rows may point at the same host. The floor exists so
 that no single site becomes the template; it is not a target. Gallery
 homepages do not count as references. A public gallery entry can count only
@@ -169,10 +173,10 @@ for routes and controls manual browsing may miss, then reconcile every discovery
 against live browser evidence. A recorder is instrumentation for this
 study, not permission to stop after its sampled path.
 
-Enter at least eight serious finalists in the dossier's candidate-comparison
+Enter the serious finalists needed to make a meaningful comparison in the dossier's candidate-comparison
 table. Bind each distinct wide and narrow capture, list the pages and states
 studied, compare it against the selection brief, and record `selected` or
-`rejected` with the concrete reason. At least two finalists must be rejected.
+`rejected` with the concrete reason. Include at least one meaningfully rejected alternative.
 Rejections must identify the actual mismatch, such as
 an incompatible content model, task, audience, brand posture, operational
 assumption, rights/access limit, incomplete experience, weak narrow
@@ -435,14 +439,47 @@ node "<DESIGN_DNA_SKILL_ROOT>/scripts/record_reference.mjs" \
 Create the state contract from
 `templates/reference-state-contract-template.json` and replace its placeholder
 with every relevant source state, exact URL, and exact trigger. State IDs are
-authored evidence, never names guessed by the recorder. The schema-4 recorder
+authored evidence, never names guessed by the recorder.
+
+### Unsolicited source appearances
+
+When the live reference changes without a visitor input—a timed newsletter
+dialog, eligibility notice, interstitial, or similar blocker—add a
+**source-only** schema-2 state. It must use `kind: "system"` and this exact
+trigger shape:
+
+```json
+{
+  "type": "ambient",
+  "target": "[role=\"dialog\"][data-ff-el=\"modal\"]",
+  "value": null,
+  "wait_ms": 15000
+}
+```
+
+`target` is the one exact selector for the element that becomes visible, not a
+close button, a generic overlay class, or `document`. `wait_ms` is an observed
+bounded wait from 100 to 60000 milliseconds. The observer captures generated
+`before`, `appearance`, and `settled` PNG evidence; it fails with the selector,
+last visibility status, and wait if the source never appears. Do not dismiss or
+auto-close an unsolicited source dialog merely to make the rest census easier.
+An ambient state belongs only in source research. A build does not inherit it
+automatically. If the selected transfer deliberately needs it, the build route
+manifest maps that recorded source state through an explicit `system` /
+`programmatic` `[data-design-dna-state-driver]` state; a build manifest may
+never declare `type: "ambient"`.
+
+The schema-4 recorder
 binds its producer and browser dependencies, records full wide and narrow
 profiles, recursively traverses every discovered same-origin page, drives
 every native and transform scroll surface to terminal, and exercises every
 contract state and discovered hover target. Ninety seconds at 15 fps is the
-minimum for each profile; if coverage remains incomplete, rerun at a greater
-duration until it is complete. Any remaining page, state, target, or scroll
-surface fails closed. It differences both videos frame by frame and keeps the moments that
+minimum for each profile. If coverage remains incomplete at the controller
+bound, preserve the partial artifact and diagnose the specific blocker.
+Start a fresh attempt only after a material input or tool correction; use the
+[bounded study workflow](bounded-source-study.md). Any remaining page, state,
+target, or scroll surface blocks public selection. It differences both videos
+frame by frame and keeps the moments that
 matter as EVENTS under `strong-3-wide-events/` and
 `strong-3-narrow-events/`: one sheet of four frames (before, during, after,
 settled) for every hover, click or scroll step that changed the screen, one
@@ -589,7 +626,7 @@ visitor or presented as the project's own work.
 ## Take the good parts into one design
 
 The selected references are where the site's front-end design comes from, and
-the site must still read as one design. Select at least four strong references
+the site must still read as one design. Select multiple qualified references
 from at least two sources and map every taken relationship to a route, state,
 or system role. Assign one selected reference as the dominant visual grammar
 for each route. It supplies the route's hierarchy, composition, progression,
@@ -664,6 +701,84 @@ This is not a licence to assemble a collage. The parts still have to become
 one design, by the rules in the section above: one dominant source grammar per
 route, source-bound color and type systems, coherent progression, and a
 source-bound interaction/motion posture that may be still.
+
+## Lock construction before writing the first visible component
+
+The dossier and a list of references are not permission to make a generic
+header, hero, grid, card, CTA, footer, palette, font, mark, asset crop, or
+connecting wrapper and source it later. Before the first visible source file,
+finish schema-2 `visible-decision-sources.json`: every row has an exact source
+ component/**selector**/state/frame, its source recorder plus artifact ledger,
+ one route/state/wide-or-narrow component cell, exact measured style properties
+ and values, and, where relevant, an asset role or dominant behavior carrier.
+ `component_id` is not descriptive metadata: it must equal the direct rendered
+ `data-design-dna-component` value and its binding key must be
+ `component:<component_id>`. A layout needs a measured layout property, a
+ control needs a control property, and so on; a shared font token cannot stand
+ in for unrelated decisions. Every non-ambient observed state is either
+ transferred or explicitly omitted with immutable settled-frame references for
+ both profiles; a census-observed carrier makes an omission fail regardless of
+ prose. A pseudo-element is its own painted surface: its profile/state/source
+ pseudo style and any background-media bytes must be bound exactly.
+Every selected source also has a signature-level contribution scope and a
+deletion test. A color, radius, spacing value, or isolated control cannot make
+a source count.
+
+Run the construction baseline before coding:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" \
+  --project "<PROJECT_ROOT>" --begin-construction
+```
+
+It writes a generated, append-only pre-code journal entry. The baseline scans
+the implementation tree; if visible site source already exists, it is a
+legacy audit rather than fresh proof and cannot be relabeled by writing a
+dossier afterward. Before each proof slice or resumed construction, run
+`--check-construction`. Changing a selected source, route manifest, source
+state, source frame, style record, or decision binding reopens the source plan
+and invalidates the old first-screen authorization.
+
+The source-by-source interaction matrix is complete before implementation: it
+must enumerate the source target IDs, state triggers, before/after/settled
+frame hashes, source selector/property evidence, safe blocked hand-offs, and
+wide/narrow recorder coverage. A static screenshot or DOM inventory can help
+locate a gap but cannot complete the matrix or authorize its behavior.
+
+For every transferred dominant behavior, `dominant_behavior_carrier` is typed
+at both profiles: exact source target ID/selector/semantic identity, source
+state SHA-256 and trigger, source before/after/settled frame hashes, recording
+event IDs, the observed relocation/state result, and the one exact build
+component root. A prose claim that a hover, stack, video opening, scrollytelling
+sequence, cursor behavior, menu, overlay, or route transition was “inspired
+by” a source does not clear this binding. The build scanner must then show the
+same bound component reacting at its declared route/state/viewport cells.
+
+Place `data-design-dna-decision-id` directly on each decision-owning rendered
+surface. A layout wrapper can source its own geometry, but it cannot pass its
+ID down to independently painted text, controls, images/video, pseudo
+elements, navigation, or footer content. The scanner reports the exact
+route/viewport/state/component and rerun command for each unbound descendant.
+For an asset, also put `data-design-dna-asset-id` on the actual rendered media
+owner. A source moving-medium role cannot become a still merely because the
+still uses a source-bound color or crop.
+
+The first screen is a structurally isolated **source-faithful proof slice**.
+It is not a hidden generic site, a concept that later becomes the deliverable,
+or a presentable local preview. It may contain only the primary manifest route,
+one substantial region, and the decisions bound for that proof; its rendered
+QA explicitly remains non-presentation-ready until the final all-route gate.
+
+When public selection itself is still pending, do not mislabel an experimental
+specimen as that standard first-screen gate. Use the separate typed
+`proof-slice.json` workflow only: a generated `source_kind: proof-slice`
+observation, current brief, exact wide/narrow selected state and arrangement
+frames, each mounted component's selector/style/media map, one local rendered
+URL, and the visible `Internal unverified proof slice — not for public
+release` root label. The proof-slice gate browser-scans both profiles. It is
+mechanically ineligible for public source selection and writes no standard
+first-screen authorization; `proof slice built`, `proof-slice gate`, `standard
+first-screen gate`, and `final site` remain separate statuses.
 
 ## Rebuild the first screen from the reference's screen
 
@@ -788,7 +903,36 @@ python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" \
 ```
 
 This phase binds the full manifest hash and proof build ID, but executes only
-the named route at both manifest viewport classes. It runs the source-fidelity
+the named route at both manifest viewport classes. Before coding, list its
+exact `proof_isolation.decision_ids`; the phase derives the required states
+from those cells while retaining every later planned decision and route in
+the unchanged full manifest. A source-observed menu or entrance may be hidden
+in its initial state when its exact proof components and exercised states are
+bound. Hidden extra components, dormant later routes, or lazy imports remain
+blocked.
+
+The standard proof boundary is the measured primary source region, not an
+arbitrary one-viewport height limit. A tall narrow composition or a pinned
+hero's scroll runway retains its exact source-bound box and is traversed with
+real wheel input. The source style record and route/state/profile define a
+document-height ceiling; measured outer margins may collapse, so that ceiling
+is not a claim of exact document-height equality. Every sampled extent,
+component ID, and nested region stays inside the frozen source plan. A full-
+page wrapper containing later sequential regions cannot become a primary
+proof by renaming its selector. Source-bound nested semantic components may
+remain only when their exact ancestry and component bindings belong to that
+one region. The separate internal static `proof-slice` retains its one-screen
+limit.
+
+A source-mapped navigation link may retain its exact planned destination when
+that destination belongs to a later route in the same immutable manifest. The
+first-screen record marks it `planned-route-pending-final`, with no claimed
+arrival and no fake substitute anchor. This cannot qualify a public source or
+pass a final gate: final verification must navigate every destination and test
+the actual completed route. Internal `proof-slice` specimens continue to forbid
+outward route links.
+
+The phase runs the source-fidelity
 checks before the generic structure can spread and writes
 `.design-dna/evidence/first-screen-gate.json` without overwriting the final
 gate. Bind that artifact as `First-screen gate` in the direction proof and
@@ -930,8 +1074,9 @@ components, runs provenance, structure, mechanisms and signature transfer,
 validates the dossier, and writes `.design-dna/evidence/gate.json` with one
 verdict line: `GATE PASS ...` or `GATE FAIL ...`. Quote it verbatim in the
 final message. If the gate did not run, say “the gate did not run.” “Quick,”
-“demo,” and “hurry” never reduce this gate; if there is no time to run it,
-there is no build to present.
+“demo,” and “hurry” never reduce this public gate. An internal proof slice has
+its separate, explicitly unverified workflow; it cannot be presented as the
+requested website or advance through the public gate.
 
 ## Continue autonomously
 

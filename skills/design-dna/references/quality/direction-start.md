@@ -134,9 +134,10 @@ quality and exact fit rather than gallery order, accolade, random result,
 industry label, fashion, or ease of recreation. Study serious finalists across
 their complete legitimately accessible pages, states, and wide/narrow
 conditions; compare them; and record concrete selection and rejection reasons.
-The dossier must establish at least six strong references from at least three
-sources with distinct full-page wide/narrow evidence, at least three visible
-counterexamples, and a selected synthesis of at least four references. One
+The dossier must justify its count through coverage and fit, with multiple
+qualified references from multiple discovery sources, distinct full-page
+wide/narrow evidence, at least three visible counterexamples, and a synthesis
+of multiple selected references. One
 selected source supplies each route's dominant grammar, and no visible part may
 come from producer taste. The floor keeps any single site from becoming the
 template; this is direction input for fresh public work, not a search ritual

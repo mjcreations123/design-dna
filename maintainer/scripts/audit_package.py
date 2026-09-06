@@ -344,6 +344,7 @@ def test_attestation_failures(
     *,
     label: str = "maintainer/attestations/test-attestation.json",
     expected_python: str | None = None,
+    expected_platform: str | None = None,
     require_zero_skips: bool = False,
 ) -> list[dict[str, str]]:
     failures = schema_validate(payload, schema_path, label)
@@ -502,6 +503,21 @@ def test_attestation_failures(
             ))
 
     output = payload.get("output")
+    try:
+        applicability_tool = import_local_script("test_platform_applicability")
+        applicability_output = output if isinstance(output, dict) else {}
+        applicability_failures = applicability_tool.validate_test_applicability(
+            payload.get("test_applicability"),
+            expected_platform=expected_platform or platform.system(),
+            tests_run=tests_run if type(tests_run) is int else 0,
+            passed=isinstance(result, dict) and result.get("status") == "passed",
+            stdout=applicability_output.get("stdout") if isinstance(applicability_output.get("stdout"), str) else "",
+            stderr=applicability_output.get("stderr") if isinstance(applicability_output.get("stderr"), str) else "",
+        )
+        failures.extend(issue("release-test-applicability-invalid", label, failure)
+                        for failure in applicability_failures)
+    except (ImportError, ValueError, TypeError, KeyError) as exc:
+        failures.append(issue("release-test-applicability-invalid", label, str(exc)))
     if isinstance(output, dict):
         stdout = output.get("stdout")
         stderr = output.get("stderr")
@@ -2209,6 +2225,15 @@ def ci_import_record_failures(
                     "Retained development package audit is not a clean pass.",
                 ))
         elif check_name == "unit_tests":
+            os_label = str(environment.get("os", "")).casefold()
+            ci_platform = (
+                "Windows" if os_label.startswith("windows-") else
+                "Linux" if os_label.startswith("ubuntu-") else
+                "Darwin" if os_label.startswith("macos-") else None
+            )
+            if ci_platform is None:
+                failures.append(issue("ci-import-platform-unsupported", relative,
+                    "The imported test applicability has no supported exact CI operating-system mapping."))
             failures.extend(test_attestation_failures(
                 evidence_payload,
                 plugin,
@@ -2216,6 +2241,7 @@ def ci_import_record_failures(
                 release_manifest,
                 label=relative,
                 expected_python=str(environment.get("python")),
+                expected_platform=ci_platform or "unsupported-ci-platform",
                 require_zero_skips=True,
             ))
             if isinstance(evidence_payload, dict):
@@ -2262,7 +2288,7 @@ def ci_contract_failures(
         "passed_entries": 0,
         "verified_imports": 0,
     }
-    verified_identifiers: set[str] = set()
+    verified_checks_by_identifier: dict[str, set[str]] = {}
     if not isinstance(compatibility, dict):
         return failures, details
     contract = compatibility.get("ci_release_contract")
@@ -2343,52 +2369,120 @@ def ci_contract_failures(
     for record in environments:
         if not isinstance(record, dict) or record.get("scope") != "ci_contract":
             continue
-        identifier = str(record.get("id", ""))
+        identifier = record.get("id")
         label = f"maintainer/compatibility/matrix.yml:{identifier}"
+        if (
+            not isinstance(identifier, str)
+            or not 3 <= len(identifier) <= 96
+            or re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", identifier) is None
+        ):
+            failures.append(issue(
+                "ci-import-environment-id-unsafe",
+                label,
+                "The CI environment identifier must be a safe canonical name before any import path is examined.",
+            ))
+            continue
         checks = record.get("checks")
         passed = {
             str(name)
             for name, status in checks.items()
             if status == "passed"
         } if isinstance(checks, dict) else set()
-        if not passed:
-            continue
-        evidence_failures, evidence_keys = validate_evidence_paths(
-            record.get("evidence"),
-            plugin,
-            label,
-        )
-        failures.extend(evidence_failures)
         canonical_import = (
             f"{CI_IMPORT_ROOT}/{identifier}/{CI_IMPORT_RECORD_NAME}"
         )
-        import_paths = [
-            value
-            for value in record.get("evidence", [])
-            if isinstance(value, str)
-            and value.casefold() == canonical_import.casefold()
-        ] if isinstance(record.get("evidence"), list) else []
-        if len(import_paths) != 1 or canonical_import.casefold() not in evidence_keys:
-            failures.append(issue(
-                "ci-import-record-missing",
-                label,
-                (
-                    "A promoted CI pass needs exactly one canonical retained "
-                    f"record at {canonical_import}."
-                ),
-            ))
-            continue
         import_path = absolute(
             plugin.joinpath(*canonical_import.split("/"))
         )
+        if not passed and not os.path.lexists(import_path):
+            continue
+        effective_record = record
+        if passed:
+            # Explicit published claims retain their original evidence and
+            # timestamp obligations; they are never silently repaired.
+            evidence_failures, evidence_keys = validate_evidence_paths(
+                record.get("evidence"),
+                plugin,
+                label,
+            )
+            failures.extend(evidence_failures)
+            import_paths = [
+                value
+                for value in record.get("evidence", [])
+                if isinstance(value, str)
+                and value.casefold() == canonical_import.casefold()
+            ] if isinstance(record.get("evidence"), list) else []
+            if len(import_paths) != 1 or canonical_import.casefold() not in evidence_keys:
+                failures.append(issue(
+                    "ci-import-record-missing",
+                    label,
+                    f"A promoted CI pass needs exactly one canonical retained record at {canonical_import}.",
+                ))
+                continue
         try:
+            assert_no_reparse_path(import_path, stop=plugin)
             import_payload = load_json(import_path)
         except ToolFailure as exc:
             failures.append(exc.issue.as_dict())
             continue
+        if not passed:
+            # The matrix remains a frozen test input. Only the effective
+            # verification view is derived from retained canonical records;
+            # nothing is promoted until the complete import verifier passes.
+            if not isinstance(import_payload, dict):
+                failures.append(issue(
+                    "ci-import-record-invalid",
+                    canonical_import,
+                    "A retained CI import must be an object.",
+                ))
+                continue
+            claimed = import_payload.get("passed_checks")
+            if (
+                not isinstance(claimed, list)
+                or not claimed
+                or not all(
+                    isinstance(name, str) and name in CI_VERIFIABLE_CHECKS
+                    for name in claimed
+                )
+                or len(set(claimed)) != len(claimed)
+                or not isinstance(checks, dict)
+                or any(
+                    checks.get(name) != "declared_not_observed"
+                    for name in claimed
+                )
+            ):
+                failures.append(issue(
+                    "ci-import-declaration-not-promotable",
+                    canonical_import,
+                    "Derived CI results require unique supported checks declared_not_observed in the frozen matrix.",
+                ))
+                continue
+            artifact = import_payload.get("artifact")
+            evidence = import_payload.get("evidence")
+            references = [workflow_path, canonical_import]
+            if isinstance(artifact, dict):
+                references.append(artifact.get("path"))
+            if isinstance(evidence, dict):
+                references.extend(
+                    value.get("path")
+                    for value in evidence.values()
+                    if isinstance(value, dict)
+                )
+            effective_record = {
+                **record,
+                "checked_at": import_payload.get("imported_at"),
+                "checks": {**checks, **{name: "passed" for name in claimed}},
+                "evidence": references,
+            }
+            evidence_failures, evidence_keys = validate_evidence_paths(
+                references,
+                plugin,
+                label,
+            )
+            failures.extend(evidence_failures)
         import_failures = ci_import_record_failures(
             import_payload,
-            record,
+            effective_record,
             plugin,
             import_schema_path,
             test_schema_path,
@@ -2398,8 +2492,12 @@ def ci_contract_failures(
             workflow_path=workflow_path,
         )
         failures.extend(import_failures)
-        if not import_failures:
-            verified_identifiers.add(identifier)
+        if not import_failures and not evidence_failures:
+            verified_checks_by_identifier[identifier] = {
+                str(name)
+                for name, status in effective_record["checks"].items()
+                if status == "passed"
+            }
             details["verified_imports"] = (
                 int(details["verified_imports"]) + 1
             )
@@ -2416,19 +2514,19 @@ def ci_contract_failures(
             continue
         record = records[0]
         checks = record.get("checks")
-        missing = [
-            check
-            for check in required_checks
-            if not isinstance(checks, dict) or checks.get(check) != "passed"
-        ]
-        if not missing:
+        if isinstance(checks, dict) and all(
+            checks.get(check) == "passed" for check in required_checks
+        ):
             details["status_passed_entries"] = (
                 int(details["status_passed_entries"]) + 1
             )
-            if str(record.get("id", "")) in verified_identifiers:
-                details["passed_entries"] = (
-                    int(details["passed_entries"]) + 1
-                )
+        verified = verified_checks_by_identifier.get(
+            str(record.get("id", "")),
+            set(),
+        )
+        missing = [check for check in required_checks if check not in verified]
+        if not missing:
+            details["passed_entries"] = int(details["passed_entries"]) + 1
         elif release_mode:
             failures.append(issue(
                 "release-ci-matrix-entry-unobserved",

@@ -12,7 +12,7 @@ jobs:
   test:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +56,29 @@ jobs:
         working-directory: maintainer
       - name: Verify dependency consistency
         run: python -m pip check
+      - name: Provision source recording encoder (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y ffmpeg
+          fi
+      - name: Provision source recording encoder (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            brew install ffmpeg
+          fi
+      - name: Provision source recording encoder (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Verify source recording encoder
+        run: ffmpeg -version
       - name: Run and attest unit and adversarial tests with zero unwaived skips
         run: python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json"
       - name: Validate evidence

@@ -107,6 +107,117 @@ class GateManifestTests(unittest.TestCase):
             "bytes": frame_bytes,
             "sha256": frame_sha,
         }
+        reference_root = project / ".design-dna" / "references"
+        state_binding = {
+            "file": state_contract.name,
+            "sha256": hashlib.sha256(state_contract.read_bytes()).hexdigest(),
+        }
+        profile_artifacts: list[dict[str, object]] = []
+        for profile in ("wide", "narrow"):
+            for kind, suffix in (
+                ("video", "video.webm"),
+                ("frame", "frame.bin"),
+                ("event-sheet", "event.png"),
+                ("cursor-path", "cursor.json"),
+                ("difference-signal", "difference.json"),
+                ("events-index", "events.md"),
+            ):
+                artifact = reference_root / f"strong-1-{profile}-{suffix}"
+                artifact.write_bytes(f"fixture {profile} {kind}".encode("utf-8"))
+                profile_artifacts.append({
+                    "kind": kind,
+                    "profile": profile,
+                    "file": artifact.name,
+                    "bytes": artifact.stat().st_size,
+                    "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                })
+        source_studies = {}
+        for profile in ("wide", "narrow"):
+            frame_artifact = next(item for item in profile_artifacts if item["profile"] == profile and item["kind"] == "frame")
+            video_artifact = next(item for item in profile_artifacts if item["profile"] == profile and item["kind"] == "video")
+            journal_name = f"strong-1-study-{profile}-source-study-progress.jsonl"
+            progress_name = f"strong-1-study-{profile}-source-study-progress.json"
+            counters = {"frames": 1, "events": 1, "states": 1, "routes": 1, "targets": 1}
+            signed = [
+                {"kind": "frame", "file": frame_artifact["file"], "bytes": frame_artifact["bytes"], "sha256": frame_artifact["sha256"], "producer": "record_reference.mjs"},
+                {"kind": "video", "file": video_artifact["file"], "bytes": video_artifact["bytes"], "sha256": video_artifact["sha256"], "producer": "record_reference.mjs"},
+            ]
+            previous = None
+            rows = []
+            for sequence, kind in ((1, "started"), (2, "frame-captured"), (3, "complete")):
+                core = {
+                    "schema_version": 1, "sequence": sequence, "at": f"2026-09-02T00:00:0{sequence}Z",
+                    "kind": kind, "counters": counters if sequence > 1 else {key: 0 for key in counters},
+                    "previous_sha256": previous,
+                    "detail": ({"terminal_success": True, "signed_artifacts": signed} if kind == "complete" else {}),
+                }
+                previous = self.validator.canonical_json_sha256(core)
+                rows.append({**core, "sha256": previous})
+            journal = reference_root / journal_name
+            journal.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
+            snapshot = {
+                "schema_version": 1, "kind": "source-study-progress", "status": "complete", "source_status": "complete",
+                "eligible_for_source_selection": True, "id": "strong-1-study", "profile": profile, "source_kind": "public-source",
+                "producer": "record_reference.mjs", "started_at": "2026-09-02T00:00:00Z",
+                "last_progress_at": "2026-09-02T00:00:03Z", "last_progress_epoch_ms": 3,
+                "last_progress_kind": "complete", "counters": counters,
+                "limits": {"max_no_progress_ms": 60000}, "progress_event_file": journal_name,
+                "progress_event_count": 3, "tail_event_sha256": previous, "signed_artifacts": signed,
+            }
+            progress = reference_root / progress_name
+            write_json(progress, snapshot)
+            progress_meta = {"kind": "source-study-progress", "profile": profile, "file": progress_name,
+                             "bytes": progress.stat().st_size, "sha256": hashlib.sha256(progress.read_bytes()).hexdigest()}
+            journal_meta = {"kind": "source-study-progress-journal", "profile": profile, "file": journal_name,
+                            "bytes": journal.stat().st_size, "sha256": hashlib.sha256(journal.read_bytes()).hexdigest()}
+            profile_artifacts.extend([progress_meta, journal_meta])
+            source_studies[profile] = {**snapshot,
+                "progress": {key: progress_meta[key] for key in ("file", "bytes", "sha256")},
+                "progress_events": {key: journal_meta[key] for key in ("file", "bytes", "sha256")}}
+        recording_path = reference_root / "strong-1-recording.json"
+        recording_payload = {
+            "tool": "record_reference.mjs",
+            "source_kind": "public-source", "source_status": "complete", "eligible_for_source_selection": True,
+            "schema_version": 4,
+            "producer_script_sha256": script_hash("record_reference.mjs"),
+            "runtime_identity": {"record_reference.mjs": script_hash("record_reference.mjs")},
+            "id": "strong-1",
+            "url": "https://reference.test/",
+            "requested_url": "https://reference.test/",
+            "state_contract": state_binding,
+            "minimum_duration_per_profile_s": 90,
+            "fps": 15,
+            "final_urls": {"wide": "https://reference.test/", "narrow": "https://reference.test/"},
+            "profiles": {
+                "wide": {
+                    "profile": "wide", "viewport": {"name": "wide", "width": 1440, "height": 900},
+                    "video_clock": {"method": "playwright-screencast-frame-wall-clock", "first_frame_epoch_ms": 1788307200000, "last_frame_epoch_ms": 1788307290000, "frames_delivered": 2},
+                    "duration_s": 90, "fps": 15, "frames": {"count": 1350}, "coverage": {"complete": True},
+                    "source_study": source_studies["wide"],
+                },
+                "narrow": {
+                    "profile": "narrow", "viewport": {"name": "narrow", "width": 390, "height": 844},
+                    "video_clock": {"method": "playwright-screencast-frame-wall-clock", "first_frame_epoch_ms": 1788307200000, "last_frame_epoch_ms": 1788307290000, "frames_delivered": 2},
+                    "duration_s": 90, "fps": 15, "frames": {"count": 1350}, "coverage": {"complete": True},
+                    "source_study": source_studies["narrow"],
+                },
+            },
+            "coverage": {"wide_complete": True, "narrow_complete": True, "complete": True},
+        }
+        write_json(recording_path, recording_payload)
+        recording_artifact = {
+            "kind": "recording", "profile": None, "file": recording_path.name,
+            "bytes": recording_path.stat().st_size,
+            "sha256": hashlib.sha256(recording_path.read_bytes()).hexdigest(),
+        }
+        ledger_core = {
+            "schema_version": 1, "algorithm": "sha256", "recording": recording_path.name,
+            "artifacts": sorted([recording_artifact, *profile_artifacts], key=lambda item: str(item["file"])),
+        }
+        write_json(reference_root / "strong-1-artifacts.json", {
+            **ledger_core,
+            "sha256": self.validator.canonical_json_sha256(ledger_core),
+        })
         navigation = {
             "requested_normalized_url": "https://reference.test/",
             "final_normalized_url": "https://reference.test/",
@@ -165,8 +276,7 @@ class GateManifestTests(unittest.TestCase):
                 "frame_dir": "strong-1-frames",
                 "frames": [frame],
                 "state_contract": {
-                    "file": state_contract.name,
-                    "sha256": hashlib.sha256(state_contract.read_bytes()).hexdigest(),
+                    **state_binding,
                 },
                 "discovery_metadata": {
                     profile: {
@@ -234,7 +344,17 @@ class GateManifestTests(unittest.TestCase):
                     for profile in ("wide", "narrow")
                 },
                 "rendered_qa_by_viewport": rendered_qa_by_viewport,
-                "states_by_viewport": {"wide": {"rest": {}}, "narrow": {"rest": {}}},
+                "states_by_viewport": {
+                    profile: {"rest": {
+                        "id": "rest",
+                        "trigger": {"type": "none", "target": "document", "value": None},
+                        "trigger_evidence": {
+                            "before_sha256": frame_sha, "after_sha256": frame_sha,
+                            "settled_sha256": frame_sha, "changed_properties": [],
+                        },
+                        "evidence_frames": {"before": bound_frame, "after": bound_frame, "settled": bound_frame},
+                    }} for profile in ("wide", "narrow")
+                },
             })
         digest = hashlib.sha256(observation.read_bytes()).hexdigest()
         for route in payload["routes"]:
@@ -255,11 +375,153 @@ class GateManifestTests(unittest.TestCase):
         }
         self.assertEqual(3, len(values))
 
+    def test_source_ambient_contract_is_schema_two_only_and_build_manifest_rejects_it(self) -> None:
+        source = {
+            "schema_version": 2,
+            "reference_id": "strong-1",
+            "states": [
+                {
+                    "id": "rest",
+                    "url": "https://reference.test/",
+                    "kind": "rest",
+                    "trigger": {"type": "none", "target": "document", "value": None},
+                    "expectation": "Initial settled reference route.",
+                },
+                {
+                    "id": "newsletter-appearance",
+                    "url": "https://reference.test/",
+                    "kind": "system",
+                    "trigger": {
+                        "type": "ambient",
+                        "target": "[role=\"dialog\"][data-ff-el=\"modal\"]",
+                        "value": None,
+                        "wait_ms": 15000,
+                    },
+                    "expectation": "Newsletter dialog appears without visitor input after the observed delay.",
+                },
+            ],
+        }
+        failures, _ = self.validator.reference_state_contract_failures(
+            source,
+            expected_reference_id="strong-1",
+            expected_primary_url="https://reference.test/",
+        )
+        self.assertEqual([], failures)
+        legacy = json.loads(json.dumps(source))
+        legacy["schema_version"] = 1
+        legacy_failures, _ = self.validator.reference_state_contract_failures(
+            legacy,
+            expected_reference_id="strong-1",
+            expected_primary_url="https://reference.test/",
+        )
+        self.assertTrue(any("schema 2" in failure for failure in legacy_failures))
+        manifest = self.valid_manifest()
+        manifest["routes"][0]["states"].append(
+            {
+                "id": "newsletter-appearance",
+                "kind": "system",
+                "trigger": {
+                    "type": "ambient",
+                    "target": "#newsletter-modal",
+                    "value": None,
+                },
+                "expectation": "Newsletter dialog appears without visitor input after the observed delay.",
+                "mapped_reference_state_id": "newsletter-appearance",
+            }
+        )
+        manifest_failures = self.validator.route_manifest_payload_failures(manifest)
+        self.assertTrue(any("unsupported trigger type" in failure for failure in manifest_failures))
+
+    def test_ambient_identity_requires_stable_accessible_source_surface(self) -> None:
+        identity = {
+            "appearance": {
+                "tag": "div", "role": "dialog", "accessible_name": "Stay Connected",
+                "class_signature": ["fd-modal"],
+                "rect": {"left": 0, "top": 0, "width": 1440, "height": 900},
+                "semantic_key": "dialog|stay connected",
+            },
+            "settled": {
+                "tag": "div", "role": "dialog", "accessible_name": "Stay Connected",
+                "class_signature": ["fd-modal", "open"],
+                "rect": {"left": 0, "top": 0, "width": 1440, "height": 900},
+                "semantic_key": "dialog|stay connected",
+            },
+        }
+        self.assertTrue(self.validator.ambient_target_identity_valid(identity))
+        invalid = json.loads(json.dumps(identity))
+        invalid["settled"]["accessible_name"] = ""
+        self.assertFalse(self.validator.ambient_target_identity_valid(invalid))
+
+    def test_source_duration_uses_exact_integer_milliseconds_without_rounding(self) -> None:
+        self.assertEqual(90_001, self.validator.exact_millisecond_duration(90.001))
+        self.assertIsNone(self.validator.exact_millisecond_duration(90.0005))
+
     def test_manifest_requires_both_wide_and_narrow(self) -> None:
         payload = self.valid_manifest()
         payload["viewports"] = [{"name": "wide", "width": 1440, "height": 900}]
         with self.assertRaisesRegex(ValueError, "narrow"):
             self.load(payload)
+
+    def test_manifest_refuses_source_profile_aliases_or_extra_viewports(self) -> None:
+        aliases = self.valid_manifest()
+        aliases["viewports"] = [
+            {"name": "desktop", "width": 1440, "height": 900},
+            {"name": "mobile", "width": 390, "height": 844},
+        ]
+        failures = self.validator.route_manifest_payload_failures(aliases)
+        self.assertTrue(any("exactly `wide` and `narrow`" in failure for failure in failures), failures)
+        extra = self.valid_manifest()
+        extra["viewports"].append({"name": "tablet", "width": 768, "height": 1024})
+        failures = self.validator.route_manifest_payload_failures(extra)
+        self.assertTrue(any("exactly the two source-bound" in failure for failure in failures), failures)
+
+    def test_mapped_source_recording_requires_profile_and_ledger_byte_bindings(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            project = Path(raw)
+            manifest = self.valid_manifest()
+            manifest_path = self.materialize_manifest(project, manifest)
+            # Baseline proves this is a valid exact-recording fixture rather
+            # than a test that merely observes another independent failure.
+            self.gate.load_route_manifest(manifest_path, [1], project)
+            if NODE is not None:
+                scanner_uri = (SCRIPTS / "scan_build_components.mjs").resolve().as_uri()
+                code = f"""
+                    import fs from 'node:fs';
+                    import * as scanner from {json.dumps(scanner_uri)};
+                    const manifest = JSON.parse(fs.readFileSync({json.dumps(str(manifest_path))}, 'utf8'));
+                    const observationPath = {json.dumps(str(project / '.design-dna' / 'references' / 'strong-1-observation.json'))};
+                    const observation = JSON.parse(fs.readFileSync(observationPath, 'utf8'));
+                    process.stdout.write(JSON.stringify(scanner.sourceRecordingBindingFailures(manifest.routes[0], observationPath, observation).failures));
+                """
+                scanned = subprocess.run(
+                    [NODE, "--input-type=module", "-e", code],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                )
+                self.assertEqual(0, scanned.returncode, scanned.stderr or scanned.stdout)
+                self.assertEqual([], json.loads(scanned.stdout))
+            recording = project / ".design-dna" / "references" / "strong-1-recording.json"
+            payload = json.loads(recording.read_text(encoding="utf-8"))
+            payload["profiles"]["wide"]["viewport"]["width"] = 1439
+            recording.write_text(json.dumps(payload), encoding="utf-8")
+            if NODE is not None:
+                scanned = subprocess.run(
+                    [NODE, "--input-type=module", "-e", code],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                )
+                self.assertEqual(0, scanned.returncode, scanned.stderr or scanned.stdout)
+                self.assertTrue(any("packaged viewport" in item for item in json.loads(scanned.stdout)))
+            with self.assertRaisesRegex(ValueError, "packaged viewport"):
+                self.gate.load_route_manifest(manifest_path, [1], project)
+            # Restore the valid tree, then prove a ledgered source artifact
+            # cannot drift after recording without stopping the build gate.
+            manifest_path = self.materialize_manifest(project, self.valid_manifest())
+            (project / ".design-dna" / "references" / "strong-1-wide-video.webm").write_bytes(b"drifted")
+            with self.assertRaisesRegex(ValueError, "ledger row .*drifted"):
+                self.gate.load_route_manifest(manifest_path, [1], project)
 
     def test_manifest_refuses_duplicate_normalized_urls(self) -> None:
         payload = self.valid_manifest()
@@ -325,17 +587,100 @@ class GateManifestTests(unittest.TestCase):
             manifest_path = self.materialize_manifest(root, manifest)
             refs = root / ".design-dna" / "references"
             write_json(refs / "strong-1-styles.json", {"tool": "extract_reference_styles.mjs", "schema_version": 2,
-                                                       "viewports_measured": [{"width": 1440}, {"width": 390}]})
+                                                       "viewports_measured": [{"width": 1440}, {"width": 390}],
+                                                       "component_styles": [{
+                                                           "selector": '[data-dna-interaction-id="1"]',
+                                                           "component_key": 'selector:[data-dna-interaction-id="1"]',
+                                                           "profile": profile, "state_id": state_id,
+                                                           "content_facts": {"text": "", "tag": "div", "role": None, "line_count": 0, "parent_tag": "body", "parent_selector": "body", "previous_selector": None},
+                                                           "properties": {
+                                                               "font-family": "Fixture Source", "font-size": "16px", "font-weight": "400",
+                                                               "line-height": "24px", "letter-spacing": "0px", "color": "rgb(1, 2, 3)",
+                                                               "background-color": "rgb(4, 5, 6)", "background-image": "none",
+                                                               "border-color": "rgb(7, 8, 9)", "border-radius": "8px", "box-shadow": "none",
+                                                               "padding": "12px", "gap": "16px", "display": "grid",
+                                                               "grid-template-columns": "1fr 1fr", "transform": "none",
+                                                               "transition-property": "opacity", "transition-duration": "200ms",
+                                                               "transition-timing-function": "ease", "cursor": "pointer",
+                                                           },
+                                                       } for profile in ("wide", "narrow") for state_id in ("rest",)]})
             observation = refs / "strong-1-observation.json"
             observation_sha = hashlib.sha256(observation.read_bytes()).hexdigest()
+            observation_payload = json.loads(observation.read_text(encoding="utf-8"))
             frame = refs / "strong-1-frames" / "state.png"
             frame_sha = hashlib.sha256(frame.read_bytes()).hexdigest()
             categories = [
                 "layout", "typeface", "color", "control", "transition",
                 "content-pattern", "effect",
             ]
+            category_property = {
+                "layout": "display", "typeface": "font-family", "color": "color",
+                "control": "cursor", "transition": "transition-duration",
+                "content-pattern": "line-height", "effect": "box-shadow",
+            }
+            source_values = {
+                "display": "grid", "font-family": "Fixture Source", "color": "rgb(1, 2, 3)",
+                "cursor": "pointer", "transition-duration": "200ms", "line-height": "24px", "box-shadow": "none",
+            }
+            build_values = {
+                "display": "grid", "font-family": "Fixture Build", "color": "rgb(10, 11, 12)",
+                "cursor": "pointer", "transition-duration": "200ms", "line-height": "24px", "box-shadow": "none",
+            }
+            source_state_hash = self.validator.canonical_json_sha256(
+                json.loads(observation.read_text(encoding="utf-8"))["states_by_viewport"]["wide"]["rest"]
+            )
+            style_path = refs / "strong-1-styles.json"
+            style_sha = hashlib.sha256(style_path.read_bytes()).hexdigest()
+            decisions = []
+            for category in categories:
+                decision_id = f"source-{category}"
+                component_id = f"source-{category}-component"
+                property_name = category_property[category]
+                decisions.append({
+                    "decision_id": decision_id,
+                    "category": category,
+                    "component_id": component_id,
+                    "source_mapping": {
+                        "rank": 1, "id": "strong-1",
+                        "observation": ".design-dna/references/strong-1-observation.json",
+                        "sha256": observation_sha,
+                        "source_component_key": 'selector:[data-dna-interaction-id="1"]',
+                        "source_selector": '[data-dna-interaction-id="1"]',
+                        "source_recording": {
+                            "path": ".design-dna/references/strong-1-recording.json",
+                            "sha256": hashlib.sha256((refs / "strong-1-recording.json").read_bytes()).hexdigest(),
+                            "ledger_path": ".design-dna/references/strong-1-artifacts.json",
+                            "ledger_sha256": hashlib.sha256((refs / "strong-1-artifacts.json").read_bytes()).hexdigest(),
+                        },
+                    },
+                    "bindings": [{
+                        "route_key": route_key, "viewport": viewport,
+                        "state_id": "rest", "component_key": f"component:{component_id}",
+                        "evidence": {
+                            "path": ".design-dna/references/strong-1-frames/state.png",
+                            "sha256": frame_sha,
+                        },
+                        "source_state": {"id": "rest", "sha256": source_state_hash},
+                    } for route_key in ("home", "about") for viewport in ("wide", "narrow")],
+                    "style_provenance": {
+                        "record": {"path": ".design-dna/references/strong-1-styles.json", "sha256": style_sha},
+                        "properties": [property_name],
+                        "measured_values": ["extract_reference_styles.mjs"],
+                        "tuples": [{
+                            "viewport": viewport, "state_id": "rest", "source_state_id": "rest",
+                            "source_selector": '[data-dna-interaction-id="1"]',
+                            "source_component_key": 'selector:[data-dna-interaction-id="1"]',
+                            "property": property_name, "source_value": source_values[property_name],
+                            "build_value": build_values[property_name],
+                        } for viewport in ("wide", "narrow")],
+                    },
+                    "asset_role_binding": None,
+                    "dominant_behavior_carrier": None,
+                    "pseudo_bindings": [],
+                    "disposition": "required",
+                })
             visible = write_json(root / ".design-dna" / "visible-decision-sources.json", {
-                "schema_version": 1,
+                "schema_version": 2,
                 "record_type": "design-dna-visible-decision-source-manifest",
                 "created_at": "2026-09-04T11:00:00Z",
                 "proof_build_id": "build-identity-123",
@@ -349,46 +694,83 @@ class GateManifestTests(unittest.TestCase):
                     "path": ".design-dna/references/strong-1-observation.json",
                     "sha256": observation_sha,
                 }],
-                "planned_decision_ids": [f"source-{category}" for category in categories],
-                "decisions": [{
-                    "decision_id": f"source-{category}",
-                    "category": category,
-                    "planned_surface": f"The {category} treatment across the complete primary composition.",
-                    "route_keys": ["home", "about"],
-                    "state_ids": ["rest"],
-                    "source_reference_id": "strong-1",
-                    "source_component_or_behavior": f"The measured reference {category} relationship captured before coding.",
+                "construction_authorization": {
+                    "journal_id": None, "entry_path": None, "entry_sha256": None,
+                },
+                "proof_isolation": {
+                    "primary_route_key": "home", "source_files": ["proof.tsx"],
+                    "region_component_id": "source-layout-component",
+                },
+                "planned_decision_ids": [row["decision_id"] for row in decisions],
+                "decisions": decisions,
+                "source_state_dispositions": [{
+                    "source_reference_id": "strong-1", "source_state_id": "rest",
+                    "disposition": "transfer",
+                    "reason": "The initial settled source state is carried by the exact first-screen component bindings.",
                     "evidence": {
-                        "path": ".design-dna/references/strong-1-frames/state.png",
-                        "sha256": frame_sha,
+                        profile: {
+                            "path": ".design-dna/references/" + observation_payload["states_by_viewport"][profile]["rest"]["evidence_frames"]["settled"]["file"],
+                            "bytes": observation_payload["states_by_viewport"][profile]["rest"]["evidence_frames"]["settled"]["bytes"],
+                            "sha256": observation_payload["states_by_viewport"][profile]["rest"]["evidence_frames"]["settled"]["sha256"],
+                        } for profile in ("wide", "narrow")
                     },
+                    "absence_assertion": "not applicable when transfer",
+                }],
+                "source_contribution_scope": [{
+                    "source_reference_id": "strong-1", "selected_rank": 1,
+                    "dominant_route_keys": ["home"],
+                    "signature_carrier_decision_ids": ["source-layout"],
+                    "signature_kind": "static",
+                    "deletion_test": "The primary source-specific arrangement and content hierarchy would disappear from the opening.",
                     "disposition": "required",
-                } for category in categories],
+                }],
                 "completeness": {
                     "required_categories": categories,
                     "covered_categories": categories,
                     "placeholders_allowed": False,
                     "generic_scaffold_allowed": False,
                     "fallback_design_allowed": False,
+                    "wrapper_inheritance_allowed": False,
                     "unsourced_decisions": [],
                 },
             })
+            initial_visible_sha = hashlib.sha256(visible.read_bytes()).hexdigest()
             (root / ".design-dna" / "reference-dossier.md").write_text(
                 "## Selected synthesis\n\n- Selected positive ranks: 1\n\n"
                 "## Route manifest\n\n"
                 f"- Route manifest: .design-dna/route-manifest.json plus sha256:{hashlib.sha256(manifest_path.read_bytes()).hexdigest()}\n"
                 "- First-screen proof build ID and primary route key: build_id=build-identity-123; route_key=home\n\n"
                 "## Preimplementation visible decisions\n\n"
-                f"- Visible decision source manifest: .design-dna/visible-decision-sources.json plus sha256:{hashlib.sha256(visible.read_bytes()).hexdigest()}\n",
+                f"- Visible decision source manifest: .design-dna/visible-decision-sources.json plus sha256:{initial_visible_sha}\n",
                 encoding="utf-8")
+            visible_payload = json.loads(visible.read_text(encoding="utf-8"))
+            self.validator.begin_construction_journal(
+                root,
+                manifest_path=manifest_path,
+                dossier_path=root / ".design-dna" / "reference-dossier.md",
+                visible_path=visible,
+                visible_payload=visible_payload,
+            )
+            current_visible_sha = hashlib.sha256(visible.read_bytes()).hexdigest()
+            dossier_path = root / ".design-dna" / "reference-dossier.md"
+            dossier_path.write_text(
+                dossier_path.read_text(encoding="utf-8").replace(
+                    initial_visible_sha,
+                    current_visible_sha,
+                ),
+                encoding="utf-8",
+            )
             final_record = write_json(root / ".design-dna" / "evidence" / "gate.json", {"sentinel": True})
             done = subprocess.run([
                 sys.executable, "-B", str(SCRIPTS / "gate.py"), "--project", str(root),
                 "--build-id", "build-identity-123", "--route-manifest", str(manifest_path),
                 "--phase", "first-screen", "--route-key", "home", "--dry-run",
             ], capture_output=True, text=True, encoding="utf-8")
-            self.assertEqual(0, done.returncode, done.stdout + done.stderr)
+            # A manifest-only fixture proves route filtering, not permission
+            # to build: missing current direction state must fail honestly.
+            self.assertNotEqual(0, done.returncode, done.stdout + done.stderr)
             payload = json.loads(done.stdout)
+            self.assertTrue(any(step["name"] == "direction-prerequisites" and not step["pass"] for step in payload["steps_so_far"]))
             self.assertEqual("first-screen", payload["phase"])
             self.assertEqual(["home"], [route["key"] for route in payload["active_routes"]])
             self.assertEqual({"sentinel": True}, json.loads(final_record.read_text(encoding="utf-8")))
@@ -775,6 +1157,23 @@ class PureRuntimeBehaviorTests(unittest.TestCase):
         value = node_module("scan_build_components.mjs", 'm.classKeys("card card__title card--loud utility")')
         self.assertEqual(["class:card", "class:card--loud", "class:card__title", "class:utility"], value)
 
+    def test_build_scan_refuses_unmapped_source_profile_aliases(self) -> None:
+        canonical = [
+            {"name": "wide", "width": 1440, "height": 900},
+            {"name": "narrow", "width": 390, "height": 844},
+        ]
+        aliases = [
+            {"name": "desktop", "width": 1440, "height": 900},
+            {"name": "mobile", "width": 390, "height": 844},
+        ]
+        value = node_module(
+            "scan_build_components.mjs",
+            f"[m.sourceProfileViewportFailures({json.dumps(canonical)}),"
+            f"m.sourceProfileViewportFailures({json.dumps(aliases)})]",
+        )
+        self.assertEqual([], value[0])
+        self.assertTrue(any("exactly `wide` and `narrow`" in item for item in value[1]))
+
     def test_responsive_omission_must_match_the_exact_source_control(self) -> None:
         candidates = [
             {"target": "#view-toggle", "semantic_key": "button|change view"},
@@ -904,6 +1303,54 @@ class PureRuntimeBehaviorTests(unittest.TestCase):
         self.assertTrue(any("target" in item for item in result["failures"]))
         self.assertTrue(any("before/after" in item or "visual change" in item for item in result["failures"]))
 
+    def test_source_ambient_can_transfer_only_through_explicit_system_driver(self) -> None:
+        changed = [{"component_key": "modal", "property": "presence", "before": None, "after": "present"}]
+        source_state = {
+            "id": "newsletter-appearance", "kind": "system",
+            "trigger": {"type": "ambient", "target": "#source-newsletter", "value": None, "wait_ms": 15000},
+        }
+        build_state = {
+            "id": "newsletter-appearance", "kind": "system",
+            "trigger": {"type": "programmatic", "target": "[data-design-dna-state-driver=\"newsletter\"]", "value": None},
+            "mapped_reference_state_id": "newsletter-appearance",
+        }
+        source = {
+            "type": "ambient", "target": "#source-newsletter", "target_component_keys": ["source-modal"],
+            "before_sha256": "1" * 64, "after_sha256": "2" * 64, "settled_sha256": "2" * 64,
+            "changed_properties": changed, "duration_ms": 15000, "settled": True,
+            "wait_ms": 15000, "appeared_after_ms": 11000, "appearance_observed": True,
+            "mechanism": {"type": "ambient-appearance"}, "mechanism_count": 1,
+        }
+        build = {
+            "type": "programmatic", "target": "[data-design-dna-state-driver=\"newsletter\"]", "target_component_keys": ["build-modal"],
+            "before_sha256": "3" * 64, "after_sha256": "4" * 64, "settled_sha256": "4" * 64,
+            "changed_properties": changed, "duration_ms": 11000, "settled": True,
+            "mechanism": {"type": "state-transition"}, "mechanism_count": 1,
+        }
+        result = node_module(
+            "compare_mechanisms.mjs",
+            f"m.diffTriggerEvidence({json.dumps(build)}, {json.dumps(source)}, {json.dumps(build_state)}, {json.dumps(source_state)})",
+        )
+        self.assertTrue(result["pass"])
+        invalid = json.loads(json.dumps(build_state))
+        invalid["trigger"]["type"] = "click"
+        invalid["trigger"]["target"] = "#newsletter"
+        result = node_module(
+            "compare_mechanisms.mjs",
+            f"m.diffTriggerEvidence({json.dumps(build)}, {json.dumps(source)}, {json.dumps(invalid)}, {json.dumps(source_state)})",
+        )
+        self.assertFalse(result["pass"])
+        self.assertTrue(any("ambient" in item for item in result["failures"]))
+        for invalid_duration in (0, 2500):
+            timed = json.loads(json.dumps(build))
+            timed["duration_ms"] = invalid_duration
+            result = node_module(
+                "compare_mechanisms.mjs",
+                f"m.diffTriggerEvidence({json.dumps(timed)}, {json.dumps(source)}, {json.dumps(build_state)}, {json.dumps(source_state)})",
+            )
+            self.assertFalse(result["pass"])
+            self.assertTrue(any("source-bound ambient appearance" in item for item in result["failures"]))
+
     def test_generic_hover_cannot_stand_in_for_pointer_follow(self) -> None:
         source = {"mechanisms": [{"type": "pointer-follow", "moved_px": 40}],
                   "score": {"type_instances": {"pointer-follow": 1}}}
@@ -1000,7 +1447,7 @@ class SignatureTransferBehaviorTests(unittest.TestCase):
     RUN_ID = "test-run-identity"
 
     def run_signature(self, signature: str, source_mechanism: dict, *, fake_tested_report: bool = False,
-                      fake_truthy_status: bool = False) -> tuple[int, dict]:
+                      fake_truthy_status: bool = False, missing_construction_contribution: bool = False) -> tuple[int, dict]:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
             state = root / ".design-dna"
@@ -1127,6 +1574,15 @@ class SignatureTransferBehaviorTests(unittest.TestCase):
                 "names": ["hero"], "census": [{"name": "hero", "routes": ["home"]}],
                 "interaction_inventory": {"complete": True, "missing": [], "cells": census_cells},
             })
+            if missing_construction_contribution:
+                write_json(state / "visible-decision-sources.json", {
+                    "schema_version": 2, "source_contribution_scope": [], "decisions": [],
+                })
+                census_payload = json.loads(census.read_text(encoding="utf-8"))
+                census_payload["visible_decision_reconciliation"] = {
+                    "complete": True, "construction_findings": [],
+                }
+                write_json(census, census_payload)
             if fake_tested_report:
                 fake = json.loads(census.read_text(encoding="utf-8"))
                 fake["interaction_inventory"]["cells"] = fake["interaction_inventory"]["cells"][:1]
@@ -1171,6 +1627,15 @@ class SignatureTransferBehaviorTests(unittest.TestCase):
         )
         self.assertEqual(2, code)
         self.assertEqual("evidence-invalid", record["error"]["code"])
+
+    def test_v2_signature_transfer_requires_every_selected_source_contribution(self) -> None:
+        code, record = self.run_signature(
+            "static: editorial type occupies a strict left rail",
+            {"type": "hover-transition", "responded": 1, "ms": 120},
+            missing_construction_contribution=True,
+        )
+        self.assertEqual(2, code)
+        self.assertEqual("construction-source-contribution-spread", record["error"]["code"])
 
 
 if __name__ == "__main__":

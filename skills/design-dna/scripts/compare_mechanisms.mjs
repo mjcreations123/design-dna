@@ -13,6 +13,7 @@ import {
   canonicalJson,
   captureInteractionCensus,
   installDomInspection,
+  isSourceAmbientMapping,
   navigateExact,
 } from "./browser_evidence.mjs";
 import {
@@ -24,7 +25,9 @@ import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright
 
 const TOOL_NAME = "compare_mechanisms.mjs";
 const SCHEMA_VERSION = PRODUCER_OUTPUT_SCHEMA_VERSION;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+import { firstScreenManifest, deriveFirstScreenSourceCensus } from "./construction_phase.mjs";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const SCRIPT_DIR = path.dirname(SCRIPT_PATH);
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(SCRIPT_DIR, "observe_reference.mjs"))).digest("hex");
@@ -362,11 +365,21 @@ export function diffTriggerEvidence(build, source, state, sourceState = null) {
     failures: ["missing build/source trigger evidence or manifest trigger"],
     verdict: "missing build/source trigger evidence or manifest trigger",
   };
+  const ambientMapping = isSourceAmbientMapping(state, sourceState);
   if (build.type !== state.trigger.type) failures.push(`build trigger type ${build.type} vs manifest ${state.trigger.type}`);
-  if (source.type !== state.trigger.type) failures.push(`source trigger type ${source.type} vs manifest ${state.trigger.type}`);
+  if (!ambientMapping && source.type !== state.trigger.type) failures.push(`source trigger type ${source.type} vs manifest ${state.trigger.type}`);
   if (build.target !== state.trigger.target) failures.push(`build trigger target ${build.target} vs manifest ${state.trigger.target}`);
   if (sourceState?.trigger && source.target !== sourceState.trigger.target) {
     failures.push(`source trigger target ${source.target} vs observed state contract ${sourceState.trigger.target}`);
+  }
+  if (ambientMapping) {
+    if (source.type !== 'ambient' || source.appearance_observed !== true || !Number.isInteger(source.wait_ms) ||
+        !Number.isInteger(source.appeared_after_ms) || source.appeared_after_ms < 0 || source.appeared_after_ms > source.wait_ms) {
+      failures.push('source-only ambient state lacks bounded, observed appearance evidence');
+    }
+    if (build.type !== 'programmatic' || state.kind !== 'system') {
+      failures.push('source-only ambient state requires explicit system/programmatic build mapping');
+    }
   }
   const digest = (value) => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
   if (![build.before_sha256, build.after_sha256, build.settled_sha256,
@@ -375,7 +388,8 @@ export function diffTriggerEvidence(build, source, state, sourceState = null) {
   }
   const buildMechanism = build.mechanism?.type || null;
   const sourceMechanism = source.mechanism?.type || null;
-  if (buildMechanism !== sourceMechanism) failures.push(`trigger mechanism ${buildMechanism || "none"} vs ${sourceMechanism || "none"}`);
+  const equivalentAmbientMechanism = ambientMapping && buildMechanism === 'state-transition' && sourceMechanism === 'ambient-appearance';
+  if (buildMechanism !== sourceMechanism && !equivalentAmbientMechanism) failures.push(`trigger mechanism ${buildMechanism || "none"} vs ${sourceMechanism || "none"}`);
   if (Number(build.mechanism_count || 0) !== Number(source.mechanism_count || 0)) {
     failures.push(`trigger mechanism count ${build.mechanism_count || 0} vs ${source.mechanism_count || 0}`);
   }
@@ -400,8 +414,15 @@ export function diffTriggerEvidence(build, source, state, sourceState = null) {
     failures.push("trigger target component identity is missing");
   }
   const sourceDuration = Number(source.duration_ms || 0), buildDuration = Number(build.duration_ms || 0);
-  if (sourceDuration > 0 && relativeDelta(buildDuration, sourceDuration) > 0.25) {
-    failures.push(`trigger duration ${buildDuration}ms vs ${sourceDuration}ms`);
+  // Ambient source states are source-only by default: omitting their mapping
+  // omits the popup. Once a build explicitly maps one, it has chosen to
+  // transfer the source's observed autonomous timing rather than replace it
+  // with an immediate harness toggle or an arbitrary delay.
+  const timingModelDuration = ambientMapping ? Number(source.appeared_after_ms || 0) : sourceDuration;
+  if (ambientMapping && (!Number.isInteger(source.wait_ms) || timingModelDuration <= 0 || timingModelDuration > Number(source.wait_ms))) {
+    failures.push('source-only ambient mapping lacks a valid source-bound appearance timing model');
+  } else if (timingModelDuration > 0 && relativeDelta(buildDuration, timingModelDuration) > 0.25) {
+    failures.push(`trigger duration ${buildDuration}ms vs source-bound ${ambientMapping ? 'ambient appearance ' : ''}${timingModelDuration}ms`);
   }
   const sourceChangedState = source.before_sha256 !== source.settled_sha256;
   const buildChangedState = build.before_sha256 !== build.settled_sha256;
@@ -503,7 +524,7 @@ async function pageTransitionPass(page, startUrl, restore) {
     active_arrival_animations: activity, before_sha256: createHash("sha256").update(before).digest("hex") } : null;
 }
 
-async function observeBuild(page, state, routeStates, profile, pageUrl, evidenceDir, evidenceRelativeRoot, evidencePrefix, firstScreen = false, navigate) {
+async function observeBuild(page, state, routeStates, profile, pageUrl, evidenceDir, evidenceRelativeRoot, evidencePrefix, firstScreen = false, navigate, plannedDeferredRoutes = []) {
   let frameSequence = 0;
   const persistFrame = (phase, bytes) => {
     frameSequence += 1;
@@ -534,7 +555,10 @@ async function observeBuild(page, state, routeStates, profile, pageUrl, evidence
   const interactionCensus = await captureInteractionCensus(page, {
     profile,
     pageUrl,
+    plannedDeferredRoutes,
     authoredStates: routeStates.map((item) => ({ ...item, url: pageUrl })),
+    baselineState: { ...state, url: pageUrl },
+    context: { phase: "mechanism-comparison", source_state_id: state.id, pass: 1 },
     captureEvidence: async (label, evidencePage = page) => {
       const bytes = await evidencePage.screenshot();
       return { ...persistFrame(label, bytes), label };
@@ -578,6 +602,7 @@ async function main() {
       );
     }
   }
+  if (args.firstScreen) manifest = firstScreenManifest(manifest, args.routeKeys);
   const loaded = loadPlaywright();
   const browserDependency = loadBrowserDependency(loaded, args.browserExecutable);
   const browser = await loaded.playwright.chromium.launch({ executablePath: browserDependency.file });
@@ -613,7 +638,7 @@ async function main() {
           const buildObservation = await observeBuild(
             page, state, route.states, profile, route.url,
             interactionFrameDir, interactionFrameRelativeRoot, `${route.key}-${viewport.name}-${state.id}`,
-            args.firstScreen, navigate,
+            args.firstScreen, navigate, args.firstScreen ? manifest.__planned_routes.filter((item) => item.key !== route.key).map((item) => item.url) : [],
           );
           await page.close();
           if (restLoads.length !== 2 || new Set(restLoads.map((entry) => entry.sha256)).size !== 1) {
@@ -624,16 +649,18 @@ async function main() {
           const sourceSheet = args.firstScreen ? firstScreenSheet(sourceState, viewport.height) : sourceState;
           const diff = diffSheets(buildObservation.sheet, [sourceSheet]);
           const stateContractMatch = sourceState.id === state.mapped_reference_state_id &&
-            sourceState.kind === state.kind && sourceState.trigger?.type === state.trigger.type;
+            (sourceState.kind === state.kind && sourceState.trigger?.type === state.trigger.type ||
+              isSourceAmbientMapping(state, sourceState));
           const triggerDiff = diffTriggerEvidence(
             buildObservation.application.trigger_evidence,
             sourceState.trigger_evidence,
             state,
             sourceState,
           );
+          const sourceComparisonCensus = args.firstScreen ? deriveFirstScreenSourceCensus(sourceState.interaction_census, manifest.__construction_mapping, route, profile, buildObservation.interaction_census, sourceState.url) : sourceState.interaction_census;
           const interactionDiff = diffInteractionCensus(
             buildObservation.interaction_census,
-            sourceState.interaction_census,
+            sourceComparisonCensus,
             route.states,
           );
           if (!stateContractMatch || !triggerDiff.pass || !interactionDiff.pass) {
@@ -661,6 +688,8 @@ async function main() {
             build_interaction_census: buildObservation.interaction_census,
             build_interaction_census_sha256: createHash("sha256").update(canonicalJson(buildObservation.interaction_census)).digest("hex"),
             source_interaction_census_sha256: createHash("sha256").update(canonicalJson(sourceState.interaction_census)).digest("hex"),
+            source_comparison_scope: args.firstScreen ? 'immutable-precode-first-screen-decision-subset' : 'full-source',
+            source_comparison_census_sha256: createHash('sha256').update(canonicalJson(sourceComparisonCensus)).digest('hex'),
             mapped_reference: {
               rank: mapped.rank, id: mapped.id, observation: mapped.observation,
               sha256: mapped.sha256, url: mapped.url,
@@ -726,6 +755,7 @@ async function main() {
     tool: TOOL_NAME, schema_version: SCHEMA_VERSION, producer_script_sha256: PRODUCER_SCRIPT_SHA256,
     runtime_identity: {
       "compare_mechanisms.mjs": PRODUCER_SCRIPT_SHA256,
+      "construction_phase.mjs": createHash('sha256').update(fs.readFileSync(path.join(SCRIPT_DIR, 'construction_phase.mjs'))).digest('hex'),
       "observe_reference.mjs": OBSERVER_SCRIPT_SHA256,
       "browser_evidence.mjs": BROWSER_EVIDENCE_SHA256,
       "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
@@ -760,5 +790,5 @@ async function main() {
   process.exit(record.pass ? 0 : 1);
 }
 
-const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH;
 if (invokedDirectly) main();

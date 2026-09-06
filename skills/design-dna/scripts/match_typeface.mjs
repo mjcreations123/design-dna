@@ -48,7 +48,8 @@ import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright
 
 const TOOL_NAME = "match_typeface.mjs";
 const SCHEMA_VERSION = 3;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "observe_reference.mjs"))).digest("hex");
 const STRUCTURE_PROBE_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "structure_probe.mjs"))).digest("hex");

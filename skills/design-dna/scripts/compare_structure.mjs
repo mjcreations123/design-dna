@@ -49,11 +49,13 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { STRUCTURE_SCRIPT, diffStructure } from "./structure_probe.mjs";
+import { compareComponentGeometry, indistinguishableRouteFindings } from "./component_geometry.mjs";
 import {
   aggregateServedContent,
   applyManifestState,
   beginServedContentCapture,
   installDomInspection,
+  isSourceAmbientMapping,
   navigateExact,
 } from "./browser_evidence.mjs";
 import {
@@ -64,7 +66,9 @@ import {
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
 
 const SCHEMA_VERSION = PRODUCER_OUTPUT_SCHEMA_VERSION;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+import { firstScreenManifest } from "./construction_phase.mjs";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const SCRIPT_DIR = path.dirname(SCRIPT_PATH);
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(SCRIPT_DIR, "observe_reference.mjs"))).digest("hex");
@@ -163,6 +167,7 @@ async function main() {
     }
   }
 
+  if (census.first_screen_only === true) manifest = firstScreenManifest(manifest, args.routeKeys);
   const loaded = loadPlaywright();
   const browserDependency = loadBrowserDependency(loaded, args.browserExecutable);
   const browser = await loaded.playwright.chromium.launch({ executablePath: browserDependency.file });
@@ -198,6 +203,9 @@ async function main() {
           }
           const stateApplication = await applyManifestState(page, state);
           const build = await page.evaluate(STRUCTURE_SCRIPT);
+          const routeContent = await page.evaluate(() => ({text: document.body.innerText.replace(/\s+/g, ' ').trim(),
+            media: [...document.querySelectorAll('img,video,object,embed')].map((node) => node.currentSrc || node.src || node.data || ''),
+            active: [...document.querySelectorAll('[aria-current],[aria-selected="true"],[aria-expanded="true"]')].map((node) => [node.tagName, node.textContent.trim(), node.getAttribute('aria-current')])}));
           await page.close();
           const result = {
             reference: mapped.observation,
@@ -216,7 +224,8 @@ async function main() {
             result.verdict = `Visible pseudo/shadow/iframe/canvas structure was not completely comparable (build: ${(build.inspection?.uninspectable || []).join(", ") || "incomplete"}; source: ${(sourceState.structure.inspection?.uninspectable || []).join(", ") || "incomplete"}).`;
           }
           const stateContractMatch = sourceState.id === state.mapped_reference_state_id &&
-            sourceState.kind === state.kind && sourceState.trigger?.type === state.trigger.type;
+            (sourceState.kind === state.kind && sourceState.trigger?.type === state.trigger.type ||
+              isSourceAmbientMapping(state, sourceState));
           if (!stateContractMatch) {
             result.pass = false;
             result.verdict = `Mapped source state ${state.mapped_reference_state_id} does not use the build state's ${state.kind}/${state.trigger.type} behavior contract.`;
@@ -230,6 +239,7 @@ async function main() {
             state_expectation: state.expectation,
             mapped_reference_state_id: state.mapped_reference_state_id,
             state_application: stateApplication,
+            rendered_route_identity: createHash('sha256').update(JSON.stringify(routeContent)).digest('hex'),
             mapped_reference: {
               rank: mapped.rank, id: mapped.id, observation: mapped.observation,
               sha256: mapped.sha256, url: mapped.url,
@@ -256,11 +266,36 @@ async function main() {
     }
 
     const failed = routes.filter((r) => !r.pass);
+    const sourceStyles = new Map();
+    const constructionFile = path.join(path.dirname(path.resolve(args.manifest)), 'visible-decision-sources.json');
+    let componentComposition = null;
+    if (fs.existsSync(constructionFile)) {
+      const construction = readJson(constructionFile, 'construction-binding-unreadable');
+      if (construction.schema_version === 2) {
+        const project = path.dirname(path.dirname(path.resolve(args.manifest)));
+        for (const decision of construction.decisions || []) {
+          if (!sourceStyles.has(decision.source_mapping?.id)) sourceStyles.set(decision.source_mapping?.id,
+            readJson(path.resolve(project, decision.style_provenance.record.path), 'source-component-style-unreadable'));
+        }
+        let contentPlan = null;
+        if (construction.content_transfer) {
+          const file = path.resolve(project, construction.content_transfer.path);
+          if (createHash('sha256').update(fs.readFileSync(file)).digest('hex') !== construction.content_transfer.sha256) fail('composition-plan-drift', 'Pre-code content/connection plan changed before structure comparison.');
+          contentPlan = readJson(file, 'composition-plan-unreadable');
+        }
+        componentComposition = compareComponentGeometry(construction, census.checks || [], sourceStyles,
+          args.routeKeys.length ? args.routeKeys : manifest.routes.map((route) => route.key), contentPlan, census.first_screen_only === true);
+      }
+    }
+    const routeIdentityFindings = indistinguishableRouteFindings(routes);
+    const complete = failed.length === 0 && (!componentComposition || componentComposition.complete) && !routeIdentityFindings.length;
     const record = {
       schema_version: SCHEMA_VERSION,
       tool: "compare_structure.mjs",
       producer_script_sha256: PRODUCER_SCRIPT_SHA256,
       runtime_identity: {
+        "component_geometry.mjs": createHash('sha256').update(fs.readFileSync(path.join(SCRIPT_DIR, 'component_geometry.mjs'))).digest('hex'),
+        "construction_phase.mjs": createHash('sha256').update(fs.readFileSync(path.join(SCRIPT_DIR, 'construction_phase.mjs'))).digest('hex'),
         "compare_structure.mjs": PRODUCER_SCRIPT_SHA256,
         "structure_probe.mjs": STRUCTURE_PROBE_SHA256,
         "scan_build_components.mjs": CENSUS_SCRIPT_SHA256,
@@ -281,12 +316,14 @@ async function main() {
       census_sha256: censusSha,
       compared_at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
       served_content_identity: aggregateServedContent(servedProbes),
-      pass: failed.length === 0,
+      pass: complete,
+      component_composition: componentComposition,
+      route_identity_findings: routeIdentityFindings,
       routes_compared: routes.length,
-      verdict: failed.length === 0
+      verdict: complete
         ? `All ${routes.length} route/viewport/state cells match their exact bound reference observation and source state.`
         : `${failed.length} of ${routes.length} route/viewport/state cells fail their mapped reference. ` +
-          failed.map((r) => `${r.route_key}/${r.viewport}/${r.state_id}: ${r.verdict}`).join(" | "),
+          failed.map((r) => `${r.route_key}/${r.viewport}/${r.state_id}: ${r.verdict}`).join(" | ") + JSON.stringify([...(componentComposition?.findings || []), ...routeIdentityFindings]),
       routes,
     };
     fs.mkdirSync(path.dirname(args.outFile), { recursive: true });
@@ -305,5 +342,5 @@ async function main() {
 }
 
 const invokedDirectly = process.argv[1]
-  && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  && path.resolve(process.argv[1]) === SCRIPT_PATH;
 if (invokedDirectly) main();

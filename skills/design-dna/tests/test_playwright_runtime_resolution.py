@@ -88,6 +88,22 @@ def run_preflight(script: Path, project: Path, *arguments: str, environment: dic
 
 @unittest.skipIf(NODE is None, "node is required")
 class PlaywrightRuntimeResolutionTests(unittest.TestCase):
+    def test_launchable_old_playwright_cannot_claim_recorder_capability(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-dna-old-browser-api-") as temporary:
+            root = Path(temporary)
+            preflight = install_shaped_scripts(root)
+            project = root / "project"
+            project.mkdir()
+            modules = project / "node_modules"
+            write_fake_playwright(modules, "1.50.0", executable_path=str(Path(sys.executable).resolve()))
+            (modules / "playwright/index.js").write_text(
+                "module.exports={chromium:{executablePath:()=>" + json.dumps(str(Path(sys.executable).resolve())) +
+                ",launch:async()=>({version:()=> 'launchable-old-runtime',newPage:async()=>({goto:async()=>{},close:async()=>{}}),close:async()=>{}})}};",
+                encoding="utf-8")
+            code, payload = run_preflight(preflight, project, "--launch")
+        self.assertEqual(3, code, payload)
+        self.assertEqual("browser-screencast-capability-unavailable", payload["error"]["code"])
+
     def test_installed_shaped_skill_discovers_project_local_playwright(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-dna-project-local-") as temporary:
             root = Path(temporary)

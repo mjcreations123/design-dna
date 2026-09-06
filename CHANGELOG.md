@@ -5,6 +5,24 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 12.0.0 - Development candidate
+
+Major revision of source evidence, construction authorization, and internal
+proof contracts. Older generated records require a truthful migration or
+recapture; changing version labels never upgrades their evidence.
+
+- Added a bounded source-study controller, typed partial artifacts, source
+  status and exact progress/recording identity.
+- Added per-component/state/viewport construction binding and proof isolation,
+  source media and behavior identity, and a separate internal proof workflow.
+- Corrected timed-modal/watch lifecycle, recorder processing, font and asset
+  delivery, standard gate prerequisites, and blocked-delivery handling.
+- Corrected installed-path and Node/parser compatibility and documented study
+  limits, evidence boundaries, and recovery.
+- Consolidated discovered defects and validation status in
+  [the defect audit](docs/DEFECT_AUDIT.md). Release qualification remains
+  limited to the evidence actually recorded for the final frozen tree.
+
 ## 11.0.0 - Development candidate
 
 This candidate is a contract and runtime hardening release. It removes

@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "record_type": "design-dna-codex-plugin-validation-attestation",
-  "created_at": "2026-09-04T11:17:48Z",
+  "created_at": "2026-09-06T11:33:14Z",
   "package": "design-dna",
-  "release_version": "11.0.0",
+  "release_version": "12.0.0",
   "validator": {
     "logical_id": "plugin-creator/validate_plugin.py",
     "sha256": "1e6cb914505b458856c2cfab7d18a224731c743ef47e0c9d78afe64f35b67f7c",
@@ -51,23 +51,23 @@
   "inputs": {
     "plugin_manifest_tree": {
       "path": ".codex-plugin",
-      "sha256": "96085f8e3e722a7c0c7a882a319a17331db345273cea42efcfd84ce6273f3fe5",
+      "sha256": "cdef5f047910342d1b2f6218857fae0f97b19943a1001994f03d0c1713d6fe37",
       "entry_count": 1,
       "file_count": 1,
       "byte_count": 1379
     },
     "skills_tree": {
       "path": "skills",
-      "sha256": "70af7fa8713609400d2ba3a23a4a576e723682660b35fe66da2f4afc0b5f08a7",
-      "entry_count": 201,
-      "file_count": 186,
-      "byte_count": 4743178
+      "sha256": "50b6bd2cb95c689a09fce8f8e20f3f574ff479ce054d7a2770ca910295a793ff",
+      "entry_count": 244,
+      "file_count": 229,
+      "byte_count": 6134397
     },
     "files": {
       "attestor": {
         "path": "maintainer/scripts/attest_codex_plugin.py",
-        "sha256": "463796ce5aef2a8ea63467c636f314f59b9ca6ec247463df35c6d7da680ea033",
-        "bytes": 37380
+        "sha256": "e9176ff7619b15b439a0e921b1ccc2dab00bf54bc377faac754575a7df853566",
+        "bytes": 37867
       },
       "cache_preflight": {
         "path": "maintainer/scripts/cache_preflight.py",

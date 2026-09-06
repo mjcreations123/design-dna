@@ -188,7 +188,11 @@ def stable_file(
 
 
 def current_python_sha256() -> str:
-    _data, digest = stable_file(Path(sys.executable))
+    # sys.executable is the interpreter already selected by this process,
+    # not a project-supplied artifact. Hosted POSIX Python/venv launchers are
+    # commonly symlinks; bind their final binary while retaining strict link
+    # refusal for validator, package, dependency and evidence inputs.
+    _data, digest = stable_file(Path(sys.executable).resolve(strict=True))
     return digest
 
 
@@ -576,7 +580,9 @@ def run_validator(
     with tempfile.TemporaryDirectory(
         prefix="design-dna-codex-validation-"
     ) as temporary:
-        snapshot_root = Path(temporary)
+        # A tempfile-created root may be under macOS's /var -> /private/var.
+        # Resolve only this intrinsically created private workspace.
+        snapshot_root = Path(temporary).resolve(strict=True)
         snapshot_plugin = snapshot_root / "plugin"
         snapshot_dependency = snapshot_root / "dependencies"
         snapshot_validator = snapshot_root / "validator"

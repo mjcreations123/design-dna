@@ -15,6 +15,7 @@ import zlib
 from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
+from directory_link_fixtures import make_directory_link, remove_directory_link
 
 
 PLUGIN = Path(__file__).resolve().parents[2]
@@ -31,20 +32,6 @@ def run_script(script: Path, *arguments: str) -> subprocess.CompletedProcess[str
         [sys.executable, str(script), *arguments],
         text=True, encoding="utf-8", capture_output=True, env=environment,
     )
-
-
-def make_directory_link(link: Path, target: Path) -> bool:
-    try:
-        os.symlink(target, link, target_is_directory=True)
-        return True
-    except (OSError, NotImplementedError):
-        if os.name != "nt":
-            return False
-        completed = subprocess.run(
-            ["cmd.exe", "/c", "mklink", "/J", str(link), str(target)],
-            text=True, capture_output=True,
-        )
-        return completed.returncode == 0
 
 
 def load_initializer():
@@ -1379,8 +1366,7 @@ class InitializerTests(unittest.TestCase):
             project.mkdir()
             outside.mkdir()
             link = project / ".design-dna"
-            if not make_directory_link(link, outside):
-                self.skipTest("directory symlink/junction unavailable")
+            make_directory_link(link, outside)
             try:
                 result = run_script(INIT, "--project", str(project), "--json")
                 self.assertEqual(result.returncode, 2)
@@ -1388,7 +1374,7 @@ class InitializerTests(unittest.TestCase):
                 self.assertEqual(json.loads(result.stderr)["error"]["code"], "reparse-point-refused")
             finally:
                 if link.exists():
-                    os.rmdir(link)
+                    remove_directory_link(link)
 
     def test_assets_manifest_validates_complete_nested_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -3,7 +3,7 @@
 Use the shared Design DNA workflow without duplicating rules in plugin metadata.
 
 - The owner's standing orders in SKILL.md (no producer design, no quality-
-  reducing shortcuts, required first-screen and final phases of one gate
+  reducing shortcuts, required pre-code construction authorization plus first-screen and final phases of one gate
   program, and the final verdict line quoted verbatim)
   applies on this host exactly as written. There is no host-specific relief.
 - Invoke explicitly with `$design-dna`; natural-language discovery may also

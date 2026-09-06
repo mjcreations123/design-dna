@@ -116,22 +116,65 @@ export async function collectSameOriginLinks(page, origin) {
   return [...new Set(links.map((value) => normalizeHttpUrl(value)))].sort();
 }
 
-const MANIFEST_TRIGGER_TYPES = new Set(["none", "hover", "focus", "click", "keyboard", "input", "url", "programmatic"]);
+/**
+ * `ambient` deliberately does not belong to a route manifest.  It is a
+ * source-observation trigger: a real page changed without an input, and the
+ * recorder must wait for and prove that exact change.  A build may map that
+ * source state through an explicit, test-only programmatic driver, but may
+ * never declare an `ambient` trigger of its own.
+ */
+export const BUILD_MANIFEST_TRIGGER_TYPES = new Set(["none", "hover", "focus", "click", "keyboard", "input", "url", "programmatic"]);
+export const SOURCE_STATE_TRIGGER_TYPES = new Set([...BUILD_MANIFEST_TRIGGER_TYPES, "ambient"]);
+export const AMBIENT_SOURCE_WAIT_MIN_MS = 100;
+export const AMBIENT_SOURCE_WAIT_MAX_MS = 60000;
+const STANDARD_TRIGGER_FIELDS = ["target", "type", "value"];
+const AMBIENT_TRIGGER_FIELDS = ["target", "type", "value", "wait_ms"];
+
+function exactObjectKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
+
+export function isProgrammaticStateDriverSelector(value) {
+  return typeof value === "string" && /^\[data-design-dna-state-driver(?:[=\]])/.test(value);
+}
+
+/** A source ambient state can transfer only through a declared build-side
+ * test driver.  This does not require the build to transfer the source
+ * overlay; it only makes a chosen transfer explicit and executable. */
+export function isSourceAmbientMapping(buildState, sourceState) {
+  return sourceState?.trigger?.type === "ambient" &&
+    buildState?.kind === "system" && buildState?.trigger?.type === "programmatic" &&
+    isProgrammaticStateDriverSelector(buildState?.trigger?.target);
+}
 
 export function validateManifestState(state, options = {}) {
+  const sourceOnly = options.sourceOnly === true;
+  const trigger = state?.trigger;
   if (!state || !/^[a-z][a-z0-9-]{0,47}$/.test(state.id || "") ||
       !["rest", "interactive", "system", "data"].includes(state.kind) ||
       typeof state.expectation !== "string" || !state.expectation.trim() ||
-      !state.trigger || !MANIFEST_TRIGGER_TYPES.has(state.trigger.type) ||
-      typeof state.trigger.target !== "string" || !state.trigger.target.trim() ||
-      !(state.trigger.value === null || typeof state.trigger.value === "string")) {
+      !trigger || typeof trigger.type !== "string" ||
+      typeof trigger.target !== "string" || !trigger.target.trim() ||
+      !(trigger.value === null || typeof trigger.value === "string")) {
     return "State must have id, kind, substantive expectation, and exact {type,target,value} trigger.";
   }
-  if (state.kind === "rest" && (state.id !== "rest" || state.trigger.type !== "none" ||
-      state.trigger.target !== "document" || state.trigger.value !== null)) {
+  if (trigger.type === "ambient") {
+    if (!sourceOnly) return "Ambient triggers are source-observation-only; route manifests must use an explicit mapped programmatic build state or omit this source state.";
+    if (!exactObjectKeys(trigger, AMBIENT_TRIGGER_FIELDS) || state.kind !== "system" || trigger.value !== null ||
+        !Number.isInteger(trigger.wait_ms) || trigger.wait_ms < AMBIENT_SOURCE_WAIT_MIN_MS || trigger.wait_ms > AMBIENT_SOURCE_WAIT_MAX_MS ||
+        trigger.target === "document") {
+      return `Ambient source states require kind=system and exact {type:"ambient",target:<exact selector>,value:null,wait_ms:${AMBIENT_SOURCE_WAIT_MIN_MS}-${AMBIENT_SOURCE_WAIT_MAX_MS}}.`;
+    }
+  } else if (!BUILD_MANIFEST_TRIGGER_TYPES.has(trigger.type) || !exactObjectKeys(trigger, STANDARD_TRIGGER_FIELDS)) {
+    return "State must use an exact supported build trigger {type,target,value}; ambient is source-observation-only.";
+  }
+  if (state.kind === "rest" && (state.id !== "rest" || trigger.type !== "none" ||
+      trigger.target !== "document" || trigger.value !== null)) {
     return "The rest state must be id=rest with trigger {type:none,target:document,value:null}.";
   }
-  if (state.kind !== "rest" && state.trigger.type === "none") return "Only the rest state may use a none trigger.";
+  if (state.kind !== "rest" && trigger.type === "none") return "Only the rest state may use a none trigger.";
   if (options.requireMappedReference && !/^[a-z][a-z0-9-]{0,47}$/.test(state.mapped_reference_state_id || "")) {
     return "Build states require mapped_reference_state_id as a lowercase slug.";
   }
@@ -241,12 +284,174 @@ async function transitionDurationMs(page, selector) {
   });
 }
 
+async function ambientTargetStatus(page, selector) {
+  let locator;
+  try { locator = page.locator(selector); }
+  catch (error) { throw new Error(`ambient target ${JSON.stringify(selector)} is not a valid exact selector: ${String(error?.message || error)}`); }
+  let count;
+  try { count = await locator.count(); }
+  catch (error) { throw new Error(`ambient target ${JSON.stringify(selector)} is not a valid exact selector: ${String(error?.message || error)}`); }
+  if (count !== 1) return { count, visible: false, operable: false, details: null };
+  const target = locator.first();
+  let visible = false, details = null, trial_actionable = false, trial_error = null;
+  try {
+    visible = await target.isVisible();
+    details = await target.evaluate((element) => {
+      const style = getComputedStyle(element), box = element.getBoundingClientRect();
+      const composedAncestors = [];
+      let current = element;
+      while (current) {
+        composedAncestors.push(current);
+        const root = current.getRootNode?.();
+        current = current.parentElement || root?.host || null;
+      }
+      const hiddenAncestor = composedAncestors.find((candidate) => candidate !== element &&
+        (candidate.hasAttribute('hidden') || candidate.getAttribute('aria-hidden') === 'true' || candidate.inert === true || candidate.hasAttribute('inert')));
+      const disabledAncestor = composedAncestors.find((candidate) => candidate !== element &&
+        (candidate.matches?.(':disabled') || candidate.getAttribute('aria-disabled') === 'true'));
+      const pointerEventsNone = composedAncestors.find((candidate) => getComputedStyle(candidate).pointerEvents === 'none');
+      const point = { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
+      const inViewport = point.x >= 0 && point.y >= 0 && point.x < innerWidth && point.y < innerHeight;
+      const hit = inViewport ? document.elementFromPoint(point.x, point.y) : null;
+      const composedPath = (node) => {
+        const result = [];
+        let cursor = node;
+        while (cursor) {
+          result.push(cursor);
+          const root = cursor.getRootNode?.();
+          cursor = cursor.parentElement || root?.host || null;
+        }
+        return result;
+      };
+      const targetPath = composedPath(element), hitPath = composedPath(hit);
+      const hitTarget = Boolean(hit && (targetPath.includes(hit) || hitPath.includes(element)));
+      const labelledBy = String(element.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean)
+        .map((id) => element.ownerDocument.getElementById(id)?.textContent || '').join(' ').trim();
+      const heading = [...element.querySelectorAll('h1,h2,h3,h4,h5,h6,[role="heading"]')]
+        .map((candidate) => (candidate.getAttribute('aria-label') || candidate.textContent || '').trim()).find(Boolean) || '';
+      const accessibleName = (element.getAttribute('aria-label') || labelledBy || element.getAttribute('title') || heading || element.textContent || '')
+        .replace(/\s+/g, ' ').trim().slice(0, 240);
+      const tag = element.tagName.toLowerCase();
+      const role = (element.getAttribute('role') || (tag === 'dialog' ? 'dialog' : tag)).toLowerCase();
+      const classSignature = String(element.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).sort();
+      return {
+        aria_hidden: element.getAttribute('aria-hidden'), hidden: element.hasAttribute('hidden'),
+        inert: element.inert === true || element.hasAttribute('inert'),
+        disabled: element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true',
+        hidden_ancestor: Boolean(hiddenAncestor && hiddenAncestor !== element),
+        disabled_ancestor: Boolean(disabledAncestor), pointer_events_none: Boolean(pointerEventsNone),
+        in_viewport: inViewport, hit_target: hitTarget,
+        display: style.display, visibility: style.visibility, opacity: style.opacity,
+        width: Math.round(box.width), height: Math.round(box.height),
+        target_identity: { tag, role, accessible_name: accessibleName, class_signature: classSignature,
+          rect: { left: Math.round(box.left), top: Math.round(box.top), width: Math.round(box.width), height: Math.round(box.height) },
+          semantic_key: `${role}|${accessibleName.toLowerCase()}` },
+      };
+    });
+  } catch (error) {
+    throw new Error(`ambient target ${JSON.stringify(selector)} could not be inspected: ${String(error?.message || error)}`);
+  }
+  if (visible && details?.in_viewport && details?.hit_target && !details?.pointer_events_none &&
+      !details?.disabled && !details?.disabled_ancestor) {
+    try {
+      if (typeof target.hover === 'function') {
+        await target.hover({ trial: true, timeout: 2000 });
+        trial_actionable = true;
+      } else {
+        // Lightweight test doubles cannot expose Playwright's trial action.
+        // Production locators always do, and still require the DOM hit test.
+        trial_actionable = true;
+      }
+    } catch (error) { trial_error = String(error?.message || error); }
+  }
+  const operable = Boolean(visible && details && !details.hidden && !details.inert && !details.hidden_ancestor &&
+    !details.disabled && !details.disabled_ancestor && !details.pointer_events_none && details.in_viewport && details.hit_target &&
+    details.aria_hidden !== 'true' && details.display !== 'none' && details.visibility !== 'hidden' &&
+    Number(details.opacity) > 0 && details.width > 1 && details.height > 1 && trial_actionable);
+  return { count, visible: Boolean(visible), operable, details, trial_actionable, trial_error };
+}
+
+async function applyAmbientSourceState(page, state, options) {
+  const trigger = state.trigger;
+  const beforeTarget = await ambientTargetStatus(page, trigger.target);
+  if (beforeTarget.count > 1) {
+    throw new Error(`${state.id}: ambient source selector ${JSON.stringify(trigger.target)} matched ${beforeTarget.count} elements before waiting; it must identify exactly one source appearance target.`);
+  }
+  if (beforeTarget.operable) {
+    throw new Error(`${state.id}: ambient source target ${JSON.stringify(trigger.target)} is already visibly operable before its wait; record it as rest or an input-driven state instead of inventing an appearance.`);
+  }
+  const before = await visualSnapshot(page);
+  const started = Date.now();
+  const deadline = started + trigger.wait_ms;
+  let appearanceTarget = beforeTarget;
+  let appearedAfterMs = null;
+  while (Date.now() < deadline) {
+    appearanceTarget = await ambientTargetStatus(page, trigger.target);
+    if (appearanceTarget.count > 1) {
+      throw new Error(`${state.id}: ambient source selector ${JSON.stringify(trigger.target)} became ambiguous (${appearanceTarget.count} matches); use the exact one target the reference displays.`);
+    }
+    if (appearanceTarget.count === 1 && appearanceTarget.operable) {
+      appearedAfterMs = Date.now() - started;
+      break;
+    }
+    await page.waitForTimeout(Math.min(100, Math.max(1, deadline - Date.now())));
+  }
+  if (appearanceTarget.count !== 1 || !appearanceTarget.operable) {
+    const last = `last count=${appearanceTarget.count}, visible=${appearanceTarget.visible}, operable=${appearanceTarget.operable}`;
+    throw new Error(`${state.id}: ambient source target ${JSON.stringify(trigger.target)} did not appear visibly within its bounded ${trigger.wait_ms}ms wait (${last}). Correct the exact source selector/wait_ms, or remove this source-only state; do not add an invented ambient state to a build manifest.`);
+  }
+  const after = await visualSnapshot(page);
+  if (typeof options.onAmbientAppearance === "function") await options.onAmbientAppearance(page, {
+    state_id: state.id, selector: trigger.target, appeared_after_ms: appearedAfterMs,
+    target: appearanceTarget,
+  });
+  const expectedDuration = await transitionDurationMs(page, trigger.target).catch(() => 0);
+  await page.waitForTimeout(Math.max(220, expectedDuration + 100));
+  const settled = await visualSnapshot(page);
+  const settledTarget = await ambientTargetStatus(page, trigger.target);
+  if (settledTarget.count !== 1 || !settledTarget.operable) {
+    throw new Error(`${state.id}: ambient source target ${JSON.stringify(trigger.target)} appeared but was not visibly operable after settling; bind the actual stable appearance state instead.`);
+  }
+  const appearanceIdentity = appearanceTarget.details?.target_identity;
+  const settledIdentity = settledTarget.details?.target_identity;
+  const identityValid = (identity) => identity && typeof identity.tag === 'string' && identity.tag &&
+    typeof identity.role === 'string' && identity.role && typeof identity.accessible_name === 'string' && identity.accessible_name &&
+    Array.isArray(identity.class_signature) && identity.class_signature.every((value) => typeof value === 'string') &&
+    JSON.stringify(identity.class_signature) === JSON.stringify([...identity.class_signature].sort()) &&
+    identity.rect && Object.keys(identity.rect).sort().join('|') === 'height|left|top|width' &&
+    Object.values(identity.rect).every(Number.isInteger) && typeof identity.semantic_key === 'string' && identity.semantic_key;
+  if (!identityValid(appearanceIdentity) || !identityValid(settledIdentity) ||
+      appearanceIdentity.tag !== settledIdentity.tag || appearanceIdentity.role !== settledIdentity.role ||
+      appearanceIdentity.semantic_key !== settledIdentity.semantic_key) {
+    throw new Error(`${state.id}: ambient source target ${JSON.stringify(trigger.target)} lacks one stable accessible appearance/settled target identity; record a source surface with a real role and accessible name.`);
+  }
+  const changes = changedVisualProperties(before, settled);
+  if (!changes.length || before.sha256 === settled.sha256) {
+    throw new Error(`${state.id}: ambient source target ${JSON.stringify(trigger.target)} became detectable without a generated visual before/appearance/settled change; it is not transferable appearance evidence.`);
+  }
+  const classification = classifyVisualChanges(changes, diagnosticVisualChanges(before, settled));
+  const targetSnapshot = await visualSnapshot(page, trigger.target);
+  const duration = Date.now() - started;
+  return { state_id: state.id, applied: true, target_count: 1, navigation: null,
+    trigger_evidence: { type: "ambient", target: trigger.target, value: null, wait_ms: trigger.wait_ms,
+      target_component_keys: targetSnapshot.rows.map((row) => row.key), before_sha256: before.sha256,
+      after_sha256: after.sha256, settled_sha256: settled.sha256, changed_properties: changes,
+      change_classification: classification, duration_ms: duration, settled: after.sha256 === settled.sha256,
+      appearance_observed: true, appeared_after_ms: appearedAfterMs,
+      target_before: beforeTarget, target_appearance: appearanceTarget, target_settled: settledTarget,
+      target_identity: { appearance: appearanceIdentity, settled: settledIdentity },
+      mechanism: { type: "ambient-appearance", trigger_type: "ambient", duration_ms: duration,
+        changed_properties: changes.length }, mechanism_count: 1 },
+    before_sha256: before.sha256, after_sha256: settled.sha256, changed: true, navigation: null };
+}
+
 /** Apply one explicit state trigger. Programmatic/system/data states require a
  * project-owned harness; the evidence tool will not fabricate their behavior. */
-export async function applyManifestState(page, state) {
-  const invalid = validateManifestState(state);
+export async function applyManifestState(page, state, options = {}) {
+  const invalid = validateManifestState(state, options);
   if (invalid) throw new Error(`${state?.id || "(unnamed state)"}: ${invalid}`);
   const trigger = state.trigger;
+  if (trigger.type === "ambient") return applyAmbientSourceState(page, state, options);
   if (trigger.type === "none") {
     const snapshot = await visualSnapshot(page);
     return { state_id: state.id, applied: true, target_count: 1, navigation: null,
@@ -273,7 +478,7 @@ export async function applyManifestState(page, state) {
         mechanism_count: changes.length ? 1 : 0 } };
   }
   if (trigger.type === "programmatic") {
-    if (!/^\[data-design-dna-state-driver(?:[=\]])/.test(trigger.target)) {
+    if (!isProgrammaticStateDriverSelector(trigger.target)) {
       throw new Error(`${state.id}: programmatic target must be a stable [data-design-dna-state-driver] CSS selector.`);
     }
     const driver = page.locator(trigger.target);
@@ -381,7 +586,11 @@ export async function inferAndReconcileStates(page, authoredStates) {
       if (element.matches('[aria-expanded],details,[aria-haspopup],[role="tab"][aria-selected],[aria-pressed],[aria-selected]'))
         add(element, 'disclosure-selection', 'interactive', ['click','keyboard','programmatic']);
       if (element.matches(':disabled,[aria-disabled="true"],[aria-disabled="false"]')) add(element, 'disabled', 'interactive', ['programmatic']);
-      if (element.matches('[role="dialog"],dialog')) add(element, 'dialog', 'interactive', ['click','keyboard','programmatic']);
+      // A dialog can be opened by a visitor or arrive on its own after a
+      // timed/source-side condition.  If the latter appears during the long
+      // recorder pass without an authored ambient source state, reconciliation
+      // remains incomplete rather than silently treating the blocker as rest.
+      if (element.matches('[role="dialog"],dialog')) add(element, 'dialog', 'interactive', ['click','keyboard','programmatic','ambient']);
       if (element.matches('a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')) {
         add(element, 'focusable', 'interactive', ['focus']); add(element, 'hover-candidate', 'interactive', ['hover']);
       }
@@ -424,43 +633,47 @@ export function interactionReconciliationGaps({ domTargetIds = [], liveTargetIds
   };
 }
 
-async function interactionTargetSafety(target, inputKind, inputValue = null) {
+export async function interactionTargetSafety(target, inputKind, inputValue = null) {
   return target.evaluate((element, input) => {
+    if (element.tagName.toLowerCase() === 'details') element = element.querySelector('summary') || element;
     const kind = input.kind, value = input.value;
-    const text = (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const text = [element.getAttribute('aria-label'), element.getAttribute('title'), element.textContent,
+      ['BUTTON', 'INPUT'].includes(element.tagName) ? element.value : null].filter(Boolean).join(' ').trim().replace(/\s+/g, ' ').toLowerCase();
     const tag = element.tagName.toLowerCase(), role = element.getAttribute('role') || '';
-    const explicitSafe = element.getAttribute('data-design-dna-safe-state') === 'true';
+    // Page-owned claims and ARIA describe a source; they cannot authorize a
+    // purchase, submission, destructive action, or account/session change.
+    const claimedSafe = element.getAttribute('data-design-dna-safe-state') === 'true';
     const dangerousWords = /\b(add(?: to cart)?|buy|purchase|pay|checkout|submit|send|delete|remove|cancel|confirm|book|reserve|subscribe|register|upload|sign out|log out|publish)\b/;
-    const formSubmit = tag === 'button' && (!element.getAttribute('type') || element.getAttribute('type').toLowerCase() === 'submit');
+    const controlType = String(element.getAttribute('type') || (tag === 'button' ? 'submit' : '')).toLowerCase();
+    const formSubmit = Boolean(element.form) && ((tag === 'button' && controlType === 'submit') ||
+      (tag === 'input' && ['submit', 'image'].includes(controlType)));
     const navigates = tag === 'a' && element.hasAttribute('href');
     const safeDisclosure = tag === 'summary' || role === 'tab' || element.hasAttribute('aria-expanded') || element.hasAttribute('aria-pressed');
     const activatingKeyboard = kind === 'keyboard' && /^(enter|space| )$/i.test(String(value || ''));
     const unknownButton = (tag === 'button' || role === 'button') && !safeDisclosure;
-    const potentiallyMutating = (kind === 'click' || activatingKeyboard) && (formSubmit || navigates || unknownButton || dangerousWords.test(text));
-    return { safe: explicitSafe || safeDisclosure || !potentiallyMutating, explicit_safe: explicitSafe,
-      reason: potentiallyMutating && !explicitSafe && !safeDisclosure ? 'potential external/state-changing side effect' : null,
+    const activating = ['click', 'open-close'].includes(kind) || activatingKeyboard;
+    const potentiallyMutating = activating && (formSubmit || navigates || element.hasAttribute('download') ||
+      unknownButton || dangerousWords.test(text));
+    return { safe: !potentiallyMutating, explicit_safe: false, ignored_page_safe_claim: claimedSafe,
+      reason: potentiallyMutating ? 'potential external/state-changing side effect' : null,
       tag, role, text, href: element.getAttribute('href'), type: element.getAttribute('type') };
   }, { kind: inputKind, value: inputValue });
 }
 
-/** Uncapped target/input census for one exact page/profile. */
-export async function captureInteractionCensus(page, options = {}) {
-  const profile = options.profile || 'wide';
-  const pageUrl = normalizeHttpUrl(options.pageUrl || page.url());
-  const authoredStates = options.authoredStates || [];
-  const capture = options.captureEvidence || (async () => null);
-  const discovery = await page.evaluate(async () => {
+/** Discover the live interaction surface without exercising it. */
+export async function discoverInteractionTargets(page) {
+  return page.evaluate(async () => {
     let sequence = 0;
     const roots = [document], targets = [], stateHooks = [], animationHooks = [];
     for (let index = 0; index < roots.length; index += 1) roots[index].querySelectorAll('*').forEach((element) => { if (element.shadowRoot) roots.push(element.shadowRoot); });
     for (const root of roots) root.querySelectorAll('[data-dna-interaction-id]').forEach((element) => {
       sequence = Math.max(sequence, Number(element.dataset.dnaInteractionId || 0));
     });
-    const selector = 'a[href],button,input,select,textarea,summary,details,video,audio,[role="button"],[role="tab"],[role="menuitem"],[role="switch"],[role="checkbox"],[role="radio"],[onclick],[tabindex]';
+    const selector = 'a[href],button,input,select,textarea,summary,details,video,audio,[role="button"],[role="tab"],[role="menuitem"],[role="switch"],[role="checkbox"],[role="radio"],[role="slider"],[draggable="true"],[ondragstart],[ondrag],[ondrop],[ontouchstart],[ontouchmove],[ontouchend],[onpointerdown],[onpointermove],[onpointerup],[onclick],[tabindex]';
     const seen = new Set();
     for (const root of roots) {
       const candidates = new Set(root.querySelectorAll(selector));
-      root.querySelectorAll('*').forEach((element) => { if (getComputedStyle(element).cursor === 'pointer') candidates.add(element); });
+      root.querySelectorAll('*').forEach((element) => { if (['pointer','grab','grabbing'].includes(getComputedStyle(element).cursor)) candidates.add(element); });
       for (const element of candidates) {
         const style = getComputedStyle(element), box = element.getBoundingClientRect();
         if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) <= 0 || box.width <= 1 || box.height <= 1) continue;
@@ -472,7 +685,21 @@ export async function captureInteractionCensus(page, options = {}) {
           .trim().replace(/\s+/g, ' ').slice(0, 200);
         const semanticKey = `${role.toLowerCase()}|${text.toLowerCase()}`;
         const repeatClass = `${element.tagName.toLowerCase()}|${role}|${classes.join('.') || 'unclassed'}`;
-        targets.push({ marker, selector: `[data-dna-interaction-id="${marker}"]`, tag: element.tagName.toLowerCase(), role,
+        const gestureSignals = [];
+        if (element.getAttribute('draggable') === 'true') gestureSignals.push('native-draggable');
+        if (['grab','grabbing'].includes(style.cursor)) gestureSignals.push(`cursor:${style.cursor}`);
+        if (role === 'slider' || element.matches('input[type="range"]')) gestureSignals.push('range-slider');
+        for (const name of ['ondragstart','ondrag','ondrop','ontouchstart','ontouchmove','ontouchend','onpointerdown','onpointermove','onpointerup']) {
+          const handler = element.getAttribute(name);
+          const gestureCue = /\b(?:drag|drop|swipe|pinch|pan|slide)\s+(?:to|this|the|files|left|right|up|down)\b|\btouch-controlled\b/i.test(text);
+          const visibleMutation = /\.style\.[a-zA-Z]+\s*=|\.style\.setProperty\s*\(|\.classList\.(?:add|remove|toggle|replace)\s*\(|\.(?:textContent|innerHTML|scrollTop|scrollLeft)\s*=/.test(handler || '');
+          if (handler !== null && (gestureCue || visibleMutation)) gestureSignals.push(`inline:${name}`);
+        }
+        const standardTarget = element.matches('a[href],button,input,select,textarea,summary,details,video,audio,[role="button"],[role="tab"],[role="menuitem"],[role="switch"],[role="checkbox"],[role="radio"],[onclick],[tabindex]') || style.cursor === 'pointer';
+        if (!standardTarget && !gestureSignals.length) continue;
+        const sourceSelector = element.id && document.querySelectorAll('#' + CSS.escape(element.id)).length === 1
+          ? '#' + CSS.escape(element.id) : `[data-dna-interaction-id="${marker}"]`;
+        targets.push({ marker, selector: `[data-dna-interaction-id="${marker}"]`, source_selector: sourceSelector, tag: element.tagName.toLowerCase(), role,
           text, semantic_key: semanticKey, class_signature: classes, repeat_class: repeatClass,
           kind: ['video','audio'].includes(element.tagName.toLowerCase()) ? 'media' :
             (element.matches('details,summary,[aria-expanded]') ? 'open-close' :
@@ -480,7 +707,7 @@ export async function captureInteractionCensus(page, options = {}) {
                 (element.matches('a[href]') ? 'route-link' : 'control'))),
           focusable: element.matches('a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])'),
           hoverable: getComputedStyle(element).cursor === 'pointer' || element.matches('a[href],button,summary,[role="button"],[role="tab"]'),
-          href: element.tagName === 'A' ? element.href : null,
+          href: element.tagName === 'A' ? element.href : null, gesture_signals: gestureSignals,
           semantic_state: {
             aria_expanded: element.getAttribute('aria-expanded'),
             aria_pressed: element.getAttribute('aria-pressed'),
@@ -518,32 +745,732 @@ export async function captureInteractionCensus(page, options = {}) {
     return { targets, dom_code_inventory: { routes, state_hooks: stateHooks, animation_hooks: animationHooks,
       assets, scripts, inline_handlers: inlineHandlers } };
   });
-  const discovered = discovery.targets;
+}
+
+/** Read actual registered gesture listeners without replacing page APIs or
+ * dispatching a guessed drag/touch sequence. A candidate is an unresolved
+ * source-study requirement until the packaged runner supports its exact input.
+ * Handler source text is deliberately not copied into the evidence. */
+const sourceRuntimeGestureScripts = new WeakMap();
+
+/** Executed read-only in the inspected root's own browser realm. */
+function inspectClosedRootMaterial(root, viewportOnly) {
+      const host = root.host;
+      if (!host?.isConnected) return null;
+      const ownerDocument = host.ownerDocument, view = ownerDocument.defaultView;
+      const material = [];
+      const visibleAncestry = (element) => {
+        for (let current = element; current; current = current.parentElement || current.getRootNode()?.host || null) {
+          const style = view.getComputedStyle(current);
+          if (style.display === 'none' || ['hidden','collapse'].includes(style.visibility) || Number(style.opacity) <= 0) return false;
+        }
+        return true;
+      };
+      const inViewport = (box) => !viewportOnly || box.bottom > 0 && box.top < view.innerHeight && box.right > 0 && box.left < view.innerWidth;
+      for (const node of root.childNodes) {
+        if (node.nodeType !== 3 || !node.textContent.trim() || !visibleAncestry(host)) continue;
+        const range = ownerDocument.createRange(); range.selectNodeContents(node);
+        if ([...range.getClientRects()].some((box) => box.width > 0 && box.height > 0 && inViewport(box))) material.push({tag:'#text',kind:'text',text:node.textContent.trim().replace(/\s+/g,' ').slice(0,160)});
+      }
+      for (const element of root.querySelectorAll('*')) {
+        if (element.matches('style,script,link,meta,template,noscript')) continue;
+        const box = element.getBoundingClientRect(), style = view.getComputedStyle(element);
+        if (visibleAncestry(element)) for (const pseudo of ['::before','::after']) {
+          const painted = view.getComputedStyle(element, pseudo);
+          const content = painted.content;
+          const background = painted.backgroundImage !== 'none' || !['transparent','rgba(0, 0, 0, 0)'].includes(painted.backgroundColor);
+          const border = ['Top','Right','Bottom','Left'].some((side) => parseFloat(painted['border'+side+'Width']) > 0 && painted['border'+side+'Style'] !== 'none');
+          const hasContent = content && !['none','normal'].includes(content);
+          const contentText = String(content || '').replace(/^(["'])([\s\S]*)\1$/, '$2').trim();
+          if (hasContent && painted.display !== 'none' && !['hidden','collapse'].includes(painted.visibility) && Number(painted.opacity) > 0 &&
+              (contentText || background || border) && inViewport(box)) {
+            material.push({tag:element.tagName.toLowerCase()+pseudo,kind:'pseudo',text:String(content).slice(0,160)});
+          }
+        }
+        if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) || box.width <= 0 || box.height <= 0 ||
+            viewportOnly && (box.bottom <= 0 || box.top >= view.innerHeight || box.right <= 0 || box.left >= view.innerWidth)) continue;
+        const control = element.matches('button,a[href],input,select,textarea,summary,[role="button"],[role="tab"],[role="slider"],[tabindex]:not([tabindex="-1"])');
+        const text = [...element.childNodes].some((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+        const media = element.matches('img,svg,canvas,video,audio,iframe,object,embed');
+        const backgroundPaint = style.backgroundImage !== 'none' || !['transparent','rgba(0, 0, 0, 0)'].includes(style.backgroundColor);
+        const borderPaint = ['Top','Right','Bottom','Left'].some((side) => parseFloat(style['border'+side+'Width']) > 0 && style['border'+side+'Style'] !== 'none');
+        const kind = control ? 'control' : media ? 'media' : text ? 'text' : backgroundPaint || borderPaint ? 'painted-layout' : null;
+        if (kind) material.push({ tag: element.tagName.toLowerCase(), kind,
+          text: (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g,' ').slice(0,160) });
+      }
+      if (!material.length) return null;
+      const inDocument = host.getRootNode() === ownerDocument;
+      let hostSelector = null;
+      if (inDocument && host.id && ownerDocument.querySelectorAll('#'+view.CSS.escape(host.id)).length === 1) hostSelector = '#'+view.CSS.escape(host.id);
+      else if (inDocument) {
+        const parts = []; let element = host;
+        while (element && element.nodeType === 1) {
+          const siblings = element.parentElement ? [...element.parentElement.children].filter((item) => item.tagName === element.tagName) : [];
+          parts.unshift(element.tagName.toLowerCase()+(siblings.length > 1 ? ':nth-of-type('+(siblings.indexOf(element)+1)+')' : ''));
+          element = element.parentElement;
+        }
+        hostSelector = parts.join(' > ');
+      }
+      return { host_selector: hostSelector, host_local_selector: hostSelector,
+        host_description: host.tagName.toLowerCase() + (host.id ? '#'+host.id : '') + (inDocument ? '' : ' inside a shadow root'),
+        host_selector_scope: inDocument ? 'frame-document' : 'unaddressable-shadow-boundary',
+        host_tag: host.tagName.toLowerCase(), mode: 'closed', document_url: ownerDocument.URL,
+        observed_kinds: [...new Set(material.map((item) => item.kind))].sort(), visible_material_count: material.length, material };
+}
+
+/** Browser-owned inventory covers both attachShadow() and parser-created
+ * declarative closed roots. Backend IDs deduplicate both creation paths; the
+ * JS instrumentation registry remains available to the surface watcher but is
+ * never treated as proof that no parser-created root exists. */
+export async function discoverUnaddressableClosedRoots(page, options = {}) {
+  const clients = new Set();
+  const objectGroup = `design-dna-closed-root-inventory-${Date.now()}`;
+  let activeFrameContext = null;
+  try {
+    const frames = new Map(), candidates = new Map(), opaqueFrames = new Map(), inspectedFrames = new Set(), documents = new Map();
+    const frameVisibility = new Map(), frameSessions = new Map();
+    let mainFrameId;
+    const collectFrames = (entry) => {
+      if (!entry?.frame?.id) throw new Error('The browser returned a frame without an identity.');
+      frames.set(entry.frame.id, entry.frame);
+      for (const child of entry.childFrames || []) collectFrames(child);
+    };
+    const walk = (node, frameId, client, frameOwners = []) => {
+      if (node.nodeType === 9) documents.set(frameId, {node,client,frameOwners});
+      for (const shadow of node.shadowRoots || []) {
+        if (shadow.shadowRootType === 'user-agent') continue;
+        if (!['open','closed'].includes(shadow.shadowRootType)) throw new Error('An unknown browser shadow-root kind cannot be classified as covered.');
+        if (shadow.shadowRootType === 'closed') {
+          if (!Number.isInteger(shadow.backendNodeId) || !Number.isInteger(node.backendNodeId)) throw new Error('An author-closed root has no browser-owned identity.');
+          candidates.set(`${frameId}:${shadow.backendNodeId}`, { root: shadow, host: node, frameId, frameOwners, client });
+        }
+        walk(shadow, frameId, client, frameOwners);
+      }
+      for (const child of node.children || []) walk(child, frameId, client, frameOwners);
+      if (node.contentDocument) {
+        const childFrameId = node.frameId || node.contentDocument.frameId;
+        if (!childFrameId) throw new Error('A child document has no verified frame identity; its closed-root scope cannot be guessed.');
+        if (!frames.has(childFrameId)) frames.set(childFrameId, {id:childFrameId,url:node.contentDocument.documentURL});
+        inspectedFrames.add(childFrameId);
+        walk(node.contentDocument, childFrameId, client, [...frameOwners, {client,backendNodeId:node.backendNodeId}]);
+      } else if (node.nodeType === 1 && node.frameId) {
+        opaqueFrames.set(node.frameId, {frameId:node.frameId,parentFrameId:frameId,frameOwners:[...frameOwners,{client,backendNodeId:node.backendNodeId}]});
+      }
+    };
+    const inspectDocument = async (client, expectedId = null, frameOwners = []) => {
+      await client.send('DOM.enable');
+      const {frameTree} = await client.send('Page.getFrameTree');
+      collectFrames(frameTree);
+      const frameId = frameTree.frame.id;
+      if (expectedId && frameId !== expectedId) throw new Error('The frame session does not match the browser-owned target frame ID.');
+      activeFrameContext = {id:frameId,url:frameTree.frame.url,is_main:!expectedId || frameId === mainFrameId};
+      const {root} = await client.send('DOM.getDocument', {depth:-1,pierce:true});
+      if (!root?.backendNodeId) throw new Error('The browser did not return a complete document identity.');
+      inspectedFrames.add(frameId);
+      walk(root, frameId, client, frameOwners);
+      return frameId;
+    };
+    const ownersVisible = async (owners) => {
+      for (const {client,backendNodeId} of owners) {
+        if (!frameVisibility.has(client)) frameVisibility.set(client, new Map());
+        const visibilityCache = frameVisibility.get(client);
+        if (!visibilityCache.has(backendNodeId)) {
+          const owner = await client.send('DOM.resolveNode', { backendNodeId, objectGroup });
+          if (!owner.object?.objectId) throw new Error('A frame owner disappeared before its visibility could be inspected.');
+          const visibility = await client.send('Runtime.callFunctionOn', { objectId: owner.object.objectId, returnByValue: true,
+            arguments: [{ value: options.viewportOnly === true }],
+            functionDeclaration: `function(viewportOnly) { const box=this.getBoundingClientRect(),view=this.ownerDocument.defaultView; return this.checkVisibility({checkOpacity:true,checkVisibilityCSS:true}) && box.width>0 && box.height>0 && (!viewportOnly || box.bottom>0 && box.top<view.innerHeight && box.right>0 && box.left<view.innerWidth); }` });
+          if (visibility.exceptionDetails || typeof visibility.result?.value !== 'boolean') throw new Error('A frame owner has no reliable visibility result.');
+          visibilityCache.set(backendNodeId, visibility.result.value);
+        }
+        if (!visibilityCache.get(backendNodeId)) return false;
+      }
+      return true;
+    };
+    const mainClient = await page.context().newCDPSession(page);
+    clients.add(mainClient);
+    mainFrameId = await inspectDocument(mainClient);
+    const visitedOpaque = new Set();
+    while ([...opaqueFrames.keys()].some((id) => !visitedOpaque.has(id))) {
+      for (const entry of [...opaqueFrames.values()]) {
+        if (visitedOpaque.has(entry.frameId)) continue;
+        visitedOpaque.add(entry.frameId);
+        if (inspectedFrames.has(entry.frameId) || !await ownersVisible(entry.frameOwners)) continue;
+        const target = frames.get(entry.frameId);
+        activeFrameContext = {id:entry.frameId,url:target?.url || null,is_main:false,parent_frame_id:entry.parentFrameId};
+        let selected = null;
+        const errors = [], candidateFrameUrls = [];
+        for (const frame of page.frames()) {
+          if (frame === page.mainFrame() || target?.url && frame.url() !== target.url) continue;
+          candidateFrameUrls.push(frame.url());
+          if (!frameSessions.has(frame)) {
+            try {
+              const client = await page.context().newCDPSession(frame);
+              clients.add(client);
+              const {frameTree} = await client.send('Page.getFrameTree');
+              frameSessions.set(frame, {client,frameId:frameTree?.frame?.id});
+            } catch (error) { frameSessions.set(frame, {error:String(error?.message || error)}); }
+          }
+          const session = frameSessions.get(frame);
+          if (session.frameId === entry.frameId) { selected = session.client; break; }
+          if (session.error) errors.push(session.error);
+        }
+        if (!selected) {
+          const code = 'closed-shadow-frame-inspection-unavailable';
+          const reason = 'A visible frame has no inspectable matching CDP document; closed-root coverage remains unknown.';
+          const frameContext = {id:entry.frameId,url:target?.url || null,is_main:false,parent_frame_id:entry.parentFrameId,
+            owner_backend_node_id:entry.frameOwners[entry.frameOwners.length-1].backendNodeId};
+          throw Object.assign(new Error(reason), {code,source_harness_gap:true,frame_context:frameContext,inspection_errors:errors,candidate_frame_urls:candidateFrameUrls,
+            census_diagnostic:{schema_version:1,kind:'closed-shadow-frame-coverage-incomplete',complete:false,profile:null,
+              context:{phase:'closed-shadow-frame-inventory'},failures:[{code,reason,frame_context:frameContext,inspection_errors:errors,candidate_frame_urls:candidateFrameUrls,evidence:null}]}});
+        }
+        await inspectDocument(selected, entry.frameId, entry.frameOwners);
+      }
+    }
+    const result = [];
+    for (const candidate of candidates.values()) {
+      activeFrameContext = {id:candidate.frameId,url:frames.get(candidate.frameId)?.url || null,is_main:candidate.frameId === mainFrameId};
+      if (!await ownersVisible(candidate.frameOwners)) continue;
+      const client = candidate.client;
+      const resolved = await client.send('DOM.resolveNode', { backendNodeId: candidate.root.backendNodeId, objectGroup });
+      if (!resolved.object?.objectId) throw new Error('An author-closed root disappeared before its material could be inspected.');
+      const inspected = await client.send('Runtime.callFunctionOn', { objectId: resolved.object.objectId, returnByValue: true,
+        arguments: [{ value: options.viewportOnly === true }, { value: { host_backend_node_id: candidate.host.backendNodeId,
+          closed_root_backend_node_id: candidate.root.backendNodeId, frame_context: activeFrameContext } }],
+        functionDeclaration: `function(viewportOnly, identity) {
+          // Parser-created roots bypass attachShadow instrumentation. Retain the
+          // actual browser object for the continuous watcher before filtering
+          // current material, so hidden-then-visible-then-hidden UI is observed.
+          // This harness-only registry never opens the source's native root.
+          const view = this.ownerDocument.defaultView;
+          if (view.__designDnaCapturedShadowRoots === undefined) {
+            Object.defineProperty(view, '__designDnaCapturedShadowRoots', { value: [], configurable: false });
+          }
+          const roots = view.__designDnaCapturedShadowRoots;
+          if (!Array.isArray(roots)) throw new Error('The captured-root inventory is unavailable.');
+          let entry = roots.find((item) => item?.root === this);
+          if (!entry) { entry = { host: this.host, root: this, mode: 'closed', discovery: 'browser-cdp' }; roots.push(entry); }
+          entry.browser_identity = identity;
+          const inspect = (${inspectClosedRootMaterial.toString()});
+          entry.sampleMaterial = (phase) => {
+            try {
+              const material = inspect(this, false);
+              if (material && !entry.observed_material) entry.observed_material = { ...material,
+                material_observation: { kind: 'continuous-watch', phase, document_elapsed_ms: view.performance.now(),
+                  observed_at_ms: view.performance.timeOrigin + view.performance.now() } };
+            } catch (error) { entry.material_inspection_error ||= String(error?.message || error); }
+          };
+          if (entry.material_inspection_error) throw new Error(entry.material_inspection_error);
+          return inspect(this, viewportOnly) || (!viewportOnly ? entry.observed_material || null : null);
+        }` });
+      if (inspected.exceptionDetails || !Object.hasOwn(inspected.result || {}, 'value')) throw new Error('Closed-root material inspection did not return a reliable result.');
+      const material = inspected.result.value;
+      if (material === null) continue;
+      if (!material || !Array.isArray(material.material) || !material.material.length) throw new Error('Closed-root material inspection returned an unsupported shape.');
+      const frame = frames.get(candidate.frameId), isMain = candidate.frameId === mainFrameId;
+      if (!frame) throw new Error('Closed-root frame identity was lost during inspection.');
+      if (!isMain) {
+        material.host_selector = null;
+        material.host_description += ` in frame ${frame.url}`;
+      }
+      result.push({ ...material, host_backend_node_id: candidate.host.backendNodeId,
+        closed_root_backend_node_id: candidate.root.backendNodeId,
+        frame_context: { id: candidate.frameId, url: frame.url, is_main: isMain, document_url: material.document_url } });
+    }
+    if (options.viewportOnly !== true) for (const [frameId, document] of documents) {
+      if (!await ownersVisible(document.frameOwners)) continue;
+      const resolved = await document.client.send('DOM.resolveNode', {backendNodeId:document.node.backendNodeId,objectGroup});
+      if (!resolved.object?.objectId) throw new Error('A studied document disappeared before its retained closed-root history could be reconciled.');
+      const history = await document.client.send('Runtime.callFunctionOn', {objectId:resolved.object.objectId,returnByValue:true,
+        functionDeclaration: `function() {
+          const roots = this.defaultView.__designDnaCapturedShadowRoots || [];
+          if (!Array.isArray(roots)) throw new Error('The captured-root history is unavailable.');
+          return roots.filter((entry) => entry.browser_identity && (entry.observed_material || entry.material_inspection_error))
+            .map((entry) => ({identity:entry.browser_identity,material:entry.observed_material || null,error:entry.material_inspection_error || null}));
+        }`});
+      if (history.exceptionDetails || !Array.isArray(history.result?.value)) throw new Error('Retained closed-root history did not return a reliable result.');
+      for (const entry of history.result.value) {
+        if (entry.error) throw new Error(entry.error);
+        if (entry.identity.frame_context?.id !== frameId) throw new Error('Retained closed-root history belongs to a different frame.');
+        if (result.some((row) => row.frame_context.id === frameId && row.closed_root_backend_node_id === entry.identity.closed_root_backend_node_id)) continue;
+        const material = entry.material, frame = frames.get(frameId), isMain = frameId === mainFrameId;
+        if (!material?.material_observation || !frame) throw new Error('Retained closed-root material lost its observation or frame identity.');
+        if (!isMain) { material.host_selector = null; material.host_description += ' in frame '+frame.url; }
+        result.push({...material,...entry.identity,frame_context:{id:frameId,url:frame.url,is_main:isMain,document_url:material.document_url}});
+      }
+    }
+    return result;
+  } catch (error) {
+    if (error?.source_harness_gap === true) throw error;
+    const code = 'closed-shadow-root-discovery-unavailable';
+    const reason = `Closed-shadow inspection is unavailable to the harness; an empty successful census cannot be inferred: ${String(error?.message || error)}`;
+    throw Object.assign(new Error(reason), { code, source_harness_gap: true, frame_context:activeFrameContext,
+      census_diagnostic:{schema_version:1,kind:'closed-shadow-inspection-incomplete',complete:false,profile:null,
+        context:{phase:'closed-shadow-inventory'},failures:[{code,reason,frame_context:activeFrameContext,evidence:null}]}});
+  } finally {
+    for (const client of clients) { await client.send('Runtime.releaseObjectGroup', { objectGroup }).catch(() => {}); await client.detach().catch(() => {}); }
+  }
+}
+
+async function trustedRuntimeGestureScripts(context) {
+  if (!sourceRuntimeGestureScripts.has(context)) sourceRuntimeGestureScripts.set(context, (async () => {
+    // Main-world locator.evaluate also injects Playwright's own interceptors.
+    // Learn their exact bytes in an owned blank document, never from a source
+    // site's labels, globals, URL, or claims about what its handlers do.
+    const calibration = await context.newPage();
+    let session;
+    try {
+      if (calibration.url() !== 'about:blank') throw new Error('Runtime gesture calibration requires an untouched blank document.');
+      await calibration.locator('html').evaluate((element) => element.localName);
+      await calibration.locator('html').hover();
+      session = await context.newCDPSession(calibration);
+      const ids = new Set(), hashes = new Set();
+      for (const expression of ['document', 'window']) {
+        const value = await session.send('Runtime.evaluate', { expression, returnByValue: false });
+        if (!value.result?.objectId) throw new Error('Runtime gesture calibration could not inspect its own blank document.');
+        const found = await session.send('DOMDebugger.getEventListeners', { objectId: value.result.objectId, depth: -1, pierce: true });
+        for (const listener of found.listeners || []) {
+          if (/^(?:drag|drop|touch|pointer)/.test(listener.type)) ids.add(listener.scriptId);
+        }
+      }
+      await session.send('Debugger.enable');
+      for (const scriptId of ids) {
+        const { scriptSource } = await session.send('Debugger.getScriptSource', { scriptId });
+        if (typeof scriptSource !== 'string' || !scriptSource) throw new Error('Runtime gesture calibration has no exact script bytes.');
+        hashes.add(sha256Bytes(Buffer.from(scriptSource, 'utf8')));
+      }
+      return hashes;
+    } finally { await session?.detach().catch(() => {}); await calibration.close().catch(() => {}); }
+  })());
+  return sourceRuntimeGestureScripts.get(context);
+}
+
+export async function discoverSourceGestureListeners(page) {
+  let session;
+  const objectGroup = `design-dna-gesture-discovery-${Date.now()}`;
+  try {
+    const runtimeScriptHashes = await trustedRuntimeGestureScripts(page.context());
+    session = await page.context().newCDPSession(page);
+    const contexts = new Map(), scriptContexts = new Map();
+    session.on('Runtime.executionContextCreated', ({ context }) => contexts.set(context.id, context.auxData?.isDefault === true));
+    session.on('Debugger.scriptParsed', (script) => scriptContexts.set(script.scriptId, script.executionContextId));
+    await session.send('Runtime.enable');
+    await session.send('Debugger.enable');
+    const owners = new Map(), inspectedScriptHashes = new Map();
+    for (const expression of ['document', 'window']) {
+      const evaluated = await session.send('Runtime.evaluate', { expression, objectGroup, returnByValue: false });
+      if (!evaluated.result?.objectId || evaluated.exceptionDetails) throw new Error(`Could not inspect ${expression} listeners.`);
+      const found = await session.send('DOMDebugger.getEventListeners', { objectId: evaluated.result.objectId, depth: -1, pierce: true });
+      for (const listener of found.listeners || []) {
+        if (!/^(?:drag(?:start|end|enter|leave|over)?|drop|touch(?:start|move|end|cancel)|pointer(?:down|move|up|cancel))$/.test(listener.type)) continue;
+        // DOMDebugger also sees Playwright's isolated utility-world pointer
+        // interceptors. Only the browser's default document worlds describe
+        // source code; never infer that boundary from a page-controlled label.
+        const contextId = scriptContexts.get(listener.scriptId);
+        if (!contexts.has(contextId)) throw new Error(`Gesture handler ${listener.scriptId} has no browser-verified execution context.`);
+        if (contexts.get(contextId) !== true) continue;
+        if (!inspectedScriptHashes.has(listener.scriptId)) {
+          const { scriptSource } = await session.send('Debugger.getScriptSource', { scriptId: listener.scriptId });
+          if (typeof scriptSource !== 'string') throw new Error(`Gesture handler ${listener.scriptId} has no inspectable script bytes.`);
+          inspectedScriptHashes.set(listener.scriptId, sha256Bytes(Buffer.from(scriptSource, 'utf8')));
+        }
+        if (runtimeScriptHashes.has(inspectedScriptHashes.get(listener.scriptId))) continue;
+        const key = listener.backendNodeId ? `node:${listener.backendNodeId}` : expression;
+        if (!owners.has(key)) owners.set(key, { backend_node_id: listener.backendNodeId || null, scope: expression, listeners: [] });
+        const owner = owners.get(key);
+        const handlerText = listener.handler?.description || listener.originalHandler?.description || '';
+        const directVisibleMutation = /\.style\.[a-zA-Z]+\s*=|\.style\.setProperty\s*\(|\.classList\.(?:add|remove|toggle|replace)\s*\(|\.(?:textContent|innerHTML|scrollTop|scrollLeft)\s*=/.test(handlerText);
+        const fact = { type: listener.type, use_capture: listener.useCapture, passive: listener.passive, once: listener.once,
+          script_id: listener.scriptId, line_number: listener.lineNumber, column_number: listener.columnNumber,
+          handler_source_sha256: handlerText ? sha256Bytes(Buffer.from(handlerText, 'utf8')) : null,
+          direct_visible_mutation_hook: directVisibleMutation };
+        if (!owner.listeners.some((item) => JSON.stringify(item) === JSON.stringify(fact))) owner.listeners.push(fact);
+      }
+    }
+    for (const owner of owners.values()) {
+      if (!owner.backend_node_id) { owner.target = { selector: owner.scope, visible: true, node_type: 'global' }; continue; }
+      const resolved = await session.send('DOM.resolveNode', { backendNodeId: owner.backend_node_id, objectGroup });
+      if (!resolved.object?.objectId) throw new Error(`Registered gesture owner ${owner.backend_node_id} detached during discovery.`);
+      const inspected = await session.send('Runtime.callFunctionOn', { objectId: resolved.object.objectId,
+        returnByValue: true, functionDeclaration: `function () {
+          if (this.nodeType !== 1) return {selector: this.nodeType === 9 ? 'document' : this.nodeName, visible: true, node_type: this.nodeType};
+          const style = this.ownerDocument.defaultView.getComputedStyle(this), box = this.getBoundingClientRect();
+          const parts = []; let node = this;
+          while (node && node.nodeType === 1) {
+            if (node.id) { parts.unshift('#' + CSS.escape(node.id)); break; }
+            const siblings = node.parentElement ? [...node.parentElement.children].filter(item => item.tagName === node.tagName) : [];
+            parts.unshift(node.tagName.toLowerCase() + (siblings.length > 1 ? ':nth-of-type(' + (siblings.indexOf(node) + 1) + ')' : ''));
+            const root = node.getRootNode(); node = node.parentElement || root.host || null;
+          }
+          return {selector: parts.join(' > '), tag: this.tagName.toLowerCase(), role: this.getAttribute('role'),
+            text: (this.getAttribute('aria-label') || this.textContent || '').trim().replace(/\\s+/g, ' ').slice(0,200),
+            visible: style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 1 && box.height > 1,
+            node_type: 1};
+        }` });
+      if (inspected.exceptionDetails || !inspected.result?.value) throw new Error(`Could not resolve registered gesture owner ${owner.backend_node_id}.`);
+      owner.target = inspected.result.value;
+    }
+    const visibleCue = await page.evaluate(() => {
+      const text = document.body?.innerText || '';
+      return /\b(?:drag|drop|swipe|pinch|pan|slide)\s+(?:to|this|the|files|left|right|up|down)\b|\btouch-controlled\b/i.test(text);
+    });
+    for (const owner of owners.values()) {
+      const targetCue = /\b(?:drag|drop|swipe|pinch|pan|slide)\s+(?:to|this|the|files|left|right|up|down)\b|\btouch-controlled\b/i.test(owner.target?.text || '');
+      owner.material_signals = [];
+      if (targetCue || ['window','document'].includes(owner.target?.selector) && visibleCue) owner.material_signals.push('gesture-specific-visible-cue');
+      if (owner.listeners.some((listener) => listener.direct_visible_mutation_hook)) owner.material_signals.push('direct-visible-mutation-hook');
+      owner.coverage_required = owner.material_signals.length > 0;
+      owner.disposition = owner.coverage_required ? 'unverified-material-gesture' : 'unverified-code-hook-candidate';
+    }
+    return { complete: true, scope: 'listener-inventory-only', observed_gesture_behavior: false, owners: [...owners.values()], error: null };
+  } catch (error) {
+    return { complete: false, scope: 'listener-inventory-only', observed_gesture_behavior: false, owners: [], error: { code: 'gesture-listener-discovery-unavailable', reason: String(error?.message || error) } };
+  } finally {
+    if (session) {
+      await session.send('Runtime.releaseObjectGroup', { objectGroup }).catch(() => {});
+      await session.detach().catch(() => {});
+    }
+  }
+}
+
+function assignRepeatIndices(targets) {
   const repeatGroups = new Map();
-  for (const target of discovered) {
+  for (const target of targets) {
     if (!repeatGroups.has(target.repeat_class)) repeatGroups.set(target.repeat_class, []);
     repeatGroups.get(target.repeat_class).push(target);
   }
   for (const group of repeatGroups.values()) group.forEach((target, index) => {
     target.repeat_index = index + 1; target.repeat_count = group.length;
   });
+  return repeatGroups;
+}
+
+export function mergeSourceGestureInventories(prior, next) {
+  if (!prior) return next || null;
+  if (!next) return prior;
+  return { complete: prior.complete === true && next.complete === true,
+    scope: 'listener-inventory-only', observed_gesture_behavior: false,
+    owners: [...new Map([...(prior.owners || []), ...(next.owners || [])].map((owner) => [JSON.stringify(owner), owner])).values()],
+    error: prior.error || next.error || null };
+}
+
+function targetObservationIdentity(target) {
+  return [target.semantic_key, target.repeat_class, String(target.repeat_index)].join('\u0000');
+}
+
+function safePageUrl(page) {
+  try { return normalizeHttpUrl(page.url()); } catch { return null; }
+}
+
+async function probeFailedCensusTarget(page, selector) {
+  return page.evaluate((targetSelector) => {
+    let matches = [];
+    try { matches = [...document.querySelectorAll(targetSelector)]; }
+    catch (error) { return { selector: targetSelector, selector_error: String(error?.message || error), matching_count: null }; }
+    const describe = (element) => {
+      if (!element) return null;
+      const classes = String(element.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).sort();
+      const text = (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 200);
+      return { tag: element.tagName.toLowerCase(), id: element.id || null,
+        role: element.getAttribute('role') || element.tagName.toLowerCase(), classes, text,
+        aria_hidden: element.getAttribute('aria-hidden'), aria_label: element.getAttribute('aria-label'),
+        aria_disabled: element.getAttribute('aria-disabled'), aria_modal: element.getAttribute('aria-modal'),
+        title: element.getAttribute('title'), data_ff_el: element.getAttribute('data-ff-el') };
+    };
+    const element = matches[0];
+    if (!element) return { selector: targetSelector, matching_count: 0, target: null, hit_test: null };
+    const style = getComputedStyle(element), rect = element.getBoundingClientRect();
+    const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && rect.width > 1 && rect.height > 1;
+    const composedAncestors = [];
+    let ancestorCursor = element;
+    while (ancestorCursor) {
+      composedAncestors.push(ancestorCursor);
+      const root = ancestorCursor.getRootNode?.();
+      ancestorCursor = ancestorCursor.parentElement || root?.host || null;
+    }
+    const inertAncestor = composedAncestors.find((candidate) => candidate !== element &&
+      (candidate.inert === true || candidate.hasAttribute?.('inert'))) || null;
+    const ariaHiddenAncestor = composedAncestors.find((candidate) => candidate !== element &&
+      candidate.getAttribute?.('aria-hidden') === 'true') || null;
+    const point = { x: Math.max(0, Math.min(innerWidth - 1, rect.left + rect.width / 2)),
+      y: Math.max(0, Math.min(innerHeight - 1, rect.top + rect.height / 2)) };
+    const hit = visible ? document.elementFromPoint(point.x, point.y) : null;
+    const hitsTarget = Boolean(hit && (hit === element || element.contains(hit)));
+    const overlay = hit?.closest?.('[role="dialog"],[aria-modal="true"],[data-ff-el="modal"],[class*="modal" i],[class*="overlay" i]') || null;
+    let focusBlocked = null;
+    if (!hitsTarget && overlay && (inertAncestor || ariaHiddenAncestor)) {
+      const priorFocus = document.activeElement;
+      try {
+        element.focus({ preventScroll: true });
+        focusBlocked = document.activeElement !== element && !element.contains(document.activeElement);
+      } catch { focusBlocked = true; }
+      try { priorFocus?.focus?.({ preventScroll: true }); } catch { /* preserve the diagnostic only */ }
+    }
+    const overlayDescription = describe(overlay);
+    if (overlayDescription) {
+      const overlayStyle = getComputedStyle(overlay), overlayRect = overlay.getBoundingClientRect();
+      overlayDescription.visible = overlayStyle.display !== 'none' && overlayStyle.visibility !== 'hidden'
+        && Number(overlayStyle.opacity) > 0 && overlayRect.width > 1 && overlayRect.height > 1;
+      overlayDescription.disabled = overlay.matches(':disabled,[aria-disabled="true"]');
+      const overlayControls = [...overlay.querySelectorAll('button,[role="button"],a[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')]
+        .map((candidate) => {
+          const description = describe(candidate);
+          const name = [description.aria_label, description.title, description.text].filter(Boolean).join(' ').trim();
+          const closeSignal = candidate.getAttribute('data-ff-el') === 'modal-close'
+            || /\b(close|dismiss|cancel|exit)\b/i.test(name);
+          return { ...description, accessible_name: name || null, close_signal: closeSignal,
+            safe_to_auto_dismiss: false };
+        });
+      overlayDescription.controls = overlayControls;
+      overlayDescription.unnamed_controls = overlayControls.filter((candidate) => !candidate.accessible_name);
+      overlayDescription.close_candidates = overlayControls.filter((candidate) => candidate.close_signal);
+      overlayDescription.auto_dismissed = false;
+    }
+    return { selector: targetSelector, matching_count: matches.length,
+      target: { ...describe(element), visible, disabled: element.matches(':disabled,[aria-disabled="true"]'),
+        inert_ancestor: describe(inertAncestor), aria_hidden_ancestor: describe(ariaHiddenAncestor),
+        focus_blocked: focusBlocked,
+        rect: { left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) } },
+      hit_test: visible ? { point: { x: Math.round(point.x), y: Math.round(point.y) }, hits_target: hitsTarget,
+        top: describe(hit), blocker: hitsTarget ? null : describe(hit),
+        blocking_overlay: hitsTarget ? null : overlayDescription } : null };
+  }, selector).catch((error) => ({ selector, probe_error: String(error?.message || error) }));
+}
+
+async function visibleModalControlNameProbe(page, selector) {
+  return page.evaluate((targetSelector) => {
+    let control;
+    try { control = document.querySelector(targetSelector); }
+    catch (error) { return { selector: targetSelector, selector_error: String(error?.message || error) }; }
+    if (!control || !control.matches('button,[role="button"]')) return null;
+    const modal = control.closest('[role="dialog"],[aria-modal="true"],[data-ff-el="modal"],[class*="modal" i],[class*="overlay" i]');
+    if (!modal) return null;
+    const modalStyle = getComputedStyle(modal), modalRect = modal.getBoundingClientRect();
+    const visible = modalStyle.display !== 'none' && modalStyle.visibility !== 'hidden'
+      && Number(modalStyle.opacity) > 0 && modalRect.width > 1 && modalRect.height > 1
+      && modal.getAttribute('aria-hidden') !== 'true';
+    if (!visible) return null;
+    const labelledBy = String(control.getAttribute('aria-labelledby') || '').trim().split(/\s+/).filter(Boolean)
+      .map((id) => document.getElementById(id)?.textContent || '').join(' ').trim();
+    const accessibleName = (control.getAttribute('aria-label') || labelledBy || control.textContent || '').trim().replace(/\s+/g, ' ');
+    const classes = String(control.getAttribute('class') || '').trim().split(/\s+/).filter(Boolean).sort();
+    return { selector: targetSelector, unnamed: !accessibleName, accessible_name: accessibleName || null,
+      control: { tag: control.tagName.toLowerCase(), role: control.getAttribute('role') || control.tagName.toLowerCase(),
+        classes, data_ff_el: control.getAttribute('data-ff-el'), aria_label: control.getAttribute('aria-label'),
+        aria_labelledby: control.getAttribute('aria-labelledby') },
+      modal: { tag: modal.tagName.toLowerCase(), role: modal.getAttribute('role') || null,
+        aria_modal: modal.getAttribute('aria-modal'), data_ff_el: modal.getAttribute('data-ff-el') } };
+  }, selector).catch((error) => ({ selector, probe_error: String(error?.message || error) }));
+}
+
+function interactionFailureCode(error, probe = null) {
+  const text = String(error?.message || error || '').toLowerCase();
+  if (probe?.hit_test?.hits_target === false || /intercepts pointer events|receives pointer events|subtree intercepts/.test(text)) return 'target-occluded';
+  if (/not attached|detached/.test(text)) return 'target-detached';
+  if (/strict mode violation|resolved to \d+ elements/.test(text)) return 'target-ambiguous';
+  if (/not visible|not receive pointer events/.test(text)) return 'target-not-visible';
+  if (/timeout/.test(text)) return 'interaction-timeout';
+  if (/navigated without an exact url trigger|trigger navigated/.test(text)) return 'unexpected-navigation';
+  if (/screenshot|visualsnapshot|snapshot/.test(text)) return 'evidence-capture-failed';
+  return 'interaction-execution-failed';
+}
+
+function compactCensusContext(context = {}) {
+  return {
+    phase: typeof context.phase === 'string' ? context.phase : 'interaction-census',
+    source_state_id: typeof context.source_state_id === 'string' ? context.source_state_id : null,
+    pass: Number.isInteger(context.pass) && context.pass > 0 ? context.pass : null,
+    route_key: typeof context.route_key === 'string' ? context.route_key : null,
+  };
+}
+
+/** A failed census is diagnostic evidence only; it can never satisfy a gate. */
+export function interactionCensusDiagnostic(census, context = {}) {
+  const normalizedContext = compactCensusContext(context);
+  const targets = new Map((census?.pages || []).flatMap((entry) => (entry.targets || [])
+    .map((target) => [target.target_id, target])));
+  const missing = Array.isArray(census?.missing) ? census.missing : [];
+  return {
+    schema_version: 1,
+    kind: 'interaction-census-incomplete',
+    complete: false,
+    profile: census?.profile || null,
+    context: normalizedContext,
+    totals: {
+      ...(census?.totals || {}),
+      inputs_failed: missing.length,
+      targets_with_failures: new Set(missing.map((item) => item?.target_id).filter(Boolean)).size,
+    },
+    failures: missing.map((item, index) => ({
+      ordinal: index + 1,
+      ...item,
+      target: item?.target_id ? targets.get(item.target_id) || null : null,
+    })),
+  };
+}
+
+export function interactionCensusIncompleteError(census, context = {}) {
+  const diagnostic = interactionCensusDiagnostic(census, context);
+  const error = new Error(`${diagnostic.profile || 'unknown'} ${diagnostic.context.source_state_id || diagnostic.context.phase}: interaction census is incomplete (${diagnostic.failures.length} unresolved input${diagnostic.failures.length === 1 ? '' : 's'}).`);
+  error.code = 'interaction-census-incomplete';
+  error.census = census;
+  error.census_context = diagnostic.context;
+  error.census_diagnostic = diagnostic;
+  return error;
+}
+
+/** A modal may make a background control unavailable only when the live DOM
+ * proves it is both removed from the active accessibility path and unable to
+ * receive focus. Mere visual occlusion remains a hard census failure. */
+export function isProvenActiveModalBlock(probe) {
+  const target = probe?.target || {};
+  const hit = probe?.hit_test || {};
+  const overlay = hit.blocking_overlay || {};
+  const activeModal = overlay.visible === true && overlay.aria_hidden !== 'true'
+    && overlay.aria_disabled !== 'true' && overlay.disabled !== true
+    && (overlay.role === 'dialog' || overlay.aria_modal === 'true');
+  const pointerExcluded = hit.hits_target === false && Boolean(hit.top || hit.blocker);
+  const genuineInert = Boolean(target.inert_ancestor);
+  return activeModal && genuineInert && target.focus_blocked === true && pointerExcluded;
+}
+
+async function freshBaselineTarget(page, target, options = {}) {
+  const baselineState = options.baselineState || null;
+  const baselineUrl = normalizeHttpUrl(baselineState?.url || options.pageUrl || page.url());
+  const fresh = await page.context().newPage();
+  try {
+    const navigation = await navigateExact(fresh, baselineUrl);
+    await fresh.evaluate(() => document.fonts?.ready).catch(() => {});
+    await fresh.waitForTimeout(options.baselineSettleMs ?? 180);
+    let application = null;
+    if (baselineState && baselineState.trigger?.type !== 'none') {
+      application = await applyManifestState(fresh, baselineState, { sourceOnly: options.sourceOnly === true });
+    }
+    const discovery = await discoverInteractionTargets(fresh);
+    assignRepeatIndices(discovery.targets);
+    const identity = targetObservationIdentity(target);
+    const matches = discovery.targets.filter((candidate) => targetObservationIdentity(candidate) === identity);
+    if (matches.length !== 1) {
+      const error = new Error(`Fresh exact baseline could not resolve one live counterpart for ${target.semantic_key} (${matches.length} matches).`);
+      error.code = 'baseline-target-unresolved';
+      error.baseline = { requested_url: baselineUrl, navigation, state_id: baselineState?.id || null,
+        state_applied: application?.applied === true, candidate_count: matches.length };
+      throw error;
+    }
+    return { page: fresh, locator: fresh.locator(matches[0].selector), selector: matches[0].selector, baseline: {
+      strategy: 'fresh-exact-state', requested_url: baselineUrl,
+      final_url: navigation.final_normalized_url, state_id: baselineState?.id || null,
+      state_applied: application?.applied === true, navigation,
+    } };
+  } catch (error) {
+    await fresh.close().catch(() => {});
+    throw error;
+  }
+}
+
+export function needsFreshCensusBaseline(inputKind) {
+  return new Set(['click', 'keyboard', 'open-close', 'media-play-pause', 'input', 'programmatic']).has(inputKind);
+}
+
+/** Uncapped target/input census for one exact page/profile. */
+export async function captureInteractionCensus(page, options = {}) {
+  const profile = options.profile || 'wide';
+  const pageUrl = normalizeHttpUrl(options.pageUrl || page.url());
+  const authoredStates = options.authoredStates || [];
+  const capture = options.captureEvidence || (async () => null);
+  const censusContext = compactCensusContext(options.context);
+  const sourceOnly = options.sourceOnly === true;
+  const plannedDeferredRoutes = options.plannedDeferredRoutes ?? [];
+  if (!Array.isArray(plannedDeferredRoutes) || plannedDeferredRoutes.some((item) => typeof item !== 'string')) {
+    throw new Error('plannedDeferredRoutes must contain exact normalized route URLs from the immutable build manifest.');
+  }
+  if (sourceOnly && plannedDeferredRoutes.length) {
+    throw new Error('Public source studies cannot defer planned routes or borrow a first-screen build exception.');
+  }
+  const deferredRouteSet = new Set(plannedDeferredRoutes.map((item) => {
+    const normalized = normalizeHttpUrl(item);
+    if (normalized !== item || new URL(item).origin !== new URL(pageUrl).origin) {
+      throw new Error('Each planned deferred route must be an exact normalized same-origin build URL.');
+    }
+    return normalized;
+  }));
+  const censusStartedAt = Date.now();
+  const discovery = await discoverInteractionTargets(page);
+  const discovered = discovery.targets;
+  const repeatGroups = assignRepeatIndices(discovered);
   const targetRows = [], blocked = [], missing = [];
   const inputCount = { discovered: 0, exercised: 0, blocked: 0 };
+  for (const closedRoot of await discoverUnaddressableClosedRoots(page)) {
+    inputCount.discovered += 1; inputCount.blocked += 1;
+    missing.push({ target_id: null, input_kind: 'closed-shadow-root',
+      code: sourceOnly ? 'unsupported-source-closed-shadow-root' : 'unsupported-build-closed-shadow-root',
+      reason: 'Visible material inside a closed shadow root is inaccessible to the exact locator/state protocol. This is a harness coverage gap, not a source-quality defect; no synthetic clicks or complete-coverage claim were substituted.',
+      closed_shadow_root: closedRoot,
+      evidence: { before: await capture('unaddressable-closed-shadow-root', page), after: null, settled: null } });
+  }
+  const gestureListeners = sourceOnly ? await discoverSourceGestureListeners(page) : null;
+  if (gestureListeners && !gestureListeners.complete) missing.push({ target_id: null, input_kind: 'gesture-discovery',
+    code: gestureListeners.error.code, reason: gestureListeners.error.reason });
+  for (const owner of (gestureListeners?.owners || []).filter((item) => item.coverage_required)) {
+    inputCount.discovered += 1; inputCount.blocked += 1;
+    missing.push({ target_id: null, input_kind: 'gesture', code: 'unsupported-source-gesture',
+      reason: `Registered ${[...new Set(owner.listeners.map(item => item.type))].join('/')} handlers on ${owner.target.selector} require exact gesture evidence; this runner will not guess a gesture or count hover/click as its substitute.`,
+      gesture_owner: owner, evidence: { before: await capture('unsupported-gesture-listener', page), after: null, settled: null } });
+  }
+  const baselineState = options.baselineState
+    || (censusContext.source_state_id ? authoredStates.find((state) => state.id === censusContext.source_state_id) : null)
+    || authoredStates.find((state) => state.id === 'rest')
+    || null;
+  const baselineApplication = options.baselineApplication || options.stateApplication || null;
+  const baselineEvidence = options.baselineEvidence || options.stateEvidence || null;
   for (const target of discovered) {
     const targetId = sha256Bytes(Buffer.from(`${pageUrl}\0${target.marker}\0${target.repeat_class}\0${target.text}`, 'utf8')).slice(0, 24);
     const locator = page.locator(target.selector);
     const sourceStates = [];
     for (const state of authoredStates) {
-      if (normalizeHttpUrl(state.url || pageUrl) !== pageUrl || ['none','url'].includes(state.trigger?.type)) continue;
+      if (normalizeHttpUrl(state.url || pageUrl) !== pageUrl || ['none','url','ambient'].includes(state.trigger?.type)) continue;
       try {
         const stateLocator = page.locator(state.trigger.target);
         if (await stateLocator.count() === 1 && await stateLocator.first().getAttribute('data-dna-interaction-id') === target.marker) sourceStates.push(state.id);
       } catch { /* invalid state target is separately rejected */ }
     }
     const inputs = [];
+    if (target.gesture_signals.length) {
+      inputCount.discovered += 1; inputCount.blocked += 1;
+      const frame = await capture(`${targetId}-unsupported-gesture`, page);
+      const row = { input_kind: 'gesture', input_value: null, status: 'blocked', safety: 'unsupported-input',
+        source_state_id: null, before_sha256: null, after_sha256: null, settled_sha256: null,
+        changed_properties: [], change_classification: { cosmetic: [], structural_semantic: [], diagnostic: [] },
+        behavior: 'gesture candidate discovered; exact drag/touch sequence is not supported by this runner',
+        evidence: { before: frame, after: null, settled: null }, disposition: 'blocked-unsupported-gesture' };
+      inputs.push(row);
+      missing.push({ target_id: targetId, input_kind: 'gesture', code: 'unsupported-source-gesture',
+        reason: 'A discovered drag/touch/range affordance requires exact gesture evidence; pointer hover and click do not establish it.',
+        gesture_signals: target.gesture_signals, evidence: row.evidence });
+    }
+    const modalName = await visibleModalControlNameProbe(page, target.selector);
+    if (modalName?.unnamed) {
+      const frame = await capture(`${targetId}-modal-control-accessible-name`, page);
+      missing.push({ target_id: targetId, input_kind: 'accessible-name', input_value: null,
+        source_state_id: null, context: censusContext, elapsed_ms_since_census_start: Date.now() - censusStartedAt,
+        stage: 'modal-control-accessible-name', code: 'unlabeled-visible-modal-control',
+        reason: 'A visible modal button/role=button has no aria-label, aria-labelledby text, or textual accessible name.',
+        url_before: safePageUrl(page), url_after: safePageUrl(page), baseline: null,
+        probe: modalName, evidence: { before: frame, after: frame, settled: frame } });
+    }
     const exercise = async (inputKind, inputValue, action, sourceStateId = null) => {
       inputCount.discovered += 1;
-      const safety = await interactionTargetSafety(locator, inputKind, inputValue);
+      let safety;
+      try { safety = await interactionTargetSafety(locator, inputKind, inputValue); }
+      catch (error) {
+        const probe = await probeFailedCensusTarget(page, target.selector);
+        missing.push({ target_id: targetId, input_kind: inputKind, input_value: inputValue,
+          source_state_id: sourceStateId, context: censusContext, elapsed_ms_since_census_start: Date.now() - censusStartedAt, stage: 'safety-classification',
+          code: interactionFailureCode(error, probe), reason: String(error?.message || error),
+          url_before: safePageUrl(page), url_after: safePageUrl(page), baseline: null, probe,
+          evidence: { before: null, after: null, settled: null } });
+        return;
+      }
       if (!safety.safe) {
         const row = { input_kind: inputKind, input_value: inputValue, safety: 'blocked-side-effect', status: 'blocked',
           source_state_id: sourceStateId, before_sha256: null, after_sha256: null, settled_sha256: null,
@@ -554,19 +1481,62 @@ export async function captureInteractionCensus(page, options = {}) {
           handoff: 'Run only in an owner-authorized disposable/sandbox state and bind the resulting generated evidence.' });
         inputCount.blocked += 1; return;
       }
+      let workingPage = page, workingLocator = locator, workingSelector = target.selector, isolated = null;
+      let beforePageUrl = null, beforeFrame = null, afterFrame = null, settledFrame = null;
+      let stage = 'baseline';
       try {
-        await locator.scrollIntoViewIfNeeded();
-        const beforePageUrl = normalizeHttpUrl(page.url());
-        const beforeFrame = await capture(`${targetId}-${inputKind}-before`);
-        const before = await visualSnapshot(page, target.selector);
-        await action(locator);
-        if (normalizeHttpUrl(page.url()) !== beforePageUrl) throw new Error('interaction navigated without an exact URL trigger/navigation binding');
-        await page.waitForTimeout(80);
-        const after = await visualSnapshot(page, target.selector);
-        const afterFrame = await capture(`${targetId}-${inputKind}-after`);
-        await page.waitForTimeout(220);
-        const settled = await visualSnapshot(page, target.selector);
-        const settledFrame = await capture(`${targetId}-${inputKind}-settled`);
+        if (needsFreshCensusBaseline(inputKind)) {
+          isolated = await freshBaselineTarget(page, target, { pageUrl, baselineState, sourceOnly });
+          workingPage = isolated.page; workingLocator = isolated.locator; workingSelector = isolated.selector;
+        }
+        stage = 'scroll-into-view';
+        await workingLocator.scrollIntoViewIfNeeded();
+        beforePageUrl = normalizeHttpUrl(workingPage.url());
+        stage = 'evidence-before';
+        beforeFrame = await capture(`${targetId}-${inputKind}-before`, workingPage);
+        stage = 'snapshot-before';
+        const before = await visualSnapshot(workingPage, workingSelector);
+        stage = 'actionability-preflight';
+        const actionability = await probeFailedCensusTarget(workingPage, workingSelector);
+        if (actionability?.hit_test?.hits_target === false) {
+          if (isProvenActiveModalBlock(actionability)) {
+            stage = 'active-modal-evidence-after';
+            afterFrame = await capture(`${targetId}-${inputKind}-active-modal-after`, workingPage);
+            await workingPage.waitForTimeout(220);
+            stage = 'active-modal-evidence-settled';
+            settledFrame = await capture(`${targetId}-${inputKind}-active-modal-settled`, workingPage);
+            inputs.push({ input_kind: inputKind, input_value: inputValue, safety: 'blocked-active-modal', status: 'blocked',
+              source_state_id: sourceStateId, before_sha256: null, after_sha256: null, settled_sha256: null,
+              changed_properties: [], change_classification: { cosmetic: [], structural_semantic: [], diagnostic: [] },
+              behavior: 'not observed because a live active modal proved this background control inert or aria-hidden and focus-blocked',
+              evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame, active_modal: actionability },
+              disposition: 'blocked-active-modal' });
+            blocked.push({ target_id: targetId, input_kind: inputKind,
+              reason: 'active modal blocks this background control with generated inert/aria-hidden and focus evidence',
+              handoff: 'Do not dismiss or bypass the modal. Preserve this state evidence and verify the modal controls independently.',
+              disposition: 'blocked-active-modal', active_modal: actionability });
+            inputCount.blocked += 1;
+            return;
+          }
+          const error = new Error('Live target is occluded at its center point; the census will not force, dismiss, or bypass the blocker.');
+          error.code = 'target-occluded';
+          error.probe = actionability;
+          throw error;
+        }
+        stage = 'input-dispatch';
+        await action(workingLocator, workingPage);
+        stage = 'url-verification';
+        if (normalizeHttpUrl(workingPage.url()) !== beforePageUrl) throw new Error('interaction navigated without an exact URL trigger/navigation binding');
+        stage = 'snapshot-after';
+        await workingPage.waitForTimeout(80);
+        const after = await visualSnapshot(workingPage, workingSelector);
+        stage = 'evidence-after';
+        afterFrame = await capture(`${targetId}-${inputKind}-after`, workingPage);
+        stage = 'snapshot-settled';
+        await workingPage.waitForTimeout(220);
+        const settled = await visualSnapshot(workingPage, workingSelector);
+        stage = 'evidence-settled';
+        settledFrame = await capture(`${targetId}-${inputKind}-settled`, workingPage);
         const changes = changedVisualProperties(before, settled);
         const classification = classifyVisualChanges(changes, diagnosticVisualChanges(before, settled));
         inputs.push({ input_kind: inputKind, input_value: inputValue, safety: 'safe', status: 'exercised',
@@ -574,41 +1544,54 @@ export async function captureInteractionCensus(page, options = {}) {
           settled_sha256: settled.sha256, changed_properties: changes,
           change_classification: classification,
           behavior: changes.length ? `changed ${[...new Set(changes.map((item) => item.property))].join(', ')}` : 'no visible computed-style/geometry change',
-          evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame },
+          evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame,
+            baseline: isolated?.baseline || { strategy: 'shared-page-nonmutating', requested_url: beforePageUrl,
+              final_url: beforePageUrl, state_id: baselineState?.id || null, state_applied: null } },
           disposition: changes.length ? 'sourceable-observed-behavior' : 'observed-quiet' });
         inputCount.exercised += 1;
       } catch (error) {
-        missing.push({ target_id: targetId, input_kind: inputKind, reason: String(error).slice(0, 240) });
-      }
+        const probe = error?.probe || await probeFailedCensusTarget(workingPage, workingSelector);
+        missing.push({ target_id: targetId, input_kind: inputKind, input_value: inputValue,
+          source_state_id: sourceStateId, context: censusContext, elapsed_ms_since_census_start: Date.now() - censusStartedAt, stage,
+          code: error?.code || interactionFailureCode(error, probe), reason: String(error?.message || error),
+          url_before: beforePageUrl, url_after: safePageUrl(workingPage),
+          baseline: isolated?.baseline || { strategy: 'shared-page-nonmutating', requested_url: beforePageUrl,
+            final_url: beforePageUrl, state_id: baselineState?.id || null, state_applied: null },
+          probe, evidence: { before: beforeFrame, after: afterFrame, settled: settledFrame } });
+      } finally { if (isolated) await isolated.page.close().catch(() => {}); }
     };
     if (target.hoverable) await exercise('hover', null, async (item) => { await item.hover({ timeout: 5000 }); });
     if (target.focusable) await exercise('focus', null, async (item) => { await item.focus({ timeout: 5000 }); });
-    if (target.focusable) await exercise('focus-traversal', 'Tab', async (item) => {
-      await item.focus({ timeout: 5000 }); await page.keyboard.press('Tab');
+    if (target.focusable) await exercise('focus-traversal', 'Tab', async (item, actionPage) => {
+      await item.focus({ timeout: 5000 }); await actionPage.keyboard.press('Tab');
     });
     if (target.kind === 'control' && (target.tag === 'button' || target.role === 'button')) {
-      await exercise('keyboard', 'Enter', async (item) => {
-        await item.focus({ timeout: 5000 }); await page.keyboard.press('Enter');
+      await exercise('keyboard', 'Enter', async (item, actionPage) => {
+        await item.focus({ timeout: 5000 }); await actionPage.keyboard.press('Enter');
       });
-      await exercise('keyboard', 'Space', async (item) => {
-        await item.focus({ timeout: 5000 }); await page.keyboard.press('Space');
+      await exercise('keyboard', 'Space', async (item, actionPage) => {
+        await item.focus({ timeout: 5000 }); await actionPage.keyboard.press('Space');
       });
     }
     if (target.kind === 'control' && (target.tag === 'button' || target.role === 'button')) await exercise('click', null,
       async (item) => { await item.click({ timeout: 5000 }); });
     if (target.kind === 'open-close') {
-      const openTarget = target.tag === 'details' ? locator.locator('summary').first() : locator;
-      if (await openTarget.count()) {
-        await exercise('keyboard', 'Enter', async () => {
-          await openTarget.focus({ timeout: 5000 }); await page.keyboard.press('Enter');
-        });
-        await exercise('keyboard', 'Space', async () => {
-          await openTarget.focus({ timeout: 5000 }); await page.keyboard.press('Space');
-        });
-        await exercise('open-close', 'open then close', async () => {
-          await openTarget.click({ timeout: 5000 }); await page.waitForTimeout(120); await openTarget.click({ timeout: 5000 });
-        });
-      }
+      const exactOpenTarget = (item) => target.tag === 'details' ? item.locator('summary').first() : item;
+      await exercise('keyboard', 'Enter', async (item, actionPage) => {
+        const openTarget = exactOpenTarget(item);
+        if (await openTarget.count() !== 1) throw new Error('open-close target no longer resolves to exactly one control.');
+        await openTarget.focus({ timeout: 5000 }); await actionPage.keyboard.press('Enter');
+      });
+      await exercise('keyboard', 'Space', async (item, actionPage) => {
+        const openTarget = exactOpenTarget(item);
+        if (await openTarget.count() !== 1) throw new Error('open-close target no longer resolves to exactly one control.');
+        await openTarget.focus({ timeout: 5000 }); await actionPage.keyboard.press('Space');
+      });
+      await exercise('open-close', 'open then close', async (item, actionPage) => {
+        const openTarget = exactOpenTarget(item);
+        if (await openTarget.count() !== 1) throw new Error('open-close target no longer resolves to exactly one control.');
+        await openTarget.click({ timeout: 5000 }); await actionPage.waitForTimeout(120); await openTarget.click({ timeout: 5000 });
+      });
     }
     if (target.kind === 'media') await exercise('media-play-pause', null, async (item) => {
       await item.evaluate(async (media) => { await media.play(); await new Promise((resolve) => setTimeout(resolve, 180)); media.pause(); });
@@ -625,11 +1608,11 @@ export async function captureInteractionCensus(page, options = {}) {
     }
     for (const stateId of sourceStates) {
       const state = authoredStates.find((item) => item.id === stateId);
-      if (!state || ['hover','focus'].includes(state.trigger.type)) continue;
-      await exercise(state.trigger.type, state.trigger.value, async () => {
+      if (!state || ['hover','focus','ambient'].includes(state.trigger.type)) continue;
+      await exercise(state.trigger.type, state.trigger.value, async (_item, actionPage) => {
         // Exact state execution is owned by applyManifestState so URL changes,
         // programmatic drivers, and side-effect policy remain fail closed.
-        await applyManifestState(page, state);
+        await applyManifestState(actionPage, state, { sourceOnly });
       }, stateId);
     }
     if (target.kind === 'route-link') {
@@ -646,7 +1629,18 @@ export async function captureInteractionCensus(page, options = {}) {
       inputCount.discovered += 1;
       let href = null;
       try { href = normalizeHttpUrl(target.href); } catch { /* non-http target */ }
-      if (href && new URL(href).origin === new URL(pageUrl).origin) {
+      if (href && deferredRouteSet.has(href)) {
+        inputs.push({ input_kind: 'navigation', input_value: href, safety: 'blocked-planned-route', status: 'blocked',
+          decision_id: await locator.getAttribute('data-design-dna-decision-id'),
+          source_state_id: null, before_sha256: null, after_sha256: null, settled_sha256: null, changed_properties: [],
+          change_classification: { cosmetic: [], structural_semantic: [], diagnostic: [] },
+          behavior: 'The immutable first-screen build plan binds this future route; arrival remains unverified until the final gate.',
+          evidence: null, disposition: 'deferred-until-final-gate' });
+        blocked.push({ target_id: targetId, input_kind: 'navigation', input_value: href,
+          reason: 'Exact planned route is outside the active first-screen proof scope.',
+          disposition: 'deferred-until-final-gate', handoff: 'The final gate must navigate this route and verify its complete source-bound body.' });
+        inputCount.blocked += 1;
+      } else if (href && new URL(href).origin === new URL(pageUrl).origin) {
         const navigationState = authoredStates.find((state) => state.trigger?.type === 'url' &&
           normalizeHttpUrl(new URL(state.trigger.target, pageUrl).href) === href);
         if (navigationState && !sourceStates.includes(navigationState.id)) sourceStates.push(navigationState.id);
@@ -683,7 +1677,7 @@ export async function captureInteractionCensus(page, options = {}) {
           handoff: 'Review only with explicit authority in a separate safe session.' }); inputCount.blocked += 1;
       }
     }
-    targetRows.push({ target_id: targetId, page_url: pageUrl, selector: target.selector, tag: target.tag, role: target.role,
+    targetRows.push({ target_id: targetId, page_url: pageUrl, selector: target.selector, source_selector: target.source_selector, tag: target.tag, role: target.role,
       text: target.text, semantic_key: target.semantic_key,
       class_signature: target.class_signature, repeat_class: target.repeat_class, repeat_index: target.repeat_index,
       repeat_count: target.repeat_count, kind: target.kind, semantic_state: target.semantic_state,
@@ -730,12 +1724,33 @@ export async function captureInteractionCensus(page, options = {}) {
     }
   } catch (error) { missing.push({ target_id: 'page-cursor-field', input_kind: 'pointer-follow', reason: String(error).slice(0, 240) }); }
 
-  const authoredStateIds = new Set(authoredStates.map((state) => state.id));
+  const activeAmbientState = baselineState?.trigger?.type === 'ambient' ? baselineState : null;
+  const authoredStateIds = new Set(authoredStates.filter((state) => state.trigger?.type !== 'ambient' || state.id === activeAmbientState?.id)
+    .map((state) => state.id));
   const boundStateIds = new Set(targetRows.flatMap((row) => row.source_state_ids));
   const pageStates = [];
-  for (const state of authoredStates.filter((item) => ['none','url','programmatic'].includes(item.trigger.type))) {
+  for (const state of authoredStates.filter((item) => ['none','url','programmatic'].includes(item.trigger.type) || item.id === activeAmbientState?.id)) {
     let triggerEvidence = null, evidence = null, disposition = 'covered-by-state-ledger';
-    if (state.trigger.type === 'none') {
+    if (state.trigger.type === 'ambient') {
+      const supplied = baselineApplication;
+      if (supplied?.state_id !== state.id || supplied?.trigger_evidence?.type !== 'ambient' ||
+          !baselineEvidence || !baselineEvidence.before || !baselineEvidence.after || !baselineEvidence.settled) {
+        missing.push({ target_id: null, input_kind: 'page-state', input_value: null, source_state_id: state.id,
+          context: censusContext, elapsed_ms_since_census_start: Date.now() - censusStartedAt,
+          stage: 'ambient-page-state-ledger', code: 'ambient-ledger-missing',
+          reason: `ambient source state ${state.id} requires one supplied generated before/appearance/settled application ledger; it must not be redispatched from a discovered target.`,
+          url_before: safePageUrl(page), url_after: safePageUrl(page), baseline: null, probe: null,
+          evidence: { before: null, after: null, settled: null } });
+        continue;
+      }
+      triggerEvidence = { before_sha256: supplied.trigger_evidence.before_sha256,
+        after_sha256: supplied.trigger_evidence.after_sha256,
+        settled_sha256: supplied.trigger_evidence.settled_sha256,
+        changed_properties: supplied.trigger_evidence.changed_properties,
+        change_classification: supplied.trigger_evidence.change_classification,
+        behavior: `ambient appearance observed after ${supplied.trigger_evidence.appeared_after_ms}ms` };
+      evidence = baselineEvidence;
+    } else if (state.trigger.type === 'none') {
       const before = await visualSnapshot(page), beforeFrame = await capture(`${state.id}-page-state-before`, page);
       const afterFrame = await capture(`${state.id}-page-state-after`, page), settledFrame = await capture(`${state.id}-page-state-settled`, page);
       triggerEvidence = { before_sha256: before.sha256, after_sha256: before.sha256, settled_sha256: before.sha256,
@@ -788,6 +1803,7 @@ export async function captureInteractionCensus(page, options = {}) {
       const { marker, ...evidence } = hook; return { target_id: targetIdByMarker.get(marker) || null, ...evidence };
     }),
     assets: discovery.dom_code_inventory.assets, scripts: discovery.dom_code_inventory.scripts,
+    gesture_listeners: gestureListeners,
     inline_handlers: discovery.dom_code_inventory.inline_handlers.map((hook) => ({ target_id: targetIdByMarker.get(hook.marker) || null,
       attribute: hook.attribute, code_length: hook.code_length })),
     live_target_ids: targetRows.map((row) => row.target_id),
@@ -806,6 +1822,18 @@ export async function captureInteractionCensus(page, options = {}) {
 
 /** Objective rendered QA for one exact page/profile. Issues remain evidence;
  * they are never converted into generic praise or silently waived. */
+export function sourceControlRequiresDisclosureSemantics(target) {
+  // Native route arrival replaces DOM nodes while retaining link semantics.
+  // This exemption requires generated exercised navigation evidence.
+  if (target.kind === 'route-link' && target.tag === 'a' && (target.inputs || []).some((input) =>
+    input.input_kind === 'navigation' && input.status === 'exercised')) return false;
+  const stateful = target.kind === 'open-close' || (target.inputs || []).some((input) =>
+    (input.change_classification?.structural_semantic || []).some((change) =>
+      ['aria_expanded','aria_pressed','presence','display','visibility'].includes(change.property)));
+  const semantic = target.semantic_state || {};
+  return stateful && semantic.aria_expanded === null && semantic.aria_pressed === null && semantic.aria_controls === null;
+}
+
 export async function captureRenderedQA(page, options = {}) {
   const profile = options.profile || 'wide';
   const pageUrl = normalizeHttpUrl(options.pageUrl || page.url());
@@ -976,13 +2004,7 @@ export async function captureRenderedQA(page, options = {}) {
     const observed = (target.inputs || []).filter((input) => input.status === 'exercised');
     return observed.length > 0 && observed.every((input) => input.disposition === 'observed-quiet');
   }).map((target) => ({ target_id: target.target_id, selector: target.selector, page_url: target.page_url }));
-  const semanticIssues = targets.filter((target) => {
-    const stateful = target.kind === 'open-close' || (target.inputs || []).some((input) =>
-      (input.change_classification?.structural_semantic || []).some((change) =>
-        ['aria_expanded','aria_pressed','presence','display','visibility'].includes(change.property)));
-    const semantic = target.semantic_state || {};
-    return stateful && semantic.aria_expanded === null && semantic.aria_pressed === null && semantic.aria_controls === null;
-  }).map((target) => ({ target_id: target.target_id, selector: target.selector,
+  const semanticIssues = targets.filter(sourceControlRequiresDisclosureSemantics).map((target) => ({ target_id: target.target_id, selector: target.selector,
     issue: 'visible state changes without aria-expanded/aria-pressed/aria-controls' }));
   const keyboardPaths = targets.map((target) => {
     const inputs = (target.inputs || []).filter((input) => input.input_kind === 'focus' || input.input_kind === 'keyboard')

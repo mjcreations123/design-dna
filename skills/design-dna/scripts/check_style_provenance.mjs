@@ -55,7 +55,9 @@ import {
 } from "./provenance_contract.mjs";
 
 const TOOL_NAME = "check_style_provenance.mjs";
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+import { firstScreenManifest } from "./construction_phase.mjs";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const EXTRACTOR_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "extract_reference_styles.mjs"))).digest("hex");
 const MATCHER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "match_typeface.mjs"))).digest("hex");
@@ -96,7 +98,7 @@ function fail(code, message) {
 
 function parseArgs(argv) {
   const out = { builds: [], references: [], outFile: null, floor: TRACED_FLOOR, substitutes: [], match: null,
-    manifest: null, buildId: null, runId: null, routeKeys: [] };
+    manifest: null, buildId: null, runId: null, routeKeys: [], firstScreen: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--build") out.builds.push(argv[++i]);
@@ -107,6 +109,7 @@ function parseArgs(argv) {
     else if (a === "--match") out.match = argv[++i];
     else if (a === "--manifest") out.manifest = argv[++i];
     else if (a === "--route-key") out.routeKeys.push(argv[++i]);
+    else if (a === "--first-screen") out.firstScreen = true;
     else if (a === "--build-id") out.buildId = argv[++i];
     else if (a === "--run-id") out.runId = argv[++i];
     else if (a === "--help" || a === "-h") {
@@ -619,6 +622,7 @@ function main() {
   if (args.routeKeys.some((key) => !manifest.routes.some((route) => route.key === key))) {
     fail("route-key-missing", "Every --route-key must exist in the manifest.");
   }
+  if (args.firstScreen) manifest = firstScreenManifest(manifest, args.routeKeys);
   const activeRoutes = args.routeKeys.length ? manifest.routes.filter((route) => args.routeKeys.includes(route.key)) : manifest.routes;
   const mappedBySha = new Map();
   for (const route of activeRoutes) {
@@ -820,6 +824,7 @@ function main() {
     producer_script_sha256: PRODUCER_SCRIPT_SHA256,
     runtime_identity: {
       "check_style_provenance.mjs": PRODUCER_SCRIPT_SHA256,
+      "construction_phase.mjs": createHash('sha256').update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), 'construction_phase.mjs'))).digest('hex'),
       "extract_reference_styles.mjs": EXTRACTOR_SCRIPT_SHA256,
       "match_typeface.mjs": MATCHER_SCRIPT_SHA256,
       "observe_reference.mjs": OBSERVER_SCRIPT_SHA256,

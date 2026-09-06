@@ -22,9 +22,10 @@
  * is the kind that wins awards.
  *
  * The record also carries a score: how many distinct mechanisms were seen and
- * what fraction of the scroll depth had a scroll-linked mechanism active. The
- * dossier gate uses it to refuse a thin site on its own, so nobody has to vet
- * a list by hand.
+ * what fraction of the scroll depth had a scroll-linked mechanism active.
+ * Those measurements bound a motion claim; they do not judge static quality,
+ * brief fit, or the source's dominant experience. Attributable candidate and
+ * rendered reviews remain mandatory.
  *
  * Usage:
  *   node observe_reference.mjs --url https://example.test/ --id strong-1 \
@@ -34,17 +35,22 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { STRUCTURE_SCRIPT } from "./structure_probe.mjs";
-import { applyManifestState, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, inferAndReconcileStates, installDomInspection, mergeSourceRenderedQA, navigateExact, normalizeHttpUrl,
+import { applyManifestState, captureInteractionCensus, captureRenderedQA, collectSameOriginLinks, discoverUnaddressableClosedRoots, inferAndReconcileStates, installDomInspection, interactionCensusIncompleteError, mergeSourceGestureInventories, mergeSourceRenderedQA, navigateExact, normalizeHttpUrl,
   traverseScrollSurfaces, validateManifestState } from "./browser_evidence.mjs";
 import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright } from "./playwright_resolver.mjs";
+import { adoptEarlySourceSurfaceWatch, armEarlySourceSurfaceWatch, drainSourceSurfaceWatch, startSourceSurfaceWatch, stopSourceSurfaceWatch, undocumentedSourceSurfaceError } from "./source_surface_watch.mjs";
+import { acquireSourceStudyOutputLease, acquireSourceStudyRunnerLease, createSourceStudyController, sourceStudyFailureStatus } from "./source_study_controller.mjs";
 
 const SCHEMA_VERSION = 5;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIPT_PATH)).digest("hex");
 const STRUCTURE_PROBE_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "structure_probe.mjs"))).digest("hex");
 const BROWSER_EVIDENCE_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "browser_evidence.mjs"))).digest("hex");
 const PLAYWRIGHT_RESOLVER_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "playwright_resolver.mjs"))).digest("hex");
+const SOURCE_SURFACE_WATCH_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "source_surface_watch.mjs"))).digest("hex");
+const SOURCE_STUDY_CONTROLLER_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "source_study_controller.mjs"))).digest("hex");
 const REST_SETTLE_MS = 700;
 const HOLD_MS = 900;
 // the mechanism pass: many small wheel ticks so a pinned stage, a swap or a
@@ -52,15 +58,30 @@ const HOLD_MS = 900;
 const TICK_PX = 700;
 const TICK_SETTLE_MS = 650;
 
-function fail(code, message) {
-  process.stdout.write(JSON.stringify({ ok: false, error: { code, message } }, null, 2) + "\n");
-  process.exit(2);
+async function requireAddressableSourceStructure(page, profile, stateId = null, evidence = null) {
+  const roots = await discoverUnaddressableClosedRoots(page);
+  if (!roots.length) return;
+  const context = { phase: 'source-structure-precheck', source_state_id: stateId };
+  const message = `${profile}${stateId ? '/'+stateId : ''}: visible closed-shadow material is inaccessible to the locator/state protocol; this is a harness coverage gap, not an empty or defective source.`;
+  throw Object.assign(new Error(message), { code: 'unsupported-source-closed-shadow-root', source_harness_gap: true,
+    census_diagnostic: { schema_version: 1, kind: 'closed-shadow-coverage-incomplete', complete: false, profile, context,
+      failures: roots.map((root) => ({ code: 'unsupported-source-closed-shadow-root', input_kind: 'closed-shadow-root',
+        source_harness_gap: true, reason: message, closed_shadow_root: root, evidence })) } });
+}
+
+function fail(code, message, details = null) {
+  throw Object.assign(new Error(message), { code, terminal_details: details || {} });
+}
+
+function emitFailure(code, message, details = null) {
+  process.stdout.write(JSON.stringify({ ok: false, error: { code, message, ...(details || {}) } }, null, 2) + "\n");
+  process.exitCode = 2;
 }
 
 function parseArgs(argv) {
   const out = { url: null, id: null, outDir: null,
     browserExecutable: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
-    label: null, stateContract: null };
+    label: null, stateContract: null, proofSource: false, sourceState: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--url") out.url = argv[++i];
@@ -68,10 +89,12 @@ function parseArgs(argv) {
     else if (a === "--out") out.outDir = argv[++i];
     else if (a === "--label") out.label = argv[++i];
     else if (a === "--state-contract") out.stateContract = argv[++i];
+    else if (a === "--proof-source") out.proofSource = true;
+    else if (a === "--state") out.sourceState = argv[++i];
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
     else if (a === "--help" || a === "-h") {
       process.stdout.write(
-        "observe_reference.mjs --url URL --id ID --out DIR --state-contract FILE [--label TEXT] [--browser-executable FILE]\n"
+        "observe_reference.mjs --url URL --id ID --out DIR --state-contract FILE [--proof-source --state ID] [--label TEXT] [--browser-executable FILE]\n"
       );
       process.exit(0);
     } else fail("unknown-argument", `Unrecognized argument: ${a}`);
@@ -80,6 +103,7 @@ function parseArgs(argv) {
   if (!out.id || !/^[a-z][a-z0-9-]{0,47}$/.test(out.id)) fail("invalid-id", "--id must be a short lowercase slug, e.g. strong-1.");
   if (!out.outDir) fail("invalid-out", "--out must name a directory.");
   if (!out.stateContract) fail("state-contract-required", "--state-contract is required; source states may not be auto-named or guessed.");
+  if (out.proofSource !== Boolean(out.sourceState)) fail("proof-state-required", "--proof-source requires one exact --state ID; --state is unavailable in public-source mode.");
   return out;
 }
 
@@ -107,16 +131,18 @@ function readStateContract(file, referenceId, primaryUrl) {
   let payload;
   try { payload = JSON.parse(fs.readFileSync(file, "utf8")); }
   catch (error) { fail("state-contract-unreadable", `${file}: ${String(error).slice(0, 220)}`); }
-  if (payload?.schema_version !== 1 || payload.reference_id !== referenceId || !Array.isArray(payload.states) ||
+  if (![1, 2].includes(payload?.schema_version) || payload.reference_id !== referenceId || !Array.isArray(payload.states) ||
       Object.keys(payload).some((key) => !["schema_version", "reference_id", "states"].includes(key))) {
-    fail("state-contract-invalid", "Source state contract must be exact schema 1 with reference_id and states.");
+    fail("state-contract-invalid", "Source state contract must be exact schema 1 (legacy) or schema 2 (ambient-capable) with reference_id and states.");
   }
   const ids = new Set();
   for (const state of payload.states) {
     const core = state && { id: state.id, kind: state.kind, trigger: state.trigger, expectation: state.expectation };
+    const ambient = state?.trigger?.type === "ambient";
+    const expectedTriggerKeys = ambient ? ["type", "target", "value", "wait_ms"] : ["type", "target", "value"];
     if (!state || Object.keys(state).some((key) => !["id", "url", "kind", "trigger", "expectation"].includes(key)) ||
-        Object.keys(state.trigger || {}).some((key) => !["type", "target", "value"].includes(key)) ||
-        validateManifestState(core) || ids.has(state.id)) {
+        Object.keys(state.trigger || {}).sort().join("|") !== expectedTriggerKeys.sort().join("|") ||
+        (ambient && payload.schema_version !== 2) || validateManifestState(core, { sourceOnly: true }) || ids.has(state.id)) {
       fail("state-contract-invalid", "Every source state needs a globally unique id, exact URL, kind, trigger and expectation.");
     }
     let normalized;
@@ -131,6 +157,39 @@ function readStateContract(file, referenceId, primaryUrl) {
 }
 
 const sha = (buf) => createHash("sha256").update(buf).digest("hex");
+
+function writeJsonAtomically(file, payload) {
+  const temporary = `${file}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(temporary, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  fs.renameSync(temporary, file);
+}
+
+function writeObservationFailureReport(args, stateContract, frameDir, frames, runtimeIdentity, error) {
+  const file = path.join(args.outDir, `${args.id}-observation-failure.json`);
+  const diagnostic = error?.census_diagnostic || null;
+  const report = {
+    schema_version: 1,
+    kind: "reference-observation-failure",
+    status: "incomplete-not-selection-evidence",
+    source_status: error?.source_study?.source_status || sourceStudyFailureStatus(error?.code, { source_error: String(error?.message || error) }, frames.length),
+    eligible_for_source_selection: false,
+    id: args.id,
+    requested_url: args.url,
+    state_contract: { file: path.basename(stateContract.file), sha256: stateContract.sha256 },
+    runtime_identity: runtimeIdentity,
+    error: { code: error?.code || "observation-failed", message: String(error?.message || error) },
+    interaction_census: diagnostic,
+    autonomous_surface_watch: error?.surface_watch || null,
+    capture_integrity: error?.capture_integrity || null,
+    source_study: error?.source_study || null,
+    source_study_progress: error?.source_study_progress || null,
+    source_study_failure: error?.source_study_failure || null,
+    consent_handoff: error?.consent_candidate || error?.consent_disposition || null,
+    frames: frames.map((frame) => ({ ...frame, file: `${path.basename(frameDir)}/${frame.file}` })),
+  };
+  writeJsonAtomically(file, report);
+  return { file, sha256: sha(fs.readFileSync(file)) };
+}
 
 // Tag every element large enough to be a stage, a picture, a heading or a
 // block, so the scroll pass can follow each one by a stable id.
@@ -523,29 +582,92 @@ async function checkAmbientVideo(page) {
   return found;
 }
 
-async function dismissScopedConsent(page) {
-  return page.evaluate(() => {
-    const containers = [...document.querySelectorAll('[role="dialog"],[aria-modal="true"],#onetrust-banner-sdk,[class*="cookie" i],[id*="cookie" i],[class*="consent" i],[id*="consent" i]')];
-    const consent = containers.find((el) => /cookie|privacy|consent|tracking/i.test(`${el.id} ${el.className} ${el.getAttribute('aria-label') || ''} ${el.textContent || ''}`));
-    if (!consent) return { present: false, dismissed: false, label: null };
-    const order = ['reject','reject all','decline','decline all','only necessary','necessary only','essential only'];
-    const buttons = [...consent.querySelectorAll('button')];
-    let button = null;
-    for (const label of order) {
-      button = buttons.find((el) => (el.textContent || '').trim().replace(/\s+/g, ' ').toLowerCase() === label);
-      if (button) break;
-    }
-    if (!button) return { present: true, dismissed: false, label: null };
-    const label = (button.textContent || '').trim(); button.click(); return { present: true, dismissed: true, label };
-  }).catch((error) => ({ present: true, dismissed: false, error: String(error).slice(0, 120) }));
+export const CONSENT_SAFE_DISPOSITIONS = [
+  'reject', 'reject all', 'decline', 'decline all',
+  'only necessary', 'necessary only', 'essential only',
+];
+
+export function isConstrainedConsentSignal(value) {
+  return /\bcookie(?:s)?\b|\bconsent\b|onetrust|privacy\s+(?:choices|settings|preferences)|tracking\s+(?:choices|settings|preferences)/i.test(String(value || ''));
 }
 
-async function requireUnblockedConsent(page, notes = null) {
-  const result = await dismissScopedConsent(page);
-  if (result.present && !result.dismissed) throw new Error("A consent dialog is present without an exact reject/necessary-only control; observation will not make an ambiguous consent choice.");
-  if (result.dismissed && notes) notes.push(`consent dialog button clicked: ${result.label}`);
-  if (result.dismissed) await page.waitForTimeout(600);
-  return result;
+/** Discover only a narrow, visible consent choice.  A generic dialog that
+ * happens to mention privacy/tracking is an ambiguity, not permission to
+ * click it.  Markers are inert data attributes used solely to make the one
+ * generated locator exact after the pre-action frame is captured. */
+async function classifyScopedConsent(page) {
+  return page.evaluate((safeLabels) => {
+    const visible = (element) => {
+      const style = getComputedStyle(element), box = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0 && box.width > 1 && box.height > 1;
+    };
+    const text = (element) => (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ');
+    const candidates = [...new Set(document.querySelectorAll('[role="dialog"],[aria-modal="true"],#onetrust-banner-sdk,[class*="cookie" i],[id*="cookie" i],[class*="consent" i],[id*="consent" i]'))]
+      .filter(visible);
+    const outer = candidates.filter((element) => !candidates.some((other) => other !== element && other.contains(element)));
+    const describe = (element) => ({ tag: element.tagName.toLowerCase(), id: element.id || null,
+      role: element.getAttribute('role') || null, aria_label: element.getAttribute('aria-label') || null,
+      class_name: String(element.className || '').slice(0, 240), text: text(element).slice(0, 400) });
+    const identified = outer.map((element) => {
+      const signal = `${element.id} ${element.className} ${element.getAttribute('aria-label') || ''} ${text(element)}`;
+      const strong = /\bcookie(?:s)?\b|\bconsent\b|onetrust|privacy\s+(?:choices|settings|preferences)|tracking\s+(?:choices|settings|preferences)/i.test(signal);
+      const broad = /\bprivacy\b|\btracking\b/i.test(signal);
+      return { element, strong, broad, description: describe(element) };
+    }).filter((item) => item.strong || item.broad);
+    if (!identified.length) return { present: false };
+    const eligible = identified.filter((item) => item.strong);
+    if (eligible.length !== 1 || identified.length !== 1) {
+      return { present: true, eligible: false, reason: 'multiple-or-broad-consent-like-dialogs', candidates: identified.map((item) => item.description) };
+    }
+    const consent = eligible[0].element;
+    const buttons = [...consent.querySelectorAll('button')].filter(visible);
+    const safe = buttons.filter((button) => safeLabels.includes(text(button).toLowerCase()));
+    if (safe.length !== 1) {
+      return { present: true, eligible: false, reason: 'missing-or-ambiguous-safe-reject-action', candidates: [eligible[0].description],
+        safe_action_count: safe.length, button_labels: buttons.map((button) => text(button).slice(0, 160)) };
+    }
+    const token = `consent-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    consent.setAttribute('data-design-dna-consent-root', token);
+    safe[0].setAttribute('data-design-dna-consent-action', token);
+    return { present: true, eligible: true, disposition: 'reject-or-essential-only', label: text(safe[0]),
+      root: eligible[0].description, root_selector: `[data-design-dna-consent-root="${token}"]`,
+      action_selector: `[data-design-dna-consent-action="${token}"]`, token };
+  }, CONSENT_SAFE_DISPOSITIONS).catch((error) => ({ present: true, eligible: false, reason: 'consent-inspection-failed', error: String(error?.message || error).slice(0, 240) }));
+}
+
+async function requireUnblockedConsent(page, options = {}) {
+  const result = await classifyScopedConsent(page);
+  if (!result.present) return { present: false, dismissed: false };
+  if (!result.eligible) {
+    const error = new Error(`Consent-like dialog requires owner-safe handoff before observation; no automatic choice was made (${result.reason || 'ambiguous-consent'}).`);
+    error.code = 'consent-handoff-required'; error.consent_candidate = result;
+    throw error;
+  }
+  const capture = options.captureEvidence;
+  if (typeof capture !== 'function') {
+    throw new Error('A scoped consent disposition requires generated before/action/after evidence; the caller did not provide captureEvidence.');
+  }
+  const labelPrefix = options.labelPrefix || 'consent-disposition';
+  const before = await capture(`${labelPrefix}-before`, page);
+  const action = page.locator(result.action_selector);
+  if (await action.count() !== 1 || !(await action.first().isVisible())) {
+    throw new Error(`Scoped consent action ${JSON.stringify(result.action_selector)} no longer resolves to one visible exact control; no automatic choice was made.`);
+  }
+  const started = Date.now();
+  await action.first().click({ timeout: 5000 });
+  const actionFrame = await capture(`${labelPrefix}-action`, page);
+  await page.waitForTimeout(600);
+  const after = await capture(`${labelPrefix}-after`, page);
+  const remaining = page.locator(result.root_selector);
+  const remainingVisible = await remaining.count() === 1 && await remaining.first().isVisible();
+  if (remainingVisible) {
+    throw new Error(`Scoped consent disposition ${JSON.stringify(result.label)} did not remove its exact visible consent surface; no further dismissal will be attempted.`);
+  }
+  const record = { kind: 'consent-disposition', disposition: result.disposition, label: result.label,
+    root: result.root, action_selector: result.action_selector, duration_ms: Date.now() - started,
+    evidence_frames: { before, action: actionFrame, after } };
+  if (Array.isArray(options.notes)) options.notes.push(record);
+  return { present: true, dismissed: true, ...record };
 }
 
 function mergeMechanismSheets(sheets) {
@@ -567,7 +689,7 @@ function mergeMechanismSheets(sheets) {
   } };
 }
 
-function mergeInteractionCensuses(profile, censuses) {
+export function mergeInteractionCensuses(profile, censuses) {
   const pageMap = new Map();
   for (const pageRecord of censuses.flatMap((census) => census.pages || [])) {
     const current = pageMap.get(pageRecord.url) || { url: pageRecord.url, targets: [], dom_code_inventory: pageRecord.dom_code_inventory };
@@ -587,6 +709,8 @@ function mergeInteractionCensuses(profile, censuses) {
     current.targets = [...targetMap.values()];
     const priorDom = current.dom_code_inventory, nextDom = pageRecord.dom_code_inventory;
     current.dom_code_inventory = nextDom || priorDom;
+    if (priorDom?.gesture_listeners || nextDom?.gesture_listeners) current.dom_code_inventory.gesture_listeners =
+      mergeSourceGestureInventories(priorDom?.gesture_listeners, nextDom?.gesture_listeners);
     if (priorDom && nextDom) for (const field of ['routes_discovered','state_hooks','animation_hooks','assets','scripts','inline_handlers']) {
       current.dom_code_inventory[field] = [...new Map([...(priorDom[field] || []), ...(nextDom[field] || [])]
         .map((item) => [typeof item === 'string' ? item : JSON.stringify(item), item])).values()];
@@ -608,7 +732,7 @@ function mergeInteractionCensuses(profile, censuses) {
     const signatures = [...new Set(members.flatMap((target) => target.inputs.filter((input) => input.status === 'exercised')
       .map((input) => `${input.input_kind}:${input.behavior}`)))].sort();
     return { repeat_class: repeatClass, target_ids: members.map((target) => target.target_id), input_kinds: inputKinds,
-      equivalent: inputKinds.every((kind) => new Set(members.flatMap((target) => target.inputs
+      equivalent: members.length < 2 || inputKinds.every((kind) => new Set(members.flatMap((target) => target.inputs
         .filter((input) => input.input_kind === kind && input.status === 'exercised').map((input) => input.behavior))).size <= 1),
       behavior_signatures: signatures,
       evidence: members.flatMap((target) => target.inputs.map((input) => input.evidence).filter(Boolean)) };
@@ -632,7 +756,7 @@ function mergeInteractionCensuses(profile, censuses) {
     truncated: false, missing, complete: missing.length === 0 && censuses.every((census) => census.complete && census.truncated === false) };
 }
 
-async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, captureEvidence) {
+async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, captureEvidence, notes, sourceStudy = null) {
   const origin = new URL(primaryUrl).origin;
   const queue = [...new Set([normalizeHttpUrl(primaryUrl), ...authoredStates.map((state) => normalizeHttpUrl(state.url))])];
   const discovered = new Set(queue), visited = new Set();
@@ -643,10 +767,55 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     if (discovered.size > 1000) throw new Error(`${profile}: more than 1000 recursive same-origin pages were discovered; traversal cannot be claimed complete.`);
     const url = queue.shift();
     if (visited.has(url)) continue;
-    const navigation = await navigateExact(page, url);
+    sourceStudy?.markRoute(url, { profile, phase: 'recursive-site' });
+    const ambientSelectors = authoredStates.filter((state) => state.trigger?.type === 'ambient').map((state) => state.trigger.target);
+    const earlyBaseline = await captureEvidence(`${profile}-early-before-navigation`, page);
+    const earlyWatch = await armEarlySourceSurfaceWatch(page, {
+      ambientSelectors, baseline: earlyBaseline, labelPrefix: `${profile}-early-autonomous-surface`,
+      captureEvidence: (label, targetPage = page) => captureEvidence(label, targetPage),
+    });
+    const navigation = sourceStudy
+      ? await sourceStudy.step(`navigate:${profile}:recursive-site`, () => navigateExact(page, url), {
+        detail: { url }, abort: async () => { await page.context().close().catch(() => {}); },
+      })
+      : await navigateExact(page, url);
     await page.evaluate(() => document.fonts?.ready).catch(() => {});
     await page.waitForTimeout(500);
-    await requireUnblockedConsent(page);
+    const consent = await requireUnblockedConsent(page, {
+      notes,
+      labelPrefix: `${profile}-consent-${visited.size + 1}`,
+      captureEvidence: (label, targetPage = page) => captureEvidence(label, targetPage),
+    });
+    const surfaceBaseline = await captureEvidence(`${profile}-autonomous-watch-baseline`, page);
+    const surfaceWatch = await adoptEarlySourceSurfaceWatch(page, earlyWatch, {
+      ambientSelectors,
+      baseline: surfaceBaseline,
+      authorizedConsent: consent.dismissed ? [consent] : [],
+      labelPrefix: `${profile}-autonomous-surface`,
+      captureEvidence: (label, targetPage = page) => captureEvidence(label, targetPage),
+    });
+    let surfaceWatchClosed = false, closedSurfaceWatchReport = null;
+    const closeSurfaceWatch = async (error = null) => {
+      if (surfaceWatchClosed) {
+        if (error && closedSurfaceWatchReport) error.surface_watch = closedSurfaceWatchReport;
+        return closedSurfaceWatchReport;
+      }
+      surfaceWatchClosed = true;
+      let report;
+      try {
+        report = await drainSourceSurfaceWatch(surfaceWatch, {
+          labelPrefix: `${profile}-autonomous-surface`, captureEvidence,
+        });
+      } finally { await stopSourceSurfaceWatch(surfaceWatch); }
+      if (report?.events?.length && Array.isArray(notes)) notes.push({ kind: 'autonomous-surface-watch', profile, page_url: url, report });
+      const undocumented = undocumentedSourceSurfaceError(report, { profile, phase: 'recursive-site' });
+      if (undocumented) throw undocumented;
+      closedSurfaceWatchReport = report;
+      if (error && report) error.surface_watch = report;
+      return report;
+    };
+    try {
+    await requireAddressableSourceStructure(page, profile);
     const structure = await page.evaluate(STRUCTURE_SCRIPT);
     if (!structure || !structure.dominant) throw new Error(`${profile} ${url}: first-screen structure is empty.`);
     const sheet = await mechanismPass(page);
@@ -659,15 +828,31 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     if (!stateInventory.complete) throw new Error(`${profile} ${url}: ${stateInventory.unreconciled.length} inferred states lack authored source-state triggers.`);
     const knownTargets = new Set();
     const pageInteractionCensuses = [];
+    let censusPass = 0;
     while (true) {
-      const interactionCensus = await captureInteractionCensus(page, { profile, pageUrl: url,
-        authoredStates: applicableStates, captureEvidence });
-      if (!interactionCensus.complete || interactionCensus.truncated) throw new Error(`${profile} ${url}: interaction census is incomplete.`);
+      censusPass += 1;
+      const baselineState = applicableStates.find((state) => state.id === 'rest') || null;
+      const censusOptions = { profile, pageUrl: url,
+        authoredStates: applicableStates, baselineState,
+        sourceOnly: true,
+        context: { phase: 'recursive-site', source_state_id: baselineState?.id || null, pass: censusPass },
+        captureEvidence };
+      const interactionCensus = sourceStudy
+        ? await sourceStudy.step(`interaction-census:${profile}:recursive-site`, () => captureInteractionCensus(page, censusOptions), {
+          timeout_ms: 180_000, detail: { url, pass: censusPass }, abort: async () => { await page.context().close().catch(() => {}); },
+        })
+        : await captureInteractionCensus(page, censusOptions);
+      if (!interactionCensus.complete || interactionCensus.truncated) {
+        throw interactionCensusIncompleteError(interactionCensus,
+          { phase: 'recursive-site', source_state_id: baselineState?.id || null, pass: censusPass });
+      }
       interactionCensuses.push(interactionCensus);
       pageInteractionCensuses.push(interactionCensus);
       const observedTargets = interactionCensus.pages.flatMap((pageRecord) => pageRecord.targets.map((target) => target.target_id));
       const newTargets = observedTargets.filter((targetId) => !knownTargets.has(targetId));
       observedTargets.forEach((targetId) => knownTargets.add(targetId));
+      for (const targetId of newTargets) sourceStudy?.markTarget(`${profile}|recursive-site|${url}|${targetId}`, { pass: censusPass });
+      sourceStudy?.markEvent({ profile, kind: 'interaction-census', targets: observedTargets.length, pass: censusPass });
       if (!newTargets.length) break;
     }
     const pageInteractionCensus = mergeInteractionCensuses(profile, pageInteractionCensuses);
@@ -683,6 +868,11 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
       state_inventory: stateInventory,
       rendered_qa: renderedQA,
       scroll_traversal: sheet.scroll_traversal, discovered_links: links });
+    await closeSurfaceWatch();
+    } catch (error) {
+      await closeSurfaceWatch(error);
+      throw error;
+    }
   }
   const missing = [...discovered].filter((url) => !visited.has(url));
   const interactionCensus = mergeInteractionCensuses(profile, interactionCensuses);
@@ -703,22 +893,77 @@ async function studyRecursiveSite(page, primaryUrl, profile, authoredStates, cap
     sheet: mergeMechanismSheets(pages.map((item) => ({ mechanisms: item.mechanisms, score: item.score }))) };
 }
 
-async function captureSourceStates(browser, contract, viewport, captureEvidence) {
+async function captureSourceStates(browser, contract, viewport, captureEvidence, notes, sourceStudy = null) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   await installDomInspection(context);
   const page = await context.newPage();
   const result = {};
   try {
     for (const state of contract.states) {
-      const navigation = await navigateExact(page, state.url);
+      sourceStudy?.markState(`${viewport.name}:${state.id}:started`, { profile: viewport.name, phase: 'source-state-start' });
+      const ambientSelectors = contract.states.filter((item) => item.trigger?.type === 'ambient').map((item) => item.trigger.target);
+      const earlyBaseline = await captureEvidence(page, `${viewport.name}-${state.id}-early-before-navigation`);
+      const earlyWatch = await armEarlySourceSurfaceWatch(page, {
+        ambientSelectors, baseline: earlyBaseline, labelPrefix: `${viewport.name}-${state.id}-early-autonomous-surface`,
+        captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+      });
+      const navigation = sourceStudy
+        ? await sourceStudy.step(`navigate:${viewport.name}:source-state`, () => navigateExact(page, state.url), {
+          detail: { state_id: state.id, url: state.url }, abort: async () => { await context.close().catch(() => {}); },
+        })
+        : await navigateExact(page, state.url);
       await page.evaluate(() => document.fonts?.ready).catch(() => {});
       await page.waitForTimeout(500);
-      await requireUnblockedConsent(page);
+      const consent = await requireUnblockedConsent(page, {
+        notes,
+        labelPrefix: `${viewport.name}-${state.id}-consent`,
+        captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+      });
       const beforeFrame = await captureEvidence(page, `${viewport.name}-${state.id}-state-before`);
-      const application = await applyManifestState(page, state);
-      const afterFrame = await captureEvidence(page, `${viewport.name}-${state.id}-state-after`);
+      const surfaceWatch = await adoptEarlySourceSurfaceWatch(page, earlyWatch, {
+        ambientSelectors,
+        baseline: beforeFrame,
+        authorizedConsent: consent.dismissed ? [consent] : [],
+        labelPrefix: `${viewport.name}-${state.id}-autonomous-surface`,
+        captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+      });
+      let surfaceWatchClosed = false, closedSurfaceWatchReport = null;
+      const closeSurfaceWatch = async (error = null) => {
+        if (surfaceWatchClosed) {
+          if (error && closedSurfaceWatchReport) error.surface_watch = closedSurfaceWatchReport;
+          return closedSurfaceWatchReport;
+        }
+        surfaceWatchClosed = true;
+        let report;
+        try {
+          report = await drainSourceSurfaceWatch(surfaceWatch, {
+            labelPrefix: `${viewport.name}-${state.id}-autonomous-surface`,
+            captureEvidence: (label, targetPage = page) => captureEvidence(targetPage, label),
+          });
+        } finally { await stopSourceSurfaceWatch(surfaceWatch); }
+        if (report?.events?.length && Array.isArray(notes)) notes.push({ kind: 'autonomous-surface-watch', profile: viewport.name, state_id: state.id, page_url: state.url, report });
+        const undocumented = undocumentedSourceSurfaceError(report, { profile: viewport.name, state_id: state.id, phase: 'source-state' });
+        if (undocumented) throw undocumented;
+        closedSurfaceWatchReport = report;
+        if (error && report) error.surface_watch = report;
+        return report;
+      };
+      try {
+      let appearanceFrame = null;
+      const application = await applyManifestState(page, state, {
+        sourceOnly: true,
+        onAmbientAppearance: state.trigger.type === "ambient" ? async (appearancePage) => {
+          appearanceFrame = await captureEvidence(appearancePage, `${viewport.name}-${state.id}-state-appearance`);
+        } : undefined,
+      });
+      const afterFrame = state.trigger.type === "ambient"
+        ? appearanceFrame
+        : await captureEvidence(page, `${viewport.name}-${state.id}-state-after`);
+      if (!afterFrame) throw new Error(`${viewport.name}/${state.id}: ambient source appearance did not produce generated appearance-frame evidence.`);
       await page.waitForTimeout(220);
       const settledFrame = await captureEvidence(page, `${viewport.name}-${state.id}-state-settled`);
+      await requireAddressableSourceStructure(page, viewport.name, state.id,
+        { before: beforeFrame, after: afterFrame, settled: settledFrame });
       const structure = await page.evaluate(STRUCTURE_SCRIPT);
       if (!structure || !structure.dominant) throw new Error(`${viewport.name}/${state.id}: source-state first screen is empty.`);
       const sheet = await mechanismPass(page);
@@ -730,32 +975,240 @@ async function captureSourceStates(browser, contract, viewport, captureEvidence)
         sheet.score.distinct_mechanisms = new Set(sheet.mechanisms.map((item) => item.type)).size;
       }
       const applicableStates = contract.states.filter((item) => normalizeHttpUrl(item.url) === normalizeHttpUrl(state.url));
-      const interactionCensus = await captureInteractionCensus(page, { profile: viewport.name,
-        pageUrl: state.url, authoredStates: applicableStates,
-        captureEvidence: (label, evidencePage = page) => captureEvidence(evidencePage, `${viewport.name}-${state.id}-${label}`) });
-      if (!interactionCensus.complete) throw new Error(`${viewport.name}/${state.id}: interaction census is incomplete.`);
+       const censusOptions = { profile: viewport.name,
+         pageUrl: state.url, authoredStates: applicableStates, baselineState: state,
+         baselineApplication: application,
+         baselineEvidence: { before: beforeFrame, after: afterFrame, settled: settledFrame },
+         sourceOnly: true,
+         context: { phase: 'source-state', source_state_id: state.id, pass: 1 },
+         captureEvidence: (label, evidencePage = page) => captureEvidence(evidencePage, `${viewport.name}-${state.id}-${label}`) };
+       const interactionCensus = sourceStudy
+         ? await sourceStudy.step(`interaction-census:${viewport.name}:source-state`, () => captureInteractionCensus(page, censusOptions), {
+           timeout_ms: 180_000, detail: { state_id: state.id, url: state.url }, abort: async () => { await context.close().catch(() => {}); },
+         })
+         : await captureInteractionCensus(page, censusOptions);
+       for (const target of interactionCensus.pages.flatMap((pageRecord) => pageRecord.targets)) {
+         sourceStudy?.markTarget(`${viewport.name}|source-state|${state.id}|${target.target_id}`, { state_id: state.id });
+       }
+       sourceStudy?.markEvent({ profile: viewport.name, kind: 'interaction-census', state_id: state.id,
+         targets: interactionCensus.pages.reduce((total, pageRecord) => total + pageRecord.targets.length, 0) });
+      if (!interactionCensus.complete) {
+        throw interactionCensusIncompleteError(interactionCensus,
+          { phase: 'source-state', source_state_id: state.id, pass: 1 });
+      }
       const renderedQA = await captureRenderedQA(page, { profile: viewport.name, pageUrl: state.url,
         sourceState: state, interactionCensus,
         captureEvidence: (label, evidencePage = page) => captureEvidence(evidencePage, `${viewport.name}-${state.id}-${label}`) });
       if (!renderedQA.complete) throw new Error(`${viewport.name}/${state.id}: rendered QA is incomplete.`);
-      result[state.id] = { id: state.id, url: state.url, kind: state.kind, trigger: state.trigger,
+       result[state.id] = { id: state.id, url: state.url, kind: state.kind, trigger: state.trigger,
         expectation: state.expectation, navigation, trigger_application: application,
         trigger_evidence: application.trigger_evidence,
-        evidence_frames: { before: beforeFrame, after: afterFrame, settled: settledFrame },
+        evidence_frames: state.trigger.type === "ambient"
+          ? { before: beforeFrame, appearance: afterFrame, settled: settledFrame }
+          : { before: beforeFrame, after: afterFrame, settled: settledFrame },
         interaction_census: interactionCensus,
-        rendered_qa: renderedQA,
-        structure, mechanisms: sheet.mechanisms, score: sheet.score, scroll_traversal: sheet.scroll_traversal };
+         rendered_qa: renderedQA,
+         structure, mechanisms: sheet.mechanisms, score: sheet.score, scroll_traversal: sheet.scroll_traversal };
+       sourceStudy?.markState(`${viewport.name}:${state.id}:complete`, { profile: viewport.name, phase: 'source-state-complete' });
+      await closeSurfaceWatch();
+      } catch (error) {
+        await closeSurfaceWatch(error);
+        throw error;
+      }
     }
   } finally { await context.close(); }
   return result;
 }
 
+/** Capture one exact state at both canonical viewports for an internal specimen.
+ * This deliberately emits no recursive/interaction completion claim. Its frames,
+ * component identities and live values authorize only the bounded proof workflow.
+ */
+async function captureProofSource(args, stateContract, loaded, browserDependency) {
+  const selected = stateContract.payload.states.find((state) => state.id === args.sourceState);
+  if (!selected || normalizeHttpUrl(selected.url) !== normalizeHttpUrl(args.url)) {
+    throw Object.assign(new Error('Proof-source capture requires one declared state at the exact primary URL.'), { code: 'proof-state-invalid' });
+  }
+  const frames = [], notes = [], navigations = [], proofComponentMaps = [];
+  const frameDir = path.join(args.outDir, `${args.id}-frames`);
+  const study = createSourceStudyController({ output_dir: args.outDir, id: args.id, producer: 'observe_reference.mjs', source_kind: 'proof-slice',
+    limits: { max_total_elapsed_ms: 180_000, max_routes: 1, max_targets: 2_000 },
+    required_completion_artifact_kinds: ['frame'],
+    abort: async () => { await browser?.close().catch(() => {}); },
+    partial_evidence: () => ({ frames, navigations, selected_state: selected.id, proof_only: true }) });
+  fs.mkdirSync(frameDir, { recursive: true });
+  let browser;
+  const states = {}, firstScreens = {}, inventory = {}, captures = {}, proofDocumentStyles = {};
+  const runtimeIdentity = { 'observe_reference.mjs': PRODUCER_SCRIPT_SHA256, 'structure_probe.mjs': STRUCTURE_PROBE_SHA256,
+    'browser_evidence.mjs': BROWSER_EVIDENCE_SHA256, 'playwright_resolver.mjs': PLAYWRIGHT_RESOLVER_SHA256,
+    'source_surface_watch.mjs': SOURCE_SURFACE_WATCH_SHA256, 'source_study_controller.mjs': SOURCE_STUDY_CONTROLLER_SHA256,
+    'playwright-entry': loaded.dependency.resolved_file_sha256, 'browser-executable': browserDependency.sha256 };
+  const shot = async (page, profile, label) => {
+    const file = `${args.id}-${String(frames.length + 1).padStart(5, '0')}-${profile}-${label}.png`;
+    const data = await study.step(`proof:${profile}:screenshot:${label}`, () => page.screenshot({ path: path.join(frameDir, file) }), { screenshot: true });
+    const row = { file: `${path.basename(frameDir)}/${file}`, bytes: data.length, sha256: sha(data) };
+    frames.push({ ...row, profile, label }); study.markFrame(row); return row;
+  };
+  try {
+    browser = await loaded.playwright.chromium.launch({ executablePath: browserDependency.file });
+    for (const viewport of [{ name: 'wide', width: 1440, height: 900 }, { name: 'narrow', width: 390, height: 844 }]) {
+      const profile = viewport.name;
+      const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
+      try {
+        await installDomInspection(context);
+        const page = await context.newPage();
+        study.markRoute(selected.url, { profile, selected_state: selected.id });
+        const navigation = await study.step(`proof:${profile}:navigate`, () => navigateExact(page, selected.url));
+        navigations.push(navigation);
+        await shot(page, profile, 'loaded-unsettled');
+        const mediaProblems = await study.step(`proof:${profile}:settle`, () => page.evaluate(async () => {
+          await document.fonts.ready;
+          const visible = [...document.images].filter((image) => {
+            const style = getComputedStyle(image), rect = image.getBoundingClientRect();
+            return style.display !== 'none' && style.visibility === 'visible' && Number(style.opacity) > 0 && image.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) &&
+              rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+          });
+          return (await Promise.all(visible.map(async (image) => {
+            const sourceBefore = image.currentSrc || image.src;
+            const selector = image.id ? '#' + CSS.escape(image.id) : 'img[src=' + JSON.stringify(image.getAttribute('src')) + ']';
+            let decodeError = null;
+            try { await image.decode(); if (!image.naturalWidth) throw new Error('decoded image has no pixels'); }
+            catch (error) { decodeError = String(error?.message || error); }
+            const sourceAfter = image.currentSrc || image.src;
+            if (sourceBefore !== sourceAfter) return { selector, url: sourceAfter,
+              code: 'proof-media-source-unstable', source_before: sourceBefore, source_after: sourceAfter,
+              error: 'The visible image source changed during decode. This is an unsettled image sequence, not proof that its media file is broken; use the full recorded source study or an observable settled source state.' };
+            return decodeError ? { selector, url: sourceAfter, code: 'proof-visible-media-decode-failed', error: decodeError } : null;
+          }))).filter(Boolean);
+        }));
+        if (mediaProblems.length) {
+          const unsettled = mediaProblems.every((item) => item.code === 'proof-media-source-unstable');
+          throw Object.assign(new Error(unsettled
+            ? `${profile}: visible source image sequence changed while capturing one settled proof state; the source is not classified as broken, and the unsettled frame and exact source URLs are retained.`
+            : `${profile}: ${mediaProblems.length} visible source media asset(s) could not be decoded; the unsettled frame and exact targets are retained.`),
+          { code: unsettled ? 'proof-media-source-unstable' : 'proof-visible-media-decode-failed', media_problems: mediaProblems });
+        }
+        await requireUnblockedConsent(page, { captureEvidence: (label, targetPage = page) => shot(targetPage, profile, label), notes });
+        const before = await shot(page, profile, 'before');
+        let appearance = null;
+        const application = await study.step(`proof:${profile}:selected-state`, () => applyManifestState(page, selected, { sourceOnly: true,
+          onAmbientAppearance: selected.trigger.type === 'ambient' ? async (appearancePage) => { appearance = await shot(appearancePage, profile, 'appearance'); } : undefined }),
+          { timeout_ms: selected.trigger.type === 'ambient' ? selected.trigger.wait_ms + 10_000 : 30_000 });
+        const after = appearance || await shot(page, profile, 'after');
+        await study.step(`proof:${profile}:state-settle`, () => page.waitForTimeout(220));
+        const closedRoots = await study.step(`proof:${profile}:closed-root-coverage`, () => discoverUnaddressableClosedRoots(page, { viewportOnly: true }));
+        if (closedRoots.length) throw Object.assign(new Error(`${profile}: visible closed-shadow material at ${closedRoots[0].host_selector || closedRoots[0].host_description} is inaccessible to the proof's exact component/state protocol; this is a harness gap, not a source-quality defect.`),
+          { code: 'proof-closed-shadow-root-unaddressable', closed_shadow_roots: closedRoots, source_harness_gap: true });
+        const structure = await study.step(`proof:${profile}:arrangement`, () => page.evaluate(STRUCTURE_SCRIPT));
+        if (!structure?.dominant) throw Object.assign(new Error(`${profile}: selected proof state has no visible arrangement.`), { code: 'proof-arrangement-empty' });
+        const sampled = await study.step(`proof:${profile}:components`, () => page.evaluate(() => {
+          const selectorFor = (element) => {
+            if (element.id && document.querySelectorAll('#' + CSS.escape(element.id)).length === 1) return '#' + CSS.escape(element.id);
+            const parts = []; let current = element;
+            while (current && current !== document.documentElement) {
+              const parent = current.parentElement; if (!parent) return null;
+              const siblings = [...parent.children].filter((item) => item.tagName === current.tagName);
+              parts.unshift(current.tagName.toLowerCase() + ':nth-of-type(' + (siblings.indexOf(current) + 1) + ')'); current = parent;
+            }
+            return 'html > ' + parts.join(' > ');
+          };
+          const properties = ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'color', 'background-color', 'background-image',
+            'padding', 'margin', 'gap', 'display', 'grid-template-columns', 'border-color', 'border-radius', 'box-shadow', 'transform', 'object-fit', 'object-position',
+            'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height', 'box-sizing', 'align-items', 'justify-content', 'align-content', 'justify-items',
+            'flex-direction', 'flex-wrap', 'grid-template-rows', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'border-width', 'border-style',
+            'text-transform', 'text-align', 'overflow', 'visibility', 'opacity', 'aspect-ratio', 'background-position', 'background-size', 'background-repeat',
+            'transition-property', 'transition-duration', 'transition-timing-function', 'animation-name', 'animation-duration', 'cursor'];
+          const documentStyles = Object.fromEntries([['html', document.documentElement], ['body', document.body]].map(([role, element]) => {
+            const style = getComputedStyle(element); return [role, Object.fromEntries(properties.map((property) => [property, style.getPropertyValue(property)]))];
+          }));
+          const components = [...document.querySelectorAll('body *')].flatMap((element) => {
+            const style = getComputedStyle(element), rect = element.getBoundingClientRect();
+            if (!element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) || style.display === 'none' || style.visibility !== 'visible' || Number(style.opacity) === 0 || rect.width < 1 || rect.height < 1 ||
+                rect.bottom <= 0 || rect.right <= 0 || rect.top >= innerHeight || rect.left >= innerWidth) return [];
+            const selector = selectorFor(element); if (!selector) return [];
+            return [{ selector, component_key: element.id ? 'id:' + element.id : element.getAttribute('data-design-dna-component') ?
+              'component:' + element.getAttribute('data-design-dna-component') : 'selector:' + selector,
+              tag: element.tagName.toLowerCase(), role: element.getAttribute('role'),
+              control: element.matches('a[href],button,input,select,textarea,summary,[role="button"],[role="link"],[role="tab"],[role="checkbox"],[role="switch"],[contenteditable="true"]'),
+              text: (element.textContent || '').replace(/\s+/g, ' ').trim(),
+              rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+              properties: Object.fromEntries(properties.map((property) => [property, style.getPropertyValue(property)])),
+              media: { tag: element.tagName.toLowerCase(), source_url: element.currentSrc || element.src || null,
+                object_fit: style.objectFit, object_position: style.objectPosition } }];
+          });
+          return { components, document_styles: documentStyles };
+        }));
+        const components = sampled.components;
+        proofDocumentStyles[profile] = sampled.document_styles;
+        for (const row of components) {
+          study.markTarget(`${profile}|${selected.id}|${row.selector}`);
+          proofComponentMaps.push({ ...row, profile, state_id: selected.id, text_sha256: sha(Buffer.from(row.text, 'utf8')) });
+        }
+        const settled = await shot(page, profile, 'settled');
+        states[profile] = { [selected.id]: { ...selected, navigation, trigger_application: application, trigger_evidence: application.trigger_evidence,
+          evidence_frames: { before, after, settled }, structure, proof_only: true } };
+        firstScreens[profile] = structure; captures[profile] = settled;
+        inventory[profile] = { profile, complete: false, scope: 'proof-first-screen-only', pages: [{ url: selected.url,
+          targets: components.filter((row) => row.control).map((row) => ({ selector: row.selector, tag: row.tag, role: row.role,
+            kind: row.tag === 'a' ? 'link' : row.tag === 'button' ? 'button' : row.role || row.tag, component_key: row.component_key,
+            source_state_id: selected.id, inputs: [], complete: false })),
+          dom_code_inventory: { assets: [...new Set(components.map((row) => row.media.source_url).filter(Boolean))] } }] };
+        study.markState(`${profile}:${selected.id}`, { profile, proof_only: true });
+      } finally { await context.close().catch(() => {}); }
+    }
+    const completed = study.complete({ terminal_success: true, coverage_complete: true, proof_only: true,
+      signed_artifacts: Object.values(captures).map((frame) => ({ ...frame, kind: 'frame', producer: 'observe_reference.mjs' })) });
+    const boundStudy = { ...completed, progress: { file: path.basename(study.progressFile), bytes: fs.statSync(study.progressFile).size, sha256: sha(fs.readFileSync(study.progressFile)) },
+      progress_events: { file: path.basename(study.eventFile), bytes: fs.statSync(study.eventFile).size, sha256: sha(fs.readFileSync(study.eventFile)) } };
+    const record = { schema_version: SCHEMA_VERSION, tool: 'observe_reference.mjs', producer_script_sha256: PRODUCER_SCRIPT_SHA256,
+      runtime_identity: runtimeIdentity, dependencies: {
+        observer: { file: 'observe_reference.mjs', sha256: PRODUCER_SCRIPT_SHA256 }, structure_probe: { file: 'structure_probe.mjs', sha256: STRUCTURE_PROBE_SHA256 },
+        browser_evidence: { file: 'browser_evidence.mjs', sha256: BROWSER_EVIDENCE_SHA256 }, playwright_resolver: { file: 'playwright_resolver.mjs', sha256: PLAYWRIGHT_RESOLVER_SHA256 },
+        source_surface_watch: { file: 'source_surface_watch.mjs', sha256: SOURCE_SURFACE_WATCH_SHA256 }, source_study_controller: { file: 'source_study_controller.mjs', sha256: SOURCE_STUDY_CONTROLLER_SHA256 },
+        playwright: loaded.dependency, browser_executable: browserDependency },
+      id: args.id, url: args.url, requested_url: args.url, final_url: navigations[0].final_url, observed_at: new Date().toISOString(),
+      source_kind: 'proof-slice', source_status: 'complete', eligible_for_source_selection: false,
+      source_study: boundStudy, state_contract: { file: path.basename(stateContract.file), sha256: stateContract.sha256 },
+      states_by_viewport: states, first_screens: firstScreens, captures_by_viewport: captures,
+      proof_component_maps: proofComponentMaps, proof_document_styles: proofDocumentStyles, interaction_census_by_viewport: inventory,
+      frame_dir: path.basename(frameDir), frames, navigations,
+      coverage: { scope: 'primary-first-screen-selected-state-only', complete: false, proof_complete: true, recursive_routes: false, full_interaction_study: false } };
+    const file = path.join(args.outDir, `${args.id}-observation.json`);
+    writeJsonAtomically(file, record);
+    process.stdout.write(JSON.stringify({ ok: true, source_kind: 'proof-slice', eligible_for_source_selection: false,
+      observation: file, sha256: sha(fs.readFileSync(file)), profiles: ['wide', 'narrow'], source_state_id: selected.id,
+      disposition: 'internal-unverified-proof-source-only; first-screen gate has not run' }, null, 2) + '\n');
+  } catch (error) {
+    const terminal = error?.source_study ? error : study.terminate(error?.code || 'source-study-proof-capture-failed', String(error?.message || error),
+      { source_error: String(error?.message || error), media_problems: error?.media_problems || null,
+        closed_shadow_roots: error?.closed_shadow_roots || null, source_harness_gap: error?.source_harness_gap === true });
+    const failure = writeObservationFailureReport(args, stateContract, frameDir,
+      frames.map((frame) => ({ ...frame, file: path.basename(frame.file) })), runtimeIdentity, terminal);
+    throw Object.assign(error, { source_study: terminal.source_study, source_study_progress: terminal.source_study_progress,
+      source_study_failure: terminal.source_study_failure, failure_report: failure });
+  } finally { await browser?.close().catch(() => {}); }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  const leaseOptions = { output_dir: args.outDir, id: args.id, producer: 'observe_reference.mjs' };
+  const outputLease = acquireSourceStudyOutputLease(leaseOptions);
+  let lease;
+  try { lease = acquireSourceStudyRunnerLease(leaseOptions); return await observeMain(args); }
+  finally { lease?.release(); outputLease.release(); }
+}
+
+async function observeMain(args) {
+  for (const suffix of ['-observation.json', '-source-study-progress.json', '-source-study-progress.jsonl', '-source-study-failure.json']) {
+    if (fs.existsSync(path.join(args.outDir, `${args.id}${suffix}`))) {
+      throw Object.assign(new Error(`Observation output already exists for ${args.id}; use a fresh output directory to retain prior evidence.`), { code: 'source-study-existing-output' });
+    }
+  }
   const loaded = loadPlaywright();
   const pw = loaded.playwright;
   const stateContract = readStateContract(args.stateContract, args.id, args.url);
   const browserDependency = loadBrowserDependency(loaded, args.browserExecutable);
+  if (args.proofSource) return captureProofSource(args, stateContract, loaded, browserDependency);
   const browserExecutable = browserDependency.file;
   if (!loaded.dependency.resolved_file_sha256 || !browserExecutable) {
     fail("browser-dependency-identity", "The Playwright entry and exact browser executable must both be readable and hashable.");
@@ -780,14 +1233,28 @@ async function main() {
   });
   await installDomInspection(context);
   const page = await context.newPage();
+  const sourceStudy = createSourceStudyController({
+    output_dir: args.outDir, id: args.id, producer: 'observe_reference.mjs', source_kind: 'public-source',
+    required_completion_artifact_kinds: ['frame'],
+    abort: async () => { await context.close().catch(() => {}); },
+    partial_evidence: () => ({
+      frames: frames.map((frame) => ({ ...frame, file: `${path.basename(frameDir)}/${frame.file}` })),
+      interactions: interactions.slice(), notes: notes.slice(), navigations: navigations.slice(),
+    }),
+  });
 
   async function shotOn(targetPage, kind, note, viewport = { width: 1440, height: 900 }) {
     n += 1;
     const safeKind = String(kind).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     const file = `${args.id}-${String(n).padStart(5, "0")}-${safeKind}.png`;
-    const buf = await targetPage.screenshot({ path: path.join(frameDir, file) });
+    const buf = await sourceStudy.step(`screenshot:${safeKind}`,
+      () => targetPage.screenshot({ path: path.join(frameDir, file) }), {
+        screenshot: true, detail: { kind: safeKind, viewport },
+        abort: async () => { await targetPage.context().close().catch(() => {}); },
+      });
     const rec = { seq: n, kind: safeKind, file, bytes: buf.length, sha256: sha(buf), viewport, note: note || null };
     frames.push(rec);
+    sourceStudy.markFrame({ file: `${path.basename(frameDir)}/${file}`, sha256: rec.sha256, kind: safeKind });
     return rec;
   }
   const shot = (kind, note) => shotOn(page, kind, note);
@@ -797,12 +1264,49 @@ async function main() {
   };
 
   try {
-    const primaryNavigation = await navigateExact(page, args.url);
+    const primaryAmbientSelectors = stateContract.payload.states.filter((state) => state.trigger?.type === 'ambient').map((state) => state.trigger.target);
+    const primaryEarlyBaseline = await boundEvidenceShot(page, 'wide-primary-early-before-navigation', 'wide early source-surface baseline', { width: 1440, height: 900 });
+    const primaryEarlyWatch = await armEarlySourceSurfaceWatch(page, {
+      ambientSelectors: primaryAmbientSelectors, baseline: primaryEarlyBaseline, labelPrefix: 'wide-primary-early-autonomous-surface',
+      captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'wide early source-surface evidence', { width: 1440, height: 900 }),
+    });
+    sourceStudy.markRoute(args.url, { profile: 'wide', phase: 'primary-rest' });
+    const primaryNavigation = await sourceStudy.step('navigate:wide:primary-rest', () => navigateExact(page, args.url), {
+      detail: { url: args.url }, abort: async () => { await context.close().catch(() => {}); },
+    });
     navigations.push({ profile: "wide", purpose: "primary-rest", ...primaryNavigation });
     await page.evaluate(() => document.fonts?.ready).catch(() => {});
     await page.waitForTimeout(3000);
 
-    await requireUnblockedConsent(page, notes);
+    const primaryConsent = await requireUnblockedConsent(page, {
+      notes,
+      labelPrefix: 'wide-primary-consent',
+      captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'constrained consent disposition', { width: 1440, height: 900 }),
+    });
+    const primarySurfaceBaseline = await boundEvidenceShot(page, 'wide-primary-autonomous-baseline', 'wide source-surface baseline', { width: 1440, height: 900 });
+    let primarySurfaceWatch = await adoptEarlySourceSurfaceWatch(page, primaryEarlyWatch, {
+      ambientSelectors: primaryAmbientSelectors, baseline: primarySurfaceBaseline,
+      authorizedConsent: primaryConsent.dismissed ? [primaryConsent] : [], labelPrefix: 'wide-primary-autonomous-surface',
+      captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'wide source-surface evidence', { width: 1440, height: 900 }),
+    });
+    const closePrimarySurfaceWatch = async (phase) => {
+      if (!primarySurfaceWatch) return null;
+      const watch = primarySurfaceWatch;
+      // Clear ownership before async drain/stop so a failure cleanup cannot
+      // accidentally drain or stop the same page-local watch twice.
+      primarySurfaceWatch = null;
+      let report;
+      try {
+        report = await drainSourceSurfaceWatch(watch, {
+          labelPrefix: 'wide-primary-autonomous-surface',
+          captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label, 'wide source-surface evidence', { width: 1440, height: 900 }),
+        });
+      } finally { await stopSourceSurfaceWatch(watch); }
+      if (report.events.length) notes.push({ kind: 'autonomous-surface-watch', profile: 'wide', page_url: page.url(), report });
+      const undocumented = undocumentedSourceSurfaceError(report, { profile: 'wide', phase });
+      if (undocumented) throw undocumented;
+      return report;
+    };
 
     // --- at rest
     const rest0 = await shot("rest", "at rest, first frame");
@@ -830,15 +1334,43 @@ async function main() {
     const narrowContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
     await installDomInspection(narrowContext);
     const narrowPage = await narrowContext.newPage();
-    const narrowNavigation = await navigateExact(narrowPage, args.url);
+    const narrowEarlyBaseline = await boundEvidenceShot(narrowPage, 'narrow-primary-early-before-navigation', 'narrow early source-surface baseline', { width: 390, height: 844 });
+    const narrowEarlyWatch = await armEarlySourceSurfaceWatch(narrowPage, {
+      ambientSelectors: primaryAmbientSelectors, baseline: narrowEarlyBaseline, labelPrefix: 'narrow-primary-early-autonomous-surface',
+      captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'narrow early source-surface evidence', { width: 390, height: 844 }),
+    });
+    sourceStudy.markRoute(args.url, { profile: 'narrow', phase: 'primary-rest' });
+    const narrowNavigation = await sourceStudy.step('navigate:narrow:primary-rest', () => navigateExact(narrowPage, args.url), {
+      detail: { url: args.url }, abort: async () => { await narrowContext.close().catch(() => {}); },
+    });
     navigations.push({ profile: "narrow", purpose: "primary-rest", ...narrowNavigation });
     await narrowPage.evaluate(() => document.fonts?.ready).catch(() => {});
     await narrowPage.waitForTimeout(700);
-    await requireUnblockedConsent(narrowPage, notes);
+    const narrowConsent = await requireUnblockedConsent(narrowPage, {
+      notes,
+      labelPrefix: 'narrow-primary-consent',
+      captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'constrained consent disposition', { width: 390, height: 844 }),
+    });
+    const narrowSurfaceBaseline = await boundEvidenceShot(narrowPage, 'narrow-primary-autonomous-baseline', 'narrow source-surface baseline', { width: 390, height: 844 });
+    const narrowSurfaceWatch = await adoptEarlySourceSurfaceWatch(narrowPage, narrowEarlyWatch, {
+      ambientSelectors: primaryAmbientSelectors, baseline: narrowSurfaceBaseline,
+      authorizedConsent: narrowConsent.dismissed ? [narrowConsent] : [], labelPrefix: 'narrow-primary-autonomous-surface',
+      captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'narrow source-surface evidence', { width: 390, height: 844 }),
+    });
     const narrowFirstScreen = await narrowPage.evaluate(STRUCTURE_SCRIPT);
     const narrowFrame = await shotOn(narrowPage, "narrow-rest", "narrow first screen at rest", { width: 390, height: 844 });
     const narrowFrameFile = narrowFrame.file;
     const narrowMechanism = await mechanismPass(narrowPage);
+    let narrowSurfaceReport;
+    try {
+      narrowSurfaceReport = await drainSourceSurfaceWatch(narrowSurfaceWatch, {
+        labelPrefix: 'narrow-primary-autonomous-surface',
+        captureEvidence: (label, targetPage = narrowPage) => boundEvidenceShot(targetPage, label, 'narrow source-surface evidence', { width: 390, height: 844 }),
+      });
+    } finally { await stopSourceSurfaceWatch(narrowSurfaceWatch); }
+    if (narrowSurfaceReport.events.length) notes.push({ kind: 'autonomous-surface-watch', profile: 'narrow', page_url: args.url, report: narrowSurfaceReport });
+    const narrowUndocumented = undocumentedSourceSurfaceError(narrowSurfaceReport, { profile: 'narrow', phase: 'primary-pre-traversal' });
+    if (narrowUndocumented) throw narrowUndocumented;
     await narrowContext.close();
 
     // --- is anything on the first screen actually a video, not a photo
@@ -852,20 +1384,22 @@ async function main() {
     // first-N cutoff. Any surface that does not reach a terminal state blocks.
     let scrollMoved = 0;
     let steps = 0;
-    const scrollHoldTraversal = await traverseScrollSurfaces(page, { maxTicks: 240, settleMs: 120,
+    const scrollHoldTraversal = await sourceStudy.step('scroll-traversal:wide-primary', () => traverseScrollSurfaces(page, { maxTicks: 240, settleMs: 120,
       onTick: async (surface, tick) => {
-      steps += 1;
-      const a = await shot("scroll-arrive", `arrived at ${surface.kind}:${surface.selector_hint || surface.id} wheel step ${tick}`);
+       steps += 1;
+       sourceStudy.markTarget(`wide|scroll|${surface.id}|${tick}`, { phase: 'primary-scroll', surface: surface.id, tick });
+       const a = await shot("scroll-arrive", `arrived at ${surface.kind}:${surface.selector_hint || surface.id} wheel step ${tick}`);
       await page.waitForTimeout(HOLD_MS);
       const b = await shot("scroll-settle", `held for ${HOLD_MS}ms after wheel step ${tick}`);
       const moved = a.sha256 !== b.sha256;
       if (moved) scrollMoved += 1;
-      interactions.push({
+       interactions.push({
         type: "scroll-hold", surface: surface.id, step: tick, moved, frames: [a.seq, b.seq],
         detail: moved ? "Content changed while the page sat still here, so something animated into place." : "Nothing changed while the page sat still here.",
-      });
-      mech.mechanisms.push(...(await checkAmbientVideo(page)));
-    } });
+       });
+       sourceStudy.markEvent({ profile: 'wide', kind: 'scroll-hold', surface: surface.id, tick });
+       mech.mechanisms.push(...(await checkAmbientVideo(page)));
+    } }), { timeout_ms: 180_000, detail: { phase: 'primary-scroll' }, abort: async () => { await context.close().catch(() => {}); } });
     if (!scrollHoldTraversal.complete) throw new Error("Scroll-hold capture did not fully traverse every scroll surface.");
     // one line per distinct video, not one per scroll step it was visible on
     {
@@ -896,6 +1430,11 @@ async function main() {
       } catch (e) { box = null; }
       if (!box || box.width < 24 || box.height < 24) continue;
       hoverTried += 1;
+      const targetKey = await sourceStudy.step('target-identity:wide-primary-hover', () => el.evaluate((node) => {
+        const classes = typeof node.className === 'string' ? node.className.split(/\s+/).filter(Boolean).sort().join('.') : '';
+        return `${node.tagName.toLowerCase()}|${node.id || ''}|${node.getAttribute('data-dna-interaction-id') || ''}|${classes}`;
+      }), { timeout_ms: 10_000, detail: { ordinal: hoverTried }, abort: async () => { await context.close().catch(() => {}); } });
+      sourceStudy.markTarget(`wide|primary-hover|${targetKey}`, { ordinal: hoverTried });
       try {
         await page.mouse.move(4, 4);
         await page.waitForTimeout(200);
@@ -924,6 +1463,7 @@ async function main() {
         interactions.push({ type: "hover", moved, page_hash_changed: before.sha256 !== after.sha256,
           frames: [before.seq, after.seq], transition: duration,
           detail: moved ? "The page responded to the pointer." : "Nothing responded to the pointer here." });
+        sourceStudy.markEvent({ profile: 'wide', kind: 'hover', target_key: targetKey, moved });
       } catch { hoverFailed += 1; }
     }
     if (hoverFailed) throw new Error(`${hoverFailed} of ${hoverTried} visible hover targets could not be completely observed.`);
@@ -951,8 +1491,33 @@ async function main() {
       if (href) {
         await page.mouse.move(4, 4);
         const before = await shot("transition-before", "before following a link");
-        const transitionNavigation = await navigateExact(page, href, { timeout: 45000 });
+        // A page-scoped observer is destroyed by document navigation. Drain it
+        // while its evidence is still reachable, then arm a fresh early watch
+        // before the destination document begins. This is a lifecycle handoff,
+        // not permission to discard the first document's surface ledger.
+        await closePrimarySurfaceWatch('primary-before-transition');
+        const transitionEarlyBaseline = await boundEvidenceShot(page, 'wide-transition-early-before-navigation',
+          'wide transition early source-surface baseline', { width: 1440, height: 900 });
+        const transitionEarlyWatch = await armEarlySourceSurfaceWatch(page, {
+          ambientSelectors: primaryAmbientSelectors, baseline: transitionEarlyBaseline,
+          labelPrefix: 'wide-transition-early-autonomous-surface',
+          captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label,
+            'wide transition early source-surface evidence', { width: 1440, height: 900 }),
+        });
+        sourceStudy.markRoute(href, { profile: 'wide', phase: 'primary-transition' });
+        const transitionNavigation = await sourceStudy.step('navigate:wide:primary-transition', () => navigateExact(page, href, { timeout: 45000 }), {
+          timeout_ms: 45_000, detail: { url: href }, abort: async () => { await context.close().catch(() => {}); },
+        });
         navigations.push({ profile: "wide", purpose: "transition", ...transitionNavigation });
+        await page.evaluate(() => document.fonts?.ready).catch(() => {});
+        const transitionSurfaceBaseline = await boundEvidenceShot(page, 'wide-transition-autonomous-baseline',
+          'wide transition source-surface baseline', { width: 1440, height: 900 });
+        primarySurfaceWatch = await adoptEarlySourceSurfaceWatch(page, transitionEarlyWatch, {
+          ambientSelectors: primaryAmbientSelectors, baseline: transitionSurfaceBaseline,
+          labelPrefix: 'wide-transition-autonomous-surface',
+          captureEvidence: (label, targetPage = page) => boundEvidenceShot(targetPage, label,
+            'wide transition source-surface evidence', { width: 1440, height: 900 }),
+        });
         await page.waitForTimeout(260);
         const during = await shot("transition-during", "shortly after navigation started");
         const duringActivity = await page.evaluate(() => document.getAnimations().map((animation) => {
@@ -980,7 +1545,10 @@ async function main() {
         };
       }
     } catch (e) {
-      throw new Error(`Exact transition navigation failed: ${String(e).slice(0, 220)}`);
+      if (e?.code) throw e;
+      const transitionError = new Error(`Exact transition navigation failed: ${String(e).slice(0, 220)}`);
+      transitionError.code = 'transition-navigation-failed';
+      throw transitionError;
     }
     interactions.push(transition);
     if (transition.moved) mech.mechanisms.push({ type: "page-transition", detail: "the next page arrived animated or staged" });
@@ -989,19 +1557,21 @@ async function main() {
     // Exact source-state sheets are producer-authored contracts, not names
     // guessed by the observer. Separately, every recursively discovered page
     // and every native/transform scroll surface is traversed at both profiles.
+    await closePrimarySurfaceWatch('primary-pre-traversal');
+
     const statesByViewport = {
       wide: await captureSourceStates(browser, stateContract.payload, { name: "wide", width: 1440, height: 900 },
-        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 1440, height: 900 })),
+        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 1440, height: 900 }), notes, sourceStudy),
       narrow: await captureSourceStates(browser, stateContract.payload, { name: "narrow", width: 390, height: 844 },
-        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 390, height: 844 })),
+        (targetPage, label) => boundEvidenceShot(targetPage, label, "source state interaction evidence", { width: 390, height: 844 }), notes, sourceStudy),
     };
     const wideSiteTraversal = await studyRecursiveSite(page, args.url, "wide", stateContract.payload.states,
-      (label, evidencePage = page) => boundEvidenceShot(evidencePage, `wide-${label}`, "wide interaction-census evidence", { width: 1440, height: 900 }));
+      (label, evidencePage = page) => boundEvidenceShot(evidencePage, `wide-${label}`, "wide interaction-census evidence", { width: 1440, height: 900 }), notes, sourceStudy);
     const narrowSiteContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
     await installDomInspection(narrowSiteContext);
     const narrowSitePage = await narrowSiteContext.newPage();
     const narrowSiteTraversal = await studyRecursiveSite(narrowSitePage, args.url, "narrow", stateContract.payload.states,
-      (label, evidencePage = narrowSitePage) => boundEvidenceShot(evidencePage, `narrow-${label}`, "narrow interaction-census evidence", { width: 390, height: 844 }));
+      (label, evidencePage = narrowSitePage) => boundEvidenceShot(evidencePage, `narrow-${label}`, "narrow interaction-census evidence", { width: 390, height: 844 }), notes, sourceStudy);
     await narrowSiteContext.close();
     if (!wideSiteTraversal.complete || !narrowSiteTraversal.complete) throw new Error("Recursive wide+narrow site traversal is incomplete.");
 
@@ -1029,7 +1599,9 @@ async function main() {
     };
     if (!interactionCensusByViewport.wide.complete || !interactionCensusByViewport.narrow.complete ||
         interactionCensusByViewport.wide.truncated || interactionCensusByViewport.narrow.truncated) {
-      throw new Error("Uncapped wide+narrow interaction census is incomplete.");
+      const profile = !interactionCensusByViewport.wide.complete || interactionCensusByViewport.wide.truncated ? 'wide' : 'narrow';
+      throw interactionCensusIncompleteError(interactionCensusByViewport[profile],
+        { phase: 'wide-narrow-aggregate', source_state_id: null, pass: 1 });
     }
     mech.mechanisms = finalizeMechanisms(combinedWide.mechanisms);
     mech.score = combinedWide.score;
@@ -1077,6 +1649,15 @@ async function main() {
           detail: pageRecord.dead_end }] : []),
       ])),
     ];
+    const sourceStudySnapshot = sourceStudy.complete({
+      terminal_success: true,
+      signed_artifacts: [{ kind: 'frame', file: `${path.basename(frameDir)}/${rest0.file}`,
+        bytes: rest0.bytes, sha256: rest0.sha256, producer: 'observe_reference.mjs' }],
+      final_url: primaryNavigation.final_url,
+    });
+    const sourceStudyBinding = { ...sourceStudySnapshot,
+      progress: { file: path.basename(sourceStudy.progressFile), bytes: fs.statSync(sourceStudy.progressFile).size, sha256: sha(fs.readFileSync(sourceStudy.progressFile)) },
+      progress_events: { file: path.basename(sourceStudy.eventFile), bytes: fs.statSync(sourceStudy.eventFile).size, sha256: sha(fs.readFileSync(sourceStudy.eventFile)) } };
 
     const record = {
       schema_version: SCHEMA_VERSION,
@@ -1084,6 +1665,8 @@ async function main() {
       producer_script_sha256: PRODUCER_SCRIPT_SHA256,
       runtime_identity: { "observe_reference.mjs": PRODUCER_SCRIPT_SHA256, "structure_probe.mjs": STRUCTURE_PROBE_SHA256,
         "browser_evidence.mjs": BROWSER_EVIDENCE_SHA256, "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
+        "source_surface_watch.mjs": SOURCE_SURFACE_WATCH_SHA256,
+        "source_study_controller.mjs": SOURCE_STUDY_CONTROLLER_SHA256,
         "playwright-entry": loaded.dependency.resolved_file_sha256,
         "browser-executable": browserExecutableSha256 },
       dependencies: {
@@ -1091,10 +1674,13 @@ async function main() {
         structure_probe: { file: "structure_probe.mjs", sha256: STRUCTURE_PROBE_SHA256 },
         browser_evidence: { file: "browser_evidence.mjs", sha256: BROWSER_EVIDENCE_SHA256 },
         playwright_resolver: { file: "playwright_resolver.mjs", sha256: PLAYWRIGHT_RESOLVER_SHA256 },
+        source_surface_watch: { file: "source_surface_watch.mjs", sha256: SOURCE_SURFACE_WATCH_SHA256 },
+        source_study_controller: { file: "source_study_controller.mjs", sha256: SOURCE_STUDY_CONTROLLER_SHA256 },
         playwright: loaded.dependency,
         browser_executable: browserDependency,
       },
       id: args.id,
+      source_kind: 'public-source', source_status: 'complete', eligible_for_source_selection: true,
       label: args.label || null,
       url: args.url,
       requested_url: primaryNavigation.requested_url,
@@ -1103,6 +1689,7 @@ async function main() {
       viewport: { width: 1440, height: 900 },
       frame_dir: path.basename(frameDir),
       frames,
+      source_study: sourceStudyBinding,
       captures_by_viewport: capturesByViewport,
       discovery_metadata: {
         wide: { discovered_urls: wideSiteTraversal.discovered_urls, visited_urls: wideSiteTraversal.visited_urls,
@@ -1166,11 +1753,42 @@ async function main() {
       ) + "\n"
     );
   } catch (error) {
-    fail("observation-failed", String(error).slice(0, 400));
+    if (!error?.source_study && !sourceStudy.closed) {
+      const terminal = sourceStudy.terminate(error?.code || 'source-study-observation-failed',
+        'Observer terminated before a complete source observation could be emitted; partial evidence is ineligible.',
+        { source_code: error?.code || null, source_error: String(error?.message || error) });
+      error.source_study = terminal.source_study;
+      error.source_study_progress = terminal.source_study_progress;
+      error.source_study_failure = terminal.source_study_failure;
+    }
+    const failureReport = writeObservationFailureReport(args, stateContract, frameDir, frames, {
+      "observe_reference.mjs": PRODUCER_SCRIPT_SHA256,
+      "structure_probe.mjs": STRUCTURE_PROBE_SHA256,
+      "browser_evidence.mjs": BROWSER_EVIDENCE_SHA256,
+      "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
+      "source_surface_watch.mjs": SOURCE_SURFACE_WATCH_SHA256,
+      "source_study_controller.mjs": SOURCE_STUDY_CONTROLLER_SHA256,
+      "playwright-entry": loaded.dependency.resolved_file_sha256,
+      "browser-executable": browserExecutableSha256,
+    }, error);
+    const summary = error?.census_diagnostic
+      ? `${String(error.message)} Review the generated incomplete-census report; it is not selection evidence.`
+      : String(error?.message || error).slice(0, 1000);
+    await browser.close().catch(() => {});
+    // Propagate only after retaining the failure artifact. The outer main()
+    // finally owns both leases; process.exit here would strand its live slots.
+    throw Object.assign(error, { message: summary, failure_report: failureReport });
   } finally {
     await browser.close().catch(() => {});
   }
 }
 
-const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-if (invokedDirectly) main();
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (invokedDirectly) main().catch((error) => emitFailure(error?.code || 'observation-failed', String(error?.message || error), {
+  ...(error?.terminal_details || {}),
+  interaction_census: error?.census_diagnostic
+    ? { profile: error.census_diagnostic.profile, context: error.census_diagnostic.context,
+      failures: error.census_diagnostic.failures.length } : null,
+  failure_report: error?.failure_report || null, source_study: error?.source_study || null,
+  source_study_progress: error?.source_study_progress || null, source_study_failure: error?.source_study_failure || null,
+}));

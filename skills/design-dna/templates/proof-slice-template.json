@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "record_type": "design-dna-proof-slice",
+  "proof_slice_id": "product-story-opening",
+  "status": "internal-unverified",
+  "brief": {
+    "path": ".design-dna/brief.md",
+    "sha256": "__REPLACE_WITH_CURRENT_BRIEF_SHA256__",
+    "current_at": "__REPLACE_WITH_CURRENT_ISO_8601_TIMESTAMP__"
+  },
+  "source": {
+    "source_kind": "proof-slice",
+    "id": "proof-source-product-story",
+    "observation": ".design-dna/references/proof-source-product-story-observation.json",
+    "sha256": "__REPLACE_WITH_GENERATED_PROOF_SOURCE_OBSERVATION_SHA256__",
+    "url": "https://www.apple.com/airpods-pro/",
+    "states": {
+      "wide": {
+        "id": "rest",
+        "sha256": "__REPLACE_WITH_CANONICAL_WIDE_SOURCE_STATE_SHA256__"
+      },
+      "narrow": {
+        "id": "rest",
+        "sha256": "__REPLACE_WITH_CANONICAL_NARROW_SOURCE_STATE_SHA256__"
+      }
+    },
+    "arrangement_frames": {
+      "wide": {
+        "path": ".design-dna/references/__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME__.png",
+        "bytes": 1,
+        "sha256": "__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME_SHA256__"
+      },
+      "narrow": {
+        "path": ".design-dna/references/__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME__.png",
+        "bytes": 1,
+        "sha256": "__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME_SHA256__"
+      }
+    }
+  },
+  "implementation": {
+    "source_file": "src/proof-slice.tsx",
+    "source_file_sha256": "__REPLACE_WITH_EXACT_PROOF_SOURCE_SHA256__",
+    "build_output_path": "index.html",
+    "proof_url": "http://127.0.0.1:__REPLACE_WITH_LOCAL_PROOF_PORT__/",
+    "primary_component_id": "product-story-opening",
+    "visible_label": "Internal unverified proof slice — not for public release"
+  },
+  "visible_components": [
+    {
+      "component_id": "product-story-opening",
+      "source_selector": "__REPLACE_WITH_EXACT_SOURCE_SELECTOR__",
+      "source_component_key": "__REPLACE_WITH_EXACT_SOURCE_COMPONENT_KEY__",
+      "content": {
+        "source_text_sha256": "__REPLACE_WITH_GENERATED_SOURCE_COMPONENT_TEXT_SHA256__",
+        "build_text_sha256": "__REPLACE_WITH_GENERATED_SOURCE_COMPONENT_TEXT_SHA256__"
+      },
+      "styles": {
+        "record": {
+          "path": ".design-dna/references/proof-source-product-story-styles.json",
+          "sha256": "__REPLACE_WITH_SOURCE_STYLE_RECORD_SHA256__"
+        },
+        "properties": [
+          "__REPLACE_WITH_EXACT_MEASURED_CSS_PROPERTY__"
+        ],
+        "tuples": [
+          {
+            "viewport": "wide",
+            "source_state_id": "rest",
+            "property": "__REPLACE_WITH_EXACT_MEASURED_CSS_PROPERTY__",
+            "source_value": "__REPLACE_WITH_WIDE_SOURCE_VALUE__",
+            "build_value": "__REPLACE_WITH_WIDE_SOURCE_VALUE__"
+          },
+          {
+            "viewport": "narrow",
+            "source_state_id": "rest",
+            "property": "__REPLACE_WITH_EXACT_MEASURED_CSS_PROPERTY__",
+            "source_value": "__REPLACE_WITH_NARROW_SOURCE_VALUE__",
+            "build_value": "__REPLACE_WITH_NARROW_SOURCE_VALUE__"
+          }
+        ]
+      },
+      "media": {
+        "kind": "none"
+      }
+    }
+  ],
+  "transfer_coverage": {
+    "layout": ["product-story-opening"],
+    "type": ["product-story-opening"],
+    "color": ["product-story-opening"],
+    "spacing": ["product-story-opening"],
+    "control": {
+      "status": "source-absent",
+      "component_ids": [],
+      "evidence": {
+        "wide": {
+          "path": ".design-dna/references/__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME__.png",
+          "bytes": 1,
+          "sha256": "__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME_SHA256__"
+        },
+        "narrow": {
+          "path": ".design-dna/references/__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME__.png",
+          "bytes": 1,
+          "sha256": "__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME_SHA256__"
+        }
+      }
+    },
+    "media": {
+      "status": "source-absent",
+      "component_ids": [],
+      "evidence": {
+        "wide": {
+          "path": ".design-dna/references/__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME__.png",
+          "bytes": 1,
+          "sha256": "__REPLACE_WITH_WIDE_GENERATED_SETTLED_FRAME_SHA256__"
+        },
+        "narrow": {
+          "path": ".design-dna/references/__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME__.png",
+          "bytes": 1,
+          "sha256": "__REPLACE_WITH_NARROW_GENERATED_SETTLED_FRAME_SHA256__"
+        }
+      }
+    }
+  }
+}

@@ -40,7 +40,9 @@ import { browserExecutableIdentity, discoverBrowserExecutable, resolvePlaywright
 const TOOL_NAME = "extract_reference_styles.mjs";
 const SCHEMA_VERSION = 3;
 export const REQUIRED_SERVED_RELOADS = 2;
-const SCRIPT_PATH = path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+import { fileURLToPath } from "node:url";
+import { firstScreenManifest } from "./construction_phase.mjs";
+const SCRIPT_PATH = path.resolve(fileURLToPath(import.meta.url));
 const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(readFileSync(SCRIPT_PATH)).digest("hex");
 const BROWSER_EVIDENCE_SHA256 = createHash("sha256").update(readFileSync(path.join(path.dirname(SCRIPT_PATH), "browser_evidence.mjs"))).digest("hex");
 const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(readFileSync(path.join(path.dirname(SCRIPT_PATH), "observe_reference.mjs"))).digest("hex");
@@ -310,6 +312,87 @@ const EXTRACT = `(() => {
   const font_faces = roots.flatMap(({ root }) => root.nodeType === 9 && root.fonts ? [...root.fonts] : [])
     .map((face) => ({ family: String(face.family || '').replace(/["']/g, ''), weight: face.weight,
       style: face.style, stretch: face.stretch, status: face.status }));
+  // Exact source-component/property tuples for construction binding.  A
+  // page-wide colour/font pool is not evidence that an arbitrary selector had
+  // that value.  Only document-root elements get a generated CSS path; shadow
+  // content without an explicit source-owned selector remains unbindable.
+  const cssEscape = (value) => window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/[^a-zA-Z0-9_-]/g, (char) => String.fromCharCode(92) + char);
+  const exactSelector = (element) => {
+    if (element.id) return '#' + cssEscape(element.id);
+    const interaction = element.getAttribute('data-dna-interaction-id');
+    if (interaction) {
+      const targetSelector = '[data-dna-interaction-id="' + cssEscape(interaction) + '"]';
+      if (document.querySelectorAll(targetSelector).length === 1) return targetSelector;
+    }
+    const parts = []; let current = element;
+    while (current && current.nodeType === 1 && current !== document.documentElement) {
+      const parent = current.parentElement; if (!parent) return null;
+      const siblings = [...parent.children].filter((item) => item.tagName === current.tagName);
+      const index = siblings.indexOf(current); if (index < 0) return null;
+      parts.unshift(current.tagName.toLowerCase() + ':nth-of-type(' + (index + 1) + ')');
+      current = parent;
+    }
+    const selector = 'html > ' + parts.join(' > ');
+    try { return document.querySelectorAll(selector).length === 1 ? selector : null; } catch { return null; }
+  };
+  const component_styles = all('*').map((element) => {
+    const value = vis(element); if (!value) return null;
+    const selector = exactSelector(element); if (!selector) return null;
+    const style = value.s;
+    const component_key = element.id ? 'id:' + element.id : element.getAttribute('data-design-dna-component') ?
+      'component:' + element.getAttribute('data-design-dna-component') :
+      'selector:' + selector;
+    const box = element.getBoundingClientRect();
+    const parentBox = element.parentElement?.getBoundingClientRect() || {left: 0, top: 0};
+    const directTextNodes = [...element.childNodes].filter((node) => node.nodeType === 3 && node.nodeValue.trim());
+    const lineTops = new Set(directTextNodes.flatMap((node) => {const range = document.createRange(); range.selectNodeContents(node); return [...range.getClientRects()].map((rect) => Math.round(rect.top));}));
+    let previous = element.previousElementSibling;
+    while (previous && !vis(previous)) previous = previous.previousElementSibling;
+    return { selector, component_key, media: {tag: element.tagName.toLowerCase(),
+      source_url: element.currentSrc || element.src || (style.backgroundImage !== 'none' ? style.backgroundImage : null)}, content_facts: {
+      text: directTextNodes.map((node) => node.nodeValue).join('').replace(/\\s+/g, ' ').trim(),
+      tag: element.tagName.toLowerCase(), role: element.getAttribute('role'), line_count: lineTops.size,
+      parent_selector: element.parentElement ? exactSelector(element.parentElement) : null,
+      parent_tag: element.parentElement?.tagName.toLowerCase() || null,
+      previous_selector: previous ? exactSelector(previous) : null,
+    }, geometry: {
+      left: Math.round(box.left - parentBox.left), top: Math.round(box.top - parentBox.top),
+      width: Math.round(box.width), height: Math.round(box.height),
+    }, properties: {
+      'font-family': style.fontFamily, 'font-size': style.fontSize, 'font-weight': style.fontWeight,
+      'line-height': style.lineHeight, 'letter-spacing': style.letterSpacing, 'color': style.color,
+      'background-color': style.backgroundColor, 'background-image': style.backgroundImage,
+      'border-color': style.borderColor, 'border-radius': style.borderRadius, 'box-shadow': style.boxShadow,
+      'padding': style.padding, 'gap': style.gap, 'display': style.display,
+      'margin': style.margin, 'width': style.width, 'height': style.height,
+      'min-height': style.minHeight, 'min-width': style.minWidth, 'max-width': style.maxWidth,
+      'box-sizing': style.boxSizing, 'align-items': style.alignItems, 'justify-content': style.justifyContent,
+      'position': style.position, 'top': style.top, 'left': style.left,
+      'object-fit': style.objectFit, 'object-position': style.objectPosition,
+      'grid-template-columns': style.gridTemplateColumns, 'transform': style.transform,
+      'transition-property': style.transitionProperty, 'transition-duration': style.transitionDuration,
+      'transition-timing-function': style.transitionTimingFunction, 'cursor': style.cursor,
+    }};
+  }).filter(Boolean).sort((a, b) => a.selector.localeCompare(b.selector));
+  const component_pseudo_styles = all('*').flatMap((element) => {
+    const value = vis(element); if (!value) return [];
+    const selector = exactSelector(element); if (!selector) return [];
+    const component_key = element.id ? 'id:' + element.id : element.getAttribute('data-design-dna-component') ?
+      'component:' + element.getAttribute('data-design-dna-component') : 'selector:' + selector;
+    return ['::before', '::after'].flatMap((pseudo) => {
+      const style = getComputedStyle(element, pseudo);
+      const content = String(style.content || '');
+      const paints = (content !== 'none' && content !== 'normal') || style.backgroundImage !== 'none' ||
+        style.backgroundColor !== 'rgba(0, 0, 0, 0)' || parseFloat(style.borderTopWidth) > 0 || style.boxShadow !== 'none';
+      if (!paints || style.display === 'none' || Number(style.opacity) === 0) return [];
+      return [{ selector, component_key, pseudo, properties: {
+        'content': content, 'color': style.color, 'background-color': style.backgroundColor,
+        'background-image': style.backgroundImage, 'border-color': style.borderColor,
+        'border-radius': style.borderRadius, 'box-shadow': style.boxShadow,
+        'transform': style.transform, 'opacity': style.opacity,
+      }}];
+    });
+  }).sort((a, b) => (a.selector + '|' + a.pseudo).localeCompare(b.selector + '|' + b.pseudo));
 
   return {
     viewport: { w: innerWidth, h: innerHeight },
@@ -326,6 +409,8 @@ const EXTRACT = `(() => {
     borders: [...borders].slice(0, 12),
     surfaces: [...surfaceMap.values()].sort((a, b) => b.area - a.area).slice(0, 120),
     pseudo_elements,
+    component_styles,
+    component_pseudo_styles,
     font_faces: font_faces.sort((a, b) => a.family.localeCompare(b.family)),
     numbers: [...numbers].sort((a, b) => a - b),
     inspection,
@@ -400,11 +485,11 @@ const uniqueRows = (rows) => {
 function mergePasses(passes) {
   const merged = {
     measured_viewport: passes[0]?.viewport || null, type: [], controls: [], transitions: [], sections: [],
-    colors: [], radii: [], borders: [], surfaces: [], pseudo_elements: [], font_faces: [], numbers: [], inspections: [],
+    colors: [], radii: [], borders: [], surfaces: [], pseudo_elements: [], component_styles: [], component_pseudo_styles: [], font_faces: [], numbers: [], inspections: [],
   };
   const numbers = new Set();
   for (const pass of passes) {
-    for (const key of ["type", "controls", "transitions", "sections", "colors", "surfaces", "pseudo_elements", "font_faces"]) {
+    for (const key of ["type", "controls", "transitions", "sections", "colors", "surfaces", "pseudo_elements", "component_styles", "component_pseudo_styles", "font_faces"]) {
       merged[key].push(...(pass[key] || []));
     }
     if (pass.inspection) merged.inspections.push(pass.inspection);
@@ -412,16 +497,16 @@ function mergePasses(passes) {
     for (const value of pass.borders || []) if (!merged.borders.includes(value)) merged.borders.push(value);
     for (const value of pass.numbers || []) numbers.add(value);
   }
-  for (const key of ["type", "controls", "transitions", "sections", "colors", "surfaces", "pseudo_elements", "font_faces"]) {
+  for (const key of ["type", "controls", "transitions", "sections", "colors", "surfaces", "pseudo_elements", "component_styles", "component_pseudo_styles", "font_faces"]) {
     merged[key] = uniqueRows(merged[key]);
   }
   merged.numbers = [...numbers].sort((a, b) => a - b);
   return merged;
 }
 
-async function captureState(page, state, holds, firstScreen = false) {
+async function captureState(page, state, holds, firstScreen = false, sourceOnly = false) {
   await page.evaluate((value) => { window.__dnaFirstScreenOnly = value; }, firstScreen);
-  const application = await applyManifestState(page, state);
+  const application = await applyManifestState(page, state, { sourceOnly });
   const passes = [await page.evaluate(EXTRACT)];
   if (firstScreen) return { attempted: 1, covered: 1, passes, application, scroll: { complete: true, surfaces: [] } };
   const scroll = await traverseScrollSurfaces(page, { maxTicks: Math.max(240, holds * 40), settleMs: 300,
@@ -475,8 +560,9 @@ function resolveInputBinding(args) {
         !observation.states_by_viewport?.narrow?.[state.mapped_reference_state_id])) {
     fail("manifest-binding", "Mapped observation bytes and every wide+narrow source-state ID must be exact and current.");
   }
+  const activeStates = args.firstScreen ? firstScreenManifest({...manifest, __file: file}, [args.routeKey]).routes[0].states : route.states;
   return { sourceObservation: null, manifest: { id: manifest.manifest_id, file: args.manifest,
-    sha256: createHash("sha256").update(readFileSync(file)).digest("hex") }, states: route.states };
+    sha256: createHash("sha256").update(readFileSync(file)).digest("hex") }, states: activeStates };
 }
 
 async function main() {
@@ -521,7 +607,17 @@ async function main() {
           if (restLoads.length !== REQUIRED_SERVED_RELOADS || new Set(restLoads.map((entry) => entry.sha256)).size !== 1) {
             fail("served-content-reload-drift", `${args.id}/${viewport.name}/${state.id} returned different response-body identities across its two required exact loads.`);
           }
-          const result = await captureState(page, state, args.holds, args.firstScreen);
+          const result = await captureState(page, state, args.holds, args.firstScreen, Boolean(binding.sourceObservation));
+          for (const pass of result.passes) {
+            pass.profile = viewport.name;
+            pass.state_id = state.id;
+            pass.component_styles = (pass.component_styles || []).map((row) => ({
+              ...row, profile: viewport.name, state_id: state.id,
+            }));
+            pass.component_pseudo_styles = (pass.component_pseudo_styles || []).map((row) => ({
+              ...row, profile: viewport.name, state_id: state.id,
+            }));
+          }
           passes.push(...result.passes);
           const inspectionComplete = result.passes.every((pass) => pass.inspection?.complete !== false);
           stateCoverage.push({ viewport: viewport.name, state_id: state.id, state_kind: state.kind,
@@ -567,6 +663,7 @@ async function main() {
       schema_version: SCHEMA_VERSION,
       producer_script_sha256: PRODUCER_SCRIPT_SHA256,
       runtime_identity: { "extract_reference_styles.mjs": PRODUCER_SCRIPT_SHA256,
+        "construction_phase.mjs": createHash('sha256').update(readFileSync(path.join(path.dirname(SCRIPT_PATH), 'construction_phase.mjs'))).digest('hex'),
         "browser_evidence.mjs": BROWSER_EVIDENCE_SHA256,
         "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
         "playwright-entry": loaded.dependency.resolved_file_sha256,
@@ -610,5 +707,5 @@ async function main() {
 }
 
 const invokedDirectly = process.argv[1]
-  && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  && path.resolve(process.argv[1]) === SCRIPT_PATH;
 if (invokedDirectly) main();

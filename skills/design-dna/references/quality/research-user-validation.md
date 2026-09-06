@@ -41,8 +41,8 @@ For every fresh Enterprise Candidate public website, use the stricter
 requires an exact audience/task/content/brand/operational selection brief;
 quality-gated discovery through curated or awarded sources; complete
 wide/narrow, page, progression, and state study of every serious finalist; a
-candidate comparison with concrete selection and rejection reasons; at least
-six strong references from at least three sources; at least three
+candidate comparison with concrete selection and rejection reasons; a count
+justified by coverage and multiple qualified references from multiple sources; at least three
 counterexamples; and a source-bound synthesis before the first visual
 candidate. A gallery is discovery material, not proof of brief fit, usability,
 truth, or permission to copy another brand. One selected reference supplies

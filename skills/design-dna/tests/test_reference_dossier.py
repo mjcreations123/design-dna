@@ -10,9 +10,11 @@ source spread rather than a quota, and selection must fit the exact brief.
 from __future__ import annotations
 
 import concurrent.futures
+from collections import OrderedDict
 import importlib.util
 import hashlib
 import json
+import math
 import os
 import shutil
 import struct
@@ -41,43 +43,71 @@ def load_initializer():
 INITIALIZER = load_initializer()
 
 # Schema-4 fixtures intentionally contain the full 90s x 15fps wide/narrow
-# frame ledger. Most frames are hard links because a settled test page can
-# render identical pixels. Cache only by the filesystem's content identity;
-# size/mtime changes invalidate the entry, so negative drift tests retain the
-# exact production semantics without hashing and decoding one inode 1,200
-# times per profile.
+# frame ledger. Frames use independent ordinary files so mutable hard-link
+# aliases never masquerade as contained evidence. Every hash and validator
+# invocation reads current inputs. Only the pure successful PNG decode may be
+# reused, after rereading the exact bytes and size; metadata is never content
+# identity. Full recording-validation results are never cached.
 _ORIGINAL_FILE_SHA256 = INITIALIZER.file_sha256
 _ORIGINAL_VERIFY_PNG = INITIALIZER.verify_png_artifact
 _ORIGINAL_RECORDING_FAILURES = INITIALIZER.reference_recording_failures
-_SHA_CACHE: dict[tuple[int, int, int, int], tuple[int, str]] = {}
-_PNG_CACHE: dict[tuple[int, int, int, int], tuple[int, int]] = {}
+_PNG_CACHE: OrderedDict[tuple[object, ...], tuple[int, int]] = OrderedDict()
+_PNG_CACHE_MAX_ENTRIES = 128
+_PNG_CACHE_MAX_ITEM_BYTES = 64 * 1024
 
 
-def _artifact_identity(path: Path) -> tuple[int, int, int, int]:
-    stat = path.stat()
-    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns)
+class _PngByteSnapshot:
+    """The production decoder's only successful inputs are size and PNG bytes.
+
+    Give that unchanged decoder one immutable snapshot so an A/B/A disk race
+    cannot attach B's validation result to A's cache key. Unexpected future
+    path operations fail rather than silently falling back to live disk.
+    """
+    def __init__(self, path: Path, observed_stat: os.stat_result, data: bytes | None):
+        self.path, self.observed_stat, self.data = path, observed_stat, data
+
+    def stat(self):
+        return self.observed_stat
+
+    def read_bytes(self):
+        if self.data is None:
+            raise AssertionError("The production PNG decoder changed its pre-read bounds; revisit this test-only optimization.")
+        return self.data
+
+    def __str__(self):
+        return str(self.path)
 
 
 def _cached_file_sha256(path: Path) -> tuple[int, str]:
-    key = _artifact_identity(path)
-    if key not in _SHA_CACHE:
-        _SHA_CACHE[key] = _ORIGINAL_FILE_SHA256(path)
-    return _SHA_CACHE[key]
+    """Historical helper name; hashes are deliberately never cached."""
+    return _ORIGINAL_FILE_SHA256(path)
 
 
 def _cached_verify_png(path: Path) -> tuple[int, int]:
-    key = _artifact_identity(path)
-    if key not in _PNG_CACHE:
-        _PNG_CACHE[key] = _ORIGINAL_VERIFY_PNG(path)
-    return _PNG_CACHE[key]
+    try:
+        observed = path.stat()
+        # Match the decoder's existing pre-read bound; do not read a giant
+        # invalid file merely to look it up in an optimization table.
+        data = path.read_bytes() if 45 <= observed.st_size <= 128 * 1024 * 1024 else None
+    except OSError as exc:
+        raise INITIALIZER.StateError("render-evidence-image-invalid", str(exc), path=path) from exc
+    key = (observed.st_size, data, _ORIGINAL_VERIFY_PNG, getattr(_ORIGINAL_VERIFY_PNG, "__code__", None))
+    if data is not None and key in _PNG_CACHE:
+        _PNG_CACHE.move_to_end(key)
+        return _PNG_CACHE[key]
+    try:
+        dimensions = _ORIGINAL_VERIFY_PNG(_PngByteSnapshot(path, observed, data))
+    except INITIALIZER.StateError as exc:
+        exc.path = path
+        raise
+    if data is not None and len(data) <= _PNG_CACHE_MAX_ITEM_BYTES:
+        _PNG_CACHE[key] = dimensions
+        if len(_PNG_CACHE) > _PNG_CACHE_MAX_ENTRIES:
+            _PNG_CACHE.popitem(last=False)
+    return dimensions
 
 
-INITIALIZER.file_sha256 = _cached_file_sha256
 INITIALIZER.verify_png_artifact = _cached_verify_png
-
-_RECORDING_VALIDATION_CACHE: dict[
-    tuple[str, str, str, str], tuple[tuple[str, ...], frozenset[tuple[str, int]]]
-] = {}
 
 
 def _cached_recording_failures(
@@ -89,21 +119,10 @@ def _cached_recording_failures(
     state_contract: Path,
     state_contract_sha256: str,
     expected_reference_id: str,
+    signature_kind: str | None = "motion",
 ) -> tuple[list[str], set[tuple[str, int]]]:
-    # The complete immutable ledger is validated once for each byte-identical
-    # fixture. Cache hits are hard-link clones of those same generated files;
-    # malformed schema/tool/duration/event variants have distinct record or
-    # ledger hashes and therefore still execute the production validator.
-    key = (
-        expected_reference_id,
-        _ORIGINAL_FILE_SHA256(recording)[1],
-        _ORIGINAL_FILE_SHA256(ledger)[1],
-        _ORIGINAL_FILE_SHA256(state_contract)[1],
-    )
-    cached = _RECORDING_VALIDATION_CACHE.get(key)
-    if cached is not None:
-        return list(cached[0]), set(cached[1])
-    failures, events = _ORIGINAL_RECORDING_FAILURES(
+    """Historical helper name; every argument reaches the production validator."""
+    return _ORIGINAL_RECORDING_FAILURES(
         payload,
         recording=recording,
         ledger_payload=ledger_payload,
@@ -111,12 +130,8 @@ def _cached_recording_failures(
         state_contract=state_contract,
         state_contract_sha256=state_contract_sha256,
         expected_reference_id=expected_reference_id,
+        signature_kind=signature_kind,
     )
-    _RECORDING_VALIDATION_CACHE[key] = (tuple(failures), frozenset(events))
-    return failures, events
-
-
-INITIALIZER.reference_recording_failures = _cached_recording_failures
 
 _RECORDING_CACHE_TEMP = tempfile.TemporaryDirectory(prefix="design-dna-recording-fixtures-")
 _RECORDING_CACHE_ROOT = Path(_RECORDING_CACHE_TEMP.name)
@@ -295,12 +310,6 @@ def clone_fixture_tree(source: Path, destination: Path) -> None:
         target = destination / item.relative_to(source)
         if target.exists():
             target.unlink()
-        if item.suffix.casefold() == ".png":
-            try:
-                os.link(item, target)
-                return
-            except OSError:
-                pass
         shutil.copyfile(item, target)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
@@ -325,12 +334,6 @@ def cache_recording_tree(
         source = source_root / relative
         target = cache_root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        if source.suffix.casefold() == ".png":
-            try:
-                os.link(source, target)
-                continue
-            except OSError:
-                pass
         shutil.copyfile(source, target)
 
 
@@ -347,6 +350,63 @@ class DossierProject:
         # Real frames on disk, because the frame column is checked by opening it.
         for rank in range(1, 7):
             write_png(self.captures / f"strong-{rank}-frames" / f"strong-{rank}-001-rest.png")
+        self.brief = self.state / "brief.md"
+        self.brief.write_text("\n".join(
+            f"The project {dimension} requirement is truthful product comparison for families using the home and detail routes."
+            for dimension in ("organization", "audience", "visitor-jobs", "content", "route-jobs", "media", "access", "quality")
+        ), encoding="utf-8")
+
+    def candidate_review_cell(self, index: int) -> str:
+        """Explicit synthetic self-review fixtures; never real taste/independence evidence."""
+        source_id = f"strong-{index}"
+        observation_path = self.captures / f"{source_id}-observation.json"
+        if not (self.captures / f"{source_id}-recording.json").is_file():
+            self.sequence_block(index)
+        module = INITIALIZER.load_bundled_source_module("fixture_candidate_review", Path(INITIALIZER.__file__).with_name("candidate_review.py"))
+        output = self.captures / f"{source_id}-candidate-review.json"
+        if output.is_file():
+            existing = json.loads(output.read_text(encoding="utf-8"))
+            if existing.get("source", {}).get("observation", {}).get("sha256") == sha256_of(observation_path):
+                return f".design-dna/references/{output.name} plus sha256:{sha256_of(output)}"
+        try:
+            payload = module.scaffold_candidate_review(self.project, brief_path=self.brief, observation_path=observation_path, candidate_id=source_id)
+        except (OSError, ValueError, KeyError, TypeError):
+            output.write_text('{"status":"blocked-invalid-source-fixture"}', encoding="utf-8")
+            return f".design-dna/references/{output.name} plus sha256:{sha256_of(output)}"
+        observed = json.loads(observation_path.read_text(encoding="utf-8"))
+        def evidence(profile: str, dimension: str) -> dict:
+            pointer = f"/states_by_viewport/{profile}/rest/structure"
+            return {"viewport": profile, "state_id": "rest", "capture": payload["source"]["states"][profile]["capture"],
+                "pointer": pointer, "value_sha256": module.canonical_sha(observed["states_by_viewport"][profile]["rest"]["structure"]),
+                "observed_fact": f"Reference {source_id} {profile} fixture records the product arrangement and hierarchy supporting its specific {dimension} requirement."}
+        for row in payload["judgments"]:
+            dimension = row["dimension"]
+            row.update(brief_excerpt=f"The project {dimension} requirement is truthful product comparison for families using the home and detail routes.",
+                fit="compatible", reason=f"Reference {source_id} supports the project {dimension} requirement through its measured product arrangement, navigation relationship and truthful comparison hierarchy.",
+                observations=[evidence(profile, dimension) for profile in ("wide", "narrow")])
+        signature = [evidence(profile, "dominant composition") for profile in ("wide", "narrow")]
+        payload["dominant_experience"] = {"kind": "composition",
+            "description": f"Reference {source_id} presents the product media as the dominant opening object with supporting measured navigation and comparison hierarchy.",
+            "signature_evidence": signature,
+            "supporting_relationships": [
+                {"relationship": "The wide source arrangement preserves the measured dominant object and the supporting comparison labels at their observed positions.", "evidence": signature[0]},
+                {"relationship": "The narrow source rearrangement keeps the physical product visible while maintaining the measured supporting text and navigation hierarchy.", "evidence": signature[1]}],
+            "planned_carriers": [{"route_key": "home", "component_id": "home-layout-component" if index == 1 else f"strong-{index}-composition",
+                "transfer_relationship": f"The home route retains reference {source_id} dominant media arrangement and supporting comparison relationships within its exact source-bound component.", "source_evidence": signature}],
+            "deletion_effect": f"Removing reference {source_id} carrier removes its dominant product arrangement and comparison hierarchy, leaving source colors insufficient to identify it."}
+        payload["reviewed_at"] = "2026-09-04T13:00:00Z"
+        payload["reviewer"].update(identity="fixture-producer", kind="producer-self-review", producer_identity="fixture-producer")
+        payload["decision"] = {"status": "selected", "reason": f"The source {source_id} fixture meets the explicit product-comparison requirements using its measured dominant arrangement and complete source evidence."}
+        original = {"reviewer_identity": "fixture-producer", "reviewer_kind": "producer-self-review", "producer_identity": "fixture-producer",
+            "reviewed_at": payload["reviewed_at"], "candidate_id": source_id, "brief_sha256": payload["brief"]["sha256"],
+            "observation_sha256": payload["source"]["observation"]["sha256"], "judgments": payload["judgments"],
+            "dominant_experience": payload["dominant_experience"], "concerns": payload["concerns"], "decision": payload["decision"]}
+        original_path = self.state / "reviews" / f"{source_id}-original-review.json"
+        original_path.parent.mkdir(exist_ok=True)
+        original_path.write_text(json.dumps(original, indent=2) + "\n", encoding="utf-8")
+        payload["reviewer"]["evidence"] = {"path": original_path.relative_to(self.project).as_posix(), "bytes": original_path.stat().st_size, "sha256": sha256_of(original_path)}
+        output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        return f".design-dna/references/{output.name} plus sha256:{sha256_of(output)}"
 
     def styles_cell(
         self,
@@ -389,6 +449,23 @@ class DossierProject:
             },
             "numbers": MEASURED_NUMBERS if numbers is None else numbers,
             "type": [], "controls": [], "transitions": [], "colors": [],
+            "component_styles": [{
+                "selector": '[data-dna-interaction-id="1"]',
+                "component_key": 'selector:[data-dna-interaction-id="1"]',
+                "profile": profile, "state_id": state_id,
+                "content_facts": {"text": "", "tag": "div", "role": None, "line_count": 0,
+                                  "parent_tag": "body", "parent_selector": "body", "previous_selector": None},
+                "properties": {
+                    "font-family": "Fixture Source", "font-size": "16px", "font-weight": "400",
+                    "line-height": "24px", "letter-spacing": "0px", "color": "rgb(1, 2, 3)",
+                    "background-color": "rgb(4, 5, 6)", "background-image": "none",
+                    "border-color": "rgb(7, 8, 9)", "border-radius": "8px", "box-shadow": "none",
+                    "padding": "12px", "gap": "16px", "display": "grid",
+                    "grid-template-columns": "1fr 1fr", "transform": "none",
+                    "transition-property": "opacity", "transition-duration": "200ms",
+                    "transition-timing-function": "ease", "cursor": "pointer",
+                },
+            } for profile in ("wide", "narrow") for state_id in ("rest", "primary-hover", "primary-focus")],
         }), encoding="utf-8")
         return (f".design-dna/references/{name}-styles.json plus sha256:"
                 + sha256_of(path))
@@ -497,6 +574,9 @@ class DossierProject:
         interaction_dir_name = "component-census-interaction-frames"
         interaction_dir = path.parent / interaction_dir_name
         interaction_dir.mkdir(parents=True, exist_ok=True)
+        interaction_video_dir_name = "component-census-interaction-videos"
+        interaction_video_dir = path.parent / interaction_video_dir_name
+        interaction_video_dir.mkdir(parents=True, exist_ok=True)
         target_censuses: list[dict[str, object]] = []
         checks: list[dict[str, object]] = []
         scopes: list[dict[str, object]] = []
@@ -520,6 +600,17 @@ class DossierProject:
                     "bytes": evidence_path.stat().st_size,
                     "sha256": sha256_of(evidence_path),
                 }
+            visual_video_path = interaction_video_dir / f"{profile}-continuous.webm"
+            visual_video_path.write_bytes(b"fixture continuous build visual recording\n")
+            visual_recording = {
+                "file": f"{interaction_video_dir_name}/{visual_video_path.name}",
+                "bytes": visual_video_path.stat().st_size,
+                "sha256": sha256_of(visual_video_path),
+                "duration_ms": 96_000,
+                "fps": 20,
+                "width": viewport["width"],
+                "height": viewport["height"],
+            }
             census = self.interaction_census(reference_id, build_url, profile, evidence)
             first_page = census["pages"][0]
             target = first_page["targets"][0]
@@ -536,7 +627,13 @@ class DossierProject:
                 "targets_discovered": 1, "inputs_discovered": 6,
                 "inputs_exercised": 5, "inputs_blocked": 1,
             }
-            target_censuses.append({**census, "route_key": "home", "viewport": profile})
+            for manifested_state in states:
+                target_censuses.append({
+                    **json.loads(json.dumps(census)),
+                    "route_key": "home",
+                    "viewport": profile,
+                    "state_id": manifested_state["id"],
+                })
             experience_path = {
                 "route_key": "home",
                 "viewport": profile,
@@ -556,7 +653,6 @@ class DossierProject:
                 "missing": [],
                 "complete": True,
             }
-            experience_paths.append(experience_path)
             control_visibility = [{
                 "key": "component:primary-control",
                 "semantic_key": "button|primary",
@@ -625,6 +721,11 @@ class DossierProject:
                 "evidence": evidence["settled"],
             }
             for manifested_state in states:
+                state_experience_path = {
+                    **json.loads(json.dumps(experience_path)),
+                    "state_id": manifested_state["id"],
+                }
+                experience_paths.append(state_experience_path)
                 changed = manifested_state["id"] != "rest"
                 trigger_evidence = {
                     "type": manifested_state["trigger"]["type"],
@@ -644,6 +745,93 @@ class DossierProject:
                     "target_count": 1, "navigation": None,
                     "trigger_evidence": trigger_evidence,
                 }
+                source_observation_payload = json.loads(
+                    observation_path.read_text(encoding="utf-8")
+                )
+                source_state_payload = (
+                    source_observation_payload.get("states_by_viewport", {})
+                    .get(profile, {})
+                    .get(manifested_state["mapped_reference_state_id"])
+                    if isinstance(source_observation_payload, dict)
+                    else None
+                )
+                # Negative observation fixtures deliberately remove state
+                # evidence.  The synthetic build record must remain writable
+                # so the gate reports that source defect instead of crashing
+                # before it can exercise its intended assertion.
+                if not isinstance(source_state_payload, dict):
+                    source_state_payload = {
+                        "trigger": manifested_state["trigger"],
+                        "trigger_evidence": trigger_evidence,
+                        "evidence_frames": {
+                            "before": evidence["before"],
+                            "after": evidence["after"],
+                            "settled": evidence["settled"],
+                        },
+                    }
+                recording_path = self.captures / f"{reference_id}-recording.json"
+                ledger_path = self.captures / f"{reference_id}-artifacts.json"
+                if not recording_path.is_file() or not ledger_path.is_file():
+                    self.sequence_block(selected_rank)
+                recording_payload = json.loads(recording_path.read_text(encoding="utf-8"))
+                source_recording_floor = int(
+                    float(recording_payload["minimum_duration_per_profile_s"]) * 1000
+                )
+                source_recording_duration = int(
+                    float(recording_payload["profiles"][profile]["duration_s"]) * 1000
+                )
+                source_recording_fps = recording_payload["profiles"][profile]["fps"]
+                source_recording_frames = recording_payload["profiles"][profile]["frames"]["count"]
+                autonomous_watch = {
+                    "source_state_id": manifested_state["mapped_reference_state_id"],
+                    "source_trigger": source_state_payload["trigger"],
+                    "source_state_binding": {
+                        "id": manifested_state["mapped_reference_state_id"],
+                        "trigger": source_state_payload["trigger"],
+                        "trigger_evidence": source_state_payload["trigger_evidence"],
+                        "evidence_frames": source_state_payload["evidence_frames"],
+                    },
+                    "source_recording": {
+                        "file": recording_path.name,
+                        "ledger_file": ledger_path.name,
+                        "sha256": sha256_of(recording_path),
+                        "ledger_sha256": sha256_of(ledger_path),
+                        "state_contract": recording_payload["state_contract"],
+                        "minimum_duration_ms": source_recording_floor,
+                        "profile": profile,
+                        "duration_ms": source_recording_duration,
+                        "fps": source_recording_fps,
+                        "frame_count": source_recording_frames,
+                    },
+                    "viewport": {"source_profile": profile, "width": viewport["width"], "height": viewport["height"]},
+                    "recording_grounded_dwell_ms": source_recording_duration,
+                    "sample_interval_ms": 50,
+                    "sample_gap_failures": [],
+                    "navigation_start_ms": 0,
+                    "host_started_monotonic_ms": 10,
+                    "trigger_started_monotonic_ms": 11,
+                    "dwell_started_monotonic_ms": 12,
+                    "host_finished_monotonic_ms": source_recording_duration + 12,
+                    "state_application": application,
+                    "pre_trigger": {"at_ms": 0, "surfaces": [], "animations": [], "blocked_frames": []},
+                    "post_trigger": {"at_ms": 0, "surfaces": [], "animations": [], "blocked_frames": []},
+                    "initial": {"at_ms": 0, "surfaces": [], "animations": [], "blocked_frames": []},
+                    "final": {"at_ms": source_recording_duration, "surfaces": [], "animations": [], "blocked_frames": []},
+                    "trigger_mutations": [], "mutation_batches": [], "tail_mutations": [],
+                    "animation_samples": [
+                        {"at_ms": moment, "surfaces": [], "animations": [], "blocked_frames": []}
+                        for moment in range(50, source_recording_duration + 1, 50)
+                    ],
+                    "visual_samples": [
+                        {"at_ms": moment, "host_monotonic_ms": moment + 12}
+                        for moment in range(50, source_recording_duration + 1, 50)
+                    ],
+                    "visual_recording": visual_recording,
+                    "animation_events": [], "waapi_events": [], "early_events": [], "events": [],
+                    "new_surfaces": [], "state_diffs": [], "transient_surfaces": [], "blocked_frame_surfaces": [], "mapped_surface": None, "unbound_surfaces": [],
+                    "evidence": {"before": evidence["before"], "appearance": evidence["after"], "after": evidence["settled"]},
+                    "complete": True,
+                }
                 source_semantics = ["button|primary"]
                 responsive_parity = {
                     "source_profile": profile,
@@ -656,6 +844,9 @@ class DossierProject:
                     "complete": True,
                 }
                 short_height = min(viewport["height"], 568)
+                short_autonomous_watch = json.loads(json.dumps(autonomous_watch))
+                short_autonomous_watch["viewport"]["height"] = short_height
+                short_autonomous_watch["visual_recording"]["height"] = short_height
                 short_qa = {
                     "profile": f"{profile}-short",
                     "width": viewport["width"],
@@ -671,6 +862,8 @@ class DossierProject:
                     "viewport": {"width": viewport["width"], "height": short_height},
                     "truncated": False,
                     "reduced_motion": reduced_motion,
+                    "autonomous_watch": short_autonomous_watch,
+                    "target_census": {**json.loads(json.dumps(census)), "state_id": manifested_state["id"]},
                 }
                 qa_cell = {
                     "route_key": "home",
@@ -702,18 +895,24 @@ class DossierProject:
                     "state_semantics": state_semantics,
                     "public_copy": public_copy,
                     "accessibility": accessibility,
-                    "experience_paths": [experience_path],
+                    "experience_paths": [state_experience_path],
                     "short_height": short_qa,
                     "missing": [],
                     "truncated": False,
                     "complete": True,
                 }
                 qa_cells.append(qa_cell)
-                applicable_decisions = sorted(
-                    row["decision_id"] for row in decisions
-                    if "home" in row["route_keys"]
-                    and manifested_state["id"] in row["state_ids"]
-                )
+                applicable_rows = [
+                    row for row in decisions
+                    if any(
+                        binding.get("route_key") == "home"
+                        and binding.get("viewport") == profile
+                        and binding.get("state_id") == manifested_state["id"]
+                        for binding in row.get("bindings", [])
+                        if isinstance(binding, dict)
+                    )
+                ]
+                applicable_decisions = sorted(row["decision_id"] for row in applicable_rows)
                 checks.append({
                     "route_key": "home", "url": build_url,
                     "mapped_reference_rank": selected_rank,
@@ -727,12 +926,35 @@ class DossierProject:
                     "mapped_reference_state_id": manifested_state["mapped_reference_state_id"],
                     "attempted": 1, "covered": 1,
                     "state_application": application,
+                    "autonomous_watch": autonomous_watch,
                     "scroll_traversal": {"complete": True, "surfaces": [{
                         "id": "document", "kind": "document", "complete": True
                     }]},
                     "components": [{"name": n, "count": 1, "area": 0.1} for n in sorted(names)],
                     "visible_decision_ids": applicable_decisions,
                     "unsourced_visible_parts": [],
+                    "wrapper_inherited_visible_parts": [],
+                    "decision_roots": [{
+                        "decision_id": row["decision_id"],
+                        "roots": [{
+                            "component_key": next(
+                                binding["component_key"] for binding in row["bindings"]
+                                if binding["route_key"] == "home" and binding["viewport"] == profile
+                                and binding["state_id"] == manifested_state["id"]
+                            ),
+                            "component_id": row["component_id"],
+                            "tag": "section", "scope": "document", "direct": True,
+                            "top": 0, "left": 0, "width": 1440, "height": 900,
+                            "computed_style": {
+                                tuple_["property"]: tuple_["build_value"]
+                                for tuple_ in row["style_provenance"]["tuples"]
+                                if tuple_["viewport"] == profile and tuple_["state_id"] == manifested_state["id"]
+                            },
+                        }],
+                    } for row in applicable_rows],
+                    "media_inventory": [],
+                    "pseudo_inventory": [],
+                    "font_delivery": {"complete": True, "findings": [], "records": []},
                     "links": [build_url], "inspection": [{"complete": True}],
                     "implementation_scope": {
                         "document_height": 1800, "viewport_height": viewport["height"],
@@ -826,6 +1048,10 @@ class DossierProject:
             "implemented_decision_ids": implemented_decision_ids,
             "missing_decision_ids": [],
             "unsourced_visible_decisions": [],
+            "wrapper_inheritance_findings": [],
+            "binding_cell_findings": [],
+            "asset_role_findings": [],
+            "construction_findings": [],
             "scaffold_findings": [],
             "fallback_findings": [],
             "placeholder_findings": [],
@@ -863,6 +1089,7 @@ class DossierProject:
             "implementation_scope": scopes,
             "state_inventories": inventories,
             "interaction_frame_directory": interaction_dir_name,
+            "interaction_video_directory": interaction_video_dir_name,
             "interaction_inventory": {
                 "complete": True, "missing": [],
                 "cells": interaction_cells,
@@ -985,6 +1212,19 @@ class DossierProject:
                 "before": evidence_frames["before"],
                 "after": evidence_frames["after"],
                 "settled": evidence_frames["settled"],
+                "baseline": {
+                    "strategy": "fresh-exact-state",
+                    "requested_url": page_url,
+                    "final_url": page_url,
+                    "state_id": "rest",
+                    "state_applied": False,
+                    "navigation": {
+                        "requested_normalized_url": page_url,
+                        "final_normalized_url": page_url,
+                        "redirect_count": 0,
+                        "final_status": 200,
+                    },
+                },
             }
             def exercised(kind, value=None, source_state_id=None):
                 changes = [{
@@ -1327,6 +1567,47 @@ class DossierProject:
                 evidence_by_profile[profile][moment] = {
                     "file": meta["file"], "bytes": meta["bytes"], "sha256": meta["sha256"]
                 }
+        study_journal_rel = f"{name}-source-study-progress.jsonl"
+        study_progress_rel = f"{name}-source-study-progress.json"
+        study_counters = {"frames": 1, "events": 1, "states": 1, "routes": 1, "targets": 1}
+        study_signed = [{
+            "kind": "frame", "file": frames[0]["file"], "bytes": frames[0]["bytes"],
+            "sha256": frames[0]["sha256"], "producer": "observe_reference.mjs",
+        }]
+        prior_study_hash = None
+        study_rows = []
+        for study_sequence, study_kind in ((1, "started"), (2, "frame-captured"), (3, "complete")):
+            study_core = {
+                "schema_version": 1, "sequence": study_sequence, "at": f"2026-09-02T00:00:0{study_sequence}Z",
+                "kind": study_kind,
+                "counters": study_counters if study_sequence > 1 else {key: 0 for key in study_counters},
+                "previous_sha256": prior_study_hash,
+                "detail": ({"terminal_success": True, "signed_artifacts": study_signed}
+                           if study_kind == "complete" else {}),
+            }
+            prior_study_hash = INITIALIZER.canonical_json_sha256(study_core)
+            study_rows.append({**study_core, "sha256": prior_study_hash})
+        study_journal_path = self.captures / study_journal_rel
+        study_journal_path.write_text("\n".join(json.dumps(row) for row in study_rows) + "\n", encoding="utf-8")
+        study_snapshot = {
+            "schema_version": 1, "kind": "source-study-progress", "status": "complete", "source_status": "complete",
+            "eligible_for_source_selection": True, "id": name, "profile": None, "source_kind": "public-source",
+            "producer": "observe_reference.mjs", "started_at": "2026-09-02T00:00:00Z",
+            "last_progress_at": "2026-09-02T00:00:03Z", "last_progress_epoch_ms": 3,
+            "last_progress_kind": "complete", "counters": study_counters,
+            "limits": {"max_no_progress_ms": 60000}, "progress_event_file": study_journal_rel,
+            "progress_event_count": 3, "tail_event_sha256": prior_study_hash,
+            "signed_artifacts": study_signed,
+        }
+        study_progress_path = self.captures / study_progress_rel
+        study_progress_path.write_text(json.dumps(study_snapshot), encoding="utf-8")
+        source_study = {
+            **study_snapshot,
+            "progress": {"file": study_progress_rel, "bytes": study_progress_path.stat().st_size,
+                         "sha256": sha256_of(study_progress_path)},
+            "progress_events": {"file": study_journal_rel, "bytes": study_journal_path.stat().st_size,
+                                "sha256": sha256_of(study_journal_path)},
+        }
         payload = {
             "schema_version": schema,
             "tool": tool,
@@ -1336,13 +1617,15 @@ class DossierProject:
             "runtime_identity": {
                 "observe_reference.mjs": sha256_of(
                     SKILL / "scripts" / "observe_reference.mjs"
-                )
+                ),
+                "source_study_controller.mjs": sha256_of(SKILL / "scripts" / "source_study_controller.mjs"),
             },
             "id": name,
             "url": url,
             "requested_url": url,
             "final_url": url,
             "observed_at": "2026-09-02T00:00:00Z",
+            "source_study": source_study,
             "interactions": ([{
                 "type": "transition",
                 "attempted": True,
@@ -1788,7 +2071,7 @@ class DossierProject:
         captures: dict[str, dict[str, object]] = {}
         discovery: dict[str, dict[str, object]] = {}
         quality: list[dict[str, object]] = []
-        frame_count = max(1, int(duration * fps * 0.9))
+        frame_count = max(1, math.ceil(duration * fps))
         for profile, width, height in (("wide", 1440, 900), ("narrow", 390, 844)):
             prefix = f"{name}-{profile}"
             frame_dir = self.captures / f"{prefix}-frames"
@@ -1802,10 +2085,7 @@ class DossierProject:
                     group_source = frame
                 else:
                     assert group_source is not None
-                    try:
-                        os.link(group_source, frame)
-                    except OSError:
-                        frame.write_bytes(group_source.read_bytes())
+                    shutil.copyfile(group_source, frame)
                 frame_files.append(artifact(
                     frame.relative_to(self.captures).as_posix(), "frame", profile
                 ))
@@ -1884,11 +2164,91 @@ class DossierProject:
                 "duration_floor_met": duration >= 90,
                 "complete": duration >= 90 and fps >= 15,
             }
+            source_frame = {
+                "video_t_s": 0,
+                "frame": {
+                    "file": frame_files[0]["file"], "bytes": frame_files[0]["bytes"],
+                    "sha256": frame_files[0]["sha256"],
+                },
+                "video": {
+                    "file": video["file"], "bytes": video["bytes"],
+                    "sha256": video["sha256"],
+                },
+            }
+            autonomous_surface_watches = [{
+                "action": "autonomous-surface-watch", "profile": profile,
+                "target": "post-dwell", "page_url": source_url,
+                "t_start": 0, "t_end": duration,
+                "report": {
+                    "sample_gap_failures": [], "gap_reconciliations": [], "events": [],
+                    "timing_integrity": {"continuous_recording_required": True},
+                    "final_target_state_evidence": source_frame,
+                    "recording_binding": {
+                        "profile": profile, "duration_s": duration,
+                        "exact_millisecond_duration": True, "fps": fps,
+                        "frame_count": frame_count,
+                        "frame_requirement": math.ceil(duration * fps),
+                        "continuous_video_frame_coverage": True,
+                    },
+                },
+            }]
+            study_prefix = f"{name}-study-{profile}-source-study"
+            journal_rel = f"{study_prefix}-progress.jsonl"
+            progress_rel = f"{study_prefix}-progress.json"
+            signed_artifacts = [
+                {"kind": "frame", "file": frame_files[0]["file"], "bytes": frame_files[0]["bytes"],
+                 "sha256": frame_files[0]["sha256"], "producer": "record_reference.mjs"},
+                {"kind": "video", "file": video["file"], "bytes": video["bytes"],
+                 "sha256": video["sha256"], "producer": "record_reference.mjs"},
+            ]
+            counters = {"frames": 1 + len(evidence), "events": 1, "states": 1, "routes": 1, "targets": 1}
+            previous = None
+            journal_rows = []
+            journal_events = [
+                ("started", {"detail": None}),
+                ("frame-captured", {"file": frame_files[0]["file"], "sha256": frame_files[0]["sha256"]}),
+                *(("frame-captured", frame) for frame in evidence.values()),
+                ("complete", {"terminal_success": True, "signed_artifacts": signed_artifacts}),
+            ]
+            for sequence, (kind, detail) in enumerate(journal_events, start=1):
+                core = {"schema_version": 1, "sequence": sequence, "at": f"2026-09-02T00:00:0{sequence}Z",
+                        "kind": kind, "counters": counters if sequence > 1 else {key: 0 for key in counters},
+                        "previous_sha256": previous, "detail": detail}
+                previous = INITIALIZER.canonical_json_sha256(core)
+                journal_rows.append({**core, "sha256": previous})
+            journal_path = self.captures / journal_rel
+            journal_path.write_text("\n".join(json.dumps(row) for row in journal_rows) + "\n", encoding="utf-8")
+            source_study_snapshot = {
+                "schema_version": 1, "kind": "source-study-progress", "status": "complete", "source_status": "complete",
+                "eligible_for_source_selection": True, "id": f"{name}-study", "profile": profile, "source_kind": "public-source",
+                "producer": "record_reference.mjs", "started_at": "2026-09-02T00:00:00Z",
+                "last_progress_at": f"2026-09-02T00:00:0{len(journal_rows)}Z", "last_progress_epoch_ms": len(journal_rows),
+                "last_progress_kind": "complete", "counters": counters,
+                "limits": {"max_no_progress_ms": 60000}, "progress_event_file": journal_rel,
+                "progress_event_count": len(journal_rows), "tail_event_sha256": previous,
+                "signed_artifacts": signed_artifacts,
+            }
+            progress_path = self.captures / progress_rel
+            progress_path.write_text(json.dumps(source_study_snapshot), encoding="utf-8")
+            source_study = {
+                **source_study_snapshot,
+                "progress": {key: artifact(progress_rel, "source-study-progress", profile)[key]
+                             for key in ("file", "bytes", "sha256")},
+                "progress_events": {key: artifact(journal_rel, "source-study-progress-journal", profile)[key]
+                                    for key in ("file", "bytes", "sha256")},
+            }
             profiles[profile] = {
                 "profile": profile,
                 "viewport": {"name": profile, "width": width, "height": height},
                 "duration_s": duration,
                 "fps": fps,
+                "video_clock": {"method": "playwright-screencast-frame-wall-clock", "first_frame_epoch_ms": 1788307200000,
+                                "last_frame_epoch_ms": 1788307200000 + duration * 1000, "frames_delivered": 2},
+                "source_entry_capture": {**evidence["settled"], "profile": profile, "state_id": None,
+                    "label": "primary-source-entry", "video_t_s": 1.0, "source_url": source_url,
+                    "navigation": self.navigation(source_url),
+                    "frame": {key: frame_files[min(fps, len(frame_files)-1)][key] for key in ("file", "bytes", "sha256")},
+                    "video": {key: video[key] for key in ("file", "bytes", "sha256")}},
                 "video": video,
                 "frames": {"count": frame_count, "directory": f"{prefix}-frames", "files": frame_files},
                 "events": {"count": events, "directory": f"{prefix}-events", "files": event_files,
@@ -1905,12 +2265,12 @@ class DossierProject:
                 ],
                 "interaction_census": interaction,
                 "rendered_qa": rendered_qa,
+                "autonomous_surface_watches": autonomous_surface_watches,
+                "source_study": source_study,
                 "coverage": coverage_payload,
             }
-            first = frame_files[0]
             captures[profile] = {
-                "file": first["file"], "bytes": first["bytes"],
-                "sha256": first["sha256"],
+                key: evidence["settled"][key] for key in ("file", "bytes", "sha256")
             }
             discovery[profile] = {
                 "discovered_urls": urls, "visited_urls": urls,
@@ -1921,10 +2281,13 @@ class DossierProject:
                 "hover_targets_observed": 2, "event_sheets": events,
                 "video_elements": 0,
             })
-            all_artifacts.extend([video, *frame_files, cursor, difference, event_index])
+            all_artifacts.extend([video, *frame_files, cursor, difference, event_index,
+                                  artifact(progress_rel, "source-study-progress", profile),
+                                  artifact(journal_rel, "source-study-progress-journal", profile)])
 
         recording = {
             "tool": tool,
+            "source_kind": "public-source", "source_status": "complete", "eligible_for_source_selection": True,
             "schema_version": schema,
             "producer_script_sha256": recorder_sha,
             "runtime_identity": {"record_reference.mjs": recorder_sha},
@@ -2134,6 +2497,7 @@ class DossierProject:
         ))
 
     def failures(self, body: str) -> list[str]:
+        self.record_path.write_text(body, encoding="utf-8")
         return INITIALIZER.reference_dossier_failures(
             body,
             project=self.project,
@@ -2145,7 +2509,7 @@ class DossierProject:
         rank: int,
         *,
         source: str,
-        access: str = "public-gallery-entry",
+        access: str = "public-live",
         host: str | None = None,
         capture: str | None = None,
         narrow_capture: str | None = None,
@@ -2220,13 +2584,14 @@ class DossierProject:
         )
         brief_status = "pass" if selected else "fail"
         quality_status = "pass" if selected else "fail"
+        review_evidence = self.candidate_review_cell(index) if selected else observation
         brief = "; ".join([
             f"content_model={brief_status}",
             f"organization_context={brief_status}",
             "visitor_task=pass", "audience=pass",
             "brand_authority=pass", "operating_reality=pass",
             "route_responsive=pass", "rights_access=pass",
-            f"evidence={observation}",
+            f"evidence={review_evidence}",
         ])
         quality = "; ".join([
             f"composition={quality_status}", "typography=pass", "media=pass",
@@ -2303,11 +2668,12 @@ class DossierProject:
         manifest_path = self.state / "route-manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         source_rows = []
-        source_evidence: dict[str, dict[str, str]] = {}
+        source_evidence: dict[str, dict[str, dict[str, dict[str, str]]]] = {}
+        source_states: dict[str, dict[str, dict[str, str]]] = {}
+        source_style_hashes: dict[str, str] = {}
         for rank in selected_ranks:
             observation = self.captures / f"strong-{rank}-observation.json"
             observed = json.loads(observation.read_text(encoding="utf-8"))
-            capture = observed["captures_by_viewport"]["wide"]
             source_id = f"strong-{rank}"
             source_rows.append({
                 "id": source_id,
@@ -2315,31 +2681,150 @@ class DossierProject:
                 "sha256": sha256_of(observation),
             })
             source_evidence[source_id] = {
-                "path": f".design-dna/references/{capture['file']}",
-                "sha256": capture["sha256"],
+                profile: {
+                    state_id: {
+                        "path": f".design-dna/references/{state['evidence_frames']['settled']['file']}",
+                        "sha256": state["evidence_frames"]["settled"]["sha256"],
+                    }
+                    for state_id, state in observed["states_by_viewport"][profile].items()
+                    if isinstance(state, dict) and isinstance(state.get("evidence_frames", {}).get("settled"), dict)
+                }
+                for profile in ("wide", "narrow")
             }
+            source_states[source_id] = {
+                profile: {
+                    state_id: INITIALIZER.canonical_json_sha256(state)
+                    for state_id, state in observed.get("states_by_viewport", {}).get(profile, {}).items()
+                    if isinstance(state, dict)
+                }
+                for profile in ("wide", "narrow")
+            }
+            style_path = self.captures / f"{source_id}-styles.json"
+            if not style_path.is_file():
+                self.styles_cell(source_id, url=f"https://reference-{rank}.example.test/entry")
+            source_style_hashes[source_id] = sha256_of(style_path)
+            recording_path = self.captures / f"{source_id}-recording.json"
+            ledger_path = self.captures / f"{source_id}-artifacts.json"
+            if not recording_path.is_file() or not ledger_path.is_file():
+                self.sequence_block(rank)
         categories = list(INITIALIZER.VISIBLE_DECISION_CATEGORIES)
+        category_property = {
+            "layout": "display", "typeface": "font-family", "color": "color",
+            "control": "cursor", "transition": "transition-duration",
+            "content-pattern": "line-height", "effect": "box-shadow",
+        }
+        source_values = {
+            "display": "grid", "font-family": "Fixture Source", "color": "rgb(1, 2, 3)",
+            "cursor": "pointer", "transition-duration": "200ms", "line-height": "24px", "box-shadow": "none",
+        }
+        build_values = {
+            "display": "grid", "font-family": "Fixture Build", "color": "rgb(10, 11, 12)",
+            "cursor": "pointer", "transition-duration": "200ms", "line-height": "24px", "box-shadow": "none",
+        }
+        signature_source_index = {
+            "layout": 0,
+            "typeface": 1,
+            "color": 0,
+            "control": 0,
+            "transition": 0,
+            "content-pattern": 2,
+            "effect": 3,
+        }
         decisions = []
         for index, category in enumerate(categories):
             state_id = "primary-hover" if category in {"control", "transition", "effect"} else "rest"
-            source = source_rows[index % len(source_rows)]
+            source = source_rows[signature_source_index.get(category, index % len(source_rows)) % len(source_rows)]
+            source_state_id = "primary-hover" if category in {"control", "transition", "effect"} else "rest"
+            component_id = f"home-{category}-component"
+            property_name = category_property[category]
             decisions.append({
                 "decision_id": f"home-{state_id}-{category}",
                 "category": category,
-                "planned_surface": (
-                    f"Primary home {category} relationship rendered in the exact {state_id} state"
-                ),
-                "route_keys": ["home"],
-                "state_ids": [state_id],
-                "source_reference_id": source["id"],
-                "source_component_or_behavior": (
-                    f"Measured {category} component and behavior from {source['id']}"
-                ),
-                "evidence": source_evidence[source["id"]],
+                "component_id": component_id,
+                "source_mapping": {
+                    "rank": int(source["id"].removeprefix("strong-")),
+                    "id": source["id"], "observation": source["path"],
+                    "sha256": source["sha256"],
+                    "source_component_key": 'selector:[data-dna-interaction-id="1"]',
+                    "source_selector": '[data-dna-interaction-id="1"]',
+                    "source_recording": {
+                        "path": f".design-dna/references/{source['id']}-recording.json",
+                        "sha256": sha256_of(self.captures / f"{source['id']}-recording.json"),
+                        "ledger_path": f".design-dna/references/{source['id']}-artifacts.json",
+                        "ledger_sha256": sha256_of(self.captures / f"{source['id']}-artifacts.json"),
+                    },
+                },
+                "bindings": [{
+                    "route_key": "home", "viewport": profile,
+                    "state_id": state_id, "component_key": f"component:{component_id}",
+                    "evidence": source_evidence[source["id"]][profile][source_state_id],
+                    "source_state": {
+                        "id": source_state_id,
+                        "sha256": source_states[source["id"]][profile][source_state_id],
+                    },
+                } for profile in ("wide", "narrow")],
+                "style_provenance": {
+                    "record": {
+                        "path": f".design-dna/references/{source['id']}-styles.json",
+                        "sha256": source_style_hashes[source["id"]],
+                    },
+                    "properties": [property_name],
+                    "measured_values": ["extract_reference_styles.mjs"],
+                    "tuples": [{
+                        "viewport": profile, "state_id": state_id,
+                        "source_state_id": source_state_id,
+                        "source_selector": '[data-dna-interaction-id="1"]',
+                        "source_component_key": 'selector:[data-dna-interaction-id="1"]',
+                        "property": property_name, "source_value": source_values[property_name],
+                        "build_value": build_values[property_name],
+                    } for profile in ("wide", "narrow")],
+                },
+                "asset_role_binding": None,
+                "dominant_behavior_carrier": None,
+                "pseudo_bindings": [],
                 "disposition": "required",
             })
+        # Selected static sources transfer compositions, not isolated tokens.
+        for source in source_rows:
+            if any(row["category"] == "layout" and row["source_mapping"]["id"] == source["id"] for row in decisions):
+                continue
+            carrier = json.loads(json.dumps(next(row for row in decisions if row["source_mapping"]["id"] == source["id"])))
+            carrier["decision_id"] = source["id"] + "-composition"
+            carrier["component_id"] = source["id"] + "-composition"
+            carrier["category"] = "layout"
+            for binding in carrier["bindings"]:
+                binding["component_key"] = "component:" + carrier["component_id"]
+            carrier["style_provenance"]["properties"] = ["display"]
+            for item in carrier["style_provenance"]["tuples"]:
+                item.update({"property": "display", "source_value": "grid", "build_value": "grid"})
+            decisions.append(carrier)
+        bound_source_states = {
+            (row["source_mapping"]["id"], binding["source_state"]["id"])
+            for row in decisions for binding in row["bindings"]
+        }
+        source_state_dispositions = []
+        for source in source_rows:
+            observed = json.loads((self.captures / f"{source['id']}-observation.json").read_text(encoding="utf-8"))
+            for source_state_id, source_state in observed["states_by_viewport"]["wide"].items():
+                if source_state["trigger"]["type"] == "ambient":
+                    continue
+                evidence_by_profile = {}
+                for profile in ("wide", "narrow"):
+                    frame = observed["states_by_viewport"][profile][source_state_id]["evidence_frames"]["settled"]
+                    evidence_by_profile[profile] = {
+                        "path": f".design-dna/references/{frame['file']}",
+                        "bytes": frame["bytes"], "sha256": frame["sha256"],
+                    }
+                transferred = (source["id"], source_state_id) in bound_source_states
+                source_state_dispositions.append({
+                    "source_reference_id": source["id"], "source_state_id": source_state_id,
+                    "disposition": "transfer" if transferred else "omit",
+                    "reason": "This observed source state is either carried by an exact component binding or omitted because the truthful project has no matching visitor state.",
+                    "evidence": evidence_by_profile,
+                    "absence_assertion": "not applicable when transfer" if transferred else "no rendered carrier exists for this source-only omitted state",
+                })
         payload = {
-            "schema_version": 1,
+            "schema_version": 2,
             "record_type": "design-dna-visible-decision-source-manifest",
             "created_at": "2026-09-04T09:00:00-04:00",
             "proof_build_id": proof_build_id,
@@ -2349,14 +2834,34 @@ class DossierProject:
                 "sha256": sha256_of(manifest_path),
             },
             "source_observations": source_rows,
+            "construction_authorization": {
+                "journal_id": None, "entry_path": None, "entry_sha256": None,
+            },
+            "proof_isolation": {
+                "primary_route_key": "home", "source_files": ["proof.tsx"],
+                "region_component_id": "home-layout-component",
+            },
             "planned_decision_ids": [row["decision_id"] for row in decisions],
             "decisions": decisions,
+            "source_state_dispositions": source_state_dispositions,
+            "source_contribution_scope": [{
+                "source_reference_id": source["id"],
+                "selected_rank": int(source["id"].removeprefix("strong-")),
+                "dominant_route_keys": ["home"],
+                "signature_carrier_decision_ids": [
+                    next(row["decision_id"] for row in decisions if row["source_mapping"]["id"] == source["id"] and row["category"] == "layout")
+                ],
+                "signature_kind": "static",
+                "deletion_test": "The source-specific arrangement and hierarchy carried by this exact component would disappear from the route.",
+                "disposition": "required",
+            } for source in source_rows],
             "completeness": {
                 "required_categories": categories,
                 "covered_categories": categories,
                 "placeholders_allowed": False,
                 "generic_scaffold_allowed": False,
                 "fallback_design_allowed": False,
+                "wrapper_inheritance_allowed": False,
                 "unsourced_decisions": [],
             },
         }
@@ -2387,12 +2892,7 @@ class DossierProject:
         selected: str = "1, 2, 3, 4",
         synthesis_rows: list[str] | None = None,
         ledger_check: str = "none",
-        combination: str = (
-            "strong-2 supplies the held screen and its type scale, strong-5 "
-            "supplies the staggered index and its captions, and strong-1 "
-            "supplies the control geometry; no single one of them carries all "
-            "three, which is what makes this build its own."
-        ),
+        combination: str | None = None,
         component_rows: list[str] | None = None,
         census: str | None = None,
         transfer_rows: list[str] | None = None,
@@ -2404,6 +2904,13 @@ class DossierProject:
         selected_list = [
             int(part.strip()) for part in selected.split(",") if part.strip().isdigit()
         ]
+        if combination is None:
+            first, second = (selected_list + [1, 2])[:2]
+            combination = (
+                f"strong-{first} supplies the held product screen and its type hierarchy, and strong-{second} supplies "
+                "the staggered comparison index and associated captions; each carrier preserves its measured "
+                "relationships and no single source supplies the whole route composition."
+            )
         if strong_rows is None:
             strong_rows = [
                 self.strong_row(rank, source=DEFAULT_SOURCES[rank - 1])
@@ -2488,8 +2995,10 @@ class DossierProject:
             census = self.census_cell(
                 selected_rank=selected_list[0] if selected_list else 1
             )
-        return "\n".join((
+        body = "\n".join((
             "## Research frame",
+            f"- Current brief artifact: .design-dna/brief.md plus sha256:{sha256_of(self.brief)}",
+            f"- Reference-count and coverage rationale: qualified={len(strong_rows)}; selected={len(selected_list)}; discovery_sources={len({row.split('|')[4].split(';')[0].strip() for row in strong_rows})}; reason=The route family requires each selected component relationship and complete behavior coverage, and the compared sources provide these distinct needs without a one-site template.",
             "- Reference-selection brief (audience and arrival; visitor tasks; "
             "truthful content model, routes, and states; brand; operating reality; "
             "material/media; accessibility/performance/maintenance; rights/access): "
@@ -2532,7 +3041,7 @@ class DossierProject:
             *negative_rows,
             "",
             "## Selected synthesis",
-            f"- Selected positive ranks (at least four distinct ranks, from at least two sources): {selected}",
+            f"- Selected positive ranks (multiple qualified live references with justified coverage): {selected}",
             "- Project-specific organizing synthesis: The selected direction makes "
             "the product, evidence, and next decision visible in one coherent retail "
             "encounter rather than rotating unrelated treatments.",
@@ -2585,6 +3094,8 @@ class DossierProject:
             COMPONENT_SEPARATOR,
             *component_rows,
         ))
+        self.record_path.write_text(body, encoding="utf-8")
+        return body
 
 
 def registry_source(**overrides: object) -> dict[str, object]:
@@ -2679,6 +3190,70 @@ class ReferenceRegistryTests(unittest.TestCase):
 
 
 class ReferenceDossierTests(unittest.TestCase):
+    def test_precode_selected_cohort_checks_real_selection_without_requiring_a_build_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            body = fixture.body()
+            # No build-side gate/census closure is required to finish source
+            # research; those records are deliberately absent from this body.
+            fixture.record_path.write_text(body.split("## Route manifest", 1)[0], encoding="utf-8")
+            mapping = json.loads((fixture.state / "visible-decision-sources.json").read_text(encoding="utf-8"))
+            self.assertEqual([], INITIALIZER.selected_cohort_failures(fixture.project, mapping_payload=mapping))
+            collapsed = json.loads(json.dumps(mapping))
+            collapsed["source_observations"] = collapsed["source_observations"][:1]
+            collapsed["source_contribution_scope"] = collapsed["source_contribution_scope"][:1]
+            problems = INITIALIZER.selected_cohort_failures(fixture.project, mapping_payload=collapsed)
+            self.assertTrue(any("exactly the selected" in item for item in problems), problems)
+
+    def test_two_distinct_qualified_sources_with_real_coverage_can_pass_without_count_padding(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            sources = [DEFAULT_SOURCES[0], DEFAULT_SOURCES[2]]
+            strong = [fixture.strong_row(rank, source=sources[rank - 1]) for rank in (1, 2)]
+            compared = [fixture.candidate_row(rank, source=sources[rank - 1], selected=True) for rank in (1, 2)]
+            compared.append(fixture.candidate_row(3, source=DEFAULT_SOURCES[4], selected=False, host="rejected-three.example.test"))
+            components = []
+            for index, name in enumerate(REQUIRED_COMPONENTS):
+                rank = 1 if name in {"first screen", "display typeface"} or name in BEHAVIOUR_COMPONENTS else 2
+                components.append(f"| {name} | {rank} | {SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else f'strong-{rank}-frames/strong-{rank}-001-rest.png'} | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |")
+            body = fixture.body(selected="1, 2", strong_rows=strong, candidate_rows=compared, component_rows=components)
+            self.assertEqual([], fixture.failures(body))
+
+    def test_selected_candidate_review_blocks_generic_self_flags_and_mismatch_in_v2(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            fixture.body()
+            self.assertEqual([], INITIALIZER.selected_candidate_review_failures(fixture.project, "strong-1"))
+            review_path = fixture.captures / "strong-1-candidate-review.json"
+            payload = json.loads(review_path.read_text(encoding="utf-8"))
+            payload["judgments"][0]["reason"] = "Pass."
+            original_path = fixture.project / payload["reviewer"]["evidence"]["path"]
+            original = json.loads(original_path.read_text(encoding="utf-8"))
+            original["judgments"] = payload["judgments"]
+            original_path.write_text(json.dumps(original), encoding="utf-8")
+            payload["reviewer"]["evidence"].update(bytes=original_path.stat().st_size, sha256=sha256_of(original_path))
+            review_path.write_text(json.dumps(payload), encoding="utf-8")
+            visible_path = fixture.state / "visible-decision-sources.json"
+            visible = json.loads(visible_path.read_text(encoding="utf-8"))
+            manifest_path = fixture.state / "route-manifest.json"
+            problems = INITIALIZER.visible_decision_source_manifest_failures(visible, project=fixture.project,
+                route_manifest=json.loads(manifest_path.read_text(encoding="utf-8")), route_manifest_path=manifest_path,
+                proof_identity="build_id=fixture-proof-build-0001; route_key=home", require_construction_v2=True, allow_pending_construction_authorization=True)
+            self.assertTrue(any("generic pass flags" in problem for problem in problems), problems)
+            payload["judgments"][0]["reason"] = "The source is a retail equipment catalogue, while this actual organization offers resident services without product purchases."
+            payload["judgments"][0]["fit"] = "mismatch"
+            original["judgments"] = payload["judgments"]
+            original_path.write_text(json.dumps(original), encoding="utf-8")
+            payload["reviewer"]["evidence"].update(bytes=original_path.stat().st_size, sha256=sha256_of(original_path))
+            review_path.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertTrue(any("mismatch" in problem for problem in INITIALIZER.selected_candidate_review_failures(fixture.project, "strong-1")))
+
+    def test_combination_cannot_claim_an_unselected_reference_supplies_the_design(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            body = fixture.body(combination="strong-1 supplies the first screen and strong-6 supplies the supporting comparison rows, with each keeping its complete source arrangement.")
+            self.assertTrue(any("unselected source ranks" in item for item in fixture.failures(body)))
+
     def test_captured_spread_dossier_passes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)
@@ -2752,7 +3327,7 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-    def test_count_is_a_floor_with_contiguous_ranks(self) -> None:
+    def test_evidence_supported_count_is_flexible_with_contiguous_ranks(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)
             five = [
@@ -2760,10 +3335,7 @@ class ReferenceDossierTests(unittest.TestCase):
                 for rank in range(1, 6)
             ]
             failures = fixture.failures(fixture.body(strong_rows=five))
-            self.assertTrue(
-                any("at least six strong-reference rows" in item for item in failures),
-                failures,
-            )
+            self.assertEqual([], failures)
 
             eight_sources = (*DEFAULT_SOURCES, "site-of-sites; editor's pick, 2026-04-02",
                              "typewolf; Site of the Day 2026-03-11")
@@ -2812,7 +3384,7 @@ class ReferenceDossierTests(unittest.TestCase):
             ]
             failures = fixture.failures(fixture.body(strong_rows=one_source))
             self.assertTrue(
-                any("at least three distinct active public sources" in item for item in failures),
+                any("at least two distinct active public sources" in item for item in failures),
                 failures,
             )
 
@@ -2876,12 +3448,12 @@ class ReferenceDossierTests(unittest.TestCase):
                 failures,
             )
 
-    def test_synthesis_needs_four_references_from_two_sources(self) -> None:
+    def test_synthesis_needs_multiple_references_from_two_sources(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)
-            failures = fixture.failures(fixture.body(selected="1, 2, 3"))
+            failures = fixture.failures(fixture.body(selected="1"))
             self.assertTrue(
-                any("at least four distinct positive ranks" in item for item in failures),
+                any("at least two distinct positive ranks" in item for item in failures),
                 failures,
             )
 
@@ -2916,7 +3488,7 @@ class ReferenceDossierTests(unittest.TestCase):
                 fixture.body(strong_rows=only_awwwards, selected="1, 2, 3, 3")
             )
             self.assertTrue(
-                any("at least four distinct positive ranks" in item for item in failures),
+                any("at least two distinct positive ranks" in item for item in failures),
                 failures,
             )
 
@@ -2965,7 +3537,7 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
                 for rank in range(1, 7)
             ]
             failures = project.failures(project.body(candidate_rows=candidates))
-        self.assertTrue(any("at least eight" in item for item in failures), failures)
+        self.assertTrue(any("at least one" in item and "rejected alternative" in item for item in failures), failures)
 
     def test_award_label_cannot_replace_exact_brief_fit(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -3038,7 +3610,10 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
                 for rank in range(1, 9)
             ]
             failures = project.failures(project.body(candidate_rows=candidates))
-        self.assertTrue(any("at least two" in item for item in failures), failures)
+        self.assertTrue(
+            any("at least one serious rejected alternative" in item for item in failures),
+            failures,
+        )
 
     def test_route_manifest_rejects_the_obsolete_mutable_build_id(self) -> None:
         payload = {
@@ -3079,7 +3654,7 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
             )
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
             payload["decisions"] = payload["decisions"][1:]
-            payload["decisions"][0]["planned_surface"] = "TODO placeholder"
+            payload["decisions"][0]["component_id"] = "TODO-placeholder"
             payload["completeness"]["generic_scaffold_allowed"] = True
             manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
             body = body.replace(
@@ -3090,7 +3665,7 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
             failures = project.failures(body)
         joined = "\n".join(failures)
         self.assertIn("planned IDs do not equal", joined)
-        self.assertIn("no scaffold/fallback/placeholder escape", joined)
+        self.assertIn("scaffold, fallback, placeholder, wrapper", joined)
         self.assertIn("contains placeholder or fallback", joined)
 
     def test_visible_decision_cannot_bind_a_hand_written_local_file(self) -> None:
@@ -3105,7 +3680,7 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
             fake = project.captures / "producer-note.txt"
             fake.write_text("I saw something like this and chose it myself.\n", encoding="utf-8")
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-            payload["decisions"][0]["evidence"] = {
+            payload["decisions"][0]["bindings"][0]["evidence"] = {
                 "path": ".design-dna/references/producer-note.txt",
                 "sha256": sha256_of(fake),
             }
@@ -3152,8 +3727,8 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
                 if row["id"] == "strong-1":
                     row["sha256"] = sha256_of(observation_path)
             source_manifest["route_manifest"]["sha256"] = sha256_of(manifest_path)
-            source_manifest["decisions"][0]["source_reference_id"] = "strong-1"
-            source_manifest["decisions"][0]["evidence"] = {
+            source_manifest["decisions"][0]["source_mapping"]["id"] = "strong-1"
+            source_manifest["decisions"][0]["bindings"][0]["evidence"] = {
                 "path": ".design-dna/references/producer-note.txt",
                 "sha256": sha256_of(fake),
             }
@@ -3168,6 +3743,294 @@ class ReferenceSelectionQualificationTests(unittest.TestCase):
             any("not an immutable generated artifact" in item for item in failures),
             failures,
         )
+
+    def test_v2_construction_binding_rejects_a_document_wrapper(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload["decisions"][0]["bindings"][0]["component_key"] = "tag:body"
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("document wrapper" in item for item in failures), failures)
+
+    def test_v2_construction_binding_requires_wide_and_narrow_for_each_component_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload["decisions"][0]["bindings"] = payload["decisions"][0]["bindings"][:1]
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("every source-bound viewport" in item for item in failures), failures)
+
+    def test_v2_source_contribution_cannot_be_color_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            scope = payload["source_contribution_scope"][0]
+            color = next(row for row in payload["decisions"] if row["category"] == "color")
+            scope["signature_carrier_decision_ids"] = [color["decision_id"]]
+            scope["deletion_test"] = "Color would be gone."
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("palette/spacing-only" in item for item in failures), failures)
+
+    def test_v2_construction_binding_requires_source_recording_and_selector(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload["decisions"][0]["source_mapping"]["source_selector"] = "body"
+            payload["decisions"][0]["source_mapping"]["source_recording"]["sha256"] = "0" * 64
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("source_mapping" in item and ("recording" in item or "current selected" in item) for item in failures), failures)
+
+    def test_v2_dominant_behavior_carrier_cannot_be_prose_or_partial_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            effect = next(row for row in payload["decisions"] if row["category"] == "effect")
+            effect["dominant_behavior_carrier"] = {
+                "source_target_id": "remembered-hover",
+                "source_event_ids": ["wide/e0004"],
+                "build_component_key": effect["bindings"][0]["component_key"],
+                "behavior_kind": "hover transition",
+            }
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("dominant_behavior_carrier has an unsupported shape" in item for item in failures), failures)
+
+    def test_v2_layout_cannot_use_a_typography_only_tuple(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            layout = next(row for row in payload["decisions"] if row["category"] == "layout")
+            layout["style_provenance"]["properties"] = ["font-family"]
+            for tuple_ in layout["style_provenance"]["tuples"]:
+                tuple_["property"] = "font-family"
+                tuple_["source_value"] = "Fixture Source"
+                tuple_["build_value"] = "Fixture Build"
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("no material layout property" in item for item in failures), failures)
+
+    def test_v2_component_id_must_be_the_exact_rendered_component_key(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            decision = payload["decisions"][0]
+            decision["bindings"][0]["component_key"] = "component:unrelated-surface"
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("component_id is a rendered" in item for item in failures), failures)
+
+    def test_v2_state_disposition_requires_exact_wide_and_narrow_frame_records(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            payload["source_state_dispositions"][0]["evidence"]["narrow"]["path"] = ".design-dna/references/forged-narrow.png"
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("exact transfer or source-backed omission" in item for item in failures), failures)
+
+    def test_v2_pseudo_binding_requires_exact_extracted_source_pseudo_style(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            decision = payload["decisions"][0]
+            binding = decision["bindings"][0]
+            decision["pseudo_bindings"] = [{
+                "viewport": binding["viewport"], "state_id": binding["state_id"],
+                "source_state_id": binding["source_state"]["id"], "pseudo": "::before",
+                "source_selector": decision["source_mapping"]["source_selector"],
+                "source_component_key": decision["source_mapping"]["source_component_key"],
+                "property": "background-image", "source_value": "linear-gradient(red, blue)",
+                "build_value": "linear-gradient(red, blue)",
+            }]
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("pseudo binding" in item and "viewport/state" in item for item in failures), failures)
+
+    def test_v2_asset_role_rejects_unrelated_served_bytes_under_a_valid_asset_id(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            decision = payload["decisions"][0]
+            source_file = project.project / "assets" / "source.png"
+            source_file.parent.mkdir(parents=True, exist_ok=True)
+            source_file.write_bytes(b"source-A-bytes")
+            source_sha = sha256_of(source_file)
+            served_sha = "b" * 64
+            assets_manifest = project.state / "assets.yml"
+            assets_manifest.write_text(
+                "schema_version: 2\nassets:\n"
+                "  - id: ASSET-001\n"
+                "    source_path: assets/source.png\n"
+                f"    source_sha256: {source_sha}\n"
+                "    source_mapping:\n"
+                f"      source_id: {decision['source_mapping']['id']}\n"
+                f"      observation: {decision['source_mapping']['observation']}\n"
+                f"      observation_sha256: {decision['source_mapping']['sha256']}\n"
+                "    runtime_output:\n"
+                "      output_path: /assets/served.png\n"
+                f"      output_sha256: {served_sha}\n"
+                "      output_bytes: 12\n"
+                "      derivation: direct-copy\n"
+                "      transformation_record: ''\n"
+                "      transformation_record_sha256: ''\n",
+                encoding="utf-8",
+            )
+            decision["asset_role_binding"] = {
+                "asset_id": "ASSET-001", "asset_manifest": ".design-dna/assets.yml",
+                "asset_manifest_sha256": sha256_of(assets_manifest),
+                "rendered_media_kind": "image", "source_media_kind": "image",
+                "role": "Opening compositional source image", "rendered_url": "http://127.0.0.1:9000/assets/served.png",
+                "rendered_sha256": served_sha, "rendered_bytes": 12, "resource_type": "image",
+                "crop": {"width": 120, "height": 80, "object_fit": "cover", "object_position": "50% 50%"},
+                "temporal_mode": "still",
+            }
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("direct-copy asset output is not the exact" in item for item in failures), failures)
+
+    def test_v2_real_png_asset_can_validate_before_its_first_journal_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            visible_path = project.state / "visible-decision-sources.json"
+            payload = json.loads(visible_path.read_text(encoding="utf-8"))
+            decision = payload["decisions"][0]
+            source_file = project.project / "assets" / "source.png"
+            source_file.parent.mkdir(parents=True, exist_ok=True)
+            write_png(source_file)
+            image_bytes, image_sha = source_file.stat().st_size, sha256_of(source_file)
+            assets_manifest = project.state / "assets.yml"
+            assets_manifest.write_text(
+                "schema_version: 2\nassets:\n  - id: ASSET-001\n    source_path: assets/source.png\n"
+                f"    source_sha256: {image_sha}\n    source_mapping:\n      source_id: {decision['source_mapping']['id']}\n"
+                f"      observation: {decision['source_mapping']['observation']}\n      observation_sha256: {decision['source_mapping']['sha256']}\n"
+                "    runtime_output:\n      output_path: /assets/source.png\n"
+                f"      output_sha256: {image_sha}\n      output_bytes: {image_bytes}\n"
+                "      derivation: direct-copy\n      transformation_record: ''\n      transformation_record_sha256: ''\n",
+                encoding="utf-8",
+            )
+            decision["asset_role_binding"] = {
+                "asset_id": "ASSET-001", "asset_manifest": ".design-dna/assets.yml", "asset_manifest_sha256": sha256_of(assets_manifest),
+                "rendered_media_kind": "image", "source_media_kind": "image", "role": "Opening source compositional image",
+                "rendered_url": "http://127.0.0.1:4960/assets/source.png", "rendered_sha256": image_sha,
+                "rendered_bytes": image_bytes, "resource_type": "image", "temporal_mode": "still",
+                "crop_by_viewport": {profile: {"width": width, "height": 80, "object_fit": "cover", "object_position": "50% 50%"} for profile, width in (("wide", 120), ("narrow", 100))},
+            }
+            visible_path.write_text(json.dumps(payload), encoding="utf-8")
+            route_path = project.state / "route-manifest.json"
+            manifest = json.loads(route_path.read_text(encoding="utf-8"))
+            failures = INITIALIZER.visible_decision_source_manifest_failures(payload, project=project.project,
+                route_manifest=manifest, route_manifest_path=route_path,
+                proof_identity="build_id=fixture-proof-build-0001; route_key=home",
+                require_construction_v2=True, allow_pending_construction_authorization=True)
+            self.assertEqual([], failures, failures)
+            dossier = project.state / "reference-dossier.md"
+            dossier.write_text(body, encoding="utf-8")
+            dossier_core_before = INITIALIZER.dossier_core_sha256(dossier)
+            action = INITIALIZER.begin_construction_journal(project.project, manifest_path=route_path,
+                dossier_path=dossier, visible_path=visible_path, visible_payload=payload)
+            self.assertEqual("began-construction", action["action"])
+            self.assertEqual(dossier_core_before, INITIALIZER.dossier_core_sha256(dossier))
+            self.assertIn(".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(visible_path), dossier.read_text(encoding="utf-8"))
+            authorized = json.loads(visible_path.read_text(encoding="utf-8"))
+            entry = json.loads((project.project / authorized["construction_authorization"]["entry_path"]).read_text(encoding="utf-8"))
+            self.assertTrue(any(row["path"] == "assets/source.png" and row["sha256"] == image_sha for row in entry["asset_files"]))
+
+    def test_v2_carrier_event_must_match_its_exact_source_target_and_trigger(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            body = project.body()
+            manifest_path = project.state / "visible-decision-sources.json"
+            old_binding = ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path)
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            decision = next(row for row in payload["decisions"] if row["category"] == "effect")
+            source_id = decision["source_mapping"]["id"]
+            observation = json.loads((project.captures / f"{source_id}-observation.json").read_text(encoding="utf-8"))
+            profiles = {}
+            for profile in ("wide", "narrow"):
+                state_id = decision["bindings"][0 if profile == "wide" else 1]["source_state"]["id"]
+                state = observation["states_by_viewport"][profile][state_id]
+                target = next(
+                    target for page in observation["interaction_census_by_viewport"][profile]["pages"]
+                    for target in page["targets"] if state_id in target["source_state_ids"]
+                )
+                input_ = next(item for item in target["inputs"] if item["input_kind"] == state["trigger"]["type"])
+                profiles[profile] = (state, target, input_)
+            decision["dominant_behavior_carrier"] = {
+                "source_targets": {
+                    profile: {field: target[field] for field in ("target_id", "selector", "semantic_key", "tag", "role")}
+                    for profile, (_state, target, _input) in profiles.items()
+                },
+                "source_states": {
+                    profile: {"id": state_id, "sha256": INITIALIZER.canonical_json_sha256(state)}
+                    for profile, (state, _target, _input) in profiles.items()
+                },
+                "source_triggers": {profile: state["trigger"] for profile, (state, _target, _input) in profiles.items()},
+                "source_surfaces": {
+                    profile: {field: target[field] for field in ("selector", "semantic_key", "tag", "role")}
+                    for profile, (_state, target, _input) in profiles.items()
+                },
+                "source_evidence": {
+                    profile: {
+                        "before_sha256": input_["evidence"]["before"]["sha256"],
+                        "after_sha256": input_["evidence"]["after"]["sha256"],
+                        "settled_sha256": input_["evidence"]["settled"]["sha256"],
+                    } for profile, (_state, _target, input_) in profiles.items()
+                },
+                # e0001 exists, but its recorder target is deliberately a
+                # different label from the observed state trigger target.
+                "source_event_ids": {"wide": ["wide/e0001"], "narrow": ["narrow/e0001"]},
+                "build_component_key": decision["bindings"][0]["component_key"],
+                "behavior_kind": "source hover relocation",
+            }
+            manifest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(old_binding, ".design-dna/visible-decision-sources.json plus sha256:" + sha256_of(manifest_path))
+            failures = project.failures(body)
+        self.assertTrue(any("dominant_behavior_carrier does not type-bind" in item for item in failures), failures)
 
     def test_combination_and_ledger_check_are_required(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -3523,7 +4386,21 @@ class MechanismGateTests(unittest.TestCase):
         self.assertTrue(any("schema_version 5" in item for item in failures), failures)
 
     def test_session_without_mechanism_sheet_is_rejected(self) -> None:
-        failures = self.run_with(sheet=False)
+        with tempfile.TemporaryDirectory() as temporary:
+            project = DossierProject(temporary)
+            # Build the complete source-bound fixture before removing the one
+            # item under test. sheet=False also omits authored state evidence,
+            # which prevents the fixture builder from reaching this validator.
+            body = project.body(strong_rows=self.rows_with_first(project))
+            observation = project.captures / "strong-1-observation.json"
+            previous_sha = sha256_of(observation)
+            payload = json.loads(observation.read_text(encoding="utf-8"))
+            self.assertIn("states_by_viewport", payload)
+            self.assertIsInstance(payload.pop("mechanisms"), list)
+            observation.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            # Reach the missing-sheet check, not merely a stale outer digest.
+            body = body.replace(previous_sha, sha256_of(observation))
+            failures = project.failures(body)
         self.assertTrue(any("mechanism sheet" in item for item in failures), failures)
 
     def test_thin_site_with_one_mechanism_is_rejected(self) -> None:
@@ -3751,8 +4628,19 @@ class StructureGateTests(unittest.TestCase):
     def test_observation_without_first_screen_structure_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = DossierProject(temporary)
-            failures = project.failures(project.body(
-                strong_rows=self.rows_with_first(project, structure=False)))
+            # Build valid construction evidence first. structure=False also
+            # removes authored states, crashing the fixture before the actual
+            # missing-first-screen validation can run.
+            body = project.body(strong_rows=self.rows_with_first(project))
+            observation = project.captures / "strong-1-observation.json"
+            previous_sha = sha256_of(observation)
+            payload = json.loads(observation.read_text(encoding="utf-8"))
+            self.assertIn("states_by_viewport", payload)
+            self.assertIsInstance(payload.pop("first_screen"), dict)
+            self.assertEqual({"wide", "narrow"}, set(payload.pop("first_screens")))
+            observation.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            body = body.replace(previous_sha, sha256_of(observation))
+            failures = project.failures(body)
         self.assertTrue(
             any("first-screen structure" in i for i in failures), failures
         )
@@ -4477,6 +5365,175 @@ class SequenceReadTests(unittest.TestCase):
 
 
 class RuntimeContractAdversarialTests(unittest.TestCase):
+    def test_autonomous_watch_rejects_empty_proof_and_shorter_than_source_recording(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            census_cell = fixture.census_cell()
+            census_path = fixture.state / "evidence" / "component-census.json"
+            payload = json.loads(census_path.read_text(encoding="utf-8"))
+            watch = payload["checks"][0]["autonomous_watch"]
+            watch["initial"] = {}
+            watch["final"] = {}
+            watch["animation_samples"] = []
+            watch["events"] = [{"event_id": "forged"}]
+            watch["source_recording"]["minimum_duration_ms"] = 180_000
+            watch["recording_grounded_dwell_ms"] = 90_000
+            census_path.write_text(json.dumps(payload), encoding="utf-8")
+            census_cell = (
+                ".design-dna/evidence/component-census.json plus sha256:"
+                + sha256_of(census_path)
+            )
+            failures = fixture.failures(fixture.body(census=census_cell))
+        self.assertTrue(
+            any("recording-grounded continuous autonomous-surface" in failure for failure in failures),
+            failures,
+        )
+
+    def test_component_census_cannot_omit_recording_grounded_late_surface_watch(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            census_cell = fixture.census_cell()
+            census_path = fixture.state / "evidence" / "component-census.json"
+            payload = json.loads(census_path.read_text(encoding="utf-8"))
+            payload["checks"][0].pop("autonomous_watch")
+            census_path.write_text(json.dumps(payload), encoding="utf-8")
+            census_cell = (
+                ".design-dna/evidence/component-census.json plus sha256:"
+                + sha256_of(census_path)
+            )
+            failures = fixture.failures(fixture.body(census=census_cell))
+        self.assertTrue(
+            any("recording-grounded continuous autonomous-surface" in failure for failure in failures),
+            failures,
+        )
+
+    def test_watch_rejects_forged_continuous_video_and_short_viewport_swap(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            census_cell = fixture.census_cell()
+            census_path = fixture.state / "evidence" / "component-census.json"
+            payload = json.loads(census_path.read_text(encoding="utf-8"))
+            full_watch = payload["checks"][0]["autonomous_watch"]
+            full_watch["visual_recording"] = {
+                "file": "component-census-interaction-videos/forged-visual.webm",
+                "bytes": 1,
+                "sha256": "f" * 64,
+                "duration_ms": 96_000,
+                "fps": 20,
+                "width": 1440,
+                "height": 900,
+            }
+            rendered_short = payload["checks"][0]["rendered_qa"]["short_height"]["autonomous_watch"]
+            rendered_short["viewport"]["height"] = payload["checks"][0]["height"]
+            census_path.write_text(json.dumps(payload), encoding="utf-8")
+            census_cell = (
+                ".design-dna/evidence/component-census.json plus sha256:"
+                + sha256_of(census_path)
+            )
+            failures = fixture.failures(fixture.body(census=census_cell))
+        self.assertTrue(
+            any("recording-grounded continuous autonomous-surface" in failure for failure in failures),
+            failures,
+        )
+
+    def test_watch_rejects_repeated_visual_sample_as_fake_continuity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            census_cell = fixture.census_cell()
+            census_path = fixture.state / "evidence" / "component-census.json"
+            payload = json.loads(census_path.read_text(encoding="utf-8"))
+            visual_samples = payload["checks"][0]["autonomous_watch"]["visual_samples"]
+            visual_samples[1]["at_ms"] = visual_samples[0]["at_ms"]
+            census_path.write_text(json.dumps(payload), encoding="utf-8")
+            census_cell = (
+                ".design-dna/evidence/component-census.json plus sha256:"
+                + sha256_of(census_path)
+            )
+            failures = fixture.failures(fixture.body(census=census_cell))
+        self.assertTrue(
+            any("recording-grounded continuous autonomous-surface" in failure for failure in failures),
+            failures,
+        )
+
+    def test_active_modal_blocks_only_when_inert_focus_and_generated_evidence_all_agree(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = DossierProject(temporary)
+            evidence: dict[str, dict[str, object]] = {}
+            for moment in ("before", "after", "settled"):
+                frame = fixture.captures / f"modal-{moment}.png"
+                write_png(frame)
+                evidence[moment] = {
+                    "file": f"references/{frame.name}",
+                    "bytes": frame.stat().st_size,
+                    "sha256": sha256_of(frame),
+                }
+            census = fixture.interaction_census(
+                "strong-1", "https://strong-1.example.test/", "wide", evidence
+            )
+            target = census["pages"][0]["targets"][0]
+            modal_probe = {
+                "target": {
+                    "inert_ancestor": {"tag": "main"},
+                    "aria_hidden_ancestor": None,
+                    "focus_blocked": True,
+                },
+                "hit_test": {
+                    "hits_target": False,
+                    "top": {"tag": "div"},
+                    "blocking_overlay": {"role": "dialog", "visible": True, "auto_dismissed": False},
+                },
+            }
+            target["inputs"][0] = {
+                "input_kind": "hover",
+                "input_value": None,
+                "safety": "blocked-active-modal",
+                "status": "blocked",
+                "source_state_id": "primary-hover",
+                "before_sha256": None,
+                "after_sha256": None,
+                "settled_sha256": None,
+                "changed_properties": [],
+                "change_classification": {
+                    "cosmetic": [], "structural_semantic": [], "diagnostic": []
+                },
+                "behavior": "Active dialog made the inert background control unavailable.",
+                "evidence": {**evidence, "active_modal": modal_probe},
+                "disposition": "blocked-active-modal",
+            }
+            census["blocked_side_effects"].append({
+                "target_id": target["target_id"],
+                "input_kind": "hover",
+                "reason": "active modal blocks the inert background",
+                "handoff": "Do not dismiss or bypass the modal.",
+                "disposition": "blocked-active-modal",
+                "active_modal": modal_probe,
+            })
+            census["totals"] = {
+                "targets_discovered": 2,
+                "inputs_discovered": 12,
+                "inputs_exercised": 9,
+                "inputs_blocked": 3,
+            }
+            expected_states = {"rest", "primary-hover", "primary-focus"}
+            accepted = INITIALIZER.interaction_census_failures(
+                census,
+                expected_profile="wide",
+                expected_state_ids=expected_states,
+                artifact_root=fixture.state,
+            )
+            self.assertFalse(
+                any("active-modal block" in failure for failure in accepted),
+                accepted,
+            )
+            target["inputs"][0]["evidence"]["active_modal"]["target"]["focus_blocked"] = False
+            rejected = INITIALIZER.interaction_census_failures(
+                census,
+                expected_profile="wide",
+                expected_state_ids=expected_states,
+                artifact_root=fixture.state,
+            )
+        self.assertTrue(any("active-modal block" in failure for failure in rejected), rejected)
+
     def test_selection_and_interaction_rows_cannot_be_retrofit_or_omitted(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = DossierProject(temporary)

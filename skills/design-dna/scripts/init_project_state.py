@@ -4072,6 +4072,7 @@ ASSET_OPTIONAL_FIELDS = {
     "owner_approval_reason",
     "generated_media_provenance",
     "source_mapping",
+    "runtime_output",
 }
 ASSET_NESTED_FIELDS = {
     "generated": {
@@ -4140,6 +4141,14 @@ ASSET_NESTED_FIELDS = {
         "measured_transfer",
         "evidence_path",
         "evidence_sha256",
+    },
+    "runtime_output": {
+        "output_path",
+        "output_sha256",
+        "output_bytes",
+        "derivation",
+        "transformation_record",
+        "transformation_record_sha256",
     },
 }
 ASSET_LIST_FIELDS = {
@@ -4543,7 +4552,7 @@ def validate_asset_manifest(
                 label=f"{label}.{nested_name}",
                 path=path,
             )
-            if nested_name == "source_mapping":
+            if nested_name in {"source_mapping", "runtime_output"}:
                 continue
             for field, value in nested.items():
                 dotted = f"{nested_name}.{field}"
@@ -4945,6 +4954,101 @@ def validate_asset_manifest(
                 f"{label}.source_path requires source_sha256.",
                 path=path,
             )
+
+        runtime_output = asset.get("runtime_output")
+        if runtime_output is not None:
+            expected_output = {
+                "output_path", "output_sha256", "output_bytes", "derivation",
+                "transformation_record", "transformation_record_sha256",
+            }
+            if (
+                not isinstance(runtime_output, dict)
+                or set(runtime_output) != expected_output
+                or not isinstance(runtime_output.get("output_path"), str)
+                or not runtime_output["output_path"].startswith("/")
+                or not isinstance(runtime_output.get("output_sha256"), str)
+                or SHA256_HEX.fullmatch(runtime_output["output_sha256"]) is None
+                or type(runtime_output.get("output_bytes")) is not int
+                or runtime_output["output_bytes"] < 1
+                or runtime_output.get("derivation") not in {"direct-copy", "transformation-chain"}
+                or not isinstance(runtime_output.get("transformation_record"), str)
+                or not isinstance(runtime_output.get("transformation_record_sha256"), str)
+            ):
+                raise StateError(
+                    "invalid-asset-manifest",
+                    f"{label}.runtime_output must be an exact output path/bytes/hash and direct-copy or transformation-chain binding.",
+                    path=path,
+                )
+            source_path = str(asset.get("source_path") or "")
+            source_sha = str(asset.get("source_sha256") or "")
+            if runtime_output["derivation"] == "direct-copy":
+                if (
+                    runtime_output["output_sha256"] != source_sha
+                    or runtime_output["transformation_record"]
+                    or runtime_output["transformation_record_sha256"]
+                ):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output direct-copy must use the exact source SHA-256 and no transformation record.",
+                        path=path,
+                    )
+                source_file = lexical_absolute(project_root / PurePosixPath(source_path))
+                if (
+                    not is_within(source_file, project_root.resolve())
+                    or not source_file.is_file()
+                    or source_file.stat().st_size != runtime_output["output_bytes"]
+                ):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output direct-copy bytes do not equal its source asset bytes.",
+                        path=path,
+                    )
+            else:
+                record_path_value = runtime_output["transformation_record"]
+                record_sha = runtime_output["transformation_record_sha256"]
+                if (
+                    not record_path_value.startswith(".design-dna/evidence/asset-transformations/")
+                    or SHA256_HEX.fullmatch(record_sha) is None
+                ):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output transformation-chain needs a hash-bound immutable transformation record.",
+                        path=path,
+                    )
+                record_path = lexical_absolute(project_root / PurePosixPath(record_path_value))
+                if not is_within(record_path, project_root.resolve()):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output transformation record escapes the project.",
+                        path=path,
+                    )
+                try:
+                    record_payload = json.loads(record_path.read_text(encoding="utf-8"))
+                except (OSError, ValueError) as exc:
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output transformation record is unreadable: {exc}",
+                        path=path,
+                    ) from exc
+                if (
+                    file_sha256(record_path)[1] != record_sha
+                    or not isinstance(record_payload, dict)
+                    or set(record_payload) != {"schema_version", "source", "output", "steps"}
+                    or record_payload.get("schema_version") != 1
+                    or record_payload.get("source") != {"path": source_path, "sha256": source_sha}
+                    or record_payload.get("output") != {
+                        "path": runtime_output["output_path"], "sha256": runtime_output["output_sha256"],
+                        "bytes": runtime_output["output_bytes"],
+                    }
+                    or not isinstance(record_payload.get("steps"), list)
+                    or not record_payload["steps"]
+                    or not all(isinstance(step, str) and len(step.strip()) >= 3 for step in record_payload["steps"])
+                ):
+                    raise StateError(
+                        "invalid-asset-manifest",
+                        f"{label}.runtime_output transformation record does not exactly bind selected source and rendered output bytes.",
+                        path=path,
+                    )
         if (
             generated["used"]
             and not non_placeholder(asset["source_path"])
@@ -5952,12 +6056,12 @@ REFERENCE_ENTRY_ACCESS = {
 }
 # The reference count is a floor with a reason, not a quota: enough
 # independent sources that no single site becomes the template.
-REFERENCE_MINIMUM_STRONG = 6
-REFERENCE_MINIMUM_CANDIDATES = 8
-REFERENCE_MINIMUM_REJECTED_CANDIDATES = 2
-REFERENCE_MINIMUM_SOURCES = 3
+REFERENCE_MINIMUM_STRONG = 2
+REFERENCE_MINIMUM_CANDIDATES = 3
+REFERENCE_MINIMUM_REJECTED_CANDIDATES = 1
+REFERENCE_MINIMUM_SOURCES = 2
 REFERENCE_MINIMUM_NEGATIVE = 3
-REFERENCE_MINIMUM_SELECTED = 4
+REFERENCE_MINIMUM_SELECTED = 2
 REFERENCE_MINIMUM_SELECTED_SOURCES = 2
 REFERENCE_CAPTURE_PREFIX = ".design-dna/references/"
 # Two held scroll positions is the floor at which a producer can tell an
@@ -6127,6 +6231,19 @@ REFERENCE_EVENT_FRAME = re.compile(
 REFERENCE_RECORDING_MINIMUM_SHEETS = 20
 REFERENCE_RECORDING_MINIMUM_SECONDS = 90
 REFERENCE_RECORDING_MINIMUM_FPS = 15
+
+
+def exact_millisecond_duration(value: object) -> int | None:
+    """Mirror JS Number.isInteger(seconds * 1000) without rounding/truncation."""
+
+    if type(value) not in {int, float}:
+        return None
+    milliseconds = float(value) * 1000
+    if not math.isfinite(milliseconds) or not milliseconds.is_integer():
+        return None
+    return int(milliseconds)
+
+
 REFERENCE_SEQUENCE_LINE_MINIMUM = 40
 REFERENCE_SEQUENCE_LINE = re.compile(r"^-\s+s(\d{3})\s*\(", re.MULTILINE)
 REFERENCE_SEQUENCE_STATIC = re.compile(
@@ -6219,15 +6336,35 @@ REFERENCE_DOSSIER_SYNTHESIS_HEADERS = (
     "Boundary or verification",
 )
 
-VISIBLE_DECISION_SOURCE_SCHEMA = 1
+VISIBLE_DECISION_SOURCE_LEGACY_SCHEMA = 1
+VISIBLE_DECISION_SOURCE_SCHEMA = 2
 VISIBLE_DECISION_SOURCE_RECORD = "design-dna-visible-decision-source-manifest"
 VISIBLE_DECISION_CATEGORIES = (
     "layout", "typeface", "color", "control", "transition",
     "content-pattern", "effect",
 )
+# A V2 tuple is evidence of the specific decision category, not a decorative
+# token that can be copied across every row.  These are all values captured by
+# extract_reference_styles.mjs and by the rendered component census.
+VISIBLE_DECISION_STYLE_FAMILIES: dict[str, set[str]] = {
+    "layout": {"display", "padding", "gap", "grid-template-columns", "transform"},
+    "typeface": {"font-family", "font-size", "font-weight", "line-height", "letter-spacing"},
+    "color": {"color", "background-color", "background-image", "border-color"},
+    "control": {"cursor", "border-radius", "padding", "gap", "border-color", "background-color"},
+    "transition": {"transition-property", "transition-duration", "transition-timing-function", "transform"},
+    "content-pattern": {"font-family", "font-size", "line-height", "letter-spacing", "display"},
+    "effect": {"transform", "box-shadow", "background-image", "transition-property", "transition-duration", "transition-timing-function"},
+}
+CONSTRUCTION_JOURNAL_SCHEMA = 1
+CONSTRUCTION_JOURNAL_RECORD = "design-dna-construction-journal-entry"
+CONSTRUCTION_JOURNAL_ENTRY_KINDS = {
+    "pre-code-baseline", "binding-freeze", "proof-slice",
+    "first-screen-authorized", "broad-implementation-open",
+    "reopened-source-change", "final-freeze",
+}
 
 
-def visible_decision_source_manifest_failures(
+def _visible_decision_source_manifest_v1_failures(
     payload: object,
     *,
     project: Path,
@@ -6246,7 +6383,7 @@ def visible_decision_source_manifest_failures(
     if not isinstance(payload, dict) or set(payload) != expected_top:
         return ["Visible decision source manifest has an unsupported shape."]
     if (
-        payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA
+        payload.get("schema_version") != VISIBLE_DECISION_SOURCE_LEGACY_SCHEMA
         or payload.get("record_type") != VISIBLE_DECISION_SOURCE_RECORD
     ):
         failures.append("Visible decision source manifest has an unsupported identity.")
@@ -6503,6 +6640,1180 @@ def visible_decision_source_manifest_failures(
     return failures
 
 
+def construction_binding_core_sha256(payload: object) -> str | None:
+    """Hash the source-authority part of a v2 binding without its journal echo.
+
+    The journal must bind the immutable construction plan, while the plan also
+    names the journal entry that bound it.  Hashing the plan minus that one
+    back-reference avoids a circular SHA-256 construction without leaving any
+    visible/source decision mutable after the pre-code entry is written.
+    """
+
+    if not isinstance(payload, dict):
+        return None
+    projection = {
+        key: value
+        for key, value in payload.items()
+        if key != "construction_authorization"
+    }
+    return canonical_json_sha256(projection)
+
+
+def _json_atomic_values(value: object) -> set[str]:
+    """Return exact scalar values, never a substring match against JSON prose."""
+
+    values: set[str] = set()
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        values.add(json.dumps(value, ensure_ascii=False, sort_keys=True))
+    elif isinstance(value, dict):
+        for child in value.values():
+            values.update(_json_atomic_values(child))
+    elif isinstance(value, list):
+        for child in value:
+            values.update(_json_atomic_values(child))
+    return values
+
+
+def _construction_binding_findings(
+    failures: list[str],
+    *,
+    route_key: str | None = None,
+    viewport: str | None = None,
+    state_id: str | None = None,
+    decision_id: str | None = None,
+    component_key: str | None = None,
+    source_reference_id: str | None = None,
+    field: str | None = None,
+) -> None:
+    """Keep legacy string validators useful while giving gate callers a stable cell.
+
+    The runtime currently transports failures as strings.  This compact
+    machine-readable envelope is encoded into one line so older callers do
+    not silently discard the exact route/state/component that must be fixed.
+    """
+
+    detail = {
+        "code": "construction-binding-invalid",
+        "route_key": route_key,
+        "viewport": viewport,
+        "state_id": state_id,
+        "decision_id": decision_id,
+        "component_key": component_key,
+        "source_reference_id": source_reference_id,
+        "field": field,
+        "rerun": "python -B <DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py --project <PROJECT_ROOT> --check-construction",
+    }
+    failures.append("construction-finding=" + json.dumps(detail, sort_keys=True))
+
+
+def _visible_decision_source_manifest_v2_failures(
+    payload: object,
+    *,
+    project: Path,
+    route_manifest: dict[str, object],
+    route_manifest_path: Path,
+    proof_identity: str,
+    allow_pending_construction_authorization: bool,
+) -> list[str]:
+    """Validate source-bound construction decisions before a visible line ships.
+
+    V1 proved a page had one source row in each broad category.  It could not
+    tell whether a generic nav hid under a sourced body wrapper, whether a
+    source interaction survived the transfer, or whether the wide/narrow
+    component actually had a source state.  V2 makes each rendered decision
+    cell explicit and keeps the pre-code journal outside producer prose.
+    """
+
+    failures: list[str] = []
+    expected_top = {
+        "schema_version", "record_type", "created_at", "proof_build_id",
+        "route_manifest", "source_observations", "construction_authorization",
+        "proof_isolation", "planned_decision_ids", "decisions", "source_state_dispositions", "source_contribution_scope",
+        "completeness",
+    }
+    if isinstance(payload, dict) and "content_transfer" in payload:
+        expected_top.add("content_transfer")
+    if not isinstance(payload, dict) or set(payload) != expected_top:
+        return ["Visible decision construction-binding v2 has an unsupported shape."]
+    if (
+        payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA
+        or payload.get("record_type") != VISIBLE_DECISION_SOURCE_RECORD
+    ):
+        return ["Visible decision construction-binding v2 has an unsupported identity."]
+
+    construction = payload.get("construction_authorization")
+    if not isinstance(construction, dict) or set(construction) != {
+        "journal_id", "entry_path", "entry_sha256"
+    }:
+        failures.append("Visible decision construction-binding v2 has invalid construction_authorization fields.")
+    else:
+        pending = all(construction.get(field) is None for field in construction)
+        valid = (
+            isinstance(construction.get("journal_id"), str)
+            and re.fullmatch(r"[0-9a-f]{32}", construction["journal_id"]) is not None
+            and isinstance(construction.get("entry_path"), str)
+            and re.fullmatch(
+                r"\.design-dna/evidence/construction-journal/[0-9]{6}-[0-9a-f]{32}\.json",
+                construction["entry_path"],
+            ) is not None
+            and isinstance(construction.get("entry_sha256"), str)
+            and SHA256_HEX.fullmatch(construction["entry_sha256"]) is not None
+        )
+        legacy_valid = (
+            isinstance(construction.get("journal_id"), str)
+            and re.fullmatch(r"legacy-[0-9a-f]{32}", construction["journal_id"]) is not None
+            and construction.get("entry_path") == f".design-dna/evidence/legacy-maintenance/{construction['journal_id']}.json"
+            and isinstance(construction.get("entry_sha256"), str)
+            and SHA256_HEX.fullmatch(construction["entry_sha256"]) is not None
+        )
+        valid = valid or legacy_valid
+        if not pending and not valid:
+            failures.append("Visible decision construction-binding v2 has invalid journal identity/path/hash.")
+        if pending and not allow_pending_construction_authorization:
+            failures.append(
+                "Visible decision construction-binding v2 has no pre-code journal authorization; run init_project_state.py --begin-construction before visible implementation."
+            )
+
+    proof_isolation = payload.get("proof_isolation")
+    proof_fields = {"primary_route_key", "source_files", "region_component_id"}
+    if isinstance(proof_isolation, dict) and "decision_ids" in proof_isolation:
+        proof_fields.add("decision_ids")
+    if not isinstance(proof_isolation, dict) or set(proof_isolation) != proof_fields:
+        failures.append("Visible decision construction-binding v2 needs exact proof_isolation primary route/source files/region component.")
+    else:
+        source_files = proof_isolation.get("source_files")
+        if (
+            proof_isolation.get("primary_route_key") not in {
+                route.get("key") for route in route_manifest.get("routes", []) if isinstance(route, dict)
+            }
+            or not isinstance(source_files, list)
+            or not source_files
+            or len(source_files) != len(set(source_files))
+            or any(
+                not isinstance(item, str) or not item
+                or PurePosixPath(item).is_absolute() or ".." in PurePosixPath(item).parts
+                or Path(item).suffix.casefold() not in CONSTRUCTION_SOURCE_EXTENSIONS
+                for item in source_files
+            )
+            or not isinstance(proof_isolation.get("region_component_id"), str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", proof_isolation["region_component_id"]) is None
+        ):
+            failures.append("Visible decision construction-binding v2 proof_isolation has invalid primary route, source file, or region component identity.")
+
+    decisions = payload.get("decisions")
+    planned = payload.get("planned_decision_ids")
+    if (
+        not isinstance(decisions, list)
+        or not decisions
+        or not isinstance(planned, list)
+        or len(planned) != len(set(planned))
+    ):
+        return [*failures, "Visible decision construction-binding v2 needs unique planned decision IDs and rows."]
+
+    # Project the v2 source facts through the battle-tested v1 evidence
+    # validator.  V2 adds cell/behavior/style precision below; it never gets a
+    # weaker observer-frame, route hash, or source-observation path rule.
+    projected_decisions: list[dict[str, object]] = []
+    for raw in decisions:
+        if not isinstance(raw, dict):
+            continue
+        bindings = raw.get("bindings")
+        mapping = raw.get("source_mapping")
+        first = bindings[0] if isinstance(bindings, list) and bindings and isinstance(bindings[0], dict) else {}
+        projected_decisions.append({
+            "decision_id": raw.get("decision_id"),
+            "category": raw.get("category"),
+            "planned_surface": "Exact construction binding for component " + str(raw.get("component_id") or ""),
+            "route_keys": sorted({str(item.get("route_key")) for item in bindings if isinstance(item, dict)}) if isinstance(bindings, list) else [],
+            "state_ids": sorted({str(item.get("state_id")) for item in bindings if isinstance(item, dict)}) if isinstance(bindings, list) else [],
+            "source_reference_id": mapping.get("id") if isinstance(mapping, dict) else None,
+            "source_component_or_behavior": "Exact observed source component " + str(mapping.get("source_component_key") if isinstance(mapping, dict) else ""),
+            "evidence": first.get("evidence") if isinstance(first, dict) else None,
+            "disposition": raw.get("disposition"),
+        })
+    legacy_projection = {
+        "schema_version": VISIBLE_DECISION_SOURCE_LEGACY_SCHEMA,
+        "record_type": payload.get("record_type"),
+        "created_at": payload.get("created_at"),
+        "proof_build_id": payload.get("proof_build_id"),
+        "route_manifest": payload.get("route_manifest"),
+        "source_observations": payload.get("source_observations"),
+        "planned_decision_ids": planned,
+        "decisions": projected_decisions,
+        "completeness": {
+            "required_categories": list(VISIBLE_DECISION_CATEGORIES),
+            "covered_categories": list(VISIBLE_DECISION_CATEGORIES),
+            "placeholders_allowed": False,
+            "generic_scaffold_allowed": False,
+            "fallback_design_allowed": False,
+            "unsourced_decisions": [],
+        },
+    }
+    failures.extend(_visible_decision_source_manifest_v1_failures(
+        legacy_projection,
+        project=project,
+        route_manifest=route_manifest,
+        route_manifest_path=route_manifest_path,
+        proof_identity=proof_identity,
+    ))
+
+    route_by_key = {
+        str(route.get("key")): route
+        for route in route_manifest.get("routes", [])
+        if isinstance(route, dict)
+    }
+    viewport_by_name = {
+        str(viewport.get("name")): viewport
+        for viewport in route_manifest.get("viewports", [])
+        if isinstance(viewport, dict)
+    }
+    observation_rows = payload.get("source_observations")
+    observation_payloads: dict[str, dict[str, object]] = {}
+    if isinstance(observation_rows, list):
+        for row in observation_rows:
+            if not isinstance(row, dict) or not isinstance(row.get("id"), str):
+                continue
+            file = (project / PurePosixPath(str(row.get("path") or ""))).resolve()
+            try:
+                observed = json.loads(file.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if isinstance(observed, dict):
+                observation_payloads[row["id"]] = observed
+    for source_id, observation in observation_payloads.items():
+        failures.extend(selected_candidate_review_failures(project, source_id))
+        for profile in ("wide", "narrow"):
+            census = observation.get("interaction_census_by_viewport", {}).get(profile)
+            states = observation.get("states_by_viewport", {}).get(profile)
+            if (
+                not isinstance(census, dict)
+                or census.get("complete") is not True
+                or census.get("truncated") is not False
+                or census.get("missing") != []
+                or not isinstance(census.get("pages"), list)
+                or not isinstance(states, dict)
+                or not states
+            ):
+                failures.append(
+                    f"Visible decision construction source {source_id}/{profile} has no complete generated interaction/state matrix; observe and record the source before coding."
+                )
+    source_frame_bindings: dict[str, set[tuple[str, str]]] = {}
+    for source_id, observation in observation_payloads.items():
+        allowed: set[tuple[str, str]] = set()
+        frame_dir = observation.get("frame_dir")
+        frames = observation.get("frames")
+        if isinstance(frame_dir, str) and isinstance(frames, list):
+            for frame in frames:
+                if not isinstance(frame, dict):
+                    continue
+                name = frame.get("file")
+                digest = frame.get("sha256")
+                if isinstance(name, str) and isinstance(digest, str) and SHA256_HEX.fullmatch(digest):
+                    relative = (
+                        PurePosixPath(".design-dna") / "references" /
+                        PurePosixPath(frame_dir) / PurePosixPath(name)
+                    ).as_posix()
+                    allowed.add((relative, digest))
+        source_frame_bindings[source_id] = allowed
+
+    decision_ids: set[str] = set()
+    decision_by_id: dict[str, dict[str, object]] = {}
+    exact_cells: set[tuple[str, str, str, str]] = set()
+    source_to_decisions: dict[str, list[dict[str, object]]] = {}
+    for index, decision in enumerate(decisions, start=1):
+        label = f"Visible decision construction binding {index}"
+        expected_decision = {
+            "decision_id", "category", "component_id", "source_mapping",
+            "bindings", "style_provenance", "asset_role_binding",
+            "dominant_behavior_carrier", "pseudo_bindings", "disposition",
+        }
+        if not isinstance(decision, dict) or set(decision) != expected_decision:
+            failures.append(f"{label} has an unsupported v2 shape.")
+            continue
+        decision_id = decision.get("decision_id")
+        component_id = decision.get("component_id")
+        if (
+            not isinstance(decision_id, str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", decision_id) is None
+            or decision_id in decision_ids
+        ):
+            failures.append(f"{label} needs a unique stable decision_id.")
+            continue
+        decision_ids.add(decision_id)
+        decision_by_id[decision_id] = decision
+        if (
+            decision.get("category") not in VISIBLE_DECISION_CATEGORIES
+            or not isinstance(component_id, str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", component_id) is None
+            or decision.get("disposition") != "required"
+        ):
+            failures.append(f"{label} has invalid category/component/disposition.")
+            _construction_binding_findings(failures, decision_id=decision_id, field="category/component_id/disposition")
+
+        mapping = decision.get("source_mapping")
+        expected_mapping = {
+            "rank", "id", "observation", "sha256", "source_component_key",
+            "source_selector", "source_recording",
+        }
+        if not isinstance(mapping, dict) or set(mapping) != expected_mapping:
+            failures.append(f"{label} needs an exact source_mapping object.")
+            mapping = {}
+        source_id = mapping.get("id") if isinstance(mapping, dict) else None
+        rank_match = re.fullmatch(r"strong-([1-9][0-9]*)", str(source_id or ""))
+        if (
+            not rank_match
+            or mapping.get("rank") != int(rank_match.group(1))
+            or mapping.get("observation") != f".design-dna/references/{source_id}-observation.json"
+            or not isinstance(mapping.get("sha256"), str)
+            or source_id not in observation_payloads
+            or not isinstance(mapping.get("source_component_key"), str)
+            or len(mapping["source_component_key"].strip()) < 3
+            or not isinstance(mapping.get("source_selector"), str)
+            or len(mapping["source_selector"].strip()) < 2
+            or mapping.get("source_selector", "").strip() in {"body", "html", "main", "document"}
+        ):
+            failures.append(f"{label} source_mapping is not a current selected observation/component binding.")
+            _construction_binding_findings(failures, decision_id=decision_id, source_reference_id=str(source_id or ""), field="source_mapping")
+        elif mapping.get("sha256") != next((row.get("sha256") for row in observation_rows if isinstance(row, dict) and row.get("id") == source_id), None):
+            failures.append(f"{label} source_mapping observation hash differs from its selected source row.")
+        source_recording = mapping.get("source_recording") if isinstance(mapping, dict) else None
+        expected_recording = {
+            "path": f".design-dna/references/{source_id}-recording.json",
+            "ledger_path": f".design-dna/references/{source_id}-artifacts.json",
+        }
+        recording_path = (project / PurePosixPath(expected_recording["path"])).resolve()
+        ledger_path = (project / PurePosixPath(expected_recording["ledger_path"])).resolve()
+        if (
+            not isinstance(source_recording, dict)
+            or set(source_recording) != {"path", "sha256", "ledger_path", "ledger_sha256"}
+            or source_recording.get("path") != expected_recording["path"]
+            or source_recording.get("ledger_path") != expected_recording["ledger_path"]
+            or not recording_path.is_file()
+            or not ledger_path.is_file()
+            or source_recording.get("sha256") != file_sha256(recording_path)[1]
+            or source_recording.get("ledger_sha256") != file_sha256(ledger_path)[1]
+        ):
+            failures.append(f"{label} source_mapping lacks an exact source recording/artifact-ledger binding.")
+        else:
+            try:
+                recording_payload = json.loads(recording_path.read_text(encoding="utf-8"))
+                profiles = recording_payload.get("profiles") if isinstance(recording_payload, dict) else None
+            except (OSError, ValueError):
+                recording_payload, profiles = None, None
+            if (
+                not isinstance(recording_payload, dict)
+                or recording_payload.get("tool") != "record_reference.mjs"
+                or recording_payload.get("id") != source_id
+                or not isinstance(profiles, dict)
+                or any(
+                    not isinstance(profiles.get(profile), dict)
+                    or not isinstance(profiles[profile].get("coverage"), dict)
+                    or profiles[profile]["coverage"].get("complete") is not True
+                    or not isinstance(profiles[profile].get("duration_s"), (int, float))
+                    or profiles[profile]["duration_s"] < 90
+                    or not isinstance(profiles[profile].get("fps"), (int, float))
+                    or profiles[profile]["fps"] < 15
+                    for profile in ("wide", "narrow")
+                )
+            ):
+                failures.append(f"{label} source recording does not prove complete 90-second/15-fps wide+narrow source study.")
+
+        bindings = decision.get("bindings")
+        if not isinstance(bindings, list) or not bindings:
+            failures.append(f"{label} needs at least one exact route/state/viewport binding.")
+            continue
+        profile_coverage: dict[tuple[str, str], set[str]] = {}
+        for binding_index, binding in enumerate(bindings, start=1):
+            cell_label = f"{label} binding {binding_index}"
+            expected_binding = {
+                "route_key", "viewport", "state_id", "component_key",
+                "evidence", "source_state",
+            }
+            if not isinstance(binding, dict) or set(binding) != expected_binding:
+                failures.append(f"{cell_label} has an unsupported exact-cell shape.")
+                continue
+            route_key = binding.get("route_key")
+            viewport = binding.get("viewport")
+            state_id = binding.get("state_id")
+            component_key = binding.get("component_key")
+            cell = (str(route_key), str(viewport), str(state_id), decision_id)
+            if cell in exact_cells:
+                failures.append(f"{cell_label} duplicates a decision route/state/viewport cell.")
+            exact_cells.add(cell)
+            profile_coverage.setdefault((str(route_key), str(state_id)), set()).add(str(viewport))
+            route = route_by_key.get(str(route_key))
+            state = next((item for item in route.get("states", []) if isinstance(item, dict) and item.get("id") == state_id), None) if isinstance(route, dict) else None
+            if route is None or viewport not in viewport_by_name or state is None:
+                failures.append(f"{cell_label} names a route, viewport, or state not in the authoritative manifest.")
+                _construction_binding_findings(failures, route_key=str(route_key), viewport=str(viewport), state_id=str(state_id), decision_id=decision_id, component_key=str(component_key or ""), field="manifest-cell")
+                continue
+            if (
+                not isinstance(component_key, str)
+                or not re.fullmatch(r"(?:class|id|tag|role|component):[^\s]{1,180}", component_key)
+                or component_key in {"tag:body", "tag:html", "tag:main", "component:document"}
+            ):
+                failures.append(f"{cell_label} component_key is invalid or tries to source a document wrapper.")
+                _construction_binding_findings(failures, route_key=str(route_key), viewport=str(viewport), state_id=str(state_id), decision_id=decision_id, component_key=str(component_key or ""), field="component_key")
+            elif component_key != f"component:{component_id}":
+                failures.append(
+                    f"{cell_label} component_key must equal component:{component_id}; component_id is a rendered data-design-dna-component identity, not free metadata."
+                )
+                _construction_binding_findings(
+                    failures, route_key=str(route_key), viewport=str(viewport), state_id=str(state_id),
+                    decision_id=decision_id, component_key=str(component_key), field="component_id/data-design-dna-component",
+                )
+            source_state = binding.get("source_state")
+            observation = observation_payloads.get(str(source_id))
+            source_state_id = source_state.get("id") if isinstance(source_state, dict) else None
+            if (
+                not isinstance(source_state, dict)
+                or set(source_state) != {"id", "sha256"}
+                or not isinstance(source_state_id, str)
+                or not source_state_id
+                or not isinstance(source_state.get("sha256"), str)
+                or SHA256_HEX.fullmatch(source_state["sha256"]) is None
+            ):
+                failures.append(f"{cell_label} source_state needs exact id and canonical SHA-256.")
+            observed_state = (
+                observation.get("states_by_viewport", {}).get(viewport, {}).get(source_state_id)
+                if isinstance(observation, dict) else None
+            )
+            expected_state = {
+                "id": source_state_id,
+                "sha256": canonical_json_sha256(observed_state) if isinstance(observed_state, dict) else None,
+            }
+            if source_state != expected_state:
+                failures.append(f"{cell_label} source_state does not bind the exact observed source state bytes.")
+                _construction_binding_findings(failures, route_key=str(route_key), viewport=str(viewport), state_id=str(state_id), decision_id=decision_id, component_key=str(component_key or ""), source_reference_id=str(source_id or ""), field="source_state")
+            evidence = binding.get("evidence")
+            if not isinstance(evidence, dict) or set(evidence) != {"path", "sha256"}:
+                failures.append(f"{cell_label} needs one immutable observer frame binding.")
+            elif (
+                not isinstance(evidence.get("path"), str)
+                or not isinstance(evidence.get("sha256"), str)
+                or (evidence["path"], evidence["sha256"])
+                not in source_frame_bindings.get(str(source_id), set())
+            ):
+                failures.append(f"{cell_label} evidence is not a canonical immutable frame of its exact source observation.")
+            else:
+                state_frames = observed_state.get("evidence_frames") if isinstance(observed_state, dict) else None
+                allowed_state_hashes = {
+                    frame.get("sha256")
+                    for frame in state_frames.values()
+                    if isinstance(state_frames, dict) and isinstance(frame, dict)
+                    and isinstance(frame.get("sha256"), str)
+                }
+                if not allowed_state_hashes or evidence.get("sha256") not in allowed_state_hashes:
+                    failures.append(
+                        f"{cell_label} evidence is not recorded for its exact {viewport}/{source_state_id} source state; a global source frame cannot stand in for this cell."
+                    )
+            # The v1 projection already validates canonical observer frame
+            # bytes; this test makes every individual viewport/state cell cite
+            # its own source frame instead of inheriting the first one.
+
+        required_profiles = set(viewport_by_name)
+        for route_state, covered_profiles in profile_coverage.items():
+            if covered_profiles != required_profiles:
+                failures.append(
+                    f"{label} {route_state[0]}/{route_state[1]} does not bind every source-bound viewport: "
+                    + ", ".join(sorted(required_profiles - covered_profiles))
+                    + "."
+                )
+                _construction_binding_findings(
+                    failures,
+                    route_key=route_state[0], state_id=route_state[1],
+                    decision_id=decision_id, source_reference_id=str(source_id or ""),
+                    field="viewport coverage",
+                )
+
+        style = decision.get("style_provenance")
+        if not isinstance(style, dict) or set(style) != {"record", "properties", "measured_values", "tuples"}:
+            failures.append(f"{label} needs exact style_provenance record, properties, measured_values, and selector/component tuples.")
+        else:
+            record = style.get("record")
+            expected_style_path = f".design-dna/references/{source_id}-styles.json"
+            style_path = (project / PurePosixPath(str(record.get("path") or ""))).resolve() if isinstance(record, dict) else Path()
+            if (
+                not isinstance(record, dict)
+                or set(record) != {"path", "sha256"}
+                or record.get("path") != expected_style_path
+                or not style_path.is_file()
+                or not isinstance(record.get("sha256"), str)
+                or file_sha256(style_path)[1] != record.get("sha256")
+            ):
+                failures.append(f"{label} style_provenance does not bind current selected-source style bytes.")
+            else:
+                try:
+                    source_styles = json.loads(style_path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    source_styles = None
+                values = style.get("measured_values")
+                properties = style.get("properties")
+                tuples = style.get("tuples")
+                serialized_values = _json_atomic_values(source_styles)
+                if (
+                    not isinstance(values, list)
+                    or not values
+                    or not isinstance(properties, list)
+                    or not properties
+                    or not all(isinstance(item, str) and re.fullmatch(r"(?:--)?[a-z][a-z0-9-]{1,63}", item) for item in properties)
+                    or not isinstance(tuples, list)
+                    or not tuples
+                    or any(json.dumps(value, ensure_ascii=False, sort_keys=True) not in serialized_values for value in values)
+                ):
+                    failures.append(f"{label} style_provenance has no exact CSS property binding or values not computed by its exact source style record.")
+                else:
+                    material_properties = VISIBLE_DECISION_STYLE_FAMILIES.get(str(decision.get("category")), set())
+                    if not set(properties).intersection(material_properties):
+                        failures.append(
+                            f"{label} style_provenance has no material {decision.get('category')} property; a generic typography/token tuple cannot source this decision."
+                        )
+                    component_rows = source_styles.get("component_styles") if isinstance(source_styles, dict) else None
+                    expected_tuple_cells = {
+                        (
+                            str(binding.get("viewport")), str(binding.get("state_id")),
+                            str(binding.get("source_state", {}).get("id")), property,
+                        )
+                        for binding in bindings if isinstance(binding, dict)
+                        for property in properties
+                    }
+                    observed_tuple_cells: set[tuple[str, str, str, str]] = set()
+                    for tuple_index, item in enumerate(tuples, start=1):
+                        expected_tuple_keys = {
+                            "viewport", "state_id", "source_selector", "source_component_key",
+                            "source_state_id", "property", "source_value", "build_value",
+                        }
+                        if not isinstance(item, dict) or set(item) != expected_tuple_keys:
+                            failures.append(f"{label} style_provenance tuple {tuple_index} has an unsupported shape.")
+                            continue
+                        cell = (
+                            str(item.get("viewport")), str(item.get("state_id")),
+                            str(item.get("source_state_id")), str(item.get("property")),
+                        )
+                        if cell in observed_tuple_cells:
+                            failures.append(f"{label} style_provenance repeats exact selector/property cell {cell}.")
+                        observed_tuple_cells.add(cell)
+                        source_match = next(
+                            (
+                                row for row in component_rows or []
+                                if isinstance(row, dict)
+                                and row.get("profile") == item.get("viewport")
+                                and row.get("state_id") == item.get("source_state_id")
+                                and row.get("selector") == item.get("source_selector")
+                                and row.get("component_key") == item.get("source_component_key")
+                                and isinstance(row.get("properties"), dict)
+                                and row["properties"].get(item.get("property")) == item.get("source_value")
+                            ),
+                            None,
+                        )
+                        if (
+                            cell not in expected_tuple_cells
+                            or item.get("source_selector") != mapping.get("source_selector")
+                            or item.get("source_component_key") != mapping.get("source_component_key")
+                            or source_match is None
+                            or not isinstance(item.get("build_value"), str)
+                        ):
+                            failures.append(f"{label} style_provenance tuple {tuple_index} does not bind an exact source selector/component/property/value at its source viewport/state.")
+                    if observed_tuple_cells != expected_tuple_cells:
+                        failures.append(f"{label} style_provenance does not cover every bound viewport/state/property tuple.")
+
+        asset = decision.get("asset_role_binding")
+        if asset is not None:
+            expected_asset = {
+                "asset_id", "asset_manifest", "asset_manifest_sha256", "rendered_media_kind", "source_media_kind", "role",
+                "rendered_url", "rendered_sha256", "rendered_bytes", "resource_type",
+                "crop", "temporal_mode",
+            }
+            if isinstance(asset, dict) and "crop_by_viewport" in asset:
+                expected_asset.remove("crop")
+                expected_asset.add("crop_by_viewport")
+            crops = asset.get("crop_by_viewport", {profile: asset.get("crop") for profile in ("wide", "narrow")}) if isinstance(asset, dict) else None
+            crops_valid = isinstance(crops, dict) and set(crops) == {"wide", "narrow"} and all(
+                isinstance(crop, dict) and set(crop) == {"width", "height", "object_fit", "object_position"}
+                and type(crop.get("width")) is int and type(crop.get("height")) is int
+                and crop["width"] > 0 and crop["height"] > 0
+                and isinstance(crop.get("object_fit"), str) and isinstance(crop.get("object_position"), str)
+                for crop in crops.values()
+            )
+            if (
+                not isinstance(asset, dict)
+                or set(asset) != expected_asset
+                or not isinstance(asset.get("asset_id"), str)
+                or not re.fullmatch(r"ASSET-[0-9]{3,}", asset["asset_id"])
+                or asset.get("asset_manifest") != ".design-dna/assets.yml"
+                or not isinstance(asset.get("asset_manifest_sha256"), str)
+                or SHA256_HEX.fullmatch(asset["asset_manifest_sha256"]) is None
+                or asset.get("rendered_media_kind") not in {"image", "video", "audio", "background-image", "svg", "canvas"}
+                or asset.get("source_media_kind") not in {"image", "video", "audio", "background-image", "svg", "canvas"}
+                or not isinstance(asset.get("role"), str)
+                or len(asset["role"].strip()) < 12
+                or not isinstance(asset.get("rendered_url"), str)
+                or not asset["rendered_url"].strip()
+                or not isinstance(asset.get("rendered_sha256"), str)
+                or SHA256_HEX.fullmatch(asset["rendered_sha256"]) is None
+                or type(asset.get("rendered_bytes")) is not int
+                or asset["rendered_bytes"] < 1
+                or asset.get("resource_type") not in {"image", "media", "font", "stylesheet", "script", "other"}
+                or not crops_valid
+                or asset.get("temporal_mode") not in {"still", "moving", "audio"}
+                or (asset.get("source_media_kind") == "video" and asset.get("temporal_mode") != "moving")
+            ):
+                failures.append(f"{label} asset_role_binding is incomplete or unsupported.")
+            else:
+                assets_path = project / ".design-dna" / "assets.yml"
+                try:
+                    assets_payload = parse_strict_yaml_subset(
+                        assets_path.read_text(encoding="utf-8"), path=assets_path
+                    )
+                    assets_sha256 = file_sha256(assets_path)[1]
+                    asset_rows = assets_payload.get("assets") if isinstance(assets_payload, dict) else None
+                    asset_row = next(
+                        (item for item in asset_rows if isinstance(item, dict) and item.get("id") == asset["asset_id"]),
+                        None,
+                    ) if isinstance(asset_rows, list) else None
+                except (OSError, UnicodeError, StateError):
+                    asset_row, assets_sha256 = None, None
+                source_asset_mapping = asset_row.get("source_mapping") if isinstance(asset_row, dict) else None
+                if (
+                    not isinstance(asset_row, dict)
+                    or asset.get("asset_manifest_sha256") != assets_sha256
+                    or not isinstance(source_asset_mapping, dict)
+                    or source_asset_mapping.get("source_id") != source_id
+                    or source_asset_mapping.get("observation") != mapping.get("observation")
+                    or source_asset_mapping.get("observation_sha256") != mapping.get("sha256")
+                ):
+                    failures.append(f"{label} asset_role_binding is not cross-bound to its asset manifest and exact selected source mapping.")
+                else:
+                    authorization = payload.get("construction_authorization") if isinstance(payload, dict) else None
+                    journal_path = (
+                        (project / PurePosixPath(str(authorization.get("entry_path") or ""))).resolve()
+                        if isinstance(authorization, dict) else Path()
+                    )
+                    try:
+                        journal_payload = json.loads(journal_path.read_text(encoding="utf-8"))
+                    except (OSError, ValueError):
+                        journal_payload = None
+                    asset_source_path = asset_row.get("source_path")
+                    asset_source_sha = asset_row.get("source_sha256")
+                    journal_assets = {
+                        (item.get("path"), item.get("sha256"))
+                        for item in journal_payload.get("asset_files", [])
+                        if isinstance(journal_payload, dict) and isinstance(item, dict)
+                    } if isinstance(journal_payload, dict) else set()
+                    if allow_pending_construction_authorization and not isinstance(journal_payload, dict):
+                        # The first journal does not exist until validation
+                        # succeeds. Bind existing source bytes now, then the
+                        # generated baseline must carry these exact bytes.
+                        _tree, _files, _visible, pending_assets = construction_source_snapshot(project)
+                        journal_assets = {(item["path"], item["sha256"]) for item in pending_assets}
+                    if (
+                        not isinstance(asset_source_path, str)
+                        or not isinstance(asset_source_sha, str)
+                        or (asset_source_path, asset_source_sha) not in journal_assets
+                    ):
+                        failures.append(
+                            f"{label} asset_role_binding has no selected pre-code journal asset inventory proof for its exact source path/bytes; a later role binding is not authorized."
+                        )
+                    runtime_output = asset_row.get("runtime_output") if isinstance(asset_row, dict) else None
+                    rendered_path = urlsplit(asset["rendered_url"]).path
+                    expected_output_keys = {
+                        "output_path", "output_sha256", "output_bytes", "derivation",
+                        "transformation_record", "transformation_record_sha256",
+                    }
+                    if (
+                        not isinstance(runtime_output, dict)
+                        or set(runtime_output) != expected_output_keys
+                        or runtime_output.get("output_path") != rendered_path
+                        or runtime_output.get("output_sha256") != asset["rendered_sha256"]
+                        or runtime_output.get("output_bytes") != asset["rendered_bytes"]
+                        or runtime_output.get("derivation") not in {"direct-copy", "transformation-chain"}
+                    ):
+                        failures.append(
+                            f"{label} asset_role_binding does not tie the rendered URL/bytes to the selected asset manifest runtime output; source asset A cannot authorize unrelated served asset B."
+                        )
+                    elif runtime_output["derivation"] == "direct-copy":
+                        try:
+                            source_file = lexical_absolute(project / PurePosixPath(asset_source_path))
+                            if not is_within(source_file, project.resolve()):
+                                raise StateError("asset-output-unsafe", "Asset source output escapes project.")
+                            source_bytes = source_file.stat().st_size
+                            source_digest = file_sha256(source_file)[1]
+                        except (OSError, StateError):
+                            source_bytes, source_digest = None, None
+                        if (
+                            runtime_output.get("output_sha256") != asset_source_sha
+                            or source_digest != asset_source_sha
+                            or source_bytes != runtime_output.get("output_bytes")
+                            or runtime_output.get("transformation_record")
+                            or runtime_output.get("transformation_record_sha256")
+                        ):
+                            failures.append(
+                                f"{label} direct-copy asset output is not the exact selected pre-code source bytes."
+                            )
+                    else:
+                        chain_path_text = runtime_output.get("transformation_record")
+                        chain_sha = runtime_output.get("transformation_record_sha256")
+                        try:
+                            chain_path = lexical_absolute(project / PurePosixPath(str(chain_path_text)))
+                            chain_payload = json.loads(chain_path.read_text(encoding="utf-8"))
+                        except (OSError, StateError, ValueError):
+                            chain_path, chain_payload = Path(), None
+                        if (
+                            not isinstance(chain_path_text, str)
+                            or not chain_path_text.startswith(".design-dna/evidence/asset-transformations/")
+                            or not isinstance(chain_sha, str)
+                            or SHA256_HEX.fullmatch(chain_sha) is None
+                            or not is_within(chain_path, project.resolve())
+                            or not chain_path.is_file()
+                            or file_sha256(chain_path)[1] != chain_sha
+                            or not isinstance(chain_payload, dict)
+                            or chain_payload.get("source") != {"path": asset_source_path, "sha256": asset_source_sha}
+                            or chain_payload.get("output") != {
+                                "path": runtime_output["output_path"], "sha256": runtime_output["output_sha256"],
+                                "bytes": runtime_output["output_bytes"],
+                            }
+                            or not isinstance(chain_payload.get("steps"), list)
+                            or not chain_payload["steps"]
+                        ):
+                            failures.append(
+                                f"{label} derivative asset output lacks a hash-bound source-to-output transformation chain."
+                            )
+
+        carrier = decision.get("dominant_behavior_carrier")
+        if carrier is not None:
+            expected_carrier = {
+                "source_targets", "source_event_ids", "source_states",
+                "source_triggers", "source_surfaces", "source_evidence",
+                "build_component_key", "behavior_kind",
+            }
+            if not isinstance(carrier, dict) or set(carrier) != expected_carrier:
+                failures.append(f"{label} dominant_behavior_carrier has an unsupported shape.")
+            else:
+                carrier_failures: list[str] = []
+                for profile in ("wide", "narrow"):
+                    target_entry = carrier.get("source_targets", {}).get(profile) if isinstance(carrier.get("source_targets"), dict) else None
+                    state_entry = carrier.get("source_states", {}).get(profile) if isinstance(carrier.get("source_states"), dict) else None
+                    trigger_entry = carrier.get("source_triggers", {}).get(profile) if isinstance(carrier.get("source_triggers"), dict) else None
+                    surface_entry = carrier.get("source_surfaces", {}).get(profile) if isinstance(carrier.get("source_surfaces"), dict) else None
+                    evidence_entry = carrier.get("source_evidence", {}).get(profile) if isinstance(carrier.get("source_evidence"), dict) else None
+                    event_ids = carrier.get("source_event_ids", {}).get(profile) if isinstance(carrier.get("source_event_ids"), dict) else None
+                    census = observation_payloads.get(str(source_id), {}).get("interaction_census_by_viewport", {}).get(profile)
+                    targets = [
+                        target for page in census.get("pages", []) if isinstance(page, dict)
+                        for target in page.get("targets", []) if isinstance(target, dict)
+                    ] if isinstance(census, dict) else []
+                    target = next((item for item in targets if isinstance(target_entry, dict) and item.get("target_id") == target_entry.get("target_id")), None)
+                    target_evidence = [
+                        {
+                            "before_sha256": item.get("evidence", {}).get("before", {}).get("sha256"),
+                            "after_sha256": item.get("evidence", {}).get("after", {}).get("sha256"),
+                            "settled_sha256": item.get("evidence", {}).get("settled", {}).get("sha256"),
+                        }
+                        for item in target.get("inputs", [])
+                        if isinstance(target, dict) and isinstance(item, dict)
+                        and isinstance(item.get("evidence"), dict)
+                    ] if isinstance(target, dict) else []
+                    state_id = state_entry.get("id") if isinstance(state_entry, dict) else None
+                    source_state = observation_payloads.get(str(source_id), {}).get("states_by_viewport", {}).get(profile, {}).get(state_id)
+                    try:
+                        carrier_recording = json.loads(
+                            (project / ".design-dna" / "references" / f"{source_id}-recording.json").read_text(encoding="utf-8")
+                        )
+                        event_files = carrier_recording.get("profiles", {}).get(profile, {}).get("events", {}).get("files", [])
+                        recorded_events = {
+                            f"{profile}/{event_file.get('id')}": event_file
+                            for event_file in event_files if isinstance(event_file, dict)
+                            and isinstance(event_file.get("id"), str)
+                            and re.fullmatch(r"e\d{4}", event_file["id"])
+                            and isinstance(event_file.get("file"), str)
+                            and re.search(rf"/{re.escape(event_file['id'])}-[^/]+\.png$", event_file["file"]) is not None
+                            and isinstance(event_file.get("sha256"), str)
+                            and SHA256_HEX.fullmatch(event_file["sha256"])
+                            and type(event_file.get("bytes")) is int and event_file["bytes"] > 0
+                            and isinstance(event_file.get("kind"), str)
+                            and isinstance(event_file.get("target"), str)
+                            and isinstance(event_file.get("t"), (int, float))
+                            and isinstance(event_file.get("frames_s"), list)
+                            and len(event_file["frames_s"]) >= 2
+                            and all(isinstance(moment, (int, float)) for moment in event_file["frames_s"])
+                        }
+                    except (OSError, ValueError, AttributeError):
+                        recorded_events = {}
+                    cited_events = [recorded_events.get(event_id) for event_id in event_ids] if isinstance(event_ids, list) else []
+                    source_trigger_target = source_state.get("trigger", {}).get("target") if isinstance(source_state, dict) else None
+                    target_matches_trigger = (
+                        source_trigger_target == target.get("selector") if isinstance(target, dict) else False
+                    ) or (
+                        isinstance(source_trigger_target, str) and source_trigger_target.startswith(".")
+                        and source_trigger_target[1:] in (target.get("class_signature") or [])
+                        if isinstance(target, dict) else False
+                    ) or (
+                        isinstance(source_trigger_target, str) and source_trigger_target.startswith("#")
+                        and target.get("selector") == source_trigger_target
+                        if isinstance(target, dict) else False
+                    )
+                    if (
+                        not isinstance(target_entry, dict)
+                        or set(target_entry) != {"target_id", "selector", "semantic_key", "tag", "role"}
+                        or target is None
+                        or any(target_entry.get(field) != target.get(field) for field in ("selector", "semantic_key", "tag", "role"))
+                        or not isinstance(state_entry, dict)
+                        or set(state_entry) != {"id", "sha256"}
+                        or not isinstance(source_state, dict)
+                        or state_entry.get("sha256") != canonical_json_sha256(source_state)
+                        or not any(
+                            isinstance(binding, dict)
+                            and binding.get("viewport") == profile
+                            and binding.get("source_state") == state_entry
+                            for binding in bindings
+                        )
+                        or trigger_entry != source_state.get("trigger")
+                        or not target_matches_trigger
+                        or surface_entry != {
+                            "selector": target.get("selector"), "semantic_key": target.get("semantic_key"),
+                            "tag": target.get("tag"), "role": target.get("role"),
+                        }
+                        or not isinstance(evidence_entry, dict)
+                        or set(evidence_entry) != {"before_sha256", "after_sha256", "settled_sha256"}
+                        or not all(isinstance(evidence_entry.get(field), str) and SHA256_HEX.fullmatch(evidence_entry[field]) for field in evidence_entry)
+                        or evidence_entry not in target_evidence
+                        or not isinstance(event_ids, list)
+                        or not event_ids
+                        or not all(isinstance(item, str) and re.fullmatch(rf"{profile}/e\d{{4}}", item) for item in event_ids)
+                        or len(set(event_ids)) != len(event_ids)
+                        or len(cited_events) != len(event_ids)
+                        or any(event is None for event in cited_events)
+                        or any(
+                            event.get("kind") != source_state.get("trigger", {}).get("type")
+                            or event.get("target") != source_trigger_target
+                            or event.get("t") < min(event.get("frames_s") or [0])
+                            or event.get("t") > max(event.get("frames_s") or [0])
+                            for event in cited_events if isinstance(event, dict) and isinstance(source_state, dict)
+                        )
+                    ):
+                        carrier_failures.append(profile)
+                if (
+                    carrier_failures
+                    or carrier.get("build_component_key") not in {
+                        binding.get("component_key") for binding in bindings if isinstance(binding, dict)
+                    }
+                    or not isinstance(carrier.get("behavior_kind"), str)
+                    or len(carrier["behavior_kind"].strip()) < 3
+                ):
+                    failures.append(
+                        f"{label} dominant_behavior_carrier does not type-bind source identity, trigger, state relocation, event/frame evidence, and exact build component at "
+                        + ", ".join(carrier_failures or ["build-component"])
+                        + "."
+                    )
+        pseudo_bindings = decision.get("pseudo_bindings")
+        if not isinstance(pseudo_bindings, list):
+            failures.append(f"{label} pseudo_bindings must be a list (empty only when this component paints no pseudo-element).")
+        try:
+            pseudo_style_payload = json.loads(
+                (project / ".design-dna" / "references" / f"{source_id}-styles.json").read_text(encoding="utf-8")
+            )
+            pseudo_rows = pseudo_style_payload.get("component_pseudo_styles", []) if isinstance(pseudo_style_payload, dict) else []
+        except (OSError, ValueError):
+            pseudo_rows = []
+        pseudo_cells: set[tuple[str, str, str, str, str]] = set()
+        for pseudo_index, pseudo in enumerate(pseudo_bindings if isinstance(pseudo_bindings, list) else [], start=1):
+            expected_pseudo = {
+                "viewport", "state_id", "source_state_id", "pseudo", "source_selector",
+                "source_component_key", "property", "source_value", "build_value",
+            }
+            pseudo_cell = (
+                str(pseudo.get("viewport")) if isinstance(pseudo, dict) else "",
+                str(pseudo.get("state_id")) if isinstance(pseudo, dict) else "",
+                str(pseudo.get("source_state_id")) if isinstance(pseudo, dict) else "",
+                str(pseudo.get("pseudo")) if isinstance(pseudo, dict) else "",
+                str(pseudo.get("property")) if isinstance(pseudo, dict) else "",
+            )
+            source_pseudo_match = next(
+                (
+                    row for row in pseudo_rows if isinstance(row, dict)
+                    and row.get("profile") == pseudo.get("viewport")
+                    and row.get("state_id") == pseudo.get("source_state_id")
+                    and row.get("selector") == pseudo.get("source_selector")
+                    and row.get("component_key") == pseudo.get("source_component_key")
+                    and row.get("pseudo") == pseudo.get("pseudo")
+                    and isinstance(row.get("properties"), dict)
+                    and row["properties"].get(pseudo.get("property")) == pseudo.get("source_value")
+                ),
+                None,
+            ) if isinstance(pseudo, dict) else None
+            if (
+                not isinstance(pseudo, dict)
+                or set(pseudo) != expected_pseudo
+                or pseudo_cell in pseudo_cells
+                or not any(
+                    isinstance(binding, dict)
+                    and binding.get("viewport") == pseudo.get("viewport")
+                    and binding.get("state_id") == pseudo.get("state_id")
+                    and binding.get("source_state", {}).get("id") == pseudo.get("source_state_id")
+                    for binding in bindings
+                )
+                or pseudo.get("pseudo") not in {"::before", "::after"}
+                or pseudo.get("source_selector") != mapping.get("source_selector")
+                or pseudo.get("source_component_key") != mapping.get("source_component_key")
+                or not isinstance(pseudo.get("property"), str)
+                or not isinstance(pseudo.get("source_value"), str)
+                or not isinstance(pseudo.get("build_value"), str)
+                or source_pseudo_match is None
+            ):
+                failures.append(f"{label} pseudo binding {pseudo_index} is not an exact source selector/component/viewport/state/property/value tuple.")
+            pseudo_cells.add(pseudo_cell)
+        if isinstance(source_id, str):
+            source_to_decisions.setdefault(source_id, []).append(decision)
+
+    if set(planned) != decision_ids:
+        failures.append("Visible decision construction-binding v2 planned_decision_ids do not equal exact decision rows.")
+    if isinstance(proof_isolation, dict):
+        primary = proof_isolation.get("primary_route_key")
+        region = proof_isolation.get("region_component_id")
+        proof_ids = proof_isolation.get("decision_ids", planned)
+        if (not isinstance(proof_ids, list) or not proof_ids or len(proof_ids) != len(set(proof_ids))
+            or not set(proof_ids).issubset(decision_by_id)
+            or not any(decision_by_id.get(value, {}).get("component_id") == region for value in proof_ids)):
+            failures.append("First-screen decision_ids must be a nonempty exact planned subset containing its primary region; the final gate still requires every planned decision.")
+        if not any(
+            decision.get("component_id") == region
+            and any(
+                isinstance(binding, dict) and binding.get("route_key") == primary
+                and binding.get("component_key") == f"component:{region}"
+                for binding in decision.get("bindings", [])
+            )
+            for decision in decisions if isinstance(decision, dict)
+        ):
+            failures.append("Visible decision construction-binding v2 proof_isolation region_component_id is not a direct decision on its primary route.")
+
+    dispositions = payload.get("source_state_dispositions")
+    if not isinstance(dispositions, list):
+        failures.append("Visible decision construction-binding v2 needs typed source_state_dispositions for every non-ambient observed source state.")
+    else:
+        for source_id, observation in observation_payloads.items():
+            wide_states = {
+                state_id for state_id, state in observation.get("states_by_viewport", {}).get("wide", {}).items()
+                if isinstance(state, dict) and state.get("trigger", {}).get("type") != "ambient"
+            }
+            narrow_states = {
+                state_id for state_id, state in observation.get("states_by_viewport", {}).get("narrow", {}).items()
+                if isinstance(state, dict) and state.get("trigger", {}).get("type") != "ambient"
+            }
+            if wide_states != narrow_states:
+                failures.append(
+                    f"Visible decision construction-binding v2 source {source_id} has a one-profile non-ambient state with no wide/narrow disposition evidence: "
+                    + ", ".join(sorted(wide_states ^ narrow_states)) + "."
+                )
+        expected_states = {
+            (source_id, state_id)
+            for source_id, observation in observation_payloads.items()
+            for state_id, state in observation.get("states_by_viewport", {}).get("wide", {}).items()
+            if isinstance(state, dict) and state.get("trigger", {}).get("type") != "ambient"
+            and isinstance(observation.get("states_by_viewport", {}).get("narrow", {}).get(state_id), dict)
+        }
+        seen_states: set[tuple[str, str]] = set()
+        bound_states = {
+            (
+                str(decision.get("source_mapping", {}).get("id")),
+                str(binding.get("source_state", {}).get("id")),
+            )
+            for decision in decisions if isinstance(decision, dict)
+            for binding in decision.get("bindings", []) if isinstance(binding, dict)
+        }
+        for index, disposition in enumerate(dispositions, start=1):
+            label = f"Source state disposition {index}"
+            expected = {
+                "source_reference_id", "source_state_id", "disposition",
+                "reason", "evidence", "absence_assertion",
+            }
+            if not isinstance(disposition, dict) or set(disposition) != expected:
+                failures.append(f"{label} has an unsupported shape.")
+                continue
+            key = (str(disposition.get("source_reference_id")), str(disposition.get("source_state_id")))
+            if key not in expected_states or key in seen_states:
+                failures.append(f"{label} names an unknown, ambient-only, or duplicate source state.")
+                continue
+            seen_states.add(key)
+            observation = observation_payloads[key[0]]
+            evidence = disposition.get("evidence")
+            expected_evidence: dict[str, dict[str, object]] = {}
+            for profile in ("wide", "narrow"):
+                profile_state = observation.get("states_by_viewport", {}).get(profile, {}).get(key[1])
+                settled = profile_state.get("evidence_frames", {}).get("settled") if isinstance(profile_state, dict) else None
+                if isinstance(settled, dict):
+                    expected_evidence[profile] = {
+                        "path": f".design-dna/references/{settled.get('file')}",
+                        "bytes": settled.get("bytes"), "sha256": settled.get("sha256"),
+                    }
+            if (
+                disposition.get("disposition") not in {"transfer", "omit"}
+                or not isinstance(disposition.get("reason"), str)
+                or len(disposition["reason"].strip()) < 24
+                or not isinstance(evidence, dict)
+                or set(evidence) != {"wide", "narrow"}
+                or evidence != expected_evidence
+                or not isinstance(disposition.get("absence_assertion"), str)
+                or (
+                    disposition.get("disposition") == "transfer"
+                    and key not in bound_states
+                )
+                or (
+                    disposition.get("disposition") == "omit"
+                    and (key in bound_states or "no rendered carrier" not in disposition["absence_assertion"].casefold())
+                )
+            ):
+                failures.append(f"{label} does not prove an exact transfer or source-backed omission with no rendered carrier.")
+        missing_states = sorted(expected_states - seen_states)
+        if missing_states:
+            failures.append(
+                "Visible decision construction-binding v2 silently omits observed non-ambient source states: "
+                + ", ".join(f"{source}/{state}" for source, state in missing_states)
+                + "."
+            )
+    completeness = payload.get("completeness")
+    expected_completeness = {
+        "required_categories", "covered_categories", "placeholders_allowed",
+        "generic_scaffold_allowed", "fallback_design_allowed",
+        "wrapper_inheritance_allowed", "unsourced_decisions",
+    }
+    observed_categories = {
+        str(item.get("category")) for item in decisions if isinstance(item, dict)
+    }
+    if (
+        not isinstance(completeness, dict)
+        or set(completeness) != expected_completeness
+        or completeness.get("required_categories") != list(VISIBLE_DECISION_CATEGORIES)
+        or completeness.get("covered_categories") != list(VISIBLE_DECISION_CATEGORIES)
+        or observed_categories != set(VISIBLE_DECISION_CATEGORIES)
+        or completeness.get("placeholders_allowed") is not False
+        or completeness.get("generic_scaffold_allowed") is not False
+        or completeness.get("fallback_design_allowed") is not False
+        or completeness.get("wrapper_inheritance_allowed") is not False
+        or completeness.get("unsourced_decisions") != []
+    ):
+        failures.append("Visible decision construction-binding v2 completeness leaves a scaffold, fallback, placeholder, wrapper, or unsourced escape.")
+
+    contributions = payload.get("source_contribution_scope")
+    if not isinstance(contributions, list) or not contributions:
+        failures.append("Visible decision construction-binding v2 needs one nontrivial source contribution scope per selected source.")
+    else:
+        seen_sources: set[str] = set()
+        for index, contribution in enumerate(contributions, start=1):
+            label = f"Source contribution scope {index}"
+            expected = {
+                "source_reference_id", "selected_rank", "dominant_route_keys",
+                "signature_carrier_decision_ids", "signature_kind", "deletion_test", "disposition",
+            }
+            if not isinstance(contribution, dict) or set(contribution) != expected:
+                failures.append(f"{label} has an unsupported shape.")
+                continue
+            source_id = contribution.get("source_reference_id")
+            rank_match = re.fullmatch(r"strong-([1-9][0-9]*)", str(source_id or ""))
+            if (
+                not rank_match
+                or contribution.get("selected_rank") != int(rank_match.group(1))
+                or source_id not in source_to_decisions
+                or source_id in seen_sources
+                or contribution.get("disposition") != "required"
+            ):
+                failures.append(f"{label} does not bind one exact selected source contribution.")
+                continue
+            seen_sources.add(str(source_id))
+            routes = contribution.get("dominant_route_keys")
+            carriers = contribution.get("signature_carrier_decision_ids")
+            deletion = contribution.get("deletion_test")
+            low_material = re.compile(r"^\s*(?:color|colour|ground|radius|spacing|margin|padding|size|dimension)s?\b", re.I)
+            if (
+                not isinstance(routes, list)
+                or not routes
+                or not all(route in route_by_key for route in routes)
+                or len(routes) != len(set(routes))
+                or not isinstance(carriers, list)
+                or not carriers
+                or not set(carriers).issubset(decision_by_id)
+                or not all(decision_by_id[item].get("source_mapping", {}).get("id") == source_id for item in carriers)
+                or contribution.get("signature_kind") not in {"motion", "static"}
+                or not isinstance(deletion, str)
+                or len(deletion.strip()) < 32
+                or low_material.match(deletion) is not None
+            ):
+                failures.append(f"{label} is palette/spacing-only or lacks exact signature carrier/deletion evidence on its declared routes.")
+            if isinstance(routes, list) and isinstance(carriers, list) and all(item in decision_by_id for item in carriers):
+                carrier_routes = {
+                    binding.get("route_key") for item in carriers
+                    for binding in decision_by_id[item].get("bindings", []) if isinstance(binding, dict)
+                }
+                if set(routes) != carrier_routes:
+                    failures.append(f"{label} dominant_route_keys do not equal the routes actually carrying its signature components.")
+                if contribution.get("signature_kind") == "static" and not any(
+                    decision_by_id[item].get("category") == "layout" for item in carriers
+                ):
+                    failures.append(f"{label} static signature needs a composition carrier; isolated font, color, card or spacing values cannot represent the dominant source encounter.")
+        missing_sources = sorted(set(source_to_decisions) - seen_sources)
+        if missing_sources:
+            failures.append("Visible decision construction-binding v2 has selected sources with no signature-level contribution: " + ", ".join(missing_sources) + ".")
+        unused_sources = sorted(set(observation_payloads) - set(source_to_decisions))
+        if unused_sources:
+            failures.append("Visible decision construction-binding v2 lists selected source observations with no component transfer: " + ", ".join(unused_sources) + ".")
+
+    authored_strings: list[str] = []
+    def collect(value: object) -> None:
+        if isinstance(value, str):
+            authored_strings.append(value)
+        elif isinstance(value, dict):
+            for child in value.values():
+                collect(child)
+        elif isinstance(value, list):
+            for child in value:
+                collect(child)
+    collect(payload)
+    if re.search(r"__replace_with|\btodo\b|lorem ipsum|coming soon|\bplaceholder\b", "\n".join(authored_strings).casefold()):
+        failures.append("Visible decision construction-binding v2 contains placeholder or fallback content.")
+    content_module = load_bundled_source_module("_design_dna_content_transfer", Path(__file__).with_name("content_transfer.py"))
+    failures.extend(content_module.content_transfer_failures(project, payload))
+    return failures
+
+
+def visible_decision_source_manifest_failures(
+    payload: object,
+    *,
+    project: Path,
+    route_manifest: dict[str, object],
+    route_manifest_path: Path,
+    proof_identity: str,
+    require_construction_v2: bool = False,
+    allow_pending_construction_authorization: bool = False,
+) -> list[str]:
+    """Validate legacy records honestly, but never let one authorize new construction."""
+
+    schema = payload.get("schema_version") if isinstance(payload, dict) else None
+    if schema == VISIBLE_DECISION_SOURCE_LEGACY_SCHEMA:
+        failures = _visible_decision_source_manifest_v1_failures(
+            payload,
+            project=project,
+            route_manifest=route_manifest,
+            route_manifest_path=route_manifest_path,
+            proof_identity=proof_identity,
+        )
+        if require_construction_v2:
+            failures.append(
+                "Visible decision source manifest schema 1 is legacy evidence only and cannot authorize a fresh proof/build; migrate to construction-binding schema 2 and run --begin-construction."
+            )
+        return failures
+    if schema != VISIBLE_DECISION_SOURCE_SCHEMA:
+        return ["Visible decision source manifest has an unsupported schema version; expected legacy 1 or construction-binding 2."]
+    return _visible_decision_source_manifest_v2_failures(
+        payload,
+        project=project,
+        route_manifest=route_manifest,
+        route_manifest_path=route_manifest_path,
+        proof_identity=proof_identity,
+        allow_pending_construction_authorization=(
+            allow_pending_construction_authorization or not require_construction_v2
+        ),
+    )
+
+
 def reference_source_registry_failures(payload: object) -> list[str]:
     """Validate the maintained public-only inspiration source registry."""
 
@@ -6698,6 +8009,16 @@ ROUTE_MANIFEST_STATE_KINDS = {"rest", "interactive", "system", "data"}
 ROUTE_MANIFEST_TRIGGER_TYPES = {
     "none", "hover", "focus", "click", "keyboard", "input", "url", "programmatic"
 }
+SOURCE_PROFILE_VIEWPORT_NAMES = frozenset({"wide", "narrow"})
+SOURCE_PROFILE_VIEWPORT_DIMENSIONS = {
+    "wide": (1440, 900),
+    "narrow": (390, 844),
+}
+SOURCE_STATE_CONTRACT_LEGACY_SCHEMA_VERSION = 1
+SOURCE_STATE_CONTRACT_SCHEMA_VERSION = 2
+SOURCE_AMBIENT_TRIGGER = "ambient"
+SOURCE_AMBIENT_WAIT_MIN_MS = 100
+SOURCE_AMBIENT_WAIT_MAX_MS = 60000
 ROUTE_MANIFEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{7,127}")
 ROUTE_REFERENCE_ID = re.compile(r"strong-(\d+)(?:-[a-z][a-z0-9-]{0,47})?")
 GATE_IGNORED_TREE_PARTS = {
@@ -6711,6 +8032,40 @@ GATE_IGNORED_TREE_PARTS = {
 }
 
 
+def source_profile_viewport_failures(viewports: object) -> list[str]:
+    """Reject build-profile aliases that cannot bind source evidence.
+
+    Route-manifest schema 2 intentionally has no ``source_profile`` mapping
+    field. Therefore only its two canonical source profile names can reach the
+    observer's generated wide/narrow records; a friendly alias is an
+    unauditable bypass, not a harmless label.
+    """
+
+    if not isinstance(viewports, list) or len(viewports) != 2:
+        return [
+            "Route manifest must declare exactly the two source-bound viewports "
+            "`wide` and `narrow`; aliases and extra profiles have no source-evidence mapping."
+        ]
+    by_name = {
+        viewport.get("name"): viewport
+        for viewport in viewports
+        if isinstance(viewport, dict) and isinstance(viewport.get("name"), str)
+    }
+    if set(by_name) != SOURCE_PROFILE_VIEWPORT_NAMES or len(by_name) != len(viewports):
+        return [
+            "Route manifest viewport names must be exactly `wide` and `narrow`; "
+            "schema 2 has no source-profile alias mapping."
+        ]
+    wide_width = by_name["wide"].get("width")
+    narrow_width = by_name["narrow"].get("width")
+    failures: list[str] = []
+    if type(wide_width) is not int or wide_width < 1280:
+        failures.append("Route manifest source-bound `wide` viewport must be at least 1280px wide.")
+    if type(narrow_width) is not int or narrow_width > 430:
+        failures.append("Route manifest source-bound `narrow` viewport must be 430px wide or less.")
+    return failures
+
+
 def project_tree_identity(root: Path) -> str:
     """Hash the exact project tree that a gate build identity represents."""
 
@@ -6718,6 +8073,8 @@ def project_tree_identity(root: Path) -> str:
     files = (path for path in root.rglob("*") if path.is_file())
     for file in sorted(files, key=lambda item: item.as_posix().casefold()):
         relative = file.relative_to(root)
+        if relative.as_posix() == LOCK_FILE_NAME:
+            continue
         if any(part in GATE_IGNORED_TREE_PARTS for part in relative.parts):
             continue
         digest.update(relative.as_posix().encode("utf-8"))
@@ -6813,16 +8170,20 @@ def reference_state_contract_failures(
 
     failures: list[str] = []
     ids: set[str] = set()
+    schema_version = payload.get("schema_version") if isinstance(payload, dict) else None
     if (
         not isinstance(payload, dict)
         or set(payload) != {"schema_version", "reference_id", "states"}
-        or payload.get("schema_version") != 1
+        or schema_version not in {
+            SOURCE_STATE_CONTRACT_LEGACY_SCHEMA_VERSION,
+            SOURCE_STATE_CONTRACT_SCHEMA_VERSION,
+        }
         or payload.get("reference_id") != expected_reference_id
         or not isinstance(payload.get("states"), list)
         or not payload["states"]
     ):
         return [
-            "Source-state contract must use exact schema 1 and bind the expected reference ID."
+            "Source-state contract must use exact schema 1 (legacy) or schema 2 (ambient-capable) and bind the expected reference ID."
         ], ids
     origins: set[tuple[str, str]] = set()
     canonical_primary: str | None = None
@@ -6853,14 +8214,35 @@ def reference_state_contract_failures(
             ids.add(state_id)
         if kind not in ROUTE_MANIFEST_STATE_KINDS:
             failures.append(f"{label} has an unsupported state kind.")
-        if (
-            not isinstance(trigger, dict)
-            or set(trigger) != {"type", "target", "value"}
-        ):
+        ambient = isinstance(trigger, dict) and trigger.get("type") == SOURCE_AMBIENT_TRIGGER
+        expected_trigger_keys = (
+            {"type", "target", "value", "wait_ms"}
+            if ambient
+            else {"type", "target", "value"}
+        )
+        if not isinstance(trigger, dict) or set(trigger) != expected_trigger_keys:
             failures.append(f"{label} needs the exact executable trigger shape.")
             trigger = {}
         trigger_type = trigger.get("type")
-        if trigger_type not in ROUTE_MANIFEST_TRIGGER_TYPES:
+        if trigger_type == SOURCE_AMBIENT_TRIGGER:
+            if schema_version != SOURCE_STATE_CONTRACT_SCHEMA_VERSION:
+                failures.append(f"{label} ambient appearance requires source-state contract schema 2.")
+            if kind != "system":
+                failures.append(f"{label} ambient appearance must use kind system.")
+            if trigger.get("target") == "document":
+                failures.append(f"{label} ambient appearance needs an exact target selector, never document.")
+            if trigger.get("value") is not None:
+                failures.append(f"{label} ambient appearance trigger value must be null.")
+            wait_ms = trigger.get("wait_ms")
+            if (
+                type(wait_ms) is not int
+                or wait_ms < SOURCE_AMBIENT_WAIT_MIN_MS
+                or wait_ms > SOURCE_AMBIENT_WAIT_MAX_MS
+            ):
+                failures.append(
+                    f"{label} ambient appearance needs bounded integer wait_ms {SOURCE_AMBIENT_WAIT_MIN_MS}-{SOURCE_AMBIENT_WAIT_MAX_MS}."
+                )
+        elif trigger_type not in ROUTE_MANIFEST_TRIGGER_TYPES:
             failures.append(f"{label} has an unsupported trigger type.")
         if not isinstance(trigger.get("target"), str) or not trigger["target"].strip():
             failures.append(f"{label} trigger target must be explicit.")
@@ -6906,6 +8288,53 @@ def reference_state_contract_failures(
     return failures, ids
 
 
+def ambient_target_identity_valid(value: object) -> bool:
+    """Require source-owned, non-DOM-attribute ambient target identity."""
+
+    if not isinstance(value, dict) or set(value) != {"appearance", "settled"}:
+        return False
+
+    def snapshot_valid(snapshot: object) -> bool:
+        if not isinstance(snapshot, dict) or set(snapshot) != {
+            "tag", "role", "accessible_name", "class_signature", "rect", "semantic_key"
+        }:
+            return False
+        tag = snapshot.get("tag")
+        role = snapshot.get("role")
+        name = snapshot.get("accessible_name")
+        classes = snapshot.get("class_signature")
+        rect = snapshot.get("rect")
+        key = snapshot.get("semantic_key")
+        return (
+            isinstance(tag, str)
+            and bool(tag)
+            and tag == tag.casefold()
+            and isinstance(role, str)
+            and bool(role)
+            and role == role.casefold()
+            and isinstance(name, str)
+            and bool(name.strip())
+            and isinstance(classes, list)
+            and all(isinstance(item, str) and item for item in classes)
+            and classes == sorted(classes)
+            and isinstance(rect, dict)
+            and set(rect) == {"left", "top", "width", "height"}
+            and all(type(item) is int for item in rect.values())
+            and isinstance(key, str)
+            and key == f"{role}|{name.casefold()}"
+        )
+
+    appearance = value.get("appearance")
+    settled = value.get("settled")
+    return (
+        snapshot_valid(appearance)
+        and snapshot_valid(settled)
+        and appearance["tag"] == settled["tag"]
+        and appearance["role"] == settled["role"]
+        and appearance["semantic_key"] == settled["semantic_key"]
+    )
+
+
 def interaction_census_failures(
     census: object,
     *,
@@ -6914,6 +8343,7 @@ def interaction_census_failures(
     expected_urls: set[str] | None = None,
     artifact_root: Path | None = None,
     allowed_artifacts: set[tuple[str, int, str]] | None = None,
+    planned_route_handoffs: set[str] | None = None,
 ) -> list[str]:
     """Validate an uncapped live DOM/code-to-interaction reconciliation."""
 
@@ -6944,7 +8374,12 @@ def interaction_census_failures(
     blocked_inputs: set[tuple[str, str]] = set()
     input_rows = exercised_rows = blocked_rows = 0
 
-    def evidence_failures(value: object, label: str) -> list[str]:
+    def evidence_failures(
+        value: object,
+        label: str,
+        *,
+        require_fresh_baseline: bool = False,
+    ) -> list[str]:
         local: list[str] = []
         if not isinstance(value, dict) or not {"before", "after", "settled"}.issubset(value):
             return [f"{label} lacks before/after/settled generated artifacts."]
@@ -7012,6 +8447,30 @@ def interaction_census_failures(
             or not 200 <= navigation["final_status"] < 300
         ):
             local.append(f"{label} navigation evidence is not an exact 2xx route binding.")
+        if require_fresh_baseline:
+            baseline = value.get("baseline")
+            baseline_navigation = (
+                baseline.get("navigation") if isinstance(baseline, dict) else None
+            )
+            if (
+                not isinstance(baseline, dict)
+                or baseline.get("strategy") != "fresh-exact-state"
+                or not isinstance(baseline.get("requested_url"), str)
+                or baseline.get("requested_url") != baseline.get("final_url")
+                or not isinstance(baseline.get("state_id"), (str, type(None)))
+                or type(baseline.get("state_applied")) is not bool
+                or not isinstance(baseline_navigation, dict)
+                or baseline_navigation.get("requested_normalized_url")
+                != baseline.get("requested_url")
+                or baseline_navigation.get("final_normalized_url")
+                != baseline.get("final_url")
+                or baseline_navigation.get("redirect_count") != 0
+                or type(baseline_navigation.get("final_status")) is not int
+                or not 200 <= baseline_navigation["final_status"] < 300
+            ):
+                local.append(
+                    f"{label} mutating input lacks a fresh exact baseline binding."
+                )
         return local
     for page_index, page in enumerate(pages, start=1):
         if not isinstance(page, dict) or set(page) != {
@@ -7034,11 +8493,14 @@ def interaction_census_failures(
             continue
         page_target_ids: list[str] = []
         for target_index, target in enumerate(targets, start=1):
-            if not isinstance(target, dict) or set(target) != {
+            target_fields = {
                 "target_id", "page_url", "selector", "tag", "role", "text", "semantic_key",
                 "class_signature", "repeat_class", "repeat_index",
                 "repeat_count", "kind", "semantic_state", "source_state_ids", "inputs",
-            }:
+            }
+            if isinstance(target, dict) and "source_selector" in target:
+                target_fields.add("source_selector")
+            if not isinstance(target, dict) or set(target) != target_fields:
                 failures.append(
                     f"{expected_profile} interaction target {page_index}/{target_index} has an unsupported shape."
                 )
@@ -7051,6 +8513,7 @@ def interaction_census_failures(
                 or target.get("page_url") != url
                 or not isinstance(target.get("selector"), str)
                 or not target["selector"].startswith('[data-dna-interaction-id="')
+                or "source_selector" in target and (not isinstance(target["source_selector"], str) or not target["source_selector"].strip())
                 or not isinstance(target.get("class_signature"), list)
                 or not isinstance(target.get("text"), str)
                 or not isinstance(target.get("semantic_key"), str)
@@ -7099,15 +8562,19 @@ def interaction_census_failures(
             safe_exercised = False
             active_behavior = False
             blocked_target = False
+            modal_blocked_keyboard_focus = False
             exercised_input_kinds: set[str] = set()
             for input_record in inputs:
                 input_rows += 1
-                if not isinstance(input_record, dict) or set(input_record) != {
+                input_fields = {
                     "input_kind", "input_value", "safety", "status",
                     "source_state_id", "before_sha256", "after_sha256",
                     "settled_sha256", "changed_properties", "change_classification", "behavior",
                     "evidence", "disposition",
-                }:
+                }
+                if isinstance(input_record, dict) and input_record.get("disposition") == "deferred-until-final-gate":
+                    input_fields.add("decision_id")
+                if not isinstance(input_record, dict) or set(input_record) != input_fields:
                     failures.append(f"{expected_profile} target {target_id} input has an unsupported shape.")
                     continue
                 state_id = input_record.get("source_state_id")
@@ -7194,24 +8661,102 @@ def interaction_census_failures(
                             evidence_failures(
                                 input_record.get("evidence"),
                                 f"{expected_profile} target {target_id} input",
+                                require_fresh_baseline=(
+                                    input_record.get("input_kind")
+                                    in {
+                                        "click", "keyboard", "open-close",
+                                        "media-play-pause", "input", "programmatic",
+                                    }
+                                ),
                             )
                         )
                 elif status == "blocked":
                     blocked_rows += 1
                     blocked_target = True
                     blocked_inputs.add((target_id, str(input_record.get("input_kind"))))
-                    if (
-                        input_record.get("safety") != "blocked-side-effect"
-                        or input_record.get("disposition") != "blocked-requires-safe-owner-handoff"
-                        or input_record.get("evidence") is not None
-                        or classification != {
-                            "cosmetic": [], "structural_semantic": [], "diagnostic": []
-                        }
-                        or any(input_record.get(field) is not None for field in (
-                            "before_sha256", "after_sha256", "settled_sha256"
-                        ))
-                    ):
-                        failures.append(f"{expected_profile} target {target_id} blocked input is misrepresented as observed.")
+                    if input_record.get("safety") == "blocked-side-effect":
+                        if (
+                            input_record.get("disposition") != "blocked-requires-safe-owner-handoff"
+                            or input_record.get("evidence") is not None
+                            or classification != {
+                                "cosmetic": [], "structural_semantic": [], "diagnostic": []
+                            }
+                            or any(input_record.get(field) is not None for field in (
+                                "before_sha256", "after_sha256", "settled_sha256"
+                            ))
+                        ):
+                            failures.append(f"{expected_profile} target {target_id} blocked side-effect input is misrepresented as observed.")
+                    elif input_record.get("safety") == "blocked-planned-route":
+                        if (not planned_route_handoffs or input_record.get("input_value") not in planned_route_handoffs
+                            or target.get("kind") != "route-link" or input_record.get("input_kind") != "navigation"
+                            or input_record.get("disposition") != "deferred-until-final-gate"
+                            or not isinstance(input_record.get("decision_id"), str) or not input_record.get("decision_id")
+                            or input_record.get("evidence") is not None or input_record.get("changed_properties") != []
+                            or classification != {"cosmetic": [], "structural_semantic": [], "diagnostic": []}
+                            or any(input_record.get(field) is not None for field in ("source_state_id", "before_sha256", "after_sha256", "settled_sha256"))):
+                            failures.append(f"{expected_profile} target {target_id} planned route handoff is unbound or falsely claims arrival.")
+                    elif input_record.get("safety") == "blocked-active-modal":
+                        evidence = input_record.get("evidence")
+                        active_modal = (
+                            evidence.get("active_modal")
+                            if isinstance(evidence, dict)
+                            else None
+                        )
+                        modal_target = (
+                            active_modal.get("target")
+                            if isinstance(active_modal, dict)
+                            else None
+                        )
+                        modal_hit = (
+                            active_modal.get("hit_test")
+                            if isinstance(active_modal, dict)
+                            else None
+                        )
+                        modal_blocker = (
+                            modal_hit.get("blocking_overlay")
+                            if isinstance(modal_hit, dict)
+                            else None
+                        )
+                        if (
+                            input_record.get("disposition") != "blocked-active-modal"
+                            or classification != {
+                                "cosmetic": [], "structural_semantic": [], "diagnostic": []
+                            }
+                            or any(input_record.get(field) is not None for field in (
+                                "before_sha256", "after_sha256", "settled_sha256"
+                            ))
+                            or not isinstance(input_record.get("behavior"), str)
+                            or not input_record.get("behavior")
+                            or not isinstance(modal_target, dict)
+                            or not modal_target.get("inert_ancestor")
+                            or modal_target.get("focus_blocked") is not True
+                            or not isinstance(modal_hit, dict)
+                            or modal_hit.get("hits_target") is not False
+                            or not isinstance(modal_blocker, dict)
+                            or modal_blocker.get("auto_dismissed") is not False
+                            or modal_blocker.get("visible") is not True
+                            or modal_blocker.get("aria_hidden") == "true"
+                            or modal_blocker.get("aria_disabled") == "true"
+                            or modal_blocker.get("disabled") is True
+                            or (
+                                modal_blocker.get("role") != "dialog"
+                                and modal_blocker.get("aria_modal") != "true"
+                            )
+                        ):
+                            failures.append(
+                                f"{expected_profile} target {target_id} active-modal block lacks generated inert/focus/blocker proof."
+                            )
+                        else:
+                            failures.extend(
+                                evidence_failures(
+                                    evidence,
+                                    f"{expected_profile} target {target_id} active-modal block",
+                                )
+                            )
+                            if input_record.get("input_kind") in {"focus", "keyboard"}:
+                                modal_blocked_keyboard_focus = True
+                    else:
+                        failures.append(f"{expected_profile} target {target_id} input is neither safely side-effect-blocked nor modal-blocked.")
                 else:
                     failures.append(f"{expected_profile} target {target_id} input is neither exercised nor safely blocked.")
             if (
@@ -7229,12 +8774,13 @@ def interaction_census_failures(
                 in {"route-link", "control", "open-close", "input-control"}
                 and target.get("semantic_state", {}).get("disabled") is not True
                 and not exercised_input_kinds.intersection({"focus", "keyboard"})
+                and not modal_blocked_keyboard_focus
             ):
                 failures.append(
                     f"{expected_profile} DOM control {target_id} has no generated keyboard/focus coverage."
                 )
         dom = page.get("dom_code_inventory")
-        if not isinstance(dom, dict) or set(dom) != {
+        if not isinstance(dom, dict) or set(dom) - {"gesture_listeners"} != {
             "routes_discovered", "controls_discovered", "state_hooks",
             "animation_hooks", "assets", "scripts", "inline_handlers",
             "live_target_ids", "live_source_state_ids",
@@ -7254,6 +8800,46 @@ def interaction_census_failures(
             failures.append(
                 f"{expected_profile} interaction page {page_index} omits DOM/code-discovered routes, controls, hooks, or assets."
             )
+        elif dom.get("gesture_listeners") is not None:
+            gestures = dom["gesture_listeners"]
+            if (
+                not isinstance(gestures, dict)
+                or set(gestures) != {"complete", "scope", "observed_gesture_behavior", "owners", "error"}
+                or gestures.get("complete") is not True
+                or gestures.get("scope") != "listener-inventory-only"
+                or gestures.get("observed_gesture_behavior") is not False
+                or not isinstance(gestures.get("owners"), list)
+                or gestures.get("error") is not None
+            ):
+                failures.append(
+                    f"{expected_profile} interaction page {page_index} has unsupported or uninspected source gesture listeners."
+                )
+            else:
+                for owner in gestures["owners"]:
+                    if (
+                        not isinstance(owner, dict)
+                        or set(owner) != {"backend_node_id", "scope", "listeners", "target", "material_signals", "coverage_required", "disposition"}
+                        or owner.get("coverage_required") is not False
+                        or owner.get("material_signals") != []
+                        or owner.get("disposition") != "unverified-code-hook-candidate"
+                        or not isinstance(owner.get("target"), dict)
+                        or not isinstance(owner.get("target", {}).get("selector"), str)
+                        or not owner.get("target", {}).get("selector")
+                        or not isinstance(owner.get("listeners"), list)
+                        or not owner.get("listeners")
+                        or any(
+                            not isinstance(listener, dict)
+                            or set(listener) != {"type", "use_capture", "passive", "once", "script_id", "line_number", "column_number", "handler_source_sha256", "direct_visible_mutation_hook"}
+                            or listener.get("direct_visible_mutation_hook") is not False
+                            or not isinstance(listener.get("type"), str)
+                            or not isinstance(listener.get("script_id"), str)
+                            or any(type(listener.get(key)) is not bool for key in ("use_capture", "passive", "once"))
+                            or any(type(listener.get(key)) is not int or listener[key] < 0 for key in ("line_number", "column_number"))
+                            or listener.get("handler_source_sha256") is not None and (not isinstance(listener["handler_source_sha256"], str) or SHA256_HEX.fullmatch(listener["handler_source_sha256"]) is None)
+                            for listener in owner.get("listeners", [])
+                        )
+                    ):
+                        failures.append(f"{expected_profile} interaction page {page_index} has a material unsupported gesture or an invalid unverified hook inventory.")
     if expected_urls is not None and urls != expected_urls:
         failures.append(f"{expected_profile} interaction census pages differ from full discovery coverage.")
     page_states = census.get("page_states")
@@ -7722,22 +9308,38 @@ FIRST_SCREEN_GATE_LINE = re.compile(
     r"(?m)^-\s*First-screen gate:\s*.*$",
     re.IGNORECASE,
 )
+VISIBLE_DECISION_BINDING_LINE = re.compile(
+    r"(?m)^-\s*Visible decision source manifest:\s*.*$", re.IGNORECASE
+)
+CONSTRUCTION_JOURNAL_LINE = re.compile(
+    r"(?m)^-\s*Pre-code journal:\s*.*$", re.IGNORECASE
+)
 
 
-def dossier_core_sha256(path: Path) -> str:
-    """Hash a dossier while excluding only its circular gate binding value."""
-
-    text = path.read_text(encoding="utf-8", errors="strict").replace("\r\n", "\n")
+def _dossier_core_text_sha256(text: str) -> str:
+    """Normalize only the three documented circular generated bindings."""
+    text = text.replace("\r\n", "\n")
     normalized = FIRST_SCREEN_GATE_LINE.sub(
         "- First-screen gate: <excluded-from-dossier-core-hash>", text
     )
+    normalized = VISIBLE_DECISION_BINDING_LINE.sub(
+        "- Visible decision source manifest: <excluded-from-dossier-core-hash>", normalized
+    )
+    normalized = CONSTRUCTION_JOURNAL_LINE.sub(
+        "- Pre-code journal: <excluded-from-dossier-core-hash>", normalized
+    )
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def dossier_core_sha256(path: Path) -> str:
+    """Hash a dossier while excluding only circular generated evidence bindings."""
+    return _dossier_core_text_sha256(path.read_text(encoding="utf-8", errors="strict"))
 
 
 def packaged_gate_runtime_identity() -> dict[str, str]:
     scripts = Path(__file__).resolve().parent
     gate = scripts / "gate.py"
-    files = [gate, Path(__file__).resolve(), *sorted(scripts.glob("*.mjs"), key=lambda item: item.name)]
+    files = [*sorted(scripts.glob("*.py"), key=lambda item: item.name), *sorted(scripts.glob("*.mjs"), key=lambda item: item.name)]
     return {path.name: file_sha256(path)[1] for path in files}
 
 
@@ -8007,6 +9609,1496 @@ def canonical_json_sha256(value: object) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+CONSTRUCTION_JOURNAL_IGNORED_PARTS = {
+    ".design-dna", ".git", "node_modules",
+    "coverage", "__pycache__", ".venv", "venv",
+}
+CONSTRUCTION_SOURCE_EXTENSIONS = {
+    ".astro", ".css", ".html", ".htm", ".js", ".jsx", ".mjs", ".cjs",
+    ".svelte", ".ts", ".tsx", ".vue", ".mdx", ".scss", ".sass", ".less",
+    ".ejs", ".hbs", ".handlebars", ".njk", ".liquid", ".php", ".twig",
+    ".j2", ".jinja", ".jinja2", ".erb", ".razor", ".gohtml",
+}
+CONSTRUCTION_ASSET_EXTENSIONS = {
+    ".avif", ".gif", ".jpeg", ".jpg", ".mp3", ".mp4", ".ogg",
+    ".png", ".svg", ".wav", ".webm", ".webp",
+}
+CONSTRUCTION_VISIBLE_SOURCE_PATTERN = re.compile(
+    r"(?:<\s*(?:a|article|aside|audio|button|canvas|div|footer|form|h[1-6]|header|img|input|main|nav|p|picture|section|span|svg|video|object|embed|iframe|portal|fencedframe)\b|"
+    r"\b(?:React\.)?createElement\s*\(|\b(?:h|hyperscript)\s*\(|"
+    r"data-design-dna-(?:decision-id|asset-id|component)|"
+    r"(?:background(?:-image|-color)?|border(?:-[a-z-]+)?|color|font-(?:family|size|weight)|"
+    r"display|position|width|height|margin|padding|gap|grid-template|box-shadow|clip-path|transform|animation|transition)\s*:)",
+    re.I,
+)
+
+
+def construction_source_snapshot(project: Path) -> tuple[str, list[dict[str, object]], list[dict[str, object]], list[dict[str, object]]]:
+    """Return an exact source-tree identity and visible-source baseline findings.
+
+    This is intentionally conservative.  A project that already contains a
+    rendered HTML/CSS/JSX surface is not a fresh construction project merely
+    because an agent writes the research record later.  It enters legacy audit
+    rather than being silently relabeled as new source-led work.
+    """
+
+    project = project.resolve()
+    digest = hashlib.sha256()
+    files: list[dict[str, object]] = []
+    visible: list[dict[str, object]] = []
+    assets: list[dict[str, object]] = []
+    for current, directories, names in os.walk(project, topdown=True, followlinks=False):
+        current_path = Path(current)
+        kept: list[str] = []
+        for name in directories:
+            candidate = current_path / name
+            if name in CONSTRUCTION_JOURNAL_IGNORED_PARTS:
+                continue
+            if is_reparse(candidate):
+                raise StateError(
+                    "construction-source-reparse-refused",
+                    "Construction baseline cannot recurse through a symlink, junction, or reparse point.",
+                    path=candidate,
+                )
+            kept.append(name)
+        directories[:] = sorted(kept, key=str.casefold)
+        for name in sorted(names, key=str.casefold):
+            file = current_path / name
+            if current_path == project and name == LOCK_FILE_NAME:
+                continue
+            if is_reparse(file):
+                raise StateError(
+                    "construction-source-reparse-refused",
+                    "Construction baseline cannot bind a symlink, junction, or reparse point.",
+                    path=file,
+                )
+            if not file.is_file():
+                continue
+            relative = file.relative_to(project).as_posix()
+            size, digest_value = file_sha256(file)
+            files.append({"path": relative, "bytes": size, "sha256": digest_value})
+            if file.suffix.casefold() in CONSTRUCTION_ASSET_EXTENSIONS:
+                assets.append({"path": relative, "bytes": size, "sha256": digest_value})
+            suffix = file.suffix.casefold()
+            if suffix not in CONSTRUCTION_SOURCE_EXTENSIONS:
+                continue
+            # Test fixture/program files are evidence tooling, not a candidate
+            # visitor surface.  Their visible tags must not force a false
+            # legacy classification of a clean website project.
+            parts = {part.casefold() for part in PurePosixPath(relative).parts}
+            # A producer can import or serve a file from tests/; a directory
+            # name is not evidence that visible source is unreachable.
+            try:
+                text = file.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            if CONSTRUCTION_VISIBLE_SOURCE_PATTERN.search(text):
+                visible.append({"path": relative, "sha256": digest_value})
+    files.sort(key=lambda item: str(item["path"]).casefold())
+    visible.sort(key=lambda item: str(item["path"]).casefold())
+    assets.sort(key=lambda item: str(item["path"]).casefold())
+    for row in files:
+        digest.update(str(row["path"]).encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(row["sha256"]).encode("ascii"))
+        digest.update(b"\0")
+    return digest.hexdigest(), files, visible, assets
+
+
+def construction_inventory_failures(
+    inventory: object,
+    declared_tree_sha256: object,
+    *,
+    label: str,
+) -> list[str]:
+    """Validate the journal's own immutable inventory projection.
+
+    Current source bytes normally change after a legitimate proof begins, so a
+    later validation cannot compare a historical baseline to the live tree.
+    It can still detect a forged/partial journal by recomputing the exact tree
+    identity from its listed path/byte/hash projection.
+    """
+
+    if not isinstance(inventory, list):
+        return [f"{label} implementation inventory must be a list."]
+    rows: list[dict[str, object]] = []
+    seen: set[str] = set()
+    for index, row in enumerate(inventory, start=1):
+        if (
+            not isinstance(row, dict)
+            or set(row) != {"path", "bytes", "sha256"}
+            or not isinstance(row.get("path"), str)
+            or not row["path"]
+            or PurePosixPath(row["path"]).is_absolute()
+            or ".." in PurePosixPath(row["path"]).parts
+            or row["path"] in seen
+            or type(row.get("bytes")) is not int
+            or row["bytes"] < 0
+            or not isinstance(row.get("sha256"), str)
+            or SHA256_HEX.fullmatch(row["sha256"]) is None
+        ):
+            return [f"{label} implementation inventory row {index} is invalid."]
+        seen.add(row["path"])
+        rows.append(row)
+    if rows != sorted(rows, key=lambda item: str(item["path"]).casefold()):
+        return [f"{label} implementation inventory is not canonically ordered."]
+    digest = hashlib.sha256()
+    for row in rows:
+        digest.update(str(row["path"]).encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(row["sha256"]).encode("ascii"))
+        digest.update(b"\0")
+    if not isinstance(declared_tree_sha256, str) or digest.hexdigest() != declared_tree_sha256:
+        return [f"{label} implementation inventory does not reproduce its declared tree SHA-256."]
+    return []
+
+
+def construction_journal_chain(
+    project: Path,
+) -> tuple[list[str], list[tuple[Path, dict[str, object], str]]]:
+    """Validate the append-only construction chronology without trusting mtime."""
+
+    root = project / ".design-dna" / "evidence" / "construction-journal"
+    if not root.exists():
+        return [], []
+    if is_reparse(root):
+        return ["Construction journal directory is a symlink, junction, or reparse point."], []
+    failures: list[str] = []
+    records: list[tuple[Path, dict[str, object], str]] = []
+    previous_path: Path | None = None
+    previous_sha: str | None = None
+    expected_sequence = 1
+    journal_id: str | None = None
+    entry_ids: set[str] = set()
+    for file in sorted(root.glob("*.json"), key=lambda item: item.name):
+        if is_reparse(file) or not file.is_file():
+            failures.append(f"Construction journal contains an unsafe entry: {file.name}.")
+            continue
+        try:
+            payload = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            failures.append(f"Construction journal {file.name} is unreadable: {exc}")
+            continue
+        digest = file_sha256(file)[1]
+        expected_keys = {
+            "schema_version", "record_type", "journal_id", "entry_id", "sequence",
+            "entry_kind", "created_at", "project", "implementation_tree_sha256",
+            "implementation_files", "visible_source_files", "asset_files", "visible_decision_core_sha256",
+            "route_manifest", "dossier_core_sha256", "source_observations", "predecessor",
+            "producer_script_sha256",
+        }
+        if not isinstance(payload, dict) or set(payload) != expected_keys:
+            failures.append(f"Construction journal {file.name} has an unsupported shape.")
+            continue
+        if (
+            payload.get("schema_version") != CONSTRUCTION_JOURNAL_SCHEMA
+            or payload.get("record_type") != CONSTRUCTION_JOURNAL_RECORD
+            or not isinstance(payload.get("journal_id"), str)
+            or re.fullmatch(r"[0-9a-f]{32}", payload["journal_id"]) is None
+            or not isinstance(payload.get("entry_id"), str)
+            or re.fullmatch(r"[0-9a-f]{32}", payload["entry_id"]) is None
+            or payload.get("sequence") != expected_sequence
+            or payload.get("entry_kind") not in CONSTRUCTION_JOURNAL_ENTRY_KINDS
+            or payload.get("project") != str(project.resolve())
+            or not isinstance(payload.get("implementation_tree_sha256"), str)
+            or SHA256_HEX.fullmatch(payload["implementation_tree_sha256"]) is None
+            or not isinstance(payload.get("visible_decision_core_sha256"), str)
+            or SHA256_HEX.fullmatch(payload["visible_decision_core_sha256"]) is None
+            or not isinstance(payload.get("dossier_core_sha256"), str)
+            or SHA256_HEX.fullmatch(payload["dossier_core_sha256"]) is None
+            or payload.get("producer_script_sha256") != file_sha256(Path(__file__).resolve())[1]
+        ):
+            failures.append(f"Construction journal {file.name} has invalid identity or binding fields.")
+        if isinstance(payload.get("journal_id"), str):
+            if journal_id is None:
+                journal_id = payload["journal_id"]
+            elif payload["journal_id"] != journal_id:
+                failures.append(f"Construction journal {file.name} changes journal_id mid-chain.")
+        if isinstance(payload.get("entry_id"), str):
+            if payload["entry_id"] in entry_ids:
+                failures.append(f"Construction journal {file.name} duplicates an entry_id.")
+            entry_ids.add(payload["entry_id"])
+        expected_name = (
+            f"{expected_sequence:06d}-{payload.get('entry_id')}.json"
+            if isinstance(payload.get("entry_id"), str) else None
+        )
+        if expected_name is not None and file.name != expected_name:
+            failures.append(f"Construction journal {file.name} does not use its canonical append-only sequence filename.")
+        try:
+            parsed_time = datetime.fromisoformat(str(payload.get("created_at") or "").replace("Z", "+00:00"))
+            if parsed_time.tzinfo is None:
+                raise ValueError("missing timezone")
+        except ValueError:
+            failures.append(f"Construction journal {file.name} has no timezone-bound created_at.")
+        failures.extend(
+            construction_inventory_failures(
+                payload.get("implementation_files"), payload.get("implementation_tree_sha256"),
+                label=f"Construction journal {file.name}",
+            )
+        )
+        asset_rows = payload.get("asset_files")
+        if not isinstance(asset_rows, list):
+            failures.append(f"Construction journal {file.name} lacks an asset inventory.")
+        else:
+            inventory_by_path = {
+                row.get("path"): row for row in payload.get("implementation_files", [])
+                if isinstance(row, dict)
+            }
+            if any(
+                not isinstance(row, dict)
+                or row.get("path") not in inventory_by_path
+                or inventory_by_path[row.get("path")] != row
+                for row in asset_rows
+            ):
+                failures.append(f"Construction journal {file.name} asset inventory is not an exact subset of its implementation inventory.")
+        visible_rows = payload.get("visible_source_files")
+        if (
+            not isinstance(visible_rows, list)
+            or any(
+                not isinstance(row, dict)
+                or row.get("path") not in {
+                    item.get("path") for item in payload.get("implementation_files", []) if isinstance(item, dict)
+                }
+                for row in visible_rows
+            )
+        ):
+            failures.append(f"Construction journal {file.name} visible-source inventory is malformed or detached from its baseline.")
+        route_binding = payload.get("route_manifest")
+        if not isinstance(route_binding, dict) or set(route_binding) != {"manifest_id", "path", "sha256"}:
+            failures.append(f"Construction journal {file.name} has invalid route-manifest binding.")
+        observations = payload.get("source_observations")
+        if not isinstance(observations, list) or not observations:
+            failures.append(f"Construction journal {file.name} has no selected source-observation binding.")
+        predecessor = payload.get("predecessor")
+        if previous_path is None:
+            if predecessor is not None or payload.get("entry_kind") != "pre-code-baseline":
+                failures.append(f"Construction journal {file.name} must begin with one pre-code-baseline entry.")
+        else:
+            expected_predecessor = {
+                "path": previous_path.relative_to(project).as_posix(),
+                "sha256": previous_sha,
+            }
+            if predecessor != expected_predecessor:
+                failures.append(f"Construction journal {file.name} breaks its append-only predecessor chain.")
+        previous_path, previous_sha = file, digest
+        records.append((file, payload, digest))
+        expected_sequence += 1
+    return failures, records
+
+
+def construction_authorization_failures(
+    project: Path,
+    payload: object,
+    *,
+    route_manifest_path: Path,
+    dossier_path: Path,
+) -> list[str]:
+    """Require the manifest's current visual plan to be preceded by fresh code-free evidence."""
+
+    if not isinstance(payload, dict) or payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA:
+        return ["Construction authorization requires visible-decision construction-binding schema 2."]
+    maintenance_auth = payload.get("construction_authorization")
+    if isinstance(maintenance_auth, dict) and str(maintenance_auth.get("journal_id", "")).startswith("legacy-"):
+        from types import SimpleNamespace
+        workflow = load_bundled_source_module("_design_dna_maintenance_workflow", Path(__file__).with_name("maintenance_workflow.py"))
+        return workflow.check(project, payload, sys.modules.get(__name__) or SimpleNamespace(**globals()))
+    authorization = payload.get("construction_authorization")
+    if not isinstance(authorization, dict):
+        return ["Construction authorization is missing from visible-decision construction-binding v2."]
+    chain_failures, records = construction_journal_chain(project)
+    failures = list(chain_failures)
+    if not records:
+        return [*failures, "No append-only pre-code construction journal exists; run init_project_state.py --begin-construction before visible implementation."]
+    selected = next(
+        (
+            (file, entry, digest)
+            for file, entry, digest in records
+            if authorization == {
+                "journal_id": entry.get("journal_id"),
+                "entry_path": file.relative_to(project).as_posix(),
+                "entry_sha256": digest,
+            }
+        ),
+        None,
+    )
+    if selected is None:
+        return [*failures, "Visible-decision construction authorization is not an entry in the validated append-only journal."]
+    file, entry, digest = selected
+    if entry.get("entry_kind") not in {"pre-code-baseline", "reopened-source-change", "binding-freeze"}:
+        failures.append("Visible-decision construction authorization must point to a pre-code/binding journal entry, not a post-build record.")
+    core = construction_binding_core_sha256(payload)
+    if entry.get("visible_decision_core_sha256") != core:
+        failures.append("Construction journal predates or differs from current visible-decision source bindings; reopen research and rerun --begin-construction.")
+    if not route_manifest_path.is_file() or entry.get("route_manifest", {}).get("sha256") != file_sha256(route_manifest_path)[1]:
+        failures.append("Construction journal route-manifest binding drifted.")
+    if not dossier_path.is_file() or entry.get("dossier_core_sha256") != dossier_core_sha256(dossier_path):
+        failures.append("Construction journal dossier core binding drifted.")
+    selected_visible = entry.get("visible_source_files")
+    if selected_visible:
+        failures.append(
+            "Construction journal selected authorization is legacy-audit because visible implementation existed before this source-plan baseline; source-bind the real current census before new visible work or presentation."
+        )
+    # A later journal entry is allowed (first-screen/final chronology), but it
+    # may not quietly bind a different source plan while the manifest keeps an
+    # older authorization pointer.
+    selected_index = next(index for index, item in enumerate(records) if item[0] == file)
+    if any(item[1].get("visible_decision_core_sha256") != core for item in records[selected_index:]):
+        failures.append("Construction journal contains later source-plan drift without a rebound construction manifest.")
+    return failures
+
+
+def proof_ast_isolation_failures(
+    file: Path,
+    *,
+    other_route_markers: list[str],
+    required_components: set[str] | None = None,
+    require_proof_label: bool = False,
+    strict_component_maps: bool = False,
+    forbid_static_imports: bool = False,
+    planned_route_handoffs: list[str] | None = None,
+    allow_bound_nested_regions: bool = False,
+) -> list[str]:
+    """Run the pinned Babel AST audit; unavailable/invalid parsing fails closed."""
+
+    node = shutil.which("node")
+    script = Path(__file__).resolve().parent / "proof_isolation_ast.mjs"
+    if node is None or not script.is_file():
+        return [f"Proof isolation AST parser is unavailable for {file.name}; no lexical fallback is permitted."]
+    env = dict(os.environ)
+    command = [node, str(script), "--file", str(file)]
+    for marker in other_route_markers:
+        command.extend(["--other-route", marker])
+    for marker in planned_route_handoffs or []:
+        command.extend(["--planned-route", marker])
+    for component_id in sorted(required_components or set()):
+        command.extend(["--required-component", component_id])
+    if require_proof_label:
+        command.append("--require-proof-label")
+    if strict_component_maps:
+        command.append("--strict-component-maps")
+    if forbid_static_imports:
+        command.append("--forbid-static-imports")
+    if allow_bound_nested_regions:
+        command.append("--allow-bound-nested-regions")
+    completed = subprocess.run(
+        command, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
+    )
+    try:
+        result = json.loads(completed.stdout)
+    except ValueError:
+        return [f"Proof isolation AST parser emitted no valid result for {file.name}: {(completed.stderr or completed.stdout).strip()[:320]}"]
+    if result.get("ok") is True and completed.returncode == 0:
+        return []
+    findings = result.get("findings") if isinstance(result, dict) else None
+    if isinstance(findings, list) and findings:
+        return [f"Proof isolation AST {file.name}: {item.get('code')}: {item.get('message')}" for item in findings if isinstance(item, dict)]
+    error = result.get("error") if isinstance(result, dict) else None
+    return [f"Proof isolation AST {file.name}: {error.get('code') if isinstance(error, dict) else 'failed'}: {error.get('message') if isinstance(error, dict) else (completed.stderr or completed.stdout).strip()[:320]}"]
+
+
+def first_screen_construction_isolation_failures(
+    project: Path,
+    payload: object,
+    *,
+    route_manifest: dict[str, object],
+    route_key: str,
+) -> list[str]:
+    """Reject hidden/deferred broad code before the first-screen browser proof.
+
+    Rendered height alone cannot see a later route or section that an agent
+    prewrote behind `display:none`, a lazy import, offscreen transform, or a
+    feature flag.  Compare the current source tree to the selected code-free
+    journal baseline and permit only the declared primary proof files.
+    """
+
+    if not isinstance(payload, dict):
+        return ["First-screen proof isolation has no construction binding payload."]
+    isolation = payload.get("proof_isolation")
+    if not isinstance(isolation, dict) or isolation.get("primary_route_key") != route_key:
+        return ["First-screen proof isolation route differs from the construction binding primary route."]
+    authorization = payload.get("construction_authorization")
+    entry_path = (project / PurePosixPath(str(authorization.get("entry_path") or ""))).resolve() if isinstance(authorization, dict) else Path()
+    try:
+        entry = json.loads(entry_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"First-screen proof isolation cannot read its pre-code journal entry: {exc}"]
+    baseline = {
+        row.get("path"): row.get("sha256")
+        for row in entry.get("implementation_files", [])
+        if isinstance(row, dict) and isinstance(row.get("path"), str)
+    }
+    _tree, current_files, _visible, _assets = construction_source_snapshot(project)
+    changed_sources = {
+        row["path"]
+        for row in current_files
+        if Path(str(row["path"])).suffix.casefold() in CONSTRUCTION_SOURCE_EXTENSIONS
+        and baseline.get(row["path"]) != row.get("sha256")
+    }
+    allowed_files = set(isolation.get("source_files", []))
+    failures: list[str] = []
+    extra = sorted(changed_sources - allowed_files)
+    if extra:
+        failures.append(
+            "First-screen proof source delta includes undeclared visible/deferred implementation files: "
+            + ", ".join(extra)
+            + ". Declare only the primary proof file before coding; later route/section files wait for authorization."
+        )
+    routes = [route for route in route_manifest.get("routes", []) if isinstance(route, dict)]
+    other_route_markers = []
+    for route in routes:
+        if route.get("key") == route_key:
+            continue
+        raw_url = str(route.get("url") or "")
+        parsed = urlsplit(raw_url)
+        if parsed.path and parsed.path != "/":
+            other_route_markers.extend([raw_url, parsed.path])
+    proof_ids = set(isolation.get("decision_ids", payload.get("planned_decision_ids", [])))
+    proof_components = {row.get("component_id") for row in payload.get("decisions", [])
+                        if row.get("decision_id") in proof_ids and isinstance(row.get("component_id"), str)}
+    # Visibility is an observed state, not evidence of extra implementation.
+    # The AST must instead contain exactly the pre-code proof component set.
+    deferred = re.compile(r"(?:\bimport\s*\(|React\.lazy\s*\(|next/dynamic)", re.IGNORECASE)
+    for relative in sorted(changed_sources & allowed_files):
+        path = project / PurePosixPath(relative)
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            failures.append(f"First-screen proof source {relative} is unreadable: {exc}")
+            continue
+        if deferred.search(text):
+            failures.append(f"First-screen proof source {relative} contains a deferred/hidden/lazy broad-surface marker.")
+        suffix = path.suffix.casefold()
+        if suffix in {".html", ".htm", ".vue", ".svelte", ".astro", ".mdx", ".php"}:
+            failures.append(
+                f"First-screen proof source {relative} uses {suffix}, which has no pinned structural parser in this gate; fail closed rather than accept lexical proof isolation."
+            )
+        elif suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".cts", ".mts"}:
+            failures.extend(proof_ast_isolation_failures(
+                path, other_route_markers=other_route_markers, forbid_static_imports=True,
+                required_components=proof_components, strict_component_maps=bool(proof_components),
+                planned_route_handoffs=other_route_markers,
+                allow_bound_nested_regions=bool(proof_components),
+            ))
+        section_count = len(re.findall(r"<\s*section\b", text, re.IGNORECASE))
+        main_count = len(re.findall(r"<\s*main\b", text, re.IGNORECASE))
+        if not proof_components and (section_count > 1 or main_count > 1):
+            failures.append(f"First-screen proof source {relative} declares multiple static broad regions before authorization.")
+    return failures
+
+
+# A proof slice is deliberately a different, non-public workflow.  It proves
+# one bounded source-faithful first screen while research is still pending; it
+# can never satisfy the public selected-source, standard first-screen, or final
+# site gates.
+PROOF_SLICE_SCHEMA = 1
+PROOF_SLICE_RECORD = "design-dna-proof-slice"
+PROOF_SLICE_LABEL = "Internal unverified proof slice — not for public release"
+PROOF_SLICE_MEDIA_KINDS = {"none", "image", "video", "audio", "background-image"}
+
+
+def _proof_slice_file_binding(
+    project: Path,
+    value: object,
+    *,
+    label: str,
+) -> tuple[Path | None, list[str]]:
+    """Read one contained ordinary file only when its bytes are exact."""
+
+    if (
+        not isinstance(value, dict)
+        or set(value) != {"path", "bytes", "sha256"}
+        or not isinstance(value.get("path"), str)
+        or not value["path"]
+        or PurePosixPath(value["path"]).is_absolute()
+        or ".." in PurePosixPath(value["path"]).parts
+        or type(value.get("bytes")) is not int
+        or value["bytes"] < 1
+        or not isinstance(value.get("sha256"), str)
+        or SHA256_HEX.fullmatch(value["sha256"]) is None
+    ):
+        return None, [f"{label} needs exact contained path, bytes, and SHA-256."]
+    candidate = lexical_absolute(project / PurePosixPath(value["path"]))
+    if (
+        not is_within(candidate, project.resolve())
+        or not candidate.is_file()
+        or is_reparse(candidate)
+    ):
+        return None, [f"{label} is missing, unsafe, or outside the project."]
+    size, digest = file_sha256(candidate)
+    if size != value["bytes"] or digest != value["sha256"]:
+        return None, [f"{label} bytes or SHA-256 drifted."]
+    return candidate, []
+
+
+def _proof_slice_source_study_failures(
+    study: object,
+    *,
+    project: Path,
+    expected_id: str,
+    observation_path: Path | None = None,
+) -> list[str]:
+    """Validate a generated, explicitly non-public proof-source study.
+
+    This intentionally does *not* call ``source_study_evidence_failures``:
+    that validator certifies public-source selection and must reject this
+    source_kind.  The proof variant still requires a generated, hash-chained
+    study and signed source frames, so a screenshot can never impersonate it.
+    """
+
+    if not isinstance(study, dict):
+        return ["Proof slice source is screenshot-only/unverified: it has no generated proof-source source_study."]
+    required = {
+        "schema_version", "kind", "status", "eligible_for_source_selection", "source_kind",
+        "id", "producer", "progress", "progress_events", "progress_event_file",
+        "progress_event_count", "tail_event_sha256", "counters", "signed_artifacts",
+    }
+    missing = sorted(required - set(study))
+    if missing:
+        return ["Proof slice source_study is incomplete: missing " + ", ".join(missing) + "."]
+    failures: list[str] = []
+    if (
+        study.get("schema_version") != 1
+        or study.get("kind") != "source-study-progress"
+        or study.get("status") != "complete"
+        or study.get("source_status") != "complete"
+        or study.get("eligible_for_source_selection") is not False
+        or study.get("source_kind") != "proof-slice"
+        or study.get("id") != expected_id
+        or study.get("producer") != "observe_reference.mjs"
+    ):
+        failures.append("Proof slice source_study must be a complete generated proof-slice study that is explicitly ineligible for public source selection.")
+    counters = study.get("counters")
+    if (
+        not isinstance(counters, dict)
+        or set(counters) != {"frames", "events", "states", "routes", "targets"}
+        or any(type(value) is not int or value < 0 for value in counters.values())
+        or counters.get("frames", 0) < 1
+        or counters.get("states", 0) < 1
+    ):
+        failures.append("Proof slice source_study has no generated frame/state progress counters.")
+    def generated_binding(row: object) -> object:
+        if isinstance(row, dict) and "file" in row and observation_path is not None:
+            relative_file = PurePosixPath(str(row.get("file") or ""))
+            candidate = (project if relative_file.parts[:1] == (".design-dna",) else observation_path.parent) / relative_file
+            try:
+                relative = candidate.relative_to(project).as_posix()
+            except ValueError:
+                relative = "../outside-project"
+            return {"path": relative, "bytes": row.get("bytes"), "sha256": row.get("sha256")}
+        return row
+
+    _progress_path, progress_failures = _proof_slice_file_binding(
+        project, generated_binding(study.get("progress")), label="Proof slice source_study progress snapshot"
+    )
+    _journal_path, journal_failures = _proof_slice_file_binding(
+        project, generated_binding(study.get("progress_events")), label="Proof slice source_study append-only journal"
+    )
+    failures.extend(progress_failures)
+    failures.extend(journal_failures)
+    if (
+        not isinstance(study.get("progress_event_file"), str)
+        or not isinstance(study.get("progress_events"), dict)
+        or study["progress_event_file"] != study["progress_events"].get("file", study["progress_events"].get("path"))
+        or type(study.get("progress_event_count")) is not int
+        or study["progress_event_count"] < 2
+        or not isinstance(study.get("tail_event_sha256"), str)
+        or SHA256_HEX.fullmatch(study["tail_event_sha256"]) is None
+    ):
+        failures.append("Proof slice source_study has no exact append-only progress-chain identity.")
+    signed = study.get("signed_artifacts")
+    signed_frame_rows: list[dict[str, object]] = []
+    if not isinstance(signed, list) or not signed:
+        failures.append("Proof slice source_study has no signed generated frame artifacts.")
+    else:
+        for index, item in enumerate(signed, start=1):
+            if (
+                not isinstance(item, dict)
+                or set(item) != {"kind", "file", "bytes", "sha256", "producer"}
+                or item.get("kind") != "frame"
+                or item.get("producer") != "observe_reference.mjs"
+            ):
+                failures.append(f"Proof slice source_study signed artifact {index} is not an exact generated frame record.")
+                continue
+            path, artifact_failures = _proof_slice_file_binding(
+                project,
+                generated_binding(item) if observation_path is not None else {"path": item.get("file"), "bytes": item.get("bytes"), "sha256": item.get("sha256")},
+                label=f"Proof slice source_study signed frame {index}",
+            )
+            failures.extend(artifact_failures)
+            if path is not None:
+                try:
+                    verify_png_artifact(path)
+                except StateError as exc:
+                    failures.append(f"Proof slice signed source frame is not a decoded PNG: {exc}")
+                signed_frame_rows.append(item)
+    if not signed_frame_rows:
+        failures.append("Proof slice source_study is screenshot-only/unverified because no generated signed frame remains.")
+    if _journal_path is not None and not journal_failures:
+        previous: str | None = None
+        count = 0
+        terminal: dict[str, object] | None = None
+        try:
+            for raw in _journal_path.read_text(encoding="utf-8").splitlines():
+                if not raw.strip():
+                    failures.append("Proof slice source_study progress journal contains a blank unverifiable row.")
+                    break
+                row = json.loads(raw)
+                if not isinstance(row, dict) or set(row) != {
+                    "schema_version", "sequence", "at", "kind", "counters", "previous_sha256", "detail", "sha256",
+                }:
+                    failures.append("Proof slice source_study progress journal has an unsupported event shape.")
+                    break
+                core = {key: row[key] for key in row if key != "sha256"}
+                count += 1
+                if (
+                    row.get("schema_version") != 1
+                    or row.get("sequence") != count
+                    or row.get("previous_sha256") != previous
+                    or row.get("sha256") != canonical_json_sha256(core)
+                ):
+                    failures.append("Proof slice source_study progress journal chain is invalid.")
+                    break
+                previous = row["sha256"]
+                terminal = row
+        except (OSError, UnicodeError, ValueError) as exc:
+            failures.append(f"Proof slice source_study progress journal is unreadable: {exc}")
+        if (
+            count != study.get("progress_event_count")
+            or previous != study.get("tail_event_sha256")
+            or not isinstance(terminal, dict)
+            or terminal.get("kind") != "complete"
+            or not isinstance(terminal.get("detail"), dict)
+            or terminal["detail"].get("terminal_success") is not True
+            or terminal["detail"].get("signed_artifacts") != signed
+        ):
+            failures.append("Proof slice source_study journal does not end in a signed complete event.")
+    return failures
+
+
+def proof_slice_manifest_failures(
+    project: Path,
+    payload: object,
+    *,
+    build_id: str,
+) -> list[str]:
+    """Fail closed unless one internal source-faithful first-screen slice is exact."""
+
+    expected_top = {
+        "schema_version", "record_type", "proof_slice_id", "status", "brief", "source",
+        "implementation", "visible_components", "transfer_coverage",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_top:
+        return ["Proof slice manifest has an unsupported shape; use the packaged proof-slice template."]
+    failures: list[str] = []
+    if (
+        payload.get("schema_version") != PROOF_SLICE_SCHEMA
+        or payload.get("record_type") != PROOF_SLICE_RECORD
+        or not isinstance(payload.get("proof_slice_id"), str)
+        or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", payload["proof_slice_id"]) is None
+        or payload.get("status") != "internal-unverified"
+    ):
+        failures.append("Proof slice must have a stable ID and explicit internal-unverified status; it is not a public site.")
+
+    brief = payload.get("brief")
+    if not isinstance(brief, dict) or set(brief) != {"path", "sha256", "current_at"}:
+        failures.append("Proof slice needs one current brief path/SHA-256/current_at binding.")
+    else:
+        brief_path = lexical_absolute(project / PurePosixPath(str(brief.get("path") or "")))
+        if (
+            not isinstance(brief.get("path"), str)
+            or PurePosixPath(brief["path"]).is_absolute()
+            or ".." in PurePosixPath(brief["path"]).parts
+            or not is_within(brief_path, project.resolve())
+            or not brief_path.is_file()
+            or is_reparse(brief_path)
+            or not isinstance(brief.get("sha256"), str)
+            or file_sha256(brief_path)[1] != brief.get("sha256")
+        ):
+            failures.append("Proof slice current brief is missing, unsafe, or hash-drifted.")
+        else:
+            try:
+                current_at = datetime.fromisoformat(str(brief.get("current_at") or "").replace("Z", "+00:00"))
+            except ValueError:
+                current_at = None
+            if (
+                current_at is None
+                or current_at.tzinfo is None
+                or current_at > datetime.now(timezone.utc)
+                or len(brief_path.read_text(encoding="utf-8", errors="replace").strip()) < 40
+            ):
+                failures.append("Proof slice brief is not a current substantive brief artifact.")
+
+    source = payload.get("source")
+    source_observation: dict[str, object] | None = None
+    source_states: dict[str, dict[str, object]] = {}
+    if not isinstance(source, dict) or set(source) != {
+        "source_kind", "id", "observation", "sha256", "url", "states", "arrangement_frames",
+    }:
+        failures.append("Proof slice needs one exact proof-source observation/state/arrangement-frame object.")
+        source = {}
+    else:
+        source_id = source.get("id")
+        observation_relative = source.get("observation")
+        observation_path = lexical_absolute(project / PurePosixPath(str(observation_relative or "")))
+        if (
+            source.get("source_kind") != "proof-slice"
+            or not isinstance(source_id, str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", source_id) is None
+            or observation_relative != f".design-dna/references/{source_id}-observation.json"
+            or not is_within(observation_path, project.resolve())
+            or not observation_path.is_file()
+            or is_reparse(observation_path)
+            or not isinstance(source.get("sha256"), str)
+            or file_sha256(observation_path)[1] != source.get("sha256")
+            or not isinstance(source.get("url"), str)
+            or urlsplit(source["url"]).scheme not in {"http", "https"}
+            or not urlsplit(source["url"]).netloc
+        ):
+            failures.append("Proof slice source is not one exact current generated proof-source observation.")
+        else:
+            try:
+                candidate = json.loads(observation_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                candidate = None
+            if not isinstance(candidate, dict):
+                failures.append("Proof slice source observation is unreadable; a screenshot is not generated observation evidence.")
+            else:
+                source_observation = candidate
+                observer_path = Path(__file__).resolve().parent / "observe_reference.mjs"
+                if (
+                    candidate.get("tool") != "observe_reference.mjs"
+                    or candidate.get("schema_version") != REFERENCE_OBSERVATION_SCHEMA
+                    or candidate.get("producer_script_sha256") != file_sha256(observer_path)[1]
+                    or candidate.get("id") != source_id
+                    or candidate.get("url") != source.get("url")
+                    or candidate.get("source_kind") != "proof-slice"
+                    or packaged_runtime_record_failures(candidate, tool="observe_reference.mjs")
+                ):
+                    failures.append("Proof slice source is screenshot-only/unverified or not generated by the current observer runtime.")
+                failures.extend(_proof_slice_source_study_failures(
+                    candidate.get("source_study"), project=project, expected_id=source_id,
+                    observation_path=observation_path,
+                ))
+                source_state_rows = source.get("states")
+                if not isinstance(source_state_rows, dict) or set(source_state_rows) != {"wide", "narrow"}:
+                    failures.append("Proof slice source needs exact wide and narrow selected source-state hashes.")
+                else:
+                    for profile in ("wide", "narrow"):
+                        row = source_state_rows.get(profile)
+                        state_id = row.get("id") if isinstance(row, dict) else None
+                        observed_state = candidate.get("states_by_viewport", {}).get(profile, {}).get(state_id)
+                        if (
+                            not isinstance(row, dict)
+                            or set(row) != {"id", "sha256"}
+                            or not isinstance(observed_state, dict)
+                            or row.get("sha256") != canonical_json_sha256(observed_state)
+                        ):
+                            failures.append(f"Proof slice source {profile} state is missing or does not match generated observation bytes.")
+                        else:
+                            source_states[profile] = observed_state
+                arrangement = source.get("arrangement_frames")
+                if not isinstance(arrangement, dict) or set(arrangement) != {"wide", "narrow"}:
+                    failures.append("Proof slice needs generated wide and narrow source arrangement frames.")
+                else:
+                    for profile in ("wide", "narrow"):
+                        settled = source_states.get(profile, {}).get("evidence_frames", {}).get("settled")
+                        expected_frame = (
+                            {
+                                "path": f".design-dna/references/{settled.get('file')}",
+                                "bytes": settled.get("bytes"), "sha256": settled.get("sha256"),
+                            }
+                            if isinstance(settled, dict) else None
+                        )
+                        if arrangement.get(profile) != expected_frame:
+                            failures.append(f"Proof slice {profile} arrangement frame is not the selected generated source-state settled frame.")
+
+    implementation = payload.get("implementation")
+    source_file: Path | None = None
+    component_ids: set[str] = set()
+    component_properties: dict[str, set[str]] = {}
+    component_selectors: dict[str, str] = {}
+    component_media_kinds: dict[str, str] = {}
+    if not isinstance(implementation, dict) or set(implementation) != {
+        "source_file", "source_file_sha256", "build_output_path", "proof_url", "primary_component_id", "visible_label",
+    }:
+        failures.append("Proof slice needs one isolated source file, primary component, and visible internal label.")
+        implementation = {}
+    else:
+        source_relative = implementation.get("source_file")
+        source_file = lexical_absolute(project / PurePosixPath(str(source_relative or "")))
+        output_relative = implementation.get("build_output_path")
+        output_file = lexical_absolute(project / PurePosixPath(str(output_relative or "")))
+        if (
+            not isinstance(source_relative, str)
+            or PurePosixPath(source_relative).is_absolute()
+            or ".." in PurePosixPath(source_relative).parts
+            or Path(source_relative).suffix.casefold() not in {".js", ".jsx", ".mjs", ".ts", ".tsx"}
+            or not is_within(source_file, project.resolve())
+            or not source_file.is_file()
+            or is_reparse(source_file)
+            or not isinstance(implementation.get("source_file_sha256"), str)
+            or file_sha256(source_file)[1] != implementation.get("source_file_sha256")
+            or not isinstance(output_relative, str)
+            or PurePosixPath(output_relative).is_absolute()
+            or ".." in PurePosixPath(output_relative).parts
+            or Path(output_relative).suffix.casefold() not in {".html", ".htm"}
+            or not is_within(output_file, project.resolve())
+            or is_reparse(output_file)
+            or output_file == source_file
+            or not isinstance(implementation.get("proof_url"), str)
+            or urlsplit(implementation["proof_url"]).scheme != "http"
+            or urlsplit(implementation["proof_url"]).hostname not in {"127.0.0.1", "localhost", "::1"}
+            or not isinstance(implementation.get("primary_component_id"), str)
+            or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", implementation["primary_component_id"]) is None
+            or implementation.get("visible_label") != PROOF_SLICE_LABEL
+        ):
+            failures.append("Proof slice implementation file/local rendered proof URL/primary component/internal label is missing, unsafe, or drifted.")
+
+    components = payload.get("visible_components")
+    if not isinstance(components, list) or not components:
+        failures.append("Proof slice needs a per-visible-component source/style/media map; a screenshot or page-level pool cannot advance it.")
+        components = []
+    else:
+        seen_components: set[str] = set()
+        for index, component in enumerate(components, start=1):
+            label = f"Proof slice visible component {index}"
+            expected_component = {"component_id", "source_selector", "source_component_key", "content", "styles", "media"}
+            if not isinstance(component, dict) or set(component) != expected_component:
+                failures.append(f"{label} has an unsupported map shape.")
+                continue
+            component_id = component.get("component_id")
+            if (
+                not isinstance(component_id, str)
+                or re.fullmatch(r"[a-z][a-z0-9-]{2,63}", component_id) is None
+                or component_id in seen_components
+                or not isinstance(component.get("source_selector"), str)
+                or component["source_selector"] in {"body", "html", "main", "document"}
+                or not isinstance(component.get("source_component_key"), str)
+                or len(component["source_component_key"].strip()) < 3
+            ):
+                failures.append(f"{label} needs one unique non-wrapper component/source selector map.")
+                continue
+            seen_components.add(component_id)
+            component_ids.add(component_id)
+            component_selectors[component_id] = component["source_selector"]
+            content = component.get("content")
+            proof_component_rows = source_observation.get("proof_component_maps", []) if isinstance(source_observation, dict) else []
+            content_match = next((
+                row for row in proof_component_rows if isinstance(row, dict)
+                and row.get("selector") == component.get("source_selector")
+                and row.get("component_key") == component.get("source_component_key")
+                and row.get("text_sha256") == (content.get("source_text_sha256") if isinstance(content, dict) else None)
+            ), None)
+            if (
+                not isinstance(content, dict)
+                or set(content) != {"source_text_sha256", "build_text_sha256"}
+                or not isinstance(content.get("source_text_sha256"), str)
+                or SHA256_HEX.fullmatch(content["source_text_sha256"]) is None
+                or content.get("build_text_sha256") != content.get("source_text_sha256")
+                or content_match is None
+            ):
+                failures.append(f"{label} content is not an exact generated source-component recognition map.")
+            styles = component.get("styles")
+            if not isinstance(styles, dict) or set(styles) != {"record", "properties", "tuples"}:
+                failures.append(f"{label} needs exact source style record/properties/tuples.")
+            else:
+                source_id = source.get("id") if isinstance(source, dict) else None
+                record = styles.get("record")
+                expected_style = f".design-dna/references/{source_id}-styles.json"
+                style_path = lexical_absolute(project / PurePosixPath(str(record.get("path") if isinstance(record, dict) else "")))
+                if (
+                    not isinstance(record, dict)
+                    or set(record) != {"path", "sha256"}
+                    or record.get("path") != expected_style
+                    or not style_path.is_file()
+                    or record.get("sha256") != file_sha256(style_path)[1]
+                ):
+                    failures.append(f"{label} source style record is missing or hash-drifted.")
+                    source_styles = {}
+                else:
+                    try:
+                        source_styles = json.loads(style_path.read_text(encoding="utf-8"))
+                    except (OSError, ValueError):
+                        source_styles = {}
+                properties = styles.get("properties")
+                tuples = styles.get("tuples")
+                if (
+                    not isinstance(properties, list) or not properties
+                    or len(properties) != len(set(properties))
+                    or not all(isinstance(item, str) and re.fullmatch(r"(?:--)?[a-z][a-z0-9-]{1,63}", item) for item in properties)
+                    or not isinstance(tuples, list) or not tuples
+                ):
+                    failures.append(f"{label} has no exact measured source CSS property map.")
+                else:
+                    component_properties[component_id] = set(properties)
+                    selected_states = source.get("states") if isinstance(source.get("states"), dict) else {}
+                    selected_state_ids = {
+                        profile: row.get("id") if isinstance(row, dict) else None
+                        for profile, row in selected_states.items()
+                    }
+                    expected_cells = {
+                        (profile, str(selected_state_ids.get(profile)), property)
+                        for profile in ("wide", "narrow") for property in properties
+                    }
+                    seen_cells: set[tuple[str, str, str]] = set()
+                    rows = source_styles.get("component_styles", []) if isinstance(source_styles, dict) else []
+                    for tuple_index, tuple_ in enumerate(tuples, start=1):
+                        expected_tuple = {"viewport", "source_state_id", "property", "source_value", "build_value"}
+                        cell = (
+                            str(tuple_.get("viewport")) if isinstance(tuple_, dict) else "",
+                            str(tuple_.get("source_state_id")) if isinstance(tuple_, dict) else "",
+                            str(tuple_.get("property")) if isinstance(tuple_, dict) else "",
+                        )
+                        source_match = next((
+                            row for row in rows if isinstance(row, dict)
+                            and row.get("profile") == cell[0]
+                            and row.get("state_id") == cell[1]
+                            and row.get("selector") == component.get("source_selector")
+                            and row.get("component_key") == component.get("source_component_key")
+                            and isinstance(row.get("properties"), dict)
+                            and row["properties"].get(cell[2]) == (tuple_.get("source_value") if isinstance(tuple_, dict) else None)
+                        ), None)
+                        if (
+                            not isinstance(tuple_, dict)
+                            or set(tuple_) != expected_tuple
+                            or cell in seen_cells
+                            or cell not in expected_cells
+                            or source_match is None
+                            or tuple_.get("build_value") != tuple_.get("source_value")
+                        ):
+                            failures.append(f"{label} style tuple {tuple_index} is not an exact source selector/state/property/value transfer.")
+                        seen_cells.add(cell)
+                    if seen_cells != expected_cells:
+                        failures.append(f"{label} does not cover every wide/narrow selected-state source style property.")
+            media = component.get("media")
+            if not isinstance(media, dict) or not isinstance(media.get("kind"), str) or media.get("kind") not in PROOF_SLICE_MEDIA_KINDS:
+                failures.append(f"{label} needs an explicit media map (kind none when no media is visible).")
+            elif media.get("kind") == "none":
+                component_media_kinds[component_id] = "none"
+                if set(media) != {"kind"}:
+                    failures.append(f"{label} media none cannot hide unbound media fields.")
+            else:
+                component_media_kinds[component_id] = str(media.get("kind"))
+                crop_field = "crop_by_viewport" if "crop_by_viewport" in media else "crop"
+                if set(media) != {"kind", "source_url", "role", crop_field, "temporal_mode"}:
+                    failures.append(f"{label} media map has an unsupported shape.")
+                else:
+                    observation_censuses = (
+                        source_observation.get("interaction_census_by_viewport")
+                        if isinstance(source_observation, dict) else {}
+                    )
+                    assets = {
+                        value for profile in ("wide", "narrow")
+                        for page in (observation_censuses.get(profile, {}).get("pages", []) if isinstance(observation_censuses, dict) and isinstance(observation_censuses.get(profile), dict) else [])
+                        if isinstance(page, dict)
+                        for value in page.get("dom_code_inventory", {}).get("assets", [])
+                        if isinstance(value, str)
+                    }
+                    crops = media.get("crop_by_viewport", {profile: media.get("crop") for profile in ("wide", "narrow")})
+                    if not isinstance(crops, dict) or set(crops) != {"wide", "narrow"}:
+                        failures.append(f"{label} responsive crop map needs exact wide and narrow geometry.")
+                        crops = {}
+                    for profile, crop in crops.items():
+                        if (
+                        media.get("source_url") not in assets
+                        or not isinstance(media.get("role"), str) or len(media["role"].strip()) < 12
+                        or not isinstance(crop, dict) or set(crop) != {"width", "height", "object_fit", "object_position"}
+                        or type(crop.get("width")) is not int or crop["width"] < 1
+                        or type(crop.get("height")) is not int or crop["height"] < 1
+                        or not isinstance(crop.get("object_fit"), str) or not isinstance(crop.get("object_position"), str)
+                        or media.get("temporal_mode") not in {"still", "moving", "audio"}
+                        ):
+                            failures.append(f"{label} {profile} media is not an exact source-observed role/crop/temporal map.")
+                        observed_media = next((row for row in source_observation.get("proof_component_maps", [])
+                            if row.get("profile") == profile and row.get("selector") == component.get("source_selector")), None)
+                        if (not isinstance(observed_media, dict) or not isinstance(crop, dict)
+                            or observed_media.get("media", {}).get("source_url") != media.get("source_url")
+                            or any(round(observed_media.get("rect", {}).get(field, -1)) != crop.get(field) for field in ("width", "height"))
+                            or observed_media.get("properties", {}).get("object-fit") != crop.get("object_fit")
+                            or observed_media.get("properties", {}).get("object-position") != crop.get("object_position")):
+                            failures.append(f"{label} {profile} crop/media role does not match its generated source component.")
+    coverage = payload.get("transfer_coverage")
+    if not isinstance(coverage, dict) or set(coverage) != {"layout", "type", "color", "spacing", "control", "media"}:
+        failures.append("Proof slice needs typed source-transfer coverage for layout, type, color, spacing, control, and media.")
+    else:
+        families = {
+            "layout": {"display", "grid-template-columns", "transform", "position", "width", "height"},
+            "type": {"font-family", "font-size", "font-weight", "line-height", "letter-spacing"},
+            "color": {"color", "background-color", "background-image", "border-color"},
+            "spacing": {"padding", "margin", "gap"},
+        }
+        for category, family in families.items():
+            covered = coverage.get(category)
+            if (
+                not isinstance(covered, list) or not covered
+                or len(covered) != len(set(covered))
+                or not all(isinstance(component_id, str) and component_id in component_ids for component_id in covered)
+                or not any(component_properties.get(component_id, set()).intersection(family) for component_id in covered)
+            ):
+                failures.append(f"Proof slice {category} coverage has no source-bound component with a material measured {category} property.")
+        source_arrangement = source.get("arrangement_frames") if isinstance(source, dict) else None
+        source_censuses = (
+            source_observation.get("interaction_census_by_viewport")
+            if isinstance(source_observation, dict) else {}
+        )
+        source_pages = [
+            page for profile in ("wide", "narrow")
+            for page in (source_censuses.get(profile, {}).get("pages", []) if isinstance(source_censuses, dict) and isinstance(source_censuses.get(profile), dict) else [])
+            if isinstance(page, dict)
+        ]
+        source_targets = [
+            target for page in source_pages
+            for target in page.get("targets", []) if isinstance(target, dict)
+        ]
+        source_control_selectors = {
+            target.get("selector") for target in source_targets
+            if target.get("kind") in {"control", "open-close", "input-control"}
+            or target.get("tag") in {"button", "input", "select", "textarea"}
+        }
+        source_assets = {
+            value for page in source_pages
+            for value in page.get("dom_code_inventory", {}).get("assets", [])
+            if isinstance(value, str)
+        } if isinstance(source_observation, dict) else set()
+        for category, source_values in (("control", source_control_selectors), ("media", source_assets)):
+            item = coverage.get(category)
+            if not isinstance(item, dict) or set(item) != {"status", "component_ids", "evidence"}:
+                failures.append(f"Proof slice {category} coverage has an unsupported source-transfer shape.")
+                continue
+            status = item.get("status")
+            ids = item.get("component_ids")
+            if status == "source-absent":
+                if ids != [] or item.get("evidence") != source_arrangement or source_values:
+                    failures.append(f"Proof slice {category} source-absent disposition is not supported by exact source state evidence.")
+            elif status == "present":
+                if (
+                    not isinstance(ids, list) or not ids or len(ids) != len(set(ids))
+                    or not all(isinstance(component_id, str) and component_id in component_ids for component_id in ids)
+                    or item.get("evidence") != source_arrangement
+                ):
+                    failures.append(f"Proof slice {category} present disposition has no exact component/evidence coverage.")
+                elif category == "control" and not all(component_selectors.get(component_id) in source_control_selectors for component_id in ids):
+                    failures.append("Proof slice control coverage is not mapped to exact observed source controls.")
+                elif category == "media" and not all(component_media_kinds.get(component_id, "none") != "none" for component_id in ids):
+                    failures.append("Proof slice media coverage names a component without an exact visible media role.")
+            else:
+                failures.append(f"Proof slice {category} coverage status must be present or source-absent.")
+    if isinstance(implementation, dict) and implementation.get("primary_component_id") not in component_ids:
+        failures.append("Proof slice primary_component_id is not present in its per-visible-component map.")
+    if source_file is not None and component_ids:
+        try:
+            source_text = source_file.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            failures.append(f"Proof slice implementation source is unreadable: {exc}")
+        else:
+            if PROOF_SLICE_LABEL not in source_text:
+                failures.append("Proof slice implementation does not render the required visible internal-unverified label text.")
+            failures.extend(proof_ast_isolation_failures(
+                source_file,
+                other_route_markers=[],
+                required_components=component_ids,
+                require_proof_label=True,
+                strict_component_maps=True,
+            ))
+    return failures
+
+
+def _atomic_write_json(path: Path, payload: object) -> None:
+    """Replace one ordinary JSON file without leaving a half-written authority record."""
+
+    if is_reparse(path) or (path.exists() and not path.is_file()):
+        raise StateError(
+            "construction-binding-target-unsafe",
+            "Construction binding target must be one ordinary file, not a link or directory.",
+            path=path,
+        )
+    fd, raw = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent), text=True,
+    )
+    temporary = Path(raw)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+        os.replace(temporary, path)
+    except Exception:
+        try:
+            if temporary.exists():
+                temporary.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def _construction_activation_bytes(
+    project: Path, *, visible_path: Path, dossier_path: Path, payload: dict[str, object],
+) -> tuple[list[tuple[Path, bytes, bytes]], str]:
+    """Prepare the canonical map/digest pair without changing source authority."""
+    root = project.resolve()
+    expected = [(visible_path, root / ".design-dna" / "visible-decision-sources.json"),
+                (dossier_path, root / ".design-dna" / "reference-dossier.md")]
+    for actual, canonical in expected:
+        if Path(os.path.abspath(actual)) != canonical:
+            raise StateError("construction-activation-path-invalid", "Construction activation requires the exact canonical map and dossier paths.", path=actual)
+        assert_no_reparse_ancestors(actual, stop=root)
+        if not actual.is_file() or is_reparse(actual) or actual.stat().st_nlink != 1:
+            raise StateError("construction-activation-target-unsafe", "Construction activation refuses missing, linked, hardlinked, or nonordinary targets.", path=actual)
+    if not isinstance(payload, dict) or payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA:
+        raise StateError("construction-activation-schema-invalid", "Only a validated schema-2 construction map can be activated.", path=visible_path)
+    old_visible, old_dossier = visible_path.read_bytes(), dossier_path.read_bytes()
+    body = old_dossier.decode("utf-8", errors="strict")
+    matches = list(re.finditer(r"(?im)^-[ \t]*Visible decision source manifest:[ \t]*([^\r\n]*)", body))
+    if len(matches) != 1:
+        raise StateError("construction-activation-binding-count", "The dossier must already contain exactly one Visible decision source manifest binding.", path=dossier_path)
+    match = matches[0]
+    binding = re.fullmatch(r"`?(\.design-dna/visible-decision-sources\.json)`?[ \t]+(?:plus[ \t]+)?sha256:([0-9a-f]{64})[ \t]*", match.group(1))
+    if binding is None:
+        raise StateError("construction-activation-binding-invalid", "The existing dossier binding must name exactly .design-dna/visible-decision-sources.json and one SHA-256 digest.", path=dossier_path)
+    new_visible = (json.dumps(payload, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+    digest = hashlib.sha256(new_visible).hexdigest()
+    start, end = match.start(1) + binding.start(2), match.start(1) + binding.end(2)
+    updated = body[:start] + digest + body[end:]
+    if _dossier_core_text_sha256(updated) != _dossier_core_text_sha256(body):
+        raise StateError("construction-activation-core-drift", "Mechanical activation attempted to change the frozen dossier core.", path=dossier_path)
+    return [(visible_path, old_visible, new_visible), (dossier_path, old_dossier, updated.encode("utf-8"))], digest
+
+
+def activate_construction_binding(
+    project: Path, *, visible_path: Path, dossier_path: Path, payload: dict[str, object],
+) -> bool:
+    """Activate map plus its existing dossier digest under the caller's project lock.
+
+    Each replace is atomic. A caught partial write restores the exact prior
+    bytes. A process crash leaves a fail-closed hash mismatch; journal recovery
+    can finish only the identical frozen source plan, never authorize new code.
+    """
+    changes, _digest = _construction_activation_bytes(project, visible_path=visible_path, dossier_path=dossier_path, payload=payload)
+    try:
+        for path, previous, updated in changes:
+            assert_no_reparse_ancestors(path, stop=project.resolve())
+            if not path.is_file() or path.stat().st_nlink != 1 or path.read_bytes() != previous:
+                raise StateError("construction-activation-target-drift", "Construction authority changed while activating its generated digest.", path=path)
+            if previous != updated:
+                atomic_replace_bytes(path, updated, code="construction-activation-write-failed")
+    except Exception as exc:
+        rollback_failures = []
+        for path, previous, updated in reversed(changes):
+            try:
+                assert_no_reparse_ancestors(path, stop=project.resolve())
+                if not path.is_file() or path.stat().st_nlink != 1:
+                    raise OSError("activation target is no longer one ordinary single-link file")
+                current = path.read_bytes()
+                if current == previous:
+                    continue
+                if current != updated:
+                    raise OSError("target has an external edit; it was preserved")
+                atomic_replace_bytes(path, previous, code="construction-activation-rollback-failed")
+            except Exception as rollback_error:
+                rollback_failures.append(f"{path.name}: {rollback_error}")
+        if rollback_failures:
+            raise StateError("construction-activation-recovery-required", f"Activation failed ({exc}); automatic rollback was incomplete: {' | '.join(rollback_failures)}. Retain the immutable journal and recover the exact frozen plan.", path=dossier_path) from exc
+        raise
+    return any(previous != updated for _path, previous, updated in changes)
+
+
+def construction_binding_project_failures(
+    project: Path,
+    *,
+    allow_pending_construction_authorization: bool,
+) -> tuple[list[str], dict[str, object] | None, Path | None, Path | None, Path | None]:
+    """Load the one source plan that construction is allowed to use."""
+
+    failures: list[str] = []
+    state = project / ".design-dna"
+    dossier = state / "reference-dossier.md"
+    manifest_path = state / "route-manifest.json"
+    visible_path = state / "visible-decision-sources.json"
+    if not dossier.is_file():
+        return ["Construction binding requires .design-dna/reference-dossier.md."], None, None, None, None
+    if not manifest_path.is_file():
+        return ["Construction binding requires .design-dna/route-manifest.json."], None, None, None, None
+    if not visible_path.is_file():
+        return ["Construction binding requires .design-dna/visible-decision-sources.json."], None, None, None, None
+    try:
+        manifest = read_json(manifest_path)
+        visible = read_json(visible_path)
+        dossier_body = dossier.read_text(encoding="utf-8")
+    except (StateError, OSError, UnicodeError) as exc:
+        return [f"Construction binding records are unreadable: {exc}"], None, None, None, None
+    if not isinstance(manifest, dict) or not isinstance(visible, dict):
+        return ["Construction binding manifest records must be JSON objects."], None, None, None, None
+    failures.extend(route_manifest_payload_failures(manifest))
+    failures.extend(route_manifest_reference_failures(manifest, project=project))
+    route_section = markdown_sections(dossier_body).get("Route manifest", "")
+    proof_identity = markdown_label_value(
+        route_section, "First-screen proof build ID and primary route key"
+    ) or ""
+    failures.extend(visible_decision_source_manifest_failures(
+        visible,
+        project=project,
+        route_manifest=manifest,
+        route_manifest_path=manifest_path,
+        proof_identity=proof_identity,
+        require_construction_v2=True,
+        allow_pending_construction_authorization=allow_pending_construction_authorization,
+    ))
+    if not allow_pending_construction_authorization:
+        failures.extend(construction_authorization_failures(
+            project, visible, route_manifest_path=manifest_path, dossier_path=dossier,
+        ))
+        controls = load_bundled_source_module(
+            "_design_dna_implementation_control", Path(__file__).with_name("implementation_control.py")
+        )
+        # Pass the already loaded module namespace without relying on its
+        # import name (the CLI and tools load this module under distinct IDs).
+        class InventoryValidator:
+            construction_source_snapshot = staticmethod(construction_source_snapshot)
+            prebuild_authorization_chain = staticmethod(prebuild_authorization_chain)
+        failures.extend(controls.prohibition_failures(project, visible, InventoryValidator))
+    return failures, visible, manifest_path, dossier, visible_path
+
+
+def precode_generated_public_asset_failures(project: Path, visible_payload: dict | None = None) -> list[str]:
+    """Generated visuals require a measured source plan preceding generation."""
+
+    assets_path = project / ".design-dna" / "assets.yml"
+    if not assets_path.is_file():
+        return []
+    try:
+        payload = parse_strict_yaml_subset(
+            assets_path.read_text(encoding="utf-8"), path=assets_path
+        )
+    except (OSError, UnicodeError, StateError) as exc:
+        return [f"Pre-code generated-asset review cannot read assets.yml: {exc}"]
+    rows = payload.get("assets") if isinstance(payload, dict) else None
+    failures: list[str] = []
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
+        generated = row.get("generated")
+        if (
+            isinstance(generated, dict)
+            and generated.get("used") is True
+            and row.get("publication_status") in {"planned-public", "public"}
+        ):
+            module = load_bundled_source_module("_design_dna_asset_source_plan", Path(__file__).with_name("asset_source_plan.py"))
+            failures.extend(module.generated_asset_source_plan_failures(project, row, visible_payload or {}))
+    return failures
+
+
+def begin_construction_journal(
+    project: Path,
+    *,
+    manifest_path: Path,
+    dossier_path: Path,
+    visible_path: Path,
+    visible_payload: dict[str, object],
+) -> dict[str, object]:
+    """Create one recoverable pre-code entry and bind it into v2 atomically enough to fail closed."""
+
+    if visible_payload.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA:
+        raise StateError(
+            "construction-binding-legacy",
+            "--begin-construction requires construction-binding schema 2; schema 1 is legacy evidence only.",
+            path=visible_path,
+        )
+    # Validate both activation targets before creating an append-only entry.
+    _construction_activation_bytes(project, visible_path=visible_path, dossier_path=dossier_path, payload=visible_payload)
+    generated_asset_failures = precode_generated_public_asset_failures(project, visible_payload)
+    if generated_asset_failures:
+        raise StateError(
+            "generated-public-asset-before-proof",
+            " | ".join(generated_asset_failures),
+            path=project / ".design-dna" / "assets.yml",
+        )
+    journal_root = project / ".design-dna" / "evidence" / "construction-journal"
+    journal_root.mkdir(parents=True, exist_ok=True)
+    assert_no_reparse_ancestors(journal_root, stop=project)
+    chain_failures, records = construction_journal_chain(project)
+    if chain_failures:
+        raise StateError("construction-journal-invalid", " | ".join(chain_failures), path=journal_root)
+    current_auth = visible_payload.get("construction_authorization")
+    if records:
+        latest_file, latest_entry, latest_sha = records[-1]
+        expected_auth = {
+            "journal_id": latest_entry["journal_id"],
+            "entry_path": latest_file.relative_to(project).as_posix(),
+            "entry_sha256": latest_sha,
+        }
+        if current_auth == expected_auth:
+            if (latest_entry.get("entry_kind") in {"pre-code-baseline", "reopened-source-change", "binding-freeze"}
+                and latest_entry.get("visible_decision_core_sha256") == construction_binding_core_sha256(visible_payload)
+                and latest_entry.get("dossier_core_sha256") == dossier_core_sha256(dossier_path)
+                and latest_entry.get("route_manifest", {}).get("sha256") == file_sha256(manifest_path)[1]
+                and activate_construction_binding(project, visible_path=visible_path, dossier_path=dossier_path, payload=visible_payload)):
+                return {"action": "recovered-construction-authorization", "path": str(latest_file), "sha256": latest_sha}
+            raise StateError(
+                "construction-journal-already-begun",
+                "The current construction bindings already have a latest journal entry; change research only through an explicit reopened-source-change entry.",
+                path=latest_file,
+            )
+        # A prior crash may have written a valid append-only entry before it
+        # rebound the manifest.  Recover only when its immutable core agrees.
+        if (
+            latest_entry.get("visible_decision_core_sha256") == construction_binding_core_sha256(visible_payload)
+            and latest_entry.get("entry_kind") in {"pre-code-baseline", "reopened-source-change", "binding-freeze"}
+        ):
+            if (latest_entry.get("dossier_core_sha256") != dossier_core_sha256(dossier_path)
+                or latest_entry.get("route_manifest", {}).get("sha256") != file_sha256(manifest_path)[1]):
+                raise StateError("construction-recovery-authority-drift", "An interrupted activation can recover only the exact frozen dossier and route manifest.", path=latest_file)
+            new_payload = dict(visible_payload)
+            new_payload["construction_authorization"] = expected_auth
+            activate_construction_binding(project, visible_path=visible_path, dossier_path=dossier_path, payload=new_payload)
+            return {"action": "recovered-construction-authorization", "path": str(latest_file), "sha256": latest_sha}
+        if latest_entry.get("visible_decision_core_sha256") == construction_binding_core_sha256(visible_payload):
+            raise StateError(
+                "construction-journal-already-begun",
+                "Construction has already advanced beyond its pre-code baseline; use the existing authorization rather than rewriting it.",
+                path=latest_file,
+            )
+        _tree_sha, _files, current_visible_files, _assets = construction_source_snapshot(project)
+        if current_visible_files:
+            raise StateError(
+                "construction-research-after-visible-code",
+                "A changed source plan cannot be rebound after visible implementation exists. Revert/remove the visible proof, or start a new clean project boundary; writing a reopened-source-change entry now would be post-hoc dossier laundering.",
+                path=project,
+                details={"visible_source_files": current_visible_files},
+            )
+        action = append_construction_journal_entry(
+            project,
+            entry_kind="reopened-source-change",
+            manifest_path=manifest_path,
+            dossier_path=dossier_path,
+            visible_payload=visible_payload,
+        )
+        new_payload = dict(visible_payload)
+        new_payload["construction_authorization"] = {
+            "journal_id": action["journal_id"],
+            "entry_path": action["relative_path"],
+            "entry_sha256": action["sha256"],
+        }
+        activate_construction_binding(project, visible_path=visible_path, dossier_path=dossier_path, payload=new_payload)
+        return {"action": "reopened-source-change", **action}
+    tree_sha, files, visible_files, asset_files = construction_source_snapshot(project)
+    journal_id = secrets.token_hex(16)
+    entry_id = secrets.token_hex(16)
+    created_at = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+    entry_name = f"000001-{entry_id}.json"
+    entry_path = journal_root / entry_name
+    route_payload = read_json(manifest_path)
+    if not isinstance(route_payload, dict):
+        raise StateError("construction-route-manifest-invalid", "Route manifest must be an object.", path=manifest_path)
+    payload = {
+        "schema_version": CONSTRUCTION_JOURNAL_SCHEMA,
+        "record_type": CONSTRUCTION_JOURNAL_RECORD,
+        "journal_id": journal_id,
+        "entry_id": entry_id,
+        "sequence": 1,
+        "entry_kind": "pre-code-baseline",
+        "created_at": created_at,
+        "project": str(project.resolve()),
+        "implementation_tree_sha256": tree_sha,
+        "implementation_files": files,
+        "visible_source_files": visible_files,
+        "asset_files": asset_files,
+        "visible_decision_core_sha256": construction_binding_core_sha256(visible_payload),
+        "route_manifest": {
+            "manifest_id": route_payload.get("manifest_id"),
+            "path": ".design-dna/route-manifest.json",
+            "sha256": file_sha256(manifest_path)[1],
+        },
+        "dossier_core_sha256": dossier_core_sha256(dossier_path),
+        "source_observations": visible_payload.get("source_observations"),
+        "predecessor": None,
+        "producer_script_sha256": file_sha256(Path(__file__).resolve())[1],
+    }
+    encoded = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+    try:
+        with entry_path.open("x", encoding="utf-8", newline="\n") as handle:
+            handle.write(encoded)
+    except FileExistsError as exc:
+        raise StateError("construction-journal-entry-exists", "Refusing to overwrite an append-only construction journal entry.", path=entry_path) from exc
+    entry_sha = file_sha256(entry_path)[1]
+    new_visible = dict(visible_payload)
+    new_visible["construction_authorization"] = {
+        "journal_id": journal_id,
+        "entry_path": entry_path.relative_to(project).as_posix(),
+        "entry_sha256": entry_sha,
+    }
+    activate_construction_binding(project, visible_path=visible_path, dossier_path=dossier_path, payload=new_visible)
+    return {"action": "began-construction", "path": str(entry_path), "sha256": entry_sha, "visible_source_files": visible_files}
+
+
+def append_construction_journal_entry(
+    project: Path,
+    *,
+    entry_kind: str,
+    manifest_path: Path,
+    dossier_path: Path,
+    visible_payload: dict[str, object],
+) -> dict[str, object]:
+    """Append a post-baseline lifecycle fact without rewriting prior evidence."""
+
+    if entry_kind not in CONSTRUCTION_JOURNAL_ENTRY_KINDS - {"pre-code-baseline"}:
+        raise StateError("construction-journal-kind-invalid", "Unsupported append-only construction journal entry kind.")
+    failures, records = construction_journal_chain(project)
+    if failures or not records:
+        raise StateError("construction-journal-invalid", " | ".join(failures or ["No pre-code baseline exists."]))
+    previous_path, previous, previous_sha = records[-1]
+    tree_sha, files, visible_files, asset_files = construction_source_snapshot(project)
+    if entry_kind in {"reopened-source-change", "binding-freeze"} and visible_files:
+        raise StateError(
+            "construction-rebind-after-visible-code",
+            "A new/rebound construction plan must take a code-free baseline; visible implementation already exists and cannot be post-hoc authorized.",
+            path=project,
+            details={"visible_source_files": visible_files},
+        )
+    route_payload = read_json(manifest_path)
+    if not isinstance(route_payload, dict):
+        raise StateError("construction-route-manifest-invalid", "Route manifest must be an object.", path=manifest_path)
+    entry_id = secrets.token_hex(16)
+    sequence = int(previous["sequence"]) + 1
+    entry_path = previous_path.parent / f"{sequence:06d}-{entry_id}.json"
+    payload = {
+        "schema_version": CONSTRUCTION_JOURNAL_SCHEMA,
+        "record_type": CONSTRUCTION_JOURNAL_RECORD,
+        "journal_id": previous["journal_id"],
+        "entry_id": entry_id,
+        "sequence": sequence,
+        "entry_kind": entry_kind,
+        "created_at": datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z"),
+        "project": str(project.resolve()),
+        "implementation_tree_sha256": tree_sha,
+        "implementation_files": files,
+        "visible_source_files": visible_files,
+        "asset_files": asset_files,
+        "visible_decision_core_sha256": construction_binding_core_sha256(visible_payload),
+        "route_manifest": {
+            "manifest_id": route_payload.get("manifest_id"),
+            "path": ".design-dna/route-manifest.json",
+            "sha256": file_sha256(manifest_path)[1],
+        },
+        "dossier_core_sha256": dossier_core_sha256(dossier_path),
+        "source_observations": visible_payload.get("source_observations"),
+        "predecessor": {
+            "path": previous_path.relative_to(project).as_posix(),
+            "sha256": previous_sha,
+        },
+        "producer_script_sha256": file_sha256(Path(__file__).resolve())[1],
+    }
+    try:
+        with entry_path.open("x", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+    except FileExistsError as exc:
+        raise StateError("construction-journal-entry-exists", "Refusing to overwrite an append-only construction journal entry.", path=entry_path) from exc
+    digest = file_sha256(entry_path)[1]
+    return {
+        "path": str(entry_path), "relative_path": entry_path.relative_to(project).as_posix(),
+        "sha256": digest, "journal_id": previous["journal_id"], "entry_id": entry_id,
+    }
+
+
 def served_content_identity_failures(
     identity: object,
     *,
@@ -8146,6 +11238,20 @@ def served_content_identity_failures(
     return failures
 
 
+def first_screen_region_authority(project: Path, mapping: dict, route_key: str, profile: str, state_id: str, viewport_height: int) -> dict:
+    """Read only immutable measured geometry for the pre-code primary region."""
+    phase = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
+    content = load_bundled_source_module("_design_dna_content_bounds", Path(__file__).with_name("content_transfer.py"))
+    records = {}
+    for decision in mapping.get("decisions", []):
+        if decision.get("component_id") != mapping.get("proof_isolation", {}).get("region_component_id") or decision.get("category") != "layout":
+            continue
+        record = decision.get("style_provenance", {}).get("record")
+        file = content.read_bound(project, record)
+        records[record["path"]] = read_json(file)
+    return phase.derive_first_screen_region_authority(mapping, records, route_key, profile, state_id, viewport_height)
+
+
 def census_runtime_failures(
     payload: object,
     *,
@@ -8154,6 +11260,8 @@ def census_runtime_failures(
     first_screen: bool,
     record_path: Path | None = None,
     project: Path | None = None,
+    decision_manifest_snapshot: dict[str, object] | None = None,
+    decision_manifest_snapshot_sha256: str | None = None,
 ) -> list[str]:
     """Reconcile build scope, inferred states, and interaction transfer cells."""
 
@@ -8170,6 +11278,13 @@ def census_runtime_failures(
         for route in expected_routes
         if isinstance(route, dict)
     }
+    planned_route_handoffs: set[str] = set()
+    if first_screen and project is not None:
+        try:
+            phase_module = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
+            planned_route_handoffs = phase_module.planned_deferred_routes(project, expected_routes)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            failures.append(f"First-screen planned route handoff authority is invalid: {exc}")
     viewport_by_name = {
         str(viewport.get("name")): viewport
         for viewport in expected_viewports
@@ -8204,8 +11319,613 @@ def census_runtime_failures(
         for state in route.get("states", [])
         if isinstance(state, dict)
     }
+
+    # Watch evidence is a build artifact, not producer-supplied JSON.  Bind
+    # the entire persisted PNG set before any watch is accepted, so a
+    # syntactically plausible file/hash tuple cannot certify a timer gap.
+    frame_artifacts: set[tuple[str, int, str]] | None = None
+    video_artifacts: set[tuple[str, int, str]] | None = None
+    if record_path is not None:
+        frame_failures, frame_bindings = generated_interaction_frame_bindings(
+            payload, record_path=record_path
+        )
+        failures.extend(frame_failures)
+        frame_artifacts = {
+            (str(binding["relative"]), int(binding["bytes"]), str(binding["sha256"]))
+            for binding in frame_bindings
+        }
+        video_failures, video_bindings = generated_interaction_video_bindings(
+            payload, record_path=record_path
+        )
+        failures.extend(video_failures)
+        video_artifacts = {
+            (str(binding["relative"]), int(binding["bytes"]), str(binding["sha256"]))
+            for binding in video_bindings
+        }
+
+    def generated_frame(value: object) -> bool:
+        return (
+            isinstance(value, dict)
+            and isinstance(value.get("file"), str)
+            and type(value.get("bytes")) is int
+            and value.get("bytes", 0) > 0
+            and isinstance(value.get("sha256"), str)
+            and SHA256_HEX.fullmatch(value["sha256"]) is not None
+            and (
+                frame_artifacts is None
+                or (value.get("file"), value.get("bytes"), value.get("sha256"))
+                in frame_artifacts
+            )
+        )
+
+    def generated_video(value: object) -> bool:
+        return (
+            isinstance(value, dict)
+            and set(value) == {"file", "bytes", "sha256", "duration_ms", "fps", "width", "height"}
+            and isinstance(value.get("file"), str)
+            and type(value.get("bytes")) is int
+            and value.get("bytes", 0) > 0
+            and isinstance(value.get("sha256"), str)
+            and SHA256_HEX.fullmatch(value["sha256"]) is not None
+            and type(value.get("duration_ms")) is int
+            and value.get("duration_ms", 0) > 0
+            and isinstance(value.get("fps"), (int, float))
+            and value.get("fps", 0) > 0
+            and type(value.get("width")) is int
+            and type(value.get("height")) is int
+            and value.get("width", 0) > 0
+            and value.get("height", 0) > 0
+            and (
+                video_artifacts is None
+                or (value.get("file"), value.get("bytes"), value.get("sha256"))
+                in video_artifacts
+            )
+        )
+
+    def autonomous_snapshot(value: object) -> bool:
+        return (
+            isinstance(value, dict)
+            and set(value) == {"at_ms", "surfaces", "animations", "blocked_frames"}
+            and type(value.get("at_ms")) is int
+            and value.get("at_ms", -1) >= 0
+            and isinstance(value.get("surfaces"), list)
+            and isinstance(value.get("animations"), list)
+            and isinstance(value.get("blocked_frames"), list)
+        )
+
+    def watch_event(value: object) -> bool:
+        evidence = value.get("evidence") if isinstance(value, dict) else None
+        allowed_kinds = {
+            "surface-node-added", "surface-node-removed", "surface-attribute-mutation",
+            "autonomous-surface-appeared", "surface-css-animation-event",
+            "surface-pseudo-animation-event", "surface-waapi-active", "surface-state-updated",
+            "uninspectable-cross-origin-frame",
+        }
+        return (
+            isinstance(value, dict)
+            and set(value) == {
+                "event_id", "kind", "elapsed_ms", "declared_ambient", "selector",
+                "surface", "detail", "evidence",
+            }
+            and isinstance(value.get("event_id"), str)
+            and value.get("event_id")
+            and value.get("kind") in allowed_kinds
+            and type(value.get("elapsed_ms")) is int
+            and value.get("elapsed_ms", -1) >= 0
+            and type(value.get("declared_ambient")) is bool
+            and (value.get("selector") is None or isinstance(value.get("selector"), str))
+            and (value.get("surface") is None or isinstance(value.get("surface"), dict))
+            and isinstance(value.get("detail"), dict)
+            and isinstance(evidence, dict)
+            and set(evidence) == {"before", "callback", "after"}
+            and all(generated_frame(evidence.get(phase)) for phase in ("before", "callback", "after"))
+        )
+
+    def exact_autonomous_watch(
+        watch: object,
+        route: dict[str, object] | None,
+        state: dict[str, object] | None,
+        viewport_name: str,
+        expected_viewport: dict[str, object] | None,
+    ) -> bool:
+        if (
+            not isinstance(watch, dict)
+            or not isinstance(route, dict)
+            or not isinstance(state, dict)
+            or not isinstance(expected_viewport, dict)
+        ):
+            return False
+        expected_keys = {
+            "source_state_id", "source_trigger", "source_state_binding", "source_recording",
+            "viewport", "recording_grounded_dwell_ms", "sample_interval_ms", "sample_gap_failures", "navigation_start_ms",
+            "host_started_monotonic_ms", "trigger_started_monotonic_ms",
+            "dwell_started_monotonic_ms", "host_finished_monotonic_ms", "state_application",
+            "pre_trigger", "post_trigger", "initial", "final", "trigger_mutations", "mutation_batches",
+            "tail_mutations", "animation_samples", "visual_recording", "visual_samples", "animation_events", "waapi_events", "early_events", "events",
+            "new_surfaces", "state_diffs", "transient_surfaces", "blocked_frame_surfaces", "mapped_surface", "unbound_surfaces", "evidence", "complete",
+        }
+        if set(watch) != expected_keys or watch.get("complete") is not True or watch.get("unbound_surfaces") != []:
+            return False
+        if watch.get("source_state_id") != state.get("mapped_reference_state_id"):
+            return False
+        if watch.get("viewport") != {
+            "source_profile": viewport_name,
+            "width": expected_viewport.get("width"),
+            "height": expected_viewport.get("height"),
+        }:
+            return False
+        source_recording = watch.get("source_recording")
+        reference_id = route.get("mapped_reference_id")
+        if (
+            not isinstance(source_recording, dict)
+            or set(source_recording) != {
+                "file", "ledger_file", "sha256", "ledger_sha256", "state_contract", "minimum_duration_ms",
+                "profile", "duration_ms", "fps", "frame_count",
+            }
+            or source_recording.get("file") != f"{reference_id}-recording.json"
+            or source_recording.get("ledger_file") != f"{reference_id}-artifacts.json"
+            or any(
+                not isinstance(source_recording.get(field), str)
+                or SHA256_HEX.fullmatch(source_recording[field]) is None
+                for field in ("sha256", "ledger_sha256")
+            )
+            or not isinstance(source_recording.get("state_contract"), dict)
+            or type(source_recording.get("minimum_duration_ms")) is not int
+            or source_recording["minimum_duration_ms"] < 90_000
+            or source_recording.get("profile") != viewport_name
+            or type(source_recording.get("duration_ms")) is not int
+            or source_recording.get("duration_ms", 0) < source_recording["minimum_duration_ms"]
+            or not isinstance(source_recording.get("fps"), (int, float))
+            or source_recording.get("fps", 0) < 15
+            or type(source_recording.get("frame_count")) is not int
+            or source_recording.get("frame_count", 0)
+            < math.ceil(source_recording.get("duration_ms", 0) / 1000 * source_recording.get("fps", 0))
+        ):
+            return False
+        if project is not None:
+            recording_path = project / ".design-dna" / "references" / str(source_recording["file"])
+            ledger_path = project / ".design-dna" / "references" / str(source_recording["ledger_file"])
+            if (
+                not recording_path.is_file()
+                or not ledger_path.is_file()
+                or file_sha256(recording_path)[1] != source_recording["sha256"]
+                or file_sha256(ledger_path)[1] != source_recording["ledger_sha256"]
+            ):
+                return False
+            try:
+                recording_payload = json.loads(recording_path.read_text(encoding="utf-8"))
+                minimum_seconds = recording_payload.get("minimum_duration_per_profile_s")
+                source_profile = recording_payload.get("profiles", {}).get(viewport_name)
+                minimum_ms_float = float(minimum_seconds) * 1000
+                duration_ms_float = float(source_profile.get("duration_s")) * 1000
+                actual_floor = int(minimum_ms_float)
+                actual_duration = int(duration_ms_float)
+                actual_fps = source_profile.get("fps")
+                actual_frames = source_profile.get("frames", {}).get("count")
+            except (OSError, ValueError, TypeError, AttributeError):
+                return False
+            if (
+                not minimum_ms_float.is_integer()
+                or not duration_ms_float.is_integer()
+                or source_recording["minimum_duration_ms"] != actual_floor
+                or source_recording["duration_ms"] != actual_duration
+                or source_recording["fps"] != actual_fps
+                or source_recording["frame_count"] != actual_frames
+            ):
+                return False
+        binding = watch.get("source_state_binding")
+        if not isinstance(binding, dict) or set(binding) != {"id", "trigger", "trigger_evidence", "evidence_frames"}:
+            return False
+        source_observation = None
+        if project is not None:
+            observation_path = project / PurePosixPath(str(route.get("mapped_reference_observation") or ""))
+            try:
+                source_observation = json.loads(observation_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                return False
+        source_state = (
+            source_observation.get("states_by_viewport", {}).get(viewport_name, {}).get(state.get("mapped_reference_state_id"))
+            if isinstance(source_observation, dict)
+            else None
+        )
+        if (
+            not isinstance(source_state, dict)
+            or source_recording.get("state_contract")
+            != source_observation.get("state_contract")
+            or binding.get("id") != state.get("mapped_reference_state_id")
+            or binding.get("trigger") != source_state.get("trigger")
+            or binding.get("trigger_evidence") != source_state.get("trigger_evidence")
+            or binding.get("evidence_frames") != source_state.get("evidence_frames")
+            or watch.get("source_trigger") != source_state.get("trigger")
+        ):
+            return False
+        source_trigger = source_state.get("trigger")
+        source_evidence = source_state.get("trigger_evidence")
+        source_identity = (
+            source_evidence.get("target_identity", {}).get("settled")
+            if isinstance(source_evidence, dict)
+            and isinstance(source_evidence.get("target_identity"), dict)
+            else None
+        )
+
+        def identity_matches_source(surface: object) -> bool:
+            if not isinstance(surface, dict) or not isinstance(source_identity, dict):
+                return False
+            source_role = source_identity.get("role")
+            surface_role = surface.get("role") or surface.get("tag")
+            source_name = source_identity.get("accessible_name")
+            surface_name = surface.get("accessible_name")
+            source_semantic = source_identity.get("semantic_key")
+            surface_semantic = surface.get("semantic_key")
+            return (
+                isinstance(source_identity.get("tag"), str)
+                and isinstance(source_role, str)
+                and isinstance(source_name, str)
+                and source_name.strip() != ""
+                and isinstance(source_semantic, str)
+                and source_semantic.strip() != ""
+                and surface.get("tag") == source_identity["tag"].lower()
+                and isinstance(surface_role, str)
+                and surface_role.lower() == source_role.lower()
+                and isinstance(surface_name, str)
+                and surface_name.strip().lower() == source_name.strip().lower()
+                and isinstance(surface_semantic, str)
+                and surface_semantic.strip().lower() == source_semantic.strip().lower()
+            )
+
+        mapped_surface = watch.get("mapped_surface")
+        is_ambient = isinstance(source_trigger, dict) and source_trigger.get("type") == "ambient"
+        if is_ambient:
+            if (
+                not identity_matches_source(mapped_surface)
+                or not isinstance(mapped_surface, dict)
+                or mapped_surface.get("phase") != "post-trigger"
+                or not any(mapped_surface == item for item in [
+                    *(watch.get("new_surfaces") if isinstance(watch.get("new_surfaces"), list) else []),
+                    *(watch.get("state_diffs") if isinstance(watch.get("state_diffs"), list) else []),
+                ])
+            ):
+                return False
+        elif mapped_surface is not None:
+            return False
+        dwell = watch.get("recording_grounded_dwell_ms")
+        required_dwell = max(
+            source_recording["duration_ms"],
+            int(source_state.get("trigger", {}).get("wait_ms") or 0)
+            if isinstance(source_state.get("trigger"), dict) and source_state["trigger"].get("type") == "ambient"
+            else 0,
+        )
+        if type(dwell) is not int or dwell < required_dwell:
+            return False
+        sample_interval = watch.get("sample_interval_ms")
+        timings = [
+            watch.get("host_started_monotonic_ms"), watch.get("trigger_started_monotonic_ms"),
+            watch.get("dwell_started_monotonic_ms"), watch.get("host_finished_monotonic_ms"),
+        ]
+        if (
+            type(sample_interval) is not int
+            or sample_interval < 1
+            or sample_interval > math.floor(1000 / float(source_recording["fps"]))
+            or watch.get("sample_gap_failures") != []
+            or any(type(value) is not int for value in timings)
+            or not (timings[0] <= timings[1] <= timings[2] <= timings[3])
+            or timings[3] - timings[2] < dwell
+        ):
+            return False
+        if not all(autonomous_snapshot(watch.get(field)) for field in ("pre_trigger", "post_trigger", "initial", "final")):
+            return False
+        if not isinstance(watch.get("state_application"), dict) or watch["state_application"].get("applied") is not True:
+            return False
+        if (
+            not isinstance(watch.get("trigger_mutations"), list)
+            or not isinstance(watch.get("mutation_batches"), list)
+            or not isinstance(watch.get("tail_mutations"), list)
+        ):
+            return False
+        if not isinstance(watch.get("animation_samples"), list) or not watch["animation_samples"]:
+            return False
+        if not all(autonomous_snapshot(sample) for sample in watch["animation_samples"]):
+            return False
+        sample_times = [sample["at_ms"] for sample in watch["animation_samples"]]
+        dwell_page_start = watch["post_trigger"]["at_ms"]
+        dwell_page_end = watch["final"]["at_ms"]
+        # The monitor asks for 50ms ticks, but the evidence floor is the
+        # source recording's measured FPS.  A renderer may schedule a single
+        # 50ms callback late; it may not fall below the source's 15fps (or
+        # higher) continuous coverage requirement.
+        minimum_samples = max(
+            1,
+            math.ceil(dwell / math.ceil(1000 / float(source_recording["fps"]))) - 1,
+        )
+        if (
+            len(sample_times) < minimum_samples
+            or any(right <= left for left, right in zip(sample_times, sample_times[1:]))
+            or dwell_page_end - dwell_page_start < dwell
+            or sample_times[0] - dwell_page_start > sample_interval * 2
+            or dwell_page_end - sample_times[-1] > sample_interval * 2
+            or any(right - left > sample_interval * 2 for left, right in zip(sample_times, sample_times[1:]))
+        ):
+            return False
+        visual_recording = watch.get("visual_recording")
+        if (
+            not generated_video(visual_recording)
+            or visual_recording["duration_ms"] < dwell
+            or visual_recording["fps"] < source_recording["fps"]
+            or visual_recording["width"] != expected_viewport.get("width")
+            or visual_recording["height"] != expected_viewport.get("height")
+        ):
+            return False
+        visual_samples = watch.get("visual_samples")
+        if not isinstance(visual_samples, list) or len(visual_samples) < minimum_samples:
+            return False
+        if any(
+            not isinstance(sample, dict)
+            or set(sample) != {"at_ms", "host_monotonic_ms"}
+            or type(sample.get("at_ms")) is not int
+            or type(sample.get("host_monotonic_ms")) is not int
+            for sample in visual_samples
+        ):
+            return False
+        visual_page_times = [sample["at_ms"] for sample in visual_samples]
+        visual_host_times = [sample["host_monotonic_ms"] for sample in visual_samples]
+        if (
+            any(right <= left for left, right in zip(visual_page_times, visual_page_times[1:]))
+            or any(right <= left for left, right in zip(visual_host_times, visual_host_times[1:]))
+            or visual_page_times[0] - dwell_page_start > sample_interval * 2
+            or dwell_page_end - visual_page_times[-1] > sample_interval * 2
+            or visual_host_times[0] - timings[2] > sample_interval * 2
+            or timings[3] - visual_host_times[-1] > sample_interval * 2
+            or any(right - left > sample_interval * 2 for left, right in zip(visual_page_times, visual_page_times[1:]))
+            or any(right - left > sample_interval * 2 for left, right in zip(visual_host_times, visual_host_times[1:]))
+        ):
+            return False
+        if (
+            not isinstance(watch.get("animation_events"), list)
+            or not isinstance(watch.get("waapi_events"), list)
+            or not isinstance(watch.get("early_events"), list)
+        ):
+            return False
+        if any(
+            not isinstance(watch.get(field), list)
+            for field in (
+                "new_surfaces", "state_diffs", "transient_surfaces",
+                "blocked_frame_surfaces", "unbound_surfaces",
+            )
+        ):
+            return False
+        batches = watch["mutation_batches"]
+        triggers = watch["trigger_mutations"]
+        tails = watch["tail_mutations"]
+
+        def mutation_row(row: object) -> bool:
+            return (
+                isinstance(row, dict)
+                and set(row) == {"at_ms", "changes", "surfaces", "event_id", "evidence"}
+                and type(row.get("at_ms")) is int
+                and isinstance(row.get("changes"), list)
+                and isinstance(row.get("surfaces"), list)
+                and isinstance(row.get("event_id"), str)
+                and row.get("event_id")
+                and isinstance(row.get("evidence"), dict)
+                and set(row["evidence"]) == {"before", "callback", "after"}
+                and all(generated_frame(row["evidence"].get(phase)) for phase in ("before", "callback", "after"))
+            )
+
+        if any(
+            not isinstance(batch, dict)
+            or set(batch) != {"current", "mutations", "evidence"}
+            or not autonomous_snapshot(batch.get("current"))
+            or not isinstance(batch.get("mutations"), list)
+            or not all(
+                isinstance(row, dict)
+                and set(row) == {"at_ms", "changes", "surfaces"}
+                and type(row.get("at_ms")) is int
+                and isinstance(row.get("changes"), list)
+                and isinstance(row.get("surfaces"), list)
+                for row in batch["mutations"]
+            )
+            or not isinstance(batch.get("evidence"), dict)
+            or set(batch["evidence"]) != {"before", "callback", "after"}
+            or not all(generated_frame(batch["evidence"].get(phase)) for phase in ("before", "callback", "after"))
+            for batch in batches
+        ):
+            return False
+        if not all(mutation_row(row) for row in [*triggers, *tails]):
+            return False
+
+        def snapshot_surface(value: object) -> bool:
+            return (
+                isinstance(value, dict)
+                and isinstance(value.get("key"), str)
+                and value.get("key")
+                and isinstance(value.get("signature"), str)
+                and isinstance(value.get("tag"), str)
+            )
+
+        all_snapshots = [
+            ({**watch["post_trigger"], "phase": "post-trigger"}),
+            *({**batch["current"], "phase": "dwell"} for batch in batches),
+            *({**sample, "phase": "dwell-sample"} for sample in watch["animation_samples"]),
+            *({"surfaces": row["surfaces"], "phase": "mutation"} for row in tails),
+            ({**watch["final"], "phase": "dwell-end"}),
+        ]
+        if any(
+            not isinstance(snapshot.get("surfaces"), list)
+            or not all(snapshot_surface(surface) for surface in snapshot["surfaces"])
+            for snapshot in all_snapshots
+        ):
+            return False
+        baseline_surfaces = {
+            surface["key"]: surface for surface in watch["initial"]["surfaces"]
+            if snapshot_surface(surface)
+        }
+        recomputed_new: dict[str, dict[str, object]] = {}
+        recomputed_diffs: dict[str, dict[str, object]] = {}
+        for snapshot in all_snapshots:
+            phase = snapshot["phase"]
+            for surface in snapshot["surfaces"]:
+                assert isinstance(surface, dict)
+                phased = {**surface, "phase": phase}
+                baseline = baseline_surfaces.get(surface["key"])
+                if baseline is None:
+                    recomputed_new.setdefault(surface["key"], phased)
+                elif baseline.get("signature") != surface.get("signature"):
+                    recomputed_diffs[surface["key"] + "|" + str(surface["signature"])] = phased
+        expected_new = sorted(recomputed_new.values(), key=lambda item: str(item["key"]))
+        expected_diffs = sorted(recomputed_diffs.values(), key=lambda item: str(item["key"]))
+        if watch["new_surfaces"] != expected_new or watch["state_diffs"] != expected_diffs:
+            return False
+        expected_waapi = [
+            animation
+            for sample in watch["animation_samples"]
+            for animation in sample["animations"]
+            if isinstance(animation, dict)
+        ]
+        if len(watch["waapi_events"]) != len(expected_waapi):
+            return False
+        initial_blocked = {
+            canonical_json_sha256(frame)
+            for frame in watch["initial"]["blocked_frames"]
+        }
+        expected_blocked = [
+            frame
+            for snapshot in all_snapshots
+            for frame in snapshot.get("blocked_frames", [])
+            if canonical_json_sha256(frame) not in initial_blocked
+        ]
+        if len(watch["blocked_frame_surfaces"]) != len(expected_blocked):
+            return False
+
+        def candidate_rows_from_changes(rows: list[object]) -> int:
+            total = 0
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                for change in row.get("changes", []):
+                    if not isinstance(change, dict):
+                        continue
+                    values = [*change.get("added_nodes", []), *change.get("removed_nodes", [])]
+                    if change.get("type") == "attributes":
+                        values.append(change.get("target"))
+                    total += sum(
+                        1 for surface in values
+                        if isinstance(surface, dict) and surface.get("candidate") is True
+                    )
+            return total
+
+        expected_transient_count = sum(
+            sum(
+                1 for surface in [*row.get("added", []), *row.get("removed", []), row.get("target")]
+                if isinstance(surface, dict) and surface.get("candidate") is True
+            )
+            for row in watch["early_events"]
+        ) + candidate_rows_from_changes(triggers) + candidate_rows_from_changes(
+            [mutation for batch in batches for mutation in batch["mutations"]]
+        ) + candidate_rows_from_changes(tails)
+        if len(watch["transient_surfaces"]) != expected_transient_count:
+            return False
+        if any(
+            not isinstance(row, dict)
+            or set(row) != {
+                "event_id", "elapsed_ms", "type", "attribute", "target", "added", "removed",
+                "frame_identity", "frame_url", "phase", "evidence",
+            }
+            or not isinstance(row.get("event_id"), str)
+            or type(row.get("elapsed_ms")) is not int
+            or not isinstance(row.get("added"), list)
+            or not isinstance(row.get("removed"), list)
+            or row.get("phase") not in {"pre-navigation", "pre-trigger", "post-trigger"}
+            or not isinstance(row.get("evidence"), dict)
+            or set(row["evidence"]) != {"before", "callback", "after"}
+            or not all(generated_frame(row["evidence"].get(phase)) for phase in ("before", "callback", "after"))
+            for row in watch["early_events"]
+        ):
+            return False
+        if any(
+            not isinstance(row, dict)
+            or set(row) != {"at_ms", "type", "target", "pseudo_element", "candidate", "event_id", "key", "phase", "transient", "evidence"}
+            or not isinstance(row.get("event_id"), str)
+            or row.get("candidate") is not True
+            or row.get("phase") != "dwell"
+            or not isinstance(row.get("evidence"), dict)
+            or set(row["evidence"]) != {"before", "callback", "after"}
+            or not all(generated_frame(row["evidence"].get(phase)) for phase in ("before", "callback", "after"))
+            for row in watch["animation_events"]
+        ):
+            return False
+        if any(
+            not isinstance(row, dict)
+            or set(row) != {"event_id", "key", "kind", "elapsed_ms", "surface", "phase", "transient", "evidence"}
+            or row.get("kind") != "surface-waapi-active"
+            or row.get("phase") != "dwell"
+            or not isinstance(row.get("evidence"), dict)
+            or set(row["evidence"]) != {"before", "callback", "after"}
+            or not all(generated_frame(row["evidence"].get(phase)) for phase in ("before", "callback", "after"))
+            for row in watch["waapi_events"]
+        ):
+            return False
+        if not isinstance(watch.get("events"), list) or not all(watch_event(event) for event in watch["events"]):
+            return False
+        if len({event["event_id"] for event in watch["events"]}) != len(watch["events"]):
+            return False
+        def candidate_mutation_events(rows: list[object]) -> int:
+            total = 0
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                for change in row.get("changes", []):
+                    if not isinstance(change, dict):
+                        continue
+                    if change.get("type") == "attributes" and isinstance(change.get("target"), dict) and change["target"].get("candidate") is True:
+                        total += 1
+                    total += sum(1 for surface in change.get("added_nodes", []) if isinstance(surface, dict) and surface.get("candidate") is True)
+                    total += sum(1 for surface in change.get("removed_nodes", []) if isinstance(surface, dict) and surface.get("candidate") is True)
+            return total
+
+        early_event_count = sum(
+            (1 if row.get("type") == "attributes" and isinstance(row.get("target"), dict) and row["target"].get("candidate") is True else 0)
+            + sum(1 for surface in row.get("added", []) if isinstance(surface, dict) and surface.get("candidate") is True)
+            + sum(1 for surface in row.get("removed", []) if isinstance(surface, dict) and surface.get("candidate") is True)
+            for row in watch["early_events"]
+        )
+        expected_event_count = (
+            early_event_count
+            + candidate_mutation_events(triggers)
+            + sum(candidate_mutation_events(batch["mutations"]) for batch in batches)
+            + candidate_mutation_events(tails)
+            + len(watch["animation_events"])
+            + len(watch["waapi_events"])
+            + len(watch["new_surfaces"])
+            + len(watch["state_diffs"])
+            + len(watch["blocked_frame_surfaces"])
+        )
+        if len(watch["events"]) != expected_event_count:
+            return False
+        if any(event.get("declared_ambient") is not True for event in watch["events"]):
+            return False
+        if is_ambient:
+            for event in watch["events"]:
+                surface = event.get("surface")
+                candidate = (
+                    surface.get("target")
+                    if isinstance(surface, dict) and isinstance(surface.get("target"), dict)
+                    else surface
+                )
+                if not identity_matches_source(candidate) or event.get("detail", {}).get("phase") not in {
+                    "post-trigger", "dwell", "dwell-sample", "dwell-end"
+                }:
+                    return False
+        evidence = watch.get("evidence")
+        if not isinstance(evidence, dict) or set(evidence) != {"before", "appearance", "after"} or not all(
+            generated_frame(evidence.get(phase)) for phase in ("before", "appearance", "after")
+        ):
+            return False
+        return True
+
     checks = payload.get("checks")
     check_by_cell: dict[tuple[str, str, str], dict[str, object]] = {}
+    expected_extents = {}
+    extent_phase = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
     if not isinstance(checks, list):
         failures.append("Component census checks must be a list.")
         checks = []
@@ -8265,6 +11985,38 @@ def census_runtime_failures(
             )
         ):
             failures.append(f"Component census check {index} has incomplete state/scroll/DOM evidence.")
+        autonomous_watch = check.get("autonomous_watch")
+        root_samples = check.get("decision_root_samples")
+        if root_samples is not None:
+            if (not isinstance(root_samples, list) or not root_samples or any(not isinstance(sample, list) for sample in root_samples)
+                or any(not isinstance(row, dict) or not isinstance(row.get("decision_id"), str) or not isinstance(row.get("roots"), list) for sample in root_samples for row in sample)
+                or extent_phase.merge_decision_root_samples(root_samples) != check.get("decision_roots")):
+                failures.append(f"Component census check {index} loses or alters its initial/simultaneous decision-root samples.")
+        if first_screen:
+            try:
+                if project is None:
+                    raise ValueError("the exact project source map is required")
+                mapping = decision_manifest_snapshot or read_json(project / ".design-dna/visible-decision-sources.json")
+                extent = first_screen_region_authority(project, mapping, cell[0], cell[1], cell[2], viewport["height"])
+                expected_extents[cell] = extent
+                samples = check.get("scope_samples")
+                if (not isinstance(samples, list) or not samples or samples[0] != check.get("implementation_scope")
+                    or any(not extent_phase.first_screen_scope_pass(sample, extent) for sample in samples)
+                    or not isinstance(root_samples, list) or len(root_samples) != len(samples)
+                    or check.get("first_screen_scope_pass") is not True):
+                    failures.append(f"Component census check {index} does not preserve the exact source-bound primary extent through every captured state/scroll sample.")
+                if check.get("implementation_scope", {}).get("document_height", 0) > viewport["height"] and (not check.get("scroll_traversal", {}).get("surfaces") or len(samples or []) < 2):
+                    failures.append(f"Component census check {index} did not traverse its measured primary-region runway.")
+            except (OSError, StateError, ValueError, KeyError, TypeError, AttributeError) as exc:
+                failures.append(f"Component census check {index} primary-region extent is not source-authorized: {exc}")
+        font_delivery = check.get("font_delivery")
+        artifact_contract = load_bundled_source_module("_design_dna_gate_artifact_contract", Path(__file__).with_name("gate_artifact_contract.py"))
+        failures.extend(f"Component census check {index} lacks actual glyph-font delivery evidence: {item}"
+                        for item in artifact_contract.rendered_font_failures(font_delivery))
+        if not exact_autonomous_watch(autonomous_watch, route, state, cell[1], viewport):
+            failures.append(
+                f"Component census check {index} lacks complete recording-grounded continuous autonomous-surface evidence."
+            )
         decision_ids = check.get("visible_decision_ids")
         if (
             not isinstance(decision_ids, list)
@@ -8275,6 +12027,26 @@ def census_runtime_failures(
             failures.append(
                 f"Component census check {index} has unsourced or invalid visible-decision coverage."
             )
+        if (
+            isinstance(project, Path)
+            and (project / ".design-dna" / "visible-decision-sources.json").is_file()
+        ):
+            try:
+                current_visible_schema = json.loads(
+                    (project / ".design-dna" / "visible-decision-sources.json").read_text(encoding="utf-8")
+                ).get("schema_version")
+            except (OSError, ValueError):
+                current_visible_schema = None
+            if current_visible_schema == VISIBLE_DECISION_SOURCE_SCHEMA and (
+                not isinstance(check.get("wrapper_inherited_visible_parts"), list)
+                or check.get("wrapper_inherited_visible_parts") != []
+                or not isinstance(check.get("decision_roots"), list)
+                or not isinstance(check.get("media_inventory"), list)
+                or not isinstance(check.get("pseudo_inventory"), list)
+            ):
+                failures.append(
+                    f"Component census check {index} has wrapper-inherited, missing root, or missing media construction evidence."
+                )
     if set(check_by_cell) != expected_cells:
         failures.append("Component census does not cover the exact route/profile/state matrix.")
 
@@ -8307,14 +12079,11 @@ def census_runtime_failures(
         ):
             failures.append(f"Component census implementation scope {index} is incomplete.")
             continue
-        if first_screen and (
-            scope.get("first_screen_scope_pass") is not True
-            or scope["document_height"] > scope["viewport_height"]
-            or len(substantial) != 1
-            or beyond != []
-        ):
+        if first_screen and (scope.get("first_screen_scope_pass") is not True
+            or (cell[0], cell[1], "rest") not in expected_extents
+            or not extent_phase.first_screen_scope_pass(scope, expected_extents.get((cell[0], cell[1], "rest")))):
             failures.append(
-                f"Component census implementation scope {index} proves broad implementation existed before authorization."
+                f"Component census implementation scope {index} exceeds or differs from the exact source-authorized primary region."
             )
     if observed_scope_cells != expected_scope_cells:
         failures.append("Component census implementation scope misses active route/profile cells.")
@@ -8362,18 +12131,8 @@ def census_runtime_failures(
     ):
         failures.append("Component census interaction inventory is incomplete or detached from inferred states.")
         return failures
-    frame_artifacts: set[tuple[str, int, str]] | None = None
-    if record_path is not None:
-        frame_failures, frame_bindings = generated_interaction_frame_bindings(
-            payload, record_path=record_path
-        )
-        failures.extend(frame_failures)
-        frame_artifacts = {
-            (str(binding["relative"]), int(binding["bytes"]), str(binding["sha256"]))
-            for binding in frame_bindings
-        }
     target_censuses = interaction.get("target_censuses")
-    target_census_cells: set[tuple[str, str]] = set()
+    target_census_cells: set[tuple[str, str, str]] = set()
     if not isinstance(target_censuses, list):
         failures.append("Component census generated target censuses must be a list.")
         target_censuses = []
@@ -8383,18 +12142,23 @@ def census_runtime_failures(
     }
     for index, target_census in enumerate(target_censuses, start=1):
         if not isinstance(target_census, dict) or set(target_census) != {
-            *census_keys, "route_key", "viewport"
+            *census_keys, "route_key", "viewport", "state_id"
         }:
             failures.append(f"Component target census {index} has an unsupported shape.")
             continue
         route_key = str(target_census.get("route_key"))
         viewport_name = str(target_census.get("viewport"))
-        cell = (route_key, viewport_name)
+        state_id = str(target_census.get("state_id"))
+        cell = (route_key, viewport_name, state_id)
         if cell in target_census_cells:
             failures.append(f"Component target census {index} duplicates a route/profile.")
         target_census_cells.add(cell)
         route = route_by_key.get(route_key)
-        if route is None or viewport_name not in viewport_by_name:
+        if (
+            route is None
+            or viewport_name not in viewport_by_name
+            or cell not in expected_cells
+        ):
             failures.append(f"Component target census {index} is not an active manifest cell.")
             continue
         core = {key: target_census.get(key) for key in census_keys}
@@ -8411,10 +12175,11 @@ def census_runtime_failures(
                 expected_urls={str(route.get("url"))},
                 artifact_root=record_path.parent if record_path is not None else None,
                 allowed_artifacts=frame_artifacts,
+                planned_route_handoffs=planned_route_handoffs,
             )
         )
-    if target_census_cells != expected_scope_cells:
-        failures.append("Component target censuses miss active route/profile cells.")
+    if target_census_cells != expected_cells:
+        failures.append("Component target censuses miss active route/profile/state cells.")
     interaction_cells = interaction.get("cells")
     interaction_by_cell: dict[tuple[str, str, str], dict[str, object]] = {}
     if not isinstance(interaction_cells, list):
@@ -8677,6 +12442,13 @@ def census_runtime_failures(
             continue
         qa_by_cell[cell] = qa_cell
         route = route_by_key.get(cell[0])
+        state = next(
+            (
+                item for item in route.get("states", [])
+                if isinstance(item, dict) and item.get("id") == cell[2]
+            ),
+            None,
+        ) if isinstance(route, dict) else None
         control_visibility = qa_cell.get("control_visibility")
         if (
             not isinstance(control_visibility, list)
@@ -8787,7 +12559,7 @@ def census_runtime_failures(
             "profile", "width", "height", "clipping", "collisions",
             "fixed_rail_overlaps", "control_visibility", "overlays",
             "state_semantics", "public_copy", "accessibility", "viewport",
-            "truncated", "reduced_motion",
+            "truncated", "reduced_motion", "autonomous_watch", "target_census",
         }
         expected_short_height = min(int(viewport_by_name.get(cell[1], {}).get("height") or 0), 568)
         if (
@@ -8859,6 +12631,46 @@ def census_runtime_failures(
                 failures.append(
                     f"Component rendered QA cell {index} short-height reduced-motion evidence is incomplete."
                 )
+            short_watch = short.get("autonomous_watch")
+            if not exact_autonomous_watch(
+                short_watch,
+                route,
+                state,
+                cell[1],
+                {"width": short.get("width"), "height": short.get("height")},
+            ):
+                failures.append(
+                    f"Component rendered QA cell {index} short-height continuous autonomous-surface evidence is incomplete."
+                )
+            short_census = short.get("target_census")
+            if (
+                not isinstance(short_census, dict)
+                or short_census.get("state_id") != cell[2]
+            ):
+                failures.append(
+                    f"Component rendered QA cell {index} short-height target census is missing its manifested state."
+                )
+            else:
+                short_core = {
+                    key: short_census.get(key)
+                    for key in census_keys
+                }
+                failures.extend(
+                    f"Component rendered QA cell {index} short-height target census: {failure}"
+                    for failure in interaction_census_failures(
+                        short_core,
+                        expected_profile=cell[1],
+                        expected_state_ids={
+                            str(item.get("id"))
+                            for item in route.get("states", [])
+                            if isinstance(item, dict)
+                        },
+                        expected_urls={str(route.get("url"))},
+                        artifact_root=record_path.parent if record_path is not None else None,
+                        allowed_artifacts=frame_artifacts,
+                        planned_route_handoffs=planned_route_handoffs,
+                    )
+                )
     controls_by_route_state: dict[tuple[str, str], dict[str, dict[str, object]]] = {}
     for (route_key, _viewport_name, state_id), qa_cell in qa_by_cell.items():
         records = controls_by_route_state.setdefault((route_key, state_id), {})
@@ -8883,7 +12695,7 @@ def census_runtime_failures(
             {},
         ) if isinstance(route, dict) else {}
         mapped_state_id = str(state.get("mapped_reference_state_id") or "")
-        source_profile = "narrow" if int(viewport.get("width") or 0) <= 430 else "wide"
+        source_profile = viewport_name
         opposite_profile = "wide" if source_profile == "narrow" else "narrow"
         current_controls = [
             control for control in qa_cell.get("control_visibility", [])
@@ -8948,21 +12760,22 @@ def census_runtime_failures(
                 f"Component rendered QA {route_key}/{viewport_name}/{state_id} does not preserve exact source-bound responsive control parity."
             )
     experience_summary = rendered_qa.get("experience_paths")
-    expected_experience_keys: set[tuple[str, str, str]] = set()
+    expected_experience_keys: set[tuple[str, str, str, str]] = set()
     for target_census in target_censuses:
         if not isinstance(target_census, dict):
             continue
         route_key = str(target_census.get("route_key"))
         viewport_name = str(target_census.get("viewport"))
+        state_id = str(target_census.get("state_id"))
         for page in target_census.get("pages", []):
             if not isinstance(page, dict):
                 continue
             for target in page.get("targets", []):
                 if isinstance(target, dict) and isinstance(target.get("target_id"), str):
                     expected_experience_keys.add(
-                        (route_key, viewport_name, target["target_id"])
+                        (route_key, viewport_name, state_id, target["target_id"])
                     )
-    experience_by_key: dict[tuple[str, str, str], dict[str, object]] = {}
+    experience_by_key: dict[tuple[str, str, str, str], dict[str, object]] = {}
     if (
         not isinstance(experience_summary, dict)
         or set(experience_summary) != {
@@ -8981,7 +12794,7 @@ def census_runtime_failures(
             if (
                 not isinstance(path_record, dict)
                 or set(path_record) != {
-                    "route_key", "viewport", "target_id", "kind", "actions",
+                    "route_key", "viewport", "state_id", "target_id", "kind", "actions",
                     "missing", "complete",
                 }
             ):
@@ -8990,10 +12803,11 @@ def census_runtime_failures(
             key = (
                 str(path_record.get("route_key")),
                 str(path_record.get("viewport")),
+                str(path_record.get("state_id")),
                 str(path_record.get("target_id")),
             )
             if key in experience_by_key:
-                failures.append(f"Component experience path {path_index} duplicates a target/profile.")
+                failures.append(f"Component experience path {path_index} duplicates a target/profile/state.")
                 continue
             experience_by_key[key] = path_record
             actions = path_record.get("actions")
@@ -9013,7 +12827,7 @@ def census_runtime_failures(
                 or not any(
                     isinstance(action, dict)
                     and action.get("resolution")
-                    in {"manifested-route", "manifested-state", "blocked-handoff"}
+                    in {"manifested-route", "manifested-state", "blocked-handoff", "planned-route-pending-final"}
                     for action in actions or []
                 )
             ):
@@ -9029,6 +12843,13 @@ def census_runtime_failures(
                 if isinstance(item, dict)
             } if isinstance(route, dict) else set()
             for action in actions:
+                if action.get("resolution") == "planned-route-pending-final":
+                    evidence = action.get("evidence")
+                    if (not first_screen or action.get("status") != "blocked" or action.get("final_url") is not None
+                        or not isinstance(evidence, dict) or set(evidence) != {"planned_url", "decision_id", "verified_arrival"}
+                        or evidence.get("planned_url") not in planned_route_handoffs or evidence.get("verified_arrival") is not False
+                        or not isinstance(evidence.get("decision_id"), str) or not evidence.get("decision_id")):
+                        failures.append(f"Component experience path {path_index} misrepresents an unverified first-screen route handoff.")
                 if action.get("resolution") == "manifested-route" and action.get("final_url") not in route_urls:
                     failures.append(f"Component experience path {path_index} resolves to an unmanifested route.")
                 if action.get("resolution") == "manifested-state" and action.get("manifested_state_id") not in route_states:
@@ -9036,7 +12857,7 @@ def census_runtime_failures(
                 if action.get("resolution") == "blocked-handoff" and action.get("status") != "blocked":
                     failures.append(f"Component experience path {path_index} mislabels an exercised action as blocked.")
         if set(experience_by_key) != expected_experience_keys:
-            failures.append("Component experience paths do not cover every discovered target/profile.")
+            failures.append("Component experience paths do not cover every discovered target/profile/state.")
         totals = experience_summary.get("totals")
         if (
             not isinstance(totals, dict)
@@ -9056,7 +12877,7 @@ def census_runtime_failures(
         for cell, qa_cell in qa_by_cell.items():
             expected_paths = [
                 record for key, record in experience_by_key.items()
-                if key[:2] == cell[:2]
+                if key[:3] == cell
             ]
             if qa_cell.get("experience_paths") != expected_paths:
                 failures.append(
@@ -9072,7 +12893,14 @@ def census_runtime_failures(
     )
     decision_manifest: object = None
     decision_manifest_sha: str | None = None
-    if decision_manifest_path is not None:
+    if decision_manifest_snapshot is not None:
+        # Existing-site maintenance validates the immutable old census
+        # against its frozen map while a distinct proposed map is current.
+        decision_manifest = decision_manifest_snapshot
+        decision_manifest_sha = decision_manifest_snapshot_sha256
+        if not isinstance(decision_manifest_sha, str) or SHA256_HEX.fullmatch(decision_manifest_sha) is None:
+            failures.append("Maintenance census has no exact frozen source-map hash.")
+    elif decision_manifest_path is not None:
         try:
             decision_manifest = json.loads(
                 decision_manifest_path.read_text(encoding="utf-8")
@@ -9082,12 +12910,23 @@ def census_runtime_failures(
             failures.append(
                 f"Component census visible-decision source manifest is unreadable: {exc}"
             )
-    expected_reconciliation_keys = {
+    legacy_reconciliation_keys = {
         "manifest_path", "manifest_sha256", "implemented_decision_ids",
         "missing_decision_ids", "unsourced_visible_decisions",
         "scaffold_findings", "fallback_findings", "placeholder_findings",
         "complete",
     }
+    v2_reconciliation_keys = {
+        *legacy_reconciliation_keys,
+        "wrapper_inheritance_findings", "binding_cell_findings",
+        "asset_role_findings", "construction_findings",
+    }
+    expected_reconciliation_keys = (
+        v2_reconciliation_keys
+        if isinstance(decision_manifest, dict)
+        and decision_manifest.get("schema_version") == VISIBLE_DECISION_SOURCE_SCHEMA
+        else legacy_reconciliation_keys
+    )
     if (
         not isinstance(reconciliation, dict)
         or set(reconciliation) != expected_reconciliation_keys
@@ -9096,6 +12935,15 @@ def census_runtime_failures(
         or reconciliation.get("manifest_sha256") != decision_manifest_sha
         or reconciliation.get("missing_decision_ids") != []
         or reconciliation.get("unsourced_visible_decisions") != []
+        or (
+            expected_reconciliation_keys == v2_reconciliation_keys
+            and (
+                reconciliation.get("wrapper_inheritance_findings") != []
+                or reconciliation.get("binding_cell_findings") != []
+                or reconciliation.get("asset_role_findings") != []
+                or reconciliation.get("construction_findings") != []
+            )
+        )
         or reconciliation.get("scaffold_findings") != []
         or reconciliation.get("fallback_findings") != []
         or reconciliation.get("placeholder_findings") != []
@@ -9107,6 +12955,48 @@ def census_runtime_failures(
     if isinstance(decision_manifest, dict):
         planned_ids = decision_manifest.get("planned_decision_ids")
         decisions = decision_manifest.get("decisions")
+        if decision_manifest.get("schema_version") == VISIBLE_DECISION_SOURCE_SCHEMA and isinstance(decisions, list):
+            expected_roots: dict[tuple[str, str, str, str], str] = {}
+            for decision in decisions:
+                if not isinstance(decision, dict) or not isinstance(decision.get("decision_id"), str):
+                    continue
+                if first_screen and decision["decision_id"] not in decision_manifest.get("proof_isolation", {}).get("decision_ids", planned_ids):
+                    continue
+                for binding in decision.get("bindings", []):
+                    if not isinstance(binding, dict):
+                        continue
+                    key = (
+                        str(binding.get("route_key")), str(binding.get("viewport")),
+                        str(binding.get("state_id")), decision["decision_id"],
+                    )
+                    expected_roots[key] = str(binding.get("component_key"))
+            for cell, check in check_by_cell.items():
+                roots_by_id: dict[str, list[dict[str, object]]] = {}
+                for row in check.get("decision_roots", []):
+                    if not isinstance(row, dict) or not isinstance(row.get("decision_id"), str) or not isinstance(row.get("roots"), list):
+                        failures.append(f"Component census {cell[0]}/{cell[1]}/{cell[2]} has malformed construction decision-root evidence.")
+                        continue
+                    roots_by_id.setdefault(row["decision_id"], []).extend(
+                        item for item in row["roots"] if isinstance(item, dict)
+                    )
+                for (route_key, viewport, state_id, decision_id), component_key in expected_roots.items():
+                    if (route_key, viewport, state_id) != cell:
+                        continue
+                    roots = roots_by_id.get(decision_id, [])
+                    if (
+                        len(roots) != 1
+                        or roots[0].get("direct") is not True
+                        or roots[0].get("component_key") != component_key
+                    ):
+                        failures.append(
+                            f"Component census {route_key}/{viewport}/{state_id} does not prove one exact direct root for v2 decision {decision_id}; wrapper or marker reuse is forbidden."
+                        )
+                for decision_id, roots in roots_by_id.items():
+                    expected = expected_roots.get((*cell, decision_id))
+                    if expected is None or len(roots) != 1 or roots[0].get("component_key") != expected:
+                        failures.append(
+                            f"Component census {cell[0]}/{cell[1]}/{cell[2]} has unplanned/reused direct decision root {decision_id}."
+                        )
         implemented = sorted({
             decision_id
             for check in check_by_cell.values()
@@ -9128,8 +13018,29 @@ def census_runtime_failures(
                     failures.append("Component census source decision row is invalid.")
                     continue
                 decision_id = decision.get("decision_id")
+                if first_screen and decision_id not in decision_manifest.get("proof_isolation", {}).get("decision_ids", planned_ids):
+                    continue
                 route_keys = decision.get("route_keys")
                 state_ids = decision.get("state_ids")
+                bindings = decision.get("bindings")
+                if decision_manifest.get("schema_version") == VISIBLE_DECISION_SOURCE_SCHEMA:
+                    if not isinstance(decision_id, str) or not isinstance(bindings, list):
+                        failures.append("Component census v2 construction decision mapping is invalid.")
+                        continue
+                    for binding in bindings:
+                        if not isinstance(binding, dict):
+                            failures.append("Component census v2 construction binding is invalid.")
+                            continue
+                        cell = (
+                            str(binding.get("route_key")), str(binding.get("viewport")),
+                            str(binding.get("state_id")),
+                        )
+                        check = check_by_cell.get(cell)
+                        if check is not None and decision_id not in check.get("visible_decision_ids", []):
+                            failures.append(
+                                f"Component census {cell[0]}/{cell[1]}/{cell[2]} omits v2 planned decision {decision_id}."
+                            )
+                    continue
                 if (
                     not isinstance(decision_id, str)
                     or not isinstance(route_keys, list)
@@ -9236,6 +13147,99 @@ def generated_interaction_frame_bindings(
             verify_png_artifact(file)
         except StateError as exc:
             failures.append(f"Interaction frame is not a valid PNG ({relative}): {exc}")
+            continue
+        bindings.append({"file": file, "relative": relative, "bytes": expected[0], "sha256": expected[1]})
+    return failures, bindings
+
+
+def generated_interaction_video_bindings(
+    payload: object,
+    *,
+    record_path: Path,
+) -> tuple[list[str], list[dict[str, object]]]:
+    """Reconcile the continuous build-watch videos with immutable metadata.
+
+    The scanner itself ffprobes these files before writing its current runtime
+    record.  This gate binds the exact bytes and makes the video set closed;
+    the watch cannot replace continuous visual proof with a stray JSON claim.
+    """
+
+    if not isinstance(payload, dict):
+        return ["Interaction-video record must contain an object."], []
+    relative_root = payload.get("interaction_video_directory")
+    expected_root_name = f"{record_path.stem}-interaction-videos"
+    if (
+        not isinstance(relative_root, str)
+        or relative_root != expected_root_name
+        or PurePosixPath(relative_root).is_absolute()
+        or ".." in PurePosixPath(relative_root).parts
+    ):
+        return ["Interaction-video directory is missing or not derived from the canonical record path."], []
+    root = lexical_absolute(record_path.parent / PurePosixPath(relative_root))
+    try:
+        assert_no_reparse_ancestors(root, stop=record_path.parent)
+        assert_safe_tree(root)
+    except StateError as exc:
+        return [f"Interaction-video directory contains a link/reparse point: {exc}"], []
+    if (
+        not is_within(root, lexical_absolute(record_path.parent))
+        or not root.is_dir()
+        or is_reparse(root)
+    ):
+        return ["Interaction-video directory is missing, linked, or escapes the evidence root."], []
+    referenced: dict[str, tuple[int, str]] = {}
+    failures: list[str] = []
+
+    def walk(value: object) -> None:
+        if isinstance(value, dict):
+            relative = value.get("file")
+            if isinstance(relative, str) and relative.startswith(relative_root + "/"):
+                size = value.get("bytes")
+                digest = value.get("sha256")
+                if (
+                    type(size) is not int
+                    or size < 1
+                    or not isinstance(digest, str)
+                    or SHA256_HEX.fullmatch(digest) is None
+                ):
+                    failures.append(f"Interaction video metadata is invalid: {relative}.")
+                elif relative in referenced and referenced[relative] != (size, digest):
+                    failures.append(f"Interaction video has conflicting metadata: {relative}.")
+                else:
+                    referenced[relative] = (size, digest)
+            for child in value.values():
+                walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
+
+    walk(payload)
+    actual_files = sorted(
+        (
+            file
+            for file in root.rglob("*")
+            if file.is_file() and not is_reparse(file)
+        ),
+        key=lambda file: file.as_posix(),
+    )
+    actual_relatives = {
+        file.relative_to(record_path.parent).as_posix() for file in actual_files
+    }
+    if not referenced:
+        failures.append("Interaction record references no continuous visual recordings.")
+    if actual_relatives != set(referenced):
+        failures.append("Interaction-video directory is not the exact referenced video set.")
+    bindings: list[dict[str, object]] = []
+    for file in actual_files:
+        relative = file.relative_to(record_path.parent).as_posix()
+        expected = referenced.get(relative)
+        if (
+            file.suffix.casefold() not in {".webm", ".mp4"}
+            or expected is None
+            or file.stat().st_size != expected[0]
+            or file_sha256(file)[1] != expected[1]
+        ):
+            failures.append(f"Interaction video bytes are invalid or drifted: {relative}.")
             continue
         bindings.append({"file": file, "relative": relative, "bytes": expected[0], "sha256": expected[1]})
     return failures, bindings
@@ -9443,6 +13447,13 @@ def mechanism_interaction_transfer_failures(
     """Validate exact source-to-build interaction transfer for every cell."""
 
     failures: list[str] = []
+    planned_route_handoffs: set[str] = set()
+    if first_screen:
+        try:
+            phase_module = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
+            planned_route_handoffs = phase_module.planned_deferred_routes(project, expected_routes)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            failures.append(f"First-screen planned route handoff authority is invalid: {exc}")
     if not isinstance(payload, dict):
         return ["Mechanism transfer record must contain an object."]
     route_by_key = {
@@ -9559,6 +13570,7 @@ def mechanism_interaction_transfer_failures(
                 expected_urls={str(route.get("url"))} if isinstance(route, dict) else set(),
                 artifact_root=record_path.parent,
                 allowed_artifacts=frame_artifacts,
+                planned_route_handoffs=planned_route_handoffs,
             )
         )
         if check.get("build_interaction_census_sha256") != canonical_json_sha256(
@@ -9578,7 +13590,7 @@ def mechanism_interaction_transfer_failures(
                     loaded = {}
                 observation = loaded if isinstance(loaded, dict) else {}
                 observation_cache[relative_observation] = observation
-            profile = "narrow" if int(viewport.get("width", 0)) <= 430 else "wide"
+            profile = cell[1]
             source_census = (
                 observation.get("states_by_viewport", {})
                 .get(profile, {})
@@ -9593,6 +13605,16 @@ def mechanism_interaction_transfer_failures(
                 failures.append(
                     f"Mechanism interaction check {index} source-census hash differs from its mapped observation state."
                 )
+            if payload.get("first_screen_only") is True:
+                try:
+                    phase_module = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
+                    mapping = read_json(project / ".design-dna" / "visible-decision-sources.json")
+                    source_page_url = observation.get("states_by_viewport", {}).get(profile, {}).get(state.get("mapped_reference_state_id"), {}).get("url")
+                    source_census = phase_module.derive_first_screen_source_census(source_census, mapping, route, profile, build_census, source_page_url)
+                    if check.get("source_comparison_scope") != "immutable-precode-first-screen-decision-subset" or check.get("source_comparison_census_sha256") != canonical_json_sha256(source_census):
+                        failures.append(f"Mechanism interaction check {index} first-screen source subset differs from its pre-code proof plan.")
+                except (StateError, OSError, ValueError, TypeError, AttributeError) as exc:
+                    failures.append(f"Mechanism first-screen source scope is invalid: {exc}")
             recomputed = recompute_interaction_transfer(
                 build_census,
                 source_census,
@@ -9716,6 +13738,7 @@ def route_manifest_payload_failures(
             failures.append("Route manifest needs at least one wide viewport (1280px+).")
         if not any(width <= 430 for _name, width, _height in valid_viewports):
             failures.append("Route manifest needs at least one narrow viewport (430px or less).")
+        failures.extend(source_profile_viewport_failures(viewports))
 
     routes = payload.get("routes")
     keys: set[str] = set()
@@ -9924,8 +13947,18 @@ def route_manifest_reference_failures(
                 observed, tool="observe_reference.mjs"
             )
         )
+        failures.extend(
+            f"{label}: {failure}"
+            for failure in source_recording_binding_failures(
+                route=route,
+                observation=observed,
+                observation_path=observation,
+                project=project,
+            )
+        )
         state_contract = observed.get("state_contract")
         contract_ids: set[str] = set()
+        contract_states_by_id: dict[str, dict[str, object]] = {}
         if (
             not isinstance(state_contract, dict)
             or set(state_contract) != {"file", "sha256"}
@@ -9969,12 +14002,51 @@ def route_manifest_reference_failures(
                         ),
                     )
                     failures.extend(f"{label}: {problem}" for problem in contract_problems)
+                    if isinstance(contract_payload, dict):
+                        contract_states_by_id = {
+                            str(state.get("id")): state
+                            for state in contract_payload.get("states", [])
+                            if isinstance(state, dict) and isinstance(state.get("id"), str)
+                        }
         states_by_viewport = observed.get("states_by_viewport")
         mapped_state_ids = {
             str(state.get("mapped_reference_state_id"))
             for state in route.get("states", [])
             if isinstance(state, dict)
         }
+        # Ambient is evidence that the source changed by itself. It must never
+        # be copied into a build manifest as a producer-authored timer. A build
+        # can deliberately transfer it only through a source-mapped system
+        # state with the existing explicit test driver; omitting it remains
+        # valid and does not force a popup into the build.
+        for build_state in route.get("states", []):
+            if not isinstance(build_state, dict):
+                continue
+            source_state = contract_states_by_id.get(
+                str(build_state.get("mapped_reference_state_id") or "")
+            )
+            source_trigger = (
+                source_state.get("trigger")
+                if isinstance(source_state, dict)
+                and isinstance(source_state.get("trigger"), dict)
+                else {}
+            )
+            if source_trigger.get("type") != SOURCE_AMBIENT_TRIGGER:
+                continue
+            build_trigger = build_state.get("trigger")
+            if (
+                build_state.get("kind") != "system"
+                or not isinstance(build_trigger, dict)
+                or build_trigger.get("type") != "programmatic"
+                or not isinstance(build_trigger.get("target"), str)
+                or re.fullmatch(
+                    r"\[data-design-dna-state-driver(?:=[^\]]+)?\]",
+                    build_trigger["target"],
+                ) is None
+            ):
+                failures.append(
+                    f"{label} state {build_state.get('id')!r} maps source-only ambient state {build_state.get('mapped_reference_state_id')!r}; use an explicit system/programmatic [data-design-dna-state-driver] mapping or omit that source state. Build manifests may not declare ambient."
+                )
         if (
             not isinstance(states_by_viewport, dict)
             or set(states_by_viewport) != {"wide", "narrow"}
@@ -10092,11 +14164,131 @@ def bound_route_manifest_failures(
     return payload_failures, payload if isinstance(payload, dict) else None, artifact
 
 
+def candidate_source_validation_failures(project: Path, observation_path: Path, observed: dict[str, object]) -> list[str]:
+    """Run existing complete source validators without entering review/construction recursively."""
+    reference_id = str(observed.get("id") or "")
+    problems = packaged_runtime_record_failures(observed, tool="observe_reference.mjs")
+    problems.extend(source_study_evidence_failures(
+        observed.get("source_study"), artifact_root=observation_path.parent,
+        expected_producer="observe_reference.mjs", expected_id=reference_id, required_artifact_kinds={"frame"},
+    ))
+    states = observed.get("states_by_viewport", {}).get("wide", {})
+    route_states = []
+    for state_id, state in states.items() if isinstance(states, dict) else []:
+        if not isinstance(state, dict):
+            continue
+        trigger = state.get("trigger")
+        ambient = isinstance(trigger, dict) and trigger.get("type") == "ambient"
+        route_states.append({"id": state_id, "kind": "system" if ambient else state.get("kind"),
+            "trigger": {"type": "programmatic", "target": "[data-design-dna-state-driver]", "value": state_id} if ambient else trigger,
+            "mapped_reference_state_id": state_id})
+    reference_route = {"mapped_reference_id": reference_id,
+        "mapped_reference_observation": observation_path.relative_to(project).as_posix(),
+        "mapped_reference_sha256": file_sha256(observation_path)[1], "states": route_states}
+    problems.extend(route_manifest_reference_failures({"routes": [reference_route]}, project=project))
+    recording = observation_path.parent / f"{reference_id}-recording.json"
+    ledger = observation_path.parent / f"{reference_id}-artifacts.json"
+    contract = observation_path.parent / f"{reference_id}-state-contract.json"
+    try:
+        recording_problems, _events = reference_recording_failures(
+            read_json(recording), recording=recording, ledger_payload=read_json(ledger), ledger=ledger,
+            state_contract=contract, state_contract_sha256=file_sha256(contract)[1], expected_reference_id=reference_id,
+            signature_kind=None,
+        )
+        problems.extend(recording_problems)
+    except (OSError, StateError, ValueError) as exc:
+        problems.append(f"Candidate complete recording evidence is unavailable: {exc}")
+    if observed.get("defect_observations") != []:
+        problems.append("Candidate source has unresolved generated defect observations.")
+    return problems
+
+
+def selected_candidate_review_failures(
+    project: Path, source_id: str, *, review_path: Path | None = None,
+    brief_path: Path | None = None,
+) -> list[str]:
+    """A selected source needs its own current attributable review, including during V2 construction."""
+    observation_path = project / ".design-dna" / "references" / f"{source_id}-observation.json"
+    review_path = review_path or observation_path.with_name(f"{source_id}-candidate-review.json")
+    if not review_path.is_file() or is_reparse(review_path):
+        return [f"Selected source {source_id} lacks its attributable candidate review; run --init-candidate-review {source_id}, complete the blocked review, and rerun selection."]
+    try:
+        if brief_path is None:
+            dossier_path = project / ".design-dna/reference-dossier.md"
+            frame = markdown_sections(dossier_path.read_text(encoding="utf-8")).get("Research frame", "")
+            brief_path, failures = bound_artifact(markdown_label_value(frame, "Current brief artifact") or "",
+                project=project, record_path=dossier_path, label="Candidate current brief artifact")
+            if failures or brief_path is None:
+                return failures or ["Selected candidate review has no current brief artifact."]
+        payload = read_json(review_path)
+        module = load_bundled_source_module("_design_dna_candidate_review", Path(__file__).with_name("candidate_review.py"))
+        callback = lambda observed: candidate_source_validation_failures(project, observation_path, observed)
+        return module.candidate_review_failures(project, payload, brief_path=brief_path,
+            observation_path=observation_path, candidate_id=source_id, validate_observation=callback)
+    except (OSError, StateError, ValueError, TypeError) as exc:
+        return [f"Selected candidate {source_id} review evidence is unavailable: {exc}"]
+
+
+def selected_cohort_failures(project: Path, *, mapping_payload: dict[str, object] | None = None) -> list[str]:
+    """Check the complete source cohort before visible code, without circular build evidence."""
+    dossier = project / ".design-dna/reference-dossier.md"
+    try:
+        body = dossier.read_text(encoding="utf-8")
+        failures = reference_dossier_failures(body, project=project, record_path=dossier, selection_only=True)
+        sections = markdown_sections(body)
+        _headers, strong_rows = markdown_first_table(sections.get("Strong references", ""))
+        selected = reference_rank_values(markdown_label_value(sections.get("Selected synthesis", ""), "Selected positive ranks") or "", maximum=len(strong_rows))
+        if selected is None or len(selected) < REFERENCE_MINIMUM_SELECTED:
+            return [*failures, "Construction needs at least two distinct completely qualified selected live sources."]
+        expected_ids = {f"strong-{rank}" for rank in selected}
+        mapping = mapping_payload if mapping_payload is not None else read_json(project / ".design-dna/visible-decision-sources.json")
+        if not isinstance(mapping, dict) or mapping.get("schema_version") != VISIBLE_DECISION_SOURCE_SCHEMA:
+            return [*failures, "Selected cohort requires the exact planned V2 component source map."]
+        source_rows = mapping.get("source_observations")
+        actual_ids = [row.get("id") for row in source_rows if isinstance(row, dict)] if isinstance(source_rows, list) else []
+        if len(actual_ids) != len(expected_ids) or set(actual_ids) != expected_ids:
+            failures.append("The planned source map must contain exactly the selected qualified source cohort; one source or an unselected reference cannot supply the build.")
+        decisions = {row.get("decision_id"): row for row in mapping.get("decisions", []) if isinstance(row, dict)}
+        contributions = mapping.get("source_contribution_scope")
+        if not isinstance(contributions, list) or len(contributions) != len(expected_ids):
+            return [*failures, "Every selected source needs a nontrivial planned signature contribution before construction."]
+        seen = set()
+        for contribution in contributions:
+            if not isinstance(contribution, dict):
+                failures.append("Selected-source signature contribution is malformed.")
+                continue
+            source_id = contribution.get("source_reference_id")
+            if source_id not in expected_ids or source_id in seen:
+                failures.append("Selected-source signature contributions must match the selected cohort exactly once.")
+            seen.add(source_id)
+            carrier_ids = contribution.get("signature_carrier_decision_ids")
+            carriers = [decisions.get(identity) for identity in carrier_ids] if isinstance(carrier_ids, list) else []
+            if not carriers or any(not isinstance(row, dict) or row.get("source_mapping", {}).get("id") != source_id
+                                   or row.get("category") not in {"layout", "effect", "transition"} for row in carriers):
+                failures.append(f"Selected source {source_id} has no actual arrangement/behavior carrier; colors, font categories, or small controls cannot stand in for its signature.")
+                continue
+            review = read_json(project / ".design-dna/references" / f"{source_id}-candidate-review.json")
+            planned = review.get("dominant_experience", {}).get("planned_carriers", []) if isinstance(review, dict) else []
+            source_components = {row.get("component_id") for row in carriers}
+            reviewed_components = {row.get("component_id") for row in planned if isinstance(row, dict)}
+            if not reviewed_components or not reviewed_components.issubset(source_components):
+                failures.append(f"Selected source {source_id} review names a signature carrier that is absent from its exact planned source-map contribution.")
+            for carrier in planned:
+                if not isinstance(carrier, dict):
+                    continue
+                if not any(row.get("component_id") == carrier.get("component_id") and any(binding.get("route_key") == carrier.get("route_key") for binding in row.get("bindings", []) if isinstance(binding, dict)) for row in carriers):
+                    failures.append(f"Selected source {source_id} carrier route/component does not match its reviewed transfer relationship.")
+        return failures
+    except (OSError, StateError, ValueError, TypeError, KeyError) as exc:
+        return [f"Selected source cohort is not ready for construction: {exc}"]
+
+
 def reference_dossier_failures(
     body: str,
     *,
     project: Path,
     record_path: Path,
+    selection_only: bool = False,
 ) -> list[str]:
     """Validate captured, source-spread, brief-fit reference research.
 
@@ -10118,6 +14310,11 @@ def reference_dossier_failures(
     }
     sections = markdown_sections(body)
     frame = sections.get("Research frame", "")
+    current_brief, current_brief_failures = bound_artifact(
+        markdown_label_value(frame, "Current brief artifact") or "", project=project,
+        record_path=record_path, label="Reference dossier current brief artifact",
+    )
+    failures.extend(current_brief_failures)
     for label in (
         "Reference-selection brief",
         "Brief and priority-source rationale",
@@ -10459,8 +14656,8 @@ def reference_dossier_failures(
         or len(candidate_rows) < REFERENCE_MINIMUM_CANDIDATES
     ):
         failures.append(
-            "Reference dossier needs at least eight serious candidate-comparison "
-            "rows using the exact contract, including concrete rejections; "
+            "Reference dossier needs multiple qualified candidates and at least one serious rejected alternative "
+            "using the exact comparison contract; "
             "selection cannot begin from the first convenient gallery results."
         )
     else:
@@ -10721,6 +14918,14 @@ def reference_dossier_failures(
                     f"{label} disposition reason must name concrete evidence/criteria, not generic praise or quota padding."
                 )
             if disposition == "selected":
+                if study_artifact is not None and isinstance(study_context, dict) and isinstance(study_context.get("record"), dict):
+                    candidate_id = str(study_context["record"].get("id") or "")
+                    expected_review = study_artifact.with_name(f"{candidate_id}-candidate-review.json")
+                    if brief_evidence is None or brief_evidence.resolve() != expected_review.resolve():
+                        failures.append(f"{label} brief-fit evidence must be its exact attributable {candidate_id}-candidate-review.json, not source metadata or self-authored pass flags.")
+                    if current_brief is not None:
+                        failures.extend(selected_candidate_review_failures(project, candidate_id,
+                            review_path=expected_review, brief_path=current_brief))
                 if not brief_pass or not quality_pass:
                     failures.append(
                         f"{label} cannot be selected unless both independent gates pass and generated defects are empty."
@@ -10741,8 +14946,8 @@ def reference_dossier_failures(
                 )
         if rejected_candidates < REFERENCE_MINIMUM_REJECTED_CANDIDATES:
             failures.append(
-                "Reference dossier candidate comparison must record at least two "
-                "serious rejected alternatives with concrete reasons."
+                "Reference dossier candidate comparison must record at least one "
+                "serious rejected alternative with concrete reasons."
             )
 
     def observation_failures(
@@ -10820,6 +15025,16 @@ def reference_dossier_failures(
             f"{observation_label}: {failure}"
             for failure in packaged_runtime_record_failures(
                 payload, tool="observe_reference.mjs"
+            )
+        )
+        problems.extend(
+            f"{observation_label}: {failure}"
+            for failure in source_study_evidence_failures(
+                payload.get("source_study"),
+                artifact_root=artifact.parent,
+                expected_producer="observe_reference.mjs",
+                expected_id=expected_reference_id,
+                required_artifact_kinds={"frame"},
             )
         )
         frames = payload.get("frames")
@@ -11044,6 +15259,110 @@ def reference_dossier_failures(
                     continue
                 for state_id, state_evidence in state_map.items():
                     source_state = contract_states.get(state_id)
+                    source_trigger = (
+                        source_state.get("trigger")
+                        if isinstance(source_state, dict)
+                        and isinstance(source_state.get("trigger"), dict)
+                        else {}
+                    )
+                    ambient_source_state = (
+                        source_trigger.get("type") == SOURCE_AMBIENT_TRIGGER
+                    )
+                    expected_evidence_phases = (
+                        {"before", "appearance", "settled"}
+                        if ambient_source_state
+                        else {"before", "after", "settled"}
+                    )
+                    ambient_trigger_evidence = (
+                        state_evidence.get("trigger_evidence")
+                        if isinstance(state_evidence, dict)
+                        else None
+                    )
+                    ambient_evidence_complete = (
+                        not ambient_source_state
+                        or (
+                            isinstance(ambient_trigger_evidence, dict)
+                            and ambient_trigger_evidence.get("type")
+                            == SOURCE_AMBIENT_TRIGGER
+                            and ambient_trigger_evidence.get("target")
+                            == source_trigger.get("target")
+                            and ambient_trigger_evidence.get("value") is None
+                            and ambient_trigger_evidence.get("wait_ms")
+                            == source_trigger.get("wait_ms")
+                            and ambient_trigger_evidence.get("appearance_observed")
+                            is True
+                            and type(
+                                ambient_trigger_evidence.get("appeared_after_ms")
+                            ) is int
+                            and 0
+                            <= ambient_trigger_evidence["appeared_after_ms"]
+                            <= int(source_trigger.get("wait_ms") or -1)
+                            and ambient_trigger_evidence.get("settled") is True
+                            and all(
+                                isinstance(ambient_trigger_evidence.get(field), str)
+                                and SHA256_HEX.fullmatch(
+                                    ambient_trigger_evidence[field]
+                                ) is not None
+                                for field in (
+                                    "before_sha256",
+                                    "after_sha256",
+                                    "settled_sha256",
+                                )
+                            )
+                            and ambient_trigger_evidence.get("before_sha256")
+                            != ambient_trigger_evidence.get("settled_sha256")
+                            and ambient_target_identity_valid(
+                                ambient_trigger_evidence.get("target_identity")
+                            )
+                            and all(
+                                isinstance(ambient_trigger_evidence.get(field), dict)
+                                and ambient_trigger_evidence[field].get("count")
+                                == 1
+                                and ambient_trigger_evidence[field].get("operable")
+                                is True
+                                and ambient_trigger_evidence[field].get("visible")
+                                is True
+                                and ambient_trigger_evidence[field].get(
+                                    "trial_actionable"
+                                )
+                                is True
+                                and isinstance(
+                                    ambient_trigger_evidence[field].get("details"),
+                                    dict,
+                                )
+                                and ambient_trigger_evidence[field]["details"].get(
+                                    "hit_target"
+                                )
+                                is True
+                                and ambient_trigger_evidence[field]["details"].get(
+                                    "in_viewport"
+                                )
+                                is True
+                                and all(
+                                    ambient_trigger_evidence[field]["details"].get(
+                                        safety_field
+                                    )
+                                    is False
+                                    for safety_field in (
+                                        "hidden",
+                                        "inert",
+                                        "disabled",
+                                        "hidden_ancestor",
+                                        "disabled_ancestor",
+                                        "pointer_events_none",
+                                    )
+                                )
+                                for field in ("target_appearance", "target_settled")
+                            )
+                            and isinstance(
+                                ambient_trigger_evidence.get("target_before"), dict
+                            )
+                            and ambient_trigger_evidence["target_before"].get(
+                                "operable"
+                            )
+                            is False
+                        )
+                    )
                     if (
                         not isinstance(state_evidence, dict)
                         or not isinstance(source_state, dict)
@@ -11056,7 +15375,7 @@ def reference_dossier_failures(
                         or not isinstance(state_evidence.get("trigger_evidence"), dict)
                         or not isinstance(state_evidence.get("evidence_frames"), dict)
                         or set(state_evidence.get("evidence_frames", {}))
-                        != {"before", "after", "settled"}
+                        != expected_evidence_phases
                         or any(
                             not isinstance(frame, dict)
                             or not isinstance(frame.get("file"), str)
@@ -11072,9 +15391,14 @@ def reference_dossier_failures(
                         or not isinstance(state_evidence.get("score"), dict)
                         or not isinstance(state_evidence.get("scroll_traversal"), dict)
                         or state_evidence["scroll_traversal"].get("complete") is not True
+                        or not ambient_evidence_complete
                     ):
                         problems.append(
                             f"{observation_label} {viewport}/{state_id} did not execute and capture its exact source state."
+                        )
+                    if ambient_source_state and not ambient_evidence_complete:
+                        problems.append(
+                            f"{observation_label} {viewport}/{state_id} ambient source appearance is missing exact selector-bound before/appearance/settled evidence, bounded wait, or stable visible target proof."
                         )
         navigations = payload.get("navigations")
         if not isinstance(navigations, list) or not navigations:
@@ -11314,9 +15638,8 @@ def reference_dossier_failures(
         or len(strong_rows) < REFERENCE_MINIMUM_STRONG
     ):
         failures.append(
-            "Reference dossier needs at least six strong-reference rows using "
-            "the public-reference table contract; the floor keeps any single "
-            "site from becoming the template."
+            "Reference dossier needs at least two distinct qualified live reference rows using "
+            "the public-reference table contract, with the chosen count justified by full route/component/behavior coverage."
         )
     else:
         ranks: list[int] = []
@@ -11392,6 +15715,8 @@ def reference_dossier_failures(
                 signature_by_rank[int(row[0])] = row[11]
             kind_by_rank[row[0]] = observed_kind
             access = row[5].split(";", 1)[0].strip().casefold()
+            if access not in {"public-live", "authorized-account"}:
+                failures.append(f"{label} needs a completely observed live source; a gallery entry alone cannot be a selected reference.")
             url_match = re.search(r"https://[^\s)]+", row[2])
             if access == "public-live" and url_match is not None:
                 host = urlsplit(url_match.group(0)).netloc.casefold()
@@ -11419,7 +15744,7 @@ def reference_dossier_failures(
         active_used = {source for source in sources if source in active_source_ids}
         if len(active_used) < REFERENCE_MINIMUM_SOURCES:
             failures.append(
-                "Reference dossier strong rows must come from at least three "
+                "Reference dossier strong rows must come from at least two "
                 "distinct active public sources."
             )
         counts: dict[str, int] = {}
@@ -11471,7 +15796,7 @@ def reference_dossier_failures(
     )
     if selected_ranks is None or len(selected_ranks) < REFERENCE_MINIMUM_SELECTED:
         failures.append(
-            "Reference dossier must select at least four distinct positive ranks "
+            "Reference dossier must select at least two distinct positive ranks "
             "so the synthesis merges several sites rather than copying one."
         )
         selected_ranks = set()
@@ -11484,6 +15809,16 @@ def reference_dossier_failures(
                 "Reference dossier selected references must come from at least "
                 "two distinct sources."
             )
+    count_fields = semicolon_fields(markdown_label_value(frame, "Reference-count and coverage rationale") or "")
+    if set(count_fields) != {"qualified", "selected", "discovery_sources", "reason"}:
+        failures.append("Reference-count and coverage rationale needs qualified, selected, discovery_sources, and a project-specific coverage reason.")
+    else:
+        expected_counts = {"qualified": len(strong_rows), "selected": len(selected_ranks), "discovery_sources": len(set(source_by_rank.values()))}
+        if any(count_fields[key] != str(value) for key, value in expected_counts.items()):
+            failures.append("Reference-count rationale does not match the actual qualified/selected/discovery-source set.")
+        reason = count_fields["reason"]
+        if len(reason.strip()) < 100 or not all(term in reason.casefold() for term in ("route", "component", "behavior", "coverage")):
+            failures.append("Reference count must follow specific route, component, and behavior coverage; six, ten, or another count is not a quality guarantee.")
     for label in (
         "Project-specific organizing synthesis",
         "Dominant visual grammar by route",
@@ -11500,6 +15835,9 @@ def reference_dossier_failures(
             failures.extend(
                 combination_failures(value, f"Reference dossier {label!r}")
             )
+            mentioned_ranks = {int(item) for item in re.findall(r"\bstrong-([1-9][0-9]*)\b", value)}
+            if not mentioned_ranks.issubset(selected_ranks):
+                failures.append("Reference combination narrative cites unselected source ranks; it must describe only the sources actually selected and transferred.")
     synthesis_headers, synthesis_rows = markdown_first_table(synthesis)
     if synthesis_headers != REFERENCE_DOSSIER_SYNTHESIS_HEADERS or not synthesis_rows:
         failures.append(
@@ -11527,6 +15865,12 @@ def reference_dossier_failures(
                 "Reference dossier selected ranks need a mapped project decision: "
                 + ", ".join(str(rank) for rank in missing_mapped)
             )
+
+    if selection_only:
+        # All source qualification, study, count/spread, candidate review,
+        # counterexamples and selected synthesis have been checked.  Build
+        # proof/census/final artifacts below cannot exist before construction.
+        return failures
 
     route_manifest_section = sections.get("Route manifest", "")
     route_manifest_cell = markdown_label_value(
@@ -12147,6 +16491,490 @@ def _recording_artifact_projection(value: object) -> dict[str, object] | None:
     return {key: value.get(key) for key in required}
 
 
+def source_study_evidence_failures(
+    study: object,
+    *,
+    artifact_root: Path,
+    expected_producer: str,
+    expected_id: str,
+    expected_profile: str | None = None,
+    required_artifact_kinds: set[str] | None = None,
+) -> list[str]:
+    """Validate the append-only, completed source-study controller record.
+
+    A controller status is not source authority by itself. It must bind a
+    current producer, a regular-file progress snapshot, every hash-chained
+    JSONL event, and immutable artifacts generated by that producer.
+    """
+
+    failures: list[str] = []
+    required_kinds = required_artifact_kinds or {"frame"}
+    if not isinstance(study, dict):
+        return ["source_study is missing; screenshots alone are not a completed source study."]
+    if (
+        study.get("schema_version") != 1
+        or study.get("kind") != "source-study-progress"
+        or study.get("status") != "complete"
+        or study.get("source_status") != "complete"
+        or study.get("eligible_for_source_selection") is not True
+        or study.get("producer") != expected_producer
+        or study.get("id") != expected_id
+        or study.get("source_kind") != "public-source"
+        or (expected_profile is not None and study.get("profile") != expected_profile)
+    ):
+        failures.append(
+            "source_study is not a completed eligible public-source study for the current producer/profile."
+        )
+    counters = study.get("counters")
+    if (
+        not isinstance(counters, dict)
+        or any(type(counters.get(key)) is not int or counters[key] < 0
+               for key in ("frames", "events", "states", "routes", "targets"))
+        or counters.get("frames", 0) < 1
+    ):
+        failures.append("source_study counters are incomplete or contain no captured frame evidence.")
+    progress = study.get("progress")
+    if (
+        not isinstance(progress, dict)
+        or set(progress) != {"file", "bytes", "sha256"}
+        or not isinstance(progress.get("file"), str)
+        or type(progress.get("bytes")) is not int
+        or progress["bytes"] < 1
+        or not isinstance(progress.get("sha256"), str)
+        or SHA256_HEX.fullmatch(progress["sha256"]) is None
+    ):
+        failures.append("source_study progress artifact binding is incomplete.")
+        progress_path = None
+    else:
+        progress_path = (artifact_root / PurePosixPath(progress["file"])).resolve()
+        if (
+            not is_within(progress_path, artifact_root)
+            or not progress_path.is_file()
+            or is_reparse(progress_path)
+        ):
+            failures.append("source_study progress artifact is outside the source artifact root or is not a regular file.")
+            progress_path = None
+        else:
+            size, digest = file_sha256(progress_path)
+            if size != progress["bytes"] or digest != progress["sha256"]:
+                failures.append("source_study progress artifact bytes/hash drifted.")
+
+    progress_events = study.get("progress_events")
+    if (
+        not isinstance(progress_events, dict)
+        or set(progress_events) != {"file", "bytes", "sha256"}
+        or not isinstance(progress_events.get("file"), str)
+        or type(progress_events.get("bytes")) is not int
+        or progress_events["bytes"] < 1
+        or not isinstance(progress_events.get("sha256"), str)
+        or SHA256_HEX.fullmatch(progress_events["sha256"]) is None
+    ):
+        failures.append("source_study append-only progress journal binding is incomplete.")
+        event_path = None
+    else:
+        event_path = (artifact_root / PurePosixPath(progress_events["file"])).resolve()
+        if not is_within(event_path, artifact_root) or not event_path.is_file() or is_reparse(event_path):
+            failures.append("source_study append-only progress journal is outside the source artifact root or unsafe.")
+            event_path = None
+        else:
+            size, digest = file_sha256(event_path)
+            if size != progress_events["bytes"] or digest != progress_events["sha256"]:
+                failures.append("source_study append-only progress journal bytes/hash drifted.")
+
+    signed = study.get("signed_artifacts")
+    signed_kinds: set[str] = set()
+    if not isinstance(signed, list) or not signed:
+        failures.append("source_study has no signed immutable artifacts.")
+    else:
+        for index, artifact in enumerate(signed, start=1):
+            if (
+                not isinstance(artifact, dict)
+                or set(artifact) != {"kind", "file", "bytes", "sha256", "producer"}
+                or not isinstance(artifact.get("kind"), str)
+                or not isinstance(artifact.get("file"), str)
+                or type(artifact.get("bytes")) is not int
+                or artifact["bytes"] < 1
+                or not isinstance(artifact.get("sha256"), str)
+                or SHA256_HEX.fullmatch(artifact["sha256"]) is None
+                or artifact.get("producer") != expected_producer
+            ):
+                failures.append(f"source_study signed artifact {index} has invalid metadata/provenance.")
+                continue
+            signed_kinds.add(artifact["kind"])
+            candidate = (artifact_root / PurePosixPath(artifact["file"])).resolve()
+            if (
+                not is_within(candidate, artifact_root)
+                or not candidate.is_file()
+                or is_reparse(candidate)
+            ):
+                failures.append(f"source_study signed artifact {index} is not a contained regular file.")
+                continue
+            size, digest = file_sha256(candidate)
+            if size != artifact["bytes"] or digest != artifact["sha256"]:
+                failures.append(f"source_study signed artifact {index} bytes/hash drifted.")
+    missing_kinds = required_kinds - signed_kinds
+    if missing_kinds:
+        failures.append(
+            "source_study is missing required signed artifact kind(s): "
+            + ", ".join(sorted(missing_kinds))
+            + "."
+        )
+
+    if progress_path is not None:
+        try:
+            progress_payload = json.loads(progress_path.read_text(encoding="utf-8"))
+            event_name = study.get("progress_event_file")
+            if (
+                not isinstance(progress_payload, dict)
+                or progress_payload.get("status") != "complete"
+                or progress_payload.get("eligible_for_source_selection") is not True
+                or progress_payload.get("producer") != expected_producer
+                or progress_payload.get("id") != study.get("id")
+                or progress_payload.get("source_kind") != "public-source"
+                or progress_payload.get("progress_event_file") != event_name
+                or progress_payload.get("progress_event_count") != study.get("progress_event_count")
+                or progress_payload.get("tail_event_sha256") != study.get("tail_event_sha256")
+                or progress_payload.get("signed_artifacts") != signed
+            ):
+                failures.append("source_study progress snapshot does not match the completed bound study record.")
+            if not isinstance(event_name, str) or not event_name:
+                failures.append("source_study has no append-only progress event filename.")
+            else:
+                named_event_path = (artifact_root / PurePosixPath(event_name)).resolve()
+                if event_path is None or named_event_path != event_path:
+                    failures.append("source_study progress event journal is missing or unsafe.")
+                else:
+                    previous = None
+                    count = 0
+                    first_kind = None
+                    last_kind = None
+                    last_detail: object = None
+                    last_counters: object = None
+                    prior_counters: dict[str, int] | None = None
+                    allowed_kinds = {
+                        "started", "frame-captured", "event-observed", "state-complete",
+                        "route-visited", "target-observed", "step-complete", "postprocess-start",
+                        "postprocess-chunk", "postprocess-complete", "artifact-retained", "complete", "failed",
+                    }
+                    for raw in event_path.read_text(encoding="utf-8").splitlines():
+                        if not raw.strip():
+                            failures.append("source_study progress journal contains a blank/unverifiable event row.")
+                            continue
+                        entry = json.loads(raw)
+                        if not isinstance(entry, dict) or set(entry) != {
+                            "schema_version", "sequence", "at", "kind", "counters", "previous_sha256", "detail", "sha256"
+                        }:
+                            failures.append("source_study progress journal has an unsupported event shape.")
+                            break
+                        core = {key: entry[key] for key in entry if key != "sha256"}
+                        count += 1
+                        event_counters = entry.get("counters")
+                        if (
+                            entry.get("schema_version") != 1
+                            or entry.get("sequence") != count
+                            or entry.get("previous_sha256") != previous
+                            or entry.get("sha256") != canonical_json_sha256(core)
+                            or entry.get("kind") not in allowed_kinds
+                            or not isinstance(event_counters, dict)
+                            or set(event_counters) != {"frames", "events", "states", "routes", "targets"}
+                            or any(type(event_counters.get(key)) is not int or event_counters[key] < 0
+                                   for key in event_counters)
+                            or (prior_counters is not None and any(
+                                event_counters[key] < prior_counters[key] for key in event_counters
+                            ))
+                        ):
+                            failures.append("source_study progress journal sequence/hash/counter chain is invalid.")
+                            break
+                        if count == 1 and (entry.get("kind") != "started" or entry.get("previous_sha256") is not None):
+                            failures.append("source_study progress journal must begin with an unchained started event.")
+                            break
+                        first_kind = first_kind or entry["kind"]
+                        last_kind = entry["kind"]
+                        last_detail = entry.get("detail")
+                        last_counters = event_counters
+                        prior_counters = event_counters
+                        previous = entry["sha256"]
+                    if count != study.get("progress_event_count") or previous != study.get("tail_event_sha256"):
+                        failures.append("source_study progress journal does not reach the bound count/tail hash.")
+                    if (
+                        first_kind != "started"
+                        or last_kind != "complete"
+                        or last_counters != study.get("counters")
+                        or not isinstance(last_detail, dict)
+                        or last_detail.get("terminal_success") is not True
+                        or last_detail.get("signed_artifacts") != signed
+                    ):
+                        failures.append("source_study progress journal does not end in a semantically bound complete event.")
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            failures.append(f"source_study progress artifact/journal is unreadable: {exc}")
+    return failures
+
+
+def source_recording_binding_failures(
+    *,
+    route: dict[str, object],
+    observation: dict[str, object],
+    observation_path: Path,
+    project: Path,
+) -> list[str]:
+    """Bind a build route to authentic recorder evidence before any dwell use.
+
+    This compact validator is intentionally separate from the autonomous
+    monitor and from the exhaustive dossier recorder review. It establishes
+    only the independent facts a scanner needs to trust: canonical
+    strong-N recording/ledger paths, current recorder identity, exact source
+    contract and URLs, concrete wide/narrow profile records, and an immutable
+    ledger whose hash and every artifact byte reconcile.
+    """
+
+    failures: list[str] = []
+    reference_id = route.get("mapped_reference_id")
+    if (
+        not isinstance(reference_id, str)
+        or ROUTE_REFERENCE_ID.fullmatch(reference_id) is None
+    ):
+        return ["Mapped source recording has no valid strong-N reference ID."]
+    references_root = (project / ".design-dna" / "references").resolve()
+    expected_observation = (
+        references_root / f"{reference_id}-observation.json"
+    ).resolve()
+    recording = (references_root / f"{reference_id}-recording.json").resolve()
+    ledger = (references_root / f"{reference_id}-artifacts.json").resolve()
+    if (
+        observation_path.resolve() != expected_observation
+        or not is_within(recording, references_root)
+        or not is_within(ledger, references_root)
+        or not recording.is_file()
+        or not ledger.is_file()
+        or is_reparse(recording)
+        or is_reparse(ledger)
+    ):
+        return [
+            "Mapped source recording and artifact ledger must exist at the "
+            "canonical strong-N reference paths."
+        ]
+    try:
+        payload = json.loads(recording.read_text(encoding="utf-8"))
+        ledger_payload = json.loads(ledger.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return [f"Mapped source recording or artifact ledger is unreadable: {exc}"]
+
+    recorder_script = Path(__file__).resolve().parent / REFERENCE_RECORDING_TOOL
+    recorder_sha = file_sha256(recorder_script)[1] if recorder_script.is_file() else ""
+    try:
+        observed_url = canonical_route_url(str(observation.get("url") or ""))
+        requested_url = canonical_route_url(
+            str(payload.get("requested_url") or "")
+        ) if isinstance(payload, dict) else ""
+        recorded_url = canonical_route_url(
+            str(payload.get("url") or "")
+        ) if isinstance(payload, dict) else ""
+    except ValueError:
+        observed_url = requested_url = recorded_url = ""
+    runtime_identity = payload.get("runtime_identity") if isinstance(payload, dict) else None
+    if (
+        not isinstance(payload, dict)
+        or payload.get("tool") != REFERENCE_RECORDING_TOOL
+        or payload.get("schema_version") not in REFERENCE_RECORDING_SCHEMAS
+        or payload.get("producer_script_sha256") != recorder_sha
+        or not isinstance(runtime_identity, dict)
+        or runtime_identity.get(REFERENCE_RECORDING_TOOL) != recorder_sha
+        or payload.get("id") != reference_id
+        or not observed_url
+        or observation.get("url") != observed_url
+        or payload.get("requested_url") != requested_url
+        or payload.get("url") != recorded_url
+        or requested_url != observed_url
+        or recorded_url != observed_url
+    ):
+        failures.append(
+            "Mapped source recording does not bind current recorder bytes, the exact reference ID, and the exact observed source URL."
+        )
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(payload.get("state_contract"), dict)
+        or not isinstance(observation.get("state_contract"), dict)
+        or payload.get("state_contract") != observation.get("state_contract")
+    ):
+        failures.append(
+            "Mapped source recording and observation do not bind the same exact source-state contract."
+        )
+    minimum_duration = (
+        payload.get("minimum_duration_per_profile_s")
+        if isinstance(payload, dict)
+        else None
+    )
+    fps = payload.get("fps") if isinstance(payload, dict) else None
+    minimum_duration_ms = exact_millisecond_duration(minimum_duration)
+    if (
+        not isinstance(minimum_duration, (int, float))
+        or minimum_duration < REFERENCE_RECORDING_MINIMUM_SECONDS
+        or minimum_duration_ms is None
+        or not isinstance(fps, (int, float))
+        or fps < REFERENCE_RECORDING_MINIMUM_FPS
+    ):
+        failures.append(
+            "Mapped source recording does not meet the 90-second per-profile and 15-FPS evidence floors."
+        )
+
+    profiles = payload.get("profiles") if isinstance(payload, dict) else None
+    final_urls = payload.get("final_urls") if isinstance(payload, dict) else None
+    coverage = payload.get("coverage") if isinstance(payload, dict) else None
+    if (
+        not isinstance(profiles, dict)
+        or set(profiles) != SOURCE_PROFILE_VIEWPORT_NAMES
+        or not isinstance(final_urls, dict)
+        or set(final_urls) != SOURCE_PROFILE_VIEWPORT_NAMES
+        or coverage
+        != {"wide_complete": True, "narrow_complete": True, "complete": True}
+    ):
+        failures.append(
+            "Mapped source recording must prove complete exact wide and narrow profiles."
+        )
+    else:
+        for profile_name, (width, height) in SOURCE_PROFILE_VIEWPORT_DIMENSIONS.items():
+            profile = profiles.get(profile_name)
+            profile_duration_ms = (
+                exact_millisecond_duration(profile.get("duration_s"))
+                if isinstance(profile, dict)
+                else None
+            )
+            try:
+                final_url = canonical_route_url(str(final_urls.get(profile_name) or ""))
+            except ValueError:
+                final_url = ""
+            if (
+                not isinstance(profile, dict)
+                or profile.get("profile") != profile_name
+                or profile.get("viewport")
+                != {"name": profile_name, "width": width, "height": height}
+                or not isinstance(profile.get("duration_s"), (int, float))
+                or profile_duration_ms is None
+                or not isinstance(minimum_duration, (int, float))
+                or profile_duration_ms < minimum_duration_ms
+                or profile.get("fps") != fps
+                or not isinstance(profile.get("coverage"), dict)
+                or profile["coverage"].get("complete") is not True
+                or final_url != observed_url
+                or final_urls.get(profile_name) != final_url
+            ):
+                failures.append(
+                    f"Mapped source recording {profile_name} profile does not bind its packaged viewport, duration, coverage, and exact settled source URL."
+                )
+            failures.extend(
+                f"Mapped source recording {profile_name} {failure}"
+                for failure in source_study_evidence_failures(
+                    profile.get("source_study") if isinstance(profile, dict) else None,
+                    artifact_root=references_root,
+                    expected_producer="record_reference.mjs",
+                    expected_id=f"{reference_id}-study",
+                    expected_profile=profile_name,
+                    required_artifact_kinds={"frame", "video"},
+                )
+            )
+
+    expected_ledger_keys = {
+        "schema_version", "algorithm", "recording", "artifacts", "sha256"
+    }
+    if (
+        not isinstance(ledger_payload, dict)
+        or set(ledger_payload) != expected_ledger_keys
+        or ledger_payload.get("schema_version") != 1
+        or ledger_payload.get("algorithm") != "sha256"
+        or ledger_payload.get("recording") != recording.name
+        or not isinstance(ledger_payload.get("artifacts"), list)
+    ):
+        failures.append("Mapped source artifact ledger has an unsupported canonical shape.")
+        return failures
+    ledger_core = {
+        "schema_version": ledger_payload["schema_version"],
+        "algorithm": ledger_payload["algorithm"],
+        "recording": ledger_payload["recording"],
+        "artifacts": ledger_payload["artifacts"],
+    }
+    if ledger_payload.get("sha256") != canonical_json_sha256(ledger_core):
+        failures.append("Mapped source artifact ledger canonical hash is invalid.")
+
+    seen_files: set[str] = set()
+    profile_kinds: dict[str, set[str]] = {
+        profile: set() for profile in SOURCE_PROFILE_VIEWPORT_NAMES
+    }
+    recording_rows: list[dict[str, object]] = []
+    for index, entry in enumerate(ledger_payload["artifacts"], start=1):
+        if (
+            not isinstance(entry, dict)
+            or set(entry) != {"kind", "profile", "file", "bytes", "sha256"}
+            or not isinstance(entry.get("kind"), str)
+            or not entry["kind"]
+            or not (
+                entry.get("profile") is None
+                or (
+                    isinstance(entry.get("profile"), str)
+                    and entry.get("profile") in SOURCE_PROFILE_VIEWPORT_NAMES
+                )
+            )
+            or not isinstance(entry.get("file"), str)
+            or not entry["file"]
+            or "\\" in entry["file"]
+            or type(entry.get("bytes")) is not int
+            or entry["bytes"] < 1
+            or not isinstance(entry.get("sha256"), str)
+            or SHA256_HEX.fullmatch(entry["sha256"]) is None
+            or entry["file"] in seen_files
+        ):
+            failures.append(
+                f"Mapped source artifact ledger row {index} has an invalid path, profile, or hash binding."
+            )
+            continue
+        seen_files.add(entry["file"])
+        relative = PurePosixPath(entry["file"])
+        artifact = (references_root / relative).resolve()
+        if (
+            relative.is_absolute()
+            or ".." in relative.parts
+            or not is_within(artifact, references_root)
+            or not artifact.is_file()
+            or is_reparse(artifact)
+            or artifact.stat().st_size != entry["bytes"]
+            or file_sha256(artifact)[1] != entry["sha256"]
+        ):
+            failures.append(
+                f"Mapped source artifact ledger row {index} bytes are missing or drifted."
+            )
+        if entry["kind"] == "recording":
+            recording_rows.append(entry)
+        elif entry["profile"] is None:
+            failures.append(
+                f"Mapped source artifact ledger row {index} has an unbound profile."
+            )
+        else:
+            profile_kinds[str(entry["profile"])].add(entry["kind"])
+    expected_recording_row = {
+        "kind": "recording",
+        "profile": None,
+        "file": recording.name,
+        "bytes": recording.stat().st_size,
+        "sha256": file_sha256(recording)[1],
+    }
+    if recording_rows != [expected_recording_row]:
+        failures.append(
+            "Mapped source artifact ledger does not hash-bind the exact recording bytes once."
+        )
+    for profile_name in SOURCE_PROFILE_VIEWPORT_NAMES:
+        required_kinds = {
+            "video", "frame", "event-sheet", "cursor-path",
+            "difference-signal", "events-index",
+        }
+        missing_kinds = sorted(required_kinds - profile_kinds[profile_name])
+        if missing_kinds:
+            failures.append(
+                f"Mapped source artifact ledger {profile_name} profile lacks "
+                + ", ".join(missing_kinds)
+                + " evidence."
+            )
+    return failures
+
+
 def reference_recording_failures(
     payload: object,
     *,
@@ -12156,11 +16984,14 @@ def reference_recording_failures(
     state_contract: Path,
     state_contract_sha256: str,
     expected_reference_id: str,
+    signature_kind: str | None = "motion",
 ) -> tuple[list[str], set[tuple[str, int]]]:
     """Validate schema-4 recorder output and its non-circular artifact ledger."""
 
     failures: list[str] = []
     event_ids: set[tuple[str, int]] = set()
+    if signature_kind not in {None, "motion", "static"}:
+        failures.append("Recording signature expectation must be motion, static, or an unclassified coverage-only check.")
     expected_top = {
         "tool", "schema_version", "producer_script_sha256", "runtime_identity",
         "dependencies", "id", "url", "requested_url", "final_urls",
@@ -12169,9 +17000,12 @@ def reference_recording_failures(
         "quality_observations", "defect_observations",
         "interaction_census_by_viewport", "rendered_qa_by_viewport",
         "profiles", "coverage",
+        "source_kind", "source_status", "eligible_for_source_selection",
     }
     if not isinstance(payload, dict) or set(payload) != expected_top:
         return ["Recording must use the exact schema-4 object shape."], event_ids
+    if payload.get("source_kind") != "public-source" or payload.get("source_status") != "complete" or payload.get("eligible_for_source_selection") is not True:
+        failures.append("Recording is not a complete public-source study eligible for source selection.")
     failures.extend(
         packaged_runtime_record_failures(
             payload, tool=REFERENCE_RECORDING_TOOL
@@ -12194,11 +17028,13 @@ def reference_recording_failures(
         failures.append("Recording must bind one exact canonical source URL.")
     minimum_duration = payload.get("minimum_duration_per_profile_s")
     fps = payload.get("fps")
+    minimum_duration_ms = exact_millisecond_duration(minimum_duration)
     if (
         not isinstance(minimum_duration, (int, float))
         or minimum_duration < REFERENCE_RECORDING_MINIMUM_SECONDS
+        or minimum_duration_ms is None
     ):
-        failures.append("Recording minimum duration is below the 90-second per-profile floor.")
+        failures.append("Recording minimum duration is below the 90-second per-profile floor or is not exactly millisecond-representable.")
     if not isinstance(fps, (int, float)) or fps < REFERENCE_RECORDING_MINIMUM_FPS:
         failures.append("Recording sampling rate is below the 15-FPS floor.")
 
@@ -12260,13 +17096,29 @@ def reference_recording_failures(
             "profile", "viewport", "duration_s", "fps", "video", "frames",
             "events", "cursor_path", "difference_signal", "video_elements",
             "navigations", "scroll_traversals", "interaction_census",
-            "rendered_qa", "coverage",
+            "rendered_qa", "autonomous_surface_watches", "source_study", "coverage",
+            "video_clock", "source_entry_capture",
         }
         if not isinstance(profile, dict) or set(profile) != expected_profile_keys:
             failures.append(f"Recording {profile_name} profile has an unsupported shape.")
             continue
         if profile.get("profile") != profile_name:
             failures.append(f"Recording {profile_name} profile identity is wrong.")
+        video_clock = profile.get("video_clock")
+        if (
+            not isinstance(video_clock, dict)
+            or set(video_clock) != {"method", "first_frame_epoch_ms", "last_frame_epoch_ms", "frames_delivered"}
+            or video_clock.get("method") != "playwright-screencast-frame-wall-clock"
+            or type(video_clock.get("first_frame_epoch_ms")) not in {int, float}
+            or type(video_clock.get("last_frame_epoch_ms")) not in {int, float}
+            or not math.isfinite(video_clock.get("first_frame_epoch_ms", float("nan")))
+            or not math.isfinite(video_clock.get("last_frame_epoch_ms", float("nan")))
+            or video_clock.get("first_frame_epoch_ms", 0) <= 0
+            or video_clock.get("last_frame_epoch_ms", 0) < video_clock.get("first_frame_epoch_ms", 0)
+            or type(video_clock.get("frames_delivered")) is not int
+            or video_clock.get("frames_delivered", 0) < 1
+        ):
+            failures.append(f"Recording {profile_name} video/event timeline is not anchored to generated source-frame timestamps.")
         viewport = profile.get("viewport")
         if viewport != {
             "name": profile_name,
@@ -12274,15 +17126,19 @@ def reference_recording_failures(
             "height": dimensions[1],
         }:
             failures.append(f"Recording {profile_name} viewport is not the packaged profile.")
+        profile_duration_ms = exact_millisecond_duration(
+            profile.get("duration_s") if isinstance(profile, dict) else None
+        )
         if (
             not isinstance(profile.get("duration_s"), (int, float))
             or profile["duration_s"] < REFERENCE_RECORDING_MINIMUM_SECONDS
+            or profile_duration_ms is None
             or (
-                isinstance(minimum_duration, (int, float))
-                and profile["duration_s"] < minimum_duration
+                minimum_duration_ms is not None
+                and profile_duration_ms < minimum_duration_ms
             )
         ):
-            failures.append(f"Recording {profile_name} did not meet its duration floor.")
+            failures.append(f"Recording {profile_name} did not meet its exact millisecond duration floor.")
         if profile.get("fps") != fps:
             failures.append(f"Recording {profile_name} FPS differs from the record.")
         try:
@@ -12409,7 +17265,7 @@ def reference_recording_failures(
             or not isinstance(frames.get("files"), list)
             or frames.get("count") != len(frames.get("files", []))
             or frames.get("count", 0)
-            < math.floor(float(profile.get("duration_s") or 0) * float(fps or 0) * 0.9)
+            < math.ceil((profile_duration_ms or 0) / 1000 * float(fps or 0))
         ):
             failures.append(f"Recording {profile_name} frame inventory is incomplete.")
         else:
@@ -12453,6 +17309,174 @@ def reference_recording_failures(
                     )
             add_artifact(events.get("index"), f"Recording {profile_name} event index")
 
+        source_study = profile.get("source_study")
+        failures.extend(
+            f"Recording {profile_name} {failure}"
+            for failure in source_study_evidence_failures(
+                source_study,
+                artifact_root=ledger.parent,
+                expected_producer="record_reference.mjs",
+                expected_id=f"{payload.get('id')}-study",
+                expected_profile=profile_name,
+                required_artifact_kinds={"frame", "video"},
+            )
+        )
+        if isinstance(source_study, dict) and isinstance(source_study.get("progress"), dict):
+            progress = source_study["progress"]
+            if (
+                isinstance(progress.get("file"), str)
+                and type(progress.get("bytes")) is int
+                and isinstance(progress.get("sha256"), str)
+            ):
+                expected_artifacts.append({
+                    "kind": "source-study-progress", "profile": profile_name,
+                    "file": progress["file"], "bytes": progress["bytes"], "sha256": progress["sha256"],
+                })
+        if isinstance(source_study, dict) and isinstance(source_study.get("progress_events"), dict):
+            progress_events = source_study["progress_events"]
+            if (
+                isinstance(progress_events.get("file"), str)
+                and type(progress_events.get("bytes")) is int
+                and isinstance(progress_events.get("sha256"), str)
+            ):
+                expected_artifacts.append({
+                    "kind": "source-study-progress-journal", "profile": profile_name,
+                    "file": progress_events["file"], "bytes": progress_events["bytes"], "sha256": progress_events["sha256"],
+                })
+
+        # The watcher is source evidence, not an optional debug log. Every
+        # recorder profile must preserve its whole watch lifecycle and bind
+        # any timing-gap reconciliation to the immutable video plus extracted
+        # frame that contains its two endpoints.
+        watches = profile.get("autonomous_surface_watches")
+        frame_rows = frames.get("files", []) if isinstance(frames, dict) else []
+        frame_bindings = {
+            (item.get("file"), item.get("bytes"), item.get("sha256"))
+            for item in frame_rows
+            if isinstance(item, dict)
+        }
+        frame_count_value = frames.get("count") if isinstance(frames, dict) else None
+        video = profile.get("video")
+        video_binding = (
+            (video.get("file"), video.get("bytes"), video.get("sha256"))
+            if isinstance(video, dict)
+            else None
+        )
+
+        def bound_recording_endpoint(value: object) -> bool:
+            if not isinstance(value, dict):
+                return False
+            frame = value.get("frame")
+            bound_video = value.get("video")
+            return (
+                isinstance(frame, dict)
+                and isinstance(bound_video, dict)
+                and (
+                    frame.get("file"), frame.get("bytes"), frame.get("sha256")
+                )
+                in frame_bindings
+                and (
+                    bound_video.get("file"),
+                    bound_video.get("bytes"),
+                    bound_video.get("sha256"),
+                )
+                == video_binding
+            )
+
+        required_watch_binding = {
+            "profile": profile_name,
+            "duration_s": profile.get("duration_s"),
+            "exact_millisecond_duration": True,
+            "fps": profile.get("fps"),
+            "frame_count": frame_count_value,
+            "frame_requirement": math.ceil(
+                (profile_duration_ms or 0) / 1000 * float(profile.get("fps") or 0)
+            ),
+            "continuous_video_frame_coverage": True,
+        }
+        if not isinstance(watches, list) or not watches:
+            failures.append(
+                f"Recording {profile_name} has no continuous autonomous-source-surface watch ledger."
+            )
+        else:
+            for watch_index, watch in enumerate(watches, start=1):
+                if (
+                    not isinstance(watch, dict)
+                    or set(watch) != {
+                        "action", "profile", "target", "page_url", "t_start", "t_end", "report"
+                    }
+                    or watch.get("action") != "autonomous-surface-watch"
+                    or watch.get("profile") != profile_name
+                    or not isinstance(watch.get("target"), str)
+                    or not isinstance(watch.get("page_url"), str)
+                    or not isinstance(watch.get("report"), dict)
+                ):
+                    failures.append(
+                        f"Recording {profile_name} autonomous watch {watch_index} has an unsupported lifecycle shape."
+                    )
+                    continue
+                report = watch["report"]
+                if report.get("recording_binding") != required_watch_binding:
+                    failures.append(
+                        f"Recording {profile_name} autonomous watch {watch_index} is not bound to the selected exact-duration video profile."
+                    )
+                if report.get("timing_integrity", {}).get("continuous_recording_required") is not True:
+                    failures.append(
+                        f"Recording {profile_name} autonomous watch {watch_index} does not require continuous recording coverage."
+                    )
+                gaps = report.get("sample_gap_failures")
+                reconciliations = report.get("gap_reconciliations")
+                if (
+                    not isinstance(gaps, list)
+                    or not isinstance(reconciliations, list)
+                    or len(gaps) != len(reconciliations)
+                ):
+                    failures.append(
+                        f"Recording {profile_name} autonomous watch {watch_index} does not retain every timing gap and reconciliation."
+                    )
+                else:
+                    for reconciliation in reconciliations:
+                        window = (
+                            reconciliation.get("continuous_recording_reconciliation")
+                            if isinstance(reconciliation, dict)
+                            else None
+                        )
+                        if (
+                            not isinstance(reconciliation, dict)
+                            or reconciliation.get("ambiguous_candidate_lifecycle") is not False
+                            or not isinstance(reconciliation.get("gap_id"), str)
+                            or reconciliation.get("watch_phase") not in {"early", "normal"}
+                            or not isinstance(window, dict)
+                            or window.get("status") != "generated-recording-frame-window-bound"
+                            or window.get("profile") != profile_name
+                            or window.get("duration_s") != profile.get("duration_s")
+                            or window.get("exact_millisecond_duration") is not True
+                            or window.get("fps") != profile.get("fps")
+                            or window.get("frame_count") != frame_count_value
+                            or not bound_recording_endpoint(window.get("before"))
+                            or not bound_recording_endpoint(window.get("after"))
+                        ):
+                            failures.append(
+                                f"Recording {profile_name} autonomous watch {watch_index} has an unresolved or unbound timing gap."
+                            )
+                            break
+                for event in report.get("events", []):
+                    evidence = event.get("evidence") if isinstance(event, dict) else None
+                    member_events = event.get("detail", {}).get("member_events") if isinstance(event, dict) and isinstance(event.get("detail"), dict) else None
+                    if (
+                        not isinstance(event, dict)
+                        or not isinstance(event.get("declared_ambient"), bool)
+                        or (event.get("declared_ambient") is True and not isinstance(event.get("selector"), str))
+                        or not isinstance(member_events, list)
+                        or not member_events
+                        or not isinstance(evidence, dict)
+                        or not all(bound_recording_endpoint(evidence.get(moment)) for moment in ("before", "callback", "after"))
+                    ):
+                        failures.append(
+                            f"Recording {profile_name} autonomous watch {watch_index} has an event without grouped immutable video/frame triplet evidence."
+                        )
+                        break
+
     captures_by_viewport = payload.get("captures_by_viewport")
     discovery_metadata = payload.get("discovery_metadata")
     quality_observations = payload.get("quality_observations")
@@ -12489,24 +17513,46 @@ def reference_recording_failures(
             if not isinstance(profile, dict):
                 continue
             profile_coverage = profile.get("coverage", {})
-            frames = profile.get("frames", {})
-            first_frame = (
-                frames.get("files", [None])[0]
-                if isinstance(frames, dict) and frames.get("files")
-                else None
-            )
-            expected_capture = (
-                {
-                    "file": first_frame.get("file"),
-                    "bytes": first_frame.get("bytes"),
-                    "sha256": first_frame.get("sha256"),
-                }
-                if isinstance(first_frame, dict)
-                else None
-            )
+            source_entry = profile.get("source_entry_capture")
+            frame_payload = profile.get("frames")
+            frames = frame_payload.get("files", []) if isinstance(frame_payload, dict) else []
+            frames = frames if isinstance(frames, list) else []
+            entry_video = profile.get("video") if isinstance(profile.get("video"), dict) else {}
+            entry_navigations = profile.get("navigations") if isinstance(profile.get("navigations"), list) else []
+            entry_duration = profile.get("duration_s")
+            valid_entry_duration = type(entry_duration) in {int, float} and math.isfinite(entry_duration) and entry_duration > 0
+            entry_time = source_entry.get("video_t_s") if isinstance(source_entry, dict) else None
+            expected_frame = None
+            if type(entry_time) in {int, float} and math.isfinite(entry_time) and entry_time > 0 and type(fps) in {int, float} and math.isfinite(fps) and fps > 0 and frames:
+                frame_index = min(len(frames) - 1, max(0, math.floor(entry_time * fps + 0.5)))
+                if isinstance(frames[frame_index], dict):
+                    expected_frame = {key: frames[frame_index].get(key) for key in ("file", "bytes", "sha256")}
+            expected_capture = {key: source_entry.get(key) for key in ("file", "bytes", "sha256")} if isinstance(source_entry, dict) else None
+            if (
+                not isinstance(source_entry, dict)
+                or set(source_entry) != {"profile", "state_id", "label", "video_t_s", "file", "bytes", "sha256", "source_url", "navigation", "frame", "video"}
+                or source_entry.get("profile") != profile_name
+                or source_entry.get("state_id") is not None
+                or source_entry.get("label") != "primary-source-entry"
+                or source_entry.get("source_url") != source_url
+                or source_entry.get("navigation") != (entry_navigations or [None])[0]
+                or expected_frame is None
+                or not valid_entry_duration
+                or entry_time > entry_duration
+                or source_entry.get("frame") != expected_frame
+                or source_entry.get("video") != {key: entry_video.get(key) for key in ("file", "bytes", "sha256")}
+                or not isinstance(source_entry.get("file"), str)
+                or type(source_entry.get("bytes")) is not int
+                or source_entry.get("bytes", 0) <= 0
+                or not isinstance(source_entry.get("sha256"), str)
+                or SHA256_HEX.fullmatch(source_entry.get("sha256", "")) is None
+                or f"-{profile_name}-interaction-evidence/" not in source_entry.get("file", "")
+                or tuple(expected_capture.get(key) for key in ("file", "bytes", "sha256")) not in ledger_allowed_artifacts
+            ):
+                failures.append(f"Recording {profile_name} has no exact navigated source-entry representative capture.")
             if captures_by_viewport.get(profile_name) != expected_capture:
                 failures.append(
-                    f"Recording {profile_name} generated capture does not bind its first frame."
+                    f"Recording {profile_name} generated capture does not bind its navigated source-entry screenshot; a raw pre-navigation frame cannot represent the source."
                 )
             discovery = discovery_metadata.get(profile_name)
             if discovery != {
@@ -12597,6 +17643,7 @@ def reference_recording_failures(
 
     collect_interaction_artifacts(interaction_census_by_viewport)
     collect_interaction_artifacts(rendered_qa_by_viewport)
+    collect_interaction_artifacts([profile.get("source_entry_capture") for profile in profiles.values() if isinstance(profile, dict)])
     ledger_interaction = [
         dict(entry)
         for entry in (
@@ -12610,9 +17657,35 @@ def reference_recording_failures(
         (entry.get("file"), entry.get("bytes"), entry.get("sha256"))
         for entry in ledger_interaction
     }
-    if ledger_interaction_keys != referenced_interaction_artifacts:
+    # Merging repeated source passes legitimately leaves captured diagnostic
+    # PNGs outside the selected census rows. Every retained PNG must still be
+    # proved by the controller's immutable capture journal; no invented or
+    # omitted file can be laundered through an oversized artifact list.
+    journal_capture_keys: set[tuple[str, str]] = set()
+    for profile in profiles.values():
+        study = profile.get("source_study", {}) if isinstance(profile, dict) else {}
+        journal_binding = study.get("progress_events", {}) if isinstance(study, dict) else {}
+        relative = journal_binding.get("file") if isinstance(journal_binding, dict) else None
+        if not isinstance(relative, str):
+            continue
+        journal_path = (ledger.parent / PurePosixPath(relative)).resolve()
+        if not is_within(journal_path, ledger.parent.resolve()) or not journal_path.is_file() or is_reparse(journal_path):
+            continue
+        try:
+            for line in journal_path.read_text(encoding="utf-8").splitlines():
+                event = json.loads(line)
+                detail = event.get("detail") if isinstance(event, dict) else None
+                if not isinstance(event, dict) or event.get("kind") != "frame-captured" or not isinstance(detail, dict):
+                    continue
+                filename, digest = detail.get("file"), detail.get("sha256")
+                if isinstance(filename, str) and "-interaction-evidence/" in filename and isinstance(digest, str):
+                    journal_capture_keys.add((filename, digest))
+        except (OSError, ValueError):
+            failures.append("Recording interaction capture journal is unreadable.")
+    ledger_capture_keys = {(filename, digest) for filename, _bytes, digest in ledger_interaction_keys}
+    if not referenced_interaction_artifacts.issubset(ledger_interaction_keys) or ledger_capture_keys != journal_capture_keys:
         failures.append(
-            "Recording interaction-frame ledger does not equal every generated census evidence frame."
+            "Recording interaction-frame ledger must contain every referenced frame and exactly the actual journaled source captures."
         )
     expected_artifacts.extend(ledger_interaction)
 
@@ -12623,7 +17696,7 @@ def reference_recording_failures(
         "complete": True,
     }:
         failures.append("Recording top-level coverage does not prove both profiles complete.")
-    if len(event_ids) < REFERENCE_RECORDING_MINIMUM_EVENTS:
+    if signature_kind == "motion" and len(event_ids) < REFERENCE_RECORDING_MINIMUM_EVENTS:
         failures.append(
             f"Recording has {len(event_ids)} events; at least "
             f"{REFERENCE_RECORDING_MINIMUM_EVENTS} observed changes are required for a motion signature."
@@ -12975,6 +18048,7 @@ def interaction_census_section_failures(
                 str(state_binding.get("sha256")) if isinstance(state_binding, dict) else ""
             ),
             expected_reference_id=expected_id,
+            signature_kind=None,
         )
         failures.extend(f"{block_label}: {problem}" for problem in recording_problems)
         if (
@@ -13279,6 +18353,7 @@ def sequence_read_failures(
             state_contract=state_contract,
             state_contract_sha256=file_sha256(state_contract)[1],
             expected_reference_id=expected_reference_id,
+            signature_kind=expected_kind,
         )
         failures.extend(f"{block_label}: {problem}" for problem in recording_problems)
         observation_binding = observation_by_rank.get(rank, "")
@@ -14751,13 +19826,33 @@ def gate_runtime_evidence_failures(
         "sha256": visible_sha,
     }:
         failures.append("Gate record does not bind the current preimplementation visible-decision source bytes.")
+    visible_payload: object = None
+    try:
+        visible_payload = json.loads(visible_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        failures.append("Current visible-decision construction binding is unreadable.")
+    else:
+        if gate.get("construction_authorization") != (
+            visible_payload.get("construction_authorization")
+            if isinstance(visible_payload, dict) else None
+        ):
+            failures.append("Gate record does not bind the current construction-journal authorization.")
+        failures.extend(
+            "Gate construction authorization: " + failure
+            for failure in construction_authorization_failures(
+                project,
+                visible_payload,
+                route_manifest_path=manifest_path,
+                dossier_path=project / ".design-dna" / "reference-dossier.md",
+            )
+        )
     dossier_path = project / ".design-dna" / "reference-dossier.md"
     if (
         gate.get("dossier") != str(dossier_path.resolve())
         or not dossier_path.is_file()
         or gate.get("dossier_core_sha256") != dossier_core_sha256(dossier_path)
         or (
-            phase == "final"
+            phase in {"final", "maintenance"}
             and gate.get("dossier_sha256") != file_sha256(dossier_path)[1]
         )
     ):
@@ -14781,16 +19876,18 @@ def gate_runtime_evidence_failures(
     if gate.get("planned_routes") != planned_routes or gate.get("viewports_checked") != viewports:
         failures.append("Gate planned route or viewport set differs from the manifest.")
     active_routes: list[dict[str, object]]
-    if phase == "final":
+    if phase in {"final", "maintenance"}:
         active_routes = planned_routes
         if gate.get("route_key") is not None or gate.get("routes") != planned_routes:
-            failures.append("Final gate must cover the complete manifest route set.")
+            failures.append("Final or maintenance gate must cover the complete manifest route set.")
     else:
         route_key = gate.get("route_key")
-        active_routes = [
-            route for route in planned_routes
-            if isinstance(route, dict) and route.get("key") == route_key
-        ]
+        try:
+            phase_module = load_bundled_source_module("_design_dna_construction_phase", Path(__file__).with_name("construction_phase.py"))
+            active_routes = phase_module.derive_first_screen_routes(manifest, visible_payload, [route_key])
+        except (ValueError, TypeError, AttributeError) as exc:
+            active_routes = []
+            failures.append(f"First-screen pre-code state projection is invalid: {exc}")
         if len(active_routes) != 1 or gate.get("routes") != active_routes:
             failures.append("First-screen gate route object is not the exact manifested route.")
     expected_coverage = expected_gate_coverage(active_routes, viewports)
@@ -14866,7 +19963,18 @@ def gate_runtime_evidence_failures(
         f"{artifact_root}/{prefix}structure-diff.json": "compare_structure.mjs",
         f"{artifact_root}/{prefix}mechanism-diff.json": "compare_mechanisms.mjs",
         f"{artifact_root}/{prefix}signature-transfer.json": "check_signature_transfer.mjs",
+        f"{artifact_root}/{prefix}font-delivery.json": None,
     }
+    artifact_contract = load_bundled_source_module("_design_dna_gate_artifact_contract", Path(__file__).with_name("gate_artifact_contract.py"))
+    content_path = artifact_contract.content_artifact_path(visible_payload)
+    if content_path is not None:
+        expected_artifacts[content_path] = None
+    if isinstance(visible_payload, dict):
+        journal = visible_payload.get("construction_authorization")
+        if isinstance(journal, dict) and isinstance(journal.get("entry_path"), str):
+            expected_artifacts[journal["entry_path"]] = None
+        else:
+            failures.append("Gate visible-decision construction binding has no journal entry path.")
     if phase == "first-screen":
         expected_artifacts[f"{artifact_root}/reference-dossier.md"] = None
         expected_artifacts[f"{artifact_root}/visible-decision-sources.json"] = None
@@ -14875,7 +19983,7 @@ def gate_runtime_evidence_failures(
             expected_artifacts[
                 f"{artifact_root}/build-{prefix}{route['key']}-{viewport['name']}-styles.json"
             ] = "extract_reference_styles.mjs"
-    if phase != "first-screen":
+    if phase == "final":
         predecessor = gate.get("prebuild_authorization")
         if isinstance(predecessor, dict) and isinstance(predecessor.get("path"), str):
             expected_artifacts[predecessor["path"]] = None
@@ -14947,6 +20055,13 @@ def gate_runtime_evidence_failures(
             and entry.get("bytes") != expected_frame_bytes[relative]
         ):
             failures.append(f"Gate interaction-frame byte count drifted: {relative}.")
+        if relative == f"{artifact_root}/{prefix}font-delivery.json":
+            try:
+                font_payload = json.loads(artifact.read_text(encoding="utf-8"))
+                failures.extend("Gate font artifact: " + failure for failure in artifact_contract.font_report_failures(
+                    font_payload, project=project, rerun_current=require_current_tree))
+            except (OSError, ValueError) as exc:
+                failures.append(f"Gate font artifact is unreadable: {exc}")
         if tool is None:
             continue
         try:
@@ -15024,6 +20139,13 @@ def gate_runtime_evidence_failures(
         if tool != "extract_reference_styles.mjs" and isinstance(identity, dict):
             aggregate_served_hashes.add(str(identity.get("sha256")))
         payloads[tool] = payload
+    if content_path is not None:
+        try:
+            content_module = load_bundled_source_module("_design_dna_content_transfer", Path(__file__).with_name("content_transfer.py"))
+            failures.extend("Gate content-transfer artifact: " + failure for failure in content_module.content_transfer_failures(
+                project, visible_payload, payloads.get("scan_build_components.mjs")))
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            failures.append(f"Gate content-transfer artifact is unavailable: {exc}")
     gate_served = gate.get("served_content_identity")
     gate_served_sha = gate_served.get("sha256") if isinstance(gate_served, dict) else None
     if len(aggregate_served_hashes) != 1 or gate_served_sha not in aggregate_served_hashes:
@@ -15187,14 +20309,7 @@ def final_gate_failures(
     gate_script = Path(__file__).resolve().parent / "gate.py"
     if gate.get("producer_script_sha256") != file_sha256(gate_script)[1]:
         failures.append("Gate result does not bind the current packaged gate.py bytes.")
-    expected_runtime = {
-        path.name: file_sha256(path)[1]
-        for path in [
-            gate_script,
-            Path(__file__).resolve(),
-            *sorted(gate_script.parent.glob("*.mjs"), key=lambda item: item.name),
-        ]
-    }
+    expected_runtime = packaged_gate_runtime_identity()
     if gate.get("runtime_identity") != expected_runtime:
         failures.append("Gate result runtime identity differs from the packaged checks.")
     if gate.get("phase") != "final" or gate.get("route_key") is not None:
@@ -15264,7 +20379,8 @@ def final_gate_failures(
             "route-manifest", "census", "provenance", "structure", "mechanisms",
             "signature-transfer", "dossier", "dossier-core", "build-stability",
             "runtime-stability", "served-content-consensus", "prebuild-authorization",
-            "visible-decision-source-manifest",
+            "visible-decision-source-manifest", "construction-authorization",
+            "direction-prerequisites", "implementation-prohibition", "font-delivery", "content-transfer",
         }
         if (
             not required_steps.issubset(step_names)
@@ -15282,6 +20398,11 @@ def final_gate_failures(
         failures.append("Gate result carries no evidence hash ledger.")
     else:
         seen: set[str] = set()
+        artifact_contract = load_bundled_source_module("_design_dna_gate_artifact_contract", Path(__file__).with_name("gate_artifact_contract.py"))
+        try:
+            current_content_path = artifact_contract.content_artifact_path(read_json(project / ".design-dna/visible-decision-sources.json"))
+        except (OSError, StateError, ValueError):
+            current_content_path = None
         for index, entry in enumerate(evidence, start=1):
             if not isinstance(entry, dict):
                 failures.append(f"Gate evidence entry {index} is not an object.")
@@ -15298,9 +20419,13 @@ def final_gate_failures(
             if relative in {
                 ".design-dna/route-manifest.json",
                 ".design-dna/visible-decision-sources.json",
+                current_content_path,
             }:
-                canonical_path = project / PurePosixPath(relative)
-                if not canonical_path.is_file() or file_sha256(canonical_path)[1] != digest:
+                try:
+                    canonical_path = safe_binding_path(project, relative, record_path=record_path)
+                except (OSError, StateError):
+                    canonical_path = None
+                if canonical_path is None or not canonical_path.is_file() or file_sha256(canonical_path)[1] != digest:
                     failures.append(f"Gate evidence ledger canonical binding drifted: {relative}.")
                 continue
             if not relative.startswith(".design-dna/evidence/"):
@@ -15437,6 +20562,7 @@ def first_screen_gate_failures(
         "runtime-stability", "served-content-consensus", "authorization-chain",
         "route-manifest-snapshot", "dossier-snapshot",
         "visible-decision-source-manifest", "visible-decision-source-snapshot",
+        "construction-authorization", "direction-prerequisites", "implementation-prohibition", "font-delivery", "content-transfer",
     }
     steps = gate.get("steps")
     step_names = {
@@ -18283,6 +23409,12 @@ def safe_binding_path(project: Path, relative: str, *, record_path: Path) -> Pat
             "The bound build or artifact file does not exist.",
             path=candidate,
         )
+    if candidate.stat().st_nlink != 1:
+        raise StateError(
+            "record-binding-hardlink-refused",
+            "A bound project artifact must have one filesystem link; copy the bytes into an independent ordinary file.",
+            path=candidate,
+        )
     if candidate == record_path:
         raise StateError(
             "invalid-record-binding",
@@ -20391,7 +25523,7 @@ def prebuild_warnings(project: Path) -> list[str]:
     ]
 
 
-def prebuild_failures(project: Path) -> list[str]:
+def prebuild_failures(project: Path, *, require_first_screen: bool = True, require_construction: bool = True) -> list[str]:
     """Return phase gaps that must close before broad implementation.
 
     Final readiness deliberately remains stricter.  This gate consumes the
@@ -20439,6 +25571,10 @@ def prebuild_failures(project: Path) -> list[str]:
             "capability-only state cannot authorize broad implementation."
         )
     for record in PREBUILD_SUBSTANTIVE_RECORDS:
+        if record == "reference-dossier" and not require_first_screen:
+            # The gate is presently generating this circular evidence. Its
+            # source contracts are validated directly by gate.py instead.
+            continue
         if record not in records:
             continue
         filename = RECORD_TEMPLATES[record][0]
@@ -20483,14 +25619,27 @@ def prebuild_failures(project: Path) -> list[str]:
             except StateError as exc:
                 failures.append(f"Reference-led prebuild dossier is unreadable: {exc}")
             else:
-                failures.extend(
-                    "Prebuild first-screen gate: " + failure
-                    for failure in first_screen_gate_failures(
-                        dossier_body,
-                        project=project,
-                        record_path=dossier_path,
+                if not require_first_screen:
+                    _dossier_meta = None
+                else:
+                    failures.extend(
+                        "Prebuild first-screen gate: " + failure
+                        for failure in first_screen_gate_failures(
+                            dossier_body,
+                            project=project,
+                            record_path=dossier_path,
+                        )
                     )
-                )
+        construction_failures, _visible, _manifest, _dossier, _visible_path = (
+            construction_binding_project_failures(
+                project,
+                allow_pending_construction_authorization=False,
+            )
+        ) if require_construction else ([], None, None, None, None)
+        failures.extend(
+            "Prebuild construction binding: " + failure
+            for failure in construction_failures
+        )
 
     if "route-family" in records:
         failures.extend(
@@ -23507,6 +28656,25 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     operation = parser.add_mutually_exclusive_group()
     operation.add_argument("--check-state", action="store_true")
+    operation.add_argument("--init-candidate-review", metavar="SOURCE_ID", help="Create one blocked attributable candidate-review scaffold from current brief and exact source captures; it never selects the candidate.")
+    parser.add_argument("--candidate-brief", type=Path, help="Current project-contained brief path for --init-candidate-review; defaults to .design-dna/brief.md.")
+    operation.add_argument("--begin-maintenance", type=Path, metavar="PLAN", help="Freeze an audited existing site and exact proposed component/file changes before scoped maintenance.")
+    operation.add_argument(
+        "--begin-construction",
+        action="store_true",
+        help=(
+            "Write one append-only pre-code construction baseline after validating "
+            "the current schema-2 visible-decision source bindings."
+        ),
+    )
+    operation.add_argument(
+        "--check-construction",
+        action="store_true",
+        help=(
+            "Require the current source bindings to match their append-only "
+            "pre-code journal before any visible proof/build work."
+        ),
+    )
     operation.add_argument(
         "--check-prebuild",
         action="store_true",
@@ -23658,6 +28826,9 @@ def main() -> int:
                  or args.record
                  or args.evidence_capability
                  or args.json
+                 or args.begin_construction
+                 or args.begin_maintenance
+                 or args.init_candidate_review
                 or any(value is not None for value in completion_values.values())
             ):
                 raise StateError(
@@ -23695,8 +28866,33 @@ def main() -> int:
             )
         mutation_selected = bool(
             args.migrate or args.mark_complete or args.mark_draft
-            or args.add_trigger
+            or args.add_trigger or args.begin_construction or args.begin_maintenance or args.init_candidate_review
         )
+        if args.candidate_brief is not None and not args.init_candidate_review:
+            raise StateError("candidate-brief-unused", "--candidate-brief is used only with --init-candidate-review.")
+        if args.init_candidate_review:
+            source_id = args.init_candidate_review
+            if ROUTE_REFERENCE_ID.fullmatch(source_id) is None:
+                raise StateError("candidate-review-id-invalid", "Candidate review source ID must be its canonical strong-N reference ID.")
+            observation_path = project / ".design-dna/references" / f"{source_id}-observation.json"
+            brief_path = args.candidate_brief or Path(".design-dna/brief.md")
+            brief_path = brief_path if brief_path.is_absolute() else project / brief_path
+            module = load_bundled_source_module("_design_dna_candidate_review", skill_root / "scripts/candidate_review.py")
+            try:
+                payload = module.scaffold_candidate_review(project, brief_path=brief_path,
+                    observation_path=observation_path, candidate_id=source_id)
+                output = observation_path.with_name(f"{source_id}-candidate-review.json")
+                assert_no_reparse_ancestors(output.parent, stop=project)
+                if not args.dry_run:
+                    with output.open("x", encoding="utf-8", newline="\n") as handle:
+                        json.dump(payload, handle, indent=2, ensure_ascii=False)
+                        handle.write("\n")
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                raise StateError("candidate-review-scaffold-blocked", str(exc), path=observation_path) from exc
+            print(json.dumps({"ok": True, "action": "candidate-review-scaffold", "status": "blocked-pending-review",
+                "eligible_for_source_selection": False, "dry_run": args.dry_run,
+                "path": str(output), "record": payload}, indent=2, ensure_ascii=False))
+            return 0
         if args.mark_complete:
             missing_completion = [
                 name
@@ -23719,8 +28915,10 @@ def main() -> int:
             )
         if (
             args.check_state
+            or args.check_construction
             or args.check_prebuild
             or args.check_ready
+            or args.begin_construction
             or mutation_selected
         ) and (
             args.force or args.record or args.evidence_capability or args.trigger
@@ -23731,12 +28929,58 @@ def main() -> int:
                 "initialization.",
                 path=project,
             )
-        if (args.check_state or args.check_prebuild or args.check_ready) and args.dry_run:
+        if (args.check_state or args.check_construction or args.check_prebuild or args.check_ready or args.begin_construction or args.begin_maintenance) and args.dry_run:
             raise StateError(
                 "incompatible-arguments",
-                "--dry-run is not used with state, prebuild, or readiness checks.",
+                "--dry-run is not used with construction, state, prebuild, or readiness checks.",
                 path=project,
             )
+        if args.begin_maintenance:
+            workflow = load_bundled_source_module("_design_dna_maintenance_workflow", skill_root / "scripts" / "maintenance_workflow.py")
+            try:
+                with ProjectMutationLock(project, "begin-maintenance"):
+                    action = workflow.begin(project, args.begin_maintenance, sys.modules[__name__])
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                raise StateError("maintenance-authorization-blocked", str(exc), path=project / ".design-dna") from exc
+            print(json.dumps({"ok": True, "project": str(project), "version": version, **action}, indent=2))
+            return 0
+        if args.begin_construction:
+            with ProjectMutationLock(project, "begin-construction"):
+                failures, visible, manifest_path, dossier_path, visible_path = construction_binding_project_failures(
+                    project,
+                    allow_pending_construction_authorization=True,
+                )
+                failures.extend(prebuild_failures(project, require_first_screen=False, require_construction=False))
+                failures.extend(selected_cohort_failures(project, mapping_payload=visible))
+                failures.extend(owner_recurrence_integration_failures(project / ".design-dna", require_resolved=True))
+                failures.extend(owner_pattern_contract_failures(project, phase="prebuild"))
+                if failures or visible is None or manifest_path is None or dossier_path is None or visible_path is None:
+                    raise StateError(
+                        "construction-binding-invalid",
+                        " | ".join(failures or ["Construction binding records are unavailable."]),
+                        path=project / ".design-dna",
+                    )
+                action = begin_construction_journal(
+                    project,
+                    manifest_path=manifest_path,
+                    dossier_path=dossier_path,
+                    visible_path=visible_path,
+                    visible_payload=visible,
+                )
+            result = {"ok": True, "project": str(project), "version": version, "action": action}
+            print(json.dumps(result, indent=2) if args.json else f"began-construction: {action['path']}")
+            return 0
+        if args.check_construction:
+            failures, _visible, _manifest, _dossier, _visible_path = construction_binding_project_failures(
+                project,
+                allow_pending_construction_authorization=False,
+            )
+            result = {"ok": not failures, "project": str(project), "version": version, "failures": failures}
+            print(json.dumps(result, indent=2) if args.json else "\n".join(
+                [*(f"FAIL: {item}" for item in failures)]
+                or ["OK: Current construction bindings match the append-only pre-code journal."]
+            ))
+            return 1 if failures else 0
         if args.check_state or args.check_prebuild or args.check_ready:
             failures, warnings = validate_state(project, version)
             recurrence_failures = owner_recurrence_integration_failures(

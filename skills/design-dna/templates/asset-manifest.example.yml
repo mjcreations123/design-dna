@@ -82,6 +82,16 @@ assets:
     #   measured_transfer: "Replace with the measured subject, medium, crop, motion, responsive, and state relationship retained here."
     #   evidence_path: ".design-dna/references/strong-1-frames/replace-with-bound-evidence.png"
     #   evidence_sha256: "replace-with-exact-evidence-sha256"
+    # A rendered visual role must point to this exact output rather than merely
+    # reuse this asset ID. direct-copy uses the source hash/bytes unchanged;
+    # any derivative names one immutable source-to-output transformation record.
+    # runtime_output:
+    #   output_path: "/assets/replace-with-served-output.webp"
+    #   output_sha256: "replace-with-exact-served-output-sha256"
+    #   output_bytes: 0
+    #   derivation: "direct-copy"
+    #   transformation_record: ""
+    #   transformation_record_sha256: ""
     delivery:
       source_dimensions: "Replace with verified intrinsic dimensions."
       output_dimensions:

@@ -23,12 +23,14 @@ license to reproduce another brand's work.
 - [Selected synthesis](#selected-synthesis)
 - [Route manifest](#route-manifest)
 - [Preimplementation visible decisions](#preimplementation-visible-decisions)
+- [Construction authorization](#construction-authorization)
 - [Sequence reads](#sequence-reads)
 - [Signature transfer](#signature-transfer)
 - [Component sources](#component-sources)
 
 Time, tokens, cost, convenience, or a demo/small/quick/hurry label may reduce
-delivered scope only. They cannot reduce any reference count, qualification,
+delivered scope only. Reference count follows documented coverage and fit,
+with multiple selected sources; it never substitutes for qualification,
 traversal, 90-second/15-fps recording floor, wide/narrow evidence, proof, or
 gate below. An unavailable required capability blocks the affected candidate;
 do not hand-write a generated-record substitute or justify an existing build
@@ -69,6 +71,8 @@ signature without invented motion.
 
 ## Research frame
 
+- Current brief artifact: __REPLACE_WITH_CURRENT_PROJECT_BRIEF_PATH__ plus sha256:__REPLACE_WITH_CURRENT_BRIEF_SHA256__
+- Reference-count and coverage rationale: qualified=N; selected=M; discovery_sources=S; reason=__REPLACE_WITH_PROJECT_ROUTE_COMPONENT_BEHAVIOR_COVERAGE_REASON__
 - Reference-selection brief (audience and arrival; visitor tasks; truthful
   content model, routes, and states; brand; operating reality; material/media;
   accessibility/performance/maintenance; rights/access):
@@ -83,9 +87,9 @@ signature without invented motion.
 
 ## Candidate comparison
 
-Record at least eight serious finalists after opening and studying each
-legitimately accessible experience at wide and narrow widths. At least two
-finalists must be concretely rejected. Raw gallery listings are not candidates.
+Record enough serious finalists to make a meaningful comparison after studying
+each legitimately accessible experience at wide and narrow widths. Include a
+concretely rejected alternative. Raw gallery listings are not candidates.
 A selected reference must be both excellent and an exact fit for the selection
 brief; an award or curated listing establishes eligibility, not suitability. A
 weak or mismatched finalist remains rejected even if that leaves a floor
@@ -122,7 +126,7 @@ evidence, or real browser verification.
 
 ## Strong references
 
-Record at least six references drawn from at least three active sources, with
+Record multiple qualified references drawn from multiple active sources, with
 no single source supplying more than half of the rows. The floor exists so
 that no one site becomes the template; it is not a target. Add rows for every
 reference that earns its place. Number ranks 1 through N without gaps.
@@ -131,10 +135,6 @@ reference that earns its place. Number ranks 1 through N without gaps.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
 | 2 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
-| 3 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
-| 4 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
-| 5 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
-| 6 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  | motion / static; path plus sha256:<hex> |  | motion: / static: |  |  |  |
 
 The rank reflects fit for this exact brief, not a universal quality score.
 Every row's `Signature` cell answers one question first: if a stranger were
@@ -209,6 +209,9 @@ required.
 
 ## Negative counterexamples
 
+Record at least three project-specific negative counterexamples. These remain
+required alongside the coverage-driven positive-reference count.
+
 | Reference title or visible entry | Public URL or gallery-entry URL | Discovery source and accolade | Retrieval date | Access status | Capture path and SHA-256 | Observed mismatch or weak relationship | What this project must avoid |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  | public-live / public-gallery-entry / authorized-account |  |  |  |
@@ -221,7 +224,7 @@ style bans.
 
 ## Selected synthesis
 
-- Selected positive ranks (at least four distinct, from at least two sources):
+- Selected positive ranks (multiple distinct, from at least two sources):
 - Project-specific organizing synthesis:
 - Dominant visual grammar by route (one selected rank per route):
 - Interaction or motion copied and where it is rendered, or static posture with evidence:
@@ -280,21 +283,53 @@ hand-picked URL subset.
 
 - Visible decision source manifest: .design-dna/visible-decision-sources.json plus sha256:<hex>
 
-Create this manifest before broad implementation and bind the exact proof
-build ID, immutable route-manifest ID/hash, current selected observation
-hashes, and every planned visible decision. Its `planned_decision_ids` must
-equal its decision rows. Cover `layout`, `typeface`, `color`, `control`,
-`transition`, `content-pattern`, and `effect`; every row binds exact routes,
-states, a selected source, and immutable evidence. Set all three escape flags
-(`placeholders_allowed`, `generic_scaffold_allowed`, and
-`fallback_design_allowed`) to false and keep `unsourced_decisions` empty. A
+Create schema-2 construction binding before **any visible source file**, not
+only before broad implementation. Bind the proof build ID, immutable route
+manifest, selected observation hashes, and each decision's direct component
+root. Every binding cell names exactly one route, state, and `wide` or
+`narrow` viewport; its source state is hash-bound and its source evidence is a
+canonical observer frame. The component root uses the matching direct
+`data-design-dna-decision-id`; a wrapper cannot pass its binding down to
+independently painted text, media, controls, pseudo-elements, navigation, or
+footer descendants.
+
+Cover `layout`, `typeface`, `color`, `control`, `transition`,
+`content-pattern`, and `effect`; bind exact computed source style values, asset
+role/crop/motion where applicable, and the selected source's dominant behavior
+carrier where applicable. `source_contribution_scope` has one signature-level
+carrier and deletion test per selected source. A color, radius, spacing value,
+or isolated control is not a contribution. Set every escape flag false,
+including `wrapper_inheritance_allowed`; keep `unsourced_decisions` empty. A
 generic scaffold, fallback styling, placeholder copy, or visible decision
-added after the proof without a new sourced manifest invalidates the proof.
-The evidence path/hash must be a generated PNG in the cited current observer's
-canonical `frames` inventory, such as a capture or a before/after/settled state
-or interaction frame. The observer JSON envelope, a local note, a hand-written
-screenshot manifest, or another file merely placed under `.design-dna/` is not
-source evidence.
+added after the binding invalidates the proof.
+
+The evidence path/hash must be a generated PNG in the cited observer's
+canonical `frames` inventory. The observer envelope, a local note, a
+hand-written screenshot manifest, DOM snapshot, or another file merely placed
+under `.design-dna/` is not source evidence.
+
+## Construction authorization
+
+- Pre-code journal: .design-dna/evidence/construction-journal/000001-<entry-id>.json plus sha256:<hex>
+- Construction binding result: `init_project_state.py --check-construction` verdict
+
+After the schema-2 manifest is complete but before a visible implementation is
+created, run:
+
+```text
+python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/init_project_state.py" \
+  --project "<PROJECT_ROOT>" --begin-construction
+```
+
+The generated append-only journal hashes the source plan and an implementation
+tree baseline. Existing visible source produces a legacy-audit blocker; it
+cannot be renamed fresh by writing research after it exists. Run
+`--check-construction` before every proof/resumption. If the dossier, selected
+source, route/state mapping, observer frame, style record, asset role, or
+decision binding changes, the old authorization is invalid. Reopen the source
+plan and obtain a new source-faithful first-screen proof. A proof slice is
+internal, isolated, and non-presentable; it must not quietly become the
+requested website.
 
 ## Sequence reads
 
@@ -316,11 +351,19 @@ relationship dominates; do not fabricate events or motion.
 Create the source-state contract from
 `templates/reference-state-contract-template.json`, retaining the primary
 `rest` entry and adding every relevant state with an exact URL and trigger.
+For a timed or unsolicited source appearance, use the schema-2 source-only
+`ambient` trigger with one exact appearing-element selector, `value: null`,
+and an observed bounded `wait_ms` (100-60000). The observer must retain
+generated `before` / `appearance` / `settled` frames and fail if the element
+does not visibly appear. This does not require a build popup: a route manifest
+never declares `ambient`; a chosen transfer maps it through an explicit
+source-bound system/programmatic driver.
 Produce the schema-4 recording with the packaged recorder. It records at least
 90 seconds at 15 fps separately at wide and narrow. If either profile remains
-incomplete, rerun it with a greater duration until every recursively discovered
-same-origin page, declared state, native or transform scroll surface, and
-discovered hover target is complete; it fails closed on any remainder. It writes an external artifact ledger binding the
+incomplete at the fixed study bound, retain the typed partial artifact and
+diagnose its missing coverage before another attempt. Every recursively
+discovered same-origin page, declared state, native or transform scroll surface,
+and discovered hover target must be complete before selection. It writes an external artifact ledger binding the
 recording JSON, both videos, both cursor paths, both difference signals, every
 frame, every event sheet, and both event indexes:
 

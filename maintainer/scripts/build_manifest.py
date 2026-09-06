@@ -95,6 +95,7 @@ IDENTITY_GROUPS: dict[str, tuple[str, ...]] = {
         "maintainer/scripts",
         "maintainer/requirements-dev.txt",
         "maintainer/requirements-dev.lock",
+        "maintainer/dependencies",
         "maintainer/package.json",
         "maintainer/package-lock.json",
     ),

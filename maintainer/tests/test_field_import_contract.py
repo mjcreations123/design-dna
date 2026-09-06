@@ -351,14 +351,14 @@ class PublicCopyContractTests(unittest.TestCase):
 
 
 class ReferenceEvidenceContractTests(unittest.TestCase):
-    """Keep the 6.1.0 reference-evidence contract durable.
+    """Keep evidence breadth and source authority durable without a fixed quota.
 
     The reference step is research only when it is provable: wide/narrow
     captured rows, a floor tied to source spread instead of a quota, exact
     brief-fit comparison, and a source-bound coherent synthesis.
     """
 
-    def test_reference_count_is_a_floor_with_its_reason(self) -> None:
+    def test_reference_count_follows_coverage_with_multiple_sources_and_counterevidence(self) -> None:
         for relative in (
             "SKILL.md",
             "references/quality/reference-led-direction.md",
@@ -368,15 +368,18 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
         ):
             text = " ".join(read(relative).casefold().split())
             with self.subTest(file=relative):
-                self.assertIn("at least six", text)
+                self.assertIn("multiple", text)
+                self.assertRegex(text, r"coverage|brief-fit|brief fit")
                 self.assertIn("at least three", text)
-                self.assertNotIn("exactly ten", text)
+                self.assertNotRegex(text, r"at least (?:six|eight|ten) (?:qualified |strong |positive |distinct )?references")
+                self.assertNotRegex(text, r"exactly (?:six|eight|ten) (?:qualified |strong |positive |distinct )?references")
                 self.assertNotIn("five through ten", text)
         led = " ".join(
             read("references/quality/reference-led-direction.md").casefold().split()
         )
         self.assertIn("no single site becomes the template", led)
-        self.assertIn("not a target", led)
+        self.assertIn("coverage", led)
+        self.assertIn("rationale", led)
 
     def test_every_reference_row_binds_a_capture(self) -> None:
         template = read("templates/reference-dossier-template.md")
@@ -488,7 +491,8 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
     def test_synthesis_must_spread_and_remain_source_bound(self) -> None:
         template = read("templates/reference-dossier-template.md")
         self.assertIn("Ledger check", template)
-        self.assertIn("at least four distinct", template)
+        self.assertIn("multiple", template)
+        self.assertIn("Reference-count and coverage rationale", template)
         self.assertIn("Dominant visual grammar by route", template)
         self.assertIn("Execution improvements only", template)
         self.assertNotIn("Elevation beyond the references", template)

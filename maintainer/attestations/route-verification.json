@@ -2,7 +2,7 @@
   "schema_version": 3,
   "record_type": "design-dna-route-verification",
   "status": "passed",
-  "verified_at": "2026-09-04T11:18:23.666893Z",
+  "verified_at": "2026-09-06T11:36:42.926201Z",
   "canonical": "skills/design-dna",
   "scan_scope": {
     "basis": "explicit-filesystem-root-scan",
@@ -25,16 +25,16 @@
     "~/.agents/skills/design-dna",
     "~/.claude/skills/design-dna"
   ],
-  "canonical_sha256": "a3f03f4b77750e45792308506b376c1d546206e5334c18244f330609a907d122",
+  "canonical_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
   "routes": [
     {
       "path": "~/.agents/skills/design-dna",
-      "content_sha256": "a3f03f4b77750e45792308506b376c1d546206e5334c18244f330609a907d122",
+      "content_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
       "matches_canonical": true
     },
     {
       "path": "~/.claude/skills/design-dna",
-      "content_sha256": "a3f03f4b77750e45792308506b376c1d546206e5334c18244f330609a907d122",
+      "content_sha256": "5fee085c44345cdcf74df52a9fa9d3360069d848a451a2be3621850a3658f79a",
       "matches_canonical": true
     }
   ]

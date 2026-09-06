@@ -63,6 +63,17 @@ against the actual project:
 The command runs each healthy installed route's `browser_preflight.mjs` in the
 current operator process and launches only a blank local browser. It is a
 prerequisite check, not Codex/Claude activation proof or finished site QA.
+The launch probe also starts/stops timestamped screencast frames; a runtime
+that can open a page but lacks the recording API is rejected. Actual recording
+is restricted to the audited Playwright `1.61.1` bundle because encoder
+byte-progress uses that version's artifact interface. An older or newer
+untested project version is not automatically upgraded or treated as equivalent.
+The source recorder also requires an existing full FFmpeg executable on PATH
+or its explicit `--ffmpeg` path. Verify it with `ffmpeg -version`; the recorder
+performs its own bounded encoder preflight before opening a source. Use a
+trusted operating-system package when provisioning this dependency. Browser
+sync does not silently install it. The CI matrix provisions it if absent and
+verifies it before the mandatory real recording tests.
 
 The resolver checks an explicit absolute
 `DESIGN_DNA_PLAYWRIGHT_MODULE_DIR` first (and fails closed if it is invalid),
@@ -76,8 +87,34 @@ closure from Windows PowerShell without modifying the project:
 npm.cmd --prefix maintainer ci --ignore-scripts --no-audit --no-fund
 npm.cmd --prefix maintainer exec -- playwright install chromium
 $env:DESIGN_DNA_PLAYWRIGHT_MODULE_DIR = (Resolve-Path ".\maintainer\node_modules").Path
+$env:DESIGN_DNA_BABEL_PARSER_MODULE_DIR = $env:DESIGN_DNA_PLAYWRIGHT_MODULE_DIR
 .venv\Scripts\python.exe -B maintainer\scripts\manage_install.py doctor --host all --browser-project "C:\absolute\project"
 ```
+
+Those `$env:` assignments affect only that PowerShell process and its children.
+For an intentionally shared Windows installation, save the already verified
+bundle path in the current user's settings as well. Check existing values
+before changing them; do not overwrite another configured bundle silently:
+
+```powershell
+$designDnaModules = (Resolve-Path ".\maintainer\node_modules").Path
+$designDnaNames = @('DESIGN_DNA_PLAYWRIGHT_MODULE_DIR', 'DESIGN_DNA_BABEL_PARSER_MODULE_DIR')
+foreach ($designDnaName in $designDnaNames) {
+    $designDnaExisting = [Environment]::GetEnvironmentVariable($designDnaName, 'User')
+    if ($designDnaExisting -and $designDnaExisting -ne $designDnaModules) {
+        throw "Review the existing user setting before changing $designDnaName"
+    }
+}
+foreach ($designDnaName in $designDnaNames) {
+    [Environment]::SetEnvironmentVariable($designDnaName, $designDnaModules, 'User')
+}
+```
+
+Already-running hosts retain their inherited environment. Relaunch them from
+an environment containing the updated settings before testing a fresh task.
+Do not call saved settings proof of host activation. If the source checkout is
+moved or its pinned dependencies change, update and verify the shared bundle
+explicitly; an invalid configured path continues to fail closed.
 
 An explicit `--browser-executable` or `DESIGN_DNA_BROWSER_EXECUTABLE` selects a
 browser only after a Playwright module has resolved; it cannot bypass that
@@ -86,6 +123,20 @@ the installed preflight directly from the project root:
 
 ```text
 node "<DESIGN_DNA_SKILL_ROOT>/scripts/browser_preflight.mjs" --project-root "ABSOLUTE_PROJECT" --launch
+```
+
+Construction and proof-slice source checks additionally use the pinned
+`@babel/parser` from the same dependency bundle. The package pins a version
+compatible with the advertised Node.js 20 minimum. The parser resolver accepts
+the explicit parser directory, the shared Playwright module directory, or an
+exact project/source-checkout/installed-skill dependency directory. An invalid
+explicit parser path is an error. It never silently uses a global parser or
+falls back to pattern matching when parsing is unavailable.
+
+Verify it from the installed route before a construction/proof check:
+
+```text
+node "<DESIGN_DNA_SKILL_ROOT>/scripts/babel_parser_resolver.mjs" --check
 ```
 
 If a process or machine interruption leaves a hidden `.stage-*` or `.pending-*`

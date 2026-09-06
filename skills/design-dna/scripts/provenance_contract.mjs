@@ -199,6 +199,15 @@ export function resolveMappedObservation(manifest, route, expectedProducerSha256
       }
     }
   }
+  for (const state of route.states) {
+    const sourceState = states?.wide?.[state.mapped_reference_state_id];
+    if (sourceState?.trigger?.type !== "ambient") continue;
+    const buildTrigger = state.trigger || {};
+    if (state.kind !== "system" || buildTrigger.type !== "programmatic" ||
+        !/^\[data-design-dna-state-driver(?:[=\]])/.test(buildTrigger.target || "")) {
+      throw new Error(`route ${route.key} state ${state.id} maps source-only ambient state ${state.mapped_reference_state_id}; use an explicit system/programmatic [data-design-dna-state-driver] mapping or omit that source state`);
+    }
+  }
   return {
     rank: route.mapped_reference_rank,
     id: route.mapped_reference_id,
@@ -210,7 +219,7 @@ export function resolveMappedObservation(manifest, route, expectedProducerSha256
   };
 }
 
-export function bindSuppliedObservations(manifest, suppliedFiles, expectedProducerSha256) {
+export function bindSuppliedObservations(manifest, suppliedFiles, expectedProducerSha256, options = {}) {
   const supplied = new Map(suppliedFiles.map((file) => [path.resolve(file), path.resolve(file)]));
   const mapped = new Map();
   for (const route of manifest.routes) {
@@ -222,6 +231,6 @@ export function bindSuppliedObservations(manifest, suppliedFiles, expectedProduc
   }
   const required = new Set([...mapped.values()].map((binding) => binding.file));
   const extras = [...supplied.keys()].filter((file) => !required.has(file));
-  if (extras.length) throw new Error(`unmapped observation input(s) were supplied: ${extras.map((file) => path.basename(file)).join(", ")}`);
+  if (extras.length && options.allowExtras !== true) throw new Error(`unmapped observation input(s) were supplied: ${extras.map((file) => path.basename(file)).join(", ")}`);
   return mapped;
 }

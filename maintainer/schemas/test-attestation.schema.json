@@ -14,7 +14,8 @@
     "inputs",
     "result",
     "output",
-    "skip_waiver"
+    "skip_waiver",
+    "test_applicability"
   ],
   "properties": {
     "schema_version": {"const": 3},
@@ -130,6 +131,21 @@
         }
       }
     },
+    "test_applicability": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["schema_version", "policy_sha256", "platform", "discovered_tests", "selected_tests", "executed_tests", "not_applicable_test_ids", "executed_native_test_ids"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "policy_sha256": {"$ref": "#/$defs/sha256"},
+        "platform": {"enum": ["Windows", "Linux", "Darwin"]},
+        "discovered_tests": {"type": "integer", "minimum": 1},
+        "selected_tests": {"type": "integer", "minimum": 1},
+        "executed_tests": {"type": "integer", "minimum": 1},
+        "not_applicable_test_ids": {"$ref": "#/$defs/native_test_ids"},
+        "executed_native_test_ids": {"$ref": "#/$defs/native_test_ids"}
+      }
+    },
     "skip_waiver": {
       "oneOf": [
         {"type": "null"},
@@ -195,7 +211,22 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {"properties": {"result": {"properties": {"status": {"const": "passed"}}}}},
+      "then": {"properties": {"test_applicability": {"type": "object"}}}
+    }
+  ],
   "$defs": {
+    "native_test_ids": {
+      "type": "array", "maxItems": 4, "uniqueItems": true,
+      "items": {"type": "string", "enum": [
+        "test_maintainer_tools.EvalRunnerV3Tests.test_windows_assignment_failure_never_releases_driver",
+        "test_maintainer_tools.EvalRunnerV3Tests.test_windows_job_termination_fallback_is_measured_and_verified",
+        "test_maintainer_tools.EvalRunnerV3Tests.test_windows_job_termination_is_verified_without_taskkill",
+        "test_maintainer_tools.EvalRunnerV3Tests.test_windows_unverified_tree_termination_fails_with_exact_evidence"
+      ]}
+    },
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"

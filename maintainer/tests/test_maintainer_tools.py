@@ -14,6 +14,7 @@ import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+from directory_link_fixtures import make_directory_link, remove_directory_link
 
 
 PLUGIN = Path(__file__).resolve().parents[2]
@@ -46,20 +47,6 @@ def run_script(
         text=True, encoding="utf-8", capture_output=True, env=environment,
         timeout=timeout,
     )
-
-
-def make_directory_link(link: Path, target: Path) -> bool:
-    try:
-        os.symlink(target, link, target_is_directory=True)
-        return True
-    except (OSError, NotImplementedError):
-        if os.name != "nt":
-            return False
-        completed = subprocess.run(
-            ["cmd.exe", "/c", "mklink", "/J", str(link), str(target)],
-            text=True, capture_output=True,
-        )
-        return completed.returncode == 0
 
 
 def minimal_skill_text(text: str = "canonical") -> str:
@@ -1024,8 +1011,7 @@ class SyncTests(unittest.TestCase):
             outside.mkdir()
             (outside / "secret.txt").write_text("secret", encoding="utf-8")
             link = source / "escape"
-            if not make_directory_link(link, outside):
-                self.skipTest("directory symlink/junction unavailable")
+            make_directory_link(link, outside)
             try:
                 result = run_script(
                     "sync_skill.py", "--source", str(source), "--target", str(discovery / "design-dna"),
@@ -1035,7 +1021,7 @@ class SyncTests(unittest.TestCase):
                 self.assertFalse((discovery / "design-dna").exists())
             finally:
                 if link.exists():
-                    os.rmdir(link)
+                    remove_directory_link(link)
 
 
 @unittest.skipUnless(
@@ -2704,9 +2690,8 @@ class EvalRunnerV3Tests(unittest.TestCase):
             outside = root / "outside"
             outside.mkdir()
             probe = root / "probe-link"
-            if not make_directory_link(probe, outside):
-                self.skipTest("directory links/junctions are unavailable")
-            os.rmdir(probe)
+            make_directory_link(probe, outside)
+            remove_directory_link(probe)
 
             fixture = write_eval_suite(root, suite="unsafe-workspace")
             if os.name == "nt":
@@ -2744,7 +2729,7 @@ class EvalRunnerV3Tests(unittest.TestCase):
             workspace_path = Path(str(run["workspace"]))
             link = workspace_path / "escape"
             if is_reparse(link):
-                os.rmdir(link)
+                remove_directory_link(link)
             shutil.rmtree(workspace_path.parent, ignore_errors=False)
 
     def test_post_run_staged_skill_mutation_fails_parity(self) -> None:

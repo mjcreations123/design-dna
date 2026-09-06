@@ -198,10 +198,13 @@ from jsonschema import Draft202012Validator, FormatChecker
 try:
     from packaging.markers import default_environment
     from packaging.requirements import InvalidRequirement, Requirement
+    from packaging.specifiers import InvalidSpecifier, SpecifierSet
 except ImportError as exc:  # pragma: no cover - exercised without dev dependencies
     default_environment = None  # type: ignore[assignment]
     InvalidRequirement = ValueError  # type: ignore[assignment,misc]
     Requirement = None  # type: ignore[assignment,misc]
+    InvalidSpecifier = ValueError  # type: ignore[assignment,misc]
+    SpecifierSet = None  # type: ignore[assignment,misc]
     PACKAGING_IMPORT_ERROR: str | None = str(exc)
 else:
     PACKAGING_IMPORT_ERROR = None
@@ -220,6 +223,8 @@ from common import (
     reject_compiled_python_residue,
     strict_format_checker,
 )
+from test_platform_applicability import extract_report, validate_test_applicability
+from suite_process import SuiteRunUnavailable, run_spooled_suite
 
 
 RELEASE_TEST_RUNNER = "maintainer/scripts/run_release_tests.py"
@@ -257,6 +262,8 @@ TEST_EXECUTION_INPUT_MANIFEST = (
     # Test-environment declarations and package-manager configuration.
     ("python_requirements", "maintainer/requirements-dev.txt", "file"),
     ("python_requirements_lock", "maintainer/requirements-dev.lock", "file"),
+    ("python_release_metadata", "maintainer/dependencies", "directory"),
+    ("python_release_metadata_file", "maintainer/dependencies/python-release-metadata.json", "file"),
     ("node_package_manifest", "maintainer/package.json", "file"),
     ("node_package_lock", "maintainer/package-lock.json", "file"),
     # Host package entry points are directly asserted by release tests.
@@ -351,7 +358,7 @@ PYTHON_EXECUTABLE_TOKEN = "python-current-environment"
 # The full suite launches real browsers and interrupted-filesystem lifecycle
 # subprocesses. Keep a hard ceiling, but allow enough time for supported slower
 # Windows and synchronized-folder environments to complete deterministically.
-TEST_SUITE_TIMEOUT_SECONDS = 3600
+TEST_SUITE_TIMEOUT_SECONDS = 20700
 
 
 def require_authoritative_isolation() -> None:
@@ -552,6 +559,24 @@ def pinned_dependencies(plugin_root: Path) -> list[dict[str, str]]:
             raise ToolFailure(
                 "test-attestation-dependency-mismatch",
                 f"{display_name} {installed} != pinned {pinned}.",
+                requirements,
+            )
+        requires_python = importlib.metadata.metadata(display_name).get("Requires-Python")
+        try:
+            if not isinstance(requires_python, str) or not requires_python.strip():
+                raise InvalidSpecifier("missing Requires-Python")
+            supported = SpecifierSet(requires_python)
+        except InvalidSpecifier as exc:
+            raise ToolFailure(
+                "test-attestation-dependency-python-metadata-invalid",
+                f"{display_name}=={pinned} has invalid Requires-Python metadata: {requires_python!r}.",
+                requirements,
+            ) from exc
+        excluded = [version for version in SUPPORTED_PYTHON_VERSIONS if version not in supported]
+        if excluded:
+            raise ToolFailure(
+                "test-attestation-dependency-python-incompatible",
+                f"{display_name}=={pinned} Requires-Python {requires_python} excludes declared supported interpreter(s): {', '.join(excluded)}.",
                 requirements,
             )
         records.append({
@@ -1124,23 +1149,8 @@ def run_exact_suite(
     plugin_root: Path,
     command: list[str],
 ) -> subprocess.CompletedProcess[bytes]:
-    environment = isolated_subprocess_environment()
-    try:
-        return subprocess.run(
-            command,
-            cwd=plugin_root,
-            env=environment,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=TEST_SUITE_TIMEOUT_SECONDS,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise ToolFailure(
-            "test-attestation-suite-unavailable",
-            str(exc),
-            plugin_root / "maintainer" / "tests",
-        ) from exc
+    return run_spooled_suite(command, cwd=plugin_root, environment=isolated_subprocess_environment(),
+        timeout=TEST_SUITE_TIMEOUT_SECONDS, redact=lambda value: redact_known_local_paths(value, plugin_root))
 
 
 def create_attestation(
@@ -1168,6 +1178,23 @@ def create_attestation(
     parsed, raw_stdout, raw_stderr, _raw_output_digest = parse_unittest_result(
         result
     )
+    applicability = None
+    try:
+        candidate_applicability = extract_report(raw_stdout, raw_stderr)
+    except (ValueError, TypeError) as exc:
+        if parsed["status"] == "passed":
+            raise ToolFailure("test-applicability-missing", str(exc)) from exc
+    else:
+        applicability_failures = validate_test_applicability(candidate_applicability, expected_platform=platform.system(),
+            tests_run=parsed["tests_run"], passed=parsed["status"] == "passed", stdout=raw_stdout, stderr=raw_stderr)
+        if applicability_failures:
+            if parsed["status"] == "passed":
+                raise ToolFailure("test-applicability-invalid", " | ".join(applicability_failures))
+        else:
+            applicability = candidate_applicability
+    # Null is permitted only for an already failed suite. Missing/native-import
+    # metadata or a captured nested runner marker must not discard its original
+    # stderr. A passed run still requires one valid exact applicability report.
     stdout = redact_known_local_paths(raw_stdout, plugin_root)
     stderr = redact_known_local_paths(raw_stderr, plugin_root)
     output_digest = hashlib.sha256(
@@ -1203,6 +1230,7 @@ def create_attestation(
         "command": [PYTHON_EXECUTABLE_TOKEN, *UNITTEST_ARGUMENTS],
         "inputs": before,
         "result": parsed,
+        "test_applicability": applicability,
         "skip_waiver": skip_waiver,
         "output": {
             "stdout": stdout,
@@ -1351,7 +1379,10 @@ def main() -> int:
         })
         return 0 if record["result"]["status"] == "passed" else 1
     except ToolFailure as exc:
-        emit({"ok": False, "failures": [exc.issue.as_dict()]})
+        failure = {"ok": False, "failures": [exc.issue.as_dict()]}
+        if isinstance(exc, SuiteRunUnavailable) and exc.diagnostic is not None:
+            failure["incomplete_diagnostic"] = exc.diagnostic
+        emit(failure)
         return 2
 
 

@@ -154,6 +154,14 @@ class ReleaseDependencyPreflightTests(unittest.TestCase):
         self.assertLess(index_named("Install pinned browser-review dependency"), other_browser)
         self.assertLess(linux_browser, attestation)
         self.assertLess(other_browser, attestation)
+        encoder_check = index_named("Verify source recording encoder")
+        self.assertEqual("ffmpeg -version", steps[encoder_check]["run"])
+        self.assertLess(encoder_check, attestation)
+        for operating_system in ("Linux", "macOS", "Windows"):
+            provision = index_named(f"Provision source recording encoder ({operating_system})")
+            self.assertLess(provision, encoder_check)
+            self.assertIn(operating_system, steps[provision]["if"])
+            self.assertIn("ffmpeg", steps[provision]["run"])
         package_audit = steps[index_named("Run development audit")]
         retained = steps[
             index_named("Retain matrix test and package-audit evidence")

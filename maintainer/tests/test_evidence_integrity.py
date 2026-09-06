@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from directory_link_fixtures import make_directory_link, remove_directory_link
 
 
 PLUGIN = Path(__file__).resolve().parents[2]
@@ -20,23 +21,6 @@ SCHEMA = (
     / "schemas"
     / "evidence-frontmatter.schema.json"
 )
-
-
-def make_directory_link(link: Path, target: Path) -> bool:
-    try:
-        os.symlink(target, link, target_is_directory=True)
-        return True
-    except (OSError, NotImplementedError):
-        if os.name != "nt":
-            return False
-        created = subprocess.run(
-            ["cmd.exe", "/c", "mklink", "/J", str(link), str(target)],
-            text=True,
-            encoding="utf-8",
-            capture_output=True,
-            timeout=30,
-        )
-        return created.returncode == 0
 
 
 def copy_validation_fixture(destination: Path) -> None:
@@ -181,19 +165,17 @@ class EvidenceSnapshotTests(unittest.TestCase):
             real_plugin = root / "real-plugin"
             copy_validation_fixture(real_plugin)
             plugin_link = root / "plugin-link"
-            if not make_directory_link(plugin_link, real_plugin):
-                self.skipTest("directory symlink/junction unavailable")
+            make_directory_link(plugin_link, real_plugin)
             try:
                 self.assert_reparse_refused(run_validation(plugin_link))
             finally:
-                os.rmdir(plugin_link)
+                remove_directory_link(plugin_link)
 
             schema_source = root / "real-schema"
             schema_source.mkdir()
             shutil.copy2(SCHEMA, schema_source / SCHEMA.name)
             schema_link = root / "schema-link"
-            if not make_directory_link(schema_link, schema_source):
-                self.skipTest("directory symlink/junction unavailable")
+            make_directory_link(schema_link, schema_source)
             try:
                 self.assert_reparse_refused(
                     run_validation(
@@ -202,7 +184,7 @@ class EvidenceSnapshotTests(unittest.TestCase):
                     )
                 )
             finally:
-                os.rmdir(schema_link)
+                remove_directory_link(schema_link)
 
     def test_reparse_evidence_cards_and_snapshots_are_rejected(self) -> None:
         for directory_name in ("cards", "snapshots"):
@@ -217,12 +199,11 @@ class EvidenceSnapshotTests(unittest.TestCase):
                 linked_directory = evidence_root / directory_name
                 real_directory = root / f"real-{directory_name}"
                 linked_directory.rename(real_directory)
-                if not make_directory_link(linked_directory, real_directory):
-                    self.skipTest("directory symlink/junction unavailable")
+                make_directory_link(linked_directory, real_directory)
                 try:
                     self.assert_reparse_refused(run_validation(copied))
                 finally:
-                    os.rmdir(linked_directory)
+                    remove_directory_link(linked_directory)
 
     def test_reparse_internal_evaluation_artifact_parent_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -235,8 +216,7 @@ class EvidenceSnapshotTests(unittest.TestCase):
             artifact.write_text('{"result":"bound"}\n', encoding="utf-8")
             digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
             artifact_link = copied / "artifacts"
-            if not make_directory_link(artifact_link, real_artifacts):
-                self.skipTest("directory symlink/junction unavailable")
+            make_directory_link(artifact_link, real_artifacts)
             card = (
                 copied
                 / "maintainer"
@@ -266,7 +246,7 @@ class EvidenceSnapshotTests(unittest.TestCase):
             try:
                 self.assert_reparse_refused(run_validation(copied))
             finally:
-                os.rmdir(artifact_link)
+                remove_directory_link(artifact_link)
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ try:
     import attest_tests
     import attest_install_lifecycle
     import audit_package
+    import test_platform_applicability as applicability
 finally:
     sys.path.remove(str(SCRIPTS))
 
@@ -65,6 +66,9 @@ def make_attestation_fixture(root: Path) -> Path:
     for name in (
         "cache_preflight.py",
         "run_release_tests.py",
+        "test_platform_applicability.py",
+        "suite_process.py",
+        "run_evals.py",
         "attest_tests.py",
         "build_manifest.py",
         "common.py",
@@ -82,6 +86,7 @@ def make_attestation_fixture(root: Path) -> Path:
         PLUGIN / "maintainer" / "requirements-dev.lock",
         maintainer / "requirements-dev.lock",
     )
+    shutil.copytree(PLUGIN / "maintainer" / "dependencies", maintainer / "dependencies")
     for name in ("package.json", "package-lock.json"):
         shutil.copy2(PLUGIN / "maintainer" / name, maintainer / name)
     for directory in (".codex-plugin", ".claude-plugin"):
@@ -162,7 +167,37 @@ def make_attestation_fixture(root: Path) -> Path:
         "entries: []\n",
         encoding="utf-8",
     )
+    write_native_identity_fixture(maintainer / "tests")
     return plugin
+
+
+NATIVE_FIXTURE_COUNT = len(applicability.WINDOWS_NATIVE_TEST_IDS) if platform.system() == "Windows" else 0
+
+
+def write_native_identity_fixture(tests: Path) -> None:
+    """Synthetic runner identities only; these are not native API coverage."""
+    methods = "\n".join("    def " + identity.rsplit(".", 1)[1] + "(self):\n        self.assertTrue(True)\n" for identity in applicability.WINDOWS_NATIVE_TEST_IDS)
+    (tests / "test_maintainer_tools.py").write_text(
+        '"""Synthetic identities for runner/attestation unit tests, not Win32 proof."""\nimport unittest\nclass EvalRunnerV3Tests(unittest.TestCase):\n' + methods,
+        encoding="utf-8")
+
+
+def with_fake_applicability(result: subprocess.CompletedProcess[bytes]) -> subprocess.CompletedProcess[bytes]:
+    """Extend a mocked test stream with an explicitly synthetic policy fixture."""
+    import re
+    stderr = result.stderr.decode("utf-8")
+    before = int(re.search(r"Ran ([0-9]+) tests?", stderr).group(1))
+    native_count = len(applicability.WINDOWS_NATIVE_TEST_IDS) if platform.system() == "Windows" else 0
+    total = before + native_count
+    stderr = re.sub(r"Ran [0-9]+ tests?", f"Ran {total} tests", stderr)
+    native = list(applicability.WINDOWS_NATIVE_TEST_IDS) if native_count else []
+    stderr = "".join(f"{identity.rsplit('.', 1)[1]} ({identity}) ... ok\n" for identity in native) + stderr
+    excluded = [] if native_count else list(applicability.WINDOWS_NATIVE_TEST_IDS)
+    report = {"schema_version": 1, "policy_sha256": applicability.POLICY_SHA256, "platform": platform.system(),
+        "discovered_tests": total + len(excluded), "selected_tests": total, "executed_tests": total,
+        "not_applicable_test_ids": excluded, "executed_native_test_ids": native}
+    stderr += applicability.MARKER + json.dumps(report, sort_keys=True) + "\n"
+    return subprocess.CompletedProcess(result.args, result.returncode, result.stdout, stderr.encode("utf-8"))
 
 
 def fake_unittest_result(
@@ -192,7 +227,7 @@ def fake_unittest_result(
                 "\n"
                 "OK\n"
             ).encode("utf-8")
-        return subprocess.CompletedProcess(command, 0, stdout=b"", stderr=stderr)
+        return with_fake_applicability(subprocess.CompletedProcess(command, 0, stdout=b"", stderr=stderr))
     stderr = (
         "test_one (suite.Case.test_one) ... FAIL\n"
         "\n"
@@ -201,7 +236,7 @@ def fake_unittest_result(
         "\n"
         "FAILED (failures=1)\n"
     ).encode("utf-8")
-    return subprocess.CompletedProcess(command, 1, stdout=b"", stderr=stderr)
+    return with_fake_applicability(subprocess.CompletedProcess(command, 1, stdout=b"", stderr=stderr))
 
 
 def make_release_runner_fixture(
@@ -222,13 +257,14 @@ def make_release_runner_fixture(
     scripts.mkdir(parents=True)
     tests.mkdir(parents=True)
     runtime_tests.mkdir(parents=True)
-    script_names = ["cache_preflight.py", "run_release_tests.py"]
+    script_names = ["cache_preflight.py", "run_release_tests.py", "test_platform_applicability.py"]
     if include_attester:
         # Importing the attester as a release test library exercises the
         # runner's real import context rather than a mock of it.
-        script_names.extend(("attest_tests.py", "build_manifest.py", "common.py"))
+        script_names.extend(("attest_tests.py", "build_manifest.py", "common.py", "suite_process.py", "run_evals.py"))
     for name in script_names:
         shutil.copy2(SCRIPTS / name, scripts / name)
+    write_native_identity_fixture(tests)
     (tests / test_name).write_text(
         test_source,
         encoding="utf-8",
@@ -364,7 +400,10 @@ def make_ci_import_fixture(
     ) -> subprocess.CompletedProcess[bytes]:
         return fake_unittest_result(command)
 
-    attestation = attest_tests.create_attestation(plugin, runner=runner)
+    # This is an explicitly fabricated import-contract fixture for Ubuntu,
+    # not evidence that the local Windows process ran a Linux CI job.
+    with patch.object(attest_tests.platform, "system", return_value="Linux"):
+        attestation = attest_tests.create_attestation(plugin, runner=runner)
     job_started = after_timestamp(attestation["started_at"], seconds=-1)
     job_completed = after_timestamp(attestation["completed_at"], seconds=1)
     imported_at = after_timestamp(job_completed, seconds=1)
@@ -818,7 +857,7 @@ class CandidateMetadataTests(unittest.TestCase):
             encoding="utf-8"
         )
         changelog = (PLUGIN / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertIn(f"`{release_version}` is not a release", readme)
+        self.assertIn(f"`{release_version}` is not a qualified release", readme)
         self.assertIn(
             f"## {release_version} - Development candidate", changelog
         )
@@ -967,7 +1006,7 @@ class TestAttestationTests(unittest.TestCase):
                 "AttesterLibraryImport.test_runner_context_is_retained) ... ok",
                 completed.stderr,
             )
-            self.assertIn("Ran 2 tests", completed.stderr)
+            self.assertIn(f"Ran {2 + NATIVE_FIXTURE_COUNT} tests", completed.stderr)
             self.assertNotIn(
                 "non-canonical import path",
                 completed.stdout + completed.stderr,
@@ -1022,7 +1061,7 @@ class TestAttestationTests(unittest.TestCase):
                     )
                 )
             )
-            self.assertEqual(parsed["tests_run"], 2)
+            self.assertEqual(parsed["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
 
     def test_release_runner_isolates_duplicate_module_fixtures_by_root(
         self,
@@ -1081,7 +1120,7 @@ class TestAttestationTests(unittest.TestCase):
             )
             self.assertEqual(parsed["status"], "failed")
             self.assertEqual(parsed["errors"], 1)
-            self.assertEqual(parsed["tests_run"], 1)
+            self.assertEqual(parsed["tests_run"], 1 + NATIVE_FIXTURE_COUNT)
 
     def test_release_runner_preserves_cache_preflight(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1316,7 +1355,7 @@ class TestAttestationTests(unittest.TestCase):
                 completed.stdout + completed.stderr,
             )
             record = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(record["result"]["tests_run"], 2)
+            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
             self.assertEqual(
                 record["command"],
                 [
@@ -1404,7 +1443,7 @@ class TestAttestationTests(unittest.TestCase):
             # discovery with its injected empty suite.
             self.assertEqual(marker.read_text(encoding="utf-8"), "1")
             record = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(record["result"]["tests_run"], 2)
+            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
             self.assertEqual(
                 record["command"],
                 [
@@ -1724,6 +1763,7 @@ class TestAttestationTests(unittest.TestCase):
             ("top-level README", "README.md"),
             ("documentation tree", "docs/QUICK_START.md"),
             ("CI workflow", ".github/workflows/ci.yml"),
+            ("Python release metadata", "maintainer/dependencies/python-release-metadata.json"),
             (
                 "validator trust policy",
                 "maintainer/trust/codex-plugin-validator.json",
@@ -1789,6 +1829,7 @@ class TestAttestationTests(unittest.TestCase):
             "maintainer/trust/codex-plugin-validator.json",
             "maintainer/evals/fixtures",
             "maintainer/compatibility/matrix.yml",
+            "maintainer/dependencies/python-release-metadata.json",
         )
         for relative in cases:
             with self.subTest(surface=relative), tempfile.TemporaryDirectory() as temporary:
@@ -1822,6 +1863,7 @@ class TestAttestationTests(unittest.TestCase):
         self.assertIn("maintainer/trust/codex-plugin-validator.json", manifest_paths)
         self.assertIn("maintainer/evals/fixtures", manifest_paths)
         self.assertIn("maintainer/compatibility/matrix.yml", manifest_paths)
+        self.assertIn("maintainer/dependencies", manifest_paths)
         for path in manifest_paths:
             self.assertFalse(
                 any(
@@ -1916,7 +1958,7 @@ class TestAttestationTests(unittest.TestCase):
             )
             self.assertEqual(errors, [])
             self.assertEqual(record["result"]["status"], "passed")
-            self.assertEqual(record["result"]["tests_run"], 2)
+            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
             self.assertEqual(record["result"]["skipped"], 1)
             self.assertEqual(
                 record["result"]["skipped_test_ids"],
@@ -1932,7 +1974,7 @@ class TestAttestationTests(unittest.TestCase):
                 attest_tests.pinned_dependencies(plugin),
             )
 
-    def test_exact_suite_uses_the_bounded_one_hour_timeout(self) -> None:
+    def test_exact_suite_uses_the_bounded_full_validation_timeout(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             plugin = Path(temporary).resolve()
             command = [sys.executable, *attest_tests.UNITTEST_ARGUMENTS]
@@ -1943,8 +1985,8 @@ class TestAttestationTests(unittest.TestCase):
                 stderr=b"Ran 1 test in 0.001s\n\nOK\n",
             )
             with patch.object(
-                attest_tests.subprocess,
-                "run",
+                attest_tests,
+                "run_spooled_suite",
                 return_value=completed,
             ) as mocked_run:
                 observed = attest_tests.run_exact_suite(plugin, command)
@@ -1955,9 +1997,13 @@ class TestAttestationTests(unittest.TestCase):
             )
             self.assertEqual(
                 attest_tests.TEST_SUITE_TIMEOUT_SECONDS,
-                3600,
+                20700,
             )
-            environment = mocked_run.call_args.kwargs["env"]
+            workflow = yaml.safe_load((PLUGIN / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+            job_minutes = workflow["jobs"]["test"]["timeout-minutes"]
+            self.assertEqual(360, job_minutes)
+            self.assertGreaterEqual(job_minutes * 60 - attest_tests.TEST_SUITE_TIMEOUT_SECONDS, 15 * 60)
+            environment = mocked_run.call_args.kwargs["environment"]
             self.assertEqual(environment["PYTHONDONTWRITEBYTECODE"], "1")
             self.assertNotIn("PYTHONPATH", environment)
             self.assertNotIn("PYTHONHOME", environment)
@@ -3070,10 +3116,19 @@ class AuditProofModeTests(unittest.TestCase):
                 / "matrix.yml"
             ).read_text(encoding="utf-8")
         )
+        # This fixed-state regression must not assume that the distributed
+        # package will forever lack legitimate derived CI imports.
+        temporary = tempfile.TemporaryDirectory(prefix="dna-unobserved-ci-")
+        self.addCleanup(temporary.cleanup)
+        plugin = make_attestation_fixture(Path(temporary.name))
+        shutil.copy2(
+            PLUGIN / ".github" / "workflows" / "ci.yml",
+            plugin / ".github" / "workflows" / "ci.yml",
+        )
         development_failures, development_details = (
             audit_package.ci_contract_failures(
                 compatibility,
-                PLUGIN,
+                plugin,
                 SCHEMAS / "ci-run-import.schema.json",
                 SCHEMAS / "test-attestation.schema.json",
                 {},
@@ -3086,7 +3141,7 @@ class AuditProofModeTests(unittest.TestCase):
         release_failures, release_details = (
             audit_package.ci_contract_failures(
                 compatibility,
-                PLUGIN,
+                plugin,
                 SCHEMAS / "ci-run-import.schema.json",
                 SCHEMAS / "test-attestation.schema.json",
                 {},

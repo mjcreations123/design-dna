@@ -1251,10 +1251,25 @@ class RouteFamilyReleaseGateTests(unittest.TestCase):
                 / "inputs"
             ).glob("**/.design-dna/references/*-observation.json")
         )
-        self.assertTrue(fixtures, "Expected committed route-family observation fixtures.")
+        fixture_root = PACKAGE_ROOT / "maintainer/evals/fixtures/inputs"
+        expected_names = {"route-family-anthology-positive", "route-family-broken-orphan-negative",
+                          "route-family-recolor-negative", "route-family-safe-paths-positive"}
+        self.assertEqual({fixture_root / name / ".design-dna/references/strong-1-observation.json" for name in expected_names}, set(fixtures))
+        dependencies = {"observe_reference.mjs", "structure_probe.mjs", "browser_evidence.mjs", "playwright_resolver.mjs",
+                        "source_surface_watch.mjs", "source_study_controller.mjs"}
         for fixture in fixtures:
             with self.subTest(fixture=fixture.relative_to(PACKAGE_ROOT).as_posix()):
                 payload = json.loads(fixture.read_text(encoding="utf-8"))
+                self.assertEqual("https://fixture-reference.invalid/", payload.get("url"))
+                self.assertEqual("synthetic-contract-fixture", payload.get("source_kind"))
+                scope = payload.get("fixture_scope", {})
+                self.assertEqual("synthetic-route-contract-unit-fixture", scope.get("kind"))
+                self.assertIs(scope.get("generated_observation"), False)
+                self.assertIs(scope.get("eligible_for_source_selection"), False)
+                self.assertIs(scope.get("browser_or_recording_evidence"), False)
+                self.assertEqual({profile: {"rest": {"id": "rest"}} for profile in ("wide", "narrow")}, payload.get("states_by_viewport"))
+                self.assertNotIn("source_study", payload)
+                self.assertNotIn("recording", payload)
                 producer = payload.get("tool")
                 self.assertIn(producer, current)
                 self.assertEqual(
@@ -1263,9 +1278,17 @@ class RouteFamilyReleaseGateTests(unittest.TestCase):
                 )
                 runtime = payload.get("runtime_identity")
                 self.assertIsInstance(runtime, dict)
+                self.assertEqual(dependencies, set(runtime))
                 for name, digest in runtime.items():
-                    if name in current:
-                        self.assertEqual(current[name], digest, name)
+                    self.assertEqual(current[name], digest, name)
+                observation_sha = hashlib.sha256(fixture.read_bytes()).hexdigest()
+                manifest = json.loads((fixture.parents[1] / "route-manifest.json").read_text(encoding="utf-8"))
+                self.assertTrue(all(route["mapped_reference_sha256"] == observation_sha for route in manifest["routes"]))
+                family = json.loads((fixture.parents[1] / "route-family.json").read_text(encoding="utf-8"))
+                for route in family["routes"]:
+                    self.assertEqual(observation_sha, route["source_mapping"]["sha256"])
+                    for row in [*route["observable_decisions"], *route["component_sources"]]:
+                        self.assertEqual(observation_sha, row["source_sha256"])
 
 
 if __name__ == "__main__":

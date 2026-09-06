@@ -51,6 +51,8 @@ exec(
 del _CACHE_PREFLIGHT_PATH, _CACHE_PREFLIGHT_SOURCE, _cache_preflight_stream
 
 import os
+import json
+import platform
 import sys
 import sysconfig
 import time
@@ -195,6 +197,8 @@ def _install_isolated_import_paths() -> None:
 
 _install_isolated_import_paths()
 
+from test_platform_applicability import MARKER, WINDOWS_NATIVE_TEST_IDS, make_report, select_suite
+
 
 TEST_PATTERN = "test_*.py"
 TEST_ROOTS = (
@@ -328,6 +332,16 @@ def run_release_suites(plugin_root: Path) -> bool:
 
     roots = release_test_roots(plugin_root)
     results: list[unittest.TestResult] = []
+    discovered_ids, excluded_ids = [], []
+    system = platform.system()
+    class NativeTrackingResult(unittest.TextTestResult):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.native_executed = set()
+        def startTest(self, test):
+            if test.id() in WINDOWS_NATIVE_TEST_IDS:
+                self.native_executed.add(test.id())
+            super().startTest(test)
     started = time.monotonic()
     with _plugin_root_import_context(plugin_root):
         for root, relative in zip(roots, TEST_ROOTS, strict=True):
@@ -340,14 +354,30 @@ def run_release_suites(plugin_root: Path) -> bool:
                 str(root),
                 pattern=TEST_PATTERN,
             )
+            suite, discovered, excluded = select_suite(suite, system)
+            discovered_ids.extend(discovered)
+            excluded_ids.extend(excluded)
             results.append(
                 unittest.TextTestRunner(
                     verbosity=2,
                     descriptions=False,
+                    resultclass=NativeTrackingResult,
                 ).run(suite)
             )
             _forget_modules_from(roots)
-    return _write_aggregate_summary(results, time.monotonic() - started)
+    successful = _write_aggregate_summary(results, time.monotonic() - started)
+    try:
+        report = make_report(system, discovered_ids, excluded_ids, results)
+    except ValueError as exc:
+        # A syntax/import error can prevent native IDs from being discovered.
+        # Keep the actual aggregate results and complete original diagnostics;
+        # this failed execution has no valid platform coverage to attest.
+        sys.stderr.write("DESIGN_DNA_TEST_APPLICABILITY_ERROR " + str(exc) + "\n")
+        sys.stderr.flush()
+        return False
+    sys.stdout.write(MARKER + json.dumps(report, sort_keys=True, separators=(",", ":")) + "\n")
+    sys.stdout.flush()
+    return successful
 
 
 @contextmanager

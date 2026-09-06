@@ -1279,6 +1279,12 @@ def driver_identity(executable: str, environment: dict[str, str]) -> dict[str, o
             f"Driver executable was not found: {executable!r}.",
         )
     path = absolute(Path(resolved))
+    # Canonicalize only aliases of this process's already-selected Python.
+    # Ordinary externally supplied drivers retain the strict no-link rule.
+    # The invocation below still uses the requested executable, preserving
+    # venv startup semantics; provenance hashes its actual interpreter binary.
+    if path.resolve(strict=True) == Path(sys.executable).resolve(strict=True):
+        path = path.resolve(strict=True)
     assert_no_reparse_path(path)
     if not path.is_file():
         raise ToolFailure("driver-not-file", "Driver must resolve to a file.", path)
@@ -1423,21 +1429,43 @@ def terminate_process_tree(
             ),
         )
 
-    if process.poll() is not None:
-        evidence["verified_empty"] = True
-        evidence["method"] = "already-exited"
-        return evidence
+    # The session/group was created for this Popen child. Its descendants can
+    # keep running after the parent exits, so parent status never proves the
+    # owned group empty (and inherited output handles may still be open).
+    evidence["root_already_exited"] = process.poll() is not None
     try:
         os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
+    except OSError as exc:
+        evidence["group_kill_error"] = str(exc)
+        raise ToolFailure("process-tree-termination-failed", "Owned POSIX group termination failed: " + json.dumps(evidence, sort_keys=True)) from exc
     try:
-        process.wait(timeout=15)
+        process.wait(timeout=5)
     except subprocess.TimeoutExpired:
         process.kill()
-        process.wait()
-    evidence["verified_empty"] = True
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired as exc:
+            evidence["root_wait_error"] = "timed-out"
+            raise ToolFailure("process-tree-termination-failed", "Owned POSIX parent termination could not be verified: " + json.dumps(evidence, sort_keys=True)) from exc
+    deadline = time.monotonic() + 5
+    while True:
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            evidence["verified_empty"] = True
+            break
+        except OSError as exc:
+            evidence["group_verification_error"] = str(exc)
+            break
+        if time.monotonic() >= deadline:
+            evidence["group_verification_error"] = "owned group still exists after bounded termination wait"
+            break
+        time.sleep(0.05)
     evidence["method"] = "posix-process-group"
+    if not evidence["verified_empty"]:
+        raise ToolFailure("process-tree-termination-failed", "Owned POSIX group emptiness could not be verified: " + json.dumps(evidence, sort_keys=True))
     return evidence
 
 
@@ -2375,7 +2403,7 @@ def main() -> int:
                 work_root.mkdir()
             assert_no_reparse_path(work_root)
         else:
-            work_root = Path(tempfile.mkdtemp(prefix="design-dna-evals-"))
+            work_root = Path(tempfile.mkdtemp(prefix="design-dna-evals-")).resolve(strict=True)
             created_work_root = True
         if not work_root.is_dir():
             raise ToolFailure(

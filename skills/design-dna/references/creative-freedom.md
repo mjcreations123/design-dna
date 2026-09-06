@@ -121,6 +121,9 @@ Use the authoritative route manifest and component-source map:
 | `source_mapping` | Selected rank, strong-N ID, canonical observation path, and exact observation SHA-256. |
 | `source_state_id` | Exact mapped state present in both wide and narrow observation evidence. |
 | `component` | Exact key from the complete rendered component census. |
+| `viewport binding` | One exact `wide` or `narrow` route/state/component cell; a decision cannot inherit an untested profile. |
+| `decision root` | The element carrying `data-design-dna-decision-id`; independently painted descendants carry their own roots rather than borrowing a wrapper's ID. |
+| `construction journal` | Generated append-only pre-code baseline that binds the current source plan before visible implementation. |
 | Observable decision | The specific measured structure or behavior reproduced from that source page/state. |
 | Transfer evidence | Current build/run/manifest-bound wide and narrow rendered evidence, including target-specific interaction frames when applicable. |
 | Status | Provisional, accepted, revised, rejected, or blocked; status never replaces evidence. |
@@ -138,6 +141,17 @@ Record consequential decisions with an observable model:
 Review conditions may follow the project, but the source/state/component fields
 stay exact. Do not complete a field by inventing a design move. Each visible decision names
 its source rank and evidence; if none exists, research it or remove it.
+
+The construction journal is an enforcement boundary, not preview concealment.
+Before the first visible source file, run `init_project_state.py
+--begin-construction`; before each proof/resumption run `--check-construction`.
+A baseline that finds existing visible source is a legacy audit and cannot
+pretend the page was built after research. A source list, hidden proof folder,
+local server, screenshot, or later passing gate does not make a producer-made
+header/footer/CTA compliant. The first proof must already reproduce the mapped
+source encounter and its dominant behavior, not merely source colors or card
+geometry. If a visible choice is unsupported, the only permitted actions are
+to record a current source that carries it or remove it.
 
 ## Explore in proportion to uncertainty
 

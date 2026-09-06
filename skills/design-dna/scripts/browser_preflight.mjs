@@ -70,6 +70,7 @@ async function main() {
     options.browserExecutable,
   ));
   let browserVersion = null;
+  let capabilities = null;
   if (options.launch) {
     const instance = await loaded.playwright.chromium.launch({
       headless: true,
@@ -79,6 +80,28 @@ async function main() {
       browserVersion = instance.version();
       const page = await instance.newPage();
       await page.goto("about:blank");
+      if (typeof page.screencast?.start !== 'function' || typeof page.screencast?.stop !== 'function') {
+        throw new PlaywrightResolutionError('browser-screencast-capability-unavailable',
+          'This project Playwright can open a page but lacks the timestamped screencast API required by the source recorder. Use the packaged Playwright dependency bundle.');
+      }
+      let deadline;
+      try {
+        let receive;
+        const firstFrame = new Promise((resolve) => { receive = resolve; });
+        const recording = (async () => {
+          await page.screencast.start({ onFrame: (frame) => {
+            if (Number.isFinite(frame.timestamp)) receive(frame.timestamp);
+          } });
+          const timestamp = await firstFrame;
+          await page.screencast.stop();
+          return timestamp;
+        })();
+        const timestamp = await Promise.race([recording, new Promise((_, reject) => {
+          deadline = setTimeout(() => reject(new PlaywrightResolutionError('browser-screencast-clock-unavailable',
+            'The runtime did not complete a timestamped screencast frame/start/stop cycle within 10 seconds. No source recording capability was certified.')), 10000);
+        })]);
+        capabilities = {timestamped_screencast: true, frame_timestamp: timestamp, saved_video: false};
+      } finally { clearTimeout(deadline); }
       await page.close();
     } finally {
       await instance.close();
@@ -90,6 +113,8 @@ async function main() {
     schema_version: 1,
     project_root: options.projectRoot,
     launch_checked: options.launch,
+    capabilities_checked: options.launch,
+    capabilities,
     playwright: loaded.dependency,
     browser: {
       path: browser.path,
