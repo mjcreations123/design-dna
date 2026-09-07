@@ -312,10 +312,11 @@ export async function hoverProbe(page) {
   for (const c of candidates) {
     try {
       await page.mouse.move(4, 4); await sleep(150);
-      const before = await bounded(page.evaluate(HOVER_SNAPSHOT, c.id), "hover-before", 10_000);
+      // A string expression gets no argument from evaluate; the id is inlined.
+      const before = await bounded(page.evaluate(`${HOVER_SNAPSHOT}(${JSON.stringify(c.id)})`), "hover-before", 10_000);
       if (!before) continue;
       await page.mouse.move(c.x, c.y, { steps: 6 }); await sleep(450);
-      const after = await bounded(page.evaluate(HOVER_SNAPSHOT, c.id), "hover-after", 10_000);
+      const after = await bounded(page.evaluate(`${HOVER_SNAPSHOT}(${JSON.stringify(c.id)})`), "hover-after", 10_000);
       if (!after) continue;
       const changed = before.rows.filter((row, i) => row !== after.rows[i]).length;
       rows.push({ target: `${c.tag} ${c.text}`.trim(), w: c.w, h: c.h, responded: changed > 0, changed_nodes: changed, transition: after.transition, cursor: after.cursor });
