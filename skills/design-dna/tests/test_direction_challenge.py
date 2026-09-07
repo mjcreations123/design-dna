@@ -1000,8 +1000,10 @@ class DirectionChallengeInitializerTests(unittest.TestCase):
                 SKILL_ROOT / "references" / "quality" / "direction-challenge.md"
             ).read_text(encoding="utf-8").split()
         )
+        # The preset catalogue lives in the retained 12.x document; the
+        # 13.0.0 SKILL.md is the four-step workflow.
         top_level = " ".join(
-            (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8").split()
+            (SKILL_ROOT / "references" / "legacy" / "SKILL-12.1-machinery.md").read_text(encoding="utf-8").split()
         )
         self.assertIn(
             "multi-root high-ambition greenfield concept challenge",

@@ -5,6 +5,37 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 13.0.0 - Development candidate
+
+The workflow is two programs and a plan. Owner directive, 2026-09-06 (Motty):
+research for a website takes minutes, not hours; nothing in the skill may make
+one producer's work block another's on the same machine; the result must be a
+high-quality copy of several excellent sites, not slop.
+
+- `scripts/study_reference.mjs`: one command per reference, a few minutes.
+  Fonts and their sources, the type scale in use, colors weighted by painted
+  area, radii, shadows, controls, transitions, keyframes, animation libraries,
+  the layout outline, the scroll mechanisms read against the viewport at
+  fourteen wheel positions, Web Animations at six depths, a pointer-follow
+  probe, a hover probe of the first twenty controls, a 25-second real-time
+  scroll-through video per width with an eight-frame contact sheet, and up to
+  three inner pages from the site's own navigation. The tool writes the
+  reference sheet; the producer reads it. House of Honey, home plus three
+  inner pages at both widths: 218 seconds.
+- `scripts/check_build.mjs`: one command on the built site, about a minute.
+  Fonts only from selected references or declared matches, the dominant ground
+  a reference's own, every signature mechanism measured on its reference and
+  present in the build, every promised route mechanism present and sourced, a
+  motion floor at the weakest selected reference, pointer response where the
+  references respond, and the slop patterns refused. One verdict line, quoted
+  verbatim.
+- `SKILL.md` rewritten around study, plan, build, check. The owner's standing
+  order, the quality-first source rule, the signature rule and the floors are
+  unchanged. The 12.x audit machinery (observer, recorder, gate, state
+  contracts, route manifests, censuses, the source-study controller and its
+  machine-wide leases) is retained under `references/legacy/` and in
+  `scripts/`, documented, and not part of the workflow.
+
 ## 12.1.0 - Development candidate
 
 Owner directive (2026-09-06, Motty: a website should take minutes, not half

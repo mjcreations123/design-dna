@@ -1,6 +1,13 @@
 # Design DNA quick start
 
-This guide describes the `12.1.0` development candidate. The version label is
+> **13.0.0:** the workflow is now study, plan, build, check with two commands,
+> `scripts/study_reference.mjs` and `scripts/check_build.mjs`; see `skills/design-dna/SKILL.md`.
+> Everything below about observe_reference, record_reference, state contracts,
+> route manifests and gate.py describes the retained 12.x machinery, which is
+> not part of the workflow.
+
+
+This guide describes the `13.0.0` development candidate. The version label is
 source identity, not release qualification; see the compatibility matrix and
 release procedure for current evidence.
 
