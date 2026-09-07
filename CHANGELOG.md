@@ -5,6 +5,51 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 13.2.0 - Development candidate
+
+Seven proposals from a second Claude Code session, reviewed by the producer
+and adopted with limits (2026-09-06, Motty: "get building and then push it").
+The check stays a minute or two; nothing re-measures a reference per section.
+
+- `scripts/check_build.mjs` prints two lines. `CHECK PASS (automated)` means
+  only that the automated checks passed for these routes at both widths; it
+  is not a review or approval. `REVIEW ...` reports whether
+  `.design-dna/review.md` exists, which selected references it compares, and
+  how many unresolved differences it lists.
+- Inputs are rejected when incomplete: no route, fewer than four distinct
+  selected references, a reference not studied ok at both widths or that hit
+  an HTTP error page, fewer than two registry sources marked award or curated
+  (`source_id` per reference; a submission feed is refused), a signature
+  without a verb (the verb list is now broad enough for honest sentences).
+- Font substitutions are verified: a `matched_for` face must name a
+  `match_record` written by `match_typeface.mjs` whose `chosen` for that
+  target is the planned family, with a verified browser measurement. A typed
+  claim no longer passes.
+- Every route is checked at desktop AND phone width: fonts, ground (phone
+  ground must be one a reference paints), promised and signature mechanisms,
+  the motion floor against the weakest reference AT THE SAME WIDTH, sideways
+  overflow, slop patterns. A desktop pass no longer covers a phone failure.
+- Routes carry a `sections` list (selector, reference, takes). The check
+  verifies each selector exists, names a selected reference, paints a ground
+  that reference or the route's dominant paints, and sets no undeclared
+  family. It does not re-measure the reference per section.
+- The check renders `review-<n>-<route>.png`: the dominant reference's first
+  screens beside the build's at both widths, then both scroll storyboards. The
+  producer looks at it and writes `review.md` (one line per reference:
+  reference shows / build shows / difference, then `## Unresolved`).
+- Owner-feedback tells are now measured, not remembered: em dashes, an
+  eyebrow label above a heading, padded `01` numbers, an arrow on a non-link,
+  a photograph used twice, and an inner route copying a reference whose inner
+  pages were never studied.
+- `scripts/study_reference.mjs` refuses HTTP 4xx/5xx pages as designs, records
+  horizontal overflow, counts inner pages only when they loaded, reports
+  `no-inner-links` when a menu hid the navigation, and writes a `not_studied`
+  list plus "Studied" and "Not studied" sheet sections (menus never opened,
+  controls not hovered, videos not watched, forms, iframes, pages beyond the
+  inner three) so a two-minute read is never mistaken for a full one.
+- `SKILL.md`: plan schema (`source_id`, `match_record`, `sections`), floors,
+  step 4 rewritten around the two lines and the required review.
+
 ## 13.1.0 - Development candidate
 
 First real build under the 13.x workflow (a bikur cholim demonstration site,

@@ -83,10 +83,14 @@ your sentence must name something on it, or something the frames show (a
 typographic composition, a photographic treatment, a color relationship).
 
 Floors, which are floors and not targets: at least four selected references
-from at least two sources, at least one of them with real scroll or pointer
+from at least two registry sources marked award or curated, each studied
+successfully at BOTH widths, at least one of them with real scroll or pointer
 motion, and at least two inner pages observed across the set. Six candidates
-studied for four selected is normal. A site the tool could not read
-(`ok: false` in its summary) is not selected.
+studied for four selected is normal. A site the tool could not read (`ok:
+false` in its summary, an HTTP error page, a width that failed) is not
+selected. Read each sheet's "Not studied" list: it names what the two-minute
+read did not open (menus, forms, videos, pages beyond the inner three), and
+if one of those matters to the copy, look at it yourself and say so.
 
 ### 2. Plan (the producer's only authorship, and it is a selection)
 
@@ -95,14 +99,18 @@ Write `.design-dna/plan.json`:
 ```json
 {
   "references": [
-    { "id": "strong-1", "url": "https://...", "source": "awwwards; site of the day 2026-03-02",
+    { "id": "strong-1", "url": "https://...", "source_id": "awwwards", "source": "awwwards; site of the day 2026-03-02",
       "signature": "the product images slide sideways under a pinned heading",
       "signature_mechanisms": ["pinned", "travel"],
       "take": ["first screen composition", "pinned heading with travelling media", "nav", "hover transition 240ms"] }
   ],
-  "typefaces": [ { "family": "Fraunces", "from": "strong-1" }, { "family": "Inter", "from": "strong-2", "matched_for": "Neue Haas Grotesk" } ],
+  "typefaces": [ { "family": "Fraunces", "from": "strong-1" },
+                 { "family": "Instrument Serif", "from": "strong-2", "matched_for": "Cardinal Fruit", "match_record": ".design-dna/typeface-match.json" } ],
   "ground": { "color": "rgb(14, 14, 14)", "from": "strong-1" },
-  "routes": [ { "url": "http://127.0.0.1:4870/", "name": "home", "dominant": "strong-1", "mechanisms": ["pinned", "travel", "reveal"] } ]
+  "routes": [ { "url": "http://127.0.0.1:4870/", "name": "home", "dominant": "strong-1", "mechanisms": ["pinned", "travel", "reveal"],
+                "sections": [
+                  { "selector": ".hero", "reference": "strong-1", "takes": "first-screen composition, nav list, ring button" },
+                  { "selector": ".stage", "reference": "strong-3", "takes": "pinned stage with a color swap per card" } ] } ]
 }
 ```
 
@@ -111,6 +119,15 @@ Rules for the plan, all checked by step 4:
 - Every `id` is a studied reference. Every `signature_mechanisms` entry was
   detected on that site. Every mechanism a route promises exists on a
   studied reference.
+- `source_id` is the registry id of the source that lists the site
+  (`awwwards`, `typewolf`, `site-of-sites`, `godly`); the check refuses a
+  submission feed and needs two distinct sources across the set.
+- Every route carries a `sections` list: one line per major section with its
+  CSS selector, the reference it copies, and what it takes (composition,
+  typography, spacing or behavior). The check verifies each selector exists,
+  names a selected reference, paints a ground that reference or the route's
+  dominant paints, and sets no undeclared family. The producer compares the
+  sections by eye in the review (step 4).
 - At most two typefaces, each computed by a selected reference, or declared as
   the rank-one match for a reference face that cannot be self-hosted:
 
@@ -122,7 +139,9 @@ Rules for the plan, all checked by step 4:
   The first measures the face as the live page renders it (and refuses a face
   the page only rendered with a fallback); the second measures the open
   candidates the same way and ranks them. `chosen` is the match; the plan
-  entry carries `"matched_for"` and the record path.
+  entry carries `"matched_for"` and `"match_record"`, and the check reads the
+  record and refuses a face it did not rank first. A typed claim is not a
+  match.
 - The ground is a selected reference's own dominant ground, not a minor
   citation that happens to justify the producer's taste.
 - One reference is the dominant grammar of each route: its first-screen
@@ -144,30 +163,58 @@ motion language. Decorative numbers, arrows on things that are not clickable,
 eyebrows above headings, and mechanism narration in the copy are forbidden by
 the owner's standing feedback.
 
-### 4. Check the build (about a minute)
+### 4. Check the build (a minute or two), then look
 
 ```
 node <skill>/scripts/check_build.mjs --plan .design-dna/plan.json --studies .design-dna/references --out .design-dna/check
 ```
 
-It reads the build with the same eyes as the references and prints one line:
-`CHECK PASS ...` or `CHECK FAIL ...`. Quote that line verbatim in the report.
-It fails when the build sets text in a family no selected reference computes,
-paints a dominant ground no selected reference has, drops a reference's
-signature mechanism, promises a mechanism a route does not carry or no
-reference has, has fewer mechanisms or less scroll choreography than the
-weakest selected reference, ignores the pointer where the references respond
-to it, or shows a slop pattern (gradient text, an icon-card triplet near the
-top, fade-up as the only motion). A failed check is fixed in the build or the
-plan and re-run; it is never argued with in prose. If the check did not run,
-the report says "the check did not run".
+It reads every route at desktop and phone width with the same eyes as the
+references and prints two lines, both quoted verbatim in the report:
+
+- `CHECK PASS (automated) ...` or `CHECK FAIL (automated) ...`. PASS means
+  exactly this: the automated checks passed for these routes at both widths.
+  It is not a review and not approval. It fails when the plan is incomplete
+  (no route, fewer than four references, a reference not studied at both
+  widths, fewer than two registry sources, a signature without a verb), when
+  a typeface is neither a reference's nor the rank-one face of a readable
+  match record, when the dominant ground at either width is not a
+  reference's, when a listed section is missing, names an unselected
+  reference or paints a foreign ground, when a signature or promised
+  mechanism does not arrive, when the phone width has fewer mechanisms or
+  less choreography than the weakest reference at phone width, when the page
+  scrolls sideways, when the copy carries an em dash, an eyebrow label over a
+  heading, padded numbers or an arrow on a non-link, when a photograph is
+  used twice, when an inner route copies a reference whose inner pages were
+  not studied, or when a slop pattern shows at either width. A failed check
+  is fixed in the build or the plan and re-run; it is never argued with in
+  prose. If the check did not run, the report says "the check did not run".
+- `REVIEW ...`: whether `.design-dna/review.md` exists and what it covers.
+
+The review is yours and it is required. The check writes
+`.design-dna/check/review-<n>-<route>.png`: the dominant reference's first
+screens beside the build's at both widths, then both scroll storyboards.
+Open it and the other selected references' contact sheets, then write
+`.design-dna/review.md` with one line per selected reference:
+
+```
+- heart-and-soil: reference shows small photographs scattered over ivory with deep green blocks; build shows the same cluster and blocks, photographs smaller; difference: the reference's cluster is denser.
+## Unresolved
+- the stage's card captions sit closer to the frame edge than the reference's issue numbers
+```
+
+Say what the reference's memorable experience is and whether it comes through
+in the build; a matching font family or a "parallax" label does not answer
+that. Keep it concrete and short. Neither line claims perfection or client
+approval: the owner's eyes remain the gate.
 
 ## What a report contains
 
 - The references, each with URL, source and accolade, signature sentence, and
   the path to its sheet and contact sheets.
 - The plan file.
-- The check verdict line, verbatim.
+- The two check lines, `CHECK ...` and `REVIEW ...`, verbatim, and the
+  path of the review sheet and `review.md`.
 - Problems the tools reported (`problems` in study.json, `problems` in
   check.json), not summarized away.
 

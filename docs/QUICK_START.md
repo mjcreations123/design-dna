@@ -7,7 +7,7 @@
 > not part of the workflow.
 
 
-This guide describes the `13.1.0` development candidate. The version label is
+This guide describes the `13.2.0` development candidate. The version label is
 source identity, not release qualification; see the compatibility matrix and
 release procedure for current evidence.
 

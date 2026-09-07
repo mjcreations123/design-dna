@@ -188,8 +188,18 @@ const LAYOUT = `(() => {
   }
   const header = document.querySelector('header,[role=banner]'); const nav = document.querySelector('nav');
   const hs = header ? getComputedStyle(header) : null; const hr = header ? header.getBoundingClientRect() : null;
+  const visible = (el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; };
   return { sections: rows.slice(0, 40), header: header ? { position: hs.position, height: Math.round(hr.height), ground: hs.backgroundColor, links: header.querySelectorAll('a').length } : null,
-    nav_links: nav ? [...nav.querySelectorAll('a')].slice(0, 20).map((a) => ({ text: a.textContent.trim().slice(0, 40), href: a.getAttribute('href') })) : [] };
+    nav_links: nav ? [...nav.querySelectorAll('a')].slice(0, 20).map((a) => ({ text: a.textContent.trim().slice(0, 40), href: a.getAttribute('href') })) : [],
+    overflow_x: { scroll_width: document.documentElement.scrollWidth, viewport: vw, overflows: document.documentElement.scrollWidth > vw + 1 },
+    inventory: {
+      controls: document.querySelectorAll('a,button,[role=button],summary').length,
+      menu_controls: [...document.querySelectorAll('button[aria-expanded],button[aria-haspopup],[aria-controls],.hamburger,.menu-toggle,.burger,[class*="menu-btn"],[class*="menu-button"],[class*="nav-toggle"]')].filter(visible).length,
+      forms: document.querySelectorAll('form').length,
+      videos: document.querySelectorAll('video').length,
+      iframes: document.querySelectorAll('iframe').length,
+      details: document.querySelectorAll('details,[aria-expanded="false"]').length,
+    } };
 })()`;
 
 // What the Web Animations API says is animating right now.
@@ -375,6 +385,9 @@ export async function studyPage(browser, url, viewport, options) {
     const response = await bounded(page.goto(url, { waitUntil: "load", timeout: 60_000 }), "navigate", 70_000);
     record.status = response?.status() ?? null;
     record.final_url = page.url();
+    if (typeof record.status === "number" && record.status >= 400) {
+      throw Object.assign(new Error(`HTTP ${record.status} for ${url}; an error page is not a design to study`), { code: `http-${record.status}` });
+    }
     await sleep(2500);
     const first = await bounded(page.screenshot(), "first-screen", 60_000);
     record.first_screen = { file: `${prefix}-first-screen.png`, sha256: sha(first) };
@@ -472,6 +485,14 @@ export function sheet(study) {
   const cands = [...new Map((w?.motion?.mechanisms || []).map((m) => [m.type, m])).values()].slice(0, 5);
   for (const m of cands) lines.push(`- ${m.type}: ${m.detail || ""}`);
   if (!cands.length) lines.push("- no scroll or pointer mechanism detected; if this site is selected its signature is typographic, photographic or a color relationship, and the sheet frames must show it");
+  lines.push("", "## Studied (what this record actually read)");
+  for (const p of study.pages) {
+    const cov = p.motion ? `${p.motion.wheel_ticks ?? 0} wheel steps, ${Math.round((p.motion.scroll_coverage || 0) * 100)}% of windows active` : "no scroll pass";
+    const ov = p.layout?.overflow_x?.overflows ? `; HORIZONTAL OVERFLOW ${p.layout.overflow_x.scroll_width}px in a ${p.layout.overflow_x.viewport}px viewport` : "";
+    lines.push(`- ${p.role} ${p.viewport} ${p.url}: ${p.ok ? "ok" : "NOT STUDIED"}${p.status ? ` (HTTP ${p.status})` : ""}; ${cov}${p.hover ? `; ${p.hover.probed} controls hovered` : ""}${ov}`);
+  }
+  if (study.inner_pages) lines.push(`- inner pages: ${study.inner_pages.studied_ok} studied of ${study.inner_pages.requested} requested, ${study.inner_pages.discovered} discovered${study.inner_pages.failed.length ? `, failed: ${study.inner_pages.failed.join(", ")}` : ""}`);
+  if (study.not_studied?.length) { lines.push("", "## Not studied (needs eyes or a second run if it matters)"); for (const n of study.not_studied) lines.push(`- ${n}`); }
   if (study.problems.length) { lines.push("", "## Problems"); for (const p of study.problems) lines.push(`- ${p.page || ""} ${p.viewport || ""}: ${p.code}: ${p.message}`); }
   return lines.join("\n") + "\n";
 }
@@ -513,6 +534,9 @@ async function main() {
       finally { await context.close().catch(() => {}); }
     }
     study.inner_routes = inner;
+    if (args.inner > 0 && wideHome?.ok && inner.length === 0) {
+      study.problems.push({ page: "inner-discovery", code: "no-inner-links", message: `no same-origin inner links were found from the home page (${study.discovered_same_origin_links ?? 0} same-origin links seen; the navigation may sit behind a menu the tool did not open); inner pages studied: 0 of ${args.inner} requested` });
+    }
     for (const [index, url] of inner.entries()) {
       for (const viewport of VIEWPORTS) {
         const prefix = `${viewport.name}-inner${index + 1}`;
@@ -524,6 +548,22 @@ async function main() {
       }
     }
     study.complete = study.pages.filter((p) => p.role === "primary").every((p) => p.ok);
+    const innerOk = study.pages.filter((p) => p.role === "inner" && p.viewport === "wide" && p.ok).length;
+    const innerFailed = study.pages.filter((p) => p.role === "inner" && !p.ok).map((p) => `${p.url} (${p.viewport})`);
+    study.inner_pages = { requested: args.inner, discovered: inner.length, studied_ok: innerOk, failed: innerFailed };
+    for (const f of innerFailed) study.problems.push({ page: f, code: "inner-page-not-studied", message: "this inner page did not load or could not be read; it does not count as studied" });
+    // What this study did NOT exercise, so nobody mistakes a two-minute read for a full one.
+    const inv = wideHome?.layout?.inventory || {};
+    const ns = [];
+    if (inv.menu_controls) ns.push(`${inv.menu_controls} menu or disclosure control(s) were never opened; whatever they reveal was not read`);
+    if (wideHome?.hover) ns.push(`hover: ${wideHome.hover.probed} of ${inv.controls ?? "?"} controls were hovered, at rest on the first screen only`);
+    if (inv.videos) ns.push(`${inv.videos} video element(s): only autoplay flags were read, not the footage`);
+    if (inv.iframes) ns.push(`${inv.iframes} iframe(s) were not read`);
+    if (inv.forms) ns.push(`${inv.forms} form(s) were not filled or submitted`);
+    if (inv.details) ns.push(`${inv.details} collapsed element(s) stayed collapsed`);
+    ns.push(`inner pages: ${innerOk} studied of ${args.inner} requested (${inner.length} discovered); pages beyond those were not read`);
+    ns.push("page transitions, cursor-follow content, sound and load sequences longer than 2.5 s were not read");
+    study.not_studied = ns;
   } finally {
     await Promise.race([browser.close(), sleep(15_000)]).catch(() => {});
   }
@@ -532,7 +572,7 @@ async function main() {
   fs.writeFileSync(path.join(outDir, "study.json"), JSON.stringify(study, null, 2) + "\n");
   fs.writeFileSync(path.join(outDir, "sheet.md"), sheet(study));
   const summary = { ok: study.complete, id: args.id, out: outDir, elapsed_s: study.elapsed_s, pages: study.pages.map((p) => ({ url: p.url, viewport: p.viewport, role: p.role, ok: p.ok,
-    mechanisms: p.motion?.distinct_mechanisms ?? null, video: p.video?.file || null, contact_sheet: p.contact_sheet?.file || null })), problems: study.problems };
+    mechanisms: p.motion?.distinct_mechanisms ?? null, video: p.video?.file || null, contact_sheet: p.contact_sheet?.file || null })), inner_pages: study.inner_pages || null, not_studied: study.not_studied || [], problems: study.problems };
   process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
   if (!study.complete) process.exitCode = 1;
 }
