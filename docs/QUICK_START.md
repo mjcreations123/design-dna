@@ -2,6 +2,10 @@
 
 > **13.0.0:** the workflow is now study, plan, build, check with two commands,
 > `scripts/study_reference.mjs` and `scripts/check_build.mjs`; see `skills/design-dna/SKILL.md`.
+> **13.5.0:** research in two phases: `study_reference.mjs --quick` on every candidate,
+> `candidates_sheet.mjs` to choose from one image, full studies of the four selected only,
+> `plan_scaffold.mjs` for the measurable half of the plan. About half an hour.
+>
 > **13.3.0:** `check_build.mjs` prints five lines (CHECK (automated), FUNCTIONAL, REVIEW,
 > EVIDENCE, APPROVAL) and has an `--early` look; studies record observation gaps, drivers and
 > a sampled visible ground. Passing measurements never substitute for looking.
@@ -10,7 +14,7 @@
 > not part of the workflow.
 
 
-This guide describes the `13.4.0` development candidate. The version label is
+This guide describes the `13.5.0` development candidate. The version label is
 source identity, not release qualification; see the compatibility matrix and
 release procedure for current evidence.
 

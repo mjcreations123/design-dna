@@ -6,7 +6,12 @@
  * to COPY the site's front-end design, written by the tool, not by the AI.
  *
  *   node study_reference.mjs --url https://example.test/ --id strong-1 --out .design-dna/references
- *        [--inner 3] [--video-seconds 25] [--browser-executable FILE]
+ *        [--quick] [--inner 1] [--inner-widths wide|both] [--video-seconds 25] [--browser-executable FILE]
+ *
+ *   --quick   a one-minute look to judge a candidate: home page at both widths, fonts, sampled ground,
+ *             layout, the scroll mechanisms, an 8-second storyboard; no inner pages, no hover probe.
+ *             A quick look is for choosing; the full study is for copying, and the check refuses a
+ *             quick-looked reference as a selection.
  *
  * For each width (wide 1440x900, narrow 390x844) it records:
  *   - the design system out of the live CSS: fonts and where they load from,
@@ -53,13 +58,15 @@ const CONTACT_FRAMES = 8;
 const CALL_TIMEOUT_MS = 45_000;   // any single browser call; a page that is alive answers well within this
 
 function parseArgs(argv) {
-  const out = { url: null, id: null, outDir: null, inner: 3, videoSeconds: 25, browserExecutable: null, regions: [] };
+  const out = { url: null, id: null, outDir: null, inner: 1, innerWidths: "wide", videoSeconds: 25, quick: false, browserExecutable: null, regions: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--url") out.url = argv[++i];
     else if (a === "--id") out.id = argv[++i];
     else if (a === "--out") out.outDir = argv[++i];
     else if (a === "--inner") out.inner = Number(argv[++i]);
+    else if (a === "--inner-widths") out.innerWidths = String(argv[++i]);
+    else if (a === "--quick") out.quick = true;
     else if (a === "--region") out.regions.push(argv[++i]);
     else if (a === "--video-seconds") out.videoSeconds = Number(argv[++i]);
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
@@ -70,7 +77,9 @@ function parseArgs(argv) {
   if (!out.id || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(out.id)) fail("invalid-id", "--id must be a short lowercase slug.");
   if (!out.outDir) fail("invalid-out", "--out must name a directory.");
   if (!Number.isInteger(out.inner) || out.inner < 0 || out.inner > 8) fail("invalid-inner", "--inner must be 0-8.");
-  if (!Number.isFinite(out.videoSeconds) || out.videoSeconds < 10 || out.videoSeconds > 90) fail("invalid-video-seconds", "--video-seconds must be 10-90.");
+  if (!Number.isFinite(out.videoSeconds) || out.videoSeconds < 6 || out.videoSeconds > 90) fail("invalid-video-seconds", "--video-seconds must be 6-90.");
+  if (!["wide", "both"].includes(out.innerWidths)) fail("invalid-inner-widths", "--inner-widths must be wide or both.");
+  if (out.quick) { out.inner = 0; out.videoSeconds = Math.min(out.videoSeconds, 8); }
   return out;
 }
 function usage() {
@@ -531,7 +540,7 @@ export async function contactSheet(browser, frameDir, frames, outFile, label) {
 }
 
 export async function studyPage(browser, url, viewport, options) {
-  const { frameDir, videoDir, prefix, videoSeconds, full } = options;
+  const { frameDir, videoDir, prefix, videoSeconds, full, lite } = options;
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1,
     recordVideo: videoSeconds ? { dir: videoDir, size: { width: viewport.width, height: viewport.height } } : undefined });
   const page = await context.newPage();
@@ -556,19 +565,20 @@ export async function studyPage(browser, url, viewport, options) {
     }
     record.design = await bounded(page.evaluate(DESIGN_SYSTEM), "design-system");
     record.layout = await bounded(page.evaluate(LAYOUT), "layout");
-    if (full) {
+    if (full && !lite) {
       // Hover first, at rest on the first screen: a smooth-scroll library can
       // ignore window.scrollTo after a traversal and leave the page elsewhere.
       record.hover = await hoverProbe(page);
       record.at_rest = await restPass(page);
       record.motion = await motionPass(page, viewport);
       record.animations_by_depth = await animationsByDepth(page);
-    } else {
+    } else if (full || !lite) {
+      // a quick wide look still reads the scroll mechanisms; a quick narrow look reads design and layout only
       record.at_rest = await restPass(page);
       record.motion = await motionPass(page, viewport);
     }
     if (record.motion) record.motion.mechanisms = annotateDrivers(record.motion.mechanisms, record.at_rest);
-    record.ground_sampled = await groundSample(page, viewport);
+    record.ground_sampled = await groundSample(page, viewport, lite ? 8 : 16);
     if (videoSeconds) record.frames = await scrollThrough(page, viewport, videoSeconds, frameDir, prefix);
     // Supporting-region traversal is last: it must never consume first-visit
     // observer state before the ordinary motion probes and recording.
@@ -628,7 +638,7 @@ export function sheet(study) {
   const n = study.pages.find((p) => p.viewport === "narrow" && p.role === "primary");
   const d = w?.design || {};
   const lines = [];
-  lines.push(`# Reference sheet: ${study.url}`, "", `Studied ${study.studied_at} by ${TOOL} (schema ${SCHEMA_VERSION}). Every number below was read from the live site; nothing here was typed by hand.`, "");
+  lines.push(`# Reference sheet: ${study.url}`, "", `Studied ${study.studied_at} by ${TOOL} (schema ${SCHEMA_VERSION}${study.mode === "quick" ? ", QUICK LOOK: home only, for choosing, not for copying; run the full study before selecting" : ""}). Every number below was read from the live site; nothing here was typed by hand.`, "");
   lines.push("## Ground and ink");
   if (w?.ground_sampled?.grounds?.length) {
     lines.push(`Visible ground, sampled (${w.ground_sampled.method}):`);
@@ -706,10 +716,10 @@ async function main() {
   const loaded = resolvePlaywright({ moduleUrl: import.meta.url });
   const executable = discoverBrowserExecutable(loaded.playwright, args.browserExecutable);
   const browser = await loaded.playwright.chromium.launch({ executablePath: executable.path });
-  const study = { schema_version: SCHEMA_VERSION, tool: TOOL, id: args.id, url: args.url, studied_at: new Date().toISOString(), pages: [], problems: [], complete: false };
+  const study = { schema_version: SCHEMA_VERSION, tool: TOOL, id: args.id, url: args.url, mode: args.quick ? "quick" : "full", inner_widths: args.innerWidths, studied_at: new Date().toISOString(), pages: [], problems: [], complete: false };
   try {
     for (const viewport of VIEWPORTS) {
-      const record = await studyPage(browser, args.url, viewport, { frameDir, videoDir, prefix: `${viewport.name}-home`, videoSeconds: args.videoSeconds, full: true, regions: args.regions });
+      const record = await studyPage(browser, args.url, viewport, { frameDir, videoDir, prefix: `${viewport.name}-home`, videoSeconds: viewport.name === "wide" || !args.quick ? args.videoSeconds : 0, full: viewport.name === "wide" || !args.quick, lite: args.quick, regions: args.regions });
       record.role = "primary";
       if (record.frames?.length) record.contact_sheet = await contactSheet(browser, frameDir, record.frames, path.join(outDir, `${viewport.name}-home-contact-sheet.png`), `${args.url} — ${viewport.name} scroll-through, ${args.videoSeconds}s`);
       for (const p of record.problems) study.problems.push({ page: "home", viewport: viewport.name, ...p });
@@ -736,7 +746,7 @@ async function main() {
       study.problems.push({ page: "inner-discovery", code: "no-inner-links", message: `no same-origin inner links were found from the home page (${study.discovered_same_origin_links ?? 0} same-origin links seen; the navigation may sit behind a menu the tool did not open); inner pages studied: 0 of ${args.inner} requested` });
     }
     for (const [index, url] of inner.entries()) {
-      for (const viewport of VIEWPORTS) {
+      for (const viewport of VIEWPORTS.filter((v) => args.innerWidths === "both" || v.name === "wide")) {
         const prefix = `${viewport.name}-inner${index + 1}`;
         const record = await studyPage(browser, url, viewport, { frameDir, videoDir, prefix, videoSeconds: viewport.name === "wide" ? 10 : 0, full: false });
         record.role = "inner";
@@ -772,7 +782,7 @@ async function main() {
   study.runtime = { node: process.version, browser: executable.path, tool_sha256: sha(fs.readFileSync(fileURLToPath(import.meta.url))) };
   fs.writeFileSync(path.join(outDir, "study.json"), JSON.stringify(study, null, 2) + "\n");
   fs.writeFileSync(path.join(outDir, "sheet.md"), sheet(study));
-  const summary = { ok: study.complete, id: args.id, out: outDir, elapsed_s: study.elapsed_s, pages: study.pages.map((p) => ({ url: p.url, viewport: p.viewport, role: p.role, ok: p.ok,
+  const summary = { ok: study.complete, id: args.id, mode: study.mode, out: outDir, elapsed_s: study.elapsed_s, pages: study.pages.map((p) => ({ url: p.url, viewport: p.viewport, role: p.role, ok: p.ok,
     mechanisms: p.motion?.distinct_mechanisms ?? null, video: p.video?.file || null, contact_sheet: p.contact_sheet?.file || null })), inner_pages: study.inner_pages || null, observation_gaps: study.observation_gaps || [], not_studied: study.not_studied || [], problems: study.problems };
   process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
   if (!study.complete) process.exitCode = 1;

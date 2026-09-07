@@ -1,5 +1,47 @@
 # Changelog
 
+## 13.5.0 - Research in half an hour
+
+The owner: research took hours before a build began, and a person chooses
+four sites in twenty minutes by looking at them. In the Menucha build nine
+candidates had been studied at full depth, three inner pages each at both
+widths, before any of them was selected.
+
+- `study_reference.mjs --quick`: a look for choosing, about half a minute.
+  Home page at both widths, fonts and their sources, sampled ground, layout
+  outline, scroll mechanisms with drivers at desktop, an eight-second
+  storyboard; no hover probe, no Web Animations depth pass, no inner pages,
+  half the ground-sample positions. The study records `mode: "quick"`, its
+  sheet says so in the header, and `check_build.mjs` refuses a quick-looked
+  reference as a selection (evidence problem).
+- Inner pages default to one, at desktop width only (`--inner 1`,
+  `--inner-widths wide`); `--inner-widths both` restores the old behavior.
+  `--video-seconds` accepts 6 and up.
+- `candidates_sheet.mjs`: every study in a folder tiled into one image, the
+  desktop first screen beside the phone first screen beside the storyboard,
+  with a measured caption (fonts, sampled ground, mechanisms and drivers,
+  gaps, hover, seconds, mode). One picture to choose from.
+- `plan_scaffold.mjs`: the measurable half of plan.json written from the
+  studies: ids, urls, detected mechanisms with drivers, the two most-set
+  families with their sources (a commercial face comes back as a
+  `matched_for` stub), the dominant reference's sampled ground, gap stubs, a
+  `signature_spec` per reference from the regions the full study captured
+  (with the tool's evidence files and hashes), one section stub per captured
+  region with `source_region` and `signature_transfer`, and `system_sections`.
+  Every judgment says TODO.
+- `check_build.mjs` refuses a plan that still says TODO anywhere (plan problem).
+- `SKILL.md`: studying in two phases (quick looks, then full studies of the
+  four only), inner pages only for references the build copies inner pages
+  from, the scaffold in step 2, and "The clock": research in about half an
+  hour; past an hour, stop and say what took the time.
+- Measured on the owner's machine with the installed Chrome, one job at a
+  time: quick looks 31 s (heartandsoilflowers.com) and 34 s
+  (estellescottsdale.com) against 307 s and 138 s for the earlier full
+  studies; the candidates sheet 1 s; a full study of estellescottsdale.com
+  with one region and one inner page requested, 102 s; the scaffold under a
+  second. Eight quick looks, one sheet, four full studies and a scaffold come
+  to roughly fifteen minutes of machine time. Development candidate.
+
 ## 13.4.2 - Supporting capture order and hover evidence
 
 - Supporting-region captures run after ordinary probes and recording so adding them cannot consume first-visit reveal state before motion measurement.

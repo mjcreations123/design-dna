@@ -1,0 +1,2174 @@
+{
+  "schema_version": 2,
+  "tool": "study_reference.mjs",
+  "id": "estelle",
+  "url": "https://estellescottsdale.com/",
+  "studied_at": "2026-09-07T03:43:45.195Z",
+  "pages": [
+    {
+      "url": "https://estellescottsdale.com/",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.estellescottsdale.com/",
+      "first_screen": {
+        "file": "wide-home-first-screen.png",
+        "sha256": "631caddcb3de7350a92be69cd5b8edb47ade47184f1e2c5079c433ff189ace36"
+      },
+      "overlays": {
+        "overlays_at_load": [
+          {
+            "tag": "div",
+            "cls": "hero-text",
+            "share": 1,
+            "consent": false,
+            "bg": false,
+            "media": false,
+            "text": "This isn’t just a rooftop bar. It’s a pulse in the heart of Old Town. Two stories. Open air. Built for momentum. A space"
+          }
+        ],
+        "consent_found": false,
+        "dismissed": false,
+        "via": null,
+        "remaining": [
+          {
+            "tag": "div",
+            "cls": "hero-text",
+            "share": 1,
+            "consent": false,
+            "bg": false,
+            "media": false,
+            "text": "This isn’t just a rooftop bar. It’s a pulse in the heart of Old Town. Two stories. Open air. Built for momentum. A space"
+          }
+        ],
+        "choices_seen": []
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 4045
+        },
+        "grounds": [
+          {
+            "color": "rgb(252, 236, 210)",
+            "area_share": 0.483,
+            "elements": 3
+          },
+          {
+            "color": "rgb(218, 235, 224)",
+            "area_share": 0.117,
+            "elements": 1
+          },
+          {
+            "color": "rgba(10, 10, 10, 0.64)",
+            "area_share": 0.087,
+            "elements": 8
+          },
+          {
+            "color": "gradient:linear-gradient(rgb(252, 236, 210), rgba(0, 0, 0, 0))",
+            "area_share": 0.025,
+            "elements": 1
+          },
+          {
+            "color": "rgb(34, 45, 24)",
+            "area_share": 0,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(34, 45, 24)",
+            "weight": 11437
+          },
+          {
+            "color": "rgb(252, 236, 210)",
+            "weight": 2898
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Fustat",
+            "characters": 4
+          },
+          {
+            "family": "Spline Sans Mono",
+            "characters": 12
+          },
+          {
+            "family": "Ojuju",
+            "characters": 4
+          },
+          {
+            "family": "Oooh Baby",
+            "characters": 1
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "normal",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "200",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "800",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "200",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "800",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "600",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "900",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "900",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "500",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d83c93ae3a3e9228e_Savate-ExtraLightItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54da6afc5c030965268_Savate-ExtraBold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d5803e0a5e6e4660d_Savate-SemiBold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d117da35d0151d857_Savate-Medium.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d339a8b7c956f821f_Savate-BoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d1d5abf34030e2e3c_Savate-Bold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54dd74a1f2c5d2ad684_Savate-Italic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d6363a8f4ed9d0489_Savate-LightItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d27bdf3745985164a_Savate-Regular.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d8da0829a6486f440_Savate-ExtraLight.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54de198d22858185417_Savate-ExtraBoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d5b1e7e473367d7fc_Savate-SemiBoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d3167401aea0ce807_Savate-BlackItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d311a184569f7efa8_Savate-Black.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d69dfcb16e86855b9_Savate-MediumItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d88d623c5f3b3eaaa_Savate-Light.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "sheet": "https://fonts.googleapis.com/css?family=Fustat:300,400,500,600,700%7COjuju:300,400,500,600,700%7COooh+Baby:300,400,500,600,700%7CSpline+Sans+Mono:300,400,500,600,700",
+            "readable": false
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Fustat",
+            "size": 17.6,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(34, 45, 24)",
+            "sample": "This isn’t just a rooftop bar.  It’s a pulse in the heart of",
+            "characters": 395
+          },
+          {
+            "role": "body",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "4439 N Saddlebag TrailScottsdale, AZ 85251",
+            "characters": 162
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "RESERVATIONS",
+            "characters": 36
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 14,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(252, 236, 210)",
+            "sample": "Explore",
+            "characters": 27
+          },
+          {
+            "role": "h3",
+            "family": "Ojuju",
+            "size": 100.8,
+            "weight": "300",
+            "line_height": "100.8px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(252, 236, 210)",
+            "sample": "Experiences",
+            "characters": 25
+          },
+          {
+            "role": "display",
+            "family": "Oooh Baby",
+            "size": 48,
+            "weight": "400",
+            "line_height": "48px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(34, 45, 24)",
+            "sample": "Estelle in the air",
+            "characters": 18
+          },
+          {
+            "role": "display",
+            "family": "Ojuju",
+            "size": 72,
+            "weight": "400",
+            "line_height": "72px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(34, 45, 24)",
+            "sample": "Meet",
+            "characters": 11
+          },
+          {
+            "role": "nav",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "12.8px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "Day",
+            "characters": 8
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "the menu",
+            "characters": 8
+          },
+          {
+            "role": "nav",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "RESERVE",
+            "characters": 7
+          }
+        ],
+        "radii": [
+          {
+            "value": "100%",
+            "elements": 2
+          },
+          {
+            "value": "1440px",
+            "elements": 2
+          }
+        ],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "color 0.2s ease",
+            "elements": 10
+          },
+          {
+            "value": "background-color 0.425s ease",
+            "elements": 3
+          },
+          {
+            "value": "background-color 0.3s ease",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.6s ease-out",
+            "elements": 1
+          },
+          {
+            "value": "color 0.35s ease",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "home",
+            "w": 104,
+            "h": 60,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View Dark Mode",
+            "w": 56,
+            "h": 26,
+            "padding": "1.6px 3.2px",
+            "radius": "1440px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Reserve a table",
+            "w": 86,
+            "h": 32,
+            "padding": "5px 15px",
+            "radius": "0px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Spline Sans Mono 400 12.8px",
+            "transform": "uppercase",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open navigation menu",
+            "w": 40,
+            "h": 60,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "the menu",
+            "w": 93,
+            "h": 36,
+            "padding": "5px 15px",
+            "radius": "0px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Spline Sans Mono 400 12.8px",
+            "transform": "uppercase",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          }
+        ],
+        "libraries": [
+          "gsap",
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 14,
+          "svg": 16
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "page-wrapper",
+            "id": null,
+            "top": 0,
+            "height": 4045,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Experiences",
+            "text_chars": 2498,
+            "images": 14,
+            "videos": 0,
+            "links": 23,
+            "buttons": 5
+          }
+        ],
+        "header": {
+          "position": "relative",
+          "height": 100,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "",
+            "href": "#"
+          },
+          {
+            "text": "RESERVE",
+            "href": "https://www.opentable.com/booking/restref/availability?lang=en-US&correlationId=84d9af35-54d8-45dc-98de-cba9b17a3d8e&restRef=1491031&otSource=Restaurant%20website"
+          },
+          {
+            "text": "",
+            "href": "#"
+          }
+        ],
+        "overflow_x": {
+          "scroll_width": 1440,
+          "viewport": 1440,
+          "overflows": false
+        },
+        "horizontal_scrollers": [],
+        "inventory": {
+          "controls": 27,
+          "menu_controls": 2,
+          "forms": 1,
+          "videos": 0,
+          "iframes": 0,
+          "details": 0
+        }
+      },
+      "hover": {
+        "probed": 1,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "a the menu",
+            "w": 93,
+            "h": 36,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0.425s background-color",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "at_rest": {
+        "time_driven": [],
+        "count": 0,
+        "interval_ms": 1200
+      },
+      "motion": {
+        "wheel_ticks": 5,
+        "scroll_windows_active": 3,
+        "scroll_windows": 5,
+        "scroll_coverage": 0.6,
+        "distinct_mechanisms": 1,
+        "type_instances": {
+          "pinned": 6
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "nav-menu-three",
+            "w": 1400,
+            "h": 60,
+            "initial_top": 966,
+            "sample": "DAY\nNIGHT\nRESERVE",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1849,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1849px of scroll",
+            "driver": "scroll"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.2,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.4,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.6,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.8,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 1,
+          "count": 0,
+          "sample": []
+        }
+      ],
+      "ground_sampled": {
+        "method": "elementFromPoint on a 16x10 grid at 16 scroll positions; media is its own bucket; shares sum to 1",
+        "positions": 16,
+        "samples": 2560,
+        "media_share": 0.265,
+        "grounds": [
+          {
+            "color": "rgb(252, 236, 210)",
+            "samples": 1521,
+            "share": 0.594
+          },
+          {
+            "color": "rgba(10, 10, 10, 0.64)",
+            "samples": 216,
+            "share": 0.084
+          },
+          {
+            "color": "rgb(218, 235, 224)",
+            "samples": 144,
+            "share": 0.056
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "wide-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "6af317c8397f3c8da084402dea31050e721f379b875b388bd0ad288a0b505af8"
+        },
+        {
+          "file": "wide-home-t003.4s.png",
+          "t_s": 3.4,
+          "sha256": "bbc9857551a94f2943bf45f081dbe1c55668e3abf018086cffe3023320a3a34e"
+        },
+        {
+          "file": "wide-home-t006.5s.png",
+          "t_s": 6.5,
+          "sha256": "fde5bbdd5872553844c0a4200640870414ec4e152c135a27dce23e91c8ea71ab"
+        },
+        {
+          "file": "wide-home-t009.8s.png",
+          "t_s": 9.8,
+          "sha256": "e2118ef341bfe94b9f63d6d19f0b3669f2c02cd76558f403785e2b9354d99b90"
+        },
+        {
+          "file": "wide-home-t013.0s.png",
+          "t_s": 13,
+          "sha256": "c7eea0766f5d324207f795cf602ae6648a0d70ad810788eff2fa15c44fd51a4b"
+        },
+        {
+          "file": "wide-home-t016.4s.png",
+          "t_s": 16.4,
+          "sha256": "38305e4623b8dcc76d58771bbf258b96ae3a472add7de536c526a3e61636f585"
+        },
+        {
+          "file": "wide-home-t019.6s.png",
+          "t_s": 19.6,
+          "sha256": "043eb9dcc748fa9e6cdc8cd1fc2fb3f1aeca070bd8b8de73bddbd91f2fec49a3"
+        },
+        {
+          "file": "wide-home-t023.4s.png",
+          "t_s": 23.4,
+          "sha256": "f14f5cb7658482107822f541ddc7bad07e3abd0859b8868ad1a62ff2357bcedf"
+        }
+      ],
+      "observation_gaps": [
+        {
+          "code": "overlay-at-rest",
+          "message": "a fixed layer div.hero-text covers 100% of the viewport at rest (\"This isn’t just a rooftop bar. It’s a pulse in the heart of \"); what sits under it was not read"
+        }
+      ],
+      "video": {
+        "file": "wide-home.webm",
+        "bytes": 6533553,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "wide-home-contact-sheet.png",
+        "sha256": "8c317ea3c8c8f262807c3b6dea500c7cb5df14816a3f19de5334de0602e00112"
+      }
+    },
+    {
+      "url": "https://estellescottsdale.com/",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.estellescottsdale.com/",
+      "first_screen": {
+        "file": "narrow-home-first-screen.png",
+        "sha256": "c2e86fbc596cf7c73eb842852c375859b4ba75cdd2fa0393be311edde901f79a"
+      },
+      "overlays": {
+        "overlays_at_load": [],
+        "consent_found": false,
+        "dismissed": false,
+        "via": null,
+        "remaining": [],
+        "choices_seen": []
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 4882
+        },
+        "grounds": [
+          {
+            "color": "rgb(252, 236, 210)",
+            "area_share": 0.395,
+            "elements": 3
+          },
+          {
+            "color": "rgb(218, 235, 224)",
+            "area_share": 0.157,
+            "elements": 1
+          },
+          {
+            "color": "rgba(10, 10, 10, 0.64)",
+            "area_share": 0.078,
+            "elements": 8
+          },
+          {
+            "color": "gradient:linear-gradient(rgb(252, 236, 210), rgba(0, 0, 0, 0))",
+            "area_share": 0.016,
+            "elements": 1
+          },
+          {
+            "color": "rgb(34, 45, 24)",
+            "area_share": 0,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(34, 45, 24)",
+            "weight": 10645
+          },
+          {
+            "color": "rgb(252, 236, 210)",
+            "weight": 1743
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Fustat",
+            "characters": 4
+          },
+          {
+            "family": "Spline Sans Mono",
+            "characters": 12
+          },
+          {
+            "family": "Ojuju",
+            "characters": 2
+          },
+          {
+            "family": "Oooh Baby",
+            "characters": 1
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "normal",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "200",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "800",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "200",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "800",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "600",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "900",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "900",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "500",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Savate",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Fustat",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Ojuju",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Oooh Baby",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "300",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Spline Sans Mono",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d83c93ae3a3e9228e_Savate-ExtraLightItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54da6afc5c030965268_Savate-ExtraBold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d5803e0a5e6e4660d_Savate-SemiBold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d117da35d0151d857_Savate-Medium.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d339a8b7c956f821f_Savate-BoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d1d5abf34030e2e3c_Savate-Bold.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54dd74a1f2c5d2ad684_Savate-Italic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d6363a8f4ed9d0489_Savate-LightItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d27bdf3745985164a_Savate-Regular.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d8da0829a6486f440_Savate-ExtraLight.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54de198d22858185417_Savate-ExtraBoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d5b1e7e473367d7fc_Savate-SemiBoldItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d3167401aea0ce807_Savate-BlackItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d311a184569f7efa8_Savate-Black.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d69dfcb16e86855b9_Savate-MediumItalic.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "family": "Savate",
+            "src": "url(\"https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/6914c54d88d623c5f3b3eaaa_Savate-Light.ttf\") format(\"truetype\")",
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          },
+          {
+            "sheet": "https://fonts.googleapis.com/css?family=Fustat:300,400,500,600,700%7COjuju:300,400,500,600,700%7COooh+Baby:300,400,500,600,700%7CSpline+Sans+Mono:300,400,500,600,700",
+            "readable": false
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Fustat",
+            "size": 17.6,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(34, 45, 24)",
+            "sample": "This isn’t just a rooftop bar.  It’s a pulse in the heart of",
+            "characters": 395
+          },
+          {
+            "role": "body",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "4439 N Saddlebag TrailScottsdale, AZ 85251",
+            "characters": 162
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "RESERVATIONS",
+            "characters": 36
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 14,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(252, 236, 210)",
+            "sample": "Explore",
+            "characters": 27
+          },
+          {
+            "role": "h3",
+            "family": "Ojuju",
+            "size": 54.6,
+            "weight": "300",
+            "line_height": "54.6px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(252, 236, 210)",
+            "sample": "Experiences",
+            "characters": 25
+          },
+          {
+            "role": "display",
+            "family": "Oooh Baby",
+            "size": 48,
+            "weight": "400",
+            "line_height": "48px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(34, 45, 24)",
+            "sample": "Estelle in the air",
+            "characters": 18
+          },
+          {
+            "role": "nav",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "12.8px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "Day",
+            "characters": 8
+          },
+          {
+            "role": "control",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "the menu",
+            "characters": 8
+          },
+          {
+            "role": "nav",
+            "family": "Spline Sans Mono",
+            "size": 12.8,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(34, 45, 24)",
+            "sample": "RESERVE",
+            "characters": 7
+          }
+        ],
+        "radii": [
+          {
+            "value": "100%",
+            "elements": 2
+          },
+          {
+            "value": "390px",
+            "elements": 2
+          }
+        ],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "color 0.2s ease",
+            "elements": 10
+          },
+          {
+            "value": "background-color 0.425s ease",
+            "elements": 3
+          },
+          {
+            "value": "background-color 0.3s ease",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.6s ease-out",
+            "elements": 1
+          },
+          {
+            "value": "color 0.35s ease",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "home",
+            "w": 78,
+            "h": 51,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View Dark Mode",
+            "w": 56,
+            "h": 26,
+            "padding": "1.6px 3.2px",
+            "radius": "390px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Reserve a table",
+            "w": 86,
+            "h": 32,
+            "padding": "5px 15px",
+            "radius": "0px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Spline Sans Mono 400 12.8px",
+            "transform": "uppercase",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open navigation menu",
+            "w": 40,
+            "h": 60,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Fustat 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "the menu",
+            "w": 93,
+            "h": 36,
+            "padding": "5px 15px",
+            "radius": "0px",
+            "border": "1px solid rgb(34, 45, 24)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(34, 45, 24)",
+            "font": "Spline Sans Mono 400 12.8px",
+            "transform": "uppercase",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/68dc41490cd9feebc14eafaa/css/estelle-open-air-restaurant-club---scot.webflow.shared.f3d8749df.css"
+          }
+        ],
+        "libraries": [
+          "gsap",
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 14,
+          "svg": 16
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "page-wrapper",
+            "id": null,
+            "top": 0,
+            "height": 4882,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Experiences",
+            "text_chars": 2498,
+            "images": 14,
+            "videos": 0,
+            "links": 23,
+            "buttons": 5
+          }
+        ],
+        "header": {
+          "position": "relative",
+          "height": 80,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "",
+            "href": "#"
+          },
+          {
+            "text": "RESERVE",
+            "href": "https://www.opentable.com/booking/restref/availability?lang=en-US&correlationId=84d9af35-54d8-45dc-98de-cba9b17a3d8e&restRef=1491031&otSource=Restaurant%20website"
+          },
+          {
+            "text": "",
+            "href": "#"
+          }
+        ],
+        "overflow_x": {
+          "scroll_width": 390,
+          "viewport": 390,
+          "overflows": false
+        },
+        "horizontal_scrollers": [],
+        "inventory": {
+          "controls": 27,
+          "menu_controls": 2,
+          "forms": 1,
+          "videos": 0,
+          "iframes": 0,
+          "details": 0
+        }
+      },
+      "hover": {
+        "probed": 1,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "a View Dark Mode",
+            "w": 56,
+            "h": 26,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "at_rest": {
+        "time_driven": [],
+        "count": 0,
+        "interval_ms": 1200
+      },
+      "motion": {
+        "wheel_ticks": 7,
+        "scroll_windows_active": 5,
+        "scroll_windows": 7,
+        "scroll_coverage": 0.71,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "pinned": 6,
+          "reveal": 2
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "nav-menu-three",
+            "w": 280,
+            "h": 80,
+            "initial_top": 844,
+            "sample": "DAY\nNIGHT\nRESERVE",
+            "content_travels_through": true,
+            "held_ticks": 5,
+            "held_px": 2822,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 2822px of scroll",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "u-fade-in",
+            "w": 318,
+            "h": 120,
+            "initial_top": 1548,
+            "sample": "A space designed to move with you, n",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.2,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.4,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.6,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.8,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 1,
+          "count": 0,
+          "sample": []
+        }
+      ],
+      "ground_sampled": {
+        "method": "elementFromPoint on a 16x10 grid at 16 scroll positions; media is its own bucket; shares sum to 1",
+        "positions": 16,
+        "samples": 2560,
+        "media_share": 0.285,
+        "grounds": [
+          {
+            "color": "rgb(252, 236, 210)",
+            "samples": 1401,
+            "share": 0.547
+          },
+          {
+            "color": "rgb(218, 235, 224)",
+            "samples": 261,
+            "share": 0.102
+          },
+          {
+            "color": "rgba(10, 10, 10, 0.64)",
+            "samples": 169,
+            "share": 0.066
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "narrow-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "3a3ed822cd4bc8db0853351bde90d94ebfd71fdfa5ad1eb55ac4f312edf36b56"
+        },
+        {
+          "file": "narrow-home-t003.0s.png",
+          "t_s": 3,
+          "sha256": "903bc09ff25128b441faa9ad93b92d1cc0b00fc1cb33323ab36cc069e4f3ed2f"
+        },
+        {
+          "file": "narrow-home-t006.2s.png",
+          "t_s": 6.2,
+          "sha256": "1b429b98e6ea97005c669b281f76160e28cfce5eae9005fb3cb5bf3eee1a9548"
+        },
+        {
+          "file": "narrow-home-t009.2s.png",
+          "t_s": 9.2,
+          "sha256": "55f2c16160f56f15c6a1cee0e6168afeaa9784fd7c5d47ccc52ddd527d9fed0a"
+        },
+        {
+          "file": "narrow-home-t012.3s.png",
+          "t_s": 12.3,
+          "sha256": "ba31df77271f73c7d8e8e9547cb3e1f210f45839d8b22a4a8db955f210fdbbbe"
+        },
+        {
+          "file": "narrow-home-t015.3s.png",
+          "t_s": 15.3,
+          "sha256": "148ecbb90283299993ba8141e84b19db5d8f8a9d7ceb8d4fddd8b2d87a6b27e5"
+        },
+        {
+          "file": "narrow-home-t018.4s.png",
+          "t_s": 18.4,
+          "sha256": "3291a2dc79c9634f4da6008d8aa30cd7dff027d993d43075d74b30943b53af1c"
+        },
+        {
+          "file": "narrow-home-t021.8s.png",
+          "t_s": 21.8,
+          "sha256": "d026abcdf9fff7364dfae5ec1b7938e821cc6150fb8c8d4dfa40d26c3c09dc06"
+        }
+      ],
+      "observation_gaps": [],
+      "video": {
+        "file": "narrow-home.webm",
+        "bytes": 5158188,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "narrow-home-contact-sheet.png",
+        "sha256": "8a586738b98689515071fa4fcfae8f19034982ee1d7dbf23a1873eef9eb1d492"
+      }
+    }
+  ],
+  "problems": [
+    {
+      "page": "inner-discovery",
+      "code": "no-inner-links",
+      "message": "no same-origin inner links were found from the home page (0 same-origin links seen; the navigation may sit behind a menu the tool did not open); inner pages studied: 0 of 2 requested"
+    }
+  ],
+  "complete": true,
+  "discovered_same_origin_links": 0,
+  "inner_routes": [],
+  "inner_pages": {
+    "requested": 2,
+    "discovered": 0,
+    "studied_ok": 0,
+    "failed": []
+  },
+  "not_studied": [
+    "2 menu or disclosure control(s) were never opened; whatever they reveal was not read",
+    "hover: 1 of 27 controls were hovered, at rest on the first screen only",
+    "1 form(s) were not filled or submitted",
+    "inner pages: 0 studied of 2 requested (0 discovered); pages beyond those were not read",
+    "page transitions, cursor-follow content, sound and load sequences longer than 2.5 s were not read"
+  ],
+  "observation_gaps": [
+    {
+      "page": "home",
+      "viewport": "wide",
+      "code": "overlay-at-rest",
+      "message": "a fixed layer div.hero-text covers 100% of the viewport at rest (\"This isn’t just a rooftop bar. It’s a pulse in the heart of \"); what sits under it was not read"
+    }
+  ],
+  "elapsed_s": 138,
+  "runtime": {
+    "node": "v26.3.0",
+    "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "tool_sha256": "fdd4403e7b241d6dab17d9072d8e27bc2dc9133e0150a4ff2ec8963dc4074f3f"
+  }
+}

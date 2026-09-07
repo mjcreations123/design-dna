@@ -1,0 +1,2079 @@
+{
+  "schema_version": 2,
+  "tool": "study_reference.mjs",
+  "id": "heart-and-soil",
+  "url": "https://www.heartandsoilflowers.com/",
+  "mode": "quick",
+  "inner_widths": "wide",
+  "studied_at": "2026-09-07T21:55:39.109Z",
+  "pages": [
+    {
+      "url": "https://www.heartandsoilflowers.com/",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.heartandsoilflowers.com/",
+      "first_screen": {
+        "file": "wide-home-first-screen.png",
+        "sha256": "2ab058d9f3a7d31bc7efe0d0de728e1a4bda121c8dab96253657b0bbbef872c4"
+      },
+      "overlays": {
+        "overlays_at_load": [],
+        "consent_found": false,
+        "dismissed": false,
+        "via": null,
+        "remaining": [],
+        "choices_seen": []
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 5678
+        },
+        "grounds": [
+          {
+            "color": "rgb(237, 235, 223)",
+            "area_share": 0.389,
+            "elements": 4
+          },
+          {
+            "color": "rgb(46, 59, 20)",
+            "area_share": 0.214,
+            "elements": 3
+          },
+          {
+            "color": "rgb(214, 201, 181)",
+            "area_share": 0.142,
+            "elements": 1
+          },
+          {
+            "color": "rgb(173, 159, 55)",
+            "area_share": 0.134,
+            "elements": 1
+          },
+          {
+            "color": "rgb(220, 217, 200)",
+            "area_share": 0.1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(173, 173, 196)",
+            "area_share": 0.085,
+            "elements": 2
+          },
+          {
+            "color": "rgb(63, 82, 26)",
+            "area_share": 0.016,
+            "elements": 2
+          },
+          {
+            "color": "gradient:linear-gradient(90deg, rgb(237, 235, 223), rgba(255, 255, 255, 0))",
+            "area_share": 0.001,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(63, 82, 26)",
+            "weight": 60256
+          },
+          {
+            "color": "rgb(237, 235, 223)",
+            "weight": 29717
+          },
+          {
+            "color": "rgb(229, 231, 123)",
+            "weight": 1094
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Cardinal Fruit",
+            "characters": 23
+          },
+          {
+            "family": "sweet-sans-pro",
+            "characters": 25
+          },
+          {
+            "family": "Baskervville",
+            "characters": 9
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "normal",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "sweet-sans-pro",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "src": "url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/6787dc903031a74592c02219_CardinalFruitWeb-Regular.woff2\") format(\"woff2\"), url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e0",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "src": "url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/6787dc903ac991e59de35748_CardinalFruitWeb-Italic.woff2\") format(\"woff2\"), url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "sheet": "https://fonts.googleapis.com/css?family=Baskervville:300,400,500,600,700",
+            "readable": false
+          },
+          {
+            "family": "sweet-sans-pro",
+            "src": "url(\"https://use.typekit.net/af/b65d74/00000000000000007735c62d/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "display",
+            "family": "Cardinal Fruit",
+            "size": 36,
+            "weight": "400",
+            "line_height": "50.4px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Kelsey and her team are incredible. Flowers were probably th",
+            "characters": 1508
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 50.4,
+            "weight": "400",
+            "line_height": "70.56px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Heart & Soil is a floral studio committed to creating season",
+            "characters": 446
+          },
+          {
+            "role": "nav",
+            "family": "sweet-sans-pro",
+            "size": 12,
+            "weight": "700",
+            "line_height": "21px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(63, 82, 26)",
+            "sample": "as seen in",
+            "characters": 207
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 26.6,
+            "weight": "400",
+            "line_height": "37.296px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "We are a floral design studio rooted in New York’s Hudson Va",
+            "characters": 166
+          },
+          {
+            "role": "nav",
+            "family": "Baskervville",
+            "size": 14,
+            "weight": "400",
+            "line_height": "19.6px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "©document.write(new Date().getFullYear())2026 Heart & Soil",
+            "characters": 70
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 32,
+            "weight": "400",
+            "line_height": "44.8px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "See our services",
+            "characters": 52
+          },
+          {
+            "role": "body",
+            "family": "Baskervville",
+            "size": 14.4,
+            "weight": "400",
+            "line_height": "25.92px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "New York, NY",
+            "characters": 48
+          },
+          {
+            "role": "nav",
+            "family": "sweet-sans-pro",
+            "size": 12,
+            "weight": "700",
+            "line_height": "16.8px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(63, 82, 26)",
+            "sample": "our work",
+            "characters": 47
+          },
+          {
+            "role": "nav",
+            "family": "Baskervville",
+            "size": 18,
+            "weight": "400",
+            "line_height": "25.2px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "inquiries@heartandsoilflowers.com",
+            "characters": 45
+          },
+          {
+            "role": "body",
+            "family": "Baskervville",
+            "size": 14,
+            "weight": "400",
+            "line_height": "19.6px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(229, 231, 123)",
+            "sample": "Now accepting inquiries for 2026 & 2027",
+            "characters": 39
+          },
+          {
+            "role": "nav",
+            "family": "sweet-sans-pro",
+            "size": 13,
+            "weight": "700",
+            "line_height": "20px",
+            "letter_spacing": "3px",
+            "transform": "uppercase",
+            "color": "rgb(229, 231, 123)",
+            "sample": "Our Work",
+            "characters": 32
+          },
+          {
+            "role": "control",
+            "family": "sweet-sans-pro",
+            "size": 12,
+            "weight": "700",
+            "line_height": "21px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Christian",
+            "characters": 27
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 57.6,
+            "weight": "400",
+            "line_height": "80.64px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "Spring",
+            "characters": 22
+          },
+          {
+            "role": "body",
+            "family": "sweet-sans-pro",
+            "size": 12,
+            "weight": "700",
+            "line_height": "18px",
+            "letter_spacing": "3px",
+            "transform": "uppercase",
+            "color": "rgb(229, 231, 123)",
+            "sample": "inquire now",
+            "characters": 11
+          }
+        ],
+        "radii": [
+          {
+            "value": "100px",
+            "elements": 2
+          },
+          {
+            "value": "200px",
+            "elements": 1
+          }
+        ],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "opacity 0.4s ease",
+            "elements": 16
+          },
+          {
+            "value": "all, opacity 0s, 1s ease, ease-in-out",
+            "elements": 2
+          },
+          {
+            "value": "background-color, opacity, color 0.4s, 0.4s, 0.4s ease, ease, ease",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Our Work",
+            "w": 143,
+            "h": 32,
+            "padding": "6px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "3px"
+          },
+          {
+            "tag": "a",
+            "text": "Services",
+            "w": 143,
+            "h": 32,
+            "padding": "6px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "3px"
+          },
+          {
+            "tag": "a",
+            "text": "About",
+            "w": 143,
+            "h": 32,
+            "padding": "6px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "3px"
+          },
+          {
+            "tag": "a",
+            "text": "Photostream",
+            "w": 143,
+            "h": 32,
+            "padding": "6px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "3px"
+          },
+          {
+            "tag": "a",
+            "text": "home",
+            "w": 288,
+            "h": 40,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(51, 51, 51)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(51, 51, 51)",
+            "font": "PT Mono 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "inquire now",
+            "w": 115,
+            "h": 115,
+            "padding": "0px",
+            "radius": "100px",
+            "border": "1px solid rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "2px"
+          },
+          {
+            "tag": "a",
+            "text": "See our services",
+            "w": 169,
+            "h": 46,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Spring",
+            "w": 128,
+            "h": 81,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Summer",
+            "w": 168,
+            "h": 81,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "name": "slide",
+            "steps": 2,
+            "sheet": "inline"
+          },
+          {
+            "name": "slidealt",
+            "steps": 2,
+            "sheet": "inline"
+          }
+        ],
+        "libraries": [
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 42,
+          "svg": 1
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "navigation w-nav",
+            "id": null,
+            "top": 0,
+            "height": 213,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "absolute",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 93,
+            "images": 2,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 0,
+            "links": 7,
+            "buttons": 1
+          },
+          {
+            "tag": "header",
+            "class": "section_home-hero",
+            "id": null,
+            "top": 0,
+            "height": 810,
+            "width": 1440,
+            "ground": "rgb(46, 59, 20)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 13,
+            "images": 0,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-about",
+            "id": null,
+            "top": 810,
+            "height": 675,
+            "width": 1440,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 860,
+            "images": 17,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 1,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "home-about-images",
+            "id": null,
+            "top": 1485,
+            "height": 810,
+            "width": 1440,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 7,
+            "videos": 0,
+            "item_count": 8,
+            "icon_items": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-portfolio",
+            "id": null,
+            "top": 2295,
+            "height": 809,
+            "width": 1440,
+            "ground": "rgb(214, 201, 181)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 236,
+            "images": 1,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 0,
+            "links": 5,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-intro",
+            "id": null,
+            "top": 3104,
+            "height": 569,
+            "width": 1440,
+            "ground": "rgb(220, 217, 200)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 161,
+            "images": 1,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 1,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "slider w-slider",
+            "id": null,
+            "top": 3674,
+            "height": 800,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 1587,
+            "images": 5,
+            "videos": 0,
+            "item_count": 4,
+            "icon_items": 1,
+            "links": 4,
+            "buttons": 6
+          },
+          {
+            "tag": "header",
+            "class": "section_cta",
+            "id": null,
+            "top": 4474,
+            "height": 720,
+            "width": 1440,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 39,
+            "images": 5,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 1,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_footer",
+            "id": null,
+            "top": 5194,
+            "height": 484,
+            "width": 1440,
+            "ground": "rgb(173, 173, 196)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 469,
+            "images": 4,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 0,
+            "links": 10,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "absolute",
+          "height": 213,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 7
+        },
+        "nav_links": [
+          {
+            "text": "Our Work",
+            "href": "/work"
+          },
+          {
+            "text": "Services",
+            "href": "/our-services"
+          },
+          {
+            "text": "About",
+            "href": "/about"
+          },
+          {
+            "text": "Photostream",
+            "href": "/photostream"
+          },
+          {
+            "text": "Inquire Now",
+            "href": "/contact"
+          }
+        ],
+        "overflow_x": {
+          "scroll_width": 1440,
+          "viewport": 1440,
+          "overflows": false
+        },
+        "horizontal_scrollers": [],
+        "inventory": {
+          "controls": 36,
+          "menu_controls": 1,
+          "forms": 0,
+          "videos": 0,
+          "iframes": 0,
+          "details": 1
+        }
+      },
+      "at_rest": {
+        "time_driven": [
+          {
+            "tag": "div",
+            "cls": "home-hero-image-container",
+            "w": 720,
+            "h": 582
+          },
+          {
+            "tag": "div",
+            "cls": "home-hero-container",
+            "w": 720,
+            "h": 432
+          },
+          {
+            "tag": "div",
+            "cls": "home-hero-image",
+            "w": 360,
+            "h": 432
+          },
+          {
+            "tag": "div",
+            "cls": "slider-2 w-slider",
+            "w": 358,
+            "h": 430
+          },
+          {
+            "tag": "div",
+            "cls": "w-slider-mask",
+            "w": 358,
+            "h": 430
+          },
+          {
+            "tag": "div",
+            "cls": "slide-6 w-slide",
+            "w": 358,
+            "h": 430
+          },
+          {
+            "tag": "div",
+            "cls": "slide-7 w-slide",
+            "w": 358,
+            "h": 430
+          },
+          {
+            "tag": "div",
+            "cls": "clients-grid logo-animate",
+            "w": 1920,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 158,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 158,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 293,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "div",
+            "cls": "clients-grid logo-animate",
+            "w": 1920,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 158,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 158,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 293,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          },
+          {
+            "tag": "img",
+            "cls": "client-logo",
+            "w": 171,
+            "h": 64
+          }
+        ],
+        "count": 25,
+        "interval_ms": 1200
+      },
+      "motion": {
+        "wheel_ticks": 8,
+        "scroll_windows_active": 8,
+        "scroll_windows": 8,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 1,
+        "type_instances": {
+          "reveal": 12
+        },
+        "mechanisms": [
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > header:nth-child(3) > div:nth-child(2)",
+            "tag": "div",
+            "cls": "home-services",
+            "w": 1008,
+            "h": 360,
+            "initial_top": 1005,
+            "sample": "Heart & Soil is a floral studio comm",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > header:nth-child(6) > div:nth-child(1)",
+            "tag": "div",
+            "cls": "text-wrapper",
+            "w": 1008,
+            "h": 289,
+            "initial_top": 1300,
+            "sample": "For more than a decade, Heart & Soil",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > header:nth-child(8) > div:nth-child(1)",
+            "tag": "div",
+            "cls": "cta-text",
+            "w": 864,
+            "h": 277,
+            "initial_top": 1455,
+            "sample": "We’d love to hear from you.\nInquire ",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(5)",
+            "tag": "div",
+            "cls": "collage-image-container-5",
+            "w": 259,
+            "h": 770,
+            "initial_top": 1526,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > header:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2)",
+            "tag": "div",
+            "cls": "slide-6 w-slide",
+            "w": 358,
+            "h": 430,
+            "initial_top": 190,
+            "sample": "",
+            "opacity_from": 0.13,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "time"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(7)",
+            "tag": "div",
+            "cls": "collage-image-container-7",
+            "w": 216,
+            "h": 648,
+            "initial_top": 1647,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(4)",
+            "tag": "div",
+            "cls": "collage-image-container-4",
+            "w": 216,
+            "h": 608,
+            "initial_top": 1688,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.98,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > header:nth-child(8) > div:nth-child(2) > div:nth-child(2)",
+            "tag": "div",
+            "cls": "cta-image-wrapper-2",
+            "w": 173,
+            "h": 670,
+            "initial_top": 1284,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.98,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(1)",
+            "tag": "div",
+            "cls": "collage-image-container-1",
+            "w": 216,
+            "h": 405,
+            "initial_top": 1161,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(2)",
+            "tag": "div",
+            "cls": "collage-image-container-2",
+            "w": 216,
+            "h": 249,
+            "initial_top": 1485,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(6)",
+            "tag": "div",
+            "cls": "collage-image-container-6",
+            "w": 202,
+            "h": 256,
+            "initial_top": 1307,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.84,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          },
+          {
+            "type": "reveal",
+            "selector": "html:nth-child(1) > body:nth-child(2) > div:nth-child(1) > main:nth-child(1) > div:nth-child(4) > div:nth-child(3)",
+            "tag": "div",
+            "cls": "collage-image-container-3",
+            "w": 173,
+            "h": 215,
+            "initial_top": 1323,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.84,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view",
+            "driver": "scroll"
+          }
+        ]
+      },
+      "ground_sampled": {
+        "method": "elementFromPoint on a 16x10 grid at 8 scroll positions; media is its own bucket; shares sum to 1",
+        "positions": 8,
+        "samples": 1280,
+        "media_share": 0.63,
+        "grounds": [
+          {
+            "color": "rgb(237, 235, 223)",
+            "samples": 272,
+            "share": 0.212
+          },
+          {
+            "color": "rgb(173, 173, 196)",
+            "samples": 87,
+            "share": 0.068
+          },
+          {
+            "color": "rgb(63, 82, 26)",
+            "samples": 59,
+            "share": 0.046
+          },
+          {
+            "color": "rgb(220, 217, 200)",
+            "samples": 48,
+            "share": 0.037
+          },
+          {
+            "color": "rgb(214, 201, 181)",
+            "samples": 8,
+            "share": 0.006
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "wide-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "ca1844ed4db80f78ac3a69f31ad22a0a7519d302ea06d46f860e0f40643e237b"
+        },
+        {
+          "file": "wide-home-t001.0s.png",
+          "t_s": 1,
+          "sha256": "f51fb0d606ff6a34bab5d744db167f7005ce0defa9d2061800ed1ac79e0d1683"
+        },
+        {
+          "file": "wide-home-t002.0s.png",
+          "t_s": 2,
+          "sha256": "ea7983c413569063f78cdd2cbea65351173cd2a086d7e9c99fb2bd33cc846e8a"
+        },
+        {
+          "file": "wide-home-t002.9s.png",
+          "t_s": 2.9,
+          "sha256": "b8cd58d5b5cf75ee68b9a8887f9d1f21901703c54b9ae12b47e1849b71b6c0d0"
+        },
+        {
+          "file": "wide-home-t003.9s.png",
+          "t_s": 3.9,
+          "sha256": "67d6f77ef8621380d584a60ea8edbf6bdb44d1bfc8149d136ff1aff96fa7ee91"
+        },
+        {
+          "file": "wide-home-t004.9s.png",
+          "t_s": 4.9,
+          "sha256": "af4bd7d9c231cb4787f577f00fa227b083fec4b37c2ebc4e38468d790fea50da"
+        },
+        {
+          "file": "wide-home-t005.9s.png",
+          "t_s": 5.9,
+          "sha256": "8f5c1fae4a7bffba79781ed8eaf10b56180c865941fa019b23ba2aa95d4e09a2"
+        },
+        {
+          "file": "wide-home-t006.8s.png",
+          "t_s": 6.8,
+          "sha256": "6af7a0698bb606b5832e2ed845c0798fef0b74777f788784bab1f099f24c0c89"
+        }
+      ],
+      "regions": [],
+      "observation_gaps": [],
+      "video": {
+        "file": "wide-home.webm",
+        "bytes": 2813959,
+        "seconds": 8
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "wide-home-contact-sheet.png",
+        "sha256": "d11e041474e1cfbe1dccb7e969d418d0ec233f1fb9fbc2087110ff1e43b2617c"
+      }
+    },
+    {
+      "url": "https://www.heartandsoilflowers.com/",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.heartandsoilflowers.com/",
+      "first_screen": {
+        "file": "narrow-home-first-screen.png",
+        "sha256": "4c05949231991ef067ebd098efa1f1c4ac0c47b2e5d3b264eb86e199d0ccc425"
+      },
+      "overlays": {
+        "overlays_at_load": [],
+        "consent_found": false,
+        "dismissed": false,
+        "via": null,
+        "remaining": [],
+        "choices_seen": []
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 3976
+        },
+        "grounds": [
+          {
+            "color": "rgb(237, 235, 223)",
+            "area_share": 0.359,
+            "elements": 3
+          },
+          {
+            "color": "rgb(46, 59, 20)",
+            "area_share": 0.253,
+            "elements": 3
+          },
+          {
+            "color": "rgb(173, 173, 196)",
+            "area_share": 0.162,
+            "elements": 2
+          },
+          {
+            "color": "rgb(173, 159, 55)",
+            "area_share": 0.126,
+            "elements": 1
+          },
+          {
+            "color": "rgb(214, 201, 181)",
+            "area_share": 0.113,
+            "elements": 1
+          },
+          {
+            "color": "rgb(220, 217, 200)",
+            "area_share": 0.1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(63, 82, 26)",
+            "area_share": 0.012,
+            "elements": 2
+          },
+          {
+            "color": "gradient:linear-gradient(90deg, rgb(237, 235, 223), rgba(255, 255, 255, 0))",
+            "area_share": 0.002,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(63, 82, 26)",
+            "weight": 33070
+          },
+          {
+            "color": "rgb(237, 235, 223)",
+            "weight": 18199
+          },
+          {
+            "color": "rgb(229, 231, 123)",
+            "weight": 534
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Cardinal Fruit",
+            "characters": 23
+          },
+          {
+            "family": "Baskervville",
+            "characters": 9
+          },
+          {
+            "family": "sweet-sans-pro",
+            "characters": 12
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "normal",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "500",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "500",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "600",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "600",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Baskervville",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "sweet-sans-pro",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "src": "url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/6787dc903031a74592c02219_CardinalFruitWeb-Regular.woff2\") format(\"woff2\"), url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e0",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "family": "Cardinal Fruit",
+            "src": "url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/6787dc903ac991e59de35748_CardinalFruitWeb-Italic.woff2\") format(\"woff2\"), url(\"https://cdn.prod.website-files.com/675c5d232754d6ecc7e03",
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "sheet": "https://fonts.googleapis.com/css?family=Baskervville:300,400,500,600,700",
+            "readable": false
+          },
+          {
+            "family": "sweet-sans-pro",
+            "src": "url(\"https://use.typekit.net/af/b65d74/00000000000000007735c62d/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n7&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Cardinal Fruit",
+            "size": 21.6,
+            "weight": "400",
+            "line_height": "30.303px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Kelsey and her team are incredible. Flowers were probably th",
+            "characters": 780
+          },
+          {
+            "role": "body",
+            "family": "Cardinal Fruit",
+            "size": 21.5,
+            "weight": "400",
+            "line_height": "32.175px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "If you have no idea what you want, but know that what you wa",
+            "characters": 728
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 23.4,
+            "weight": "400",
+            "line_height": "32.76px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Heart & Soil is a floral studio committed to creating season",
+            "characters": 446
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 19.5,
+            "weight": "400",
+            "line_height": "27.3px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "We are a floral design studio rooted in New York’s Hudson Va",
+            "characters": 166
+          },
+          {
+            "role": "nav",
+            "family": "Baskervville",
+            "size": 12,
+            "weight": "400",
+            "line_height": "16.8px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "©document.write(new Date().getFullYear())2026 Heart & Soil",
+            "characters": 70
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 24,
+            "weight": "400",
+            "line_height": "33.6px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "See our services",
+            "characters": 52
+          },
+          {
+            "role": "nav",
+            "family": "sweet-sans-pro",
+            "size": 10.4,
+            "weight": "700",
+            "line_height": "14.56px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(63, 82, 26)",
+            "sample": "our work",
+            "characters": 47
+          },
+          {
+            "role": "nav",
+            "family": "Baskervville",
+            "size": 15.6,
+            "weight": "400",
+            "line_height": "21.84px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "inquiries@heartandsoilflowers.com",
+            "characters": 45
+          },
+          {
+            "role": "body",
+            "family": "Baskervville",
+            "size": 12,
+            "weight": "400",
+            "line_height": "16.8px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(229, 231, 123)",
+            "sample": "Now accepting inquiries for 2026 & 2027",
+            "characters": 39
+          },
+          {
+            "role": "control",
+            "family": "sweet-sans-pro",
+            "size": 10.4,
+            "weight": "700",
+            "line_height": "18.2px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(63, 82, 26)",
+            "sample": "Christian",
+            "characters": 27
+          },
+          {
+            "role": "body",
+            "family": "Baskervville",
+            "size": 13.6,
+            "weight": "400",
+            "line_height": "24.48px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(63, 82, 26)",
+            "sample": "New York, NY",
+            "characters": 24
+          },
+          {
+            "role": "body",
+            "family": "Baskervville",
+            "size": 13.6,
+            "weight": "400",
+            "line_height": "21.76px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "New York, NY",
+            "characters": 24
+          },
+          {
+            "role": "nav",
+            "family": "Cardinal Fruit",
+            "size": 31.2,
+            "weight": "400",
+            "line_height": "43.68px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(237, 235, 223)",
+            "sample": "Spring",
+            "characters": 22
+          },
+          {
+            "role": "nav",
+            "family": "sweet-sans-pro",
+            "size": 10.4,
+            "weight": "700",
+            "line_height": "18.2px",
+            "letter_spacing": "2px",
+            "transform": "uppercase",
+            "color": "rgb(237, 235, 223)",
+            "sample": "through the seasons",
+            "characters": 19
+          },
+          {
+            "role": "body",
+            "family": "sweet-sans-pro",
+            "size": 6,
+            "weight": "700",
+            "line_height": "10px",
+            "letter_spacing": "1.5px",
+            "transform": "uppercase",
+            "color": "rgb(229, 231, 123)",
+            "sample": "inquire now",
+            "characters": 11
+          }
+        ],
+        "radii": [
+          {
+            "value": "100px",
+            "elements": 1
+          },
+          {
+            "value": "200px",
+            "elements": 1
+          }
+        ],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "opacity 0.4s ease",
+            "elements": 16
+          },
+          {
+            "value": "all, opacity 0s, 1s ease, ease-in-out",
+            "elements": 2
+          },
+          {
+            "value": "background-color, opacity, color 0.4s, 0.4s, 0.4s ease, ease, ease",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "div",
+            "text": "menu",
+            "w": 63,
+            "h": 17,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "PT Mono 400 24px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "home",
+            "w": 160,
+            "h": 22,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(51, 51, 51)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(51, 51, 51)",
+            "font": "PT Mono 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "inquire now",
+            "w": 63,
+            "h": 63,
+            "padding": "0px",
+            "radius": "100px",
+            "border": "1px solid rgb(229, 231, 123)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 231, 123)",
+            "font": "sweet-sans-pro 700 13px",
+            "transform": "uppercase",
+            "letter_spacing": "2px"
+          },
+          {
+            "tag": "a",
+            "text": "See our services",
+            "w": 135,
+            "h": 35,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Spring",
+            "w": 69,
+            "h": 44,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 32px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Summer",
+            "w": 91,
+            "h": 44,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 32px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Fall",
+            "w": 38,
+            "h": 44,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 32px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Winter",
+            "w": 73,
+            "h": 44,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 32px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "See more projects",
+            "w": 145,
+            "h": 35,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "About us",
+            "w": 94,
+            "h": 35,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(63, 82, 26)",
+            "font": "Cardinal Fruit 400 14px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/675c5d232754d6ecc7e03ac8/css/heart-soil-flowers.webflow.shared.ca8258b4e.css"
+          },
+          {
+            "name": "slide",
+            "steps": 2,
+            "sheet": "inline"
+          },
+          {
+            "name": "slidealt",
+            "steps": 2,
+            "sheet": "inline"
+          }
+        ],
+        "libraries": [
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 42,
+          "svg": 1
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "navigation w-nav",
+            "id": null,
+            "top": 0,
+            "height": 133,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "absolute",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 93,
+            "images": 2,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 1,
+            "links": 7,
+            "buttons": 1
+          },
+          {
+            "tag": "header",
+            "class": "section_home-hero",
+            "id": null,
+            "top": 0,
+            "height": 556,
+            "width": 390,
+            "ground": "rgb(46, 59, 20)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 13,
+            "images": 0,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-about",
+            "id": null,
+            "top": 556,
+            "height": 428,
+            "width": 390,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 860,
+            "images": 17,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 1,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "home-about-images",
+            "id": null,
+            "top": 984,
+            "height": 550,
+            "width": 390,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 7,
+            "videos": 0,
+            "item_count": 8,
+            "icon_items": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-portfolio",
+            "id": null,
+            "top": 1534,
+            "height": 450,
+            "width": 390,
+            "ground": "rgb(214, 201, 181)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 236,
+            "images": 1,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 1,
+            "links": 5,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_home-intro",
+            "id": null,
+            "top": 1984,
+            "height": 398,
+            "width": 390,
+            "ground": "rgb(220, 217, 200)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 161,
+            "images": 1,
+            "videos": 0,
+            "item_count": 2,
+            "icon_items": 1,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "slider w-slider",
+            "id": null,
+            "top": 2382,
+            "height": 500,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 1587,
+            "images": 5,
+            "videos": 0,
+            "item_count": 4,
+            "icon_items": 0,
+            "links": 4,
+            "buttons": 6
+          },
+          {
+            "tag": "header",
+            "class": "section_cta",
+            "id": null,
+            "top": 2882,
+            "height": 450,
+            "width": 390,
+            "ground": "rgb(237, 235, 223)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 39,
+            "images": 5,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 2,
+            "links": 1,
+            "buttons": 0
+          },
+          {
+            "tag": "header",
+            "class": "section_footer",
+            "id": null,
+            "top": 3332,
+            "height": 644,
+            "width": 390,
+            "ground": "rgb(173, 173, 196)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 469,
+            "images": 4,
+            "videos": 0,
+            "item_count": 3,
+            "icon_items": 0,
+            "links": 10,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "absolute",
+          "height": 133,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 7
+        },
+        "nav_links": [
+          {
+            "text": "Our Work",
+            "href": "/work"
+          },
+          {
+            "text": "Services",
+            "href": "/our-services"
+          },
+          {
+            "text": "About",
+            "href": "/about"
+          },
+          {
+            "text": "Photostream",
+            "href": "/photostream"
+          },
+          {
+            "text": "Inquire Now",
+            "href": "/contact"
+          }
+        ],
+        "overflow_x": {
+          "scroll_width": 390,
+          "viewport": 390,
+          "overflows": false
+        },
+        "horizontal_scrollers": [],
+        "inventory": {
+          "controls": 36,
+          "menu_controls": 1,
+          "forms": 0,
+          "videos": 0,
+          "iframes": 0,
+          "details": 1
+        }
+      },
+      "ground_sampled": {
+        "method": "elementFromPoint on a 16x10 grid at 8 scroll positions; media is its own bucket; shares sum to 1",
+        "positions": 8,
+        "samples": 1280,
+        "media_share": 0.479,
+        "grounds": [
+          {
+            "color": "rgb(237, 235, 223)",
+            "samples": 327,
+            "share": 0.255
+          },
+          {
+            "color": "rgb(173, 159, 55)",
+            "samples": 126,
+            "share": 0.098
+          },
+          {
+            "color": "rgb(173, 173, 196)",
+            "samples": 94,
+            "share": 0.073
+          },
+          {
+            "color": "rgb(220, 217, 200)",
+            "samples": 60,
+            "share": 0.047
+          },
+          {
+            "color": "rgb(63, 82, 26)",
+            "samples": 32,
+            "share": 0.025
+          },
+          {
+            "color": "rgb(46, 59, 20)",
+            "samples": 28,
+            "share": 0.022
+          }
+        ]
+      },
+      "regions": [],
+      "observation_gaps": [],
+      "role": "primary"
+    }
+  ],
+  "problems": [],
+  "complete": true,
+  "inner_routes": [],
+  "inner_pages": {
+    "requested": 0,
+    "discovered": 0,
+    "studied_ok": 0,
+    "failed": []
+  },
+  "not_studied": [
+    "1 menu or disclosure control(s) were never opened; whatever they reveal was not read",
+    "1 collapsed element(s) stayed collapsed",
+    "inner pages: 0 studied of 0 requested (0 discovered); pages beyond those were not read",
+    "page transitions, cursor-follow content, sound and load sequences longer than 2.5 s were not read"
+  ],
+  "observation_gaps": [],
+  "elapsed_s": 31,
+  "runtime": {
+    "node": "v26.3.0",
+    "browser": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "tool_sha256": "42e43eb113e4fe9fd637c342648f4c2151e2b469d9e387d65eb3c00e95e5b2af"
+  }
+}

@@ -94,29 +94,41 @@ Write these six judgments into the plan for every selected reference. If you
 cannot write them honestly, the site is not selected. Drop thin, dated, ugly,
 broken or unsuitable sites on sight and keep looking.
 
-**Studying.**
+**Studying, in two phases.** First a quick look at every serious candidate,
+then the full study of the four you select. Never study a site at full depth
+before you have decided to copy it.
 
 ```
-node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references [--inner 3]
+node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references --quick
+node <skill>/scripts/candidates_sheet.mjs --studies .design-dna/references --out .design-dna/candidates.png
 ```
 
-It writes `.design-dna/references/<slug>/sheet.md` and `study.json`, a
-25-second real-time scroll-through video and an eight-frame contact sheet per
-width, first screens, and up to three inner pages. The sheet holds the fonts
-and where they load from, the type scale, the visible ground by sampling (an
-`elementFromPoint` grid at ten scroll positions, so overlapping layers cannot
-double count; the older stacked-rectangle figure is kept and labeled an
-estimate), radii, shadows, controls, transitions, keyframes, libraries, the
-layout outline, what the page does as it scrolls, and for each mechanism its
-driver: `scroll` (changes with the wheel), `time` (changes on its own, an
-autoplay or ambient loop) or `pointer`. An autoplay video and a scroll-gated
-slideshow both say "swap"; they are different experiences, and the build
-copies the one the reference has.
+A quick look takes about a minute: the home page at both widths, its fonts
+and where they load from, the visible ground by sampling, the layout outline,
+the scroll mechanisms with their drivers, and an eight-second storyboard. The
+candidates sheet tiles every look into one image, desktop beside phone beside
+storyboard with a measured caption; look at it once and choose. A quick look
+is for choosing; the check refuses one as a selected reference.
 
-The study handles a consent overlay only through a permitted choice (reject,
-decline, necessary-only, close). It never accepts terms for the visitor. If
-only "accept" is offered, the overlay stays and the sheet says the capture is
-obstructed.
+```
+node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references --region SEL [--region SEL2] [--inner 1] [--inner-widths both]
+```
+
+The full study of a selected reference takes two to four minutes: everything
+above plus the hover probe, Web Animations at six depths, a 25-second
+recording per width, the source regions you intend to transfer (name their
+selectors from the quick look's layout outline), and one inner page at
+desktop width (`--inner 0` for a one-page build; `--inner 3 --inner-widths
+both` only for the dominant reference of a multi-page build).
+
+Floors, which are floors and not targets: at least four selected references
+from at least two registry sources marked award or curated, each fully
+studied at BOTH widths, at least one of them with real scroll or pointer
+motion. Inner pages are studied only for references the build copies inner
+pages from. Six to eight quick looks for four selections is normal. A site the
+tool could not read (`ok: false`, an HTTP error page, a width that failed) is
+not selected. **Four is a floor, not a quota: a weak fourth chosen to reach
+four is forbidden; keep looking.**
 
 **A successful capture is not an adequate study.** The sheet ends with three
 sections you must read: *Studied* (which pages loaded, at which width, how
@@ -146,6 +158,19 @@ The JSON below shows the base fields; the linked guide supplies the required
 `signature_spec`, `signature_from`, `signature_transfer`, `source_region`, `system_sections`
 and review fields. Existing ingredient-only plans need an actual review and
 re-study, not automatically filled declarations.
+
+Scaffold the measurable half, then write the judgments:
+
+```
+node <skill>/scripts/plan_scaffold.mjs --studies .design-dna/references --select a,b,c,d --dominant a --route http://127.0.0.1:4870/ --out .design-dna/plan.json
+```
+
+It fills ids, urls, detected mechanisms, the two most-set families with
+their sources (a commercial face comes back as a `matched_for` stub), the
+dominant reference's sampled ground, the gaps to acknowledge, a
+`signature_spec` per reference built from the regions the study captured,
+and one section stub per captured region. Every field you must write says
+TODO, and the check refuses a plan that still says TODO anywhere.
 
 Write `.design-dna/plan.json`. Every field below is read by the check.
 
@@ -269,8 +294,8 @@ verbatim in the report:
 
 - `CHECK PASS (automated)` or `CHECK FAIL (automated)`: the measurable
   comparisons. Inputs complete (route, four distinct references studied at
-  both widths from two sources, quality judgments, contributions, gaps
-  reviewed); typefaces from references or verified match records; the
+  both widths from two sources, none of them a quick look, quality judgments,
+  contributions, gaps reviewed, no TODO left in the plan); typefaces from references or verified match records; the
   sampled dominant ground a reference's own, at both widths; every listed
   section present, explained, using only its own or the dominant reference's
   families and grounds, carrying the behavior the plan names *inside that
@@ -330,6 +355,18 @@ lines, the review's findings including unresolved differences, the functional
 line, and owner approval. Material problems are stated first and plainly.
 "Fonts and colors passed" never becomes "the site is ready". A known weak or
 rejected result is never described favorably because a metric improved.
+
+## The clock
+
+Research is done in about half an hour of wall time, and the tools are sized
+for it: quick looks about a minute each, one candidates sheet, four full
+studies at two to four minutes each, a typeface match in two minutes, a
+scaffolded plan. A human picks four sites in twenty minutes by looking at
+them; the tools exist so the producer can look at the same things in the same
+time and prove afterwards what it copied. If research passes an hour, stop,
+say what took the time, and do not spend it on studying more candidates at
+full depth. Building and checking are separate clocks: a one-page build is
+thirty to sixty minutes; a check is three to five.
 
 ## What a report contains
 

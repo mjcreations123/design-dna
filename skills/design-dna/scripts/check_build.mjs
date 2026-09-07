@@ -415,6 +415,8 @@ async function main() {
   const reviewFile = path.resolve(args.review || (plan.review?.file ? resolveFrom(args.plan, plan.review.file) : path.join(path.dirname(path.resolve(args.plan)), "review.md")));
   const problems = [], passed = [], functional = [], notes = [];
   const push = (cat, msg) => problems.push({ cat, msg });
+  const todos = (fs.readFileSync(args.plan, "utf8").match(/\bTODO\b/g) || []).length;
+  if (todos) push("plan", `plan.json still says TODO in ${todos} place${todos === 1 ? "" : "s"}; a scaffold is not a plan until every judgment is written`);
   const evidence = { plan: args.plan, studies: [...studies.keys()], run: outDir, routes: [], sources: [], sections: [], probes: [], functional: [], blank_moments: [] };
 
   // ---- inputs: routes, references, both widths, duplicates
@@ -433,6 +435,7 @@ async function main() {
       if (!p?.ok) push("evidence", `${id}: the ${vp} study did not succeed (${(p?.problems || []).map((x) => x.message).join("; ") || "no record"}); a reference the tool could not read at this width is not selected`);
     }
     if ((study.problems || []).some((p) => /^http-4|^http-5/.test(p.code || ""))) push("evidence", `${id}: the study hit an HTTP error page`);
+    if (study.mode === "quick") push("evidence", `${id}: only a quick look was taken (home page, no hover probe, no inner pages); a quick look is for choosing, run the full study before selecting`);
   }
 
   // ---- selection as a quality decision; contributions; gaps acknowledged
