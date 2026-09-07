@@ -39,6 +39,19 @@ export function signaturePlanProblems(plan, studies, studyRoot) {
       const section = list(route.sections).find((s) => s.selector === selector);
       if (!section || section.reference !== route.dominant) problems.push(`${route.name}: ${role} must name a planned section owned by its dominant reference (system_sections)`);
     }
+    for(const section of list(route.sections)) {
+      const ref=refs.find(r=>r.id===section.reference);
+      const source=section.source_region || (list(section.signature_from).includes(ref?.id)?ref?.signature_spec:null);
+      if(!text(source?.page)||!text(source?.selector)) {
+        problems.push(`${route.name} ${section.selector}: source_region needs the exact measured page and selector; naming a reference alone does not source a layout`);
+        continue;
+      }
+      for(const viewport of profiles) {
+        const region=list(studies.get(ref?.id)?.pages).find(p=>p.ok&&p.url===source.page&&p.viewport===viewport)?.regions?.find(r=>r.selector===source.selector&&r.count===1);
+        if(!region)problems.push(`${route.name} ${section.selector} ${viewport}: composition source region is unmeasured`);
+        else problems.push(...artifactProblems([region.evidence],path.join(studyRoot,ref.id)).map(p=>`${route.name} ${section.selector} ${viewport}: ${p}`));
+      }
+    }
   }
   for (const ref of refs) {
     if (ref.role && !['contributor','ancillary'].includes(ref.role)) problems.push(`${ref.id}: role must be contributor or ancillary`);
@@ -127,12 +140,15 @@ export function inspectRegions(selectors) {
   return selectors.map((selector) => {
     let nodes;try{nodes=document.querySelectorAll(selector);}catch{return {selector,count:-1};}
     if(nodes.length!==1)return {selector,count:nodes.length};
-    const root=nodes[0],all=[root,...root.querySelectorAll('*')].filter(visible),box=root.getBoundingClientRect();
+    // Ownership is structural. Hidden future states still belong to this region;
+    // only their painted media/state is filtered by visibility. Motion needs its
+    // own observed evidence and is never inferred from membership.
+    const root=nodes[0],members=[root,...root.querySelectorAll('*')],all=members.filter(visible),box=root.getBoundingClientRect();
     const media=new Set();
     for(const el of all){if(el.tagName==='IMG')media.add('image');if(el.tagName==='VIDEO')media.add('video');if(el.tagName==='CANVAS')media.add('canvas');if(el.tagName==='SVG')media.add('svg');if(getComputedStyle(el).backgroundImage!=='none')media.add('background');}
     const words=(root.innerText||'').trim().split(/\s+/).filter(Boolean).length;
     if(words)media.add('typography');
-    return {selector,count:1,keys:all.map(key),selectors:all.map(selectorFor),media:[...media],words,width:box.width,height:box.height,viewport:{width:innerWidth,height:innerHeight},
+    return {selector,count:1,keys:members.map(key),selectors:members.map(selectorFor),media:[...media],words,width:box.width,height:box.height,viewport:{width:innerWidth,height:innerHeight},
       state:all.map((el)=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return [key(el),(el.childNodes.length&&[...el.childNodes].filter((n)=>n.nodeType===3).map((n)=>n.textContent).join(''))||'',el.currentSrc||'',el.tagName==='VIDEO'?el.currentTime:null,s.transform,s.opacity,s.color,s.backgroundColor,Math.round(r.x-box.x),Math.round(r.y-box.y)];}),
       images:all.filter((el)=>el.tagName==='IMG').map((el)=>({src:el.currentSrc,alt:el.alt,loaded:el.complete&&el.naturalWidth>0})),
       children:[...root.children].filter(visible).map((el)=>{const r=el.getBoundingClientRect();return {tag:el.tagName.toLowerCase(),x:(r.x-box.x)/Math.max(1,box.width),y:(r.y-box.y)/Math.max(1,box.height),width:r.width/Math.max(1,box.width),height:r.height/Math.max(1,box.height)};})};
@@ -154,13 +170,15 @@ export function reviewTransferProblems(plan, reviewText, base) {
   const problems=[];
   if(!Array.isArray(plan.review?.issues))problems.push('review.issues must explicitly classify unresolved findings, or be an empty array');
   const rows=list(plan.review?.transfers);
-  for(const route of list(plan.routes))for(const section of list(route.sections))for(const id of list(section.signature_from))for(const viewport of profiles){
+  for(const route of list(plan.routes))for(const section of list(route.sections))for(const id of new Set([section.reference,...list(section.signature_from)]))for(const viewport of profiles){
     const row=rows.find((r)=>r.route===(route.name||route.url)&&r.selector===section.selector&&r.reference===id&&r.viewport===viewport);
     const label=`${route.name} ${section.selector} ${viewport}`;
     if(!row||row.status!=='present') {problems.push(`${label}: signature review is ${row?.status||'missing'}`);continue;}
     for(const field of ['composition','crop','hierarchy','pacing','sequence','interaction','image_accuracy']) if(!text(row[field])) problems.push(`${label}: review must address ${field}`);
     problems.push(...artifactProblems(row.evidence,base).map((p)=>`${label}: ${p}`));
     if(!list(row.evidence).some((a)=>a.side==='source')||!list(row.evidence).some((a)=>a.side==='build'))problems.push(`${label}: review must bind both source and build captures`);
+    const sourceFiles=new Set(list(row.evidence).filter(a=>a.side==='source'&&text(a.file)).map(a=>path.resolve(base,a.file)));
+    if(list(row.evidence).some(a=>a.side==='build'&&text(a.file)&&sourceFiles.has(path.resolve(base,a.file))))problems.push(`${label}: the source capture cannot also be labeled as the build capture`);
   }
   for(const issue of list(plan.review?.issues)){
     if(!issue||!['material','minor'].includes(issue.severity)||!['open','resolved'].includes(issue.status)||!text(issue.message))problems.push('review issue needs severity, status and message');

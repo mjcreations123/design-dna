@@ -40,6 +40,7 @@ import { resolvePlaywright, discoverBrowserExecutable } from "./playwright_resol
 import { studyPage, hoverProbe } from "./study_reference.mjs";
 import {signaturePlanProblems, gapDispositionProblems, inspectRegions, signatureBuildProblems, reviewTransferProblems} from './signature_contract.mjs';
 import {captureTransferSequence, sequencePlanProblems} from './signature_sequence.mjs';
+import {repeatedImages,iconCardRow,contentRoles} from './content_classification.mjs';
 
 const TOOL = "check_build.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -207,21 +208,16 @@ const PROBE = `((sections) => {
     const caps = cs.textTransform === 'uppercase' || (txt === txt.toUpperCase() && /[A-Z]/.test(txt));
     if (caps && parseFloat(cs.fontSize) <= 15 && out.copy.eyebrows.length < 5) out.copy.eyebrows.push(snippet(txt) + ' > ' + snippet(h.textContent));
   }
-  const seen = new Map();
-  for (const img of document.querySelectorAll('img')) {
-    const src = img.currentSrc || img.src || ''; if (!src) continue;
-    const r = img.getBoundingClientRect(); if (r.width < 40 || r.height < 40) continue; out.images += 1;
-    const k = src.length > 200 ? src.slice(0, 160) + '#' + src.length : src;
-    seen.set(k, (seen.get(k) || 0) + 1);
-  }
-  for (const [k, c] of seen) if (c > 1) out.duplicate_images.push({ src: k.slice(0, 90), uses: c });
+  Object.assign(out, (${repeatedImages.toString()})());
   return out;
 })`;
 
 /* Runs in the built page: what a visitor with a keyboard, a reduced-motion setting, or a settled page meets. */
-const FUNCTIONAL = `(() => {
+export const FUNCTIONAL = `((sections) => {
   const vw = innerWidth, vh = innerHeight;
   const out = { focus: { visited: 0, visible: 0, invisible: [] }, overlays: [], blank: false, hidden_blocks: [] };
+  const roles = (${contentRoles.toString()})(sections);
+  out.content_roles = {sticky_content: roles.stickyContent.length, inactive_panels: roles.inactivePanels.length};
   const focusables = [...document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')].filter((el) => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; }).slice(0, 14);
   for (const el of focusables) {
     try {
@@ -240,16 +236,16 @@ const FUNCTIONAL = `(() => {
     if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
     const r = el.getBoundingClientRect(); const share = (Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0)) * Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0))) / (vw * vh);
     if (share < 0.3) continue; if (r.top < 5 && r.height < 160) continue;
-    if (r.height >= vh * 0.9 && r.width >= vw * 0.9 && el.querySelector('img,video,canvas,h1,h2')) continue; // a pinned hero is the page, not an overlay
+    if (roles.stickyContent.includes(el)) continue;
     out.overlays.push({ tag: el.tagName.toLowerCase(), cls: (typeof el.className === 'string' ? el.className : '').trim().slice(0, 60), share: +share.toFixed(2), text: (el.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 80) });
   }
   out.blank = (document.body.innerText || '').trim().length < 40;
   for (const el of document.querySelectorAll('section,article,header,main > div,main > *')) {
     const r = el.getBoundingClientRect(); if (r.top > vh * 2 || r.bottom < 0) continue; if (r.width * r.height < vw * vh * 0.2) continue;
-    const cs = getComputedStyle(el); if (Number(cs.opacity) < 0.2 || cs.visibility === 'hidden') out.hidden_blocks.push(el.tagName.toLowerCase() + '.' + ((typeof el.className === 'string' ? el.className : '').trim().split(/\\s+/)[0] || ''));
+    const cs = getComputedStyle(el); if ((Number(cs.opacity) < 0.2 || cs.visibility === 'hidden') && !roles.inactivePanels.includes(el)) out.hidden_blocks.push(el.tagName.toLowerCase() + '.' + ((typeof el.className === 'string' ? el.className : '').trim().split(/\\s+/)[0] || ''));
   }
   return out;
-})()`;
+})`;
 
 /* Runs in the built page at one scroll stop: what is on the screen right now. */
 const SCREEN_CONTENT = `(() => {
@@ -339,7 +335,7 @@ async function probeRoute(browser, url, viewport, sections, frameDir, prefix) {
     return result;
   } finally { await page.close().catch(() => {}); await context.close().catch(() => {}); }
 }
-async function functionalPass(browser, url, viewport) {
+async function functionalPass(browser, url, viewport, sections) {
   const out = { viewport: viewport.name };
   for (const reduced of [false, true]) {
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, reducedMotion: reduced ? "reduce" : "no-preference" });
@@ -347,7 +343,7 @@ async function functionalPass(browser, url, viewport) {
     try {
       await page.goto(url, { waitUntil: "load", timeout: 60_000 });
       await new Promise((r) => setTimeout(r, reduced ? 2500 : 4000));
-      const r = await page.evaluate(FUNCTIONAL);
+      const r = await page.evaluate(`${FUNCTIONAL}(${JSON.stringify(sections||[])})`);
       if (reduced) out.reduced = { blank: r.blank, hidden_blocks: r.hidden_blocks }; else out.settled = r;
     } finally { await page.close().catch(() => {}); await context.close().catch(() => {}); }
   }
@@ -510,7 +506,7 @@ async function main() {
         catch (error) { push("evidence", `${routeName} (${viewport.name}) probe failed: ${String(error?.message || error).slice(0, 160)}`); }
         try { const bm = await blankMoments(browser, route.url, viewport); evidence.blank_moments.push({ route: routeName, viewport: viewport.name, ...bm }); }
         catch (error) { push("evidence", `${routeName} (${viewport.name}) blank-moment pass failed: ${String(error?.message || error).slice(0, 160)}`); }
-        try { evidence.functional.push({ route: routeName, ...(await functionalPass(browser, route.url, viewport)) }); }
+        try { evidence.functional.push({ route: routeName, ...(await functionalPass(browser, route.url, viewport, route.sections)) }); }
         catch (error) { functional.push(`${routeName} (${viewport.name}): functional pass failed: ${String(error?.message || error).slice(0, 160)}`); }
       }
       const dom = route.dominant && studies.get(route.dominant);
@@ -675,7 +671,7 @@ async function main() {
     if ((c.disclaimers || []).length > 1) push("content", `${where}: the page explains that it is a demo ${c.disclaimers.length} times (${c.disclaimers.slice(0, 3).map((x) => `"${x}"`).join("; ")}); one quiet disclosure is enough`);
     if (c.narration?.length) push("content", `${where}: public copy narrates the design (${c.narration.slice(0, 2).map((x) => `"${x}"`).join("; ")})`);
     if (c.slogans?.length) push("content", `${where}: generic slogan (${c.slogans.slice(0, 2).map((x) => `"${x}"`).join("; ")})`);
-    if (probe.duplicate_images?.length) push("design", `${where}: a photograph is used more than once (${probe.duplicate_images.slice(0, 3).map((d) => `${d.uses}x ${d.src.slice(0, 40)}`).join("; ")})`);
+    if (probe.duplicate_images?.length) push("design", `${where}: a content image is used more than once (${probe.duplicate_images.slice(0, 3).map((d) => `${d.uses}x ${d.src.slice(0, 40)}`).join("; ")})`);
   }
 
   // ---- blank moments: a screen the visitor can stop on that shows almost nothing
@@ -699,11 +695,10 @@ async function main() {
     const d = page.design;
     const gradientText = (d.type_scale || []).some((t) => /^h[12]$|display/.test(t.role) && /transparent/.test(t.color || ""));
     if (gradientText) push("design", `${where}: slop: gradient text`);
-    const types = mechanismTypes(page);
-    if (types.size === 1 && types.has("reveal")) push("design", `${where}: slop: sections fading up on scroll are the only motion on this page`);
+    // Mechanism diversity is not a quality floor. Compare the selected source's
+    // actual driver and section obligations, including reveal-only sources.
     const sections = page.layout?.sections || [];
-    const threeEqualTracks = (grid) => { const px = String(grid || "").match(/[\d.]+px/g); if (!px || px.length !== 3) return /repeat\(3|1fr 1fr 1fr/.test(grid || ""); const n = px.map(parseFloat); const max = Math.max(...n), min = Math.min(...n); return max > 0 && (max - min) / max < 0.05; };
-    const triplet = sections.find((s) => /grid/.test(s.display) && threeEqualTracks(s.grid) && s.images === 0 && s.text_chars < 600 && s.top < 1400);
+    const triplet = sections.find(iconCardRow);
     if (triplet) push("design", `${where}: slop: a three-column icon-card row near the top of the page (${triplet.tag}${triplet.class ? "." + triplet.class.split(" ")[0] : ""} at ${triplet.top}px)`);
   }
 

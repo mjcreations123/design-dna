@@ -23,7 +23,8 @@ function fixture(dynamic=false){
     return {id,url,signature_mechanisms:dynamic?['swap']:[],signature_spec:{page:url,selector:'.source',wide:structuredClone(profile),narrow:structuredClone(profile)}};
   });
   const sections=references.map((r,i)=>({selector:'.section-'+i,reference:r.id,signature_from:[r.id],behavior:dynamic?'swap':'none',signature_transfer:Object.fromEntries(['wide','narrow'].map(vp=>[vp,{reference:r.id,medium:'image',driver:dynamic?'scroll':'static',mechanisms:dynamic?['swap']:[],sequence:dynamic?['opening','changed']:['settled']}]))}));
-  return {studies,plan:{references,routes:[{name:'home',dominant:'ref-0',system_sections:{opening:'.section-0',navigation:'.header',ending:'.footer'},sections:[{selector:'.header',reference:'ref-0'},...sections,{selector:'.footer',reference:'ref-0'}]}]}};
+  const source_region={page:references[0].url,selector:'.source'};
+  return {studies,plan:{references,routes:[{name:'home',dominant:'ref-0',system_sections:{opening:'.section-0',navigation:'.header',ending:'.footer'},sections:[{selector:'.header',reference:'ref-0',source_region},...sections,{selector:'.footer',reference:'ref-0',source_region}]}]}};
 }
 test.after(()=>fs.rmSync(root,{recursive:true,force:true}));
 test('a substantial static composition can satisfy the contract without animation',()=>{
@@ -71,10 +72,19 @@ test('missing or materially failed visual reviews prevent readiness',()=>{
 });
 test('a completed paired review can pass and cannot hide an open material issue',()=>{
   const {plan}=fixture();
-  plan.review={issues:[],transfers:plan.references.flatMap((ref,i)=>['wide','narrow'].map(viewport=>({route:'home',selector:'.section-'+i,reference:ref.id,viewport,status:'present',composition:'Compared source and build arrangement',crop:'Compared the image framing',hierarchy:'Compared the type hierarchy',pacing:'Compared the readable pacing',sequence:'Compared ordered state captures',interaction:'Compared expected user response',image_accuracy:'Reviewed product image and label',evidence:[{...artifact,file:ref.id+'/region.png',side:'source'},{...artifact,file:ref.id+'/region.png',side:'build'}]})))};
+  fs.writeFileSync(path.join(root,'build.png'),png);
+  plan.review={issues:[],transfers:plan.routes[0].sections.flatMap(section=>['wide','narrow'].map(viewport=>({route:'home',selector:section.selector,reference:section.reference,viewport,status:'present',composition:'Compared source and build arrangement',crop:'Compared the image framing',hierarchy:'Compared the type hierarchy',pacing:'Compared the readable pacing',sequence:'Compared ordered state captures',interaction:'Compared expected user response',image_accuracy:'Reviewed product image and label',evidence:[{...artifact,file:section.reference+'/region.png',side:'source'},{...artifact,file:'build.png',side:'build'}]})))};
   assert.deepEqual(reviewTransferProblems(plan,'',root),[]);
   plan.review.issues.push({severity:'material',status:'open',message:'Missing defining scene'});
   assert.ok(reviewTransferProblems(plan,'',root).some(p=>p.includes('Missing defining scene')));
+});
+test('a source name alone does not authorize navigation or an invented page shell',()=>{
+  const {plan,studies}=fixture();delete plan.routes[0].sections[0].source_region;
+  assert.ok(signaturePlanProblems(plan,studies,root).some(p=>p.includes('naming a reference alone')));
+});
+test('the same artifact cannot serve as both sides of a comparison',()=>{
+  const {plan}=fixture();plan.review={issues:[],transfers:[{route:'home',selector:'.header',reference:'ref-0',viewport:'wide',status:'present',evidence:[{...artifact,file:'ref-0/region.png',side:'source'},{...artifact,file:'ref-0/region.png',side:'build'}]}]};
+  assert.ok(reviewTransferProblems(plan,'',root).some(p=>p.includes('cannot also be labeled')));
 });
 test('a wrong input driver or omitted state fails sequence validation',()=>{
   assert.ok(sequencePlanProblems({driver:'scroll',sequence:['opening','end'],steps:[{action:'rest',expect:{selector:':scope',visibility:'visible'}},{action:'time',ms:100,expect:{selector:'.end',visibility:'visible'}}]}).length);

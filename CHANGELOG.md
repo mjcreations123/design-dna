@@ -1,5 +1,15 @@
 # Changelog
 
+## 13.4.1 - Content classification and ordinary-section source bindings
+
+- Distinguish a small header/footer home-link identity pair from repeated content images; keep complete image URLs to avoid prefix collisions.
+- Require observed icons before reporting an icon-card row. Reveal-only source motion is no longer rejected merely for having one mechanism.
+- Keep hidden descendants in exact region ownership without treating their presence as motion evidence.
+- Distinguish planned in-flow multi-state sticky content and nonfocusable aria-hidden inactive panels; retain overlay, missing-state, focus and motion checks.
+- Bind ordinary sections to captured source regions and review every section, not just signature widgets. The same capture file cannot be both sides of a review.
+- Clarify photographic versus invented illustrative substitutions and remove superseded recording/gate settings from the active assurance policy.
+- Existing projects need genuine supporting-region studies and reviews; no generated backfill or changes to empirical evidence. Development candidate, not aesthetic qualification.
+
 ## 13.4.0 - Signature transfer corrections
 
 - Plan-only checking rejects signatures that reach no build section, dynamic

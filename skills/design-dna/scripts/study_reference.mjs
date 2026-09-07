@@ -186,6 +186,8 @@ const LAYOUT = `(() => {
       ground: s.backgroundColor, position: s.position, display: s.display, grid: s.display.includes('grid') ? s.gridTemplateColumns.slice(0, 80) : null,
       heading: heading ? heading.textContent.trim().slice(0, 80) : null,
       text_chars: el.textContent.trim().length, images: el.querySelectorAll('img,picture').length, videos: el.querySelectorAll('video').length,
+      item_count: el.children.length,
+      icon_items: [...el.children].filter(child => [...child.querySelectorAll('svg,[role="img"],img')].some(icon => { const r=icon.getBoundingClientRect();return r.width>0&&r.height>0&&r.width<=96&&r.height<=96; })).length,
       links: el.querySelectorAll('a').length, buttons: el.querySelectorAll('button,[role=button]').length });
   }
   const header = document.querySelector('header,[role=banner]'); const nav = document.querySelector('nav');

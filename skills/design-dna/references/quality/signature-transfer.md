@@ -85,6 +85,15 @@ Each `signature_from` entry must have the corresponding transfer. References
 marked `role: "ancillary"` may provide palette/type details but do not count
 toward the four substantial references and cannot own composition/behavior.
 
+Every section, including ordinary navigation, introductions, forms and footers,
+binds `source_region: {"page":"https://source.example/page", "selector":".actual-region"}`
+to a captured region of its composition reference at both widths. A section
+transferring that reference's signature may use its signature_spec binding
+instead. A source name attached to an invented shell is not provenance.
+Study the supporting regions in the same pass using repeated `--region`.
+The route's opening means the actual first content encounter, not a convenient
+widget farther down the page; mapping that widget cannot omit a preceding hero.
+
 Run the inexpensive prebuild check:
 
 ```
@@ -108,13 +117,22 @@ claimed relationship rather than treating prose or file hashes as proof.
 ## Review the captured result
 
 Keep review.md for the independent or self-review narrative and visitor walk.
-In `plan.review.transfers`, add one row per mapped signature and width:
+In `plan.review.transfers`, add one row per section, contributing reference and width,
+including the ordinary page shell, not only the signature widget:
 `route`, `selector`, `reference`, `viewport`, and `status` (present, missing,
 unverified). Address composition, crop, hierarchy, pacing, sequence,
 interaction, and image_accuracy. Bind `evidence` for both sides, using
 `side: "source"` and `side: "build"`, file and SHA-256. These paths are
 relative to the plan directory; for example `references/source/frames/...`
 and `check/runs/.../frames/...`.
+
+Use distinct source and build capture files. Treat photo, illustration, diagram,
+video and canvas as different visual roles even when the browser exposes them
+all as images. An invented SVG inside an img tag does not transfer photography.
+Compare the full region and surrounding hierarchy, not just an ingredient or
+an easy fragment. If the early comparison does not visibly carry the reference,
+repair it before expanding. Never relabel the selected source, replace its
+evidence, or move its boundaries merely to accommodate an already built design.
 
 Review changed states too: filtered results, empty/filled baskets, selected
 options, revealed panels and the end of held stages. Product and cultural

@@ -141,7 +141,7 @@ reference now binds a measured source region and its defining static or
 interactive experience to a build section. Use `study_reference.mjs --region`
 for the chosen source region, then `check_build.mjs --plan-only` before building.
 The JSON below shows the base fields; the linked guide supplies the required
-`signature_spec`, `signature_from`, `signature_transfer`, `system_sections`
+`signature_spec`, `signature_from`, `signature_transfer`, `source_region`, `system_sections`
 and review fields. Existing ingredient-only plans need an actual review and
 re-study, not automatically filled declarations.
 
@@ -274,7 +274,8 @@ verbatim in the report:
   families and grounds, carrying the behavior the plan names *inside that
   section at that width*; no held section asking more than about a viewport
   per state; no tall, near-empty section; no mostly empty page; no photograph
-  used twice; no em dash, eyebrow, padded number, stray arrow, repeated
+  used twice (a small header/footer home-link identity pair is recorded separately);
+  no em dash, eyebrow, padded number, stray arrow, repeated
   disclaimer, design narration or slogan in public copy; no scroll stop (half a
   viewport apart across the page, a twentieth inside held sections, measured
   through the stacking order) where the visitor sees almost nothing; no slop

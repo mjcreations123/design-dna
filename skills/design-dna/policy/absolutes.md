@@ -66,10 +66,12 @@ preference or remembered criticism.
    sample, small, quick, test, or hurry may reduce only the truthful delivered
    scope. They never reduce reference eligibility, quality or exact brief-fit
    qualification, count/source spread, complete same-origin traversal, the
-   90-second/15-fps recording floor, distinct wide/narrow evidence,
-   source-fidelity proof, component provenance, the first-screen gate, the
-   final gate, or whole-scope copy, functional, responsive, and access review.
-   If traversal exceeds the floor, increase the duration. Do not use a homemade
+   current study's required recordings, distinct wide/narrow evidence,
+   source-fidelity proof, component provenance, the early source/build comparison,
+   final check, or whole-scope copy, functional, responsive, and access review.
+   Complete any relevant states the automatic pass did not observe. The current
+   study/plan/build/check workflow supersedes historical gate commands and
+   recording settings; it does not reduce the quality obligation. Do not use a homemade
    tool or hand-written generated-record substitute, defer required evidence,
    lower a threshold, omit a route/state, reuse evidence, grant a waiver, or
    justify an existing build after the fact. A missing required capability or

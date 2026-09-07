@@ -1,6 +1,6 @@
 schema_version: 3
 last_updated: "2026-09-06"
-package_version: "13.4.0"
+package_version: "13.4.1"
 
 discovery_roots:
   - "~/.agents/skills"
@@ -35,7 +35,7 @@ hosts:
     notes:
       - "The direct .agents route is the single intended visible Codex skill."
       - "Package plugin metadata is a portable source artifact, not a second installed route."
-      - "The Plugin Creator validation, installer-lifecycle, and route records must bind the 13.4.0 development-candidate source tree before they are current; host activation remains unverified."
+      - "The Plugin Creator validation, installer-lifecycle, and route records must bind the 13.4.1 development-candidate source tree before they are current; host activation remains unverified."
       - "Static validation is scoped to the publisher-reviewed Plugin Creator validator byte pin; that pin is not an OpenAI signature and must be replayed with the explicit validator path."
       - "Local forward builds and rendered QA runs are diagnostic evidence, not trusted host-native release evidence."
       - "Codex CLI 0.153.4 with gpt-6-astra returned current rule boundaries in a fresh diagnostic; direct installed-file/version reads were policy-blocked. Desktop activation and formal host evaluation remain unverified."
@@ -53,7 +53,7 @@ hosts:
       - "docs/LOCAL_HOST_DIAGNOSTICS.md"
     notes:
       - "The direct .claude route is the single intended visible Claude Code skill."
-      - "The installer-lifecycle and route records must bind the 13.4.0 development-candidate source tree before they are current; host activation remains unverified."
+      - "The installer-lifecycle and route records must bind the 13.4.1 development-candidate source tree before they are current; host activation remains unverified."
       - "A new Claude Code session may be required after sync."
       - "Claude Code 2.1.222 was found through its exact local executable; its official plugin validate --strict command passed."
       - "The fresh read-only model attempt returned Not logged in with zero model tokens; authentication and host behavior remain unverified."
@@ -79,7 +79,7 @@ environments:
       - "maintainer/attestations/test-attestation.json"
       - "maintainer/attestations/install-lifecycle.json"
     notes:
-      - "The isolated test attestation must bind the frozen 13.4.0 development-candidate tree before unit_tests is relied upon."
+      - "The isolated test attestation must bind the frozen 13.4.1 development-candidate tree before unit_tests is relied upon."
       - "The attempts ending 2026-09-06T04:14:07Z and 2026-09-06T07:03:49Z reached their former 3600/7200-second ceilings without a complete attestation. The latter retained incomplete diagnostics and verified owned cleanup; its malformed negative fixture is corrected. Unit tests remain pending until a complete current-source run succeeds."
       - "The complete run ending 2026-09-06T11:27:00Z executed 1373 tests with zero skips and all four Windows-native cases; one obsolete assertion and one malformed first-screen fixture kept the result failed. Both test defects are corrected and require a fresh complete run."
       - "The local unit_tests declaration remains pending in the frozen portable matrix; the separate exact-host attestation records its actual result. Verified remote results derive from complete canonical CI imports without rewriting source declarations or weakening any input hash."
@@ -282,5 +282,5 @@ portable_contract:
 release_limitations:
   - "No trusted host-native adapter is registered for controlled Codex or Claude Code behavioral evidence."
   - "Claude Code is installed and statically validated, but its model diagnostic requires operator authentication."
-  - "No formal controlled host evaluations or independent rendered-review records are promoted for the 13.4.0 development candidate; local forward builds remain diagnostic evidence only."
+  - "No formal controlled host evaluations or independent rendered-review records are promoted for the 13.4.1 development candidate; local forward builds remain diagnostic evidence only."
   - "Connected Public Experience records, when selected, are project-level evidence only; they do not establish host activation, owner acceptance, target-user validation, production readiness, real service operation, or visual quality."
