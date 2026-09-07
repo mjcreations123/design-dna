@@ -1,24 +1,24 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "13.0.0",
-  "distribution_sha256": "dcf35d560ee35b06d9815216ba2e2c1d7fada9a04dc36638512150705e57303c",
-  "content_sha256": "e90c92c8870af7f12f60709b225c9818d4bc766ef9632c001e71b0394b1991ad",
-  "codex_plugin_manifest_sha256": "601fa44b033895b729bf3cbcb7a5bc3757ef94d8adceb559200df70bfdde4e3a",
-  "claude_plugin_manifest_sha256": "3b5e84e789d1a0fba2246d1844baa3b4ec2d096c0df8d366dd886c6b23883e86",
-  "sbom_sha256": "1c0522f90dcc1a6a8829163da0e04c88ff72c67e0ca3d6115770da462777ecbc",
-  "compatibility_matrix_sha256": "5e13fc7de788f854ea61eed35949a1db78a6f82249d20ccbf70a20a19991f851",
+  "version": "13.1.0",
+  "distribution_sha256": "953298604539e6ef597c5c2e90736cce9079837c20860f0fb5e3feb52c70458d",
+  "content_sha256": "82684dcf189fcddcb895c94146742f2fd0d058eeb20f9e1eae74ace602711e43",
+  "codex_plugin_manifest_sha256": "6d3fd5b4f7d7d5c71eaf3b37bcdb484d4b8923c494eb884d75c3ab53b183a87c",
+  "claude_plugin_manifest_sha256": "cb60c49c440c742c143407d3625460a27dc9022ea7e5a47be04cb8e99efbe40c",
+  "sbom_sha256": "67797878d1e995f1c617b1875f06be34c78491ab960491d5097011758e436fcd",
+  "compatibility_matrix_sha256": "b10b666a89c6adac21e29704d7a2ad6c45b9217f0e9ef7be4caf335bd3309c1f",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "dcf35d560ee35b06d9815216ba2e2c1d7fada9a04dc36638512150705e57303c",
-    "runtime": "e90c92c8870af7f12f60709b225c9818d4bc766ef9632c001e71b0394b1991ad",
-    "codex_plugin_manifest": "601fa44b033895b729bf3cbcb7a5bc3757ef94d8adceb559200df70bfdde4e3a",
-    "claude_plugin_manifest": "3b5e84e789d1a0fba2246d1844baa3b4ec2d096c0df8d366dd886c6b23883e86",
-    "sbom": "1c0522f90dcc1a6a8829163da0e04c88ff72c67e0ca3d6115770da462777ecbc",
-    "compatibility_matrix": "5e13fc7de788f854ea61eed35949a1db78a6f82249d20ccbf70a20a19991f851",
+    "distribution_tree": "953298604539e6ef597c5c2e90736cce9079837c20860f0fb5e3feb52c70458d",
+    "runtime": "82684dcf189fcddcb895c94146742f2fd0d058eeb20f9e1eae74ace602711e43",
+    "codex_plugin_manifest": "6d3fd5b4f7d7d5c71eaf3b37bcdb484d4b8923c494eb884d75c3ab53b183a87c",
+    "claude_plugin_manifest": "cb60c49c440c742c143407d3625460a27dc9022ea7e5a47be04cb8e99efbe40c",
+    "sbom": "67797878d1e995f1c617b1875f06be34c78491ab960491d5097011758e436fcd",
+    "compatibility_matrix": "b10b666a89c6adac21e29704d7a2ad6c45b9217f0e9ef7be4caf335bd3309c1f",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "60f8c15fcc363a2f7efb4d62d4e39f1a21d0c55ae5ccf450426ecd6697022173",
-    "distribution_docs": "ed50e62d82584fce4430bd737639b8213ab9c8f83ec81cd4fe02d0a15a101d0d",
+    "compatibility_verification": "16a0573e8e0a956614c04a76b875f312ff363614e3a9d5832138ae67f502a489",
+    "distribution_docs": "d85e44b5bb6ef69f67e2eecaec04fe1ceb9cca3dee891a337b182598ce808f92",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,14 +26,14 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "a0b9a308b5ce77c6e3af94e05f1b5e03b85e9b92d59b5efa370779669522a737",
-  "generated_at": "2026-09-07T00:28:04.693115+00:00",
+  "release_sha256": "93bd063fef08badc1ada4f714cd58ee20c88cd1b177851bf0529a1b78f7e3bfd",
+  "generated_at": "2026-09-07T01:20:47.121226+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 10412,
-      "sha256": "a7f5f9b81da67c64f2b27a6e0cdfae4a492d2cbf9157501e6a0cbe030f4f3fb3"
+      "size": 11079,
+      "sha256": "29f0c789a1339a6f7b2d08e5ed5f344fcb6305654f91f2615f7e791a0be2746e"
     },
     {
       "path": "agents",
@@ -705,7 +705,7 @@
       "path": "release.json",
       "type": "file",
       "size": 82,
-      "sha256": "833167203d164e1d91ed4eb90a3246c8bdecdbead59aec71f51b699bf88b44ff"
+      "sha256": "ad34249e9f660aa085573e42a350af2bf5e5341a5d71c0ba76e7d5b25c380fdd"
     },
     {
       "path": "schemas",
@@ -926,8 +926,14 @@
     {
       "path": "scripts/match_typeface.mjs",
       "type": "file",
-      "size": 21582,
-      "sha256": "770511349acea74ffc60bae7b041ccf4e13ca15b585cab88f24df8f68b17fd50"
+      "size": 24042,
+      "sha256": "e0b80525833ef45c82d7c584b05f620313470322f7f47f9a1165d2a763c2182a"
+    },
+    {
+      "path": "scripts/measure_faces.mjs",
+      "type": "file",
+      "size": 9518,
+      "sha256": "6629c8f42a3f4e942e4fa64f3944570633e53d84e05babf7424f1cd2518b992b"
     },
     {
       "path": "scripts/observe_reference.mjs",
@@ -1541,7 +1547,7 @@
       "path": ".claude-plugin/plugin.json",
       "type": "file",
       "size": 607,
-      "sha256": "3b5e84e789d1a0fba2246d1844baa3b4ec2d096c0df8d366dd886c6b23883e86"
+      "sha256": "cb60c49c440c742c143407d3625460a27dc9022ea7e5a47be04cb8e99efbe40c"
     },
     {
       "path": ".codex-plugin",
@@ -1553,7 +1559,7 @@
       "path": ".codex-plugin/plugin.json",
       "type": "file",
       "size": 1379,
-      "sha256": "601fa44b033895b729bf3cbcb7a5bc3757ef94d8adceb559200df70bfdde4e3a"
+      "sha256": "6d3fd5b4f7d7d5c71eaf3b37bcdb484d4b8923c494eb884d75c3ab53b183a87c"
     },
     {
       "path": ".gitattributes",
@@ -1600,8 +1606,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 119658,
-      "sha256": "3f66fb223d73a81762601dfae668caf819eaa6fd843b4ddf2fe30580ae77aa95"
+      "size": 121069,
+      "sha256": "daedcc2c03386a00c72dd0c614573700b78cff7eee34ccea44084001dc603e82"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -1625,7 +1631,7 @@
       "path": "README.md",
       "type": "file",
       "size": 38340,
-      "sha256": "1d30309a3e8cf01bffb6277bd31daba1d4de53a0ea8661a743c1f46e14a61b35"
+      "sha256": "1129589822381a441419dfa2898ad179f2553604b76274c594726d8dcc7a4d7d"
     },
     {
       "path": "SECURITY.md",
@@ -1679,7 +1685,7 @@
       "path": "docs/LOCAL_HOST_DIAGNOSTICS.md",
       "type": "file",
       "size": 3533,
-      "sha256": "a002ef79839b91a66a7ee4d243e5551f613abe5cce49b2d77937d87e0999fd1e"
+      "sha256": "d1ae20820079b1907ea1c7ac74e57f0e76bc523762d03e7734d897c1a9ba76a9"
     },
     {
       "path": "docs/MIGRATION.md",
@@ -1697,13 +1703,13 @@
       "path": "docs/QUICK_START.md",
       "type": "file",
       "size": 30424,
-      "sha256": "658b9be1ec52cf791f4ca51e3626b998e1879ba2536575c286e3a9c77f0658db"
+      "sha256": "8debf08e5d4c80da21fa08681b48eead5bc6ee2dae2dbd73397d80cddafefffc"
     },
     {
       "path": "docs/RELEASE.md",
       "type": "file",
       "size": 30434,
-      "sha256": "ba9e93eba96cf67ca23bee7bd592bfdaf620057e6265e960bf7f20ae6d651d92"
+      "sha256": "d06042f4366a20325fcbbd4f91acdb74b98e2eb40a96d7de937790d06f299f47"
     },
     {
       "path": "docs/RENDER_COMPARISON.md",
@@ -1775,7 +1781,7 @@
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
       "size": 12385,
-      "sha256": "5e13fc7de788f854ea61eed35949a1db78a6f82249d20ccbf70a20a19991f851"
+      "sha256": "b10b666a89c6adac21e29704d7a2ad6c45b9217f0e9ef7be4caf335bd3309c1f"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -3941,7 +3947,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "1c0522f90dcc1a6a8829163da0e04c88ff72c67e0ca3d6115770da462777ecbc"
+      "sha256": "67797878d1e995f1c617b1875f06be34c78491ab960491d5097011758e436fcd"
     },
     {
       "path": "maintainer/schemas",
@@ -4678,8 +4684,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 10412,
-      "sha256": "a7f5f9b81da67c64f2b27a6e0cdfae4a492d2cbf9157501e6a0cbe030f4f3fb3"
+      "size": 11079,
+      "sha256": "29f0c789a1339a6f7b2d08e5ed5f344fcb6305654f91f2615f7e791a0be2746e"
     },
     {
       "path": "skills/design-dna/agents",
@@ -5351,7 +5357,7 @@
       "path": "skills/design-dna/release.json",
       "type": "file",
       "size": 82,
-      "sha256": "833167203d164e1d91ed4eb90a3246c8bdecdbead59aec71f51b699bf88b44ff"
+      "sha256": "ad34249e9f660aa085573e42a350af2bf5e5341a5d71c0ba76e7d5b25c380fdd"
     },
     {
       "path": "skills/design-dna/schemas",
@@ -5572,8 +5578,14 @@
     {
       "path": "skills/design-dna/scripts/match_typeface.mjs",
       "type": "file",
-      "size": 21582,
-      "sha256": "770511349acea74ffc60bae7b041ccf4e13ca15b585cab88f24df8f68b17fd50"
+      "size": 24042,
+      "sha256": "e0b80525833ef45c82d7c584b05f620313470322f7f47f9a1165d2a763c2182a"
+    },
+    {
+      "path": "skills/design-dna/scripts/measure_faces.mjs",
+      "type": "file",
+      "size": 9518,
+      "sha256": "6629c8f42a3f4e942e4fa64f3944570633e53d84e05babf7424f1cd2518b992b"
     },
     {
       "path": "skills/design-dna/scripts/observe_reference.mjs",

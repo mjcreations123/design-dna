@@ -24,7 +24,8 @@
  * Usage:
  *   node match_typeface.mjs \
  *     --observation .design-dna/references/strong-1-observation.json \
- *     [--observation ...] [--family "Louize Display"] \
+ *     [--observation ...] [--target .design-dna/references/<id>/faces.json] \
+ *     [--family "Louize Display"] \
  *     [--candidates "Fraunces:500,EB Garamond:400"] [--candidates-file FILE] \
  *     [--measured FILE]        (skip the browser; a JSON array of measured faces) \
  *     --out .design-dna/evidence/typeface-match.json \
@@ -54,6 +55,8 @@ const PRODUCER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(SCRIP
 const OBSERVER_SCRIPT_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "observe_reference.mjs"))).digest("hex");
 const STRUCTURE_PROBE_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "structure_probe.mjs"))).digest("hex");
 const PLAYWRIGHT_RESOLVER_SHA256 = createHash("sha256").update(fs.readFileSync(path.join(path.dirname(SCRIPT_PATH), "playwright_resolver.mjs"))).digest("hex");
+const MEASURE_FACES_PATH = path.join(path.dirname(SCRIPT_PATH), "measure_faces.mjs");
+const MEASURE_FACES_SHA256 = fs.existsSync(MEASURE_FACES_PATH) ? createHash("sha256").update(fs.readFileSync(MEASURE_FACES_PATH)).digest("hex") : null;
 /* The I-width axis is one glyph; x-height and advance are the texture of
    every line. Equal weights let the I override both (Louize Display, whose
    capitals carry tiny serifs, ranked a face with the wrong x-height and the
@@ -118,7 +121,7 @@ function fail(code, message) {
 
 function parseArgs(argv) {
   const out = {
-    observations: [], family: null, candidates: [], candidatesFile: null,
+    observations: [], targets: [], family: null, candidates: [], candidatesFile: null,
     measured: null, out: null,
     browser: process.env.DESIGN_DNA_BROWSER_EXECUTABLE || process.env.CHROME || null,
     posture: null,
@@ -126,6 +129,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--observation") out.observations.push(argv[++i]);
+    else if (a === "--target") out.targets.push(argv[++i]);
     else if (a === "--family") out.family = argv[++i];
     else if (a === "--candidates") out.candidates.push(...String(argv[++i]).split(",").map((s) => s.trim()).filter(Boolean));
     else if (a === "--candidates-file") out.candidatesFile = argv[++i];
@@ -134,11 +138,11 @@ function parseArgs(argv) {
     else if (a === "--browser-executable") out.browser = argv[++i];
     else if (a === "--posture") out.posture = String(argv[++i]).toLowerCase();
     else if (a === "--help" || a === "-h") {
-      process.stdout.write("match_typeface.mjs --observation FILE... [--family NAME] [--candidates \"Family:weight,...\"] [--candidates-file FILE] [--measured FILE] --out FILE [--browser-executable FILE]\n");
+      process.stdout.write("match_typeface.mjs (--observation FILE... | --target FILE...) [--family NAME] [--candidates \"Family:weight,...\"] [--candidates-file FILE] [--measured FILE] --out FILE [--browser-executable FILE]\n");
       process.exit(0);
     } else fail("unknown-argument", `Unrecognized argument: ${a}`);
   }
-  if (!out.observations.length) fail("invalid-observation", "--observation must name at least one observation session.");
+  if (!out.observations.length && !out.targets.length) fail("invalid-observation", "--observation or --target must name at least one measured record.");
   if (out.posture && !["mono", "proportional"].includes(out.posture)) fail("invalid-posture", "--posture must be mono or proportional.");
   if (!out.out) fail("invalid-out", "--out must name the record to write.");
   return out;
@@ -206,6 +210,42 @@ function targetsFrom(observationPath, familyFilter) {
       font_fingerprint: t.font_fingerprint || null,
       observation: path.relative(process.cwd(), observationPath).split(path.sep).join("/"),
       observation_sha256: sha256(observationPath),
+    });
+  }
+  return targets;
+}
+
+/* The targets, 13.x path: faces measured on the live reference by
+   measure_faces.mjs with the same probe this script applies to candidates. */
+function targetsFromMeasured(file, familyFilter) {
+  let payload;
+  try {
+    payload = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (e) {
+    fail("target-unreadable", `Could not read ${file}: ${e.message}`);
+  }
+  if (payload?.tool !== "measure_faces.mjs" || payload.schema_version !== 1) {
+    fail("target-identity", `${file} was not emitted by measure_faces.mjs (schema 1).`);
+  }
+  if (!MEASURE_FACES_SHA256 || payload.producer_script_sha256 !== MEASURE_FACES_SHA256) {
+    fail("target-identity", `${file} was not emitted by the current measure_faces.mjs runtime; re-run it.`);
+  }
+  const targets = [];
+  for (const t of payload.faces || []) {
+    if (!t || t.error || t.fallback_suspected) continue;
+    if (typeof t.x_ratio !== "number" || typeof t.advance !== "number") continue;
+    if (familyFilter && stem(t.family) !== stem(familyFilter)) continue;
+    targets.push({
+      family: t.family, role: "measured", weight: String(t.weight || "400"),
+      x_ratio: t.x_ratio, advance: t.advance,
+      i_ratio: typeof t.i_ratio === "number" ? t.i_ratio : null,
+      lower_advance: typeof t.lower_advance === "number" ? t.lower_advance : null,
+      upper_advance: typeof t.upper_advance === "number" ? t.upper_advance : null,
+      digit_advance: typeof t.digit_advance === "number" ? t.digit_advance : null,
+      punct_advance: typeof t.punct_advance === "number" ? t.punct_advance : null,
+      font_fingerprint: t.font_fingerprint || null,
+      observation: path.relative(process.cwd(), file).split(path.sep).join("/"),
+      observation_sha256: sha256(file),
     });
   }
   return targets;
@@ -323,8 +363,9 @@ const args = parseArgs(process.argv.slice(2));
 
 let targets = [];
 for (const file of args.observations) targets.push(...targetsFrom(file, args.family));
-if (!targets.length) fail("no-targets", "No measured faces found in the observation(s)" + (args.family ? ` for family ${args.family}` : "") + ".");
-const inputObservations = args.observations.map((file) => {
+for (const file of args.targets) targets.push(...targetsFromMeasured(file, args.family));
+if (!targets.length) fail("no-targets", "No measured faces found in the observation(s) or target record(s)" + (args.family ? ` for family ${args.family}` : "") + " (a face the page rendered with a fallback is not a target).");
+const inputObservations = [...args.observations, ...args.targets].map((file) => {
   let payload;
   try { payload = JSON.parse(fs.readFileSync(file, "utf8")); }
   catch (error) { fail("observation-unreadable", `Could not re-read ${file}: ${error.message}`); }
@@ -395,6 +436,7 @@ const record = {
     "observe_reference.mjs": OBSERVER_SCRIPT_SHA256,
     "structure_probe.mjs": STRUCTURE_PROBE_SHA256,
     "playwright_resolver.mjs": PLAYWRIGHT_RESOLVER_SHA256,
+    ...(MEASURE_FACES_SHA256 ? { "measure_faces.mjs": MEASURE_FACES_SHA256 } : {}),
     ...(measuredSource.mode === "browser" ? {
       "playwright-entry": measuredSource.playwright.resolved_file_sha256,
       "browser-executable": measuredSource.browser_executable.sha256,

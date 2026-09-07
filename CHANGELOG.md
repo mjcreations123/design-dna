@@ -5,6 +5,29 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 13.1.0 - Development candidate
+
+First real build under the 13.x workflow (a bikur cholim demonstration site,
+2026-09-06: nine candidates studied in parallel, four selected from three
+sources, plan, build, `CHECK PASS` on the second run) exposed one gap: a
+selected reference set its display face in a commercial family and the only
+way to rank an open substitute was `match_typeface.mjs`, which accepted
+targets solely from the legacy observer's schema-5 observation, and the
+legacy observer refuses to run without a state contract.
+
+- `scripts/measure_faces.mjs` (new): measures named families as the live
+  reference renders them, with the exact probe `match_typeface.mjs` applies to
+  candidates (100px canvas geometry on seven axes and the 96px raster
+  fingerprint). A family the page only rendered through a fallback is
+  reported `fallback_suspected` and is not a target. Writes a schema-1 record
+  bound to the script's SHA-256, the Playwright entry and the browser.
+- `scripts/match_typeface.mjs`: accepts `--target FILE` (a `measure_faces.mjs`
+  record) alongside `--observation`, verifies the record's runtime identity,
+  and lists `measure_faces.mjs` in its own runtime identity. Heart & Soil's
+  Cardinal Fruit measured x 0.658, advance 5.717, I 0.354; Instrument Serif
+  400 ranked first at delta 0.054 with a verified browser measurement.
+- `SKILL.md`: the typeface rule names both commands.
+
 ## 13.0.0 - Development candidate
 
 The workflow is two programs and a plan. Owner directive, 2026-09-06 (Motty):

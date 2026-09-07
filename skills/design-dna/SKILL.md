@@ -31,9 +31,10 @@ Mechanically: every part a visitor can see (layout, arrangement, typefaces,
 colors, controls, spacing, motion, dividers, footers, navigation, cards, marks)
 traces to a studied reference's sheet, or it is cut. Typefaces are the
 references' own families, self-hosted where the license allows; otherwise the
-top-ranked face from `scripts/match_typeface.mjs`, declared in the plan as a
-match. The producer never picks a face, a palette, or a layout for beauty,
-brand fit, or "reads as right".
+face is measured on the live reference with `scripts/measure_faces.mjs` and
+the top-ranked open-licence face from `scripts/match_typeface.mjs --target`
+is declared in the plan as a match. The producer never picks a face, a
+palette, or a layout for beauty, brand fit, or "reads as right".
 
 Owner directive, 2026-09-06: the research for a site takes minutes, not
 hours, and nothing in this skill is allowed to make one producer's work block
@@ -111,7 +112,17 @@ Rules for the plan, all checked by step 4:
   detected on that site. Every mechanism a route promises exists on a
   studied reference.
 - At most two typefaces, each computed by a selected reference, or declared as
-  the rank-one match for a reference face that cannot be self-hosted.
+  the rank-one match for a reference face that cannot be self-hosted:
+
+  ```
+  node <skill>/scripts/measure_faces.mjs --url <reference URL> --family "<Face>" --out .design-dna/references/<id>/faces.json
+  node <skill>/scripts/match_typeface.mjs --target .design-dna/references/<id>/faces.json --family "<Face>" --out .design-dna/typeface-match.json
+  ```
+
+  The first measures the face as the live page renders it (and refuses a face
+  the page only rendered with a fallback); the second measures the open
+  candidates the same way and ranks them. `chosen` is the match; the plan
+  entry carries `"matched_for"` and the record path.
 - The ground is a selected reference's own dominant ground, not a minor
   citation that happens to justify the producer's taste.
 - One reference is the dominant grammar of each route: its first-screen

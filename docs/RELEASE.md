@@ -1,6 +1,6 @@
 # Release procedure
 
-The current source identity is the `13.0.0` development candidate. Do not call
+The current source identity is the `13.1.0` development candidate. Do not call
 it published or release-qualified until this procedure passes against its exact
 frozen bytes and the required external evidence is retained.
 
