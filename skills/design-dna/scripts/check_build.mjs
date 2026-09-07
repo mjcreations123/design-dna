@@ -38,6 +38,8 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolvePlaywright, discoverBrowserExecutable } from "./playwright_resolver.mjs";
 import { studyPage, hoverProbe } from "./study_reference.mjs";
+import {signaturePlanProblems, gapDispositionProblems, inspectRegions, signatureBuildProblems, reviewTransferProblems} from './signature_contract.mjs';
+import {captureTransferSequence, sequencePlanProblems} from './signature_sequence.mjs';
 
 const TOOL = "check_build.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -63,8 +65,9 @@ function parseArgs(argv) {
     else if (a === "--review") out.review = argv[++i];
     else if (a === "--route-seconds") out.routeSeconds = Number(argv[++i]);
     else if (a === "--early") out.early = true;
+    else if (a === "--plan-only") out.planOnly = true;
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
-    else if (a === "--help" || a === "-h") { process.stdout.write(`usage: node ${TOOL} --plan FILE --studies DIR --out DIR [--review FILE] [--route-seconds S] [--early]\n`); process.exit(0); }
+    else if (a === "--help" || a === "-h") { process.stdout.write(`usage: node ${TOOL} --plan FILE --studies DIR --out DIR [--review FILE] [--route-seconds S] [--early | --plan-only]\n`); process.exit(0); }
     else fail("invalid-argument", `Unknown argument ${a}.`);
   }
   if (!out.plan || !fs.existsSync(out.plan)) fail("plan-missing", "--plan must name an existing plan.json.");
@@ -136,7 +139,7 @@ function loadRegistry() {
 const primary = (study, viewport = "wide") => (study.pages || []).find((p) => p.role === "primary" && p.viewport === viewport);
 const mechanismTypes = (page) => new Set((page?.motion?.mechanisms || []).map((m) => m.type));
 const mechKey = (m) => `${m.tag || ""}.${String(m.cls || "").split(/\s+/)[0] || ""}`;
-const realFamilies = (design) => (design?.fonts || []).map((f) => norm(f.family)).filter((f) => f && !GENERIC_FAMILIES.has(f));
+const realFamilies = (design) => (design?.fonts || []).map((f) => norm(f.family)).filter(Boolean);
 const familiesOf = (study) => { const s = new Set(); for (const p of study.pages || []) for (const f of realFamilies(p.design)) s.add(f); return s; };
 const groundsOf = (study) => { const out = []; for (const p of study.pages || []) { for (const g of p.ground_sampled?.grounds || []) if (rgb(g.color)) out.push(g.color); for (const g of p.design?.grounds || []) if (rgb(g.color)) out.push(g.color); } return out; };
 const dominantGround = (page) => page?.ground_sampled?.grounds?.[0] ? { color: page.ground_sampled.grounds[0].color, share: page.ground_sampled.grounds[0].share, method: "sampled" } : page?.design?.grounds?.[0] ? { color: page.design.grounds[0].color, share: page.design.grounds[0].area_share, method: "stacked estimate" } : null;
@@ -309,17 +312,29 @@ async function blankMoments(browser, url, viewport) {
   return { stops: stops.length, blank };
 }
 
-async function probeRoute(browser, url, viewport, sections) {
+async function probeRoute(browser, url, viewport, sections, frameDir, prefix) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
   try {
     await page.goto(url, { waitUntil: "load", timeout: 60_000 });
     await new Promise((r) => setTimeout(r, 1500));
     const result = await page.evaluate(`${PROBE}(${JSON.stringify(sections || [])})`);
+    result.regions = await page.evaluate(inspectRegions, sections.map((s) => s.selector));
+    result.unmapped = await page.evaluate((selectors) => {
+      const mapped = selectors.flatMap((s) => {try{return [...document.querySelectorAll(s)];}catch{return [];}});
+      return [...document.querySelectorAll('header,footer,main > section,main > article,main > div')].filter((el) => {
+        const r=el.getBoundingClientRect();return r.width>innerWidth*.25&&r.height>80&&!mapped.some((root)=>root===el||root.contains(el));
+      }).map((el)=>el.tagName.toLowerCase()+'.'+String(el.className||'').split(/\s+/)[0]);
+    }, sections.map((s) => s.selector));
     for (const section of result.sections) {
       const planned = sections.find((s) => s.selector === section.selector);
       const behavior = viewport.name === 'narrow' ? planned?.behavior_narrow ?? planned?.behavior : planned?.behavior;
       if (section.count > 0 && mechanismsIn(behavior).includes('hover')) section.hover = await hoverProbe(page, section.selector);
+    }
+    result.signature_sequences=[];
+    for(const [index,section] of sections.entries()){
+      const captured=await captureTransferSequence(page,section,viewport.name,frameDir,`${prefix}-${index+1}`);
+      if(captured)result.signature_sequences.push(captured);
     }
     return result;
   } finally { await page.close().catch(() => {}); await context.close().catch(() => {}); }
@@ -438,8 +453,9 @@ async function main() {
     const gaps = gapsOf(study);
     if (gaps.length && words(ref.gaps_reviewed).length < 6) push("evidence", `${ref.id}: the study has ${gaps.length} observation gap(s) (${[...new Set(gaps.map((g) => g.code))].join(", ")}); the plan does not say how they were inspected before copying (gaps_reviewed). A successful capture is not an adequate study`);
     for (const problem of gapEvidenceProblems(gaps, ref.gap_reviews, args.plan)) push('evidence', `${ref.id}: ${problem}; artifact identity supports review, not automatic approval of its conclusion`);
+    for (const problem of gapDispositionProblems(gaps, ref, args.studies)) push('evidence', problem);
   }
-  const usedBy = new Map(selected.map((id) => [id, 0]));
+  const usedBy = new Map(selected.filter((id)=>plan.references.find((r)=>r.id===id)?.role!=='ancillary').map((id) => [id, 0]));
   for (const route of routes) for (const s of route.sections || []) for (const id of [s.reference, ...(mechanismsIn(s.behavior).length || mechanismsIn(s.behavior_narrow).length ? [s.behavior_from] : [])]) if (id && usedBy.has(id)) usedBy.set(id, usedBy.get(id) + 1);
   for (const [id, n] of usedBy) if (!n) push("selection", `${id} is selected but no section copies it; a reference that reaches no section is a quota filler`);
 
@@ -455,7 +471,7 @@ async function main() {
     else if (!/^(award|curated)$/i.test(src.curation || "")) push("sources", `${ref.id}: source ${src.id} is a submission feed (${src.curation}); it cannot supply a selected reference`);
     else if (src.status && src.status !== "active") push("sources", `${ref.id}: source ${src.id} is ${src.status} in the registry (${src.notes || ""}); verify the current domain and record a dated correction, or pick another listing`);
     else {
-      sourceKeys.set(src.id, (sourceKeys.get(src.id) || 0) + 1);
+      if(ref.role!=='ancillary')sourceKeys.set(src.id, (sourceKeys.get(src.id) || 0) + 1);
       if (!ref.source_url) push("sources", `${ref.id}: no source_url; the listing page that names this site must be recorded so anyone can verify it`);
       else { const h = hostOf(ref.source_url); const ok = [hostOf(src.url), ...(src.aliases || []).map((a) => a.replace(/^www\./, ""))].filter(Boolean).some((d) => h === d || (h && h.endsWith("." + d))); if (!ok) push("sources", `${ref.id}: source_url ${ref.source_url} is not on ${src.id}'s domain (${hostOf(src.url)}${(src.aliases || []).length ? " or " + src.aliases.join(", ") : ""})`); }
     }
@@ -464,6 +480,18 @@ async function main() {
   else if (sourceKeys.size) passed.push(`sources: ${[...sourceKeys.keys()].join(", ")}`);
 
   // ---- read the build
+  for (const problem of signaturePlanProblems(plan, studies, args.studies)) push('plan', problem);
+  for(const route of routes)for(const section of route.sections||[])for(const vp of VIEWPORTS){
+    const transfer=section.signature_transfer?.[vp.name];
+    if(transfer)for(const problem of sequencePlanProblems(transfer))push('plan',`${route.name} ${section.selector} ${vp.name}: ${problem}`);
+  }
+  if (args.planOnly || problems.length) {
+    const verdict = problems.length ? `CHECK FAIL (plan): ${problems.map((p)=>p.msg).join(' | ')}` : 'CHECK PASS (plan): signature obligations and source evidence bound; build and visual review not checked';
+    fs.writeFileSync(path.join(outDir,'plan-check.json'), JSON.stringify({verdict,problems,plan_sha256:sha(fs.readFileSync(args.plan))},null,2));
+    process.stdout.write(verdict+'\nFUNCTIONAL not run\nREVIEW not run\nEVIDENCE plan and studies only\nAPPROVAL not assessed\n');
+    process.exitCode=problems.length?1:0;
+    return;
+  }
   const loaded = resolvePlaywright({ moduleUrl: import.meta.url });
   const executable = discoverBrowserExecutable(loaded.playwright, args.browserExecutable);
   const browser = await loaded.playwright.chromium.launch({ executablePath: executable.path });
@@ -478,7 +506,7 @@ async function main() {
         buildPages.push(record);
         if (!record.ok) push("evidence", `${routeName} (${viewport.name}) could not be read: ${record.problems.map((p) => p.message).join("; ")}`);
         if (args.early) continue;
-        try { probes.push({ route: routeName, viewport: viewport.name, ...(await probeRoute(browser, route.url, viewport, route.sections || [])) }); }
+        try { probes.push({ route: routeName, viewport: viewport.name, ...(await probeRoute(browser, route.url, viewport, route.sections || [], frameDir, `route${index+1}-${viewport.name}`)) }); }
         catch (error) { push("evidence", `${routeName} (${viewport.name}) probe failed: ${String(error?.message || error).slice(0, 160)}`); }
         try { const bm = await blankMoments(browser, route.url, viewport); evidence.blank_moments.push({ route: routeName, viewport: viewport.name, ...bm }); }
         catch (error) { push("evidence", `${routeName} (${viewport.name}) blank-moment pass failed: ${String(error?.message || error).slice(0, 160)}`); }
@@ -588,16 +616,20 @@ async function main() {
         evidence.sections.push({ ...ps, route: routeName, viewport: viewport.name });
         if (ps.count === -1) { push("plan", `${where}: invalid selector`); continue; }
         if (ps.count === 0) { push("design", `${where}: not in the page`); continue; }
-        const foreign = (ps.fonts || []).filter((f) => f && !GENERIC_FAMILIES.has(f) && !allowedFamilies.has(f));
+        const foreign = (ps.fonts || []).filter((f) => f && !allowedFamilies.has(f));
         if (foreign.length) push("design", `${where}: sets text in ${foreign.join(", ")}, which neither ${s.reference} nor the route's dominant reference computes; a family somewhere in the set does not authorize its use here`);
         if (ps.ground && rgb(ps.ground) && allowedGrounds.length && !allowedGrounds.some((c) => colorDistance(c, ps.ground) <= 24)) push("design", `${where}: paints ${ps.ground}, a ground neither ${s.reference} nor the dominant reference${s.palette_from ? ` nor ${s.palette_from}` : ""} paints`);
         const want = viewport.name === "wide" ? wantWide : wantNarrow;
-        const keys = new Set(ps.keys || []);
-        const have = new Set(buildMechs(routeName, viewport.name).filter((m) => keys.has(mechKey(m))).map((m) => m.type));
+        const exactSelectors=new Set(probe?.regions?.find((r)=>r.selector===s.selector)?.selectors||[]);
+        const have = new Set(buildMechs(routeName, viewport.name).filter((m) => m.selector&&exactSelectors.has(m.selector)).map((m) => m.type));
+        const transfer=s.signature_transfer?.[viewport.name];
+        const targeted=probe?.signature_sequences?.find((sequence)=>sequence.selector===s.selector);
+        const directlyObserved=transfer&&targeted&&!targeted.problems.length&&targeted.states.length===transfer.sequence.length;
+        if(directlyObserved&&['click','hover','pointer','time'].includes(transfer.driver)) for(const type of transfer.mechanisms||[]) have.add(type);
         const hoverOk = (ps.hover?.responded || 0) > 0;
         const sourcePage = primary(studies.get(s.behavior_from || s.reference), viewport.name);
-        const actual = buildMechs(routeName, viewport.name).filter((m) => keys.has(mechKey(m)));
-        const driverProblems = behaviorDriverProblems(want, sourcePage?.motion?.mechanisms || [], actual);
+        const actual = buildMechs(routeName, viewport.name).filter((m) => m.selector&&exactSelectors.has(m.selector));
+        const driverProblems = directlyObserved&&['click','hover','pointer','time'].includes(transfer.driver) ? [] : behaviorDriverProblems(want, sourcePage?.motion?.mechanisms || [], actual);
         for (const problem of driverProblems) push('design', `${where}: ${problem}`);
         for (const w of want) {
           if (w === "hover") { if (!hoverOk) push("design", `${where}: promises a hover response but none was measured inside this section`); if (!(sourcePage?.hover?.responded > 0)) push('evidence', `${where}: named reference has no measured hover response at this width`); continue; }
@@ -626,7 +658,10 @@ async function main() {
   }
 
   // ---- whole-page emptiness, overflow, copy, duplicate photographs
+  for (const problem of signatureBuildProblems(plan, probes)) push('design',problem);
   for (const probe of probes) {
+    for (const region of probe.unmapped || []) push('design',`${probe.route} ${probe.viewport}: unplanned major region ${region}`);
+    for(const sequence of probe.signature_sequences||[])for(const problem of sequence.problems)push('design',`${probe.route} ${probe.viewport} ${sequence.selector}: ${problem}`);
     const where = `${probe.route} (${probe.viewport})`;
     const vh = VIEWPORTS.find((v) => v.name === probe.viewport).height;
     const screens = Math.max(1, probe.doc_height / vh);
@@ -700,14 +735,22 @@ async function main() {
   if (!routes.length || evidence.functional.length !== routes.length * VIEWPORTS.length) functional.push('Functional coverage incomplete: every route requires both widths');
   const functionalLine = functional.length ? `FUNCTIONAL FAIL ${functional.length} problem(s): ${functional.join(" | ")}` : `FUNCTIONAL PASS: sampled focus, reduced-motion content, rest overlays and horizontal overflow checks passed for ${routes.length} route(s) at both widths; full interaction review remains separate`;
   const review = readReview(reviewFile, selected, plan);
+  const transferReviewProblems = reviewTransferProblems(plan, review.written ? fs.readFileSync(reviewFile,'utf8') : '', path.dirname(path.resolve(args.plan)));
+  if (!review.written || review.missing?.length || review.walkMissing?.length) transferReviewProblems.push('visual comparison or visitor walk is incomplete');
+  if(review.unresolved>(plan.review?.issues||[]).length)transferReviewProblems.push('unresolved review notes must each have a severity and disposition in review.issues');
+  if (transferReviewProblems.length) review.line = 'REVIEW FAIL: '+transferReviewProblems.join(' | ');
+  const readiness = !problems.length && !functional.length && !transferReviewProblems.length;
   const approvalLine = plan.approval?.by && plan.approval?.date ? `APPROVAL recorded: ${plan.approval.by}, ${plan.approval.date}${plan.approval.note ? ` (${plan.approval.note})` : ""}` : "APPROVAL not recorded: no owner approval is claimed";
   const report = { tool: TOOL, tool_revisions: { check_build: SELF_SHA, study_reference: STUDY_SHA }, checked_at: new Date().toISOString(), verdict, functional: functionalLine, review: review.line, evidence_line: evidenceLine, approval: approvalLine, notes, problems, functional_problems: functional, passed, evidence,
     build_pages: buildPages.map((p) => ({ route: p.route, viewport: p.viewport, ok: p.ok, status: p.status ?? null, first_screen: p.first_screen?.file, mechanisms: p.motion?.mechanisms?.map((m) => `${m.type}:${m.driver || "?"}:${mechKey(m)}`), fonts: p.design?.fonts, ground: dominantGround(p), overflow_x: p.layout?.overflow_x || null })) };
+  report.ready_for_owner_review=readiness;
+  report.signature_review_problems=transferReviewProblems;
+  report.plan_sha256=sha(fs.readFileSync(args.plan));
   fs.writeFileSync(path.join(outDir, "check.json"), JSON.stringify(report, null, 2) + "\n");
   fs.writeFileSync(path.join(outRoot, "check.json"), JSON.stringify(report, null, 2) + "\n");
   fs.writeFileSync(path.join(outRoot, "latest.json"), JSON.stringify({ run: outDir, checked_at: report.checked_at, lines: [verdict, functionalLine, review.line, evidenceLine, approvalLine] }, null, 2) + "\n");
   process.stdout.write([verdict, functionalLine, review.line, evidenceLine, approvalLine].join("\n") + "\n");
-  process.exitCode = problems.length || functional.length ? 1 : 0;
+  process.exitCode = readiness ? 0 : 1;
 }
 
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));

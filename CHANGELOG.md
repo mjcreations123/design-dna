@@ -1,5 +1,21 @@
 # Changelog
 
+## 13.4.0 - Signature transfer corrections
+
+- Plan-only checking rejects signatures that reach no build section, dynamic
+  source regions relabeled static, wrong drivers, missing sequence states and
+  ancillary references counted as substantial contributors.
+- `study_reference --region` captures the chosen source region at both widths.
+  Mechanism matching uses exact structural selectors rather than shared classes.
+- Targeted build sequences capture ordered states and expected responses within
+  the section. Medium substitution and unplanned major regions are reported.
+- Gap reviews distinguish exclusion from new inspection. Removing the defining
+  region cannot count as resolving an observation gap.
+- Generic primary typography is subject to provenance checks. Material or missing
+  signature reviews fail readiness independently of automated ingredient checks.
+- This remains a development candidate. Regression fixtures verify contracts and
+  detection; they do not establish aesthetic quality or owner approval.
+
 ## 13.3.1 review corrections
 
 - Explicit and environment browser paths follow the installed-Chrome rule;

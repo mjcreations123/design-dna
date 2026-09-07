@@ -233,6 +233,7 @@ export const TAG_PROBES = `(() => {
 })()`;
 
 export const SAMPLE_PROBES = `(() => {
+  const selectorFor = (el) => {if(el.id && document.querySelectorAll('#'+CSS.escape(el.id)).length===1)return '#'+CSS.escape(el.id);const parts=[];for(let n=el;n&&n.nodeType===1;n=n.parentElement){let index=1;for(let p=n.previousElementSibling;p;p=p.previousElementSibling)index++;parts.unshift(n.tagName.toLowerCase()+':nth-child('+index+')');}return parts.join(' > ');};
   const out = {};
   const vh = window.innerHeight;
   document.querySelectorAll('[data-dna-probe]').forEach((el) => {
@@ -243,6 +244,7 @@ export const SAMPLE_PROBES = `(() => {
     let src = '';
     if (media) src = (media.currentSrc || media.src || media.poster || '').slice(-48);
     out[el.getAttribute('data-dna-probe')] = {
+      selector: selectorFor(el),
       top: Math.round(r.top),
       left: Math.round(r.left),
       h: Math.round(r.height),
@@ -296,7 +298,7 @@ export function finalizeMechanisms(mechanisms) {
   return [...mechanisms]
     .sort((a, b) => mechanismWeight(b) - mechanismWeight(a))
     .filter((mechanism) => {
-      const key = `${mechanism.type}|${mechanism.tag || ""}|${mechanism.cls || ""}|${mechanism.src || ""}|${mechanism.detail || ""}`;
+      const key = `${mechanism.type}|${mechanism.selector || ""}|${mechanism.tag || ""}|${mechanism.cls || ""}|${mechanism.src || ""}|${mechanism.detail || ""}`;
       if (seen.has(key)) return false;
       seen.add(key); return true;
     });
@@ -384,7 +386,7 @@ export function deriveMechanisms(ticks) {
   for (const [id, seq] of track) {
     if (seq.length < 3) continue;
     const first = seq[0];
-    const ident = { tag: first.tag, cls: first.cls, w: first.w, h: first.h, initial_top: first.top, sample: first.txt.slice(0, 36) };
+    const ident = { selector: first.selector, tag: first.tag, cls: first.cls, w: first.w, h: first.h, initial_top: first.top, sample: first.txt.slice(0, 36) };
     let pinRun = 0, pinPx = 0, bestRun = 0, bestPx = 0, bestStart = -1, runStart = -1;
     let parallaxTicks = 0;
     const parallaxTickIds = [];
@@ -485,7 +487,7 @@ export function deriveMechanisms(ticks) {
   const seen = new Set();
   const kept = mechanisms
     .sort((a, b) => mechanismWeight(b) - mechanismWeight(a))
-    .filter((m) => { const k = `${m.type}|${m.tag}|${m.cls}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    .filter((m) => { const k = `${m.type}|${m.selector || ''}|${m.tag}|${m.cls}`; if (seen.has(k)) return false; seen.add(k); return true; });
   return { mechanisms: kept, activeTicks, scrollTicks, pageMove, typeCounts };
 }
 

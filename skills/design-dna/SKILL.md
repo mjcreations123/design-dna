@@ -135,6 +135,16 @@ if the sheet measured it on that site.
 
 ### 2. Plan (a selection, written down)
 
+Before completing the plan, read
+[Signature transfer](references/quality/signature-transfer.md). Each substantial
+reference now binds a measured source region and its defining static or
+interactive experience to a build section. Use `study_reference.mjs --region`
+for the chosen source region, then `check_build.mjs --plan-only` before building.
+The JSON below shows the base fields; the linked guide supplies the required
+`signature_spec`, `signature_from`, `signature_transfer`, `system_sections`
+and review fields. Existing ingredient-only plans need an actual review and
+re-study, not automatically filled declarations.
+
 Write `.design-dna/plan.json`. Every field below is read by the check.
 
 ```json
@@ -183,6 +193,9 @@ Rules, all checked:
   `artifacts: [{"file":"path/to/capture.png","sha256":"..."}]`.
   Use actual screenshots or video of that inspection. The checker verifies
   the files and hashes; the reviewer must judge what those captures show.
+  Also distinguish `disposition: "inspected"` from `"excluded"`. An exclusion
+  that removes the selected signature disqualifies that contribution. The
+  original obstructed screenshot cannot establish a new inspection.
 - At most two typefaces, each computed by a selected reference or declared
   with `matched_for` and a `match_record` that ranks it first. A typed claim
   is not a match.
@@ -280,6 +293,10 @@ verbatim in the report:
   command exit status even when the separate design comparisons pass.
 - `REVIEW INDEPENDENT`, `REVIEW SELF-REVIEW` or `REVIEW MISSING`: whether a
   review was written, by whom, what it covers and what it leaves unresolved.
+  `REVIEW FAIL` means a signature is missing/unverified, its paired captures
+  are absent, or a material issue remains. It fails the final command even
+  when automated ingredient comparisons pass. Generic primary fonts are
+  checked for source authorization too; fallback lists are not a design licence.
 - `EVIDENCE`: the tool revisions that made the studies and this check, and
   which studies are older than the current study tool.
 - `APPROVAL`: owner approval, recorded in the plan or not.

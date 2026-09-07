@@ -37,6 +37,7 @@ import { fileURLToPath } from "node:url";
 import { resolvePlaywright, discoverBrowserExecutable } from "./playwright_resolver.mjs";
 import { TAG_PROBES, SAMPLE_PROBES, deriveMechanisms, finalizeMechanisms, mechanismWeight } from "./observe_reference.mjs";
 import { collectSameOriginLinks } from "./browser_evidence.mjs";
+import {inspectRegions} from './signature_contract.mjs';
 
 const TOOL = "study_reference.mjs";
 const SCHEMA_VERSION = 2;
@@ -52,13 +53,14 @@ const CONTACT_FRAMES = 8;
 const CALL_TIMEOUT_MS = 45_000;   // any single browser call; a page that is alive answers well within this
 
 function parseArgs(argv) {
-  const out = { url: null, id: null, outDir: null, inner: 3, videoSeconds: 25, browserExecutable: null };
+  const out = { url: null, id: null, outDir: null, inner: 3, videoSeconds: 25, browserExecutable: null, regions: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--url") out.url = argv[++i];
     else if (a === "--id") out.id = argv[++i];
     else if (a === "--out") out.outDir = argv[++i];
     else if (a === "--inner") out.inner = Number(argv[++i]);
+    else if (a === "--region") out.regions.push(argv[++i]);
     else if (a === "--video-seconds") out.videoSeconds = Number(argv[++i]);
     else if (a === "--browser-executable") out.browserExecutable = argv[++i];
     else if (a === "--help" || a === "-h") { process.stdout.write(usage()); process.exit(0); }
@@ -72,7 +74,7 @@ function parseArgs(argv) {
   return out;
 }
 function usage() {
-  return `usage: node ${TOOL} --url URL --id ID --out DIR [--inner N] [--video-seconds S] [--browser-executable FILE]\n`;
+  return `usage: node ${TOOL} --url URL --id ID --out DIR [--region SELECTOR]... [--inner N] [--video-seconds S] [--browser-executable FILE]\n`;
 }
 function fail(code, message) {
   process.stdout.write(JSON.stringify({ ok: false, error: { code, message } }, null, 2) + "\n");
@@ -429,7 +431,7 @@ export async function motionPass(page, viewport) {
         const back = Math.hypot(returned.left - start.left, returned.top - start.top);
         const correlation = moved && plen ? (dx * pdx + dy * pdy) / (moved * plen) : -1;
         if (moved > 8 && correlation > 0.45 && back <= Math.max(8, moved * 0.3) && middle.top > -50 && middle.top < viewport.height + 50) {
-          pointerFollow = { tag: middle.tag, cls: middle.cls, w: middle.w, h: middle.h, moved_px: Math.round(moved), return_error_px: Math.round(back), depth_fraction: fraction };
+          pointerFollow = { selector: middle.selector, tag: middle.tag, cls: middle.cls, w: middle.w, h: middle.h, moved_px: Math.round(moved), return_error_px: Math.round(back), depth_fraction: fraction };
           break;
         }
       }
@@ -549,6 +551,20 @@ export async function studyPage(browser, url, viewport, options) {
       fs.writeFileSync(path.join(frameDir, record.first_screen_clear.file), clear);
     }
     record.design = await bounded(page.evaluate(DESIGN_SYSTEM), "design-system");
+    record.regions = [];
+    for (const [index, selector] of (options.regions || []).entries()) {
+      const target = page.locator(selector);
+      if (await target.count() !== 1) { record.problems.push({code:'signature-region-unmeasured',message:`${selector} must match one source region`}); continue; }
+      await bounded(target.evaluate((el) => el.scrollIntoView({block:'center',behavior:'instant'})), 'signature-region-scroll');
+      await sleep(400);
+      const [region] = await bounded(page.evaluate(inspectRegions, [selector]), 'signature-region-measure');
+      const bytes = await bounded(page.screenshot(), 'signature-region-frame');
+      const file = `${prefix}-region-${index+1}.png`;
+      fs.writeFileSync(path.join(frameDir,file),bytes);
+      region.evidence = {file:`frames/${file}`,sha256:sha(bytes)};
+      record.regions.push(region);
+    }
+    if (options.regions?.length) await page.evaluate(() => window.scrollTo(0,0));
     record.layout = await bounded(page.evaluate(LAYOUT), "layout");
     if (full) {
       // Hover first, at rest on the first screen: a smooth-scroll library can
@@ -688,7 +704,7 @@ async function main() {
   const study = { schema_version: SCHEMA_VERSION, tool: TOOL, id: args.id, url: args.url, studied_at: new Date().toISOString(), pages: [], problems: [], complete: false };
   try {
     for (const viewport of VIEWPORTS) {
-      const record = await studyPage(browser, args.url, viewport, { frameDir, videoDir, prefix: `${viewport.name}-home`, videoSeconds: args.videoSeconds, full: true });
+      const record = await studyPage(browser, args.url, viewport, { frameDir, videoDir, prefix: `${viewport.name}-home`, videoSeconds: args.videoSeconds, full: true, regions: args.regions });
       record.role = "primary";
       if (record.frames?.length) record.contact_sheet = await contactSheet(browser, frameDir, record.frames, path.join(outDir, `${viewport.name}-home-contact-sheet.png`), `${args.url} — ${viewport.name} scroll-through, ${args.videoSeconds}s`);
       for (const p of record.problems) study.problems.push({ page: "home", viewport: viewport.name, ...p });
