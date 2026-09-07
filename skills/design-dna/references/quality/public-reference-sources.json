@@ -25,7 +25,17 @@
       "scope": "Public cross-discipline visual and interface inspiration; the current endpoint may redirect to Recent.",
       "notes": "Public design browsing was visible during the 2026-09-01 audit. A plain fetch returns a script shell with no entry links; use a real browser session.",
       "curation": "curated",
-      "curation_note": "Editorially chosen; a small number of entries per week."
+      "curation_note": "Editorially chosen; a small number of entries per week.",
+      "aliases": [
+        "recent.design"
+      ],
+      "corrections": [
+        {
+          "date": "2026-09-06",
+          "change": "alias recent.design added",
+          "evidence": "godly.website answered 301 to http://recent.design/?ref=godly on 2026-09-06; recent.design returns 403 to a plain fetch and needs a real browser session."
+        }
+      ]
     },
     {
       "id": "mobbin",
@@ -174,14 +184,24 @@
     {
       "id": "minimal-gallery",
       "name": "Minimal Gallery",
-      "url": "https://minimalgallery.com/",
-      "status": "inactive",
-      "access": "unavailable-current",
-      "retrieval": "none",
+      "url": "https://minimal.gallery/",
+      "status": "active",
+      "access": "public",
+      "retrieval": "fetch",
       "scope": "Minimal website inspiration gallery.",
-      "notes": "The supplied domain did not resolve during the 2026-09-01 audit; skip until a future public audit succeeds.",
+      "notes": "Canonical address is minimal.gallery. The 2026-09-01 audit tried minimalgallery.com, which did not resolve, and marked the source inactive; that was the wrong domain, not a dead gallery.",
       "curation": "curated",
-      "curation_note": "Hand-picked by the gallery's editor."
+      "curation_note": "Hand-picked by the gallery's editor.",
+      "aliases": [
+        "minimalgallery.com"
+      ],
+      "corrections": [
+        {
+          "date": "2026-09-06",
+          "change": "url minimalgallery.com -> minimal.gallery; status inactive -> active; retrieval none -> fetch",
+          "evidence": "https://minimal.gallery/ fetched 2026-09-06: 'Hand-picked web design inspiration, premium templates, tools and more'; entries dated today, 2 days ago, 3 days ago. Also reached in the Crossing Law build (scooter-law-demo/.design-dna/registry-correction-proposal.json)."
+        }
+      ]
     },
     {
       "id": "unsection",
@@ -231,5 +251,6 @@
       "curation": "curated",
       "curation_note": "Hand-picked commerce work."
     }
-  ]
+  ],
+  "corrections_note": "Entries carry dated `corrections` when a later fact contradicts the audit; `aliases` list other hostnames a listing may legitimately live on."
 }

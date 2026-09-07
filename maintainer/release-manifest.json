@@ -1,24 +1,24 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "13.2.0",
-  "distribution_sha256": "160fb36051094ae8a6d0714b9359d9d41b4a93f355740187a4ffcada467b1cc1",
-  "content_sha256": "363e0f65e8e4fc8f06e35b2b5fc18a54027d6d7c7d39103d9ca411225d05f50d",
-  "codex_plugin_manifest_sha256": "622e1e18ea787331475b3ba2354a42cbdf85036c38f29c13ce8f105f333619ed",
-  "claude_plugin_manifest_sha256": "8dfa1dec2854daac0a7a354d897da61d8af4fdee4ccc7cd7db34d1f49482ff29",
-  "sbom_sha256": "2ed7c0c594846075c6dc469e865cca32938838cbdc50c6837082dec151ad4838",
-  "compatibility_matrix_sha256": "0d77ca198aae4e7c70e6f08834819fe461d97f70d694a7aa639ac9e5905a3b13",
+  "version": "13.3.0",
+  "distribution_sha256": "d64c0cc2dd402a298e9d8e109f85f91ad835bf067309f7eb44c5a223fc16a7f5",
+  "content_sha256": "63efef513c720bb166487805b10ce00bba9666b1910c5929cdb4af2527322543",
+  "codex_plugin_manifest_sha256": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9",
+  "claude_plugin_manifest_sha256": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81",
+  "sbom_sha256": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f",
+  "compatibility_matrix_sha256": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "160fb36051094ae8a6d0714b9359d9d41b4a93f355740187a4ffcada467b1cc1",
-    "runtime": "363e0f65e8e4fc8f06e35b2b5fc18a54027d6d7c7d39103d9ca411225d05f50d",
-    "codex_plugin_manifest": "622e1e18ea787331475b3ba2354a42cbdf85036c38f29c13ce8f105f333619ed",
-    "claude_plugin_manifest": "8dfa1dec2854daac0a7a354d897da61d8af4fdee4ccc7cd7db34d1f49482ff29",
-    "sbom": "2ed7c0c594846075c6dc469e865cca32938838cbdc50c6837082dec151ad4838",
-    "compatibility_matrix": "0d77ca198aae4e7c70e6f08834819fe461d97f70d694a7aa639ac9e5905a3b13",
+    "distribution_tree": "d64c0cc2dd402a298e9d8e109f85f91ad835bf067309f7eb44c5a223fc16a7f5",
+    "runtime": "63efef513c720bb166487805b10ce00bba9666b1910c5929cdb4af2527322543",
+    "codex_plugin_manifest": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9",
+    "claude_plugin_manifest": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81",
+    "sbom": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f",
+    "compatibility_matrix": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "de16a628c7c8fadb21f8ca4246112c20e35e81582ae729b78cfb40cb5e82a1d2",
-    "distribution_docs": "3b23b9333e888725875602a2c2f334683f56f5469fefd2447d67451862029741",
+    "compatibility_verification": "dc38f0d42f4baaf33f79a5f9019dea4613d9871da344fc3dabf3db5b242ebdc8",
+    "distribution_docs": "3efc0f9c13115d9506eca5f9385b4f29bb19901673ae32078c849ea22a9f3f7a",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,14 +26,14 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "480a1f8a09472b781c2c41493190218a423a29fde669125c54d8b0a4e267ebd5",
-  "generated_at": "2026-09-07T02:01:58.525304+00:00",
+  "release_sha256": "4e37556d998c5b89bf56a215b86e0d2767a7325698e7f58f18f1d7de139f3a30",
+  "generated_at": "2026-09-07T03:49:13.113761+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 14229,
-      "sha256": "1ce660fcb7ae1a140bff361d3226df172b9c5a60ca0944a17c0bfd110e53a5d5"
+      "size": 19601,
+      "sha256": "e86ad85f585bd9776dd2ae0a21ce8362ad631a0c92e0cc8e12dd29be258e7ddb"
     },
     {
       "path": "agents",
@@ -560,8 +560,8 @@
     {
       "path": "references/quality/public-reference-sources.json",
       "type": "file",
-      "size": 11206,
-      "sha256": "bc191fccbfa7803c5a7a95468398875d027fbfbd65ecea7f47f66bc392296310"
+      "size": 12348,
+      "sha256": "cfe67058d16e8208abad01b860851db506082149de93817b5ae007a1716872e9"
     },
     {
       "path": "references/quality/reference-led-direction.md",
@@ -705,7 +705,7 @@
       "path": "release.json",
       "type": "file",
       "size": 82,
-      "sha256": "ae4f48e07ef4af5abaaf1880aff8e8c0eab2ee3d938c852df49cd06dbae209c0"
+      "sha256": "2327169547b322a283417171d26ecd5d0cb34d4dd86fe276ebeed7647f4db15f"
     },
     {
       "path": "schemas",
@@ -794,8 +794,8 @@
     {
       "path": "scripts/check_build.mjs",
       "type": "file",
-      "size": 36786,
-      "sha256": "20ddf0b879c5a0d577b3c9b14acc25d4c4f4c05198df240a21497f40f70eb3c3"
+      "size": 56626,
+      "sha256": "e711993d8b10b3408f972e504619ffab0ed82732dedbcc5458326d5d32c460ad"
     },
     {
       "path": "scripts/check_signature_transfer.mjs",
@@ -956,8 +956,8 @@
     {
       "path": "scripts/playwright_resolver.mjs",
       "type": "file",
-      "size": 11562,
-      "sha256": "a38a6b0db61e04ca384673c01ab44cd97d1c709e88092bf947fe3fee3453c789"
+      "size": 12752,
+      "sha256": "e080c02539b1b05505407a49ce307aa1a4a0da2669b3df1f7091ffcb2a38d5a0"
     },
     {
       "path": "scripts/project_contrast_audit.py",
@@ -1046,8 +1046,8 @@
     {
       "path": "scripts/study_reference.mjs",
       "type": "file",
-      "size": 42099,
-      "sha256": "c2a59a67fcf8b72dfc4f61b12e2abbbf8f9350985aa208e3e1899f5e5f79747f"
+      "size": 56815,
+      "sha256": "fdd4403e7b241d6dab17d9072d8e27bc2dc9133e0150a4ff2ec8963dc4074f3f"
     },
     {
       "path": "templates",
@@ -1308,6 +1308,1020 @@
       "sha256": null
     },
     {
+      "path": "tests/fixtures/check-negatives",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/.gitignore",
+      "type": "file",
+      "size": 146,
+      "sha256": "a1396e96e3417bb98749e7204cb7d2ac36685680e22932f28ea7c95277d655fc"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/RESULTS.md",
+      "type": "file",
+      "size": 24370,
+      "sha256": "7c5b9bfbd88854218db169429927a818faa580cf5e56dda0e8b98103301d6bce"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/crossing-law",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/crossing-law/plan-port-4871.json",
+      "type": "file",
+      "size": 11606,
+      "sha256": "90370a46f806be333639a7f50ff02388d27979956d2fa35fad2c0ea30473e360"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/crossing-law/review-as-submitted.md",
+      "type": "file",
+      "size": 3594,
+      "sha256": "2fc50b02af73f4e875e760e7a3f9412ed7aff436d4b9de795f3a0853eff3851a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/check.json",
+      "type": "file",
+      "size": 38757,
+      "sha256": "0e07ef5f716a27ef4318f9fcae1e00c8c5dd7b2c0f03e6561a2511895599355c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/latest.json",
+      "type": "file",
+      "size": 2764,
+      "sha256": "bc92e32bd7cbe8efd87c873d3e5e1285cce77423eebb8ff820dae34ec9ac6687"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/review-1-home.png",
+      "type": "file",
+      "size": 908586,
+      "sha256": "b8be74a8441f6964884fa57ca8684553eb62b2403517458a45241beb8ef80c13"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/check.json",
+      "type": "file",
+      "size": 38757,
+      "sha256": "0e07ef5f716a27ef4318f9fcae1e00c8c5dd7b2c0f03e6561a2511895599355c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 458270,
+      "sha256": "60aabffe9a412d02809d74e1542cefa5f57f52eb12a0b6037b1b9dae046adc7a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t001.7s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t003.4s.png",
+      "type": "file",
+      "size": 408024,
+      "sha256": "4e971b796ac5e77eddacf7a36b721d9ca2bd13f97adaf8cf59bcb757c6cb9416"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t004.8s.png",
+      "type": "file",
+      "size": 400014,
+      "sha256": "b84ebd48523aea5a681db97867d36f417196809a3a4f8d565e74924ad0837afb"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t006.3s.png",
+      "type": "file",
+      "size": 242646,
+      "sha256": "723c207b6960abca980eb273db01e5d70543a309dafc2d732f499c62c0423fbe"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t007.8s.png",
+      "type": "file",
+      "size": 241676,
+      "sha256": "a051cc075c31e544b7d3f53e378deb08f11d9c2786420e6ca6d7b40357688774"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t009.2s.png",
+      "type": "file",
+      "size": 165304,
+      "sha256": "7007a7a089bccc4d28596054c87ee85476835f067293a5cc501f5efd3d48f64e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t010.5s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/review-1-home.png",
+      "type": "file",
+      "size": 908586,
+      "sha256": "b8be74a8441f6964884fa57ca8684553eb62b2403517458a45241beb8ef80c13"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/videos/route1-wide.webm",
+      "type": "file",
+      "size": 7032431,
+      "sha256": "ee246d1a3324a7715c6c0f80b261fcaec19bd261cdf81bf949ef5af7101e006d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/duplicate-references/plan.json",
+      "type": "file",
+      "size": 18619,
+      "sha256": "2e544061f1488fd780ea2e01885b04f14d565f1ec2f4aadf1e9e90cab2476830"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/check.json",
+      "type": "file",
+      "size": 38585,
+      "sha256": "dced92d37d07283890526c8e49390b6d1f961206d72bb7dad79b21d048c66837"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/latest.json",
+      "type": "file",
+      "size": 2728,
+      "sha256": "0ed0bf34f83e5d036ec06adf520a769764bf6290213edabdd7cfcd1514ae3d25"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/review-1-home.png",
+      "type": "file",
+      "size": 911148,
+      "sha256": "301fb50505bedd153eade5a8c97dff229f7d2e1e9abe6c0deea1a6e7a343e530"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/check.json",
+      "type": "file",
+      "size": 38585,
+      "sha256": "dced92d37d07283890526c8e49390b6d1f961206d72bb7dad79b21d048c66837"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 432506,
+      "sha256": "ca678555079f8b4af488c2aacc2f7170d0ee94473b8731e8415ceac399cef860"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t001.4s.png",
+      "type": "file",
+      "size": 788269,
+      "sha256": "9a64ae348197332cce180fdaa0d1b7523ecbf86f1b4b690bba9938ac3431bc2a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t002.9s.png",
+      "type": "file",
+      "size": 408023,
+      "sha256": "2d0eeab600f8b1b3393b0f4ec31d6fc711ef2ffc421eb5e9fb9bcdfa00b70a6b"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t004.4s.png",
+      "type": "file",
+      "size": 400014,
+      "sha256": "b84ebd48523aea5a681db97867d36f417196809a3a4f8d565e74924ad0837afb"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t005.8s.png",
+      "type": "file",
+      "size": 242583,
+      "sha256": "38d899de43a7a8016d9b2ef902bb5ce0105344d4516d7205bace3b560d976a11"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t007.1s.png",
+      "type": "file",
+      "size": 241679,
+      "sha256": "389e32be65e027d60bf9c2c7342f3d7a10b142a5549c5bd0581220b47364d005"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t008.4s.png",
+      "type": "file",
+      "size": 165302,
+      "sha256": "aa16f11b0559fc0291057fc3a1ef5d0bc3e838600a5854812bf5357354f92be5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t009.7s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/review-1-home.png",
+      "type": "file",
+      "size": 911148,
+      "sha256": "301fb50505bedd153eade5a8c97dff229f7d2e1e9abe6c0deea1a6e7a343e530"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/videos/route1-wide.webm",
+      "type": "file",
+      "size": 5932893,
+      "sha256": "53de2171880712d496160170bc495ac538c4501180d215f8821ecadb65c35c9a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/plan.json",
+      "type": "file",
+      "size": 17612,
+      "sha256": "33ba5b347535eb9521375ff85f866972839fe575243a2f999d4267364ae0ba1d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/era-residence",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/era-residence/study.json",
+      "type": "file",
+      "size": 108675,
+      "sha256": "9e69bc45839e36308164eaaf7486aa17a7f56d7102941d0dc5f550df1ed7545e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/estelle",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/estelle/study.json",
+      "type": "file",
+      "size": 62238,
+      "sha256": "dee722ddec3cab81d19cfae07ec196fb699899f6ff8270e8fd99f267ba050d80"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/heart-and-soil",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/heart-and-soil/study.json",
+      "type": "file",
+      "size": 213297,
+      "sha256": "f6e568189c507a5bdcde742b7f55d2f48acd16d227475957c5cc6c3017f7a970"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/surfers-journal",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/failed-study/references/surfers-journal/study.json",
+      "type": "file",
+      "size": 191618,
+      "sha256": "bfc90e4dd74e1c933bb01d6f2c1d785cfd5c5f29cec26ee01cc5317a64e90534"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/check.json",
+      "type": "file",
+      "size": 47530,
+      "sha256": "fa2c62d895ada1408cfba7e12df47ace753a2fc09bc70fac3fa77faa07fdefaa"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/latest.json",
+      "type": "file",
+      "size": 6840,
+      "sha256": "b29dfcc44c211b60790de2ff0df004ef2717d713e24e5f922fec1ed04c59c7de"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/review-1-home.png",
+      "type": "file",
+      "size": 912276,
+      "sha256": "445623386399a85cd34fdcb26c241d257aea213d45475f242d71180d56f43c59"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/check.json",
+      "type": "file",
+      "size": 47530,
+      "sha256": "fa2c62d895ada1408cfba7e12df47ace753a2fc09bc70fac3fa77faa07fdefaa"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 472112,
+      "sha256": "c65a823a71b5597a7a08d0fed1e52e7e18e013908791b06cb29506a59d705034"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t001.5s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t003.0s.png",
+      "type": "file",
+      "size": 408024,
+      "sha256": "4e971b796ac5e77eddacf7a36b721d9ca2bd13f97adaf8cf59bcb757c6cb9416"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t004.5s.png",
+      "type": "file",
+      "size": 392005,
+      "sha256": "d66afa1b08f144321b7a6dcc9a030b535c2391cb2fba0415fbad068eedc267f9"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t005.9s.png",
+      "type": "file",
+      "size": 247956,
+      "sha256": "fc2aa567eca0b033a68a5a3f04cb890b1c8762aba886e39dc0c005866e55046d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t007.3s.png",
+      "type": "file",
+      "size": 241698,
+      "sha256": "f1706ff7307841311f72c7c841a4199eac9c82acf323fd8409e90e7f2f215c18"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t008.7s.png",
+      "type": "file",
+      "size": 165304,
+      "sha256": "7007a7a089bccc4d28596054c87ee85476835f067293a5cc501f5efd3d48f64e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t010.0s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/review-1-home.png",
+      "type": "file",
+      "size": 912276,
+      "sha256": "445623386399a85cd34fdcb26c241d257aea213d45475f242d71180d56f43c59"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/videos/route1-wide.webm",
+      "type": "file",
+      "size": 5217329,
+      "sha256": "639a986ca07c8133ebbdc3f832a87b09030e14e359856b34c3d8e556ff830978"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/invented-match/plan.json",
+      "type": "file",
+      "size": 17645,
+      "sha256": "e264a6adfccb728294c2a1f2daff3375ca60b20836416739c6b2f2e6350a3cfc"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/check.json",
+      "type": "file",
+      "size": 4040,
+      "sha256": "242b4d32a70ac3052061f6ba2e540597d0ecb7861dc9491cebcdd5b539890dfd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/latest.json",
+      "type": "file",
+      "size": 1749,
+      "sha256": "e2122e59c695af592770edaefe2937502da3c60f0c2e984a77ed6c25e60a761e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56/check.json",
+      "type": "file",
+      "size": 4040,
+      "sha256": "242b4d32a70ac3052061f6ba2e540597d0ecb7861dc9491cebcdd5b539890dfd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/missing-routes/plan.json",
+      "type": "file",
+      "size": 10702,
+      "sha256": "236e9e44802b71422327b8e9b3cec0cf2ec04350cac472d2861b246a4912e0c0"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/era-residence",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/era-residence/study.json",
+      "type": "file",
+      "size": 108675,
+      "sha256": "9e69bc45839e36308164eaaf7486aa17a7f56d7102941d0dc5f550df1ed7545e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/estelle",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/estelle/study.json",
+      "type": "file",
+      "size": 62114,
+      "sha256": "86dc8553446b4751173b61504d012854f516c536e1fa03c73f2b782bdfdcc0ca"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/heart-and-soil",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/heart-and-soil/study.json",
+      "type": "file",
+      "size": 213297,
+      "sha256": "f6e568189c507a5bdcde742b7f55d2f48acd16d227475957c5cc6c3017f7a970"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/surfers-journal",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/references-base/surfers-journal/study.json",
+      "type": "file",
+      "size": 191618,
+      "sha256": "bfc90e4dd74e1c933bb01d6f2c1d785cfd5c5f29cec26ee01cc5317a64e90534"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/check.json",
+      "type": "file",
+      "size": 13958,
+      "sha256": "dfbb66606939b7bfb81afbc8b8fa6f9261b1d565a882724c8e88791fb137199e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/latest.json",
+      "type": "file",
+      "size": 2253,
+      "sha256": "a60e327ff311ff3d9064a7c5fd62b15f9c9f9b62a1502bdd5e7abe3ef108172c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/check.json",
+      "type": "file",
+      "size": 13719,
+      "sha256": "ee8c8cbbf4285b1b9fb1a75a5a3b2a2514d2349299435bd482e6dc7160712809"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 27666,
+      "sha256": "df8b0469b87501890c87b823b14313c75687e967f39d452f3fb9b5338e52c73c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t001.3s.png",
+      "type": "file",
+      "size": 42186,
+      "sha256": "b5cdc60018354a343e4b1b2715338ffecd4025fc1dae968e1997abdb604e5b57"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t002.6s.png",
+      "type": "file",
+      "size": 43086,
+      "sha256": "d0bf934fb6de9246c9f915ae320f5de30e86d7943b88c5ea48d81a74931a188f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t003.9s.png",
+      "type": "file",
+      "size": 36044,
+      "sha256": "506f5c20d72f0864d45a3c72eed50a730b18e22cecb97b7934b8a5dc92db9375"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t005.2s.png",
+      "type": "file",
+      "size": 32699,
+      "sha256": "a38989cdb34318671c296756bbf0eb894416d535bf0bf847b4f86e86fda964e6"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t006.4s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t007.7s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t009.0s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/videos/route1-wide.webm",
+      "type": "file",
+      "size": 1657861,
+      "sha256": "3fc0809637c63bd254de24ab7d06fcd5bee82f99c767324abb27595707c50537"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/check.json",
+      "type": "file",
+      "size": 13958,
+      "sha256": "dfbb66606939b7bfb81afbc8b8fa6f9261b1d565a882724c8e88791fb137199e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 27666,
+      "sha256": "df8b0469b87501890c87b823b14313c75687e967f39d452f3fb9b5338e52c73c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t001.3s.png",
+      "type": "file",
+      "size": 42186,
+      "sha256": "b5cdc60018354a343e4b1b2715338ffecd4025fc1dae968e1997abdb604e5b57"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t002.6s.png",
+      "type": "file",
+      "size": 43086,
+      "sha256": "d0bf934fb6de9246c9f915ae320f5de30e86d7943b88c5ea48d81a74931a188f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t003.9s.png",
+      "type": "file",
+      "size": 36044,
+      "sha256": "506f5c20d72f0864d45a3c72eed50a730b18e22cecb97b7934b8a5dc92db9375"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t005.3s.png",
+      "type": "file",
+      "size": 32699,
+      "sha256": "a38989cdb34318671c296756bbf0eb894416d535bf0bf847b4f86e86fda964e6"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t006.6s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t008.0s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t009.4s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/videos/route1-wide.webm",
+      "type": "file",
+      "size": 2185530,
+      "sha256": "0489195e22003f9dd3dfb8d998e59b13858a18c14565b0e760f870bfdd90d797"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/plan.json",
+      "type": "file",
+      "size": 11673,
+      "sha256": "a8d31f8f3d5741197ec6d66eb970b4c4ee1b5d49785dfac61cb6388ba91654bd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-composition/site/index.html",
+      "type": "file",
+      "size": 2126,
+      "sha256": "9cad9906250647660f99a6cb14164bd919bcbe7094dbca48b8a784267b8a1795"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/check.json",
+      "type": "file",
+      "size": 38284,
+      "sha256": "ccab68f614da58810f453ccf8859dc9032ab3bb49fda700b81b58b337192607f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/latest.json",
+      "type": "file",
+      "size": 2541,
+      "sha256": "c18352e78d463dfdde7b48399276d46b18c8a7cdd3825b1aa21a1be5464f8fe2"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/review-1-home.png",
+      "type": "file",
+      "size": 891475,
+      "sha256": "d89ee75bc1054ced51873f3498c093e39cde3cfeb3cb5e88748baa2c1e2dc62d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/check.json",
+      "type": "file",
+      "size": 38284,
+      "sha256": "ccab68f614da58810f453ccf8859dc9032ab3bb49fda700b81b58b337192607f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 732284,
+      "sha256": "9da62e24f81a99b25fa58c824a46c7766e41da559af82cdc3b282cac556cf65a"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t002.0s.png",
+      "type": "file",
+      "size": 352605,
+      "sha256": "c981f426769350742b478bf3f1f2fe8e95256049039d9b86b4f21722cd148c06"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t003.4s.png",
+      "type": "file",
+      "size": 384190,
+      "sha256": "d810ad75ce8b2f44e551d5ee5166c3fc72c26f54bd6f2c85b950583bece7c2da"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t005.0s.png",
+      "type": "file",
+      "size": 14587,
+      "sha256": "b2358a97c71f4e5f9583df68cc1b57bc1b8f799e37d30dc5e99a96a97ad8b5fa"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t008.1s.png",
+      "type": "file",
+      "size": 44042,
+      "sha256": "14d9bd7901c957e94818bf278e22c7f26893e73cbd7ee8152856d73a41a50d20"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t010.3s.png",
+      "type": "file",
+      "size": 661179,
+      "sha256": "d1ca2c08901dc5ae06d481f23ef8453aa10ed3560ceb4e92b4b4b7ca2a3fa62f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t011.9s.png",
+      "type": "file",
+      "size": 229337,
+      "sha256": "e063a6c2c6488b56b90adbfc3c19292b3006e437d9f40a809909e3d62962a8a2"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t013.5s.png",
+      "type": "file",
+      "size": 401304,
+      "sha256": "ccfd70da9c41f3c3963d56f0837d72a2bc217e65871e050caa53f470e59388fb"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/review-1-home.png",
+      "type": "file",
+      "size": 891475,
+      "sha256": "d89ee75bc1054ced51873f3498c093e39cde3cfeb3cb5e88748baa2c1e2dc62d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/videos/route1-wide.webm",
+      "type": "file",
+      "size": 6383788,
+      "sha256": "5bba4ba7da7e4e98ef5b3381b75a42982daea80af21b3ed924bf1a522b0a051f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/plan.json",
+      "type": "file",
+      "size": 17612,
+      "sha256": "8d20c0099f0185ba8bbf8477206eaa53b6df542b577f82161093e0a017ef14ae"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/wrong-mobile/site/index.html",
+      "type": "file",
+      "size": 1321848,
+      "sha256": "184895c4f8bb4c7d0f638a4b22f7ea592aafdbc7e33cb3ee05278999afdc103a"
+    },
+    {
       "path": "tests/fixtures/project-contrast",
       "type": "directory",
       "size": 0,
@@ -1547,7 +2561,7 @@
       "path": ".claude-plugin/plugin.json",
       "type": "file",
       "size": 607,
-      "sha256": "8dfa1dec2854daac0a7a354d897da61d8af4fdee4ccc7cd7db34d1f49482ff29"
+      "sha256": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81"
     },
     {
       "path": ".codex-plugin",
@@ -1559,7 +2573,7 @@
       "path": ".codex-plugin/plugin.json",
       "type": "file",
       "size": 1379,
-      "sha256": "622e1e18ea787331475b3ba2354a42cbdf85036c38f29c13ce8f105f333619ed"
+      "sha256": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9"
     },
     {
       "path": ".gitattributes",
@@ -1606,8 +2620,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 124025,
-      "sha256": "5fb540431c9310b96acfd5936572d9086eb3dc36ccadc2e5f6b622145d2439c6"
+      "size": 128591,
+      "sha256": "9ec4013823c9e9ef0d65da3b47522b97bc878a035c573a6a527ed04fe9bbbe25"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -1631,7 +2645,7 @@
       "path": "README.md",
       "type": "file",
       "size": 38340,
-      "sha256": "94e8ac5234a5a2c23b8e8493feec801b7136fd745c57eb0c09b8fd6bd2eb1819"
+      "sha256": "03707f570c992c8d3552c4178f7f0c5660ba0c330ecf49a0da0532cabb181c0e"
     },
     {
       "path": "SECURITY.md",
@@ -1685,7 +2699,7 @@
       "path": "docs/LOCAL_HOST_DIAGNOSTICS.md",
       "type": "file",
       "size": 3533,
-      "sha256": "d1e328495a99ab2e71f10c387bcbfe0a981cec0298bff1459d526fc4cbce97a2"
+      "sha256": "218ad70b510ca8bbabc0a10a8b9135ea0802dd8a6b41cc389fd4a07951f6bfa2"
     },
     {
       "path": "docs/MIGRATION.md",
@@ -1702,14 +2716,14 @@
     {
       "path": "docs/QUICK_START.md",
       "type": "file",
-      "size": 30424,
-      "sha256": "a3dc9f357456235549134f1eadf7bd580dc387b7e8bcb8855b1ef21e00dec42c"
+      "size": 30687,
+      "sha256": "dc4ae8aac9c4f6c9fabf033f80b260ac7fbb99a76f050a86695a62e6d59bbff2"
     },
     {
       "path": "docs/RELEASE.md",
       "type": "file",
       "size": 30434,
-      "sha256": "4bf06279bdccfaddf2a44bcb64dcc26feb5eed27235360f9769112bd1debee4d"
+      "sha256": "2bf9ec210bc530db1f47902e74f0a777f09bb1e7cdfbd341a0b140e2e37f433d"
     },
     {
       "path": "docs/RENDER_COMPARISON.md",
@@ -1781,7 +2795,7 @@
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
       "size": 12385,
-      "sha256": "0d77ca198aae4e7c70e6f08834819fe461d97f70d694a7aa639ac9e5905a3b13"
+      "sha256": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -3947,7 +4961,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "2ed7c0c594846075c6dc469e865cca32938838cbdc50c6837082dec151ad4838"
+      "sha256": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f"
     },
     {
       "path": "maintainer/schemas",
@@ -4684,8 +5698,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 14229,
-      "sha256": "1ce660fcb7ae1a140bff361d3226df172b9c5a60ca0944a17c0bfd110e53a5d5"
+      "size": 19601,
+      "sha256": "e86ad85f585bd9776dd2ae0a21ce8362ad631a0c92e0cc8e12dd29be258e7ddb"
     },
     {
       "path": "skills/design-dna/agents",
@@ -5212,8 +6226,8 @@
     {
       "path": "skills/design-dna/references/quality/public-reference-sources.json",
       "type": "file",
-      "size": 11206,
-      "sha256": "bc191fccbfa7803c5a7a95468398875d027fbfbd65ecea7f47f66bc392296310"
+      "size": 12348,
+      "sha256": "cfe67058d16e8208abad01b860851db506082149de93817b5ae007a1716872e9"
     },
     {
       "path": "skills/design-dna/references/quality/reference-led-direction.md",
@@ -5357,7 +6371,7 @@
       "path": "skills/design-dna/release.json",
       "type": "file",
       "size": 82,
-      "sha256": "ae4f48e07ef4af5abaaf1880aff8e8c0eab2ee3d938c852df49cd06dbae209c0"
+      "sha256": "2327169547b322a283417171d26ecd5d0cb34d4dd86fe276ebeed7647f4db15f"
     },
     {
       "path": "skills/design-dna/schemas",
@@ -5446,8 +6460,8 @@
     {
       "path": "skills/design-dna/scripts/check_build.mjs",
       "type": "file",
-      "size": 36786,
-      "sha256": "20ddf0b879c5a0d577b3c9b14acc25d4c4f4c05198df240a21497f40f70eb3c3"
+      "size": 56626,
+      "sha256": "e711993d8b10b3408f972e504619ffab0ed82732dedbcc5458326d5d32c460ad"
     },
     {
       "path": "skills/design-dna/scripts/check_signature_transfer.mjs",
@@ -5608,8 +6622,8 @@
     {
       "path": "skills/design-dna/scripts/playwright_resolver.mjs",
       "type": "file",
-      "size": 11562,
-      "sha256": "a38a6b0db61e04ca384673c01ab44cd97d1c709e88092bf947fe3fee3453c789"
+      "size": 12752,
+      "sha256": "e080c02539b1b05505407a49ce307aa1a4a0da2669b3df1f7091ffcb2a38d5a0"
     },
     {
       "path": "skills/design-dna/scripts/project_contrast_audit.py",
@@ -5698,8 +6712,8 @@
     {
       "path": "skills/design-dna/scripts/study_reference.mjs",
       "type": "file",
-      "size": 42099,
-      "sha256": "c2a59a67fcf8b72dfc4f61b12e2abbbf8f9350985aa208e3e1899f5e5f79747f"
+      "size": 56815,
+      "sha256": "fdd4403e7b241d6dab17d9072d8e27bc2dc9133e0150a4ff2ec8963dc4074f3f"
     },
     {
       "path": "skills/design-dna/templates",
@@ -5958,6 +6972,1008 @@
       "type": "directory",
       "size": 0,
       "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/.gitignore",
+      "type": "file",
+      "size": 146,
+      "sha256": "a1396e96e3417bb98749e7204cb7d2ac36685680e22932f28ea7c95277d655fc"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/RESULTS.md",
+      "type": "file",
+      "size": 24370,
+      "sha256": "7c5b9bfbd88854218db169429927a818faa580cf5e56dda0e8b98103301d6bce"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/crossing-law",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/crossing-law/plan-port-4871.json",
+      "type": "file",
+      "size": 11606,
+      "sha256": "90370a46f806be333639a7f50ff02388d27979956d2fa35fad2c0ea30473e360"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/crossing-law/review-as-submitted.md",
+      "type": "file",
+      "size": 3594,
+      "sha256": "2fc50b02af73f4e875e760e7a3f9412ed7aff436d4b9de795f3a0853eff3851a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/check.json",
+      "type": "file",
+      "size": 38757,
+      "sha256": "0e07ef5f716a27ef4318f9fcae1e00c8c5dd7b2c0f03e6561a2511895599355c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/latest.json",
+      "type": "file",
+      "size": 2764,
+      "sha256": "bc92e32bd7cbe8efd87c873d3e5e1285cce77423eebb8ff820dae34ec9ac6687"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/review-1-home.png",
+      "type": "file",
+      "size": 908586,
+      "sha256": "b8be74a8441f6964884fa57ca8684553eb62b2403517458a45241beb8ef80c13"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/check.json",
+      "type": "file",
+      "size": 38757,
+      "sha256": "0e07ef5f716a27ef4318f9fcae1e00c8c5dd7b2c0f03e6561a2511895599355c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 458270,
+      "sha256": "60aabffe9a412d02809d74e1542cefa5f57f52eb12a0b6037b1b9dae046adc7a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t001.7s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t003.4s.png",
+      "type": "file",
+      "size": 408024,
+      "sha256": "4e971b796ac5e77eddacf7a36b721d9ca2bd13f97adaf8cf59bcb757c6cb9416"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t004.8s.png",
+      "type": "file",
+      "size": 400014,
+      "sha256": "b84ebd48523aea5a681db97867d36f417196809a3a4f8d565e74924ad0837afb"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t006.3s.png",
+      "type": "file",
+      "size": 242646,
+      "sha256": "723c207b6960abca980eb273db01e5d70543a309dafc2d732f499c62c0423fbe"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t007.8s.png",
+      "type": "file",
+      "size": 241676,
+      "sha256": "a051cc075c31e544b7d3f53e378deb08f11d9c2786420e6ca6d7b40357688774"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t009.2s.png",
+      "type": "file",
+      "size": 165304,
+      "sha256": "7007a7a089bccc4d28596054c87ee85476835f067293a5cc501f5efd3d48f64e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/frames/route1-wide-t010.5s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/review-1-home.png",
+      "type": "file",
+      "size": 908586,
+      "sha256": "b8be74a8441f6964884fa57ca8684553eb62b2403517458a45241beb8ef80c13"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/check/runs/2026-09-07T02-58-44/videos/route1-wide.webm",
+      "type": "file",
+      "size": 7032431,
+      "sha256": "ee246d1a3324a7715c6c0f80b261fcaec19bd261cdf81bf949ef5af7101e006d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/duplicate-references/plan.json",
+      "type": "file",
+      "size": 18619,
+      "sha256": "2e544061f1488fd780ea2e01885b04f14d565f1ec2f4aadf1e9e90cab2476830"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/check.json",
+      "type": "file",
+      "size": 38585,
+      "sha256": "dced92d37d07283890526c8e49390b6d1f961206d72bb7dad79b21d048c66837"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/latest.json",
+      "type": "file",
+      "size": 2728,
+      "sha256": "0ed0bf34f83e5d036ec06adf520a769764bf6290213edabdd7cfcd1514ae3d25"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/review-1-home.png",
+      "type": "file",
+      "size": 911148,
+      "sha256": "301fb50505bedd153eade5a8c97dff229f7d2e1e9abe6c0deea1a6e7a343e530"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/check.json",
+      "type": "file",
+      "size": 38585,
+      "sha256": "dced92d37d07283890526c8e49390b6d1f961206d72bb7dad79b21d048c66837"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 432506,
+      "sha256": "ca678555079f8b4af488c2aacc2f7170d0ee94473b8731e8415ceac399cef860"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t001.4s.png",
+      "type": "file",
+      "size": 788269,
+      "sha256": "9a64ae348197332cce180fdaa0d1b7523ecbf86f1b4b690bba9938ac3431bc2a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t002.9s.png",
+      "type": "file",
+      "size": 408023,
+      "sha256": "2d0eeab600f8b1b3393b0f4ec31d6fc711ef2ffc421eb5e9fb9bcdfa00b70a6b"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t004.4s.png",
+      "type": "file",
+      "size": 400014,
+      "sha256": "b84ebd48523aea5a681db97867d36f417196809a3a4f8d565e74924ad0837afb"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t005.8s.png",
+      "type": "file",
+      "size": 242583,
+      "sha256": "38d899de43a7a8016d9b2ef902bb5ce0105344d4516d7205bace3b560d976a11"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t007.1s.png",
+      "type": "file",
+      "size": 241679,
+      "sha256": "389e32be65e027d60bf9c2c7342f3d7a10b142a5549c5bd0581220b47364d005"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t008.4s.png",
+      "type": "file",
+      "size": 165302,
+      "sha256": "aa16f11b0559fc0291057fc3a1ef5d0bc3e838600a5854812bf5357354f92be5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/frames/route1-wide-t009.7s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/review-1-home.png",
+      "type": "file",
+      "size": 911148,
+      "sha256": "301fb50505bedd153eade5a8c97dff229f7d2e1e9abe6c0deea1a6e7a343e530"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/check/runs/2026-09-07T03-02-16/videos/route1-wide.webm",
+      "type": "file",
+      "size": 5932893,
+      "sha256": "53de2171880712d496160170bc495ac538c4501180d215f8821ecadb65c35c9a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/plan.json",
+      "type": "file",
+      "size": 17612,
+      "sha256": "33ba5b347535eb9521375ff85f866972839fe575243a2f999d4267364ae0ba1d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/era-residence",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/era-residence/study.json",
+      "type": "file",
+      "size": 108675,
+      "sha256": "9e69bc45839e36308164eaaf7486aa17a7f56d7102941d0dc5f550df1ed7545e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/estelle",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/estelle/study.json",
+      "type": "file",
+      "size": 62238,
+      "sha256": "dee722ddec3cab81d19cfae07ec196fb699899f6ff8270e8fd99f267ba050d80"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/heart-and-soil",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/heart-and-soil/study.json",
+      "type": "file",
+      "size": 213297,
+      "sha256": "f6e568189c507a5bdcde742b7f55d2f48acd16d227475957c5cc6c3017f7a970"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/surfers-journal",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/failed-study/references/surfers-journal/study.json",
+      "type": "file",
+      "size": 191618,
+      "sha256": "bfc90e4dd74e1c933bb01d6f2c1d785cfd5c5f29cec26ee01cc5317a64e90534"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/check.json",
+      "type": "file",
+      "size": 47530,
+      "sha256": "fa2c62d895ada1408cfba7e12df47ace753a2fc09bc70fac3fa77faa07fdefaa"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/latest.json",
+      "type": "file",
+      "size": 6840,
+      "sha256": "b29dfcc44c211b60790de2ff0df004ef2717d713e24e5f922fec1ed04c59c7de"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/review-1-home.png",
+      "type": "file",
+      "size": 912276,
+      "sha256": "445623386399a85cd34fdcb26c241d257aea213d45475f242d71180d56f43c59"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/check.json",
+      "type": "file",
+      "size": 47530,
+      "sha256": "fa2c62d895ada1408cfba7e12df47ace753a2fc09bc70fac3fa77faa07fdefaa"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 472112,
+      "sha256": "c65a823a71b5597a7a08d0fed1e52e7e18e013908791b06cb29506a59d705034"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t001.5s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t003.0s.png",
+      "type": "file",
+      "size": 408024,
+      "sha256": "4e971b796ac5e77eddacf7a36b721d9ca2bd13f97adaf8cf59bcb757c6cb9416"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t004.5s.png",
+      "type": "file",
+      "size": 392005,
+      "sha256": "d66afa1b08f144321b7a6dcc9a030b535c2391cb2fba0415fbad068eedc267f9"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t005.9s.png",
+      "type": "file",
+      "size": 247956,
+      "sha256": "fc2aa567eca0b033a68a5a3f04cb890b1c8762aba886e39dc0c005866e55046d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t007.3s.png",
+      "type": "file",
+      "size": 241698,
+      "sha256": "f1706ff7307841311f72c7c841a4199eac9c82acf323fd8409e90e7f2f215c18"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t008.7s.png",
+      "type": "file",
+      "size": 165304,
+      "sha256": "7007a7a089bccc4d28596054c87ee85476835f067293a5cc501f5efd3d48f64e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/frames/route1-wide-t010.0s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/review-1-home.png",
+      "type": "file",
+      "size": 912276,
+      "sha256": "445623386399a85cd34fdcb26c241d257aea213d45475f242d71180d56f43c59"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/check/runs/2026-09-07T03-03-58/videos/route1-wide.webm",
+      "type": "file",
+      "size": 5217329,
+      "sha256": "639a986ca07c8133ebbdc3f832a87b09030e14e359856b34c3d8e556ff830978"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/invented-match/plan.json",
+      "type": "file",
+      "size": 17645,
+      "sha256": "e264a6adfccb728294c2a1f2daff3375ca60b20836416739c6b2f2e6350a3cfc"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check/check.json",
+      "type": "file",
+      "size": 4040,
+      "sha256": "242b4d32a70ac3052061f6ba2e540597d0ecb7861dc9491cebcdd5b539890dfd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check/latest.json",
+      "type": "file",
+      "size": 1749,
+      "sha256": "e2122e59c695af592770edaefe2937502da3c60f0c2e984a77ed6c25e60a761e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/check/runs/2026-09-07T02-57-56/check.json",
+      "type": "file",
+      "size": 4040,
+      "sha256": "242b4d32a70ac3052061f6ba2e540597d0ecb7861dc9491cebcdd5b539890dfd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/missing-routes/plan.json",
+      "type": "file",
+      "size": 10702,
+      "sha256": "236e9e44802b71422327b8e9b3cec0cf2ec04350cac472d2861b246a4912e0c0"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/era-residence",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/era-residence/study.json",
+      "type": "file",
+      "size": 108675,
+      "sha256": "9e69bc45839e36308164eaaf7486aa17a7f56d7102941d0dc5f550df1ed7545e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/estelle",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/estelle/study.json",
+      "type": "file",
+      "size": 62114,
+      "sha256": "86dc8553446b4751173b61504d012854f516c536e1fa03c73f2b782bdfdcc0ca"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/heart-and-soil",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/heart-and-soil/study.json",
+      "type": "file",
+      "size": 213297,
+      "sha256": "f6e568189c507a5bdcde742b7f55d2f48acd16d227475957c5cc6c3017f7a970"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/surfers-journal",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/references-base/surfers-journal/study.json",
+      "type": "file",
+      "size": 191618,
+      "sha256": "bfc90e4dd74e1c933bb01d6f2c1d785cfd5c5f29cec26ee01cc5317a64e90534"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/check.json",
+      "type": "file",
+      "size": 13958,
+      "sha256": "dfbb66606939b7bfb81afbc8b8fa6f9261b1d565a882724c8e88791fb137199e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/latest.json",
+      "type": "file",
+      "size": 2253,
+      "sha256": "a60e327ff311ff3d9064a7c5fd62b15f9c9f9b62a1502bdd5e7abe3ef108172c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/check.json",
+      "type": "file",
+      "size": 13719,
+      "sha256": "ee8c8cbbf4285b1b9fb1a75a5a3b2a2514d2349299435bd482e6dc7160712809"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 27666,
+      "sha256": "df8b0469b87501890c87b823b14313c75687e967f39d452f3fb9b5338e52c73c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t001.3s.png",
+      "type": "file",
+      "size": 42186,
+      "sha256": "b5cdc60018354a343e4b1b2715338ffecd4025fc1dae968e1997abdb604e5b57"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t002.6s.png",
+      "type": "file",
+      "size": 43086,
+      "sha256": "d0bf934fb6de9246c9f915ae320f5de30e86d7943b88c5ea48d81a74931a188f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t003.9s.png",
+      "type": "file",
+      "size": 36044,
+      "sha256": "506f5c20d72f0864d45a3c72eed50a730b18e22cecb97b7934b8a5dc92db9375"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t005.2s.png",
+      "type": "file",
+      "size": 32699,
+      "sha256": "a38989cdb34318671c296756bbf0eb894416d535bf0bf847b4f86e86fda964e6"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t006.4s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t007.7s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/frames/route1-wide-t009.0s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-02-40/videos/route1-wide.webm",
+      "type": "file",
+      "size": 1657861,
+      "sha256": "3fc0809637c63bd254de24ab7d06fcd5bee82f99c767324abb27595707c50537"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/check.json",
+      "type": "file",
+      "size": 13958,
+      "sha256": "dfbb66606939b7bfb81afbc8b8fa6f9261b1d565a882724c8e88791fb137199e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 27666,
+      "sha256": "df8b0469b87501890c87b823b14313c75687e967f39d452f3fb9b5338e52c73c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 35527,
+      "sha256": "32bba4c31fd089ac25248df18cbc95620b6fd9bc68c7f75c965cb9aab526071a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t001.3s.png",
+      "type": "file",
+      "size": 42186,
+      "sha256": "b5cdc60018354a343e4b1b2715338ffecd4025fc1dae968e1997abdb604e5b57"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t002.6s.png",
+      "type": "file",
+      "size": 43086,
+      "sha256": "d0bf934fb6de9246c9f915ae320f5de30e86d7943b88c5ea48d81a74931a188f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t003.9s.png",
+      "type": "file",
+      "size": 36044,
+      "sha256": "506f5c20d72f0864d45a3c72eed50a730b18e22cecb97b7934b8a5dc92db9375"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t005.3s.png",
+      "type": "file",
+      "size": 32699,
+      "sha256": "a38989cdb34318671c296756bbf0eb894416d535bf0bf847b4f86e86fda964e6"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t006.6s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t008.0s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/frames/route1-wide-t009.4s.png",
+      "type": "file",
+      "size": 32839,
+      "sha256": "c4945a4d664dae3504a6094a1ac05c858e016a23add725b25b4798a527097577"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/review-1-home.png",
+      "type": "file",
+      "size": 136334,
+      "sha256": "c4f474257303929ed8789952e7231511c5e257234340747a974a4214931fb81c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/check/runs/2026-09-07T03-21-31/videos/route1-wide.webm",
+      "type": "file",
+      "size": 2185530,
+      "sha256": "0489195e22003f9dd3dfb8d998e59b13858a18c14565b0e760f870bfdd90d797"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/plan.json",
+      "type": "file",
+      "size": 11673,
+      "sha256": "a8d31f8f3d5741197ec6d66eb970b4c4ee1b5d49785dfac61cb6388ba91654bd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-composition/site/index.html",
+      "type": "file",
+      "size": 2126,
+      "sha256": "9cad9906250647660f99a6cb14164bd919bcbe7094dbca48b8a784267b8a1795"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/check.json",
+      "type": "file",
+      "size": 38284,
+      "sha256": "ccab68f614da58810f453ccf8859dc9032ab3bb49fda700b81b58b337192607f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/latest.json",
+      "type": "file",
+      "size": 2541,
+      "sha256": "c18352e78d463dfdde7b48399276d46b18c8a7cdd3825b1aa21a1be5464f8fe2"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/review-1-home.png",
+      "type": "file",
+      "size": 891475,
+      "sha256": "d89ee75bc1054ced51873f3498c093e39cde3cfeb3cb5e88748baa2c1e2dc62d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/check.json",
+      "type": "file",
+      "size": 38284,
+      "sha256": "ccab68f614da58810f453ccf8859dc9032ab3bb49fda700b81b58b337192607f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 732284,
+      "sha256": "9da62e24f81a99b25fa58c824a46c7766e41da559af82cdc3b282cac556cf65a"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t002.0s.png",
+      "type": "file",
+      "size": 352605,
+      "sha256": "c981f426769350742b478bf3f1f2fe8e95256049039d9b86b4f21722cd148c06"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t003.4s.png",
+      "type": "file",
+      "size": 384190,
+      "sha256": "d810ad75ce8b2f44e551d5ee5166c3fc72c26f54bd6f2c85b950583bece7c2da"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t005.0s.png",
+      "type": "file",
+      "size": 14587,
+      "sha256": "b2358a97c71f4e5f9583df68cc1b57bc1b8f799e37d30dc5e99a96a97ad8b5fa"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t008.1s.png",
+      "type": "file",
+      "size": 44042,
+      "sha256": "14d9bd7901c957e94818bf278e22c7f26893e73cbd7ee8152856d73a41a50d20"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t010.3s.png",
+      "type": "file",
+      "size": 661179,
+      "sha256": "d1ca2c08901dc5ae06d481f23ef8453aa10ed3560ceb4e92b4b4b7ca2a3fa62f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t011.9s.png",
+      "type": "file",
+      "size": 229337,
+      "sha256": "e063a6c2c6488b56b90adbfc3c19292b3006e437d9f40a809909e3d62962a8a2"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/frames/route1-wide-t013.5s.png",
+      "type": "file",
+      "size": 401304,
+      "sha256": "ccfd70da9c41f3c3963d56f0837d72a2bc217e65871e050caa53f470e59388fb"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/review-1-home.png",
+      "type": "file",
+      "size": 891475,
+      "sha256": "d89ee75bc1054ced51873f3498c093e39cde3cfeb3cb5e88748baa2c1e2dc62d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/check/runs/2026-09-07T02-58-36/videos/route1-wide.webm",
+      "type": "file",
+      "size": 6383788,
+      "sha256": "5bba4ba7da7e4e98ef5b3381b75a42982daea80af21b3ed924bf1a522b0a051f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/plan.json",
+      "type": "file",
+      "size": 17612,
+      "sha256": "8d20c0099f0185ba8bbf8477206eaa53b6df542b577f82161093e0a017ef14ae"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/wrong-mobile/site/index.html",
+      "type": "file",
+      "size": 1321848,
+      "sha256": "184895c4f8bb4c7d0f638a4b22f7ea592aafdbc7e33cb3ee05278999afdc103a"
     },
     {
       "path": "skills/design-dna/tests/fixtures/project-contrast",

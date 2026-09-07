@@ -5,6 +5,76 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 13.3.0 - Development candidate
+
+Built from the Crossing Law failure report (a rejected law-firm demo whose
+fonts, colors and mechanisms all traced to references and which still looked
+poor) and Motty's sixteen-point directive of 2026-09-06. The architecture is
+unchanged: study, plan, build, check. Passing measurements never substitute
+for visual quality, and the tools now say so in their own output.
+
+- `check_build.mjs` prints five lines: `CHECK PASS/FAIL (automated)` (the
+  measurable comparisons; problems ordered design, content, selection,
+  evidence, plan, sources, so a registry fault never leads), `FUNCTIONAL
+  PASS/FAIL` (keyboard focus visible, content present with reduced motion, no
+  fixed layer at rest, no sideways scroll, both widths), `REVIEW
+  INDEPENDENT / SELF-REVIEW / MISSING` (who looked, coverage, unresolved
+  differences, whether the visitor walk mentions menus, reading flow,
+  horizontal interactions, keyboard, focus, motion, overlays, reduced motion,
+  mobile and settled states), `EVIDENCE` (tool revisions; which studies
+  predate the current study tool), `APPROVAL` (recorded in the plan or not).
+- Selection is a quality decision: each reference carries six judgments
+  (desktop, mobile, readability, navigation, reliability, suitability) and a
+  `contributes` sentence; a reference no section copies is called filler; the
+  four-reference floor is stated as a floor, not a quota.
+- Capture is not study: `study_reference.mjs` declines consent overlays only
+  through permitted choices (reject, decline, necessary-only, close; never
+  accept), records `observation_gaps` (consent not dismissed, a fixed layer
+  covering the page, repeated scroll frames, horizontal scrollers never
+  traversed, redirects, failed inner pages), and the plan must say how each
+  gap was closed (`gaps_reviewed`). The check derives the same gaps from
+  older studies where it can.
+- Drivers: a rest pass tags every mechanism `scroll`, `time` (autoplay or
+  ambient) or `pointer`; the sheet prints them so a scroll-gated slideshow is
+  never copied as an autoplay video or the reverse.
+- Mechanism counts and coverage percentages are no longer quality floors and
+  are never pooled across the page. Each section names its `behavior` (and
+  `behavior_narrow`), and the check looks for that mechanism inside that
+  section at that width.
+- Ground is measured by sampling (`elementFromPoint` on a 16x10 grid at ten
+  scroll positions; media is its own bucket; shares sum to 100%). The old
+  stacked-rectangle figure is kept and labeled an estimate that double counts
+  overlaps ("248.7% of the painted page" was that estimate).
+- The plan explains section relationships: `content`, `composition`,
+  `image_role`, `typography_role`, `behavior`, `mobile`, `states` for held
+  sections, `palette_from` / `behavior_from` when a color or behavior comes
+  from another selected reference. A section may use only what its own
+  reference or the route's dominant reference computes.
+- Proportions: a held section asking more than about a viewport per state, a
+  tall near-empty section, and a mostly empty page are reported as design
+  problems.
+- Public copy: repeated demo disclaimers, design narration and generic
+  slogans are measured in the DOM and reported.
+- `--early`: reads the first route only and renders the review sheet so the
+  opening and its first transition are compared before the rest is built.
+- Every check run lands in `check/runs/<timestamp>/`; the latest copies sit at
+  the root; `check.json` records both tool SHA-256s.
+- Registry: `minimal-gallery` corrected to its canonical domain and active
+  (dated `corrections` entry with evidence); `godly` gains the alias
+  `recent.design`; entries may carry `aliases` and `corrections`.
+- `tests/fixtures/check-negatives/`: the rejected Crossing Law build and six
+  deliberately bad cases (missing routes, duplicate references, a failed
+  study, an invented font match, a phone page that scrolls sideways, a page
+  with the right ingredients and a generic composition) with the verdict
+  lines each produced, in `RESULTS.md`.
+- `SKILL.md` rewritten around these rules and closes with what the tools
+  prove and what only eyes can.
+- Browser: `playwright_resolver.mjs` launches the installed Google Chrome (or
+  Edge) and refuses Playwright's bundled Chromium ("Chrome for Testing") unless
+  the owner sets `DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1` for a run; four parallel
+  bundled-Chromium studies had frozen his machine (owner order, 2026-09-07).
+  Studies and checks run one at a time.
+
 ## 13.2.0 - Development candidate
 
 Seven proposals from a second Claude Code session, reviewed by the producer

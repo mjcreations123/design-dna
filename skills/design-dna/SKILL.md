@@ -7,19 +7,20 @@ description: Builds, redesigns, polishes, and visually reviews specific, current
 
 A website made with this skill copies the front-end design of several
 excellent websites and reads as one design. The producer contributes no
-design of its own. Two programs do the looking and the checking; the producer
-does the choosing, the planning and the building. A rich reference is studied
-in minutes, a site is checked in a minute, and every claim traces to a record
-the programs wrote.
+design of its own. Two programs do the looking and the measuring; the producer
+does the choosing, the planning, the building and the looking-again. A
+reference is studied in minutes, a build is checked in a minute or two, and
+every claim traces to a record a program wrote or a screenshot a person saw.
+
+The standard is the visitor's experience. Measurements prove provenance and
+catch known failure shapes. They never substitute for looking.
 
 ## The owner's standing order: no producer design
 
-This is the publisher's own dated rule and it outranks every other aesthetic
-instruction here. Motty (MJ's Studio), 2026-09-03, after a build made "as a
-quick test" shipped a sticky blurred nav, a typeface pairing chosen by taste,
-an approximated palette, numbered cards and a stock accordion that no selected
-reference carried, and after the same thing had happened, in his count, about
-twenty times before:
+Motty (MJ's Studio), 2026-09-03, after a build made "as a quick test" shipped
+a sticky blurred nav, a typeface pairing chosen by taste, an approximated
+palette, numbered cards and a stock accordion that no selected reference
+carried:
 
 > "Your own designs is absolutely forbidden because you have terrible taste.
 > So even if you think that your design should be on there, don't. Never put
@@ -36,194 +37,274 @@ the top-ranked open-licence face from `scripts/match_typeface.mjs --target`
 is declared in the plan as a match. The producer never picks a face, a
 palette, or a layout for beauty, brand fit, or "reads as right".
 
-Owner directive, 2026-09-06: the research for a site takes minutes, not
-hours, and nothing in this skill is allowed to make one producer's work block
-another's on the same machine. There are no machine-wide slots, leases, state
-contracts, or censuses in this workflow.
+Owner directive, 2026-09-06: research for a site takes minutes, not hours,
+and nothing in this skill may make one producer's work block another's on the
+same machine. There are no machine-wide slots, leases, state contracts or
+censuses.
+
+Owner directive, 2026-09-07: the tools launch the installed Google Chrome (or
+Edge), never Playwright's bundled "Chrome for Testing", which froze his
+machine; `playwright_resolver.mjs` refuses the bundled build unless the owner
+sets `DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1` himself for a run. One study or
+check runs at a time on a machine. Parallel launches are not speed; they are
+the freeze.
+
+Owner directive, 2026-09-06, after the Crossing Law rejection: passing
+measurements never substitute for visual quality. A build whose fonts, colors
+and mechanisms all trace to references and which still looks poor is a poor
+build, and the report says so first.
 
 ## The workflow
 
-Four steps, in order. Steps 1 and 4 are programs and their output is quoted,
-never paraphrased or reconstructed.
+Four steps. Steps 1 and 4 are programs whose output is quoted, never
+paraphrased. Step 2 is the only place the producer authors anything, and it
+is a selection. Step 3 has a mandatory early look before the whole site is
+built.
 
-### 1. Study each reference (a few minutes each)
+### 1. Find, judge, study
 
-Select candidates QUALITY FIRST and register second, only from sources the
-registry marks `award` or `curated` in
-[`references/quality/public-reference-sources.json`](references/quality/public-reference-sources.json).
-A listing on an open submission feed means someone sent it in, not that it is
-good. Judge every candidate with your own eyes on its live page before
-studying it, and drop a thin, dated or ugly site on sight. Never judge a site
-from a still. Record what each selected site won or why its source's editor
-chose it; a source you cannot verify is dropped, not footnoted.
+**Finding.** Candidates come only from sources the registry marks `award` or
+`curated` in
+[`references/quality/public-reference-sources.json`](references/quality/public-reference-sources.json);
+a listing on an open submission feed means someone sent it in. Before
+studying, resolve eligibility: load the gallery, confirm the site is listed
+there today, and record the listing URL as `source_url`. If the registry is
+stale (a gallery moved domain, a status is wrong), correct the registry entry
+with a dated `corrections` note and the evidence, then continue. A registry
+fault is never the principal problem with a build; it is the least of its
+problems.
 
-Study every serious candidate:
+**Judging.** A gallery listing establishes where a site was found. It does not
+establish that the site is good or that it suits this project. Open every
+serious candidate at desktop and phone width and decide, with your own eyes:
+
+- Desktop experience: does it read as one considered design, or a template?
+- Mobile experience: does the phone layout survive, or collapse into a stack?
+- Readability: type sizes, contrast, line lengths, text over photographs.
+- Navigation: can a visitor find and do things without hunting?
+- Reliability: does it load, at both widths, without an overlay covering it?
+- Suitability: do its design relationships fit this project's content and the
+  visitor's tasks? Unrelated industries are fine; a florist can be the
+  dominant grammar for a care organization. A loud retail site cannot be the
+  grammar for a quiet one.
+
+Write these six judgments into the plan for every selected reference. If you
+cannot write them honestly, the site is not selected. Drop thin, dated, ugly,
+broken or unsuitable sites on sight and keep looking.
+
+**Studying.**
 
 ```
 node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references [--inner 3]
 ```
 
 It writes `.design-dna/references/<slug>/sheet.md` and `study.json`, a
-25-second real-time scroll-through video per width, an eight-frame contact
-sheet per width, first screens, and up to three inner pages from the site's
-own navigation. The sheet holds the site's fonts and where they load from, its
-type scale, its colors weighted by painted area (the dominant ground is a
-measurement), radii, shadows, controls, transitions, keyframes, animation
-libraries, the layout outline, what the page does as it scrolls (pinned,
-travelling, swapping, revealing, parallax, pointer-follow), what the Web
-Animations API is running at six depths, and which controls respond to the
-pointer.
+25-second real-time scroll-through video and an eight-frame contact sheet per
+width, first screens, and up to three inner pages. The sheet holds the fonts
+and where they load from, the type scale, the visible ground by sampling (an
+`elementFromPoint` grid at ten scroll positions, so overlapping layers cannot
+double count; the older stacked-rectangle figure is kept and labeled an
+estimate), radii, shadows, controls, transitions, keyframes, libraries, the
+layout outline, what the page does as it scrolls, and for each mechanism its
+driver: `scroll` (changes with the wheel), `time` (changes on its own, an
+autoplay or ambient loop) or `pointer`. An autoplay video and a scroll-gated
+slideshow both say "swap"; they are different experiences, and the build
+copies the one the reference has.
 
-Then LOOK: open both contact sheets and the first screens with your own eyes
-and read the sheet. Answer one question per site and write it down with a
-verb: if a stranger were shown this site, what would they say they noticed?
-That is the signature. If it names a subject, a palette or a mood, it is not
-a signature. The sheet's "signature candidates" list what the tool measured;
-your sentence must name something on it, or something the frames show (a
-typographic composition, a photographic treatment, a color relationship).
+The study handles a consent overlay only through a permitted choice (reject,
+decline, necessary-only, close). It never accepts terms for the visitor. If
+only "accept" is offered, the overlay stays and the sheet says the capture is
+obstructed.
 
-Floors, which are floors and not targets: at least four selected references
-from at least two registry sources marked award or curated, each studied
-successfully at BOTH widths, at least one of them with real scroll or pointer
-motion, and at least two inner pages observed across the set. Six candidates
-studied for four selected is normal. A site the tool could not read (`ok:
-false` in its summary, an HTTP error page, a width that failed) is not
-selected. Read each sheet's "Not studied" list: it names what the two-minute
-read did not open (menus, forms, videos, pages beyond the inner three), and
-if one of those matters to the copy, look at it yourself and say so.
+**A successful capture is not an adequate study.** The sheet ends with three
+sections you must read: *Studied* (which pages loaded, at which width, how
+far the wheel went, how many controls were hovered), *Observation gaps*
+(consent overlay not dismissed, a fixed layer covering the page, scroll frames
+that repeat because the page never travelled, a horizontal scroller the
+vertical pass never traversed, an inner page that failed) and *Not studied*
+(menus never opened, videos not watched, forms, iframes, pages beyond the
+inner three). Anything you intend to copy from a gapped region you inspect
+yourself first, by an appropriate method (open the menu, traverse the strip,
+read an inner page), and you say in the plan how you did (`gaps_reviewed`).
+A gap you did not close is a thing you cannot copy.
 
-### 2. Plan (the producer's only authorship, and it is a selection)
+**The signature.** For each selected site write one sentence with a verb
+saying what a stranger would notice: what creates its impact, composition,
+imagery, typography, sequence, interaction, pacing. Name the mechanism only
+if the sheet measured it on that site.
 
-Write `.design-dna/plan.json`:
+### 2. Plan (a selection, written down)
+
+Write `.design-dna/plan.json`. Every field below is read by the check.
 
 ```json
 {
   "references": [
-    { "id": "strong-1", "url": "https://...", "source_id": "awwwards", "source": "awwwards; site of the day 2026-03-02",
+    { "id": "strong-1", "url": "https://...", "source_id": "awwwards", "source_url": "https://www.awwwards.com/sites/...",
+      "quality": { "desktop": "...", "mobile": "...", "readability": "...", "navigation": "...", "reliability": "...", "suitability": "..." },
+      "contributes": "the dominant grammar: first screen, ground, type system, footer",
       "signature": "the product images slide sideways under a pinned heading",
       "signature_mechanisms": ["pinned", "travel"],
-      "take": ["first screen composition", "pinned heading with travelling media", "nav", "hover transition 240ms"] }
+      "gaps_reviewed": "the horizontal strip was traversed by hand at both widths; nothing from the obstructed footer was copied" }
   ],
   "typefaces": [ { "family": "Fraunces", "from": "strong-1" },
                  { "family": "Instrument Serif", "from": "strong-2", "matched_for": "Cardinal Fruit", "match_record": ".design-dna/typeface-match.json" } ],
   "ground": { "color": "rgb(14, 14, 14)", "from": "strong-1" },
-  "routes": [ { "url": "http://127.0.0.1:4870/", "name": "home", "dominant": "strong-1", "mechanisms": ["pinned", "travel", "reveal"],
-                "sections": [
-                  { "selector": ".hero", "reference": "strong-1", "takes": "first-screen composition, nav list, ring button" },
-                  { "selector": ".stage", "reference": "strong-3", "takes": "pinned stage with a color swap per card" } ] } ]
+  "routes": [ { "url": "http://127.0.0.1:4870/", "name": "home", "dominant": "strong-1",
+    "sections": [
+      { "selector": ".hero", "reference": "strong-1",
+        "content": "name, four nav items, one photograph, the hotline",
+        "composition": "split screen: green panel left with a vertical nav, full-bleed photo right, wordmark straddling the split",
+        "image_role": "the right half is a full-bleed still life; the inset is a tight portrait",
+        "typography_role": "wordmark in the display serif; uppercase tracked labels in the text face",
+        "behavior": "none",
+        "mobile": "one column: hamburger, centered wordmark, ring button; photo below" },
+      { "selector": ".stage", "reference": "strong-3", "behavior": "pinned; swap (scroll-driven)", "behavior_narrow": "pinned", "states": 4,
+        "palette_from": "strong-1", "behavior_from": "strong-3",
+        "content": "...", "composition": "...", "image_role": "...", "typography_role": "...", "mobile": "..." } ] } ],
+  "review": { "reviewer": "independent", "file": ".design-dna/review.md" }
 }
 ```
 
-Rules for the plan, all checked by step 4:
+Rules, all checked:
 
-- Every `id` is a studied reference. Every `signature_mechanisms` entry was
-  detected on that site. Every mechanism a route promises exists on a
-  studied reference.
-- `source_id` is the registry id of the source that lists the site
-  (`awwwards`, `typewolf`, `site-of-sites`, `godly`); the check refuses a
-  submission feed and needs two distinct sources across the set.
-- Every route carries a `sections` list: one line per major section with its
-  CSS selector, the reference it copies, and what it takes (composition,
-  typography, spacing or behavior). The check verifies each selector exists,
-  names a selected reference, paints a ground that reference or the route's
-  dominant paints, and sets no undeclared family. The producer compares the
-  sections by eye in the review (step 4).
-- At most two typefaces, each computed by a selected reference, or declared as
-  the rank-one match for a reference face that cannot be self-hosted:
+- Every `id` is a studied reference, studied successfully at both widths, not
+  an HTTP error page, from a registry source marked award or curated, with a
+  `source_url` on that source's domain. At least four distinct references from
+  at least two sources. **Four is a floor, not a quota: a weak fourth chosen
+  to reach four is forbidden.** If the set does not work, keep researching.
+  Every selected reference must reach at least one section (as `reference`,
+  `palette_from` or `behavior_from`), or it is filler.
+- `quality` carries the six judgments; `contributes` names what the site gives
+  this build; `gaps_reviewed` says how any observation gap was closed.
+- At most two typefaces, each computed by a selected reference or declared
+  with `matched_for` and a `match_record` that ranks it first. A typed claim
+  is not a match.
+- The ground is a selected reference's dominant visible ground, sampled.
+- Every route lists its major sections. Each section names the reference it
+  copies and explains the relationship: `content` (what goes in it),
+  `composition`, `image_role`, `typography_role`, `behavior` (mechanisms and
+  their driver, or `none`), `mobile` (how it recomposes), and, when it holds
+  still while the visitor scrolls, `states` (how many things the visitor sees
+  while it holds). `behavior_narrow` when the phone behavior differs;
+  `palette_from` or `behavior_from` when a color or a behavior comes from a
+  different selected reference than the composition. A font or color that
+  appears somewhere in the set does not authorize its use everywhere: a
+  section may use only what its own reference or the route's dominant
+  reference computes.
+- Adapt proportions to the content. Copy the reference's relationships, not
+  its pixel heights or scroll distances. Short copy does not inherit a tall
+  container; three brief topics do not earn thousands of pixels of scrolling.
+  About one viewport per state is the most a held section may ask for.
+- When a reference cannot carry this project's content, accessibility or
+  phone behavior, take another studied pattern from the set. Never fill the
+  gap with an invented design, and never reproduce a source's usability
+  defect (2.9:1 text, a tiny label, a menu that hides the nav) because it is
+  measurable.
 
-  ```
-  node <skill>/scripts/measure_faces.mjs --url <reference URL> --family "<Face>" --out .design-dna/references/<id>/faces.json
-  node <skill>/scripts/match_typeface.mjs --target .design-dna/references/<id>/faces.json --family "<Face>" --out .design-dna/typeface-match.json
-  ```
+### 3. Build, with an early look
 
-  The first measures the face as the live page renders it (and refuses a face
-  the page only rendered with a fallback); the second measures the open
-  candidates the same way and ranks them. `chosen` is the match; the plan
-  entry carries `"matched_for"` and `"match_record"`, and the check reads the
-  record and refuses a face it did not rank first. A typed claim is not a
-  match.
-- The ground is a selected reference's own dominant ground, not a minor
-  citation that happens to justify the producer's taste.
-- One reference is the dominant grammar of each route: its first-screen
-  composition, section rhythm, control language and narrow recomposition.
-  Other references contribute their signature moments where the content
-  supports them. A build copies inner pages only from references whose inner
-  pages were studied.
-- Take the GOOD parts and design the site as one thing. A transfer that takes
-  only a palette value, a font category, a background or one generic
-  animation fails the standard even though it names a source.
+Build the first route's opening and its first major transition, serve it,
+and run the early look before building the rest:
 
-### 3. Build
+```
+node <skill>/scripts/check_build.mjs --plan .design-dna/plan.json --studies .design-dna/references --out .design-dna/check --early
+```
 
-Build the routes the plan names. Content is the client's; design is the
-references'. Copy the reference's mechanism, not a label for it: a "swap" that
-is an ambient autoplay video on the reference is an autoplay video in the
-build, not a scroll-gated slideshow. Sections fading up on scroll are not a
-motion language. Decorative numbers, arrows on things that are not clickable,
-eyebrows above headings, and mechanism narration in the copy are forbidden by
-the owner's standing feedback.
+It prints `EARLY LOOK: <png>`: the dominant reference's first screens beside
+the build's at both widths and both scroll storyboards. Look at it. Judge
+hierarchy, density, crop, legibility, pacing, and whether the reference's
+impression comes through. Fix the opening before there is a whole site to
+fix.
 
-### 4. Check the build (a minute or two), then look
+Then build the routes. Content is the client's; design is the references'.
+Copy the mechanism the reference has, with its driver. Public copy carries no
+design narration, no repeated demo disclaimers, no generic slogans, no filler.
+Imagery matches the reference's compositional role (a full-bleed still life
+where the reference has one), not merely its subject. A fictional or
+illustrative disclosure appears once, quietly, where a footer note goes.
+Decorative numbers, arrows on things that are not clickable, eyebrows above
+headings and em dashes are forbidden by the owner's standing feedback.
+
+### 4. Check, review, report
 
 ```
 node <skill>/scripts/check_build.mjs --plan .design-dna/plan.json --studies .design-dna/references --out .design-dna/check
 ```
 
-It reads every route at desktop and phone width with the same eyes as the
-references and prints two lines, both quoted verbatim in the report:
+Every run lands in `.design-dna/check/runs/<timestamp>/` with its frames,
+video, review sheet and `check.json`; the latest copies sit at the root. The
+failure history survives. The check prints five lines; quote all five
+verbatim in the report:
 
-- `CHECK PASS (automated) ...` or `CHECK FAIL (automated) ...`. PASS means
-  exactly this: the automated checks passed for these routes at both widths.
-  It is not a review and not approval. It fails when the plan is incomplete
-  (no route, fewer than four references, a reference not studied at both
-  widths, fewer than two registry sources, a signature without a verb), when
-  a typeface is neither a reference's nor the rank-one face of a readable
-  match record, when the dominant ground at either width is not a
-  reference's, when a listed section is missing, names an unselected
-  reference or paints a foreign ground, when a signature or promised
-  mechanism does not arrive, when the phone width has fewer mechanisms or
-  less choreography than the weakest reference at phone width, when the page
-  scrolls sideways, when the copy carries an em dash, an eyebrow label over a
-  heading, padded numbers or an arrow on a non-link, when a photograph is
-  used twice, when an inner route copies a reference whose inner pages were
-  not studied, or when a slop pattern shows at either width. A failed check
-  is fixed in the build or the plan and re-run; it is never argued with in
-  prose. If the check did not run, the report says "the check did not run".
-- `REVIEW ...`: whether `.design-dna/review.md` exists and what it covers.
+- `CHECK PASS (automated)` or `CHECK FAIL (automated)`: the measurable
+  comparisons. Inputs complete (route, four distinct references studied at
+  both widths from two sources, quality judgments, contributions, gaps
+  reviewed); typefaces from references or verified match records; the
+  sampled dominant ground a reference's own, at both widths; every listed
+  section present, explained, using only its own or the dominant reference's
+  families and grounds, carrying the behavior the plan names *inside that
+  section at that width*; no held section asking more than about a viewport
+  per state; no tall, near-empty section; no mostly empty page; no photograph
+  used twice; no em dash, eyebrow, padded number, stray arrow, repeated
+  disclaimer, design narration or slogan in public copy; no slop shape.
+  Problems are listed design first and registry last. Route-level mechanism
+  counts and coverage percentages are no longer floors; behavior is tested
+  per section and per width, never pooled across the page.
+- `FUNCTIONAL PASS` or `FUNCTIONAL FAIL`: keyboard focus visible on the first
+  controls, content present with reduced motion, no fixed layer covering the
+  page at rest, no sideways scroll, at both widths.
+- `REVIEW INDEPENDENT`, `REVIEW SELF-REVIEW` or `REVIEW MISSING`: whether a
+  review was written, by whom, what it covers and what it leaves unresolved.
+- `EVIDENCE`: the tool revisions that made the studies and this check, and
+  which studies are older than the current study tool.
+- `APPROVAL`: owner approval, recorded in the plan or not.
 
-The review is yours and it is required. The check writes
-`.design-dna/check/review-<n>-<route>.png`: the dominant reference's first
-screens beside the build's at both widths, then both scroll storyboards.
-Open it and the other selected references' contact sheets, then write
-`.design-dna/review.md` with one line per selected reference:
+**The review.** Where an independent reviewer is available (a fresh agent, a
+second session, a person), give it the brief, the reference sheets and
+contact sheets, and `review-<n>-<route>.png`, without the builder's
+explanation, and have it write `.design-dna/review.md`. Otherwise the builder
+writes it and the first line says `Reviewer: self`. The file has:
 
 ```
-- heart-and-soil: reference shows small photographs scattered over ivory with deep green blocks; build shows the same cluster and blocks, photographs smaller; difference: the reference's cluster is denser.
+Reviewer: independent (or: self)
+- <reference id>: reference shows ... / build shows ... / difference: ...   (one line per selected reference)
+## Visitor walk
+menus, reading flow, horizontal interactions, keyboard navigation, focus visibility, moving content, overlays, reduced motion, mobile layouts, settled states after load
 ## Unresolved
-- the stage's card captions sit closer to the frame edge than the reference's issue numbers
+- ...
 ```
 
-Say what the reference's memorable experience is and whether it comes through
-in the build; a matching font family or a "parallax" label does not answer
-that. Keep it concrete and short. Neither line claims perfection or client
-approval: the owner's eyes remain the gate.
+The visitor walk is done, not imagined: open the menus at both widths,
+traverse anything horizontal, tab through the page, load it with reduced
+motion, look at it settled four seconds after load, and say what you saw. A
+correctly formatted review proves that a review was written; it does not
+prove the design is good.
+
+**The report** separates four things and never blends them: the automated
+lines, the review's findings including unresolved differences, the functional
+line, and owner approval. Material problems are stated first and plainly.
+"Fonts and colors passed" never becomes "the site is ready". A known weak or
+rejected result is never described favorably because a metric improved.
 
 ## What a report contains
 
-- The references, each with URL, source and accolade, signature sentence, and
-  the path to its sheet and contact sheets.
-- The plan file.
-- The two check lines, `CHECK ...` and `REVIEW ...`, verbatim, and the
-  path of the review sheet and `review.md`.
-- Problems the tools reported (`problems` in study.json, `problems` in
-  check.json), not summarized away.
+- The references, each with URL, source and listing URL, the six quality
+  judgments, its signature, what it contributes, its observation gaps and how
+  they were closed, and the paths to its sheet and contact sheets.
+- The plan file and the review file, with the review sheet path.
+- The five check lines, verbatim.
+- Problems the tools reported (`problems` and `observation_gaps` in
+  study.json; `problems` and `functional_problems` in check.json), not
+  summarized away.
+- What was not verified, in one plain sentence.
 
 ## Reference selection is by design, not by industry
 
-Pick references from any genre for their design and never for the client's
-industry. Six faithful copies of forgettable sites make a forgettable site.
-When a client names another client's site, copy its structure and register,
-never its copy or claims.
+Pick references from any genre for their design relationships and never for
+the client's industry. Six faithful copies of forgettable sites make a
+forgettable site. When a client names another client's site, copy its
+structure and register, never its copy or claims.
 
 ## Other standing rules that still apply
 
@@ -235,6 +316,17 @@ never its copy or claims.
   evidence honesty, delivery authority) in [policy/absolutes.md](policy/absolutes.md)
   come first. The owner record at `~/.design-dna/owner-standards.md` is read
   before direction exists; it closes only the ingredients it names.
+
+## What the tools prove, and what they cannot
+
+The study proves what a site's DOM computed and how its elements moved under
+a wheel, a pointer and time, at two widths, on the day it ran. The check
+proves that a build's visible ingredients trace to those records, that the
+behaviors named for each section exist in that section, that known failure
+shapes are absent, and that a keyboard and a reduced-motion visitor are not
+locked out. Neither proves that the composition is right, that the crop is
+good, that the pacing feels earned, or that the reference's impression comes
+through. Those are seen or they are not, and the report says which.
 
 ## Legacy machinery
 

@@ -1,0 +1,3572 @@
+{
+  "schema_version": 1,
+  "tool": "study_reference.mjs",
+  "id": "era-residence",
+  "url": "https://era-residence.com/",
+  "studied_at": "2026-09-07T00:57:23.304Z",
+  "pages": [
+    {
+      "url": "https://era-residence.com/",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.era-residence.com/",
+      "first_screen": {
+        "file": "wide-home-first-screen.png",
+        "sha256": "245865177371e66f5c49ab8e2e16f951511041e81c5f10338f1f65dbc524ef54"
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 21670
+        },
+        "grounds": [
+          {
+            "color": "rgb(52, 12, 36)",
+            "area_share": 0.674,
+            "elements": 10
+          },
+          {
+            "color": "rgb(243, 243, 236)",
+            "area_share": 0.454,
+            "elements": 10
+          },
+          {
+            "color": "gradient:linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))",
+            "area_share": 0.355,
+            "elements": 10
+          },
+          {
+            "color": "rgb(181, 206, 219)",
+            "area_share": 0.208,
+            "elements": 6
+          },
+          {
+            "color": "gradient:linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0))",
+            "area_share": 0.083,
+            "elements": 3
+          },
+          {
+            "color": "gradient:linear-gradient(rgb(243, 243, 236), rgba(243, 243, 236, 0))",
+            "area_share": 0.027,
+            "elements": 2
+          },
+          {
+            "color": "rgb(23, 35, 59)",
+            "area_share": 0,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(23, 35, 59)",
+            "weight": 70453
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 31308
+          },
+          {
+            "color": "rgb(243, 243, 236)",
+            "weight": 6498
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Maison Neue Extended",
+            "characters": 83
+          },
+          {
+            "family": "ambroise-francois-std",
+            "characters": 67
+          },
+          {
+            "family": "sloop-script-three",
+            "characters": 12
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "ambroise-francois-std",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "sloop-script-three",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "src": "url(\"https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/6a06a699270853940fed199c_MaisonNeueExt-Book.woff2\") format(\"woff2\")",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "src": "url(\"https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/6a06a6b22391d5d6ce159452_MaisonNeueExt-Bold.woff2\") format(\"woff2\")",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "ambroise-francois-std",
+            "src": "url(\"https://use.typekit.net/af/02a0c4/0000000000000000773598f9/31/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          },
+          {
+            "family": "sloop-script-three",
+            "src": "url(\"https://use.typekit.net/af/ceca40/00000000000000007758dac7/31/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          },
+          {
+            "sheet": "https://unpkg.com/lenis@1.3.21/dist/lenis.css",
+            "readable": false
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 11.7,
+            "weight": "400",
+            "line_height": "16.146px",
+            "letter_spacing": "-0.2808px",
+            "transform": "none",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Nestled between pristine beaches, world-class golf courses a",
+            "characters": 1812
+          },
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 9.9,
+            "weight": "700",
+            "line_height": "14.355px",
+            "letter_spacing": "0.4752px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "Era",
+            "characters": 1004
+          },
+          {
+            "role": "h4",
+            "family": "ambroise-francois-std",
+            "size": 36,
+            "weight": "400",
+            "line_height": "36px",
+            "letter_spacing": "-0.288px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Instead of corridors, walking paths connect the apartments —",
+            "characters": 370
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 56.7,
+            "weight": "400",
+            "line_height": "49.896px",
+            "letter_spacing": "-0.9072px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "ERA Residences is a boutique gated community of only 25 resi",
+            "characters": 271
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 36,
+            "weight": "400",
+            "line_height": "36px",
+            "letter_spacing": "-0.288px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Between Marbella and Estepona",
+            "characters": 135
+          },
+          {
+            "role": "h4",
+            "family": "Maison Neue Extended",
+            "size": 9.9,
+            "weight": "700",
+            "line_height": "14.355px",
+            "letter_spacing": "0.4752px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Optional upgrades are available: • Private jacuzzi • EV char",
+            "characters": 105
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 36,
+            "weight": "400",
+            "line_height": "36px",
+            "letter_spacing": "-0.288px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "A place",
+            "characters": 79
+          },
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 8.1,
+            "weight": "700",
+            "line_height": "10.773px",
+            "letter_spacing": "2.592px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Book a call",
+            "characters": 76
+          },
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 9.9,
+            "weight": "400",
+            "line_height": "14.355px",
+            "letter_spacing": "0.4752px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Era Residence",
+            "characters": 75
+          },
+          {
+            "role": "body",
+            "family": "ambroise-francois-std",
+            "size": 25.2,
+            "weight": "400",
+            "line_height": "25.2px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Accept",
+            "characters": 64
+          },
+          {
+            "role": "h1",
+            "family": "ambroise-francois-std",
+            "size": 36,
+            "weight": "400",
+            "line_height": "36px",
+            "letter_spacing": "-0.288px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Crafted to Endure",
+            "characters": 51
+          },
+          {
+            "role": "h4",
+            "family": "ambroise-francois-std",
+            "size": 86.4,
+            "weight": "400",
+            "line_height": "78.624px",
+            "letter_spacing": "-2.0736px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Developer",
+            "characters": 46
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 86.4,
+            "weight": "400",
+            "line_height": "78.624px",
+            "letter_spacing": "-2.0736px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "E",
+            "characters": 41
+          },
+          {
+            "role": "h3",
+            "family": "Maison Neue Extended",
+            "size": 9.9,
+            "weight": "700",
+            "line_height": "14.355px",
+            "letter_spacing": "0.4752px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "New Golden Mile, Estepona",
+            "characters": 40
+          },
+          {
+            "role": "h2",
+            "family": "ambroise-francois-std",
+            "size": 172.8,
+            "weight": "400",
+            "line_height": "150.336px",
+            "letter_spacing": "-4.1472px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Thespaceto",
+            "characters": 39
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 56.7,
+            "weight": "400",
+            "line_height": "49.896px",
+            "letter_spacing": "-0.9072px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Three reasons to choose Era",
+            "characters": 27
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 122.4,
+            "weight": "400",
+            "line_height": "107.712px",
+            "letter_spacing": "-2.9376px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Ground floor + basement",
+            "characters": 23
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 22.5,
+            "weight": "400",
+            "line_height": "25.2px",
+            "letter_spacing": "18px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "From rooftop terraces",
+            "characters": 21
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 172.8,
+            "weight": "400",
+            "line_height": "150.336px",
+            "letter_spacing": "-4.1472px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Real-Life Location",
+            "characters": 18
+          },
+          {
+            "role": "h4",
+            "family": "Maison Neue Extended",
+            "size": 9.9,
+            "weight": "400",
+            "line_height": "14.355px",
+            "letter_spacing": "0.4752px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Bedrooms",
+            "characters": 18
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 122.4,
+            "weight": "400",
+            "line_height": "107.712px",
+            "letter_spacing": "-2.9376px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "+34 (655) 408-648",
+            "characters": 17
+          },
+          {
+            "role": "h1",
+            "family": "ambroise-francois-std",
+            "size": 172.8,
+            "weight": "400",
+            "line_height": "150.336px",
+            "letter_spacing": "-4.1472px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Era Residence",
+            "characters": 13
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 172.8,
+            "weight": "400",
+            "line_height": "150.336px",
+            "letter_spacing": "-4.1472px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "New",
+            "characters": 13
+          },
+          {
+            "role": "h4",
+            "family": "Maison Neue Extended",
+            "size": 11.7,
+            "weight": "400",
+            "line_height": "16.146px",
+            "letter_spacing": "-0.2808px",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Costa del Sol",
+            "characters": 13
+          }
+        ],
+        "radii": [
+          {
+            "value": "720px 720px 0px 0px",
+            "elements": 2
+          },
+          {
+            "value": "345.6px 345.6px 0px 0px",
+            "elements": 2
+          },
+          {
+            "value": "3.6px",
+            "elements": 4
+          },
+          {
+            "value": "50%",
+            "elements": 9
+          },
+          {
+            "value": "36px",
+            "elements": 2
+          },
+          {
+            "value": "100%",
+            "elements": 1
+          }
+        ],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 224px 63px 0px, rgba(0, 0, 0, 0.01) 0px 143px 57px 0px, rgba(0, 0, 0, 0.04) 0px 81px 48px 0px, rgba",
+            "elements": 4
+          }
+        ],
+        "transitions": [
+          {
+            "value": "all 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 16
+          },
+          {
+            "value": "color, background-color 0.4s, 0.4s cubic-bezier(0.25, 1, 0.5, 1), cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 11
+          },
+          {
+            "value": "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 7
+          },
+          {
+            "value": "all 0.8s cubic-bezier(0.76, 0, 0.24, 1)",
+            "elements": 4
+          },
+          {
+            "value": "all 0.4s cubic-bezier(0.5, 0, 0.75, 0)",
+            "elements": 3
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Accept",
+            "w": 52,
+            "h": 25,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(23, 35, 59)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 35, 59)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Decline",
+            "w": 58,
+            "h": 25,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(23, 35, 59)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 35, 59)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Back to top",
+            "w": 122,
+            "h": 122,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Select  an Apartment",
+            "w": 105,
+            "h": 50,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View available apartments",
+            "w": 101,
+            "h": 29,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View available apartments",
+            "w": 187,
+            "h": 187,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 14.4px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "name": "marquee",
+            "steps": 2,
+            "sheet": "inline"
+          }
+        ],
+        "libraries": [
+          "gsap",
+          "ScrollTrigger",
+          "Lenis",
+          "barba",
+          "lottie",
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_01.webm",
+              "w": 720,
+              "h": 720,
+              "top": 6142
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_02.webm",
+              "w": 720,
+              "h": 720,
+              "top": 6610
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_03.webm",
+              "w": 720,
+              "h": 720,
+              "top": 6170
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_04.webm",
+              "w": 720,
+              "h": 720,
+              "top": 9452
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_06.webm",
+              "w": 576,
+              "h": 576,
+              "top": 12506
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_05.webm",
+              "w": 984,
+              "h": 984,
+              "top": 14679
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_07.webm",
+              "w": 957,
+              "h": 957,
+              "top": 14692
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_07.webm",
+              "w": 1018,
+              "h": 1018,
+              "top": 17702
+            }
+          ],
+          "canvas": [],
+          "images": 41,
+          "svg": 85
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "section",
+            "class": "section clip theme_on-color",
+            "id": "hero",
+            "top": 0,
+            "height": 5220,
+            "width": 1440,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Era Residence",
+            "text_chars": 342,
+            "images": 2,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section arch clip theme_on-brand",
+            "id": null,
+            "top": 3600,
+            "height": 720,
+            "width": 1440,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 160,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section z-2 theme_on-brand",
+            "id": null,
+            "top": 4320,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Real-Life Location",
+            "text_chars": 700,
+            "images": 3,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section z-2 theme_on-brand",
+            "id": null,
+            "top": 5220,
+            "height": 1080,
+            "width": 1440,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 167,
+            "images": 1,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 6300,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "The concept",
+            "text_chars": 735,
+            "images": 3,
+            "videos": 3,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip theme_on-color",
+            "id": null,
+            "top": 7200,
+            "height": 1260,
+            "width": 1440,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "New Golden Mile, Estepona",
+            "text_chars": 213,
+            "images": 13,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-brand",
+            "id": null,
+            "top": 8460,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgb(181, 206, 219)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Ground floor + basement",
+            "text_chars": 566,
+            "images": 3,
+            "videos": 0,
+            "links": 3,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip theme_on-brand",
+            "id": null,
+            "top": 9360,
+            "height": 855,
+            "width": 1440,
+            "ground": "rgb(181, 206, 219)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Residences range from 104 to 244 sq.m., offering spacious single level and duple",
+            "text_chars": 178,
+            "images": 0,
+            "videos": 1,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "amen-scroll-area",
+            "id": null,
+            "top": 10215,
+            "height": 2970,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Gated community",
+            "text_chars": 718,
+            "images": 5,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section arch clip",
+            "id": null,
+            "top": 11565,
+            "height": 2979,
+            "width": 1440,
+            "ground": "rgb(243, 243, 236)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Thespaceto",
+            "text_chars": 478,
+            "images": 6,
+            "videos": 1,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 14544,
+            "height": 3379,
+            "width": 1440,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Architecture",
+            "text_chars": 193,
+            "images": 1,
+            "videos": 2,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 17924,
+            "height": 1498,
+            "width": 1440,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 580,
+            "images": 1,
+            "videos": 1,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-color",
+            "id": null,
+            "top": 19421,
+            "height": 1579,
+            "width": 1440,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Perfect sea views",
+            "text_chars": 261,
+            "images": 1,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-dark",
+            "id": null,
+            "top": 20770,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Sales Office",
+            "text_chars": 269,
+            "images": 0,
+            "videos": 0,
+            "links": 7,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "floating-tips w-dyn-list",
+            "id": null,
+            "top": 0,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "fixed",
+            "display": "block",
+            "grid": null,
+            "heading": "Crafted to Endure",
+            "text_chars": 554,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "floating-tips w-dyn-list",
+            "id": null,
+            "top": 0,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "fixed",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "modal show w-dyn-list",
+            "id": null,
+            "top": 0,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "fixed",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          }
+        ],
+        "header": null,
+        "nav_links": []
+      },
+      "hover": {
+        "probed": 4,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "a Accept",
+            "w": 52,
+            "h": 25,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Decline",
+            "w": 58,
+            "h": 25,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Back to top",
+            "w": 122,
+            "h": 122,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Select  an Apartment",
+            "w": 105,
+            "h": 50,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 14,
+        "scroll_windows_active": 11,
+        "scroll_windows": 14,
+        "scroll_coverage": 0.79,
+        "distinct_mechanisms": 4,
+        "type_instances": {
+          "swap": 10,
+          "reveal": 3,
+          "pinned": 13,
+          "parallax": 17
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "hero-s",
+            "w": 1354,
+            "h": 900,
+            "initial_top": 0,
+            "sample": "ERA\nRESIDENCE\nEstepona\nA PLACE\nBY DA",
+            "content_travels_through": true,
+            "held_ticks": 4,
+            "held_px": 2556,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 2556px of scroll"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "btn-circle_bg w-embed",
+            "w": 187,
+            "h": 187,
+            "initial_top": 1085,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 4,
+            "held_px": 2556,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 2556px of scroll"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "pins-cms b-desk w-dyn-list",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1933,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1933px of scroll"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "img-w h-auto",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1933,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1933px of scroll"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "loc-info-s",
+            "w": 1015,
+            "h": 675,
+            "initial_top": 1715,
+            "sample": "THE CONCEPT\nERA RESIDENCES IS A BOUT",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "transition-wrapper",
+            "w": 1440,
+            "h": 24605,
+            "initial_top": 0,
+            "sample": "COSTA\nERA\nRESIDENCE\nEstepona\nDEL SOL",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader theme_on-dark",
+            "w": 1440,
+            "h": 1800,
+            "initial_top": 0,
+            "sample": "COSTA\nERA\nRESIDENCE\nEstepona\nDEL SOL",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_ctn",
+            "w": 1440,
+            "h": 900,
+            "initial_top": 0,
+            "sample": "COSTA\nERA\nRESIDENCE\nEstepona\nDEL SOL",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_c",
+            "w": 1354,
+            "h": 193,
+            "initial_top": 353,
+            "sample": "COSTA\nERA\nRESIDENCE\nEstepona\nDEL SOL",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "grid",
+            "w": 1354,
+            "h": 193,
+            "initial_top": 353,
+            "sample": "COSTA\nERA\nRESIDENCE\nEstepona\nDEL SOL",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_logo",
+            "w": 533,
+            "h": 193,
+            "initial_top": 353,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "h3 a-center",
+            "w": 239,
+            "h": 157,
+            "initial_top": 353,
+            "sample": "ERA\nRESIDENCE",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_b",
+            "w": 1354,
+            "h": 353,
+            "initial_top": 547,
+            "sample": "ERA RESIDENCEA PLACE TO RETURN TO.",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "s_title",
+            "w": 259,
+            "h": 144,
+            "initial_top": 713,
+            "sample": "ERA RESIDENCEA PLACE TO RETURN TO.",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "hero-s_btn",
+            "w": 1354,
+            "h": 187,
+            "initial_top": 1085,
+            "sample": "VIEW AVAILABLE APARTMENTS\nVIEW AVAIL",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-s",
+            "w": 1354,
+            "h": 900,
+            "initial_top": 0,
+            "sample": "ERA\nRESIDENCE\nEstepona\nA PLACE\nBY DA",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "grid",
+            "w": 1354,
+            "h": 373,
+            "initial_top": 43,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-s_logo",
+            "w": 806,
+            "h": 373,
+            "initial_top": 43,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "h1",
+            "cls": "h1 a-center",
+            "w": 479,
+            "h": 301,
+            "initial_top": 43,
+            "sample": "ERA\nRESIDENCE",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-s_logo_a",
+            "w": 285,
+            "h": 162,
+            "initial_top": 281,
+            "sample": "Estepona",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "h2",
+            "cls": "a2",
+            "w": 285,
+            "h": 162,
+            "initial_top": 300,
+            "sample": "Estepona",
+            "rate": 0.36,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-w_bg",
+            "w": 1440,
+            "h": 1296,
+            "initial_top": 0,
+            "sample": "VIEW AVAILABLE APARTMENTS\nVIEW AVAIL",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-w_bg_master",
+            "w": 1440,
+            "h": 1296,
+            "initial_top": 0,
+            "sample": "VIEW AVAILABLE APARTMENTS\nVIEW AVAIL",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-w_bg_master_img",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "pins-cms b-desk w-dyn-list",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "pins-cms_list w-dyn-items",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "hero-w_bg_master_img_day",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "img-w h-auto",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "img",
+            "cls": "img h-auto hero-img",
+            "w": 1181,
+            "h": 1063,
+            "initial_top": 0,
+            "sample": "",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "img-over-grad from-top _100vh",
+            "w": 1181,
+            "h": 738,
+            "initial_top": 0,
+            "sample": "",
+            "rate": 0.24,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "parallax",
+            "tag": "div",
+            "cls": "img-over-grad from-bot bot _6x",
+            "w": 1181,
+            "h": 484,
+            "initial_top": 579,
+            "sample": "",
+            "rate": 0.25,
+            "ticks": 4,
+            "detail": "moved at a different rate than the page"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "preloader_logo_a",
+            "w": 152,
+            "h": 86,
+            "initial_top": 475,
+            "sample": "Estepona",
+            "opacity_from": 1,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 9,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.2,
+          "count": 9,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 767.4385380510416,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.4,
+          "count": 3,
+          "sample": [
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": true
+            }
+          ]
+        },
+        {
+          "depth": 0.6,
+          "count": 3,
+          "sample": [
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.8,
+          "count": 10,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.logo.w-embed",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.header-logo_bg.b-desk",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l1.a-center",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "background-color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.s-bar_fill",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "background-color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.s-bar_track",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.s-down_arrow.w-embed",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 1,
+          "count": 15,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.h6",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.h6",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 400,
+              "iterations": 1,
+              "target": "div.l2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        }
+      ],
+      "frames": [
+        {
+          "file": "wide-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "0d65a18d15a38d79c0b9473519cd0fa015a25e6d3ba381c9d3b3aa42629993c1"
+        },
+        {
+          "file": "wide-home-t005.1s.png",
+          "t_s": 5.1,
+          "sha256": "234cb7700eb6cf07bafee61b750e3276c70f9d398047020d82ad8f5686e438db"
+        },
+        {
+          "file": "wide-home-t010.2s.png",
+          "t_s": 10.2,
+          "sha256": "03307c4f88f76e0dc013618470b39281a8c71f3d03986ec85c9834aaa3bfc155"
+        },
+        {
+          "file": "wide-home-t014.2s.png",
+          "t_s": 14.2,
+          "sha256": "03dd2136ba99ab73ba0c8b000808fcbe6e8fb4e598f68aa999c1050ae8593aa1"
+        },
+        {
+          "file": "wide-home-t018.2s.png",
+          "t_s": 18.2,
+          "sha256": "78216f505d446314c25b064f5052d16b0bf65f22b991f62e50bafe88deb61014"
+        },
+        {
+          "file": "wide-home-t021.9s.png",
+          "t_s": 21.9,
+          "sha256": "9aea9972f812df43bb81aa93a1710ae48113451721c912516ca6c99233645a2a"
+        },
+        {
+          "file": "wide-home-t027.2s.png",
+          "t_s": 27.2,
+          "sha256": "640f14b6323797229f7755e7c2bc14f066f979befb7eca3bbd6ae2f436af6eb3"
+        },
+        {
+          "file": "wide-home-t031.3s.png",
+          "t_s": 31.3,
+          "sha256": "5f89d4dd3040f20c445adfac5756bc89cd7bac84070917e3dfef104f5b4d030a"
+        }
+      ],
+      "video": {
+        "file": "wide-home.webm",
+        "bytes": 13899485,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "wide-home-contact-sheet.png",
+        "sha256": "cacfc13035404ed0151aebd4494c06875e745c1f478cace019de7b7464203068"
+      }
+    },
+    {
+      "url": "https://era-residence.com/",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://www.era-residence.com/",
+      "first_screen": {
+        "file": "narrow-home-first-screen.png",
+        "sha256": "f75894bb47b45238c19045814ed9b6df8aa3a4a6790807f413a72b0af6583e07"
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 15382
+        },
+        "grounds": [
+          {
+            "color": "rgb(52, 12, 36)",
+            "area_share": 0.689,
+            "elements": 10
+          },
+          {
+            "color": "rgb(243, 243, 236)",
+            "area_share": 0.449,
+            "elements": 5
+          },
+          {
+            "color": "gradient:linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3))",
+            "area_share": 0.4,
+            "elements": 8
+          },
+          {
+            "color": "rgb(181, 206, 219)",
+            "area_share": 0.214,
+            "elements": 6
+          },
+          {
+            "color": "gradient:linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0))",
+            "area_share": 0.14,
+            "elements": 3
+          },
+          {
+            "color": "gradient:linear-gradient(rgb(243, 243, 236), rgba(243, 243, 236, 0))",
+            "area_share": 0.021,
+            "elements": 2
+          },
+          {
+            "color": "rgb(23, 35, 59)",
+            "area_share": 0.001,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(23, 35, 59)",
+            "weight": 47828
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 16813
+          },
+          {
+            "color": "rgb(243, 243, 236)",
+            "weight": 4886
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Maison Neue Extended",
+            "characters": 64
+          },
+          {
+            "family": "ambroise-francois-std",
+            "characters": 50
+          },
+          {
+            "family": "sloop-script-three",
+            "characters": 11
+          }
+        ],
+        "faces": [
+          {
+            "family": "webflow-icons",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "weight": "700",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "ambroise-francois-std",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "sloop-script-three",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "webflow-icons",
+            "src": "url(\"data:application/x-font-ttf;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SBiUAAAC8AAAAYGNtYXDpP+a4AAABHAAAAFxnYXNwAAAAEAAAAXgAAAAIZ2x5ZmhS2XEAAAGAAAADHGhlYWQTFw3HAAAEnAAAADZoaGVhCXYFgQAABNQAAAAkaG",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "src": "url(\"https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/6a06a699270853940fed199c_MaisonNeueExt-Book.woff2\") format(\"woff2\")",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "Maison Neue Extended",
+            "src": "url(\"https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/6a06a6b22391d5d6ce159452_MaisonNeueExt-Bold.woff2\") format(\"woff2\")",
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "family": "ambroise-francois-std",
+            "src": "url(\"https://use.typekit.net/af/02a0c4/0000000000000000773598f9/31/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          },
+          {
+            "family": "sloop-script-three",
+            "src": "url(\"https://use.typekit.net/af/ceca40/00000000000000007758dac7/31/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3\") format(\"woff2\"), url(\"https://use.typekit.net/",
+            "sheet": "inline"
+          },
+          {
+            "sheet": "https://unpkg.com/lenis@1.3.21/dist/lenis.css",
+            "readable": false
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 12.2,
+            "weight": "400",
+            "line_height": "16.8188px",
+            "letter_spacing": "-0.2925px",
+            "transform": "none",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Nestled between pristine beaches, world-class golf courses a",
+            "characters": 1373
+          },
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "700",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "Era",
+            "characters": 941
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 37.5,
+            "weight": "400",
+            "line_height": "37.5px",
+            "letter_spacing": "-0.6px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "ERA Residences is a boutique gated community of only 25 resi",
+            "characters": 271
+          },
+          {
+            "role": "h4",
+            "family": "ambroise-francois-std",
+            "size": 26.3,
+            "weight": "400",
+            "line_height": "26.25px",
+            "letter_spacing": "-0.21px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Instead of corridors, walking paths connect the apartments —",
+            "characters": 233
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 26.3,
+            "weight": "400",
+            "line_height": "26.25px",
+            "letter_spacing": "-0.21px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Between Marbella and Estepona",
+            "characters": 135
+          },
+          {
+            "role": "h4",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "700",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Optional upgrades are available: • Private jacuzzi • EV char",
+            "characters": 105
+          },
+          {
+            "role": "body",
+            "family": "ambroise-francois-std",
+            "size": 26.3,
+            "weight": "400",
+            "line_height": "26.25px",
+            "letter_spacing": "-0.21px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "A place",
+            "characters": 79
+          },
+          {
+            "role": "body",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "400",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Cookies",
+            "characters": 69
+          },
+          {
+            "role": "h4",
+            "family": "ambroise-francois-std",
+            "size": 52.5,
+            "weight": "400",
+            "line_height": "48.3px",
+            "letter_spacing": "-1.26px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Developer",
+            "characters": 46
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 52.5,
+            "weight": "400",
+            "line_height": "48.3px",
+            "letter_spacing": "-1.26px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "E",
+            "characters": 41
+          },
+          {
+            "role": "h2",
+            "family": "ambroise-francois-std",
+            "size": 90,
+            "weight": "400",
+            "line_height": "81.9px",
+            "letter_spacing": "-2.16px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Thespaceto",
+            "characters": 39
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 68.4,
+            "weight": "400",
+            "line_height": "59.5406px",
+            "letter_spacing": "-1.6425px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Real-Life Location",
+            "characters": 35
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 37.5,
+            "weight": "400",
+            "line_height": "37.5px",
+            "letter_spacing": "-0.6px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Three reasons to choose Era",
+            "characters": 27
+          },
+          {
+            "role": "body",
+            "family": "ambroise-francois-std",
+            "size": 26.3,
+            "weight": "400",
+            "line_height": "26.25px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Accept",
+            "characters": 26
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 68.4,
+            "weight": "400",
+            "line_height": "59.5406px",
+            "letter_spacing": "-1.6425px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Ground floor + basement",
+            "characters": 23
+          },
+          {
+            "role": "h3",
+            "family": "ambroise-francois-std",
+            "size": 17.8,
+            "weight": "400",
+            "line_height": "22.4438px",
+            "letter_spacing": "14.25px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "From rooftop terraces",
+            "characters": 21
+          },
+          {
+            "role": "h4",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "400",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "Bedrooms",
+            "characters": 18
+          },
+          {
+            "role": "h3",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "700",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Gated community",
+            "characters": 15
+          },
+          {
+            "role": "h1",
+            "family": "ambroise-francois-std",
+            "size": 90,
+            "weight": "400",
+            "line_height": "81.9px",
+            "letter_spacing": "-2.16px",
+            "transform": "uppercase",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Era Residence",
+            "characters": 13
+          },
+          {
+            "role": "display",
+            "family": "ambroise-francois-std",
+            "size": 90,
+            "weight": "400",
+            "line_height": "81.9px",
+            "letter_spacing": "-2.16px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "New",
+            "characters": 13
+          },
+          {
+            "role": "h5",
+            "family": "ambroise-francois-std",
+            "size": 26.3,
+            "weight": "400",
+            "line_height": "26.25px",
+            "letter_spacing": "-0.21px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "3",
+            "characters": 13
+          },
+          {
+            "role": "h3",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "400",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(243, 243, 236)",
+            "sample": "Sales Office",
+            "characters": 12
+          },
+          {
+            "role": "h2",
+            "family": "Maison Neue Extended",
+            "size": 10.3,
+            "weight": "700",
+            "line_height": "14.9531px",
+            "letter_spacing": "0.495px",
+            "transform": "uppercase",
+            "color": "rgb(23, 35, 59)",
+            "sample": "The concept",
+            "characters": 11
+          },
+          {
+            "role": "display",
+            "family": "sloop-script-three",
+            "size": 45,
+            "weight": "400",
+            "line_height": "45px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(243, 243, 236)",
+            "sample": "E",
+            "characters": 8
+          }
+        ],
+        "radii": [
+          {
+            "value": "195px 195px 0px 0px",
+            "elements": 2
+          },
+          {
+            "value": "156px 156px 0px 0px",
+            "elements": 2
+          },
+          {
+            "value": "50%",
+            "elements": 4
+          },
+          {
+            "value": "3.75px",
+            "elements": 1
+          },
+          {
+            "value": "37.5px",
+            "elements": 2
+          },
+          {
+            "value": "100%",
+            "elements": 1
+          }
+        ],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 224px 63px 0px, rgba(0, 0, 0, 0.01) 0px 143px 57px 0px, rgba(0, 0, 0, 0.04) 0px 81px 48px 0px, rgba",
+            "elements": 1
+          }
+        ],
+        "transitions": [
+          {
+            "value": "all 0.8s cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 9
+          },
+          {
+            "value": "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 5
+          },
+          {
+            "value": "color, background-color 0.4s, 0.4s cubic-bezier(0.25, 1, 0.5, 1), cubic-bezier(0.25, 1, 0.5, 1)",
+            "elements": 4
+          },
+          {
+            "value": "all 0.8s cubic-bezier(0.76, 0, 0.24, 1)",
+            "elements": 4
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Accept",
+            "w": 54,
+            "h": 26,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(23, 35, 59)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 35, 59)",
+            "font": "Maison Neue Extended 400 3.9px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Decline",
+            "w": 60,
+            "h": 26,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(23, 35, 59)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 35, 59)",
+            "font": "Maison Neue Extended 400 3.9px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Back to top",
+            "w": 75,
+            "h": 75,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 3.9px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View available apartments",
+            "w": 105,
+            "h": 30,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 3.9px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "View available apartments",
+            "w": 165,
+            "h": 165,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Maison Neue Extended 400 3.9px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "spin",
+            "steps": 2,
+            "sheet": "https://cdn.prod.website-files.com/6a068da7ad91b057365bf967/css/era-residence.webflow.shared.c9555a234.min.css"
+          },
+          {
+            "name": "marquee",
+            "steps": 2,
+            "sheet": "inline"
+          }
+        ],
+        "libraries": [
+          "gsap",
+          "ScrollTrigger",
+          "Lenis",
+          "barba",
+          "lottie",
+          "webflow-ix2"
+        ],
+        "media": {
+          "video": [
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_01.webm",
+              "w": 375,
+              "h": 375,
+              "top": 3341
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_02.webm",
+              "w": 375,
+              "h": 375,
+              "top": 4820
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_03.webm",
+              "w": 0,
+              "h": 0,
+              "top": 0
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_04.webm",
+              "w": 375,
+              "h": 375,
+              "top": 7496
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_06.webm",
+              "w": 368,
+              "h": 368,
+              "top": 9645
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_05.webm",
+              "w": 0,
+              "h": 0,
+              "top": 0
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_07.webm",
+              "w": 0,
+              "h": 0,
+              "top": 0
+            },
+            {
+              "autoplay": false,
+              "loop": true,
+              "muted": true,
+              "paused": true,
+              "src": "https://assets.era-residence.com/flowers/bougainvillea-flowers_07.webm",
+              "w": 530,
+              "h": 530,
+              "top": 12392
+            }
+          ],
+          "canvas": [],
+          "images": 41,
+          "svg": 85
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "section",
+            "class": "section clip theme_on-color",
+            "id": "hero",
+            "top": 0,
+            "height": 2727,
+            "width": 390,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Era Residence",
+            "text_chars": 342,
+            "images": 2,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section arch clip theme_on-brand",
+            "id": null,
+            "top": 1688,
+            "height": 502,
+            "width": 390,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 160,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section z-2 theme_on-brand",
+            "id": null,
+            "top": 2189,
+            "height": 844,
+            "width": 390,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Real-Life Location",
+            "text_chars": 700,
+            "images": 3,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section z-2 theme_on-brand",
+            "id": null,
+            "top": 3033,
+            "height": 390,
+            "width": 390,
+            "ground": "rgb(181, 206, 219)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 167,
+            "images": 1,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 3423,
+            "height": 2241,
+            "width": 390,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "The concept",
+            "text_chars": 735,
+            "images": 3,
+            "videos": 3,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip theme_on-color",
+            "id": null,
+            "top": 5664,
+            "height": 683,
+            "width": 390,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "New Golden Mile, Estepona",
+            "text_chars": 213,
+            "images": 13,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-brand",
+            "id": null,
+            "top": 6347,
+            "height": 774,
+            "width": 390,
+            "ground": "rgb(181, 206, 219)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Ground floor + basement",
+            "text_chars": 566,
+            "images": 3,
+            "videos": 0,
+            "links": 3,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip theme_on-brand",
+            "id": null,
+            "top": 7121,
+            "height": 757,
+            "width": 390,
+            "ground": "rgb(181, 206, 219)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Residences range from 104 to 244 sq.m., offering spacious single level and duple",
+            "text_chars": 178,
+            "images": 0,
+            "videos": 1,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "amen-scroll-area",
+            "id": null,
+            "top": 7879,
+            "height": 2305,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Gated community",
+            "text_chars": 718,
+            "images": 5,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section arch clip",
+            "id": null,
+            "top": 9145,
+            "height": 2327,
+            "width": 390,
+            "ground": "rgb(243, 243, 236)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Thespaceto",
+            "text_chars": 478,
+            "images": 6,
+            "videos": 1,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 11472,
+            "height": 1035,
+            "width": 390,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Architecture",
+            "text_chars": 193,
+            "images": 1,
+            "videos": 2,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section clip",
+            "id": null,
+            "top": 12507,
+            "height": 1184,
+            "width": 390,
+            "ground": "rgb(243, 243, 236)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 580,
+            "images": 1,
+            "videos": 1,
+            "links": 0,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-color",
+            "id": null,
+            "top": 13690,
+            "height": 1035,
+            "width": 390,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Perfect sea views",
+            "text_chars": 261,
+            "images": 1,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "section",
+            "class": "section theme_on-dark",
+            "id": null,
+            "top": 14538,
+            "height": 844,
+            "width": 390,
+            "ground": "rgb(52, 12, 36)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Sales Office",
+            "text_chars": 269,
+            "images": 0,
+            "videos": 0,
+            "links": 7,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "modal show w-dyn-list",
+            "id": null,
+            "top": 0,
+            "height": 844,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "fixed",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 0,
+            "videos": 0,
+            "links": 0,
+            "buttons": 0
+          }
+        ],
+        "header": null,
+        "nav_links": []
+      },
+      "hover": {
+        "probed": 3,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "a Accept",
+            "w": 54,
+            "h": 26,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Decline",
+            "w": 60,
+            "h": 26,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Back to top",
+            "w": 75,
+            "h": 75,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 14,
+        "scroll_windows_active": 13,
+        "scroll_windows": 14,
+        "scroll_coverage": 0.93,
+        "distinct_mechanisms": 3,
+        "type_instances": {
+          "swap": 15,
+          "pinned": 11,
+          "reveal": 5
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "h1",
+            "cls": "h1 a-center",
+            "w": 249,
+            "h": 164,
+            "initial_top": 143,
+            "sample": "Era Residence",
+            "content_travels_through": false,
+            "held_ticks": 3,
+            "held_px": 1756,
+            "swaps_while_held": 1,
+            "detail": "held still in the viewport for 1756px of scroll while its content changed 1 time(s)"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "hero-s_logo_a",
+            "w": 179,
+            "h": 101,
+            "initial_top": 267,
+            "sample": "Estepona",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1756,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1756px of scroll"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "btn-circle_bg w-embed",
+            "w": 165,
+            "h": 165,
+            "initial_top": 627,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1756,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1756px of scroll"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "transition-wrapper",
+            "w": 390,
+            "h": 15382,
+            "initial_top": 0,
+            "sample": "ERA\nRESIDENCE\nEstepona\n\nERA RESIDENC",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader theme_on-dark",
+            "w": 390,
+            "h": 1688,
+            "initial_top": 0,
+            "sample": "ERA\nRESIDENCE\nEstepona\n\nERA RESIDENC",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_ctn",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "ERA\nRESIDENCE\nEstepona\n\nERA RESIDENC",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_c",
+            "w": 345,
+            "h": 127,
+            "initial_top": 359,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "grid",
+            "w": 345,
+            "h": 127,
+            "initial_top": 359,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_logo",
+            "w": 165,
+            "h": 127,
+            "initial_top": 359,
+            "sample": "ERA\nRESIDENCE\nEstepona",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "h3 a-center",
+            "w": 145,
+            "h": 97,
+            "initial_top": 359,
+            "sample": "ERA\nRESIDENCE",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "preloader_b",
+            "w": 345,
+            "h": 359,
+            "initial_top": 485,
+            "sample": "ERA RESIDENCEA PLACE TO RETURN TO.",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "s_title",
+            "w": 195,
+            "h": 142,
+            "initial_top": 672,
+            "sample": "ERA RESIDENCEA PLACE TO RETURN TO.",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "section",
+            "cls": "section clip theme_on-color",
+            "w": 390,
+            "h": 2727,
+            "initial_top": 0,
+            "sample": "Era ResidenceEsteponaA place by dayb",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "container",
+            "w": 390,
+            "h": 2727,
+            "initial_top": 0,
+            "sample": "Era ResidenceEsteponaA place by dayb",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "hero-scroll-area",
+            "w": 345,
+            "h": 2727,
+            "initial_top": 0,
+            "sample": "Era ResidenceEsteponaA place by dayb",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "hero-w_bg",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "hero-w_bg_master",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "hero-w_bg",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "[data-pin='crafted-to-endure'] {\n   ",
+            "opacity_from": 1,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "img h-auto",
+            "w": 975,
+            "h": 189,
+            "initial_top": 1284,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.94,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "loc-info-s",
+            "w": 259,
+            "h": 478,
+            "initial_top": 1620,
+            "sample": "THE CONCEPT\nERA RESIDENCES IS A BOUT",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "hero-s_btn",
+            "w": 345,
+            "h": 165,
+            "initial_top": 627,
+            "sample": "View available apartmentsView availa",
+            "opacity_from": 0.77,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "loc-intro-s_btn",
+            "w": 255,
+            "h": 165,
+            "initial_top": 1431,
+            "sample": "VIEW AVAILABLE APARTMENTS\nVIEW AVAIL",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 6,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.2,
+          "count": 6,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 784.4045877086285,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 784.4045877086285,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 784.4045877086285,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.4,
+          "count": 3,
+          "sample": [
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.6,
+          "count": 3,
+          "sample": [
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 0.8,
+          "count": 6,
+          "sample": [
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "a.nav-item.w-inline-block",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSTransition",
+              "name": "color",
+              "state": "running",
+              "duration": 800,
+              "iterations": 1,
+              "target": "div.nav-item_label_text.is-2",
+              "on_screen": true
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        },
+        {
+          "depth": 1,
+          "count": 3,
+          "sample": [
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            },
+            {
+              "kind": "CSSAnimation",
+              "name": "marquee",
+              "state": "running",
+              "duration": 32000,
+              "iterations": null,
+              "target": "div.marquee_track",
+              "on_screen": false
+            }
+          ]
+        }
+      ],
+      "frames": [
+        {
+          "file": "narrow-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "174a893a2d1e4114da2ae7a8bd93aea9ce49081aa681978209138afcd0e1c001"
+        },
+        {
+          "file": "narrow-home-t003.4s.png",
+          "t_s": 3.4,
+          "sha256": "7aabaede135c8ef62a753e07faba225581a75b26255b876aea89a2d0379679d8"
+        },
+        {
+          "file": "narrow-home-t006.6s.png",
+          "t_s": 6.6,
+          "sha256": "5cc9320295e0a3933b16551130126d0fe2cf0a9ae4a1845d9933d8b0bb757df1"
+        },
+        {
+          "file": "narrow-home-t009.8s.png",
+          "t_s": 9.8,
+          "sha256": "e86ab8def0ce0350278bfa7ace6223e93f29bd497293a945d59e823cc9f7db3d"
+        },
+        {
+          "file": "narrow-home-t013.0s.png",
+          "t_s": 13,
+          "sha256": "27074e33f3068bf411c4bc65d1a55b005cf31d005a6644f65117ce2d3829c46c"
+        },
+        {
+          "file": "narrow-home-t016.2s.png",
+          "t_s": 16.2,
+          "sha256": "6a3d730381a1096adc7e102af5536f27daba0da5b846f2f2ccc804c32a32f36e"
+        },
+        {
+          "file": "narrow-home-t019.3s.png",
+          "t_s": 19.3,
+          "sha256": "2200ccc4c9bbad759b70c6e357768cb4048f8b7000f1ff52e057950e139c2ad8"
+        },
+        {
+          "file": "narrow-home-t022.4s.png",
+          "t_s": 22.4,
+          "sha256": "8107935c8086a4abebe29384cc737c63ddd65ce1af56b9244ee9d8efbb7a6dc1"
+        }
+      ],
+      "video": {
+        "file": "narrow-home.webm",
+        "bytes": 7269647,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "narrow-home-contact-sheet.png",
+        "sha256": "15f7bdcae12a9c059b23cd6e16a7fdf9a1a32ab4f8f35e345e368fe24f9d4ee9"
+      }
+    }
+  ],
+  "problems": [],
+  "complete": true,
+  "discovered_same_origin_links": 0,
+  "inner_routes": [],
+  "elapsed_s": 292,
+  "runtime": {
+    "node": "v26.3.0",
+    "browser": "C:\\Users\\motty\\AppData\\Local\\Packages\\Claude_pzs8sxrjxfjjc\\LocalCache\\Local\\ms-playwright\\chromium-1228\\chrome-win64\\chrome.exe",
+    "tool_sha256": "46691caec22c743794060bf174a63b523e37c1091ffbd2712835a533614a7b95"
+  }
+}

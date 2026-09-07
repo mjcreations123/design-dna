@@ -2,12 +2,15 @@
 
 > **13.0.0:** the workflow is now study, plan, build, check with two commands,
 > `scripts/study_reference.mjs` and `scripts/check_build.mjs`; see `skills/design-dna/SKILL.md`.
+> **13.3.0:** `check_build.mjs` prints five lines (CHECK (automated), FUNCTIONAL, REVIEW,
+> EVIDENCE, APPROVAL) and has an `--early` look; studies record observation gaps, drivers and
+> a sampled visible ground. Passing measurements never substitute for looking.
 > Everything below about observe_reference, record_reference, state contracts,
 > route manifests and gate.py describes the retained 12.x machinery, which is
 > not part of the workflow.
 
 
-This guide describes the `13.2.0` development candidate. The version label is
+This guide describes the `13.3.0` development candidate. The version label is
 source identity, not release qualification; see the compatibility matrix and
 release procedure for current evidence.
 

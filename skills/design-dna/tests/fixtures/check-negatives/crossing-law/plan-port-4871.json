@@ -1,0 +1,250 @@
+{
+  "project": "Crossing Law, fictional scooter collision practice",
+  "workflow": "Installed four-step Design DNA workflow, retried 2026-09-06; legacy gate records retained as history only",
+  "references": [
+    {
+      "id": "herzog",
+      "url": "https://herzog.law/",
+      "source": "minimal-gallery; hand-picked editorial listing https://minimal.gallery/herzog-law/; live canonical gallery verified during this run",
+      "signature": "The oversized wordmark gives way to service panels that hold their headings while pale layers scroll over one another above sculptural metal imagery.",
+      "signature_mechanisms": [
+        "pinned",
+        "parallax",
+        "reveal"
+      ],
+      "take": [
+        "dominant opening composition and narrow recomposition",
+        "24px rounded white opening with left text and right vertical navigation",
+        "24px body and 88px section heading",
+        "pinned layered practice panels",
+        "sculptural metal image with scroll parallax",
+        "compact dark floating menu and opacity reveal",
+        "coral, pale gray, white and dark red relationship"
+      ],
+      "sheet": ".design-dna/references/herzog/sheet.md",
+      "source_id": "minimal-gallery"
+    },
+    {
+      "id": "hafnia",
+      "url": "https://hafnialaw.com/",
+      "source": "awwwards; Honorable Mention February 9 2024 https://www.awwwards.com/sites/hafnia-law",
+      "signature": "The large off-center photographs set a quiet reading pace, with short copy alongside and open space preserving the images' scale.",
+      "signature_mechanisms": [],
+      "take": [
+        "asymmetric image-and-copy reading section from home about/left-image and observed people inner page",
+        "measured pale gray ground",
+        "unpadded rectangular photographic crop with caption below"
+      ],
+      "sheet": ".design-dna/references/hafnia/sheet.md",
+      "capture_limit": "Home recording contains consent overlay. Unobstructed inner page captures and supplementary live inspection supply photo composition; no cookie UI or unmeasured home motion is transferred.",
+      "source_id": "awwwards"
+    },
+    {
+      "id": "grace",
+      "url": "https://www.gracewalker.ca/",
+      "source": "minimal-gallery; editor-selected listing https://minimal.gallery/grace-walker/; canonical gallery currently reachable",
+      "signature": "A horizontal row of tall rounded reading panels holds short introductions, then reveals the longer text inside a panel when its plus control is pressed.",
+      "signature_mechanisms": [],
+      "take": [
+        "496px tall horizontal reading panels with next panel visible",
+        "24px corners and 32px interior spacing",
+        "48px round plus/minus control",
+        "panel-local expanded copy with 0.2s opacity response",
+        "touch horizontal scrolling"
+      ],
+      "sheet": ".design-dna/references/grace/sheet.md",
+      "capture_limit": "Automated vertical wheel pass does not traverse horizontal strip. Plus interaction and strip were additionally inspected live; no scroll mechanism is claimed for this source.",
+      "source_id": "minimal-gallery"
+    },
+    {
+      "id": "noah",
+      "url": "https://noahstokes.com/",
+      "source": "minimal-gallery; editor-selected listing https://minimal.gallery/noah-stokes/; canonical gallery currently reachable",
+      "signature": "The large name and introduction set a two-column lead beside a narrower information rail, then a dense set of plain text links closes the page without cards.",
+      "signature_mechanisms": [],
+      "take": [
+        "12-column information composition with two-column lead and right rail",
+        "18px links and 20px supporting headings",
+        "dark closing reading section with plain links",
+        "single-column mobile ordering",
+        "0.3s color hover response"
+      ],
+      "sheet": ".design-dna/references/noah/sheet.md",
+      "source_id": "minimal-gallery"
+    }
+  ],
+  "typefaces": [
+    {
+      "family": "Hanken Grotesk",
+      "from": "herzog",
+      "matched_for": "NeueMontreal",
+      "record": ".design-dna/typeface-match.json",
+      "license": "assets/fonts/OFL.txt",
+      "match_record": ".design-dna/typeface-match.json"
+    },
+    {
+      "family": "NotoSerif",
+      "from": "hafnia",
+      "role": "serif suffix on the source-mapped typographic masthead",
+      "license": "assets/fonts/Noto-OFL.txt"
+    }
+  ],
+  "ground": {
+    "color": "rgb(75, 17, 13)",
+    "from": "herzog"
+  },
+  "routes": [
+    {
+      "url": "http://127.0.0.1:4871/",
+      "name": "home",
+      "dominant": "herzog",
+      "mechanisms": [
+        "pinned",
+        "parallax",
+        "reveal"
+      ],
+      "sections": [
+        {
+          "selector": ".opening",
+          "reference": "herzog",
+          "takes": "Fictional subject copy replaces source copy. A large typographic Crossing Law name replaces the source brand artwork; no copied logo."
+        },
+        {
+          "selector": ".opening-nav, .menu-button, .menu-panel",
+          "reference": "herzog",
+          "takes": "Existing page anchors only. Visible fiction disclosure occupies source language utility position."
+        },
+        {
+          "selector": ".metal-study",
+          "reference": "herzog",
+          "takes": "Generated illustrative scooter metal replaces source chain imagery; image moves at a different scroll rate underneath practice panels."
+        },
+        {
+          "selector": ".practice, .practice-panel",
+          "reference": "herzog",
+          "takes": "Three actual subject categories: rental operations, scooter design, and the impact on the family. No decorative numbers. Desktop sticky layering becomes normal flow on narrow screens as in source."
+        },
+        {
+          "selector": ".family-section",
+          "reference": "hafnia",
+          "takes": "Fictional street illustration and short parent-focused text replace lawyer photography. Source asymmetry and reading pace retained; dominant type system retained."
+        },
+        {
+          "selector": ".question-strip, .question-card",
+          "reference": "grace",
+          "takes": "Question/answer faces use the dominant reference's pale gray and dark red to remain coherent. No fake testimonial or professional advice. Each card represents one reader question."
+        },
+        {
+          "selector": ".closing",
+          "reference": "noah",
+          "takes": "Source information grid and simple links; colors and one typeface inherited from dominant source. Fictional disclosure replaces real contact data."
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "target": ".opening",
+      "from": "herzog",
+      "source": "wide-home-first-screen.png and narrow-home-first-screen.png",
+      "values": {
+        "margin": "12px",
+        "radius": "24px",
+        "widePadding": "36px",
+        "narrowPadding": "12px",
+        "bodySize": "24px",
+        "ink": "rgb(245,105,85)",
+        "ground": "rgb(255,255,255)"
+      },
+      "adaptation": "Fictional subject copy replaces source copy. A large typographic Crossing Law name replaces the source brand artwork; no copied logo."
+    },
+    {
+      "target": ".opening-nav, .menu-button, .menu-panel",
+      "from": "herzog",
+      "values": {
+        "wideNav": "24px / 32px",
+        "compactControl": "60px",
+        "dark": "rgb(75,17,13)",
+        "reveal": "opacity 0.3s"
+      },
+      "adaptation": "Existing page anchors only. Visible fiction disclosure occupies source language utility position."
+    },
+    {
+      "target": ".metal-study",
+      "from": "herzog",
+      "values": {
+        "ground": "rgb(235,237,238)",
+        "fullWidth": true
+      },
+      "adaptation": "Generated illustrative scooter metal replaces source chain imagery; image moves at a different scroll rate underneath practice panels."
+    },
+    {
+      "target": ".practice, .practice-panel",
+      "from": "herzog",
+      "values": {
+        "heading": "88px / 90.024px",
+        "body": "24px / 28.008px",
+        "radius": "0 0 24px 24px",
+        "grounds": [
+          "rgb(255,255,255)",
+          "rgb(245,246,246)",
+          "rgb(240,241,242)",
+          "rgb(230,231,232)"
+        ]
+      },
+      "adaptation": "Three actual subject categories: rental operations, scooter design, and the impact on the family. No decorative numbers. Desktop sticky layering becomes normal flow on narrow screens as in source."
+    },
+    {
+      "target": ".family-section",
+      "from": "hafnia",
+      "values": {
+        "padding": "80px 0 56px",
+        "outerGutter": "2.5vw",
+        "ground": "rgb(236,236,236)"
+      },
+      "adaptation": "Fictional street illustration and short parent-focused text replace lawyer photography. Source asymmetry and reading pace retained; dominant type system retained."
+    },
+    {
+      "target": ".question-strip, .question-card",
+      "from": "grace",
+      "values": {
+        "height": "496px",
+        "gap": "24px",
+        "radius": "24px",
+        "padding": "32px",
+        "toggle": "48px",
+        "response": "opacity 0.2s"
+      },
+      "adaptation": "Question/answer faces use the dominant reference's pale gray and dark red to remain coherent. No fake testimonial or professional advice. Each card represents one reader question."
+    },
+    {
+      "target": ".closing",
+      "from": "noah",
+      "values": {
+        "columns": "12",
+        "leadSpan": "8",
+        "railSpan": "4",
+        "links": "18px / 25px",
+        "supportHeadings": "20px / 24px",
+        "hover": "color 0.3s"
+      },
+      "adaptation": "Source information grid and simple links; colors and one typeface inherited from dominant source. Fictional disclosure replaces real contact data."
+    }
+  ],
+  "truth_boundary": "No real law firm, legal advice, legal intake, results, credentials, staff, or real accident portrayal. Local noindex demo. Generated photos labeled illustrative.",
+  "source_registry_note": "Registry's minimal-gallery entry is marked curated but has obsolete minimalgallery.com URL and a temporary DNS-unavailable note. This run verified its live canonical minimal.gallery directory, editorial policy and individual entries; no registry file changed.",
+  "review": "Source selection and visual evaluation by producing assistant, not independent or owner approval. All four packaged studies returned ok:true and problems:[]; capture limitations above remain explicit.",
+  "accessibility_adjustments": [
+    {
+      "target": ".opening-copy, .opening-nav, .demo-note, .practice-intro h2",
+      "from": "herzog",
+      "measured_issue": "rgb(245,105,85) on white has 2.985:1 contrast, below even the large-text threshold",
+      "change": "Use the same sheet's rgb(75,17,13) for reading text. Retain coral for the large identity wordmark and dark-ground control text."
+    }
+  ],
+  "motion_revision": {
+    "from": "herzog",
+    "reason": "First implementation stuck individual panels briefly without content moving through a held section; it did not reproduce the source's 2592-3888px holding sequence.",
+    "implementation": "A viewport-tall sticky practice stage holds for the source-measured 3888px of desktop scroll. Later pale panels move up together at their different slower rates, leaving prior titles exposed. The last panel and underlying stage use the source's dark red ground, matching its final network panel. The compact navigation sits above reserved header space. Phones and reduced-motion use normal reading flow. Covered panel links were removed so keyboard users cannot focus occluded controls."
+  }
+}

@@ -39,7 +39,7 @@ import { TAG_PROBES, SAMPLE_PROBES, deriveMechanisms, finalizeMechanisms, mechan
 import { collectSameOriginLinks } from "./browser_evidence.mjs";
 
 const TOOL = "study_reference.mjs";
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const VIEWPORTS = [
   { name: "wide", width: 1440, height: 900 },
   { name: "narrow", width: 390, height: 844 },
@@ -192,6 +192,8 @@ const LAYOUT = `(() => {
   return { sections: rows.slice(0, 40), header: header ? { position: hs.position, height: Math.round(hr.height), ground: hs.backgroundColor, links: header.querySelectorAll('a').length } : null,
     nav_links: nav ? [...nav.querySelectorAll('a')].slice(0, 20).map((a) => ({ text: a.textContent.trim().slice(0, 40), href: a.getAttribute('href') })) : [],
     overflow_x: { scroll_width: document.documentElement.scrollWidth, viewport: vw, overflows: document.documentElement.scrollWidth > vw + 1 },
+    horizontal_scrollers: [...document.querySelectorAll('body *')].filter((el) => { const cs = getComputedStyle(el); return /(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 40 && el.clientWidth >= vw * 0.4; }).slice(0, 6)
+      .map((el) => ({ tag: el.tagName.toLowerCase(), cls: (typeof el.className === 'string' ? el.className : '').trim().slice(0, 60), scroll_width: el.scrollWidth, client_width: el.clientWidth, top: Math.round(el.getBoundingClientRect().top + scrollY) })),
     inventory: {
       controls: document.querySelectorAll('a,button,[role=button],summary').length,
       menu_controls: [...document.querySelectorAll('button[aria-expanded],button[aria-haspopup],[aria-controls],.hamburger,.menu-toggle,.burger,[class*="menu-btn"],[class*="menu-button"],[class*="nav-toggle"]')].filter(visible).length,
@@ -238,6 +240,149 @@ const HOVER_SNAPSHOT = `((id) => {
   const s = getComputedStyle(el);
   return { rows, transition: s.transitionDuration + ' ' + s.transitionProperty, cursor: s.cursor };
 })`;
+
+/* Fixed or sticky layers big enough to obstruct a capture, and the consent
+   controls inside them. Only the permitted choices are ever pressed: reject,
+   decline, necessary-only, close. Accepting terms is the visitor's decision. */
+const OVERLAYS = `(() => {
+  const vw = innerWidth, vh = innerHeight; const kw = /cookie|consent|privacy|gdpr|accept|agree|tracking/i;
+  const transparent = (bg) => !bg || bg === 'transparent' || /rgba\\([^)]*,\\s*0\\s*\\)$/.test(bg);
+  const out = { overlays: [], buttons: [] };
+  for (const el of document.querySelectorAll('body *')) {
+    const cs = getComputedStyle(el); if (!/fixed|sticky/.test(cs.position)) continue;
+    if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.05) continue;
+    const r = el.getBoundingClientRect(); const share = (Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0)) * Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0))) / (vw * vh);
+    if (share < 0.08) continue;
+    const text = (el.innerText || '').replace(/\\s+/g, ' ').trim();
+    const consent = kw.test(text.slice(0, 600));
+    const bg = !transparent(cs.backgroundColor) || (cs.backgroundImage && cs.backgroundImage !== 'none');
+    const media = !!el.querySelector('img,video,canvas,picture,h1,h2');
+    if (!consent && r.top < 5 && r.height < 160) continue; // a sticky header is not an obstruction
+    if (!consent && !bg && !media && !text) continue; // an invisible layer covers nothing a visitor sees
+    out.overlays.push({ tag: el.tagName.toLowerCase(), cls: (typeof el.className === 'string' ? el.className : '').trim().slice(0, 60), share: +share.toFixed(2), consent, bg, media, text: text.slice(0, 120) });
+    if (consent) for (const b of el.querySelectorAll('button,a,[role=button],input[type=button],input[type=submit]')) {
+      let t = (b.textContent || b.value || b.getAttribute('aria-label') || '').replace(/\\s+/g, ' ').trim(); const br = b.getBoundingClientRect();
+      if (!t || br.width < 10 || br.height < 10) continue;
+      if (t.length % 2 === 0 && t.slice(0, t.length / 2) === t.slice(t.length / 2)) t = t.slice(0, t.length / 2); // a label rendered twice for a hover effect
+      out.buttons.push({ text: t.slice(0, 40), x: br.left + br.width / 2, y: br.top + br.height / 2 });
+    }
+  }
+  return out;
+})()`;
+const PERMITTED_CONSENT = /^\s*(reject|decline|refuse|deny|only (the )?(necessary|essential|required)|(necessary|essential|required)( cookies)? only|use (necessary|essential) only|no,? thanks|continue without|close|dismiss|\u2715|\u00d7|x)\b/i;
+
+export async function handleOverlays(page) {
+  let before = await bounded(page.evaluate(OVERLAYS), "overlays");
+  // A preloader or intro curtain covers everything for a moment; a click through it lands on the curtain.
+  for (let i = 0; i < 5 && before.overlays.some((o) => !o.consent && o.share >= 0.9 && o.text); i += 1) { await sleep(800); before = await bounded(page.evaluate(OVERLAYS), "overlays"); }
+  if (before.overlays.some((o) => o.consent) && !before.buttons.length) { await sleep(900); before = await bounded(page.evaluate(OVERLAYS), "overlays"); }
+  const result = { overlays_at_load: before.overlays, consent_found: before.overlays.some((o) => o.consent), dismissed: false, via: null, remaining: before.overlays, choices_seen: before.buttons.map((b) => b.text).slice(0, 8) };
+  if (!result.consent_found) return result;
+  const choice = before.buttons.find((b) => PERMITTED_CONSENT.test(b.text.trim()));
+  if (choice) {
+    try {
+      await bounded(page.mouse.click(choice.x, choice.y), "consent-click", 10_000);
+      let after = null;
+      for (let i = 0; i < 4; i += 1) { await sleep(700); after = await bounded(page.evaluate(OVERLAYS), "overlays"); if (!after.overlays.some((o) => o.consent && o.share >= 0.02)) break; }
+      result.remaining = after.overlays;
+      result.dismissed = !after.overlays.some((o) => o.consent && o.share >= 0.02);
+      result.via = choice.text;
+    } catch (error) { result.error = String(error?.message || error).slice(0, 120); }
+  } else {
+    result.only_choices = before.buttons.map((b) => b.text).slice(0, 8);
+  }
+  return result;
+}
+
+/* What moves on its own: two samples at rest, 1.2 s apart. Anything that
+   changed is time-driven (autoplay, ambient loops, carousels), which is a
+   different experience from a scroll-driven or pointer-driven change. */
+export async function restPass(page) {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await sleep(300);
+  await bounded(page.evaluate(TAG_PROBES), "tag-probes");
+  const a = await bounded(page.evaluate(SAMPLE_PROBES), "sample-probes");
+  await sleep(1200);
+  const b = await bounded(page.evaluate(SAMPLE_PROBES), "sample-probes");
+  const changed = [];
+  for (const [id, ea] of Object.entries(a.els || {})) {
+    const eb = b.els?.[id]; if (!eb) continue;
+    if (JSON.stringify(ea) !== JSON.stringify(eb)) changed.push({ tag: eb.tag, cls: eb.cls, w: eb.w, h: eb.h });
+  }
+  return { time_driven: changed.slice(0, 40), count: changed.length, interval_ms: 1200 };
+}
+export function annotateDrivers(mechanisms, rest) {
+  const timeKeys = new Set((rest?.time_driven || []).map((e) => `${e.tag}.${String(e.cls || "").split(/\s+/)[0] || ""}`));
+  return (mechanisms || []).map((m) => {
+    const key = `${m.tag}.${String(m.cls || "").split(/\s+/)[0] || ""}`;
+    const driver = m.type === "pointer-follow" ? "pointer" : timeKeys.has(key) ? "time" : "scroll";
+    return { ...m, driver };
+  });
+}
+
+/* Visible ground by sampling: elementFromPoint on a 16x10 grid at ten scroll
+   positions, walking up to the first painted background. Media (images,
+   video, canvas, background images) is its own bucket. Overlapping rectangles
+   cannot double count here, so the shares add up to 100%. */
+const GROUND_SAMPLE = `(() => {
+  const vw = innerWidth, vh = innerHeight, cols = 16, rows = 10; const counts = {}; let total = 0;
+  const transparent = (bg) => !bg || bg === 'transparent' || /rgba\\([^)]*,\\s*0\\s*\\)$/.test(bg);
+  for (let i = 0; i < cols; i += 1) for (let j = 0; j < rows; j += 1) {
+    const x = Math.round((i + 0.5) * vw / cols), y = Math.round((j + 0.5) * vh / rows);
+    let n = document.elementFromPoint(x, y); if (!n) continue; total += 1;
+    let color = null;
+    while (n && n !== document.documentElement) {
+      if (/^(IMG|VIDEO|CANVAS|PICTURE|SVG)$/.test(n.tagName)) { color = 'media'; break; }
+      const cs = getComputedStyle(n);
+      if (cs.backgroundImage && cs.backgroundImage !== 'none' && !/gradient/.test(cs.backgroundImage)) { color = 'media'; break; }
+      if (!transparent(cs.backgroundColor)) { color = cs.backgroundColor; break; }
+      n = n.parentElement;
+    }
+    if (!color) { const b = getComputedStyle(document.body).backgroundColor; color = transparent(b) ? getComputedStyle(document.documentElement).backgroundColor : b; if (transparent(color)) color = 'rgb(255, 255, 255)'; }
+    counts[color] = (counts[color] || 0) + 1;
+  }
+  return { total, counts, y: scrollY, docH: document.documentElement.scrollHeight };
+})()`;
+export async function groundSample(page, viewport, positions = 16) {
+  const counts = {}; let total = 0; let visited = 0;
+  const docH = await page.evaluate(() => document.documentElement.scrollHeight).catch(() => viewport.height);
+  const maxY = Math.max(0, docH - viewport.height);
+  let lastY = -1;
+  for (let k = 0; k < positions; k += 1) {
+    const y = Math.round((maxY * k) / Math.max(1, positions - 1));
+    try {
+      await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: "auto" }), y);
+      await sleep(250);
+      let sample = await bounded(page.evaluate(GROUND_SAMPLE), "ground-sample");
+      if (sample.y === lastY && k > 0) { // a smooth-scroll library ignored scrollTo; move the wheel instead
+        await page.mouse.wheel(0, Math.round(maxY / Math.max(1, positions - 1))); await sleep(350);
+        sample = await bounded(page.evaluate(GROUND_SAMPLE), "ground-sample");
+      }
+      lastY = sample.y; visited += 1;
+      for (const [c, n] of Object.entries(sample.counts)) counts[c] = (counts[c] || 0) + n; total += sample.total;
+    } catch (error) { if (error?.code === "browser-call-timeout") throw error; }
+  }
+  const rows = Object.entries(counts).map(([color, n]) => ({ color, samples: n, share: +(n / Math.max(1, total)).toFixed(3) })).sort((a, b) => b.samples - a.samples);
+  const media = rows.find((r) => r.color === "media");
+  return { method: `elementFromPoint on a 16x10 grid at ${visited} scroll positions; media is its own bucket; shares sum to 1`, positions: visited, samples: total,
+    media_share: media ? media.share : 0, grounds: rows.filter((r) => r.color !== "media").slice(0, 10) };
+}
+
+/* Where a two-minute capture is not a study: say so, per page. */
+export function observationGaps(record) {
+  const gaps = [];
+  const ov = record.overlays;
+  if (ov?.consent_found && !ov.dismissed) gaps.push({ code: "consent-overlay", message: `a consent overlay covered ${Math.round(Math.max(...ov.overlays_at_load.filter((o) => o.consent).map((o) => o.share)) * 100)}% of the first screen and ${ov.via ? `stayed after "${ov.via}" was pressed` : `offered no permitted way to decline (${(ov.choices_seen || []).join(", ") || "no buttons found"})`}; the first screen, design probes and recording are obstructed` });
+  for (const o of (ov?.remaining || []).filter((o) => !o.consent && o.share >= 0.12 && !(o.share >= 0.85 && o.media))) gaps.push({ code: "overlay-at-rest", message: `a fixed layer ${o.tag}${o.cls ? "." + o.cls.split(" ")[0] : ""} covers ${Math.round(o.share * 100)}% of the viewport at rest ("${o.text.slice(0, 60)}"); what sits under it was not read` });
+  const shas = (record.frames || []).map((f) => f.sha256).filter(Boolean);
+  if (shas.length >= 4) {
+    let repeats = 0; for (let i = 1; i < shas.length; i += 1) if (shas[i] === shas[i - 1]) repeats += 1;
+    if (repeats / (shas.length - 1) >= 0.5) gaps.push({ code: "frames-repeat", message: `${repeats} of ${shas.length - 1} consecutive scroll-through frames are identical; the page did not travel with the wheel (smooth-scroll library, overlay, or a page shorter than the viewport). The recording is not evidence of its scroll experience` });
+  }
+  for (const h of record.layout?.horizontal_scrollers || []) gaps.push({ code: "horizontal-untraversed", message: `a horizontal scroller ${h.tag}${h.cls ? "." + h.cls.split(" ")[0] : ""} (${h.scroll_width}px inside ${h.client_width}px, at ${h.top}px) was never traversed; the vertical wheel pass cannot read it` });
+  if (record.status && record.status >= 300 && record.status < 400) gaps.push({ code: "redirected", message: `HTTP ${record.status}: the page redirected; the studied URL is ${record.final_url}` });
+  return gaps;
+}
 
 /* ------------------------------------------------------------------ study */
 
@@ -392,18 +537,30 @@ export async function studyPage(browser, url, viewport, options) {
     const first = await bounded(page.screenshot(), "first-screen", 60_000);
     record.first_screen = { file: `${prefix}-first-screen.png`, sha256: sha(first) };
     fs.writeFileSync(path.join(frameDir, record.first_screen.file), first);
+    // Consent: decline through a permitted choice when one is offered; never accept for the visitor.
+    record.overlays = await handleOverlays(page);
+    if (record.overlays.dismissed) {
+      const clear = await bounded(page.screenshot(), "first-screen-clear", 60_000);
+      record.first_screen_clear = { file: `${prefix}-first-screen-clear.png`, sha256: sha(clear) };
+      fs.writeFileSync(path.join(frameDir, record.first_screen_clear.file), clear);
+    }
     record.design = await bounded(page.evaluate(DESIGN_SYSTEM), "design-system");
     record.layout = await bounded(page.evaluate(LAYOUT), "layout");
     if (full) {
       // Hover first, at rest on the first screen: a smooth-scroll library can
       // ignore window.scrollTo after a traversal and leave the page elsewhere.
       record.hover = await hoverProbe(page);
+      record.at_rest = await restPass(page);
       record.motion = await motionPass(page, viewport);
       record.animations_by_depth = await animationsByDepth(page);
     } else {
+      record.at_rest = await restPass(page);
       record.motion = await motionPass(page, viewport);
     }
+    if (record.motion) record.motion.mechanisms = annotateDrivers(record.motion.mechanisms, record.at_rest);
+    record.ground_sampled = await groundSample(page, viewport);
     if (videoSeconds) record.frames = await scrollThrough(page, viewport, videoSeconds, frameDir, prefix);
+    record.observation_gaps = observationGaps(record);
     record.ok = true;
   } catch (error) {
     record.problems.push({ code: error?.code || "study-page-failed", message: String(error?.message || error).slice(0, 300) });
@@ -447,8 +604,17 @@ export function sheet(study) {
   const d = w?.design || {};
   const lines = [];
   lines.push(`# Reference sheet: ${study.url}`, "", `Studied ${study.studied_at} by ${TOOL} (schema ${SCHEMA_VERSION}). Every number below was read from the live site; nothing here was typed by hand.`, "");
-  lines.push("## Ground and ink (measured by painted area)");
-  for (const g of d.grounds || []) lines.push(`- ground ${g.color}: ${(g.area_share * 100).toFixed(1)}% of the painted page across ${g.elements} elements`);
+  lines.push("## Ground and ink");
+  if (w?.ground_sampled?.grounds?.length) {
+    lines.push(`Visible ground, sampled (${w.ground_sampled.method}):`);
+    for (const g of w.ground_sampled.grounds) lines.push(`- ground ${g.color}: ${(g.share * 100).toFixed(1)}% of sampled points`);
+    lines.push(`- media (photographs, video, canvas, background images): ${(w.ground_sampled.media_share * 100).toFixed(1)}% of sampled points`);
+    if (n?.ground_sampled?.grounds?.length) lines.push(`- narrow, sampled: ${n.ground_sampled.grounds.slice(0, 3).map((g) => `${g.color} ${(g.share * 100).toFixed(0)}%`).join("; ")}; media ${(n.ground_sampled.media_share * 100).toFixed(0)}%`);
+    lines.push("Stacked-rectangle estimate (viewport-clipped element boxes summed; overlapping layers double count, so this can exceed 100% and is NOT visible area):");
+  } else {
+    lines.push("Stacked-rectangle estimate (viewport-clipped element boxes summed; overlapping layers double count, so this can exceed 100% and is NOT visible area; re-study for the sampled figure):");
+  }
+  for (const g of d.grounds || []) lines.push(`- ${g.color}: ${(g.area_share * 100).toFixed(1)}% of summed boxes across ${g.elements} elements`);
   for (const i of d.inks || []) lines.push(`- text ${i.color} (weight ${i.weight})`);
   lines.push("", "## Typefaces (as computed; the file that serves each is in study.json face_sources)");
   for (const f of d.fonts || []) lines.push(`- ${f.family}: ${f.characters} characters set in it`);
@@ -466,8 +632,11 @@ export function sheet(study) {
     for (const m of p.motion?.mechanisms || []) { const g = byType.get(m.type) || []; g.push(m); byType.set(m.type, g); }
     for (const [type, group] of byType) {
       const examples = group.slice(0, 2).map((m) => `${m.tag || ""}${m.cls ? "." + String(m.cls).split(" ")[0] : ""}`).filter(Boolean).join(", ");
-      lines.push(`- ${type} x${group.length}${examples ? ` (${examples})` : ""}: ${group[0].detail || ""}`);
+      const drivers = [...new Set(group.map((m) => m.driver).filter(Boolean))].join("/");
+      lines.push(`- ${type} x${group.length}${examples ? ` (${examples})` : ""}${drivers ? ` [driver: ${drivers}]` : ""}: ${group[0].detail || ""}`);
     }
+    if (p.at_rest) lines.push(`- moves on its own at rest (time-driven, ${p.at_rest.interval_ms} ms apart): ${p.at_rest.count ? p.at_rest.time_driven.slice(0, 4).map((e) => `${e.tag}${e.cls ? "." + String(e.cls).split(" ")[0] : ""}`).join(", ") + (p.at_rest.count > 4 ? ` and ${p.at_rest.count - 4} more` : "") : "nothing"}; a scroll-driven change and an autoplay change are different experiences, copy the one the reference has`);
+    if (p.overlays?.consent_found) lines.push(`- consent overlay: ${p.overlays.dismissed ? `declined via "${p.overlays.via}"; design probes ran on the clear page (first screen also saved as ${p.first_screen_clear?.file})` : `present and NOT dismissed (${p.overlays.via ? `"${p.overlays.via}" was pressed and the panel stayed` : "no permitted decline offered"}); this page's first screen and recording are obstructed`}`);
     if (p.animations_by_depth) lines.push(`- Web Animations running by depth: ${p.animations_by_depth.map((a) => `${Math.round(a.depth * 100)}%:${a.count}`).join("  ")}`);
     if (p.hover) lines.push(`- hover: ${p.hover.responded} of ${p.hover.probed} probed controls responded; transitions: ${[...new Set(p.hover.rows.filter((r) => r.responded).map((r) => r.transition))].slice(0, 4).join("; ") || "none"}`);
     if (p.video) lines.push(`- scroll-through video: videos/${p.video.file} (${p.video.seconds}s); contact sheet: ${p.contact_sheet?.file || "n/a"}`);
@@ -492,6 +661,10 @@ export function sheet(study) {
     lines.push(`- ${p.role} ${p.viewport} ${p.url}: ${p.ok ? "ok" : "NOT STUDIED"}${p.status ? ` (HTTP ${p.status})` : ""}; ${cov}${p.hover ? `; ${p.hover.probed} controls hovered` : ""}${ov}`);
   }
   if (study.inner_pages) lines.push(`- inner pages: ${study.inner_pages.studied_ok} studied of ${study.inner_pages.requested} requested, ${study.inner_pages.discovered} discovered${study.inner_pages.failed.length ? `, failed: ${study.inner_pages.failed.join(", ")}` : ""}`);
+  if (study.observation_gaps?.length) {
+    lines.push("", "## Observation gaps (a successful capture is not an adequate study; inspect these by hand before copying them)");
+    for (const g of study.observation_gaps) lines.push(`- ${g.page} ${g.viewport || ""}: ${g.code}: ${g.message}`);
+  }
   if (study.not_studied?.length) { lines.push("", "## Not studied (needs eyes or a second run if it matters)"); for (const n of study.not_studied) lines.push(`- ${n}`); }
   if (study.problems.length) { lines.push("", "## Problems"); for (const p of study.problems) lines.push(`- ${p.page || ""} ${p.viewport || ""}: ${p.code}: ${p.message}`); }
   return lines.join("\n") + "\n";
@@ -564,6 +737,9 @@ async function main() {
     ns.push(`inner pages: ${innerOk} studied of ${args.inner} requested (${inner.length} discovered); pages beyond those were not read`);
     ns.push("page transitions, cursor-follow content, sound and load sequences longer than 2.5 s were not read");
     study.not_studied = ns;
+    study.observation_gaps = [];
+    for (const p of study.pages) for (const g of p.observation_gaps || []) study.observation_gaps.push({ page: p.role === "primary" ? "home" : p.url, viewport: p.viewport, ...g });
+    for (const f of innerFailed) study.observation_gaps.push({ page: f, code: "inner-page-not-studied", message: "this inner page did not load or could not be read" });
   } finally {
     await Promise.race([browser.close(), sleep(15_000)]).catch(() => {});
   }
@@ -572,7 +748,7 @@ async function main() {
   fs.writeFileSync(path.join(outDir, "study.json"), JSON.stringify(study, null, 2) + "\n");
   fs.writeFileSync(path.join(outDir, "sheet.md"), sheet(study));
   const summary = { ok: study.complete, id: args.id, out: outDir, elapsed_s: study.elapsed_s, pages: study.pages.map((p) => ({ url: p.url, viewport: p.viewport, role: p.role, ok: p.ok,
-    mechanisms: p.motion?.distinct_mechanisms ?? null, video: p.video?.file || null, contact_sheet: p.contact_sheet?.file || null })), inner_pages: study.inner_pages || null, not_studied: study.not_studied || [], problems: study.problems };
+    mechanisms: p.motion?.distinct_mechanisms ?? null, video: p.video?.file || null, contact_sheet: p.contact_sheet?.file || null })), inner_pages: study.inner_pages || null, observation_gaps: study.observation_gaps || [], not_studied: study.not_studied || [], problems: study.problems };
   process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
   if (!study.complete) process.exitCode = 1;
 }

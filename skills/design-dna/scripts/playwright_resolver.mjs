@@ -272,6 +272,11 @@ function systemBrowserCandidates() {
 
 /** Resolve but do not launch a Chromium-family browser. */
 export function discoverBrowserExecutable(playwright, explicitPath = null) {
+  // Owner directive, 2026-09-07 (Motty): use the installed Google Chrome, never
+  // Playwright's bundled "Chrome for Testing", which overloaded his machine.
+  // Order: an explicit path, DESIGN_DNA_BROWSER_EXECUTABLE, the system browser,
+  // and only then a bundled Chromium.
+  explicitPath = explicitPath || process.env.DESIGN_DNA_BROWSER_EXECUTABLE || null;
   if (explicitPath) {
     if (!path.isAbsolute(explicitPath) || !isFile(explicitPath)) {
       throw new PlaywrightResolutionError(
@@ -282,17 +287,30 @@ export function discoverBrowserExecutable(playwright, explicitPath = null) {
     }
     return { path: realFile(explicitPath), source: "explicit", name: path.basename(explicitPath) };
   }
-  try {
-    const bundled = playwright?.chromium?.executablePath?.();
-    if (bundled && isFile(bundled)) {
-      return { path: realFile(bundled), source: "playwright", name: "chromium" };
-    }
-  } catch {
-    // A valid playwright-core module may not carry a browser; try existing system browsers.
-  }
   for (const candidate of systemBrowserCandidates()) {
     if (isFile(candidate.path)) {
       return { path: realFile(candidate.path), source: "system-discovery", name: candidate.name };
+    }
+  }
+  // Owner order, 2026-09-07 (Motty): "Make sure you never use that ever again without my
+  // explicit permission. USE THE REGULAR CHROME." The bundled build is used only when
+  // DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1 is set for that run.
+  if (process.env.DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM === "1") {
+    try {
+      const bundled = playwright?.chromium?.executablePath?.();
+      if (bundled && isFile(bundled)) return { path: realFile(bundled), source: "playwright", name: "chromium" };
+    } catch {
+      // A valid playwright-core module may not carry a browser.
+    }
+  } else {
+    let bundled = null;
+    try { bundled = playwright?.chromium?.executablePath?.(); } catch { bundled = null; }
+    if (bundled && isFile(bundled)) {
+      throw new PlaywrightResolutionError(
+        "bundled-chromium-forbidden",
+        "No installed Google Chrome or Microsoft Edge was found, and the bundled Playwright Chromium (Chrome for Testing) is not used without the owner's explicit permission for this run (DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1). Install Chrome or pass --browser-executable.",
+        { bundled },
+      );
     }
   }
   throw new PlaywrightResolutionError(

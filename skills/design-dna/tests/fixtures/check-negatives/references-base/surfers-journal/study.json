@@ -1,0 +1,6255 @@
+{
+  "schema_version": 1,
+  "tool": "study_reference.mjs",
+  "id": "surfers-journal",
+  "url": "https://archives.surfersjournal.com/",
+  "studied_at": "2026-09-07T00:45:32.325Z",
+  "pages": [
+    {
+      "url": "https://archives.surfersjournal.com/",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/",
+      "first_screen": {
+        "file": "wide-home-first-screen.png",
+        "sha256": "7fc2f8636a1ae8b19545180c0fc643a01ce2cb879a9c4d9e4746ab08c111100b"
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 900
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 164, 0)",
+            "area_share": 1.218,
+            "elements": 2
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 1,
+            "elements": 2
+          },
+          {
+            "color": "rgb(252, 232, 241)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(150, 145, 108)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(255, 248, 163)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(174, 193, 206)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(242, 222, 183)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(102, 129, 184)",
+            "area_share": 1,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 1228
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 280
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 9
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Issues",
+            "characters": 37
+          },
+          {
+            "role": "control",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "All (187)",
+            "characters": 9
+          },
+          {
+            "role": "display",
+            "family": "Practice",
+            "size": 56,
+            "weight": "400",
+            "line_height": "56px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "2026",
+            "characters": 8
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "22px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          }
+        ],
+        "radii": [],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+            "elements": 2
+          }
+        ],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 186
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Issues",
+            "w": 48,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Collections",
+            "w": 92,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Search",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 256,
+            "h": 21,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 59,
+            "h": 56,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.4 from 2026",
+            "w": 484,
+            "h": 585,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.3 from 2026",
+            "w": 484,
+            "h": 585,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgb(255, 164, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.2 from 2026",
+            "w": 484,
+            "h": 585,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgb(139, 214, 230)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "All (187)",
+            "w": 64,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 374,
+          "svg": 3
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "issues-stage",
+            "id": "issues-stage",
+            "top": 0,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 187,
+            "videos": 0,
+            "links": 187,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "hover": {
+        "probed": 7,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "a Issues",
+            "w": 48,
+            "h": 24,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Collections",
+            "w": 92,
+            "h": 24,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Search",
+            "w": 54,
+            "h": 24,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Home",
+            "w": 256,
+            "h": 21,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "button Library",
+            "w": 59,
+            "h": 56,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0.15s color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Open Issue 35.4 from 2026",
+            "w": 484,
+            "h": 585,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "button All (187)",
+            "w": 64,
+            "h": 24,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 3,
+        "scroll_windows_active": 3,
+        "scroll_windows": 3,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "pinned": 4,
+          "reveal": 4
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "issue-number-wrapper",
+            "w": 467,
+            "h": 56,
+            "initial_top": 824,
+            "sample": "35.4",
+            "content_travels_through": false,
+            "held_ticks": 3,
+            "held_px": 1664,
+            "swaps_while_held": 2,
+            "detail": "held still in the viewport for 1664px of scroll while its content changed 2 time(s)"
+          },
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "issues-scroller lenis",
+            "w": 1440,
+            "h": 900,
+            "initial_top": 0,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1664,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1664px of scroll"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "issue issue-1 grid-layout",
+            "w": 1440,
+            "h": 900,
+            "initial_top": 0,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "issue issue-3 grid-layout",
+            "w": 1440,
+            "h": 900,
+            "initial_top": 1800,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "a",
+            "cls": "issue-link js-scroll-show",
+            "w": 484,
+            "h": 585,
+            "initial_top": 158,
+            "sample": "",
+            "opacity_from": 1,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.2,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.4,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.6,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.8,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 1,
+          "count": 0,
+          "sample": []
+        }
+      ],
+      "frames": [
+        {
+          "file": "wide-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "b053333de1a4ab3fa34d6e0bfd53c7cbcc945a1b4c186a26a1fe82b8a50cdb28"
+        },
+        {
+          "file": "wide-home-t004.1s.png",
+          "t_s": 4.1,
+          "sha256": "ca9cf9ab5d1e7e942267a59556748c0c7cc2982450dc4db3c91b15dc0c911442"
+        },
+        {
+          "file": "wide-home-t008.3s.png",
+          "t_s": 8.3,
+          "sha256": "533dabd6ddf98cd98cf5803bf1f4749632f77a6fc707391d130f8bf22de8b4f1"
+        },
+        {
+          "file": "wide-home-t012.0s.png",
+          "t_s": 12,
+          "sha256": "8a5016e6423c2645581b0ffaeef2b498f67057cd803da96fe01fef61d242bbdc"
+        },
+        {
+          "file": "wide-home-t015.4s.png",
+          "t_s": 15.4,
+          "sha256": "e82de8c1b00d52a873325efb30664bf81fcb5987bf4432565ecb3e52c3027149"
+        },
+        {
+          "file": "wide-home-t018.7s.png",
+          "t_s": 18.7,
+          "sha256": "0df07f560da8ac378df85d789ebe9a917011899aea182ec3327f5cf30f54bd32"
+        },
+        {
+          "file": "wide-home-t022.2s.png",
+          "t_s": 22.2,
+          "sha256": "79c45db092c5e7a69bfbf2088e0717580a7cb1c02656a593a3fdc56a92daab42"
+        },
+        {
+          "file": "wide-home-t026.2s.png",
+          "t_s": 26.2,
+          "sha256": "b31a9773f66e2204b9d939c1ae38e978d65a3a070a417f5a82bc9997500fb148"
+        }
+      ],
+      "video": {
+        "file": "wide-home.webm",
+        "bytes": 6050166,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "wide-home-contact-sheet.png",
+        "sha256": "09ea2557bcea05afa4cd1b4f0e5b6b6505b3e90d4a645583b8399788676f178d"
+      }
+    },
+    {
+      "url": "https://archives.surfersjournal.com/",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/",
+      "first_screen": {
+        "file": "narrow-home-first-screen.png",
+        "sha256": "7f02717ffdb64b65c9d259c498162753fcda2a085fe60e7c4bd9548e2427495f"
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 844
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 164, 0)",
+            "area_share": 1.268,
+            "elements": 2
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 1,
+            "elements": 2
+          },
+          {
+            "color": "rgb(252, 232, 241)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(150, 145, 108)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(255, 248, 163)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(174, 193, 206)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(242, 222, 183)",
+            "area_share": 1,
+            "elements": 1
+          },
+          {
+            "color": "rgb(102, 129, 184)",
+            "area_share": 1,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 640
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 224
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 7
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Menu",
+            "characters": 18
+          },
+          {
+            "role": "control",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "All (187)",
+            "characters": 9
+          },
+          {
+            "role": "display",
+            "family": "Practice",
+            "size": 40,
+            "weight": "400",
+            "line_height": "40px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "2026",
+            "characters": 8
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          }
+        ],
+        "radii": [],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+            "elements": 2
+          }
+        ],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 186
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "button",
+            "text": "Menu",
+            "w": 38,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 40,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 47,
+            "h": 50,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 44,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.4 from 2026",
+            "w": 270,
+            "h": 329,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.3 from 2026",
+            "w": 270,
+            "h": 326,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgb(255, 164, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Open Issue 35.2 from 2026",
+            "w": 270,
+            "h": 326,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgb(139, 214, 230)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "All (187)",
+            "w": 52,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 374,
+          "svg": 3
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "issues-stage",
+            "id": "issues-stage",
+            "top": 0,
+            "height": 844,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": null,
+            "text_chars": 0,
+            "images": 187,
+            "videos": 0,
+            "links": 187,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "hover": {
+        "probed": 5,
+        "responded": 0,
+        "rows": [
+          {
+            "target": "button Menu",
+            "w": 38,
+            "h": 18,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Home",
+            "w": 40,
+            "h": 24,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "button Library",
+            "w": 47,
+            "h": 50,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0.15s color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to",
+            "cursor": "pointer"
+          },
+          {
+            "target": "a Open Issue 35.4 from 2026",
+            "w": 270,
+            "h": 329,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          },
+          {
+            "target": "button All (187)",
+            "w": 52,
+            "h": 18,
+            "responded": false,
+            "changed_nodes": 0,
+            "transition": "0s all",
+            "cursor": "pointer"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 3,
+        "scroll_windows_active": 3,
+        "scroll_windows": 3,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "pinned": 3,
+          "reveal": 4
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "issues-scroller lenis",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1819,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1819px of scroll"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "issue issue-1 grid-layout",
+            "w": 390,
+            "h": 844,
+            "initial_top": 0,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "issue issue-3 grid-layout",
+            "w": 390,
+            "h": 844,
+            "initial_top": 1688,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "a",
+            "cls": "issue-link js-scroll-show",
+            "w": 270,
+            "h": 329,
+            "initial_top": 257,
+            "sample": "",
+            "opacity_from": 1,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "animations_by_depth": [
+        {
+          "depth": 0,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.2,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.4,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.6,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 0.8,
+          "count": 0,
+          "sample": []
+        },
+        {
+          "depth": 1,
+          "count": 0,
+          "sample": []
+        }
+      ],
+      "frames": [
+        {
+          "file": "narrow-home-t000.0s.png",
+          "t_s": 0,
+          "sha256": "0e21135cfdb1ec1d9e73dc609f4a68e9b1e58b57ccd8f0632f8d2f16190038e2"
+        },
+        {
+          "file": "narrow-home-t003.2s.png",
+          "t_s": 3.2,
+          "sha256": "a350ff489c188193bf5688360fdaa2d97fd8847192628ee8755c82dd05f277ed"
+        },
+        {
+          "file": "narrow-home-t006.9s.png",
+          "t_s": 6.9,
+          "sha256": "e9e373b652e141d80da0d10c2f41352e1727d5dc3902d5522b6a0e396e30ec68"
+        },
+        {
+          "file": "narrow-home-t010.8s.png",
+          "t_s": 10.8,
+          "sha256": "dfccb2328d1b424aa31b05857933694e69f97fca95ac737d9fcc4ecba9f7fcf0"
+        },
+        {
+          "file": "narrow-home-t014.0s.png",
+          "t_s": 14,
+          "sha256": "d00d4feedf83c5fd6cd978203149c68cb21d6d88587d72dec27109675d9900b2"
+        },
+        {
+          "file": "narrow-home-t017.2s.png",
+          "t_s": 17.2,
+          "sha256": "ba2be231765d7b0a1cc0c0dc64b7692bebd2757c9157673b5643a1c56a042e83"
+        },
+        {
+          "file": "narrow-home-t020.9s.png",
+          "t_s": 20.9,
+          "sha256": "68892445005120b193030c4d2aad1ce77ac0c474986da535b65be47f1b06eba8"
+        },
+        {
+          "file": "narrow-home-t024.1s.png",
+          "t_s": 24.1,
+          "sha256": "2b055c4da0d325dd7a91d10099eaaaa5bdb076aabbcf07a976b7adc3cfdd49fd"
+        }
+      ],
+      "video": {
+        "file": "narrow-home.webm",
+        "bytes": 3542205,
+        "seconds": 25
+      },
+      "role": "primary",
+      "contact_sheet": {
+        "file": "narrow-home-contact-sheet.png",
+        "sha256": "4311cbafbd4db45f4391a3ee9066859f2f1997fcb46e8abf515f2428c128b3b3"
+      }
+    },
+    {
+      "url": "https://archives.surfersjournal.com/collections",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/collections",
+      "first_screen": {
+        "file": "wide-inner1-first-screen.png",
+        "sha256": "c86dfe9042102728716f387e352cf1e2aeb2e503e02fa2d343466ef26ac35b4f"
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 4072
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.499,
+            "elements": 4
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 0.221,
+            "elements": 2
+          },
+          {
+            "color": "rgb(26, 26, 26)",
+            "area_share": 0.221,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(oklab(0 0 0 / 0.5) 0%, oklab(0 0 0 / 0) 100%)",
+            "area_share": 0.221,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.024,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 8228
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 2648
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 49
+          },
+          {
+            "family": "Plain",
+            "characters": 3
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "control",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Steve Pezman",
+            "characters": 126
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "16 Articles",
+            "characters": 120
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 24,
+            "weight": "400",
+            "line_height": "28px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "People",
+            "characters": 80
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Patagonia",
+            "characters": 70
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 32,
+            "weight": "400",
+            "line_height": "38px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "TSJ Pillars",
+            "characters": 49
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Issues",
+            "characters": 37
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Made possible with sponsorship from",
+            "characters": 35
+          },
+          {
+            "role": "control",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "The Surfer’s Journal Archives",
+            "characters": 29
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Storytellers",
+            "characters": 12
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "22px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "© 2026",
+            "characters": 6
+          }
+        ],
+        "radii": [],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 11
+          },
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 11
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 10
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Issues",
+            "w": 48,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Collections",
+            "w": 92,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Search",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 256,
+            "h": 21,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 59,
+            "h": 56,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "16 Articles\n                        Peop",
+            "w": 298,
+            "h": 511,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "13 Articles\n                        Cult",
+            "w": 298,
+            "h": 285,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "17 Articles\n                        Trav",
+            "w": 298,
+            "h": 511,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "19 Articles\n                        Art",
+            "w": 298,
+            "h": 285,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Steve Pezman",
+            "w": 89,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Scott Hulet",
+            "w": 75,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "C.R. Stecyk III",
+            "w": 95,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Jamie Brisick",
+            "w": 85,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Dave Parmenter",
+            "w": 105,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Derek Hynd",
+            "w": 80,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Richard Kenvin",
+            "w": 101,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Matt Warshaw",
+            "w": 93,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Kyle DeNuccio",
+            "w": 98,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "Joe Donnelly",
+            "w": 84,
+            "h": 16,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "0.05008px"
+          },
+          {
+            "tag": "a",
+            "text": "21 Articles\n                        Ship",
+            "w": 636,
+            "h": 788,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "20 Articles\n                        Surf",
+            "w": 636,
+            "h": 491,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 20,
+          "svg": 4
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "collection-image-grid grid-layout",
+            "id": null,
+            "top": 144,
+            "height": 733,
+            "width": 1440,
+            "ground": "rgb(255, 255, 255)",
+            "position": "static",
+            "display": "grid",
+            "grid": "50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px ",
+            "heading": "TSJ Pillars",
+            "text_chars": 1333,
+            "images": 4,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "fw-collections",
+            "id": null,
+            "top": 877,
+            "height": 900,
+            "width": 1440,
+            "ground": "rgb(26, 26, 26)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Storytellers",
+            "text_chars": 1400,
+            "images": 10,
+            "videos": 0,
+            "links": 10,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "featured-collections grid-layout",
+            "id": null,
+            "top": 1777,
+            "height": 1051,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "grid",
+            "grid": "50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px ",
+            "heading": "Featured Collections",
+            "text_chars": 573,
+            "images": 2,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "collection-image-grid grid-layout",
+            "id": null,
+            "top": 2828,
+            "height": 654,
+            "width": 1440,
+            "ground": "rgb(255, 255, 255)",
+            "position": "static",
+            "display": "grid",
+            "grid": "50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px 50.6562px ",
+            "heading": "Latest Collections",
+            "text_chars": 1354,
+            "images": 4,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "footer",
+            "class": "footer-default",
+            "id": null,
+            "top": 3483,
+            "height": 589,
+            "width": 1440,
+            "ground": "rgb(255, 255, 255)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 435,
+            "images": 0,
+            "videos": 0,
+            "links": 1,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgb(255, 255, 255)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 6,
+        "scroll_windows_active": 6,
+        "scroll_windows": 6,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "swap": 21,
+          "reveal": 11
+        },
+        "mechanisms": [
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "featured-collections grid-layout",
+            "w": 1440,
+            "h": 1051,
+            "initial_top": 1777,
+            "sample": "Featured Collections\n21 Articles\nShi",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "collection-image-grid grid-layout",
+            "w": 1440,
+            "h": 654,
+            "initial_top": 1540,
+            "sample": "Latest Collections\n\n27 Articles\n\nInt",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "-grid-collection-image-grid",
+            "w": 1312,
+            "h": 510,
+            "initial_top": 1612,
+            "sample": "Latest Collections\n\n27 Articles\n\nInt",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "js-horizontal-scroll",
+            "w": 1352,
+            "h": 432,
+            "initial_top": 1690,
+            "sample": "27 Articles\n\nInterviews\n\n19 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "ul",
+            "cls": "collection-list js-horizontal-scroll-con",
+            "w": 1352,
+            "h": 432,
+            "initial_top": 1690,
+            "sample": "27 Articles\n\nInterviews\n\n19 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "collection-item",
+            "w": 298,
+            "h": 432,
+            "initial_top": 1690,
+            "sample": "27 Articles\n\nInterviews",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "collection-link",
+            "w": 298,
+            "h": 408,
+            "initial_top": 1690,
+            "sample": "27 Articles\n\nInterviews",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "collection-image-wrapper js-scroll-show",
+            "w": 298,
+            "h": 340,
+            "initial_top": 1690,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "collection-image \n                      ",
+            "w": 298,
+            "h": 340,
+            "initial_top": 1690,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "item-image-wrapper js-scroll-show",
+            "w": 636,
+            "h": 712,
+            "initial_top": 1324,
+            "sample": "",
+            "opacity_from": 0.6,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-image -loading -show",
+            "w": 636,
+            "h": 712,
+            "initial_top": 1324,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "collection-image-wrapper js-scroll-show",
+            "w": 298,
+            "h": 364,
+            "initial_top": 1690,
+            "sample": "",
+            "opacity_from": 0.54,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "collection-image \n                      ",
+            "w": 298,
+            "h": 364,
+            "initial_top": 1690,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "wide-inner1-t000.0s.png",
+          "t_s": 0,
+          "sha256": "c86dfe9042102728716f387e352cf1e2aeb2e503e02fa2d343466ef26ac35b4f"
+        },
+        {
+          "file": "wide-inner1-t001.7s.png",
+          "t_s": 1.7,
+          "sha256": "2d3e95a18932c8fb42e5d8e557f48f91c7067fafa91c8ee2733c38c4048ec0aa"
+        },
+        {
+          "file": "wide-inner1-t003.8s.png",
+          "t_s": 3.8,
+          "sha256": "8d1808750a5e803d490898f8befdbb35c48db85924f14dafb42f300bcfaa0e70"
+        },
+        {
+          "file": "wide-inner1-t006.0s.png",
+          "t_s": 6,
+          "sha256": "173bc5a3e06a5dfa461a138a4f949bdfeb16c4b77c951e9ae8c61f8fe9dc5794"
+        },
+        {
+          "file": "wide-inner1-t008.0s.png",
+          "t_s": 8,
+          "sha256": "9fce7e48a7181cb34fc45379a1e5729449da7fb9ea86b1ffc0918633a74ab9da"
+        },
+        {
+          "file": "wide-inner1-t009.7s.png",
+          "t_s": 9.7,
+          "sha256": "fddcbd933c5521c4423915293de84f1ea755c589e0c9ae34c651d1e9e533f9fa"
+        },
+        {
+          "file": "wide-inner1-t011.3s.png",
+          "t_s": 11.3,
+          "sha256": "68f921c195b701784fd23c6af3dd25c076a7aa01fa2c33277a8263cf43d7d2b6"
+        },
+        {
+          "file": "wide-inner1-t012.9s.png",
+          "t_s": 12.9,
+          "sha256": "4371c66792aba2d931227d90defce57c7fd9e5d51ced269bc5dd2d01de8bb0a0"
+        }
+      ],
+      "video": {
+        "file": "wide-inner1.webm",
+        "bytes": 4868173,
+        "seconds": 10
+      },
+      "role": "inner",
+      "contact_sheet": {
+        "file": "wide-inner1-contact-sheet.png",
+        "sha256": "fd4d529715ed25751292f1e6897bed844b2046084b129a3b306e9ba91e2e1894"
+      }
+    },
+    {
+      "url": "https://archives.surfersjournal.com/collections",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/collections",
+      "first_screen": {
+        "file": "narrow-inner1-first-screen.png",
+        "sha256": "9a94bab08fd46272fc70032bb4a91dc95ffac96eaa61394eb0b46a87af7fdc69"
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 3840
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.513,
+            "elements": 4
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 0.22,
+            "elements": 2
+          },
+          {
+            "color": "rgb(26, 26, 26)",
+            "area_share": 0.22,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(oklab(0 0 0 / 0.5) 0%, oklab(0 0 0 / 0) 100%)",
+            "area_share": 0.22,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.025,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 6522
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 2296
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 47
+          },
+          {
+            "family": "Plain",
+            "characters": 3
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "control",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Steve Pezman",
+            "characters": 126
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "16 Articles",
+            "characters": 120
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "People",
+            "characters": 80
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Patagonia",
+            "characters": 70
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 24,
+            "weight": "400",
+            "line_height": "28px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "TSJ Pillars",
+            "characters": 49
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Made possible with sponsorship from",
+            "characters": 35
+          },
+          {
+            "role": "control",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "The Surfer’s Journal Archives",
+            "characters": 29
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Menu",
+            "characters": 18
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Storytellers",
+            "characters": 12
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "© 2026",
+            "characters": 6
+          }
+        ],
+        "radii": [],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 11
+          },
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 11
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 10
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          }
+        ],
+        "controls": [
+          {
+            "tag": "button",
+            "text": "Menu",
+            "w": 38,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 40,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 47,
+            "h": 50,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 44,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "16 Articles\n                        Peop",
+            "w": 323,
+            "h": 542,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "13 Articles\n                        Cult",
+            "w": 323,
+            "h": 296,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "17 Articles\n                        Trav",
+            "w": 323,
+            "h": 541,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "19 Articles\n                        Art",
+            "w": 323,
+            "h": 296,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "21 Articles\n                        Ship",
+            "w": 350,
+            "h": 464,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "20 Articles\n                        Surf",
+            "w": 350,
+            "h": 300,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 20,
+          "svg": 4
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "collection-image-grid grid-layout",
+            "id": null,
+            "top": 96,
+            "height": 739,
+            "width": 390,
+            "ground": "rgb(255, 255, 255)",
+            "position": "static",
+            "display": "grid",
+            "grid": "165px 165px",
+            "heading": "TSJ Pillars",
+            "text_chars": 1333,
+            "images": 4,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "fw-collections",
+            "id": null,
+            "top": 835,
+            "height": 844,
+            "width": 390,
+            "ground": "rgb(26, 26, 26)",
+            "position": "relative",
+            "display": "block",
+            "grid": null,
+            "heading": "Storytellers",
+            "text_chars": 1400,
+            "images": 10,
+            "videos": 0,
+            "links": 10,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "featured-collections grid-layout",
+            "id": null,
+            "top": 1679,
+            "height": 985,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "grid",
+            "grid": "165px 165px",
+            "heading": "Featured Collections",
+            "text_chars": 573,
+            "images": 2,
+            "videos": 0,
+            "links": 2,
+            "buttons": 0
+          },
+          {
+            "tag": "div",
+            "class": "collection-image-grid grid-layout",
+            "id": null,
+            "top": 2664,
+            "height": 653,
+            "width": 390,
+            "ground": "rgb(255, 255, 255)",
+            "position": "static",
+            "display": "grid",
+            "grid": "165px 165px",
+            "heading": "Latest Collections",
+            "text_chars": 1354,
+            "images": 4,
+            "videos": 0,
+            "links": 4,
+            "buttons": 0
+          },
+          {
+            "tag": "footer",
+            "class": "footer-default",
+            "id": null,
+            "top": 3317,
+            "height": 523,
+            "width": 390,
+            "ground": "rgb(255, 255, 255)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 435,
+            "images": 0,
+            "videos": 0,
+            "links": 1,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgb(255, 255, 255)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 6,
+        "scroll_windows_active": 5,
+        "scroll_windows": 6,
+        "scroll_coverage": 0.83,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "swap": 19,
+          "reveal": 3
+        },
+        "mechanisms": [
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "featured-collections grid-layout",
+            "w": 390,
+            "h": 985,
+            "initial_top": 1679,
+            "sample": "Featured Collections\n21 Articles\nShi",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "-grid-featured-collections",
+            "w": 350,
+            "h": 889,
+            "initial_top": 1125,
+            "sample": "Featured Collections\n21 Articles\nShi",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "ul",
+            "cls": "featured-list",
+            "w": 350,
+            "h": 812,
+            "initial_top": 1202,
+            "sample": "21 Articles\nShip To Shore\n20 Article",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "featured-item",
+            "w": 350,
+            "h": 464,
+            "initial_top": 1202,
+            "sample": "21 Articles\nShip To Shore",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "item-link",
+            "w": 350,
+            "h": 464,
+            "initial_top": 1202,
+            "sample": "21 Articles\nShip To Shore",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "item-image-wrapper js-scroll-show",
+            "w": 350,
+            "h": 392,
+            "initial_top": 1202,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "item-image -loading -show",
+            "w": 350,
+            "h": 392,
+            "initial_top": 1202,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "collection-image-grid grid-layout",
+            "w": 390,
+            "h": 653,
+            "initial_top": 1454,
+            "sample": "Latest Collections\n\n27 Articles\n\nInt",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "-grid-collection-image-grid",
+            "w": 350,
+            "h": 557,
+            "initial_top": 1502,
+            "sample": "Latest Collections\n\n27 Articles\n\nInt",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "js-horizontal-scroll can-scroll",
+            "w": 390,
+            "h": 505,
+            "initial_top": 1554,
+            "sample": "27 Articles\n\nInterviews\n\n19 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "ul",
+            "cls": "collection-list js-horizontal-scroll-con",
+            "w": 390,
+            "h": 456,
+            "initial_top": 1554,
+            "sample": "27 Articles\n\nInterviews\n\n19 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "collection-item",
+            "w": 323,
+            "h": 456,
+            "initial_top": 1554,
+            "sample": "27 Articles\n\nInterviews",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "collection-link",
+            "w": 323,
+            "h": 430,
+            "initial_top": 1554,
+            "sample": "27 Articles\n\nInterviews",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "collection-image-wrapper js-scroll-show",
+            "w": 323,
+            "h": 368,
+            "initial_top": 1554,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "collection-image \n                      ",
+            "w": 323,
+            "h": 368,
+            "initial_top": 1554,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-image -loading -show",
+            "w": 350,
+            "h": 392,
+            "initial_top": 1202,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "collection-image \n                      ",
+            "w": 323,
+            "h": 368,
+            "initial_top": 1554,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "role": "inner"
+    },
+    {
+      "url": "https://archives.surfersjournal.com/search",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/search",
+      "first_screen": {
+        "file": "wide-inner2-first-screen.png",
+        "sha256": "5cb6019860a69dcc811fb916fa2719c7043e37b2c63bd5b17009130793416a2e"
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 2297
+        },
+        "grounds": [
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.042,
+            "elements": 1
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.024,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 22108
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 38
+          },
+          {
+            "family": "Practice-Display",
+            "characters": 12
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Taylor Knox breaks down his Mount Rushmore of power surfing,",
+            "characters": 970
+          },
+          {
+            "role": "h2",
+            "family": "Practice-Display",
+            "size": 20,
+            "weight": "400",
+            "line_height": "22px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Keeper of the Arc",
+            "characters": 249
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "35.4",
+            "characters": 48
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Issues",
+            "characters": 30
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "1732 results",
+            "characters": 12
+          }
+        ],
+        "radii": [],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 12
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 12
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Issues",
+            "w": 48,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Collections",
+            "w": 92,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Search",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 256,
+            "h": 21,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 59,
+            "h": 56,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "input",
+            "text": "",
+            "w": 1312,
+            "h": 71,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 32px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Keeper of the Arc\n ",
+            "w": 280,
+            "h": 609,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Cutting Room: Shane",
+            "w": 280,
+            "h": 402,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Watch “The Fantasti",
+            "w": 280,
+            "h": 396,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Influences: Pete Ca",
+            "w": 280,
+            "h": 614,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Watch “Four Days in",
+            "w": 280,
+            "h": 374,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                On Style\n          ",
+            "w": 280,
+            "h": 329,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                So Long, Shredder\n ",
+            "w": 280,
+            "h": 559,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Lunkerland\n        ",
+            "w": 280,
+            "h": 576,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Deep West\n         ",
+            "w": 280,
+            "h": 401,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                The Navigator\n     ",
+            "w": 280,
+            "h": 408,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Addendum: Steering ",
+            "w": 280,
+            "h": 403,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Captain Fun\n       ",
+            "w": 280,
+            "h": 377,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 13,
+          "svg": 3
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "search-results-wrapper",
+            "id": "live-search",
+            "top": 279,
+            "height": 1938,
+            "width": 1312,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Keeper of the Arc",
+            "text_chars": 4315,
+            "images": 13,
+            "videos": 0,
+            "links": 12,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgb(255, 255, 255)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 3,
+        "scroll_windows_active": 3,
+        "scroll_windows": 3,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "swap": 16,
+          "reveal": 5
+        },
+        "mechanisms": [
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "result-item",
+            "w": 280,
+            "h": 408,
+            "initial_top": 1641,
+            "sample": "35.3\n\nDEEP WEST\n\nWhen the berg winds",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "",
+            "w": 280,
+            "h": 401,
+            "initial_top": 1641,
+            "sample": "35.3\n\nDEEP WEST\n\nWhen the berg winds",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "item-image js-scroll-show",
+            "w": 280,
+            "h": 187,
+            "initial_top": 1665,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "item-asset \n                            ",
+            "w": 280,
+            "h": 187,
+            "initial_top": 1665,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "infinite-trigger js-infinite-trigger",
+            "w": 1312,
+            "h": 128,
+            "initial_top": 1448,
+            "sample": "",
+            "opacity_from": 0.54,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-asset \n                            ",
+            "w": 280,
+            "h": 214,
+            "initial_top": 1665,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 0.74,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "wide-inner2-t000.0s.png",
+          "t_s": 0,
+          "sha256": "5cb6019860a69dcc811fb916fa2719c7043e37b2c63bd5b17009130793416a2e"
+        },
+        {
+          "file": "wide-inner2-t001.9s.png",
+          "t_s": 1.9,
+          "sha256": "18a0a36058a56de31bde76056445107b24442a923738e14c2925cb858e2482ca"
+        },
+        {
+          "file": "wide-inner2-t003.7s.png",
+          "t_s": 3.7,
+          "sha256": "d431205ea33a5669cc9338017e650d52e678f1aad5d9d2f7f1a2d4561a5de7b3"
+        },
+        {
+          "file": "wide-inner2-t005.8s.png",
+          "t_s": 5.8,
+          "sha256": "1b820db46dd7bb7c238857091be1064b1fbc9a3f86c50347706915e9234221a5"
+        },
+        {
+          "file": "wide-inner2-t007.7s.png",
+          "t_s": 7.7,
+          "sha256": "574330d23ae3096bf917a1a0baf2d2c5353bdd9f0138d0071b2a848bf1a25da9"
+        },
+        {
+          "file": "wide-inner2-t009.5s.png",
+          "t_s": 9.5,
+          "sha256": "acaeefbe86aae593a8487cc31f5268ab9decb03635045f1e2bf26b029ad06851"
+        },
+        {
+          "file": "wide-inner2-t011.4s.png",
+          "t_s": 11.4,
+          "sha256": "577d2e9280cd3d3f80bccb54ffa4e344a5018407286d435f1542ef6ef918efd4"
+        },
+        {
+          "file": "wide-inner2-t013.3s.png",
+          "t_s": 13.3,
+          "sha256": "30982bcf0d8aaee6195579178fda382a897982d45d83b334d84aa85371d7a892"
+        }
+      ],
+      "video": {
+        "file": "wide-inner2.webm",
+        "bytes": 6301654,
+        "seconds": 10
+      },
+      "role": "inner",
+      "contact_sheet": {
+        "file": "wide-inner2-contact-sheet.png",
+        "sha256": "4fca71e79bb417af30a0528ae0574192b8c960635703c86ed1183d41b8d85e9f"
+      }
+    },
+    {
+      "url": "https://archives.surfersjournal.com/search",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/search",
+      "first_screen": {
+        "file": "narrow-inner2-first-screen.png",
+        "sha256": "2c83618037f098128fafcd41a7d53f9c1a5aa7583cd6a66aab995fa7606d3f99"
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 3002
+        },
+        "grounds": [
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.032,
+            "elements": 1
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.019,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 18604
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 36
+          },
+          {
+            "family": "Practice-Display",
+            "characters": 12
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Taylor Knox breaks down his Mount Rushmore of power surfing,",
+            "characters": 970
+          },
+          {
+            "role": "h2",
+            "family": "Practice-Display",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Keeper of the Arc",
+            "characters": 249
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "35.4",
+            "characters": 48
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "1732 results",
+            "characters": 12
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Menu",
+            "characters": 11
+          }
+        ],
+        "radii": [],
+        "shadows": [],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 12
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 12
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "button",
+            "text": "Menu",
+            "w": 38,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 40,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 47,
+            "h": 50,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "input",
+            "text": "",
+            "w": 350,
+            "h": 61,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 24px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Keeper of the Arc\n ",
+            "w": 350,
+            "h": 270,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Cutting Room: Shane",
+            "w": 350,
+            "h": 181,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Watch “The Fantasti",
+            "w": 350,
+            "h": 209,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Influences: Pete Ca",
+            "w": 350,
+            "h": 297,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.4\n                Watch “Four Days in",
+            "w": 350,
+            "h": 173,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                On Style\n          ",
+            "w": 350,
+            "h": 157,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                So Long, Shredder\n ",
+            "w": 350,
+            "h": 264,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Lunkerland\n        ",
+            "w": 350,
+            "h": 251,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Deep West\n         ",
+            "w": 350,
+            "h": 217,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                The Navigator\n     ",
+            "w": 350,
+            "h": 175,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "35.3\n                Addendum: Steering ",
+            "w": 350,
+            "h": 199,
+            "padding": "24px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 13,
+          "svg": 3
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "search-results-wrapper",
+            "id": "live-search",
+            "top": 177,
+            "height": 2745,
+            "width": 350,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Keeper of the Arc",
+            "text_chars": 4315,
+            "images": 13,
+            "videos": 0,
+            "links": 12,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgb(255, 255, 255)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 5,
+        "scroll_windows_active": 5,
+        "scroll_windows": 5,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 2,
+        "type_instances": {
+          "swap": 8,
+          "reveal": 7
+        },
+        "mechanisms": [
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "result-item",
+            "w": 350,
+            "h": 264,
+            "initial_top": 1501,
+            "sample": "35.3\n\nSO LONG, SHREDDER\n\nThe unavoid",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "",
+            "w": 350,
+            "h": 264,
+            "initial_top": 1501,
+            "sample": "35.3\n\nSO LONG, SHREDDER\n\nThe unavoid",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "item-image js-scroll-show",
+            "w": 165,
+            "h": 215,
+            "initial_top": 1526,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "item-asset \n                            ",
+            "w": 165,
+            "h": 215,
+            "initial_top": 1526,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "infinite-trigger js-infinite-trigger",
+            "w": 350,
+            "h": 128,
+            "initial_top": 1584,
+            "sample": "",
+            "opacity_from": 0.91,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-asset \n                            ",
+            "w": 165,
+            "h": 215,
+            "initial_top": 1526,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-asset -show -success -late",
+            "w": 165,
+            "h": 201,
+            "initial_top": 1186,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "role": "inner"
+    },
+    {
+      "url": "https://archives.surfersjournal.com/issues/1-1",
+      "viewport": "wide",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/issues/1-1",
+      "first_screen": {
+        "file": "wide-inner3-first-screen.png",
+        "sha256": "043ddd6be6321ca9a6fb4b6b343e316c1f991049d38d9c2375f62f5d1937efa7"
+      },
+      "design": {
+        "viewport": {
+          "w": 1440,
+          "h": 900,
+          "doc_height": 3770
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.954,
+            "elements": 3
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 0.239,
+            "elements": 2
+          },
+          {
+            "color": "rgb(243, 243, 210)",
+            "area_share": 0.239,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.025,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 23972
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 280
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 46
+          },
+          {
+            "family": "Practice-Display",
+            "characters": 9
+          },
+          {
+            "family": "Plain",
+            "characters": 3
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "20px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "In this issue: Surf Statements by Jonathan Paskowitz, Bazook",
+            "characters": 973
+          },
+          {
+            "role": "h2",
+            "family": "Practice-Display",
+            "size": 20,
+            "weight": "400",
+            "line_height": "22px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Bazooka",
+            "characters": 172
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "1.1",
+            "characters": 70
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Patagonia",
+            "characters": 70
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "24px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Issues",
+            "characters": 37
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 16,
+            "weight": "400",
+            "line_height": "16px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Made possible with sponsorship from",
+            "characters": 35
+          },
+          {
+            "role": "control",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "The Surfer’s Journal Archives",
+            "characters": 29
+          },
+          {
+            "role": "h1",
+            "family": "Practice",
+            "size": 32,
+            "weight": "400",
+            "line_height": "38px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Volume 1 Issue 1",
+            "characters": 16
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 32,
+            "weight": "400",
+            "line_height": "38px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "More Issues",
+            "characters": 11
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 20,
+            "weight": "400",
+            "line_height": "22px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "© 2026",
+            "characters": 6
+          }
+        ],
+        "radii": [],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+            "elements": 1
+          }
+        ],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 13
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 13
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "a",
+            "text": "Issues",
+            "w": 48,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Collections",
+            "w": 92,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Search",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 256,
+            "h": 21,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 59,
+            "h": 56,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 54,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 20px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Back to Issues",
+            "w": 484,
+            "h": 585,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tBazooka\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 496,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Bull & The Kid\n\t\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 253,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Power of his Prime: Bar",
+            "w": 280,
+            "h": 516,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tNo Pants Mance\n\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 498,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tPortfolio: Don King\n\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 544,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Secret\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 328,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tWelcome to Mickey’s House\n\t",
+            "w": 280,
+            "h": 454,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tRetrospective: Rick Griffin",
+            "w": 280,
+            "h": 516,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tPop’s Truck\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 280,
+            "h": 346,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px none rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 14,
+          "svg": 4
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "issue-detail",
+            "id": null,
+            "top": 0,
+            "height": 3181,
+            "width": 1440,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Volume 1 Issue 1",
+            "text_chars": 3858,
+            "images": 14,
+            "videos": 0,
+            "links": 14,
+            "buttons": 0
+          },
+          {
+            "tag": "footer",
+            "class": "footer-default",
+            "id": null,
+            "top": 3181,
+            "height": 589,
+            "width": 1440,
+            "ground": "rgb(255, 255, 255)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 435,
+            "images": 0,
+            "videos": 0,
+            "links": 1,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 6,
+        "scroll_windows_active": 6,
+        "scroll_windows": 6,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 3,
+        "type_instances": {
+          "pinned": 2,
+          "reveal": 9,
+          "swap": 10
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "issue-detail-cover-image js-scroll-show",
+            "w": 484,
+            "h": 585,
+            "initial_top": 129,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 3,
+            "held_px": 1926,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 1926px of scroll"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "latest-issues-scroller",
+            "w": 1440,
+            "h": 604,
+            "initial_top": 1288,
+            "sample": "More Issues\n5 Articles\n14 Articles\n1",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "ul",
+            "cls": "issues-list",
+            "w": 1440,
+            "h": 382,
+            "initial_top": 1438,
+            "sample": "5 Articles\n14 Articles\n14 Articles\n1",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "issues-item",
+            "w": 280,
+            "h": 382,
+            "initial_top": 1438,
+            "sample": "5 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "item-link",
+            "w": 280,
+            "h": 378,
+            "initial_top": 1438,
+            "sample": "5 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "item-image-wrapper js-scroll-show",
+            "w": 280,
+            "h": 342,
+            "initial_top": 1438,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "item-image -loading -show",
+            "w": 280,
+            "h": 342,
+            "initial_top": 1438,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "div",
+            "cls": "item-image-wrapper js-scroll-show",
+            "w": 280,
+            "h": 342,
+            "initial_top": 1438,
+            "sample": "",
+            "opacity_from": 0.63,
+            "opacity_to": 1,
+            "transform_shed": false,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-image -loading -show",
+            "w": 280,
+            "h": 342,
+            "initial_top": 1438,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-asset -show -success -late",
+            "w": 280,
+            "h": 208,
+            "initial_top": 1517,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "frames": [
+        {
+          "file": "wide-inner3-t000.0s.png",
+          "t_s": 0,
+          "sha256": "043ddd6be6321ca9a6fb4b6b343e316c1f991049d38d9c2375f62f5d1937efa7"
+        },
+        {
+          "file": "wide-inner3-t001.4s.png",
+          "t_s": 1.4,
+          "sha256": "7862e1f2da7016bdbba1cc3c1fa9b4cda38dff9c94531491561fbdce4322d37a"
+        },
+        {
+          "file": "wide-inner3-t003.0s.png",
+          "t_s": 3,
+          "sha256": "42350f3b5de8e6150cb76c30244f936558a7a041d7c96d680fa2fdb49f037a83"
+        },
+        {
+          "file": "wide-inner3-t004.8s.png",
+          "t_s": 4.8,
+          "sha256": "850f667fea5ab6e6f1b282550901eb06ba564dd2a06d8efb68de8bca51293d10"
+        },
+        {
+          "file": "wide-inner3-t006.3s.png",
+          "t_s": 6.3,
+          "sha256": "24ab660dcba41aaf086b37daeb53e5808aa7a5ec35a2b9e323283f99caebffcd"
+        },
+        {
+          "file": "wide-inner3-t007.7s.png",
+          "t_s": 7.7,
+          "sha256": "d5f1b19b1fc4000cfd2cf306cb23aad0195f93da85e1ffef186717f0b48ee1ed"
+        },
+        {
+          "file": "wide-inner3-t009.2s.png",
+          "t_s": 9.2,
+          "sha256": "ecf4178c2765f03fb3e49d496f023541c8d4ddb3160f137c2082a7fdefeaac2d"
+        },
+        {
+          "file": "wide-inner3-t010.7s.png",
+          "t_s": 10.7,
+          "sha256": "440090829fc1b8d25956cc800a4de8b9f24c8089885f6a36fdb4ad82a0b8566f"
+        }
+      ],
+      "video": {
+        "file": "wide-inner3.webm",
+        "bytes": 3495040,
+        "seconds": 10
+      },
+      "role": "inner",
+      "contact_sheet": {
+        "file": "wide-inner3-contact-sheet.png",
+        "sha256": "5c9d7e962a989def095203ada12df40107f9349c7ffed168628211bebcc18074"
+      }
+    },
+    {
+      "url": "https://archives.surfersjournal.com/issues/1-1",
+      "viewport": "narrow",
+      "ok": true,
+      "problems": [],
+      "status": 200,
+      "final_url": "https://archives.surfersjournal.com/issues/1-1",
+      "first_screen": {
+        "file": "narrow-inner3-first-screen.png",
+        "sha256": "81fe1b12b876e634e9ca7f499be23bbbed3ccde1bedab801cea90d6cbc82416f"
+      },
+      "design": {
+        "viewport": {
+          "w": 390,
+          "h": 844,
+          "doc_height": 4321
+        },
+        "grounds": [
+          {
+            "color": "rgb(255, 255, 255)",
+            "area_share": 0.956,
+            "elements": 3
+          },
+          {
+            "color": "rgb(0, 0, 0)",
+            "area_share": 0.195,
+            "elements": 2
+          },
+          {
+            "color": "rgb(243, 243, 210)",
+            "area_share": 0.195,
+            "elements": 1
+          },
+          {
+            "color": "gradient:linear-gradient(in oklab, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)",
+            "area_share": 0.022,
+            "elements": 1
+          }
+        ],
+        "inks": [
+          {
+            "color": "rgb(0, 0, 0)",
+            "weight": 20208
+          },
+          {
+            "color": "rgb(255, 255, 255)",
+            "weight": 224
+          }
+        ],
+        "fonts": [
+          {
+            "family": "Practice",
+            "characters": 44
+          },
+          {
+            "family": "Practice-Display",
+            "characters": 9
+          },
+          {
+            "family": "Plain",
+            "characters": 3
+          }
+        ],
+        "faces": [
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "400",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "700",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Plain",
+            "weight": "100 300",
+            "style": "italic",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice-Display",
+            "weight": "400",
+            "style": "normal",
+            "status": "loaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "700",
+            "style": "normal",
+            "status": "unloaded"
+          },
+          {
+            "family": "Practice",
+            "weight": "400",
+            "style": "italic",
+            "status": "loaded"
+          }
+        ],
+        "face_sources": [
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Regular-DCPT2Q4D.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-6gjMRuRV.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Italic-B_i4tnbS.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Bold-Italic-BYFbTBJX.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-o_oUGH8H.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Plain",
+            "src": "url(\"/dist/assets/Plain-Thin-Italic-Da8_OVG3.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Regular-Bbo0cK0Z.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice-Display",
+            "src": "url(\"/dist/assets/Practice-Display-Regular-4hdt-17v.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Bold-BpciNeoF.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "family": "Practice",
+            "src": "url(\"/dist/assets/Practice-Italic-C0GistHf.woff2\") format(\"woff2\")",
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "type_scale": [
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "In this issue: Surf Statements by Jonathan Paskowitz, Bazook",
+            "characters": 973
+          },
+          {
+            "role": "h2",
+            "family": "Practice-Display",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "uppercase",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Bazooka",
+            "characters": 172
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "1.1",
+            "characters": 70
+          },
+          {
+            "role": "body",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Patagonia",
+            "characters": 70
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 14,
+            "weight": "400",
+            "line_height": "14px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Made possible with sponsorship from",
+            "characters": 35
+          },
+          {
+            "role": "control",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "The Surfer’s Journal Archives",
+            "characters": 29
+          },
+          {
+            "role": "nav",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Menu",
+            "characters": 18
+          },
+          {
+            "role": "h1",
+            "family": "Practice",
+            "size": 24,
+            "weight": "400",
+            "line_height": "28px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "Volume 1 Issue 1",
+            "characters": 16
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 24,
+            "weight": "400",
+            "line_height": "28px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "More Issues",
+            "characters": 11
+          },
+          {
+            "role": "h2",
+            "family": "Practice",
+            "size": 16,
+            "weight": "400",
+            "line_height": "18px",
+            "letter_spacing": "normal",
+            "transform": "none",
+            "color": "rgb(255, 255, 255)",
+            "sample": "Library",
+            "characters": 7
+          },
+          {
+            "role": "body",
+            "family": "Plain",
+            "size": 12,
+            "weight": "400",
+            "line_height": "12px",
+            "letter_spacing": "0.05008px",
+            "transform": "none",
+            "color": "rgb(0, 0, 0)",
+            "sample": "© 2026",
+            "characters": 6
+          }
+        ],
+        "radii": [],
+        "shadows": [
+          {
+            "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+            "elements": 1
+          }
+        ],
+        "transitions": [
+          {
+            "value": "background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 13
+          },
+          {
+            "value": "opacity 0.2s cubic-bezier(0.54, 0.01, 0.25, 1.01)",
+            "elements": 13
+          },
+          {
+            "value": "color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 2
+          },
+          {
+            "value": "opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "elements": 1
+          }
+        ],
+        "controls": [
+          {
+            "tag": "button",
+            "text": "Menu",
+            "w": 38,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Home",
+            "w": 40,
+            "h": 24,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "Library",
+            "w": 47,
+            "h": 50,
+            "padding": "16px 0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "button",
+            "text": "(Close)",
+            "w": 44,
+            "h": 18,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(255, 255, 255)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "font": "Practice 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "Back to Issues",
+            "w": 270,
+            "h": 326,
+            "padding": "0px",
+            "radius": "0px",
+            "border": "0px solid rgb(0, 0, 0)",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tBazooka\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 350,
+            "h": 241,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Bull & The Kid\n\t\t\t\t\t\t\t\t",
+            "w": 350,
+            "h": 113,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Power of his Prime: Bar",
+            "w": 350,
+            "h": 240,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tNo Pants Mance\n\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 350,
+            "h": 242,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tPortfolio: Don King\n\t\t\t\t\t\t\t",
+            "w": 350,
+            "h": 270,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tThe Secret\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            "w": 350,
+            "h": 157,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          },
+          {
+            "tag": "a",
+            "text": "1.1\n\t\t\t\t\t\t\t\t\tWelcome to Mickey’s House\n\t",
+            "w": 350,
+            "h": 220,
+            "padding": "24px 0px 0px",
+            "radius": "0px",
+            "border": "",
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(0, 0, 0)",
+            "font": "Plain 400 16px",
+            "transform": "none",
+            "letter_spacing": "normal"
+          }
+        ],
+        "keyframes": [
+          {
+            "name": "fadeup",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "dropin",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse-text",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "fadeup-20",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "loader-fade-in",
+            "steps": 3,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "icon-fadein",
+            "steps": 2,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          },
+          {
+            "name": "pulse",
+            "steps": 1,
+            "sheet": "https://archives.surfersjournal.com/dist/assets/app-DVklsRRd.css"
+          }
+        ],
+        "libraries": [
+          "Lenis"
+        ],
+        "media": {
+          "video": [],
+          "canvas": [],
+          "images": 14,
+          "svg": 4
+        }
+      },
+      "layout": {
+        "sections": [
+          {
+            "tag": "div",
+            "class": "issue-detail",
+            "id": null,
+            "top": 0,
+            "height": 3798,
+            "width": 390,
+            "ground": "rgba(0, 0, 0, 0)",
+            "position": "static",
+            "display": "block",
+            "grid": null,
+            "heading": "Volume 1 Issue 1",
+            "text_chars": 3858,
+            "images": 14,
+            "videos": 0,
+            "links": 14,
+            "buttons": 0
+          },
+          {
+            "tag": "footer",
+            "class": "footer-default",
+            "id": null,
+            "top": 3798,
+            "height": 523,
+            "width": 390,
+            "ground": "rgb(255, 255, 255)",
+            "position": "relative",
+            "display": "flex",
+            "grid": null,
+            "heading": null,
+            "text_chars": 435,
+            "images": 0,
+            "videos": 0,
+            "links": 1,
+            "buttons": 0
+          }
+        ],
+        "header": {
+          "position": "fixed",
+          "height": 56,
+          "ground": "rgba(0, 0, 0, 0)",
+          "links": 4
+        },
+        "nav_links": [
+          {
+            "text": "Issues",
+            "href": "https://archives.surfersjournal.com/"
+          },
+          {
+            "text": "Collections",
+            "href": "https://archives.surfersjournal.com/collections"
+          },
+          {
+            "text": "Search",
+            "href": "https://archives.surfersjournal.com/search"
+          }
+        ]
+      },
+      "motion": {
+        "wheel_ticks": 7,
+        "scroll_windows_active": 7,
+        "scroll_windows": 7,
+        "scroll_coverage": 1,
+        "distinct_mechanisms": 3,
+        "type_instances": {
+          "pinned": 2,
+          "swap": 10,
+          "reveal": 2
+        },
+        "mechanisms": [
+          {
+            "type": "pinned",
+            "tag": "div",
+            "cls": "issue-detail-cover-image js-scroll-show",
+            "w": 270,
+            "h": 326,
+            "initial_top": 243,
+            "sample": "",
+            "content_travels_through": true,
+            "held_ticks": 5,
+            "held_px": 3032,
+            "swaps_while_held": 0,
+            "detail": "held still in the viewport for 3032px of scroll"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "latest-issues-scroller",
+            "w": 390,
+            "h": 561,
+            "initial_top": 1420,
+            "sample": "More Issues\n5 Articles\n14 Articles\n1",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "ul",
+            "cls": "issues-list",
+            "w": 390,
+            "h": 413,
+            "initial_top": 1520,
+            "sample": "5 Articles\n14 Articles\n14 Articles\n1",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "li",
+            "cls": "issues-item",
+            "w": 293,
+            "h": 397,
+            "initial_top": 1520,
+            "sample": "5 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "a",
+            "cls": "item-link",
+            "w": 293,
+            "h": 393,
+            "initial_top": 1520,
+            "sample": "5 Articles",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "div",
+            "cls": "item-image-wrapper js-scroll-show",
+            "w": 293,
+            "h": 357,
+            "initial_top": 1520,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "swap",
+            "tag": "img",
+            "cls": "item-image \n                            ",
+            "w": 293,
+            "h": 357,
+            "initial_top": 1520,
+            "sample": "",
+            "swaps": 1,
+            "detail": "its content changed 1 time(s) as the page moved"
+          },
+          {
+            "type": "reveal",
+            "tag": "img",
+            "cls": "item-image \n                            ",
+            "w": 293,
+            "h": 357,
+            "initial_top": 1520,
+            "sample": "",
+            "opacity_from": 0,
+            "opacity_to": 1,
+            "transform_shed": true,
+            "detail": "changed opacity or shed a transform as it came into view"
+          }
+        ]
+      },
+      "role": "inner"
+    }
+  ],
+  "problems": [],
+  "complete": true,
+  "discovered_same_origin_links": 190,
+  "inner_routes": [
+    "https://archives.surfersjournal.com/collections",
+    "https://archives.surfersjournal.com/search",
+    "https://archives.surfersjournal.com/issues/1-1"
+  ],
+  "elapsed_s": 397,
+  "runtime": {
+    "node": "v26.3.0",
+    "browser": "C:\\Users\\motty\\AppData\\Local\\Packages\\Claude_pzs8sxrjxfjjc\\LocalCache\\Local\\ms-playwright\\chromium-1228\\chrome-win64\\chrome.exe",
+    "tool_sha256": "46691caec22c743794060bf174a63b523e37c1091ffbd2712835a533614a7b95"
+  }
+}
