@@ -238,10 +238,12 @@ export const HOVER_CANDIDATES = `((sectionSelector = null) => {
   }
   return rows;
 })()`;
-const HOVER_SNAPSHOT = `((id) => {
+export const HOVER_SNAPSHOT = `((id) => {
   const el = document.querySelector('[data-dna-study-hover="' + id + '"]'); if (!el) return null;
+  const paint = (s) => [s.color,s.backgroundColor,s.transform,s.opacity,s.filter,s.textDecorationLine,s.textDecorationColor,s.borderTopColor,s.borderRightColor,s.borderBottomColor,s.borderLeftColor,s.borderTopWidth,s.borderRightWidth,s.borderBottomWidth,s.borderLeftWidth,s.borderTopStyle,s.borderRightStyle,s.borderBottomStyle,s.borderLeftStyle,s.boxShadow,s.clipPath];
   const rows = [el, ...el.querySelectorAll('*')].slice(0, 30).map((n) => { const s = getComputedStyle(n), r = n.getBoundingClientRect();
-    return [s.color, s.backgroundColor, s.transform, s.opacity, s.filter, s.textDecorationLine, Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)].join(','); });
+    const pseudos = ['::before','::after'].map(p => {const ps=getComputedStyle(n,p);return !ps.content||ps.content==='none'||ps.content==='normal' ? null : [ps.content,ps.display,ps.visibility,ps.width,ps.height,ps.top,ps.right,ps.bottom,ps.left,...paint(ps)];});
+    return JSON.stringify([paint(s),Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height),pseudos]); });
   const s = getComputedStyle(el);
   return { rows, transition: s.transitionDuration + ' ' + s.transitionProperty, cursor: s.cursor };
 })`;
@@ -553,20 +555,6 @@ export async function studyPage(browser, url, viewport, options) {
       fs.writeFileSync(path.join(frameDir, record.first_screen_clear.file), clear);
     }
     record.design = await bounded(page.evaluate(DESIGN_SYSTEM), "design-system");
-    record.regions = [];
-    for (const [index, selector] of (options.regions || []).entries()) {
-      const target = page.locator(selector);
-      if (await target.count() !== 1) { record.problems.push({code:'signature-region-unmeasured',message:`${selector} must match one source region`}); continue; }
-      await bounded(target.evaluate((el) => el.scrollIntoView({block:'center',behavior:'instant'})), 'signature-region-scroll');
-      await sleep(400);
-      const [region] = await bounded(page.evaluate(inspectRegions, [selector]), 'signature-region-measure');
-      const bytes = await bounded(page.screenshot(), 'signature-region-frame');
-      const file = `${prefix}-region-${index+1}.png`;
-      fs.writeFileSync(path.join(frameDir,file),bytes);
-      region.evidence = {file:`frames/${file}`,sha256:sha(bytes)};
-      record.regions.push(region);
-    }
-    if (options.regions?.length) await page.evaluate(() => window.scrollTo(0,0));
     record.layout = await bounded(page.evaluate(LAYOUT), "layout");
     if (full) {
       // Hover first, at rest on the first screen: a smooth-scroll library can
@@ -582,6 +570,21 @@ export async function studyPage(browser, url, viewport, options) {
     if (record.motion) record.motion.mechanisms = annotateDrivers(record.motion.mechanisms, record.at_rest);
     record.ground_sampled = await groundSample(page, viewport);
     if (videoSeconds) record.frames = await scrollThrough(page, viewport, videoSeconds, frameDir, prefix);
+    // Supporting-region traversal is last: it must never consume first-visit
+    // observer state before the ordinary motion probes and recording.
+    record.regions = [];
+    for (const [index, selector] of (options.regions || []).entries()) {
+      const target = page.locator(selector);
+      if (await target.count() !== 1) { record.problems.push({code:'signature-region-unmeasured',message:`${selector} must match one source region`}); continue; }
+      await bounded(target.evaluate((el) => el.scrollIntoView({block:'center',behavior:'instant'})), 'signature-region-scroll');
+      await sleep(400);
+      const [region] = await bounded(page.evaluate(inspectRegions, [selector]), 'signature-region-measure');
+      const bytes = await bounded(page.screenshot(), 'signature-region-frame');
+      const file = `${prefix}-region-${index+1}.png`;
+      fs.writeFileSync(path.join(frameDir,file),bytes);
+      region.evidence = {file:`frames/${file}`,sha256:sha(bytes)};
+      record.regions.push(region);
+    }
     record.observation_gaps = observationGaps(record);
     record.ok = true;
   } catch (error) {

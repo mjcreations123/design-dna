@@ -1,5 +1,12 @@
 # Changelog
 
+## 13.4.2 - Supporting capture order and hover evidence
+
+- Supporting-region captures run after ordinary probes and recording so adding them cannot consume first-visit reveal state before motion measurement.
+- Hover snapshots include generated before/after pseudo-element paint and border color/style/width changes. Unchanged controls still report no response.
+- Apply Motty's explicit clarification that concurrent regular-Chrome work is allowed; Chrome for Testing remains prohibited without an explicit run exception.
+- Two focused regressions exercise actual study orchestration with stateful probe doubles and snapshot comparisons. Live-source remeasurement remains necessary; no historical records were rewritten.
+
 ## 13.4.1 - Content classification and ordinary-section source bindings
 
 - Distinguish a small header/footer home-link identity pair from repeated content images; keep complete image URLs to avoid prefix collisions.

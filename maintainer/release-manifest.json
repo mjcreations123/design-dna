@@ -1,24 +1,24 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "13.4.1",
-  "distribution_sha256": "79110d6a3c32c98d0f58f679ec47f9e8cb71746a1b31be55beb086c59078ea41",
-  "content_sha256": "57162023a72fbe12844efe429652c6cb51da194bc8a7a4132bde9ea0e91f7c18",
-  "codex_plugin_manifest_sha256": "d988f9012c25bc3bf527ef50dbd2f09b4867efb1a004e0d5604d95a5243102a2",
-  "claude_plugin_manifest_sha256": "4a3d1ad5d20c02e4f24a15b4c14c6837fd7a8e21b199504b58e9ec50f3f84353",
-  "sbom_sha256": "2f78683146f3608f904001101e3fba9c9e7136b412c6c0c909a641cae076fc33",
-  "compatibility_matrix_sha256": "fbfda958b3eab92e96ce7a57ede08479e1e276a741790c48c38897ce43dffd0f",
+  "version": "13.4.2",
+  "distribution_sha256": "543f8993ee546ed6815ade29a66955e4706bd6b692707d6de2e67321316eebd6",
+  "content_sha256": "60d919f46cb459b1eb2b612858aea7d32e2f3c4e2e5c3e95a3feac948530629e",
+  "codex_plugin_manifest_sha256": "939d2785ded1713188f9fc63d6053c572c48c251d4b00f88341dc3d0c4edc9ef",
+  "claude_plugin_manifest_sha256": "5e329092ffc910372c596f19598c8d783da5d4a88a2d83995d8b8f0877add300",
+  "sbom_sha256": "6359375aedc52d24cec05b557c4706dfd78e0e3333962d4689ff24e898131d1a",
+  "compatibility_matrix_sha256": "b309664cd086ed4536b1073beda41099bb13ff0620e31d693e223b05717191ef",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "79110d6a3c32c98d0f58f679ec47f9e8cb71746a1b31be55beb086c59078ea41",
-    "runtime": "57162023a72fbe12844efe429652c6cb51da194bc8a7a4132bde9ea0e91f7c18",
-    "codex_plugin_manifest": "d988f9012c25bc3bf527ef50dbd2f09b4867efb1a004e0d5604d95a5243102a2",
-    "claude_plugin_manifest": "4a3d1ad5d20c02e4f24a15b4c14c6837fd7a8e21b199504b58e9ec50f3f84353",
-    "sbom": "2f78683146f3608f904001101e3fba9c9e7136b412c6c0c909a641cae076fc33",
-    "compatibility_matrix": "fbfda958b3eab92e96ce7a57ede08479e1e276a741790c48c38897ce43dffd0f",
+    "distribution_tree": "543f8993ee546ed6815ade29a66955e4706bd6b692707d6de2e67321316eebd6",
+    "runtime": "60d919f46cb459b1eb2b612858aea7d32e2f3c4e2e5c3e95a3feac948530629e",
+    "codex_plugin_manifest": "939d2785ded1713188f9fc63d6053c572c48c251d4b00f88341dc3d0c4edc9ef",
+    "claude_plugin_manifest": "5e329092ffc910372c596f19598c8d783da5d4a88a2d83995d8b8f0877add300",
+    "sbom": "6359375aedc52d24cec05b557c4706dfd78e0e3333962d4689ff24e898131d1a",
+    "compatibility_matrix": "b309664cd086ed4536b1073beda41099bb13ff0620e31d693e223b05717191ef",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "e42901b0d9fde9daad373a40b409f0cce0fe39830850f285b59c7a1f2bc8213d",
-    "distribution_docs": "1c908cdf4446058b81d90799999e0298e52b05046f75853398c93ff45d641316",
+    "compatibility_verification": "4f5e0898d9139056e96b3431d98a7fee49a624b9f3e0e14104220f7feb1b09ec",
+    "distribution_docs": "367df722233214fc7ac0af4b5205fb9beba0333798a0c694669b6f6756f31ab2",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,14 +26,14 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "4237784fc1a93e887e0a4d2be972af3b3d1dcbaceb4b7d26ba948d9ef0e28217",
-  "generated_at": "2026-09-07T19:49:47.100954+00:00",
+  "release_sha256": "4f0e5eaf5d9a1502ba783e298bd266a8bd1b4925f604285ac41a8cde489ef18c",
+  "generated_at": "2026-09-07T21:18:12.889630+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 22454,
-      "sha256": "f87553739682b455cd5d8a52075e17eea8e764ac4a71ccbe43a728423fc669d8"
+      "size": 22673,
+      "sha256": "1d656d3c9a913700a773dbe676461a2e5f36db93aea646f646f4ba1bfc3332e2"
     },
     {
       "path": "agents",
@@ -711,7 +711,7 @@
       "path": "release.json",
       "type": "file",
       "size": 82,
-      "sha256": "168bd078451fc93c6376f89ea3ee06fa55496b10ae795402f636b8399f89cc88"
+      "sha256": "77254e8ca49736a45318dd80dcae955bd5d0181022c647a08caa5fb5e8ef7d72"
     },
     {
       "path": "schemas",
@@ -1070,8 +1070,8 @@
     {
       "path": "scripts/study_reference.mjs",
       "type": "file",
-      "size": 58976,
-      "sha256": "3071a92a92a8ddc6c4bed3972a693f8288c4ec2108a236825261683aee01ba3f"
+      "size": 59621,
+      "sha256": "515b6db67070de00ed47f0ebedf02bca15f2f15387dd8a6d173117c953e03524"
     },
     {
       "path": "templates",
@@ -2736,6 +2736,12 @@
       "sha256": "ede614444f2b6b328b0be3886544b1732b6b927b6a6045134bab72c83a3e90da"
     },
     {
+      "path": "tests/test_study_order_hover.mjs",
+      "type": "file",
+      "size": 2828,
+      "sha256": "54696318e81f6362bed3e1fcee2de4a3749aa6b399b68f23f7c3efa0a80b4b47"
+    },
+    {
       "path": "tests/test_style_provenance.py",
       "type": "file",
       "size": 17211,
@@ -2759,7 +2765,7 @@
       "path": ".claude-plugin/plugin.json",
       "type": "file",
       "size": 607,
-      "sha256": "4a3d1ad5d20c02e4f24a15b4c14c6837fd7a8e21b199504b58e9ec50f3f84353"
+      "sha256": "5e329092ffc910372c596f19598c8d783da5d4a88a2d83995d8b8f0877add300"
     },
     {
       "path": ".codex-plugin",
@@ -2771,7 +2777,7 @@
       "path": ".codex-plugin/plugin.json",
       "type": "file",
       "size": 1379,
-      "sha256": "d988f9012c25bc3bf527ef50dbd2f09b4867efb1a004e0d5604d95a5243102a2"
+      "sha256": "939d2785ded1713188f9fc63d6053c572c48c251d4b00f88341dc3d0c4edc9ef"
     },
     {
       "path": ".gitattributes",
@@ -2818,8 +2824,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 133054,
-      "sha256": "20519dd3cbfb37d3bd620460dfba2eaacc8a8c0aec3d67826a9866801729976f"
+      "size": 133775,
+      "sha256": "91338add0420e7a2ea0f696c80c17b3dd189889bad42b2d17864b808ddd43cd3"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -2843,7 +2849,7 @@
       "path": "README.md",
       "type": "file",
       "size": 38340,
-      "sha256": "e297d927cd7d1c01af82c8a61bc7c26e7f5280a55ec2f29dc629bce3fcd50cf5"
+      "sha256": "5ffefccb6423e11f8ea1ff0f75a8d9c368082719f19c56b369e8c3377bcd1439"
     },
     {
       "path": "SECURITY.md",
@@ -2993,7 +2999,7 @@
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
       "size": 12385,
-      "sha256": "fbfda958b3eab92e96ce7a57ede08479e1e276a741790c48c38897ce43dffd0f"
+      "sha256": "b309664cd086ed4536b1073beda41099bb13ff0620e31d693e223b05717191ef"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -5159,7 +5165,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "2f78683146f3608f904001101e3fba9c9e7136b412c6c0c909a641cae076fc33"
+      "sha256": "6359375aedc52d24cec05b557c4706dfd78e0e3333962d4689ff24e898131d1a"
     },
     {
       "path": "maintainer/schemas",
@@ -5896,8 +5902,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 22454,
-      "sha256": "f87553739682b455cd5d8a52075e17eea8e764ac4a71ccbe43a728423fc669d8"
+      "size": 22673,
+      "sha256": "1d656d3c9a913700a773dbe676461a2e5f36db93aea646f646f4ba1bfc3332e2"
     },
     {
       "path": "skills/design-dna/agents",
@@ -6575,7 +6581,7 @@
       "path": "skills/design-dna/release.json",
       "type": "file",
       "size": 82,
-      "sha256": "168bd078451fc93c6376f89ea3ee06fa55496b10ae795402f636b8399f89cc88"
+      "sha256": "77254e8ca49736a45318dd80dcae955bd5d0181022c647a08caa5fb5e8ef7d72"
     },
     {
       "path": "skills/design-dna/schemas",
@@ -6934,8 +6940,8 @@
     {
       "path": "skills/design-dna/scripts/study_reference.mjs",
       "type": "file",
-      "size": 58976,
-      "sha256": "3071a92a92a8ddc6c4bed3972a693f8288c4ec2108a236825261683aee01ba3f"
+      "size": 59621,
+      "sha256": "515b6db67070de00ed47f0ebedf02bca15f2f15387dd8a6d173117c953e03524"
     },
     {
       "path": "skills/design-dna/templates",
@@ -8586,6 +8592,12 @@
       "type": "file",
       "size": 59631,
       "sha256": "ede614444f2b6b328b0be3886544b1732b6b927b6a6045134bab72c83a3e90da"
+    },
+    {
+      "path": "skills/design-dna/tests/test_study_order_hover.mjs",
+      "type": "file",
+      "size": 2828,
+      "sha256": "54696318e81f6362bed3e1fcee2de4a3749aa6b399b68f23f7c3efa0a80b4b47"
     },
     {
       "path": "skills/design-dna/tests/test_style_provenance.py",

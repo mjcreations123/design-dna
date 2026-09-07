@@ -45,9 +45,11 @@ censuses.
 Owner directive, 2026-09-07: the tools launch the installed Google Chrome,
 never automatically Edge or Playwright's bundled "Chrome for Testing", which froze his
 machine; `playwright_resolver.mjs` refuses the bundled build unless the owner
-sets `DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1` himself for a run. One study or
-check runs at a time on a machine. Parallel launches are not speed; they are
-the freeze.
+sets `DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1` himself for a run.
+Later clarification on 2026-09-07: concurrent regular-Chrome work is permitted;
+open task-owned tabs and do not wait for exclusive use of the machine's browser.
+Do not close or control another task's tabs or processes. The restriction is
+against Chrome for Testing, not a limit on active projects or regular-Chrome tabs.
 
 Owner directive, 2026-09-06, after the Crossing Law rejection: passing
 measurements never substitute for visual quality. A build whose fonts, colors
