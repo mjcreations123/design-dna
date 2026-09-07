@@ -42,8 +42,8 @@ and nothing in this skill may make one producer's work block another's on the
 same machine. There are no machine-wide slots, leases, state contracts or
 censuses.
 
-Owner directive, 2026-09-07: the tools launch the installed Google Chrome (or
-Edge), never Playwright's bundled "Chrome for Testing", which froze his
+Owner directive, 2026-09-07: the tools launch the installed Google Chrome,
+never automatically Edge or Playwright's bundled "Chrome for Testing", which froze his
 machine; `playwright_resolver.mjs` refuses the bundled build unless the owner
 sets `DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1` himself for a run. One study or
 check runs at a time on a machine. Parallel launches are not speed; they are
@@ -173,10 +173,16 @@ Rules, all checked:
   `source_url` on that source's domain. At least four distinct references from
   at least two sources. **Four is a floor, not a quota: a weak fourth chosen
   to reach four is forbidden.** If the set does not work, keep researching.
-  Every selected reference must reach at least one section (as `reference`,
-  `palette_from` or `behavior_from`), or it is filler.
+  Every selected reference must reach at least one section as its composition
+  `reference` or as `behavior_from` for a measured promised behavior. A
+  `palette_from` citation alone is filler.
 - `quality` carries the six judgments; `contributes` names what the site gives
   this build; `gaps_reviewed` says how any observation gap was closed.
+  For each gap also supply `gap_reviews`: an array with its exact `code`,
+  `page`, `viewport`, the inspection `method`, what was `observed`, and
+  `artifacts: [{"file":"path/to/capture.png","sha256":"..."}]`.
+  Use actual screenshots or video of that inspection. The checker verifies
+  the files and hashes; the reviewer must judge what those captures show.
 - At most two typefaces, each computed by a selected reference or declared
   with `matched_for` and a `match_record` that ranks it first. A typed claim
   is not a match.
@@ -263,9 +269,15 @@ verbatim in the report:
   Problems are listed design first and registry last. Route-level mechanism
   counts and coverage percentages are no longer floors; behavior is tested
   per section and per width, never pooled across the page.
+  Its driver must also match the named behavior reference at that width.
+  If an older study has no driver, re-study the intended behavior. A promised
+  hover is probed inside its own section, including on narrow layouts when
+  explicitly promised there; use `behavior_narrow: "none"` when appropriate.
 - `FUNCTIONAL PASS` or `FUNCTIONAL FAIL`: keyboard focus visible on the first
   controls, content present with reduced motion, no fixed layer covering the
   page at rest, no sideways scroll, at both widths.
+  Missing route/width coverage fails. Functional failures return a nonzero
+  command exit status even when the separate design comparisons pass.
 - `REVIEW INDEPENDENT`, `REVIEW SELF-REVIEW` or `REVIEW MISSING`: whether a
   review was written, by whom, what it covers and what it leaves unresolved.
 - `EVIDENCE`: the tool revisions that made the studies and this check, and

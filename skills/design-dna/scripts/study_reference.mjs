@@ -219,10 +219,11 @@ const ANIMATIONS = `(() => {
   return { count: document.getAnimations().length, sample: out };
 })()`;
 
-export const HOVER_CANDIDATES = `(() => {
+export const HOVER_CANDIDATES = `((sectionSelector = null) => {
   const vw = innerWidth, vh = innerHeight; const rows = [];
   window.__dnaStudyHover = Number(window.__dnaStudyHover || 0);
   for (const el of document.querySelectorAll('a,button,[role=button],summary,[onclick]')) {
+    if (sectionSelector && ![...document.querySelectorAll(sectionSelector)].some((root) => root === el || root.contains(el))) continue;
     const r = el.getBoundingClientRect();
     if (r.width < 16 || r.height < 12 || r.bottom <= 0 || r.top >= vh || r.right <= 0 || r.left >= vw) continue;
     const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) continue;
@@ -456,15 +457,18 @@ async function animationsByDepth(page) {
   return out;
 }
 
-export async function hoverProbe(page) {
+export async function hoverProbe(page, sectionSelector = null) {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.mouse.move(8, 8);
   await bounded(page.mouse.wheel(0, -20000), "wheel", 15_000).catch(() => {});
   await sleep(600);
-  let candidates = await bounded(page.evaluate(HOVER_CANDIDATES), "hover-candidates");
-  if (!candidates.length) { await sleep(1200); candidates = await bounded(page.evaluate(HOVER_CANDIDATES), "hover-candidates"); }
+  if (sectionSelector) await bounded(page.locator(sectionSelector).first().evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' })), 'hover-section-scroll');
+  const candidateProbe = sectionSelector ? HOVER_CANDIDATES.replace(/\(\)$/, '(' + JSON.stringify(sectionSelector) + ')') : HOVER_CANDIDATES;
+  let candidates = await bounded(page.evaluate(candidateProbe), "hover-candidates");
+  if (!candidates.length) { await sleep(1200); candidates = await bounded(page.evaluate(candidateProbe), "hover-candidates"); }
   const rows = [];
   for (const c of candidates) {
+    if (sectionSelector && !await page.evaluate(({selector,id}) => [...document.querySelectorAll(selector)].some((root) => root.contains(document.querySelector('[data-dna-study-hover="' + id + '"]'))), {selector:sectionSelector,id:c.id})) continue;
     try {
       await page.mouse.move(4, 4); await sleep(150);
       // A string expression gets no argument from evaluate; the id is inlined.

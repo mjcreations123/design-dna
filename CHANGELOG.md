@@ -1,5 +1,18 @@
 # Changelog
 
+## 13.3.1 review corrections
+
+- Explicit and environment browser paths follow the installed-Chrome rule;
+  no automatic Edge fallback. Other paths require the owner-authorized run flag.
+- Functional coverage is required at both widths for every route, and
+  functional failures now fail the command. Empty plans cannot report functional success.
+- Section behavior compares reference and build drivers. Hover is measured
+  within the promised section rather than borrowed from another control.
+- Gap reviews bind their specific gap to captured image/video artifacts and
+  hashes. Palette-only citations cannot satisfy reference contributions.
+- Focused regression tests cover browser policy, driver mismatch, unsupported
+  gap claims and section-scoped hover using installed Chrome.
+
 All notable changes to Design DNA are recorded here. Versions follow semantic
 versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime

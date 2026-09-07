@@ -37,7 +37,7 @@ import process from "node:process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { resolvePlaywright, discoverBrowserExecutable } from "./playwright_resolver.mjs";
-import { studyPage } from "./study_reference.mjs";
+import { studyPage, hoverProbe } from "./study_reference.mjs";
 
 const TOOL = "check_build.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -88,6 +88,33 @@ const rgb = (color) => {
 const colorDistance = (a, b) => { const x = rgb(a), y = rgb(b); if (!x || !y) return Infinity; return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]); };
 const words = (s) => String(s || "").trim().split(/\s+/).filter(Boolean);
 const mechanismsIn = (text) => { const t = String(Array.isArray(text) ? text.join(" ") : text || "").toLowerCase(); const head = t.split(/[(:]/)[0]; if (/^\s*(none|no)\b/.test(head)) return []; return MECHANISM_WORDS.filter((w) => new RegExp("\\b" + w.replace("-", "[- ]") + "\\b").test(head)); }; // the promise is what comes before a "(" or ":"; the rest is explanation
+
+export function behaviorDriverProblems(wanted, source, built) {
+  const problems = [];
+  for (const type of wanted.filter((t) => t !== 'hover')) {
+    const drivers = new Set(source.filter((m) => m.type === type).map((m) => m.driver).filter((d) => ['scroll', 'time', 'pointer'].includes(d)));
+    if (!drivers.size) problems.push(`${type}: named reference has no measured driver; inspect and re-study that behavior`);
+    else if (!built.some((m) => m.type === type && drivers.has(m.driver))) problems.push(`${type}: build must match reference driver ${[...drivers].join('/')}, not just its mechanism name`);
+  }
+  return problems;
+}
+
+export function gapEvidenceProblems(gaps, reviews, base) {
+  return gaps.flatMap((gap) => {
+    const review = (Array.isArray(reviews) ? reviews : []).find((r) => r.code === gap.code && r.page === gap.page && (r.viewport || '') === (gap.viewport || ''));
+    if (!review || words(review.method).length < 3 || words(review.observed).length < 3 || !Array.isArray(review.artifacts) || !review.artifacts.length) return [`${gap.code}: requires gap_reviews with exact page/viewport, method, observed result and captured artifacts`];
+    for (const artifact of review.artifacts) {
+      try {
+        if (!artifact.file || !/^[a-f0-9]{64}$/i.test(artifact.sha256 || '')) throw new Error();
+        const file = resolveFrom(base, artifact.file);
+        const bytes = fs.readFileSync(file);
+        const imageOrVideo = bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10])) || bytes.subarray(0,3).equals(Buffer.from([255,216,255])) || bytes.subarray(0,4).equals(Buffer.from([26,69,223,163])) || bytes.subarray(4,8).toString() === 'ftyp';
+        if (!fs.statSync(file).isFile() || bytes.length < 32 || !imageOrVideo || sha(bytes) !== artifact.sha256) throw new Error();
+      } catch { return [`${gap.code}: missing or changed gap-review artifact`]; }
+    }
+    return [];
+  });
+}
 
 function loadStudies(dir) {
   const studies = new Map();
@@ -288,7 +315,13 @@ async function probeRoute(browser, url, viewport, sections) {
   try {
     await page.goto(url, { waitUntil: "load", timeout: 60_000 });
     await new Promise((r) => setTimeout(r, 1500));
-    return await page.evaluate(`${PROBE}(${JSON.stringify(sections || [])})`);
+    const result = await page.evaluate(`${PROBE}(${JSON.stringify(sections || [])})`);
+    for (const section of result.sections) {
+      const planned = sections.find((s) => s.selector === section.selector);
+      const behavior = viewport.name === 'narrow' ? planned?.behavior_narrow ?? planned?.behavior : planned?.behavior;
+      if (section.count > 0 && mechanismsIn(behavior).includes('hover')) section.hover = await hoverProbe(page, section.selector);
+    }
+    return result;
   } finally { await page.close().catch(() => {}); await context.close().catch(() => {}); }
 }
 async function functionalPass(browser, url, viewport) {
@@ -404,9 +437,10 @@ async function main() {
     for (const type of ref.signature_mechanisms || []) if (!detected.has(type)) push("evidence", `${ref.id}: signature mechanism "${type}" was not detected on that site (detected: ${[...detected].join(", ") || "none"})`);
     const gaps = gapsOf(study);
     if (gaps.length && words(ref.gaps_reviewed).length < 6) push("evidence", `${ref.id}: the study has ${gaps.length} observation gap(s) (${[...new Set(gaps.map((g) => g.code))].join(", ")}); the plan does not say how they were inspected before copying (gaps_reviewed). A successful capture is not an adequate study`);
+    for (const problem of gapEvidenceProblems(gaps, ref.gap_reviews, args.plan)) push('evidence', `${ref.id}: ${problem}; artifact identity supports review, not automatic approval of its conclusion`);
   }
   const usedBy = new Map(selected.map((id) => [id, 0]));
-  for (const route of routes) for (const s of route.sections || []) for (const id of [s.reference, s.palette_from, s.behavior_from]) if (id && usedBy.has(id)) usedBy.set(id, usedBy.get(id) + 1);
+  for (const route of routes) for (const s of route.sections || []) for (const id of [s.reference, ...(mechanismsIn(s.behavior).length || mechanismsIn(s.behavior_narrow).length ? [s.behavior_from] : [])]) if (id && usedBy.has(id)) usedBy.set(id, usedBy.get(id) + 1);
   for (const [id, n] of usedBy) if (!n) push("selection", `${id} is selected but no section copies it; a reference that reaches no section is a quota filler`);
 
   // ---- sources (reported last; a registry fault never outranks a design fault)
@@ -560,12 +594,16 @@ async function main() {
         const want = viewport.name === "wide" ? wantWide : wantNarrow;
         const keys = new Set(ps.keys || []);
         const have = new Set(buildMechs(routeName, viewport.name).filter((m) => keys.has(mechKey(m))).map((m) => m.type));
-        const hoverOk = viewport.name === "narrow" || (buildPages.find((p) => p.route === routeName && p.viewport === "wide")?.hover?.responded || 0) > 0;
+        const hoverOk = (ps.hover?.responded || 0) > 0;
+        const sourcePage = primary(studies.get(s.behavior_from || s.reference), viewport.name);
+        const actual = buildMechs(routeName, viewport.name).filter((m) => keys.has(mechKey(m)));
+        const driverProblems = behaviorDriverProblems(want, sourcePage?.motion?.mechanisms || [], actual);
+        for (const problem of driverProblems) push('design', `${where}: ${problem}`);
         for (const w of want) {
-          if (w === "hover") { if (!hoverOk) push("design", `${where}: promises a hover response and no control on the route responded to the pointer`); continue; }
+          if (w === "hover") { if (!hoverOk) push("design", `${where}: promises a hover response but none was measured inside this section`); if (!(sourcePage?.hover?.responded > 0)) push('evidence', `${where}: named reference has no measured hover response at this width`); continue; }
           if (!have.has(w)) push("design", `${where}: the plan says it ${w === "pinned" ? "holds still (pinned)" : w}, and no ${w} element was detected inside it at this width (detected here: ${[...have].join(", ") || "none"}). Test the behavior chosen for this section, not the page's pooled motion`);
         }
-        if (want.length && want.every((w) => w === "hover" ? hoverOk : have.has(w))) passed.push(`${s.selector} ${viewport.name}: ${want.join("+")}`);
+        if (want.length && !driverProblems.length && want.every((w) => w === "hover" ? hoverOk : have.has(w))) passed.push(`${s.selector} ${viewport.name}: ${want.join("+")}`);
         // Proportions: the reference's relationships, not its pixel heights.
         if (ps.sticky) {
           const states = Number(s.states);
@@ -659,7 +697,8 @@ async function main() {
   const verdict = problems.length
     ? `CHECK FAIL (automated) ${problems.length} problem(s): ${problems.map((p) => `[${p.cat}] ${p.msg}`).join(" | ")}`
     : `CHECK PASS (automated): ${passed.length} measurable comparisons over ${routeCount} route(s) x 2 widths (${passed.join("; ")}); this proves provenance and the absence of known failure shapes, not that the site is good`;
-  const functionalLine = functional.length ? `FUNCTIONAL FAIL ${functional.length} problem(s): ${functional.join(" | ")}` : `FUNCTIONAL PASS: keyboard focus visible, content present with reduced motion, no overlay at rest, no sideways scroll, at both widths`;
+  if (!routes.length || evidence.functional.length !== routes.length * VIEWPORTS.length) functional.push('Functional coverage incomplete: every route requires both widths');
+  const functionalLine = functional.length ? `FUNCTIONAL FAIL ${functional.length} problem(s): ${functional.join(" | ")}` : `FUNCTIONAL PASS: sampled focus, reduced-motion content, rest overlays and horizontal overflow checks passed for ${routes.length} route(s) at both widths; full interaction review remains separate`;
   const review = readReview(reviewFile, selected, plan);
   const approvalLine = plan.approval?.by && plan.approval?.date ? `APPROVAL recorded: ${plan.approval.by}, ${plan.approval.date}${plan.approval.note ? ` (${plan.approval.note})` : ""}` : "APPROVAL not recorded: no owner approval is claimed";
   const report = { tool: TOOL, tool_revisions: { check_build: SELF_SHA, study_reference: STUDY_SHA }, checked_at: new Date().toISOString(), verdict, functional: functionalLine, review: review.line, evidence_line: evidenceLine, approval: approvalLine, notes, problems, functional_problems: functional, passed, evidence,
@@ -668,7 +707,7 @@ async function main() {
   fs.writeFileSync(path.join(outRoot, "check.json"), JSON.stringify(report, null, 2) + "\n");
   fs.writeFileSync(path.join(outRoot, "latest.json"), JSON.stringify({ run: outDir, checked_at: report.checked_at, lines: [verdict, functionalLine, review.line, evidenceLine, approvalLine] }, null, 2) + "\n");
   process.stdout.write([verdict, functionalLine, review.line, evidenceLine, approvalLine].join("\n") + "\n");
-  process.exitCode = problems.length ? 1 : 0;
+  process.exitCode = problems.length || functional.length ? 1 : 0;
 }
 
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));

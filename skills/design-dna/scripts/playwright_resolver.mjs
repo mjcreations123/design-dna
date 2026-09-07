@@ -277,6 +277,7 @@ export function discoverBrowserExecutable(playwright, explicitPath = null) {
   // Order: an explicit path, DESIGN_DNA_BROWSER_EXECUTABLE, the system browser,
   // and only then a bundled Chromium.
   explicitPath = explicitPath || process.env.DESIGN_DNA_BROWSER_EXECUTABLE || null;
+  const installed = systemBrowserCandidates().filter((candidate) => candidate.name === 'chrome' || candidate.name === 'google-chrome' || candidate.name === 'google-chrome-stable');
   if (explicitPath) {
     if (!path.isAbsolute(explicitPath) || !isFile(explicitPath)) {
       throw new PlaywrightResolutionError(
@@ -285,9 +286,13 @@ export function discoverBrowserExecutable(playwright, explicitPath = null) {
         { browser_executable: explicitPath },
       );
     }
-    return { path: realFile(explicitPath), source: "explicit", name: path.basename(explicitPath) };
+    const resolved = realFile(explicitPath);
+    if (process.env.DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM !== '1' && !installed.some((candidate) => isFile(candidate.path) && realFile(candidate.path) === resolved)) {
+      throw new PlaywrightResolutionError('browser-not-installed-chrome', 'Use the installed Google Chrome. Other browser paths require explicit owner permission for this run.', { browser_executable: resolved });
+    }
+    return { path: resolved, source: "explicit", name: path.basename(explicitPath) };
   }
-  for (const candidate of systemBrowserCandidates()) {
+  for (const candidate of installed) {
     if (isFile(candidate.path)) {
       return { path: realFile(candidate.path), source: "system-discovery", name: candidate.name };
     }
@@ -308,14 +313,14 @@ export function discoverBrowserExecutable(playwright, explicitPath = null) {
     if (bundled && isFile(bundled)) {
       throw new PlaywrightResolutionError(
         "bundled-chromium-forbidden",
-        "No installed Google Chrome or Microsoft Edge was found, and the bundled Playwright Chromium (Chrome for Testing) is not used without the owner's explicit permission for this run (DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1). Install Chrome or pass --browser-executable.",
+        "No installed Google Chrome was found. Bundled Chromium requires the owner's explicit permission for this run (DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM=1). Install regular Google Chrome.",
         { bundled },
       );
     }
   }
   throw new PlaywrightResolutionError(
     "browser-executable-unavailable",
-    "A Playwright module resolved, but no compatible Chromium-family executable was found. Install Playwright Chromium or pass --browser-executable with an absolute existing browser path.",
+    "No installed Google Chrome was found. Install regular Google Chrome; bundled Chromium is not an automatic fallback.",
   );
 }
 
