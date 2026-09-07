@@ -1,24 +1,24 @@
 {
   "schema_version": 6,
   "package": "design-dna",
-  "version": "13.3.0",
-  "distribution_sha256": "d64c0cc2dd402a298e9d8e109f85f91ad835bf067309f7eb44c5a223fc16a7f5",
-  "content_sha256": "63efef513c720bb166487805b10ce00bba9666b1910c5929cdb4af2527322543",
-  "codex_plugin_manifest_sha256": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9",
-  "claude_plugin_manifest_sha256": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81",
-  "sbom_sha256": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f",
-  "compatibility_matrix_sha256": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de",
+  "version": "13.3.1",
+  "distribution_sha256": "ce69ac955440bec47480401947c9071c70147e16cc614980effc8502454337ca",
+  "content_sha256": "0d3120247b3dfb71943ba82e8238002ec66ab2f1092390af2e49c2d1f42e47cb",
+  "codex_plugin_manifest_sha256": "fc3849ef3a116ebbbdf4c7aa3229ef1fd54e1bf0af497aa2389068fc990f9a06",
+  "claude_plugin_manifest_sha256": "c2a691a1de6dc675e566dae7e35013489cf14b6afbc25fe651bbbbccc4afdc59",
+  "sbom_sha256": "82e5a31191ba0b4e4df388045b9b06a6bdf267e0dacdcae82edbfada4dd051c3",
+  "compatibility_matrix_sha256": "5c5e51e690985d7bb7944f1515efaef39dd2267d8341847cc4cccb8926cceb9f",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "d64c0cc2dd402a298e9d8e109f85f91ad835bf067309f7eb44c5a223fc16a7f5",
-    "runtime": "63efef513c720bb166487805b10ce00bba9666b1910c5929cdb4af2527322543",
-    "codex_plugin_manifest": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9",
-    "claude_plugin_manifest": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81",
-    "sbom": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f",
-    "compatibility_matrix": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de",
+    "distribution_tree": "ce69ac955440bec47480401947c9071c70147e16cc614980effc8502454337ca",
+    "runtime": "0d3120247b3dfb71943ba82e8238002ec66ab2f1092390af2e49c2d1f42e47cb",
+    "codex_plugin_manifest": "fc3849ef3a116ebbbdf4c7aa3229ef1fd54e1bf0af497aa2389068fc990f9a06",
+    "claude_plugin_manifest": "c2a691a1de6dc675e566dae7e35013489cf14b6afbc25fe651bbbbccc4afdc59",
+    "sbom": "82e5a31191ba0b4e4df388045b9b06a6bdf267e0dacdcae82edbfada4dd051c3",
+    "compatibility_matrix": "5c5e51e690985d7bb7944f1515efaef39dd2267d8341847cc4cccb8926cceb9f",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
-    "compatibility_verification": "dc38f0d42f4baaf33f79a5f9019dea4613d9871da344fc3dabf3db5b242ebdc8",
-    "distribution_docs": "3efc0f9c13115d9506eca5f9385b4f29bb19901673ae32078c849ea22a9f3f7a",
+    "compatibility_verification": "6558a6010bd5aaf08956b1cacaced1e6706ce6479538de46b8fbab2589e4c7bc",
+    "distribution_docs": "b2a57a114d5b2432804edb59e0a2fcbbd23d760d85828b91fa43a086c7cd530d",
     "eval_contract": "aaf8bd2937bdb655fa1afeb9c1cdfbd496278c75dd80449302e588eb28fb2e16",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "7e8646c5c740f220fe26120a24661dad5cf6ddfb28b96c8775e083865fb571b0",
@@ -26,14 +26,14 @@
     "schemas": "6b299ebf53dc1562cdc1b9013a03f155cd65f36605517622db5e8bbaf744e6b3",
     "tests": "d554f73059a87c059e95453d2baece48f93a56a5770d42ea2ea3c8fbf221d022"
   },
-  "release_sha256": "4e37556d998c5b89bf56a215b86e0d2767a7325698e7f58f18f1d7de139f3a30",
-  "generated_at": "2026-09-07T03:49:13.113761+00:00",
+  "release_sha256": "59b134b2e66760439dd80cdad77568dbb788670ad382d468dfec69c999ab5bbf",
+  "generated_at": "2026-09-07T04:25:11.807334+00:00",
   "files": [
     {
       "path": "SKILL.md",
       "type": "file",
-      "size": 19601,
-      "sha256": "e86ad85f585bd9776dd2ae0a21ce8362ad631a0c92e0cc8e12dd29be258e7ddb"
+      "size": 20333,
+      "sha256": "e38c815bc67692175a7ee5f866e5f11b7911f9924fc29ea4577607e14c4a142a"
     },
     {
       "path": "agents",
@@ -705,7 +705,7 @@
       "path": "release.json",
       "type": "file",
       "size": 82,
-      "sha256": "2327169547b322a283417171d26ecd5d0cb34d4dd86fe276ebeed7647f4db15f"
+      "sha256": "e31ace73478845279efa5d0bd35c9bff953e53badbe1b94c1736f351e1218a59"
     },
     {
       "path": "schemas",
@@ -794,8 +794,8 @@
     {
       "path": "scripts/check_build.mjs",
       "type": "file",
-      "size": 56626,
-      "sha256": "e711993d8b10b3408f972e504619ffab0ed82732dedbcc5458326d5d32c460ad"
+      "size": 61249,
+      "sha256": "2fcf45570f072b42de24df1a9dcbf96c83bb24711670ece6b58c3be437341182"
     },
     {
       "path": "scripts/check_signature_transfer.mjs",
@@ -1316,14 +1316,164 @@
     {
       "path": "tests/fixtures/check-negatives/.gitignore",
       "type": "file",
-      "size": 146,
-      "sha256": "a1396e96e3417bb98749e7204cb7d2ac36685680e22932f28ea7c95277d655fc"
+      "size": 46,
+      "sha256": "505a5ebfbd182cbf96dcc59956d39f0429fd304a5ac47f48527a23fd20a095bd"
     },
     {
       "path": "tests/fixtures/check-negatives/RESULTS.md",
       "type": "file",
-      "size": 24370,
-      "sha256": "7c5b9bfbd88854218db169429927a818faa580cf5e56dda0e8b98103301d6bce"
+      "size": 26021,
+      "sha256": "3219fb1905222393f967934ff10360702ce44d254cd2da67326cf9c4cdf3198d"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/check.json",
+      "type": "file",
+      "size": 38994,
+      "sha256": "13dc728f932530f67049b270a3fb92193b942e332e8628c156030692cefb7613"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/latest.json",
+      "type": "file",
+      "size": 1441,
+      "sha256": "29f3001108d70a81217c4bbabbfeed9128cd9ef7bd21364c47e9724afc9a52c9"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/review-1-home.png",
+      "type": "file",
+      "size": 2777985,
+      "sha256": "3fb116ab2b5b2e0ac1d2c79226bb8fcf83af57cc9dc73b5bea0f850cf30086c4"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/check.json",
+      "type": "file",
+      "size": 38994,
+      "sha256": "13dc728f932530f67049b270a3fb92193b942e332e8628c156030692cefb7613"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t001.5s.png",
+      "type": "file",
+      "size": 408023,
+      "sha256": "1f08b37bc8810bbd220148e2880c555896248a5630fbbdbeb7b4e00c24256624"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t002.9s.png",
+      "type": "file",
+      "size": 392005,
+      "sha256": "d66afa1b08f144321b7a6dcc9a030b535c2391cb2fba0415fbad068eedc267f9"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t004.2s.png",
+      "type": "file",
+      "size": 247344,
+      "sha256": "88377b9f0c97f1016a21ada6ce50d0c75cc496255b026f83c8cde4e61f2ecff0"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t005.6s.png",
+      "type": "file",
+      "size": 242491,
+      "sha256": "094ef01472ec77f79063f1e6462497dbb74de2a91ea35c4aed49fedbef00b98e"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t006.9s.png",
+      "type": "file",
+      "size": 165302,
+      "sha256": "aa16f11b0559fc0291057fc3a1ef5d0bc3e838600a5854812bf5357354f92be5"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t008.3s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t009.7s.png",
+      "type": "file",
+      "size": 403591,
+      "sha256": "3b1cd07ee3e27eabecd303592479b9d44a5b37f19e27378516b034d7504b52e8"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/review-1-home.png",
+      "type": "file",
+      "size": 2777985,
+      "sha256": "3fb116ab2b5b2e0ac1d2c79226bb8fcf83af57cc9dc73b5bea0f850cf30086c4"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/videos/route1-wide.webm",
+      "type": "file",
+      "size": 6868652,
+      "sha256": "f4e0e62bd1b0570e57e155ddd9532ab7a83180bdff717ab85de9fce3c4c44c49"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/plan.json",
+      "type": "file",
+      "size": 17807,
+      "sha256": "03d615e352a50a50546a01c5709e5d6ecb442ca747616788de646359917a775c"
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "tests/fixtures/check-negatives/blank-stage/site/index.html",
+      "type": "file",
+      "size": 1321831,
+      "sha256": "758997a05396a7cb4a4f149ce09e5c754f0bee302abcea92914920a3bb4b9f63"
     },
     {
       "path": "tests/fixtures/check-negatives/crossing-law",
@@ -2561,7 +2711,7 @@
       "path": ".claude-plugin/plugin.json",
       "type": "file",
       "size": 607,
-      "sha256": "e59f6afddf017c7372785df07d12dd29f627a1a88a96fbd1b0f9fff473a00e81"
+      "sha256": "c2a691a1de6dc675e566dae7e35013489cf14b6afbc25fe651bbbbccc4afdc59"
     },
     {
       "path": ".codex-plugin",
@@ -2573,7 +2723,7 @@
       "path": ".codex-plugin/plugin.json",
       "type": "file",
       "size": 1379,
-      "sha256": "443a6907f7904595b203b37b1d8af820d9478b97df5b1d59e906795cd18daae9"
+      "sha256": "fc3849ef3a116ebbbdf4c7aa3229ef1fd54e1bf0af497aa2389068fc990f9a06"
     },
     {
       "path": ".gitattributes",
@@ -2620,8 +2770,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 128591,
-      "sha256": "9ec4013823c9e9ef0d65da3b47522b97bc878a035c573a6a527ed04fe9bbbe25"
+      "size": 130134,
+      "sha256": "b1bc6e364eaef94e9449dc4f996a72fb4d5f53569d1c2a76bd2de273a07b40ad"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -2645,7 +2795,7 @@
       "path": "README.md",
       "type": "file",
       "size": 38340,
-      "sha256": "03707f570c992c8d3552c4178f7f0c5660ba0c330ecf49a0da0532cabb181c0e"
+      "sha256": "44885fa67549d75f253daa84b8f34ecb94eba85525a77431bff709a0ef50ca03"
     },
     {
       "path": "SECURITY.md",
@@ -2699,7 +2849,7 @@
       "path": "docs/LOCAL_HOST_DIAGNOSTICS.md",
       "type": "file",
       "size": 3533,
-      "sha256": "218ad70b510ca8bbabc0a10a8b9135ea0802dd8a6b41cc389fd4a07951f6bfa2"
+      "sha256": "9e5e807e002999642d5e6ab005756537fc685ceeb6bf5c959ae086a3f2ec6103"
     },
     {
       "path": "docs/MIGRATION.md",
@@ -2717,13 +2867,13 @@
       "path": "docs/QUICK_START.md",
       "type": "file",
       "size": 30687,
-      "sha256": "dc4ae8aac9c4f6c9fabf033f80b260ac7fbb99a76f050a86695a62e6d59bbff2"
+      "sha256": "b43615b8dd3b736b95e8d664618d5e11cbe2edb932e631169f2a39e57eb66a9c"
     },
     {
       "path": "docs/RELEASE.md",
       "type": "file",
       "size": 30434,
-      "sha256": "2bf9ec210bc530db1f47902e74f0a777f09bb1e7cdfbd341a0b140e2e37f433d"
+      "sha256": "f6a2b10bcbd66cc72fc4bb6d3db62636f979919566fd2f4d314f19514a45ccd9"
     },
     {
       "path": "docs/RENDER_COMPARISON.md",
@@ -2795,7 +2945,7 @@
       "path": "maintainer/compatibility/matrix.yml",
       "type": "file",
       "size": 12385,
-      "sha256": "cbbc14783941bb4b676c6399fa47d5a650f4143ae31153804ed8e43e4e0be3de"
+      "sha256": "5c5e51e690985d7bb7944f1515efaef39dd2267d8341847cc4cccb8926cceb9f"
     },
     {
       "path": "maintainer/compatibility/trusted-host-adapters.yml",
@@ -4961,7 +5111,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "689ad0f33661ee733c3a1e7fe3db1a81bf2c957d629442bdb1a9477febe19d7f"
+      "sha256": "82e5a31191ba0b4e4df388045b9b06a6bdf267e0dacdcae82edbfada4dd051c3"
     },
     {
       "path": "maintainer/schemas",
@@ -5698,8 +5848,8 @@
     {
       "path": "skills/design-dna/SKILL.md",
       "type": "file",
-      "size": 19601,
-      "sha256": "e86ad85f585bd9776dd2ae0a21ce8362ad631a0c92e0cc8e12dd29be258e7ddb"
+      "size": 20333,
+      "sha256": "e38c815bc67692175a7ee5f866e5f11b7911f9924fc29ea4577607e14c4a142a"
     },
     {
       "path": "skills/design-dna/agents",
@@ -6371,7 +6521,7 @@
       "path": "skills/design-dna/release.json",
       "type": "file",
       "size": 82,
-      "sha256": "2327169547b322a283417171d26ecd5d0cb34d4dd86fe276ebeed7647f4db15f"
+      "sha256": "e31ace73478845279efa5d0bd35c9bff953e53badbe1b94c1736f351e1218a59"
     },
     {
       "path": "skills/design-dna/schemas",
@@ -6460,8 +6610,8 @@
     {
       "path": "skills/design-dna/scripts/check_build.mjs",
       "type": "file",
-      "size": 56626,
-      "sha256": "e711993d8b10b3408f972e504619ffab0ed82732dedbcc5458326d5d32c460ad"
+      "size": 61249,
+      "sha256": "2fcf45570f072b42de24df1a9dcbf96c83bb24711670ece6b58c3be437341182"
     },
     {
       "path": "skills/design-dna/scripts/check_signature_transfer.mjs",
@@ -6982,14 +7132,164 @@
     {
       "path": "skills/design-dna/tests/fixtures/check-negatives/.gitignore",
       "type": "file",
-      "size": 146,
-      "sha256": "a1396e96e3417bb98749e7204cb7d2ac36685680e22932f28ea7c95277d655fc"
+      "size": 46,
+      "sha256": "505a5ebfbd182cbf96dcc59956d39f0429fd304a5ac47f48527a23fd20a095bd"
     },
     {
       "path": "skills/design-dna/tests/fixtures/check-negatives/RESULTS.md",
       "type": "file",
-      "size": 24370,
-      "sha256": "7c5b9bfbd88854218db169429927a818faa580cf5e56dda0e8b98103301d6bce"
+      "size": 26021,
+      "sha256": "3219fb1905222393f967934ff10360702ce44d254cd2da67326cf9c4cdf3198d"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/check.json",
+      "type": "file",
+      "size": 38994,
+      "sha256": "13dc728f932530f67049b270a3fb92193b942e332e8628c156030692cefb7613"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/latest.json",
+      "type": "file",
+      "size": 1441,
+      "sha256": "29f3001108d70a81217c4bbabbfeed9128cd9ef7bd21364c47e9724afc9a52c9"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/review-1-home.png",
+      "type": "file",
+      "size": 2777985,
+      "sha256": "3fb116ab2b5b2e0ac1d2c79226bb8fcf83af57cc9dc73b5bea0f850cf30086c4"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/check.json",
+      "type": "file",
+      "size": 38994,
+      "sha256": "13dc728f932530f67049b270a3fb92193b942e332e8628c156030692cefb7613"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-narrow-first-screen.png",
+      "type": "file",
+      "size": 250132,
+      "sha256": "f7345a31361e987e0086f83b64508eba15b24aaa5a2aa6cd13ca4a03a682d1f5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-first-screen.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "9d011b69a7df94627ca05f1d19e4a1011a3f71312224f1b144c8922af3120a2f"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t000.0s.png",
+      "type": "file",
+      "size": 789823,
+      "sha256": "44e41e98141795c1e475b917352ff22f1b18970f0be1575c48678ec76b88a1a1"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t001.5s.png",
+      "type": "file",
+      "size": 408023,
+      "sha256": "1f08b37bc8810bbd220148e2880c555896248a5630fbbdbeb7b4e00c24256624"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t002.9s.png",
+      "type": "file",
+      "size": 392005,
+      "sha256": "d66afa1b08f144321b7a6dcc9a030b535c2391cb2fba0415fbad068eedc267f9"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t004.2s.png",
+      "type": "file",
+      "size": 247344,
+      "sha256": "88377b9f0c97f1016a21ada6ce50d0c75cc496255b026f83c8cde4e61f2ecff0"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t005.6s.png",
+      "type": "file",
+      "size": 242491,
+      "sha256": "094ef01472ec77f79063f1e6462497dbb74de2a91ea35c4aed49fedbef00b98e"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t006.9s.png",
+      "type": "file",
+      "size": 165302,
+      "sha256": "aa16f11b0559fc0291057fc3a1ef5d0bc3e838600a5854812bf5357354f92be5"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t008.3s.png",
+      "type": "file",
+      "size": 660424,
+      "sha256": "ea8cfe3bc0da53fb1fefb9c448a8044d5656ce4504e3184c0790ea484607c5cd"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/frames/route1-wide-t009.7s.png",
+      "type": "file",
+      "size": 403591,
+      "sha256": "3b1cd07ee3e27eabecd303592479b9d44a5b37f19e27378516b034d7504b52e8"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/review-1-home.png",
+      "type": "file",
+      "size": 2777985,
+      "sha256": "3fb116ab2b5b2e0ac1d2c79226bb8fcf83af57cc9dc73b5bea0f850cf30086c4"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/videos",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/check/runs/2026-09-07T04-20-17/videos/route1-wide.webm",
+      "type": "file",
+      "size": 6868652,
+      "sha256": "f4e0e62bd1b0570e57e155ddd9532ab7a83180bdff717ab85de9fce3c4c44c49"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/plan.json",
+      "type": "file",
+      "size": 17807,
+      "sha256": "03d615e352a50a50546a01c5709e5d6ecb442ca747616788de646359917a775c"
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/site",
+      "type": "directory",
+      "size": 0,
+      "sha256": null
+    },
+    {
+      "path": "skills/design-dna/tests/fixtures/check-negatives/blank-stage/site/index.html",
+      "type": "file",
+      "size": 1321831,
+      "sha256": "758997a05396a7cb4a4f149ce09e5c754f0bee302abcea92914920a3bb4b9f63"
     },
     {
       "path": "skills/design-dna/tests/fixtures/check-negatives/crossing-law",

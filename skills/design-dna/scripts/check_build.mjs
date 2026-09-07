@@ -221,6 +221,67 @@ const FUNCTIONAL = `(() => {
   return out;
 })()`;
 
+/* Runs in the built page at one scroll stop: what is on the screen right now. */
+const SCREEN_CONTENT = `(() => {
+  const vw = innerWidth, vh = innerHeight, cols = 24, rows = 15;
+  let media = 0, textPts = 0, total = 0; const textEls = new Set();
+  for (let i = 0; i < cols; i += 1) for (let j = 0; j < rows; j += 1) {
+    const x = Math.round((i + 0.5) * vw / cols), y = Math.round((j + 0.5) * vh / rows);
+    let n = document.elementFromPoint(x, y); if (!n) continue; total += 1;
+    for (let d = 0; d < 6 && n && n !== document.documentElement; d += 1, n = n.parentElement) {
+      if (/^(IMG|VIDEO|CANVAS|PICTURE|SVG)$/.test(n.tagName)) { media += 1; break; }
+      const cs = getComputedStyle(n);
+      if (cs.backgroundImage && cs.backgroundImage !== 'none' && !/gradient/.test(cs.backgroundImage)) { media += 1; break; }
+      if (n.childNodes && [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim())) { textPts += 1; textEls.add(n); break; }
+    }
+  }
+  let words = 0; for (const el of textEls) words += (el.innerText || el.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+  return { y: scrollY, words, images: media, coverage: +((media + textPts) / Math.max(1, total)).toFixed(3), docH: document.documentElement.scrollHeight };
+})()`;
+const HELD_RANGES = `(() => {
+  const vh = innerHeight; const out = [];
+  for (const el of document.querySelectorAll('body *')) {
+    const cs = getComputedStyle(el); if (!/sticky|fixed/.test(cs.position)) continue;
+    const er = el.getBoundingClientRect(); if (er.height < vh * 0.5) continue;
+    const host = cs.position === 'sticky' ? (el.parentElement || el) : el;
+    const pageLevel = !host || /^(BODY|MAIN|HTML)$/.test(host.tagName);
+    const r = pageLevel ? er : host.getBoundingClientRect();
+    const top = Math.round(r.top + scrollY), bottom = pageLevel ? Math.round(er.top + scrollY + vh * 3) : Math.round(r.bottom + scrollY);
+    if (bottom - top <= vh * 1.05) continue;
+    out.push({ top, bottom });
+  }
+  return out;
+})()`;
+async function blankMoments(browser, url, viewport) {
+  const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
+  const page = await context.newPage();
+  const stops = [];
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 60_000 });
+    await new Promise((r) => setTimeout(r, 2000));
+    const docH = await page.evaluate(() => document.documentElement.scrollHeight);
+    const held = await page.evaluate(HELD_RANGES);
+    const maxY = Math.max(0, docH - viewport.height);
+    const ys = new Set();
+    for (let y = 0; y <= maxY; y += Math.round(viewport.height * 0.5)) ys.add(y);
+    for (const h of held) {
+      const from = Math.max(0, h.top), to = Math.min(maxY, h.bottom - viewport.height);
+      for (let y = from; y <= to; y += Math.round(viewport.height * 0.05)) ys.add(y);
+      if (to > from) { ys.add(to); ys.add(Math.max(from, to - 8)); }
+    }
+    ys.add(maxY);
+    const list = [...ys].sort((a, b) => a - b).slice(0, 240);
+    for (const y of list) {
+      await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: "auto" }), y);
+      await new Promise((r) => setTimeout(r, 260));
+      stops.push(await page.evaluate(SCREEN_CONTENT));
+    }
+  } finally { await page.close().catch(() => {}); await context.close().catch(() => {}); }
+  // A blank moment: no picture on top, almost no words, content on under 4% of the sampled screen.
+  const blank = stops.filter((st) => st.images === 0 && (st.words < 12 || st.coverage < 0.02) && st.coverage < 0.04);
+  return { stops: stops.length, blank };
+}
+
 async function probeRoute(browser, url, viewport, sections) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
   const page = await context.newPage();
@@ -310,7 +371,7 @@ async function main() {
   const reviewFile = path.resolve(args.review || (plan.review?.file ? resolveFrom(args.plan, plan.review.file) : path.join(path.dirname(path.resolve(args.plan)), "review.md")));
   const problems = [], passed = [], functional = [], notes = [];
   const push = (cat, msg) => problems.push({ cat, msg });
-  const evidence = { plan: args.plan, studies: [...studies.keys()], run: outDir, routes: [], sources: [], sections: [], probes: [], functional: [] };
+  const evidence = { plan: args.plan, studies: [...studies.keys()], run: outDir, routes: [], sources: [], sections: [], probes: [], functional: [], blank_moments: [] };
 
   // ---- inputs: routes, references, both widths, duplicates
   const routes = plan.routes || [];
@@ -385,6 +446,8 @@ async function main() {
         if (args.early) continue;
         try { probes.push({ route: routeName, viewport: viewport.name, ...(await probeRoute(browser, route.url, viewport, route.sections || [])) }); }
         catch (error) { push("evidence", `${routeName} (${viewport.name}) probe failed: ${String(error?.message || error).slice(0, 160)}`); }
+        try { const bm = await blankMoments(browser, route.url, viewport); evidence.blank_moments.push({ route: routeName, viewport: viewport.name, ...bm }); }
+        catch (error) { push("evidence", `${routeName} (${viewport.name}) blank-moment pass failed: ${String(error?.message || error).slice(0, 160)}`); }
         try { evidence.functional.push({ route: routeName, ...(await functionalPass(browser, route.url, viewport)) }); }
         catch (error) { functional.push(`${routeName} (${viewport.name}): functional pass failed: ${String(error?.message || error).slice(0, 160)}`); }
       }
@@ -540,6 +603,13 @@ async function main() {
     if (c.narration?.length) push("content", `${where}: public copy narrates the design (${c.narration.slice(0, 2).map((x) => `"${x}"`).join("; ")})`);
     if (c.slogans?.length) push("content", `${where}: generic slogan (${c.slogans.slice(0, 2).map((x) => `"${x}"`).join("; ")})`);
     if (probe.duplicate_images?.length) push("design", `${where}: a photograph is used more than once (${probe.duplicate_images.slice(0, 3).map((d) => `${d.uses}x ${d.src.slice(0, 40)}`).join("; ")})`);
+  }
+
+  // ---- blank moments: a screen the visitor can stop on that shows almost nothing
+  for (const bm of evidence.blank_moments) {
+    if (!bm.blank?.length) { passed.push(`no blank screen at ${bm.viewport} across ${bm.stops} stops`); continue; }
+    const where = bm.blank.slice(0, 4).map((b) => `${b.y}px (${b.words} words, ${Math.round(b.coverage * 100)}% covered)`).join(", ");
+    push("design", `${bm.route} (${bm.viewport}): ${bm.blank.length} of ${bm.stops} scroll stops show a nearly empty screen, no photograph and almost no words, at ${where}; a held stage whose card has already left, or a gap between sections, reads as a blank page to the visitor`);
   }
 
   // ---- hover: the dominant reference's controls answer the pointer, so the build's must

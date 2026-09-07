@@ -75,8 +75,21 @@ EVIDENCE: check_build 24f95824a2dd, study_reference 8c1509dbdcde; studies by the
 APPROVAL not recorded: no owner approval is claimed
 ```
 
+## blank-stage (the Menucha demo before its stage fix, served on 4884)
+
+The owner scrolled this build and stopped on a bare green stage with only a corner word. Its studies are the demo's own; the plan is the demo's with the route pointed at 4884.
+
+```
+CHECK FAIL (automated) 1 problem(s): [design] home (wide): 17 of 120 scroll stops show a nearly empty screen, no photograph and almost no words, at 2250px (2 words, 1% covered), 2495px (4 words, 2% covered), 2540px (4 words, 2% covered), 3125px (4 words, 2% covered); a held stage whose card has already left, or a gap between sections, reads as a blank page to the visitor
+FUNCTIONAL PASS: keyboard focus visible, content present with reduced motion, no overlay at rest, no sideways scroll, at both widths
+REVIEW SELF-REVIEW: C:\Users\motty\OneDrive\Desktop\Clients\lev-cholim-lakewood\.design-dna\review.md; 4 of 4 selected references compared; written by the builder, so it is the builder's comparison, not a second pair of eyes; 5 unresolved difference(s) listed; visitor walk covers menus, reading, horizontal, keyboard, focus, motion, overlays, reduced motion, mobile, settled states; a written review proves a review was written, not that the design is good
+EVIDENCE: check_build 2fcf45570f07, study_reference fdd4403e7b24; studies by the current study revision: 4 of 4; run check/runs/2026-09-07T04-20-17
+APPROVAL not recorded: no owner approval is claimed
+```
+
 ## What these runs prove and what they do not
 
 - Each bad input produced the failure line written for it: no route, a duplicate reference, a study that did not succeed at phone width, a typed font match without a record, a phone page that scrolls sideways, and a generic composition (icon-card triplet, fade-up as the only motion, no pointer response, slogans, repeated disclaimers).
 - The Crossing Law build, with its registry fault corrected, still fails on the things its owner rejected it for: a held section asking five viewports of scrolling for uncounted states, twelve demo disclaimers, a face borrowed from a non-dominant reference, four references with no recorded quality judgment or contribution, two studies with unacknowledged observation gaps (a consent overlay, a recording that never travelled), and a self-review with no visitor walk. The registry lines come last.
+- The blank-stage case is caught only because the screen probe samples the stacking order at every twentieth of a viewport inside held sections; rect-based visibility counted the covered sticky hero's photographs and missed it.
 - No automated line judged composition, crop, hierarchy or pacing. For the wrong-composition page the checker caught the slop shapes and the missing behaviors; whether the page looks like its references is answered only by the review sheet and a person's eyes. That is the boundary, stated.

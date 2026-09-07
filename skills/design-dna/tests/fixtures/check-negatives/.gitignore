@@ -1,3 +1,3 @@
-# Check output (frames, videos, review sheets) and the 1.3 MB inlined build variant are regenerated, never committed.
 */check/
 wrong-mobile/site/
+blank-stage/site/

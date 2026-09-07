@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
   "description": "Cross-host website production with specific, source-authorized visual decisions and no producer-authored design, visitor-serving copy, rendered verification, and opt-in Connected Public Experience.",
-  "version": "13.3.0",
+  "version": "13.3.1",
   "author": {
     "name": "Motty"
   },

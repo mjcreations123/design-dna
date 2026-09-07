@@ -67,14 +67,14 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Development-candidate status:** `13.3.0` is not a qualified release. Candidate source
+> **Development-candidate status:** `13.3.1` is not a qualified release. Candidate source
 > and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
 > CI, signatures, and strict release qualification each need their own current
 > evidence. Any retained earlier host, install, route, test, or validation
-> records are historical inputs, not 13.3.0 qualification; see
+> records are historical inputs, not 13.3.1 qualification; see
 > [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel

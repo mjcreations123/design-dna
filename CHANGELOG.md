@@ -5,6 +5,32 @@ versioning for the portable skill contract; maintainer evidence and dated
 convergence watches may receive review-only updates without changing runtime
 behavior.
 
+## 13.3.1 - Development candidate
+
+The owner scrolled the Menucha demo and stopped on a bare green screen: the
+held stage had let its last card leave before the hold ended, and between
+cards there were moments when neither the leaving nor the arriving card was on
+screen. Fourteen wheel steps and an eight-frame storyboard had sampled past
+every one of those instants, and no check asked whether the visitor could
+stop on nothing.
+
+- `check_build.mjs`: blank moments. The build is scrolled half a viewport at a
+  time across the page and a twentieth of a viewport inside every held range
+  (plus the last pixel of each hold). At each stop a 24x15 grid is sampled
+  with `elementFromPoint`, so a sticky hero covered by the page does not count
+  as a picture, and the stop is reported when nothing is on top: no media
+  point, fewer than twelve words or under two percent covered. Against the
+  unfixed demo it reported 17 of 120 stops at desktop and 8 of 88 at phone
+  width; the rect-based first attempt had missed desktop entirely.
+- `SKILL.md`: a held section never shows an empty frame; transitions overlap
+  as the reference's do and the last state holds until release; scrub every
+  held section slowly at both widths before calling it built.
+- Fixture `tests/fixtures/check-negatives/blank-stage`: the demo as it was
+  before the fix, with the lines the checker produced.
+- The demo's stage now rests each card for half its slice and slides the next
+  card in underneath while it leaves; the last card stays until the stage
+  releases.
+
 ## 13.3.0 - Development candidate
 
 Built from the Crossing Law failure report (a rejected law-firm demo whose

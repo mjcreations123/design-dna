@@ -226,6 +226,15 @@ illustrative disclosure appears once, quietly, where a footer note goes.
 Decorative numbers, arrows on things that are not clickable, eyebrows above
 headings and em dashes are forbidden by the owner's standing feedback.
 
+A held section (a pinned stage, a sticky hero) never shows the visitor an
+empty frame. Copy the reference's timing, not its label: on the Surfer's
+Journal the next cover is already rising while the last one leaves, and the
+final cover stays put until the stage lets go. A stage whose card has left
+before the hold ends, or whose next card has not arrived, is a bare colored
+screen with a word in the corner (the Menucha stage did exactly this on
+2026-09-07 and the owner saw it). Scrub through every held section slowly at
+both widths before calling it built.
+
 ### 4. Check, review, report
 
 ```
@@ -247,7 +256,10 @@ verbatim in the report:
   section at that width*; no held section asking more than about a viewport
   per state; no tall, near-empty section; no mostly empty page; no photograph
   used twice; no em dash, eyebrow, padded number, stray arrow, repeated
-  disclaimer, design narration or slogan in public copy; no slop shape.
+  disclaimer, design narration or slogan in public copy; no scroll stop (half a
+  viewport apart across the page, a twentieth inside held sections, measured
+  through the stacking order) where the visitor sees almost nothing; no slop
+  shape.
   Problems are listed design first and registry last. Route-level mechanism
   counts and coverage percentages are no longer floors; behavior is tested
   per section and per width, never pooled across the page.

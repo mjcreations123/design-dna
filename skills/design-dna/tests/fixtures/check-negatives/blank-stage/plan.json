@@ -1,0 +1,310 @@
+{
+  "project": "Menucha Bikur Cholim of Lakewood (demonstration site)",
+  "written": "2026-09-06",
+  "references": [
+    {
+      "id": "heart-and-soil",
+      "url": "https://www.heartandsoilflowers.com/",
+      "source": "typewolf; Site of the Day 2025-12-13 (https://www.typewolf.com/site-of-the-day/heart-and-soil)",
+      "signature": "small photographs scatter across an ivory page like prints laid on a table, between solid blocks of deep green; each block fades and slides up into place as it scrolls into view, and every link dims when the pointer touches it",
+      "signature_mechanisms": [
+        "reveal"
+      ],
+      "take": [
+        "first screen: split hero, deep green left panel with a vertical uppercase nav list and an inset photograph, centered wordmark, ring-shaped inquire button, full-bleed photograph on the right, thin rule under a small notice line",
+        "logo strip on ivory under the hero",
+        "centered large serif statement with italic emphasis and an underlined italic link with arrow",
+        "scattered photograph cluster on ivory, staggered sizes and offsets, revealing as it enters",
+        "half-and-half blocks: photograph beside a deep green block holding a stacked serif list of links",
+        "quote block on olive ground with a large opening quotation mark beside a tall black-and-white photograph",
+        "closing 'We'd love to hear from you' on ivory with photographs at the edges, then a lavender footer with the mark centered",
+        "hover: 0.4s color and opacity transitions on links; ivory ground rgb(237,235,223); greens rgb(46,59,20) and rgb(63,82,26); sand rgb(214,201,181); olive rgb(173,159,55); lavender footer rgb(173,173,196)",
+        "narrow: nav collapses to a hamburger, wordmark centered, ring button at right; blocks stack full width"
+      ],
+      "source_id": "typewolf",
+      "source_url": "https://www.typewolf.com/site-of-the-day/heart-and-soil",
+      "quality": {
+        "desktop": "split hero, statement, scattered prints, half blocks, quote, footer read as one calm sequence; nothing fights for attention",
+        "mobile": "collapses to hamburger + centered wordmark + ring; blocks stack; the cluster stays legible at 390px",
+        "readability": "Cardinal Fruit at 26-50px with Baskervville 14-18px body; dark green on ivory; no thin text on photos",
+        "navigation": "four-item vertical nav, ring inquire button, footer repeats the links; every link responded to hover",
+        "reliability": "loaded in one pass at both widths, three inner pages studied, no overlays",
+        "suitability": "a warm, dignified, photograph-led grammar for a care organization whose content is short and human; its floral subject is irrelevant"
+      },
+      "contributes": "the dominant grammar: first screen, ground, type system, cluster, half blocks, quote, closing and footer",
+      "gaps_reviewed": "see the re-studied sheet: gaps, if any, concern menus never opened; only home components were copied and each was read in the frames"
+    },
+    {
+      "id": "estelle",
+      "url": "https://estellescottsdale.com/",
+      "source": "siteofsites; featured 08/2026 (https://siteofsites.co/)",
+      "signature": "the nav holds pinned at the top while a narrow centered column of text scrolls past on warm cream with photographs staggered down both sides of it, and two half-width photo panels carry large light headings with a small outlined button",
+      "signature_mechanisms": [
+        "pinned"
+      ],
+      "take": [
+        "text column flanked by staggered photographs on cream",
+        "two half-width photograph panels, each with a large light serif heading over the photo and one small outlined uppercase button",
+        "small uppercase tracked controls with a 1px outline, 5px 15px padding, square corners",
+        "nav held pinned at the top while the page scrolls"
+      ],
+      "source_id": "site-of-sites",
+      "source_url": "https://siteofsites.co/",
+      "quality": {
+        "desktop": "cream ground, centered text column with staggered photos, two big photo panels with one outlined button each; generous and quiet",
+        "mobile": "panels stack full width, headings stay large and legible",
+        "readability": "light display face at 100px over photos with a dark overlay; mono uppercase labels at 12.8px are small but sparse",
+        "navigation": "small outlined controls, a menu control; pinned nav",
+        "reliability": "loaded at both widths; no inner pages behind its nav, recorded",
+        "suitability": "the two-panel call to action is exactly the volunteer / request split this site needs"
+      },
+      "contributes": "the two half-width photo panels with large light headings and outlined buttons; the outlined control language",
+      "gaps_reviewed": "the fixed div.hero-text layer the tool flags is the sticky greeting that scales away as you scroll; I read it in the contact-sheet frames (t=0 to 7.5 s) and did not copy it; inner pages were not discovered behind its menu and none were copied"
+    },
+    {
+      "id": "surfers-journal",
+      "url": "https://archives.surfersjournal.com/",
+      "source": "siteofsites; featured 09/2026 (https://siteofsites.co/)",
+      "signature": "each cover slides up through a stage that stays pinned in the viewport, and the whole page ground changes color to match the cover that is passing",
+      "signature_mechanisms": [
+        "pinned",
+        "reveal"
+      ],
+      "take": [
+        "pinned stage: a section holds still for several screens while its cards slide up through it one by one",
+        "ground swap: the section's background color changes per card, 0.8s cubic-bezier(0.4,0,0.2,1)",
+        "big year and issue number in the bottom corners of the pinned stage set in the display face; here the service name and its count position",
+        "underlined nav links, 20px, no button chrome"
+      ],
+      "source_id": "site-of-sites",
+      "source_url": "https://siteofsites.co/",
+      "quality": {
+        "desktop": "one idea done perfectly: covers slide through a pinned stage while the ground repaints; nav is three underlined words",
+        "mobile": "the stage survives at 390px as a single pinned column",
+        "readability": "Practice at 20px nav and 56px corners; high contrast on every ground",
+        "navigation": "three text links plus a Library button; inner pages (collections, search, issue) all loaded",
+        "reliability": "home and three inner pages at both widths, no overlays",
+        "suitability": "gives the four services a paced, memorable presentation without cards or icons"
+      },
+      "contributes": "the pinned stage whose ground changes color per card (the How we help section) and its corner typography",
+      "gaps_reviewed": "no gaps recorded; the stage's swap is scroll-driven (driver: scroll), not autoplay, and the build copies it as scroll-driven"
+    },
+    {
+      "id": "era-residence",
+      "url": "https://era-residence.com/",
+      "source": "awwwards; Site of the Day 2026-08-31 (https://www.awwwards.com/websites/sites_of_the_day/)",
+      "signature": "the hero photograph holds still while the next section slides up over it, and layers inside each screen move at different speeds",
+      "signature_mechanisms": [
+        "pinned",
+        "parallax"
+      ],
+      "take": [
+        "hero pinned under the page: the first screen is fixed while the following section scrolls up over it",
+        "parallax: photographs inside sections move at a different rate than the page",
+        "small uppercase tracked labels in the corners of the hero (place, time)",
+        "full-bleed photograph screens with a short caption in the bottom corner"
+      ],
+      "source_id": "awwwards",
+      "source_url": "https://www.awwwards.com/websites/sites_of_the_day/",
+      "quality": {
+        "desktop": "cinematic: pinned hero under the page, parallax layers, big Didone display; a cookie panel sat over the recording",
+        "mobile": "pinned title and swaps survive; heavy motion but legible",
+        "readability": "small extended sans at 10-12px uppercase is at the edge of legibility; not copied at that size",
+        "navigation": "sparse: select an apartment, book a call, contact",
+        "reliability": "loaded, but a consent panel covered part of every frame and only 'accept/decline' were offered; inner pages not studied",
+        "suitability": "only its pinned-hero and parallax behaviors are taken; its luxury register and tiny labels are not"
+      },
+      "contributes": "photographs moving at a different rate than the page in the cluster, the halves and the quote (behavior_from); its pinned hero was tried and not copied at its length",
+      "gaps_reviewed": "consent panel in every frame: the pinned hero and parallax were read from the motion pass (which measures element movement, not pixels) and confirmed in the frames beside the panel; nothing from its obstructed lower-right region was copied"
+    }
+  ],
+  "studied_not_selected": [
+    {
+      "id": "aardvark",
+      "why": "awwwards SOTD 2026-08-30; excellent, but saturated yellow and pink retail playfulness is the wrong register for a chesed organization"
+    },
+    {
+      "id": "trevornoah",
+      "why": "awwwards SOTD 2026-09-03; dark charcoal and pink collage for a comedian, wrong register; the tool found no inner pages behind its hamburger"
+    },
+    {
+      "id": "daylight",
+      "why": "typewolf SOTD 2025-12-14; warm, but its grammar is icon-card rows and stat cards, which the checker and the owner's feedback both forbid"
+    },
+    {
+      "id": "gorving",
+      "why": "typewolf SOTD 2025-09-26; corporate content site with cookie banner, card grids and an icon triplet; thin"
+    },
+    {
+      "id": "every",
+      "why": "typewolf SOTD 2025-09-28; dense dark editorial grid for an AI newsletter, wrong register"
+    },
+    {
+      "id": "oimachi",
+      "why": "awwwards SOTD 2026-08-21; dark agency portfolio grid, wrong register"
+    },
+    {
+      "id": "casa-portufornia",
+      "why": "siteofsites 07/2026; pale pink ground with a giant script monogram, then an accordion list and forms carry the page; thin"
+    }
+  ],
+  "typefaces": [
+    {
+      "family": "Instrument Serif",
+      "from": "heart-and-soil",
+      "matched_for": "Cardinal Fruit",
+      "match_record": "C:/Users/motty/OneDrive/Desktop/Clients/lev-cholim-lakewood/.design-dna/typeface-match-cardinal.json",
+      "measured_target": ".design-dna/references/heart-and-soil/faces.json"
+    },
+    {
+      "family": "Baskervville",
+      "from": "heart-and-soil"
+    }
+  ],
+  "ground": {
+    "color": "rgb(237, 235, 223)",
+    "from": "heart-and-soil"
+  },
+  "routes": [
+    {
+      "url": "http://127.0.0.1:4884/",
+      "name": "home",
+      "dominant": "heart-and-soil",
+      "mechanisms": [
+        "pinned",
+        "reveal",
+        "parallax"
+      ],
+      "sections": [
+        {
+          "selector": ".hero",
+          "reference": "heart-and-soil",
+          "content": "organization name, four nav items, notice line, town and hotline",
+          "composition": "split screen: green panel left with vertical nav and an inset photo, full-bleed photo right, wordmark straddling the split, ring button top right",
+          "image_role": "right half is a full-bleed still life of packed meals; inset is a hands-and-flowers portrait, cropped tight",
+          "typography_role": "wordmark in the display serif, uppercase tracked labels in the text face",
+          "behavior": "none measured: the hero is sticky under the page for one screen (era-residence holds its hero for two and a half screens; that length was not copied, so the tool does not count this as pinned)",
+          "mobile": "one column: hamburger, centered wordmark, ring; inset photo full width; photo half below; the hero is not sticky on a phone",
+          "behavior_narrow": "none",
+          "palette_from": "heart-and-soil",
+          "states": 1
+        },
+        {
+          "selector": ".strip",
+          "reference": "heart-and-soil",
+          "content": "five town names",
+          "composition": "one row under the hero: small label left, five words spaced across",
+          "image_role": "none",
+          "typography_role": "display serif words at 28px, one uppercase label",
+          "behavior": "none",
+          "mobile": "scrolls sideways inside its own row"
+        },
+        {
+          "selector": ".statement",
+          "reference": "heart-and-soil",
+          "content": "one sentence saying what Menucha does, with an italic link",
+          "composition": "centered column, max 880px, link under it",
+          "image_role": "none",
+          "typography_role": "display serif 50px with italic words; italic underlined link with arrow",
+          "behavior": "reveal",
+          "mobile": "same column at 34px"
+        },
+        {
+          "selector": ".cluster",
+          "reference": "heart-and-soil",
+          "content": "six still lifes of the work",
+          "composition": "prints scattered at staggered sizes and offsets across an 880px band",
+          "image_role": "the photographs are the content; small, unframed, like prints on a table",
+          "typography_role": "none",
+          "behavior": "parallax (the prints move at different rates than the page)",
+          "mobile": "six prints re-scattered in a taller band",
+          "behavior_from": "era-residence"
+        },
+        {
+          "selector": ".stage",
+          "reference": "surfers-journal",
+          "content": "the four services, one card each with a one-line caption",
+          "composition": "a viewport-tall stage pinned for four states; a portrait card slides up through the center; big word bottom left, count bottom right",
+          "image_role": "each card is one photograph standing for one service",
+          "typography_role": "display serif 56px corner word; text face 20px count and caption",
+          "behavior": "pinned; swap (ground color and the corner word change per state, scroll-driven, driver: scroll)",
+          "mobile": "same stage, card 72vw wide",
+          "states": 4,
+          "palette_from": "heart-and-soil",
+          "behavior_narrow": "pinned; parallax (the tool reads the sliding cards as parallax at 390px and does not register the ground swap; the swap is present but unmeasured there)",
+          "behavior_from": "surfers-journal"
+        },
+        {
+          "selector": ".halves",
+          "reference": "heart-and-soil",
+          "content": "five service names as links",
+          "composition": "photo left, deep green block right with a stacked list and an italic link",
+          "image_role": "the van at dusk, full bleed in its half",
+          "typography_role": "display serif 57.6px list",
+          "behavior": "parallax (the photo moves at a different rate)",
+          "mobile": "photo above the green block, list at 40px",
+          "behavior_narrow": "none",
+          "behavior_from": "era-residence"
+        },
+        {
+          "selector": ".intro",
+          "reference": "heart-and-soil",
+          "content": "one paragraph about why the work matters, with a link",
+          "composition": "centered display paragraph on the stone ground",
+          "image_role": "none",
+          "typography_role": "display serif 36px",
+          "behavior": "reveal",
+          "mobile": "same centered column at 28px"
+        },
+        {
+          "selector": ".quote",
+          "reference": "heart-and-soil",
+          "content": "the three things asked of a volunteer, attributed to the welcome letter",
+          "composition": "olive ground, quotation mark, quote left, tall black-and-white photo right",
+          "image_role": "the hands photograph carries the emotional weight",
+          "typography_role": "text face 26.6px quote, uppercase attribution",
+          "behavior": "parallax (the photo)",
+          "mobile": "photo below the quote",
+          "behavior_narrow": "none",
+          "behavior_from": "era-residence"
+        },
+        {
+          "selector": ".panels",
+          "reference": "estelle",
+          "content": "Volunteer and Request help",
+          "composition": "two half-width photo panels with one large heading and one outlined button each",
+          "image_role": "photographs sit under a dark overlay as the panel's ground",
+          "typography_role": "display serif 100.8px headings; outlined uppercase button 12.8px",
+          "behavior": "hover (photo scales, button fills)",
+          "mobile": "panels stack; headings 56px",
+          "behavior_narrow": "none"
+        },
+        {
+          "selector": ".closing",
+          "reference": "heart-and-soil",
+          "content": "we'd love to hear from you, with the phone number as a link",
+          "composition": "centered monogram, heading, italic link",
+          "image_role": "none",
+          "typography_role": "display serif 36px",
+          "behavior": "reveal",
+          "mobile": "same layout, tighter padding",
+          "behavior_narrow": "none (the reveal exists in the CSS at 390px but the motion pass reaches the page bottom before it registers; not claimed)"
+        },
+        {
+          "selector": "footer.site",
+          "reference": "heart-and-soil",
+          "content": "description, mark, two link columns, copyright and the demonstration note",
+          "composition": "lavender ground, four columns, bottom line",
+          "image_role": "none",
+          "typography_role": "text face 14.4px, uppercase links",
+          "behavior": "none",
+          "mobile": "two columns then one"
+        }
+      ]
+    }
+  ],
+  "review": {
+    "reviewer": "self",
+    "file": "C:/Users/motty/OneDrive/Desktop/Clients/lev-cholim-lakewood/.design-dna/review.md"
+  }
+}
