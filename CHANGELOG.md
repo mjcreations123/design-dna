@@ -1,5 +1,13 @@
 # Changelog
 
+## 13.6.0 - The user selects the design parts
+
+- Motty's new workflow: research ten websites with suitable overall designs, present them, then stop for the user's part-by-part selections or request for more.
+- No website, first-screen slice, automatic source subset or invented supporting design before selection. Uncovered visible choices return to the user.
+- Record the initial candidates, actual user instructions and selected parts in the existing plan; bind each section to those choices. The checker rejects missing choices and unselected contributions, without pretending to authenticate user messages.
+- Remove autonomous four-reference, two-gallery and two-typeface quotas. Navigation and footer may follow separate user selections. Source measurement, rights, accessibility and final review remain required.
+- Update the skill entrypoint, selection guide, assurance policy, scaffold and Codex prompt. Existing installations require genuine user-selection records, never fabricated approval.
+
 ## 13.5.0 - Research in half an hour
 
 The owner: research took hours before a build began, and a person chooses

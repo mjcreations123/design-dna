@@ -5,7 +5,8 @@ slots or new workflow stage. The plan is checked before the browser opens.
 
 ## Study the region that matters
 
-After looking at the live reference, name its actual defining region:
+First present ten suitable websites and wait for the user's part selections,
+as required by SKILL.md. Then identify the actual region the user selected:
 
 ```
 node <skill>/scripts/study_reference.mjs --url <URL> --id <ID> --region ".source-region" --out .design-dna/references
@@ -19,8 +20,29 @@ or unobserved canvas as evidence of the experience behind it.
 
 ## Add the obligation to the plan
 
+Preserve selection in the existing plan, not a new workflow service:
+
+```json
+{
+  "owner_selection": {
+    "candidates": [{"id":"source-a","url":"https://example.com/","fit":"Why this overall design suits the project"}],
+    "user_instructions": "The user's actual selection message, copied faithfully",
+    "choices": [{"id":"chosen-header","reference":"source-a","parts":"The header and navigation the user selected"}]
+  }
+}
+```
+
+The example abbreviates candidates: retain all ten distinct websites presented,
+plus any requested additions. Each section binds `owner_choices: ["chosen-header"]`
+to the choices authorizing its composition and any palette/behavior contributions.
+Do not type approval on the user's behalf. The checker validates completeness
+and consistency, not the authenticity of a user message or the accuracy of a
+visual interpretation. A broad compliment or a request to build is not a
+selection. Ask about uncovered parts; do not backfill them with producer choices.
+
 Every substantial reference has one `signature_spec` with exact `page` and
-`selector`, plus `wide` and `narrow` definitions. Each definition names:
+`selector` for the USER-CHOSEN part, plus `wide` and `narrow` definitions.
+Do not import a different signature from elsewhere on the source. Each definition names:
 
 - `kind`: static or interactive.
 - `medium`: image, video, canvas, svg, background, or typography.
@@ -35,8 +57,8 @@ Every substantial reference has one `signature_spec` with exact `page` and
 
 Static signatures are valid and have an empty mechanism list, driver static,
 and a single settled sequence state. A region with measured dynamic content
-cannot be relabeled static to discard its behavior. Choose a genuinely static
-source region if that is what the design needs. If a detector cannot measure a
+cannot be relabeled static to discard its behavior. Ask the user about a genuinely static
+alternative if needed; do not substitute it autonomously. If a detector cannot measure a
 defining custom interaction, keep it unverified and obtain targeted evidence;
 do not rename it into a supported effect or invent a static substitute.
 
@@ -79,11 +101,12 @@ The checker captures these states for the visual review. It cannot infer
 that an input was meaningful merely because a screenshot changed.
 
 Every route's `system_sections` names its opening, navigation and ending
-selectors. These sections belong to its dominant reference. Other substantial
+selectors. They follow the user's choices and may come from different sources;
+the dominant reference does not override a separately chosen footer or navigation. Other substantial
 references contribute their selected signatures in distinct mapped regions.
 Each `signature_from` entry must have the corresponding transfer. References
-marked `role: "ancillary"` may provide palette/type details but do not count
-toward the four substantial references and cannot own composition/behavior.
+marked `role: "ancillary"` may provide user-selected palette/type details but
+cannot own composition/behavior. There is no four-reference or motion quota.
 
 Every section, including ordinary navigation, introductions, forms and footers,
 binds `source_region: {"page":"https://source.example/page", "selector":".actual-region"}`
@@ -110,7 +133,7 @@ Inspected means new state evidence, not the original obstructed screenshot.
 Excluded records exact `excluded_selectors`; an exclusion on the signature's
 page also explains `unrelated_reason`. Excluding the signature region itself,
 the whole page, or leaving the defining experience unverified means replacing
-that contributor or re-studying it. Excluding an unrelated footer is allowed.
+that contributor with the user's permission or re-studying it. Excluding an unrelated footer is allowed.
 These records make the decision inspectable; a reviewer must verify the
 claimed relationship rather than treating prose or file hashes as proof.
 

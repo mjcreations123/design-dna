@@ -40,6 +40,7 @@ import { resolvePlaywright, discoverBrowserExecutable } from "./playwright_resol
 import { studyPage, hoverProbe } from "./study_reference.mjs";
 import {signaturePlanProblems, gapDispositionProblems, inspectRegions, signatureBuildProblems, reviewTransferProblems} from './signature_contract.mjs';
 import {captureTransferSequence, sequencePlanProblems} from './signature_sequence.mjs';
+import {ownerSelectionProblems} from './owner_selection.mjs';
 import {repeatedImages,iconCardRow,contentRoles} from './content_classification.mjs';
 
 const TOOL = "check_build.mjs";
@@ -427,7 +428,8 @@ async function main() {
   if (dupes.length) push("selection", `reference listed twice: ${[...new Set(dupes)].join(", ")}; a duplicate is not a second reference`);
   for (const ref of plan.references || []) if (!studies.has(ref.id)) push("plan", `plan cites reference ${ref.id} but ${args.studies}/${ref.id}/study.json does not exist`);
   const selected = [...new Set(ids.filter((id) => studies.has(id)))];
-  if (selected.length < 4) push("selection", `plan selects ${selected.length} distinct studied references; the floor is four, and a filler fourth is not a reference: keep studying until the set works`);
+  if (!selected.length) push("selection", 'the plan needs at least one user-selected, fully studied source');
+  for(const problem of ownerSelectionProblems(plan))push('plan',problem);
   for (const id of selected) {
     const study = studies.get(id);
     for (const vp of ["wide", "narrow"]) {
@@ -475,8 +477,7 @@ async function main() {
       else { const h = hostOf(ref.source_url); const ok = [hostOf(src.url), ...(src.aliases || []).map((a) => a.replace(/^www\./, ""))].filter(Boolean).some((d) => h === d || (h && h.endsWith("." + d))); if (!ok) push("sources", `${ref.id}: source_url ${ref.source_url} is not on ${src.id}'s domain (${hostOf(src.url)}${(src.aliases || []).length ? " or " + src.aliases.join(", ") : ""})`); }
     }
   }
-  if (selected.length && sourceKeys.size < 2) push("sources", `selected references come from ${sourceKeys.size} registry source(s) (${[...sourceKeys.keys()].join(", ") || "none"}); the floor is two`);
-  else if (sourceKeys.size) passed.push(`sources: ${[...sourceKeys.keys()].join(", ")}`);
+  if (sourceKeys.size) passed.push(`sources: ${[...sourceKeys.keys()].join(", ")}`);
 
   // ---- read the build
   for (const problem of signaturePlanProblems(plan, studies, args.studies)) push('plan', problem);
@@ -559,7 +560,7 @@ async function main() {
       }
     }
   }
-  if ((plan.typefaces || []).length > 2) push("design", `plan declares ${(plan.typefaces || []).length} typefaces; the rule is at most two`);
+  // The user's selected treatments determine the font count; provenance remains checked.
   const buildFamilies = new Set(); for (const page of buildPages) for (const f of realFamilies(page.design)) buildFamilies.add(f);
   for (const f of buildFamilies) {
     if (!declared.has(f)) push("design", `the build sets text in "${f}", which the plan does not declare`);

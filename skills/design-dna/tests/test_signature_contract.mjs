@@ -33,6 +33,16 @@ test('a substantial static composition can satisfy the contract without animatio
 test('a faithfully mapped interactive signature satisfies the plan contract',()=>{
   const {plan,studies}=fixture(true);assert.deepEqual(signaturePlanProblems(plan,studies,root),[]);
 });
+test('one chosen source is sufficient when it covers the planned design',()=>{
+  const {plan,studies}=fixture();plan.references=plan.references.slice(0,1);
+  plan.routes[0].sections=plan.routes[0].sections.filter(s=>s.reference==='ref-0');
+  assert.deepEqual(signaturePlanProblems(plan,studies,root),[]);
+});
+test('a separately chosen footer need not use the opening reference',()=>{
+  const {plan,studies}=fixture();const footer=plan.routes[0].sections.at(-1);
+  footer.reference='ref-1';footer.source_region={page:plan.references[1].url,selector:'.source'};
+  assert.deepEqual(signaturePlanProblems(plan,studies,root),[]);
+});
 test('behavior:none cannot erase a chosen interactive source',()=>{
   const {plan,studies}=fixture(true);plan.routes[0].sections[1].behavior='none';
   assert.ok(signaturePlanProblems(plan,studies,root).some(p=>p.includes('behavior:none strips')));
@@ -52,7 +62,7 @@ test('relabeling observed dynamic content static fails',()=>{
 });
 test('ancillary palette references do not count and cannot own the route',()=>{
   const {plan,studies}=fixture();plan.references[0].role='ancillary';
-  const failures=signaturePlanProblems(plan,studies,root);assert.ok(failures.some(p=>p.includes('four substantial')));assert.ok(failures.some(p=>p.includes('dominant must')));
+  const failures=signaturePlanProblems(plan,studies,root);assert.ok(failures.some(p=>p.includes('ancillary citations cannot own')));assert.ok(failures.some(p=>p.includes('dominant must')));
 });
 test('excluding a signature region fails, excluding an unrelated footer can stand',()=>{
   const {plan}=fixture();const ref=plan.references[0],gap={page:'home',viewport:'wide',code:'overlay-at-rest'};

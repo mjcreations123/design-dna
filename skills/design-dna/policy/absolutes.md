@@ -8,6 +8,12 @@ inferred from previous work.
 
 ## Governing rule
 
+Motty's 2026-09-08 workflow replaces autonomous source/part selection: present
+ten suitable websites, wait for the user to choose parts or request more,
+then implement those choices. Earlier selected-source count/spread/motion
+quotas cannot override this decision. Missing visible choices require a question,
+not an invented design. Truth, rights, accessibility and evidence still apply.
+
 Use a non-negotiable constraint only when violating it would make the work
 untrue, inaccessible, unsafe, unauthorized, broken, misleading, or contrary
 to an explicit project requirement. Aesthetic, expressive, compositional, and

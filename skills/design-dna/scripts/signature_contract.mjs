@@ -29,7 +29,7 @@ export function signaturePlanProblems(plan, studies, studyRoot) {
   const problems = [];
   const refs = list(plan.references), routes = list(plan.routes);
   const substantial = refs.filter((ref) => ref.role !== 'ancillary');
-  if (new Set(substantial.map((r) => r.id)).size < 4) problems.push('selection: four substantial references are required; ancillary palette/type citations do not count');
+  if (!substantial.length) problems.push('selection: at least one user-selected composition reference is required');
   for (const route of routes) {
     const dominant = refs.find((ref) => ref.id === route.dominant);
     if (!dominant || dominant.role === 'ancillary') problems.push(`${route.name}: dominant must be a substantial selected reference`);
@@ -37,7 +37,7 @@ export function signaturePlanProblems(plan, studies, studyRoot) {
     for (const role of ['opening','navigation','ending']) {
       const selector = system?.[role];
       const section = list(route.sections).find((s) => s.selector === selector);
-      if (!section || section.reference !== route.dominant) problems.push(`${route.name}: ${role} must name a planned section owned by its dominant reference (system_sections)`);
+      if (!section) problems.push(`${route.name}: ${role} must name a planned user-selected section (system_sections)`);
     }
     for(const section of list(route.sections)) {
       const ref=refs.find(r=>r.id===section.reference);

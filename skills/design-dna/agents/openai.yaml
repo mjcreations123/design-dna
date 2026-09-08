@@ -1,6 +1,6 @@
 interface:
   display_name: "Design DNA"
-  short_description: "Source-authorized web design; no invented visible choices"
-  default_prompt: "Use $design-dna to build only from qualified measured references or approved project authority; invent no visible design."
+  short_description: "Ten website options; you choose the design parts"
+  default_prompt: "Use $design-dna to present ten suitable websites, wait for my part-by-part selections, then build only from those choices."
 policy:
   allow_implicit_invocation: true

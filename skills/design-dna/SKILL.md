@@ -7,8 +7,9 @@ description: Builds, redesigns, polishes, and visually reviews specific, current
 
 A website made with this skill copies the front-end design of several
 excellent websites and reads as one design. The producer contributes no
-design of its own. Two programs do the looking and the measuring; the producer
-does the choosing, the planning, the building and the looking-again. A
+design of its own. The producer researches ten suitable websites; the user
+chooses the parts to use. The producer records those choices, measures,
+implements and checks them without making additional design selections. A
 reference is studied in minutes, a build is checked in a minute or two, and
 every claim traces to a record a program wrote or a screenshot a person saw.
 
@@ -58,12 +59,43 @@ build, and the report says so first.
 
 ## The workflow
 
-Four steps. Steps 1 and 4 are programs whose output is quoted, never
-paraphrased. Step 2 is the only place the producer authors anything, and it
-is a selection. Step 3 has a mandatory early look before the whole site is
-built.
+Owner-directed selection (Motty, 2026-09-08) supersedes earlier autonomous
+selection, reference-count floors, source-spread quotas and motion quotas.
+Research → present ten → wait for the user's part-by-part choices → measure
+and plan those choices → build → check. No design or website slice is built
+before the user selects the parts. A request to build, hurry or test is not
+permission to skip that pause.
 
-### 1. Find, judge, study
+### 1. Research and present ten; then stop for the user
+
+Find exactly ten distinct websites whose OVERALL designs would suit this
+project's audience, content and visitor tasks. They need not share its industry:
+a plumbing website may suit a doctor's office. Do not choose a weak overall
+site merely because it has one attractive button or easy-to-copy effect.
+
+Inspect the current sites, including relevant page progression and phone
+layouts. Present a numbered list of ten with working direct links, names,
+concise project-specific overall-fit reasons and accessible visual previews
+where available. Label access or inspection limitations honestly; replace
+uninspectable candidates instead of filling the ten with unverified claims.
+
+Then STOP. The user reviews the ten and says which parts to take from each,
+or asks for more websites. Supply additional candidates when requested; do not
+quietly replace the original list, automatically select a subset, choose a
+dominant design, combine treatments, scaffold the website or build a proof.
+Numbering this research list is functional and not decorative website copy.
+
+After the user replies, preserve their actual instructions in the existing
+plan's `owner_selection` (see the signature-transfer guide). A general positive
+reaction to the list is not a part-by-part selection. Ask concise questions
+about uncovered visible decisions; do not invent a navigation, footer, color,
+typeface, mobile treatment or transition to fill a gap. If the user chooses a
+whole site's design for a named scope, that supplies authority for that scope;
+do not require them to approve every pixel separately. Existing explicit choices
+remain valid within their scope. New or replacement visible choices return to
+the user. Selection approval is not final website or deployment approval.
+
+### Research and study methods
 
 **Finding.** Candidates come only from sources the registry marks `award` or
 `curated` in
@@ -95,8 +127,8 @@ cannot write them honestly, the site is not selected. Drop thin, dated, ugly,
 broken or unsuitable sites on sight and keep looking.
 
 **Studying, in two phases.** First a quick look at every serious candidate,
-then the full study of the four you select. Never study a site at full depth
-before you have decided to copy it.
+then the full study of the parts the USER selects. Do not perform full transfer
+studies or decide what to copy before the user's selection.
 
 ```
 node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references --quick
@@ -107,8 +139,9 @@ A quick look takes about a minute: the home page at both widths, its fonts
 and where they load from, the visible ground by sampling, the layout outline,
 the scroll mechanisms with their drivers, and an eight-second storyboard. The
 candidates sheet tiles every look into one image, desktop beside phone beside
-storyboard with a measured caption; look at it once and choose. A quick look
-is for choosing; the check refuses one as a selected reference.
+storyboard with a measured caption; use it to help the user review the ten.
+A quick look supports candidate presentation, not implementation evidence;
+the check refuses one as a fully studied implementation reference.
 
 ```
 node <skill>/scripts/study_reference.mjs --url <URL> --id <slug> --out .design-dna/references --region SEL [--region SEL2] [--inner 1] [--inner-widths both]
@@ -121,14 +154,11 @@ selectors from the quick look's layout outline), and one inner page at
 desktop width (`--inner 0` for a one-page build; `--inner 3 --inner-widths
 both` only for the dominant reference of a multi-page build).
 
-Floors, which are floors and not targets: at least four selected references
-from at least two registry sources marked award or curated, each fully
-studied at BOTH widths, at least one of them with real scroll or pointer
-motion. Inner pages are studied only for references the build copies inner
-pages from. Six to eight quick looks for four selections is normal. A site the
-tool could not read (`ok: false`, an HTTP error page, a width that failed) is
-not selected. **Four is a floor, not a quota: a weak fourth chosen to reach
-four is forbidden; keep looking.**
+The first presentation contains ten candidates, but the number of sources
+actually used is determined by the user's choices. Do not force four sources,
+two galleries, or animation into those choices. Fully study each selected
+transfer at both widths and relevant inner pages. A failed study is not evidence;
+explain the obstacle and ask before substituting a different design or source.
 
 **A successful capture is not an adequate study.** The sheet ends with three
 sections you must read: *Studied* (which pages loaded, at which width, how
@@ -142,12 +172,13 @@ yourself first, by an appropriate method (open the menu, traverse the strip,
 read an inner page), and you say in the plan how you did (`gaps_reviewed`).
 A gap you did not close is a thing you cannot copy.
 
-**The signature.** For each selected site write one sentence with a verb
+**The selected part.** For each user-selected contribution write one sentence with a verb
 saying what a stranger would notice: what creates its impact, composition,
 imagery, typography, sequence, interaction, pacing. Name the mechanism only
-if the sheet measured it on that site.
+if the sheet measured it on that site. Its signature_spec describes the part
+the user chose, not an unrelated grand feature the producer wants to add.
 
-### 2. Plan (a selection, written down)
+### 2. Plan (the user's selections, written down)
 
 Before completing the plan, read
 [Signature transfer](references/quality/signature-transfer.md). Each substantial
@@ -159,7 +190,8 @@ The JSON below shows the base fields; the linked guide supplies the required
 and review fields. Existing ingredient-only plans need an actual review and
 re-study, not automatically filled declarations.
 
-Scaffold the measurable half, then write the judgments:
+Only after user selection, optionally scaffold the measurable half, then
+replace suggestions with the actual user-authorized choices:
 
 ```
 node <skill>/scripts/plan_scaffold.mjs --studies .design-dna/references --select a,b,c,d --dominant a --route http://127.0.0.1:4870/ --out .design-dna/plan.json
@@ -169,7 +201,9 @@ It fills ids, urls, detected mechanisms, the two most-set families with
 their sources (a commercial face comes back as a `matched_for` stub), the
 dominant reference's sampled ground, the gaps to acknowledge, a
 `signature_spec` per reference built from the regions the study captured,
-and one section stub per captured region. Every field you must write says
+and one section stub per captured region. These are mechanical suggestions,
+not permission to choose fonts, source parts or layouts. Remove unselected
+suggestions and ask about uncovered choices. Every field you must write says
 TODO, and the check refuses a plan that still says TODO anywhere.
 
 Write `.design-dna/plan.json`. Every field below is read by the check.
@@ -207,9 +241,8 @@ Rules, all checked:
 
 - Every `id` is a studied reference, studied successfully at both widths, not
   an HTTP error page, from a registry source marked award or curated, with a
-  `source_url` on that source's domain. At least four distinct references from
-  at least two sources. **Four is a floor, not a quota: a weak fourth chosen
-  to reach four is forbidden.** If the set does not work, keep researching.
+  `source_url` on that source's domain. Use only the user's selected sources
+  and parts; there is no minimum number of sources used beyond one.
   Every selected reference must reach at least one section as its composition
   `reference` or as `behavior_from` for a measured promised behavior. A
   `palette_from` citation alone is filler.
@@ -223,7 +256,7 @@ Rules, all checked:
   Also distinguish `disposition: "inspected"` from `"excluded"`. An exclusion
   that removes the selected signature disqualifies that contribution. The
   original obstructed screenshot cannot establish a new inspection.
-- At most two typefaces, each computed by a selected reference or declared
+- Typefaces follow the user's selected treatments, each computed by a selected reference or declared
   with `matched_for` and a `match_record` that ranks it first. A typed claim
   is not a match.
 - The ground is a selected reference's dominant visible ground, sampled.
@@ -243,14 +276,16 @@ Rules, all checked:
   container; three brief topics do not earn thousands of pixels of scrolling.
   About one viewport per state is the most a held section may ask for.
 - When a reference cannot carry this project's content, accessibility or
-  phone behavior, take another studied pattern from the set. Never fill the
+  phone behavior, explain the conflict and ask the user which alternative to
+  use, even if another studied pattern is available. Never fill the
   gap with an invented design, and never reproduce a source's usability
   defect (2.9:1 text, a tiny label, a menu that hides the nav) because it is
   measurable.
 
 ### 3. Build, with an early look
 
-Build the first route's opening and its first major transition, serve it,
+After the user has selected the relevant parts, build the first route's opening
+and its first major transition, serve it,
 and run the early look before building the rest:
 
 ```
@@ -293,8 +328,8 @@ failure history survives. The check prints five lines; quote all five
 verbatim in the report:
 
 - `CHECK PASS (automated)` or `CHECK FAIL (automated)`: the measurable
-  comparisons. Inputs complete (route, four distinct references studied at
-  both widths from two sources, none of them a quick look, quality judgments,
+  comparisons. Inputs complete (route, recorded user selections, selected references studied at
+  both widths, none of them a quick look, quality judgments,
   contributions, gaps reviewed, no TODO left in the plan); typefaces from references or verified match records; the
   sampled dominant ground a reference's own, at both widths; every listed
   section present, explained, using only its own or the dominant reference's
@@ -358,15 +393,10 @@ rejected result is never described favorably because a metric improved.
 
 ## The clock
 
-Research is done in about half an hour of wall time, and the tools are sized
-for it: quick looks about a minute each, one candidates sheet, four full
-studies at two to four minutes each, a typeface match in two minutes, a
-scaffolded plan. A human picks four sites in twenty minutes by looking at
-them; the tools exist so the producer can look at the same things in the same
-time and prove afterwards what it copied. If research passes an hour, stop,
-say what took the time, and do not spend it on studying more candidates at
-full depth. Building and checking are separate clocks: a one-page build is
-thirty to sixty minutes; a check is three to five.
+Keep research proportionate and give useful progress updates. Present the ten
+before full transfer studies. Waiting for the user's selection is intentional,
+not a blocker to bypass. Elapsed time never authorizes choosing for the user.
+Additional candidates are researched when the user requests them.
 
 ## What a report contains
 

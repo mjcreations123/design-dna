@@ -161,6 +161,7 @@ const ground = g0 ? { color: g0.color, from: args.dominant, share_sampled: g0.sh
 const plan = {
   project: "TODO project name",
   written: new Date().toISOString().slice(0, 10),
+  owner_selection: {candidates: [], user_instructions: 'TODO preserve the actual user selection after presenting ten websites', choices: []},
   references,
   studied_not_selected: [...studies.keys()].filter((id) => !args.select.includes(id)).map((id) => ({ id, why: "TODO why it was not selected" })),
   typefaces,

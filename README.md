@@ -4,11 +4,16 @@
 specific, resolved websites instead of interchangeable first drafts.**
 
 It is packaged for Claude Code and Codex. Point it at a project and it reads the
-real material, turns the brief into explicit reference-fit criteria, visits and
-records qualified sites, reproduces the selected visual relationships, builds,
+real material and presents ten websites whose overall designs suit the brief.
+The user chooses the parts to take, or asks for more options. The agent waits
+before designing or building, then measures and implements only those choices,
 then *looks at the rendered page* and reviews what is actually there. Host
 support is reported only from current compatibility evidence; the package
 never treats a copied folder as proof of activation.
+
+The 13.6 workflow in `skills/design-dna/SKILL.md` supersedes older autonomous
+selection and source-count machinery described in historical package records.
+Missing visible choices are questions for the user, not a design lane for the agent.
 
 Six things make it different from a prompt that says "make it look nice":
 
@@ -67,14 +72,14 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Development-candidate status:** `13.5.0` is not a qualified release. Candidate source
+> **Development-candidate status:** `13.6.0` is not a qualified release. Candidate source
 > and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
 > CI, signatures, and strict release qualification each need their own current
 > evidence. Any retained earlier host, install, route, test, or validation
-> records are historical inputs, not 13.5.0 qualification; see
+> records are historical inputs, not 13.6.0 qualification; see
 > [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
