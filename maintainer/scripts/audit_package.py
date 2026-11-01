@@ -1183,6 +1183,26 @@ def frontmatter(path: Path) -> tuple[object, str]:
     return strict_yaml_text(match.group(1)), text[match.end():]
 
 
+def skill_frontmatter_failures(skill_meta: object) -> list[dict[str, str]]:
+    """Require the portable skill's native Claude explicit-invocation policy."""
+    required = {"name", "description", "disable-model-invocation"}
+    if (
+        not isinstance(skill_meta, dict)
+        or set(skill_meta) != required
+        or skill_meta.get("name") != "design-dna"
+        or skill_meta.get("disable-model-invocation") is not True
+    ):
+        return [issue(
+            "invalid-skill-frontmatter",
+            "skills/design-dna/SKILL.md",
+            (
+                "Only name, description, and disable-model-invocation are allowed; "
+                "name must be design-dna and disable-model-invocation must be true."
+            ),
+        )]
+    return []
+
+
 def runtime_reference_reachability_failures(
     skill: Path,
     *,
@@ -6785,12 +6805,18 @@ def release_behavioral_coverage_failures(
             for record in skill_artifacts
             if isinstance(record["workspace_sha256"], str)
         }
+        explicit_opt_in = bool(skill_runs) and all(
+            run.get("invocation_mode") == "explicit"
+            and run.get("host_native_evidence_status") == "bound"
+            for run in skill_runs
+        )
         repeated = (
             len(skill_runs) >= MIN_RELEASE_REPETITIONS_PER_VARIANT
             and len(baseline_runs) >= MIN_RELEASE_REPETITIONS_PER_VARIANT
             and skill_passed == len(skill_runs)
             and baseline_passed == len(baseline_runs)
             and artifact_references_valid
+            and explicit_opt_in
         )
         artifact_identity = (
             "identical"
@@ -6819,6 +6845,7 @@ def release_behavioral_coverage_failures(
                 coverage.get("cultural_context_gate") is True
             ),
             "adversarial": bool(contract.get("adversarial_required")),
+            "explicit_opt_in": explicit_opt_in,
             "implicit": any(
                 run.get("invocation_mode") == "implicit"
                 and run.get("host_native_evidence_status") == "bound"
@@ -6853,6 +6880,11 @@ def release_behavioral_coverage_failures(
         case_id
         for case_id in qualified_cases
         if case_matrix[case_id]["adversarial"] is True
+    }
+    explicit_opt_in_cases = {
+        case_id
+        for case_id in qualified_cases
+        if case_matrix[case_id]["explicit_opt_in"] is True
     }
     implicit_cases = {
         case_id
@@ -6892,7 +6924,8 @@ def release_behavioral_coverage_failures(
                 f"Behavioral pass needs at least {MIN_RELEASE_REPRESENTATIVE_CASES} "
                 "distinct representative high-value cases, each with at least "
                 f"{MIN_RELEASE_REPETITIONS_PER_VARIANT} passed skill and baseline "
-                f"runs; qualified: {len(qualified_cases)}."
+                "runs; every counted skill run must use explicit invocation with "
+                f"bound host-native evidence; qualified: {len(qualified_cases)}."
             ),
         ))
     if not REQUIRED_RELEASE_MODES <= modes:
@@ -6918,14 +6951,14 @@ def release_behavioral_coverage_failures(
             label,
             "Representative behavioral coverage needs at least one adversarial case.",
         ))
-    if not implicit_cases:
+    if not explicit_opt_in_cases:
         failures.append(issue(
-            "release-implicit-discovery-coverage-missing",
+            "release-explicit-opt-in-coverage-missing",
             label,
             (
-                "Behavioral pass needs a representative implicit-discovery case "
-                "with bound host-native evidence; explicit invocation cannot prove "
-                "automatic discovery."
+                "Behavioral pass needs a representative explicit opt-in case "
+                "with bound host-native evidence; automatic discovery cannot "
+                "prove a human-requested invocation."
             ),
         ))
     if "framework-application-data" not in project_strata:
@@ -6990,6 +7023,7 @@ def release_behavioral_coverage_failures(
         "scopes": sorted(scopes),
         "project_strata": sorted(project_strata),
         "adversarial_cases": sorted(adversarial_cases),
+        "explicit_opt_in_cases": sorted(explicit_opt_in_cases),
         "implicit_discovery_cases": sorted(implicit_cases),
         "expressive_perception_cases": sorted(expressive_cases),
         "quiet_perception_cases": sorted(quiet_cases),
@@ -8598,8 +8632,7 @@ def main() -> int:
 
         try:
             skill_meta, _ = frontmatter(skill / "SKILL.md")
-            if not isinstance(skill_meta, dict) or set(skill_meta) != {"name", "description"} or skill_meta.get("name") != "design-dna":
-                failures.append({"code": "invalid-skill-frontmatter", "path": "skills/design-dna/SKILL.md", "message": "Only name and description are allowed; name must be design-dna."})
+            failures.extend(skill_frontmatter_failures(skill_meta))
         except (OSError, UnicodeError, yaml.YAMLError, ValueError) as exc:
             failures.append({"code": "invalid-skill-frontmatter", "path": "skills/design-dna/SKILL.md", "message": str(exc)})
         failures.extend(runtime_reference_reachability_failures(

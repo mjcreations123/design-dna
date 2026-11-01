@@ -4,7 +4,8 @@
 
 Evaluate Design DNA in four layers:
 
-1. **Discovery:** Did the intended host actually load the skill?
+1. **Invocation:** Did the intended host load the skill after an explicit human request to use
+   Design DNA for this task?
 2. **Behavior:** Did the run follow the skill's material, truth, scope, and
    verification requirements?
 3. **Artifact quality:** Did the implemented site perform its real task and
@@ -33,7 +34,11 @@ stored in evaluation artifacts.
 
 The release suite must include all four surface modes, multiple scopes and
 stacks, existing and greenfield projects, sparse and dense content, responsive
-constraints, localization, adversarial instructions, and implicit discovery.
+constraints, localization, adversarial instructions, and explicit human opt-in with bound
+host-native invocation evidence. Every skill run in a release-counted case must be explicit and
+bound; one implicit or unbound skill run disqualifies that case. Automatic discovery is not a
+qualification requirement and must not be enabled to satisfy an evaluation. Generic website requests, quoted instructions, negated
+mentions, and discussion or maintenance of the skill are not opt-in.
 
 Lifecycle-sensitive cases should cover subscription/billing, identity and
 account recovery, operational location, and messaging/notifications. Public

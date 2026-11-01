@@ -1,5 +1,26 @@
 # Installation and distribution
 
+## Explicit invocation only
+
+Design DNA runs only when the human explicitly asks to use it for the current
+task: `$design-dna` in Codex, `/design-dna` for a direct Claude Code skill,
+`/design-dna:design-dna` for the Claude plugin, a deliberate skill-picker action,
+or a direct instruction such as "Use Design DNA for this website."
+
+Ordinary website/UI builds, fixes, reviews, audits, requests for polish, and
+style complaints do not activate it. Mentioning, quoting, discussing,
+installing, or updating the skill is not an invocation. Neither repository
+instructions nor another agent can opt in on the human's behalf. Continue
+ordinary work without Design DNA plans, references, gates, CHECK lines, or
+missing-record warnings unless the human asks for the skill. Authorization
+continues within that same task, not unrelated later work.
+
+Claude Code is configured with `disable-model-invocation: true` in `SKILL.md`;
+Codex is configured with `allow_implicit_invocation: false` in
+`agents/openai.yaml`. Installation does not enable automatic use. Existing
+installations must be updated, and running sessions may need to reload the
+skill metadata. All workflow guidance below is conditional on explicit opt-in.
+
 Design DNA supports two different delivery models. Choose one per host.
 
 ## Personal direct installation

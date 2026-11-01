@@ -1,13 +1,16 @@
 # Codex behavior
 
-Use the shared Design DNA workflow without duplicating rules in plugin metadata.
+This guide applies only after the human explicitly asks to use Design DNA
+for the current task. Do not select it automatically for relevant website or UI
+work. Once invoked, use the shared workflow without duplicating host rules.
 
 - The owner's standing orders in SKILL.md (no producer design, no quality-
   reducing shortcuts, required pre-code construction authorization plus first-screen and final phases of one gate
   program, and the final verdict line quoted verbatim)
   applies on this host exactly as written. There is no host-specific relief.
-- Invoke explicitly with `$design-dna`; natural-language discovery may also
-  select it for relevant work.
+- Invoke explicitly with `$design-dna`. The skill sets
+  `allow_implicit_invocation: false`; generic natural-language tasks do not
+  authorize automatic selection.
 - Inspect repository instructions and the existing working state before editing.
 - Use browser, rendering, image, file, and test capabilities when they
   materially improve the requested result.

@@ -189,8 +189,6 @@ def run_record(
     variant: str,
     number: int,
     workspace_sha256: str,
-    *,
-    implicit_bound: bool = False,
 ) -> dict[str, object]:
     return {
         "case": case["id"],
@@ -198,8 +196,8 @@ def run_record(
         "run_id": f"suite:codex:{case['id']}:{variant}:{number}",
         "passed": True,
         "workspace_sha256": workspace_sha256,
-        "invocation_mode": "implicit" if implicit_bound else "explicit",
-        "host_native_evidence_status": "bound" if implicit_bound else "bound",
+        "invocation_mode": "explicit",
+        "host_native_evidence_status": "bound",
         "review_contract": run_evals.case_review_contract(case),
     }
 
@@ -216,17 +214,11 @@ def coverage_runs(
                     case_index + variant_offset + (number if variant == "skill" else 1)
                 ) % 16
                 workspace_hash = f"{hash_digit:x}" * 64
-                implicit = (
-                    case["id"] == "implicit-case"
-                    and variant == "skill"
-                    and number == 1
-                )
                 run = run_record(
                     case,
                     variant,
                     number,
                     workspace_hash,
-                    implicit_bound=implicit,
                 )
                 records.append((Path(f"{run['run_id']}.json"), run))
     return records
@@ -1247,7 +1239,7 @@ class ReleaseCoverageTests(unittest.TestCase):
     def representative_cases(self) -> list[dict[str, object]]:
         cases = [
             release_case(
-                "implicit-case",
+                "explicit-opt-in-case",
                 mode="persuade",
                 scope="new-build",
                 stratum="static-site",
@@ -1286,6 +1278,11 @@ class ReleaseCoverageTests(unittest.TestCase):
         )
         self.assertEqual(failures, [])
         self.assertEqual(len(details["qualified_cases"]), 4)
+        self.assertEqual(
+            set(details["explicit_opt_in_cases"]),
+            set(details["qualified_cases"]),
+        )
+        self.assertEqual(details["implicit_discovery_cases"], [])
         self.assertIn(
             "framework-application-data",
             details["project_strata"],
@@ -1298,7 +1295,7 @@ class ReleaseCoverageTests(unittest.TestCase):
             "codex",
             coverage_runs(cases),
         )
-        self.assertEqual(details["expressive_perception_cases"], ["implicit-case"])
+        self.assertEqual(details["expressive_perception_cases"], ["explicit-opt-in-case"])
         self.assertIn(
             "release-expressive-behavioral-coverage-incomplete",
             {item["code"] for item in failures},
@@ -1394,12 +1391,12 @@ class ReleaseCoverageTests(unittest.TestCase):
             {item["code"] for item in failures},
         )
 
-    def test_missing_implicit_adversarial_and_framework_are_rejected(
+    def test_missing_explicit_opt_in_adversarial_and_framework_are_rejected(
         self,
     ) -> None:
         records = coverage_runs(self.representative_cases())
         for _path, run in records:
-            run["invocation_mode"] = "explicit"
+            run["invocation_mode"] = "implicit"
             contract = run["review_contract"]
             contract["adversarial_required"] = False
             coverage = contract["release_coverage"]
@@ -1410,9 +1407,70 @@ class ReleaseCoverageTests(unittest.TestCase):
             records,
         )
         codes = {item["code"] for item in failures}
-        self.assertIn("release-implicit-discovery-coverage-missing", codes)
+        self.assertIn("release-explicit-opt-in-coverage-missing", codes)
         self.assertIn("release-behavioral-adversarial-coverage-missing", codes)
         self.assertIn("release-framework-application-coverage-missing", codes)
+
+    def test_explicit_opt_in_requires_bound_host_evidence(self) -> None:
+        records = coverage_runs(self.representative_cases())
+        for _path, run in records:
+            run["host_native_evidence_status"] = "unverified"
+        failures, details = audit_package.release_behavioral_coverage_failures(
+            "codex",
+            records,
+        )
+        self.assertEqual(details["explicit_opt_in_cases"], [])
+        self.assertIn(
+            "release-explicit-opt-in-coverage-missing",
+            {item["code"] for item in failures},
+        )
+
+    def test_one_implicit_run_disqualifies_an_otherwise_explicit_case(self) -> None:
+        records = coverage_runs(self.representative_cases())
+        changed = False
+        for _path, run in records:
+            if run["case"] == "explicit-opt-in-case" and run["variant"] == "skill":
+                run["invocation_mode"] = "implicit"
+                changed = True
+                break
+        self.assertTrue(changed)
+        failures, details = audit_package.release_behavioral_coverage_failures(
+            "codex",
+            records,
+        )
+        self.assertEqual(len(details["qualified_cases"]), 3)
+        self.assertNotIn("explicit-opt-in-case", details["qualified_cases"])
+        self.assertNotIn("explicit-opt-in-case", details["explicit_opt_in_cases"])
+        metadata = details["cases"]["explicit-opt-in-case"]
+        self.assertFalse(metadata["explicit_opt_in"])
+        self.assertTrue(metadata["implicit"])
+        self.assertFalse(metadata["qualified"])
+        self.assertIn(
+            "release-behavioral-case-coverage-incomplete",
+            {item["code"] for item in failures},
+        )
+
+    def test_one_unbound_run_disqualifies_an_otherwise_bound_explicit_case(self) -> None:
+        records = coverage_runs(self.representative_cases())
+        changed = False
+        for _path, run in records:
+            if run["case"] == "explicit-opt-in-case" and run["variant"] == "skill":
+                run["host_native_evidence_status"] = "unverified"
+                changed = True
+                break
+        self.assertTrue(changed)
+        failures, details = audit_package.release_behavioral_coverage_failures(
+            "codex",
+            records,
+        )
+        self.assertEqual(len(details["qualified_cases"]), 3)
+        self.assertNotIn("explicit-opt-in-case", details["qualified_cases"])
+        self.assertNotIn("explicit-opt-in-case", details["explicit_opt_in_cases"])
+        self.assertFalse(details["cases"]["explicit-opt-in-case"]["qualified"])
+        self.assertIn(
+            "release-behavioral-case-coverage-incomplete",
+            {item["code"] for item in failures},
+        )
 
     def test_all_four_primary_modes_are_required(self) -> None:
         records = coverage_runs(self.representative_cases())
@@ -1436,7 +1494,7 @@ class ReleaseCoverageTests(unittest.TestCase):
             coverage_runs(self.representative_cases()),
         )
         self.assertEqual(failures, [])
-        metadata = details["cases"]["implicit-case"]
+        metadata = details["cases"]["explicit-opt-in-case"]
         review = {"comparative_analysis": comparison_for(metadata)}
         self.assertEqual(
             audit_package.representative_comparison_failures(

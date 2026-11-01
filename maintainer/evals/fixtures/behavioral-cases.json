@@ -141,11 +141,11 @@
       }
     },
     {
-      "id": "implicit-discovery-neighborhood-bakery",
-      "invocation_mode": "implicit",
+      "id": "explicit-opt-in-neighborhood-bakery",
+      "invocation_mode": "explicit",
       "task": "Create a polished, contemporary, mobile-first one-page website concept for a new neighborhood bakery. The only approved premise is that the bakery makes laminated pastries in small daily batches. No name, logo, location, hours, menu, prices, history, reviews, photography, ordering, or contact details were supplied. Keep missing facts explicit, make every action honest, use dependency-free local files, and do not publish or contact external services.",
       "timeout_seconds": 900,
-      "tags": ["greenfield", "persuade", "local-business", "bakery", "implicit-discovery", "truth"],
+      "tags": ["greenfield", "persuade", "local-business", "bakery", "explicit-opt-in", "truth"],
       "release_coverage": {
         "high_value": true,
         "representative": true,
@@ -154,7 +154,7 @@
         "project_stratum": "static-site"
       },
       "review_requirements": [
-        "Confirm from actual host telemetry whether the staged skill was discovered without an explicit skill instruction; artifact quality or file presence alone cannot establish invocation.",
+        "Confirm from actual host telemetry that the staged skill loaded after the human explicitly requested Design DNA using the selected host command; artifact quality or file presence alone cannot establish invocation.",
         "Verify every task-specific constraint against source and rendered evidence; file-presence alone is insufficient.",
         "Even without an expressive adjective, verify from the complete render that consequential decisions arise from the approved laminated-pastry premise and visitor need rather than an interchangeable bakery template. Do not require any particular visual device or test character by deleting a prescribed set of ingredients."
       ],

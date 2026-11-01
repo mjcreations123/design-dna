@@ -420,14 +420,14 @@ class CreativeFreedomContractTests(unittest.TestCase):
         entrypoint = read(SKILL / "agents" / "openai.yaml").casefold()
 
         self.assertIn(
-            'short_description: "source-authorized web design; no invented visible choices"',
+            'short_description: "explicit-only, source-authorized website design"',
             entrypoint,
         )
         self.assertIn(
-            'default_prompt: "use $design-dna to build only from qualified measured references or approved project authority; invent no visible design."',
+            'default_prompt: "use $design-dna to present ten suitable websites, wait for my choices, then copy only those measured designs."',
             entrypoint,
         )
-        self.assertIn("allow_implicit_invocation: true", entrypoint)
+        self.assertIn("allow_implicit_invocation: false", entrypoint)
         self.assertNotIn("creative range", entrypoint)
 
     def test_creative_range_is_source_supplied_not_producer_authored(self) -> None:

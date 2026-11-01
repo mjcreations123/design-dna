@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
-  "version": "13.6.0",
-  "description": "Cross-host website production with specific, source-authorized visual decisions and no producer-authored design, visitor-serving copy, rendered verification, and opt-in Connected Public Experience.",
+  "version": "13.6.1",
+  "description": "Explicit-request-only skill for specific, source-authorized website design. Use only when the human asks for Design DNA; generic website, UI, review, and audit requests do not activate it.",
   "author": {
     "name": "Motty"
   },
@@ -22,8 +22,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Design DNA",
-    "shortDescription": "Source-authorized web design with truthful proof.",
-    "longDescription": "Build, redesign, or review websites whose visible layout, type, color, controls, spacing, motion, interactions, and components trace to recorded references or approved project authority, never producer-authored visual design, with visitor-serving copy and rendered verification.",
+    "shortDescription": "Explicit-request-only source-authorized web design.",
+    "longDescription": "Explicit-request-only skill for specific, source-authorized website design. Use only when the human asks for Design DNA; generic website, UI, review, and audit requests do not activate it.",
     "developerName": "Motty",
     "category": "Productivity",
     "capabilities": [

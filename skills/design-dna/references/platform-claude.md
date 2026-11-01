@@ -1,15 +1,17 @@
 # Claude behavior
 
-Use the shared Design DNA workflow without duplicating a Claude-specific rule
-set.
+This guide applies only after the human explicitly asks to use Design DNA
+for the current task. Do not select it automatically for relevant website or UI
+work. Once invoked, use the shared workflow without duplicating host rules.
 
 - The owner's standing orders in SKILL.md (no producer design, no quality-
   reducing shortcuts, required pre-code construction authorization plus first-screen and final phases of one gate
   program, and the final verdict line quoted verbatim)
   applies on this host exactly as written. There is no host-specific relief.
 - A direct personal Claude Code skill uses `/design-dna`. A packaged Claude
-  Code plugin uses `/design-dna:design-dna`. Natural-language discovery may
-  also select the installed skill for relevant work.
+  Code plugin uses `/design-dna:design-dna`. The skill sets
+  `disable-model-invocation: true`; generic natural-language tasks do not
+  authorize automatic selection.
 - Use available browser, rendering, image, file, and test capabilities when they
   help the requested work.
 - Before a task that requires packaged browser evidence, run the installed

@@ -96,7 +96,7 @@ class SuppliedMediaFixtureTests(unittest.TestCase):
 
     def test_unadorned_prompts_require_specificity_without_a_deletion_recipe(self) -> None:
         case_ids = {
-            "implicit-discovery-neighborhood-bakery",
+            "explicit-opt-in-neighborhood-bakery",
             "coffee-current-supplied-facts",
         }
         matched = {

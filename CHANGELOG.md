@@ -1,5 +1,17 @@
 # Changelog
 
+## 13.6.1 - Explicit invocation only (2026-11-01)
+
+- Design DNA now requires an explicit human request for the current task.
+  Generic website, UI, redesign, polish, review, and audit requests do not opt in.
+- Claude Code automatic model invocation is disabled; Codex implicit invocation
+  is disabled. Manual commands and deliberate skill-picker use remain available.
+- The activation gate also excludes quoted instructions, standing blanket
+  mandates, negated mentions, other agents' suggestions, and skill maintenance.
+- Package discovery text, installation guidance, and activation regression
+  contracts follow the same policy. The source patch does not claim fresh
+  real-host qualification of retained historical release evidence.
+
 ## 13.6.0 - The user selects the design parts
 
 - Motty's new workflow: research ten websites with suitable overall designs, present them, then stop for the user's part-by-part selections or request for more.

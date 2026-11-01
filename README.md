@@ -1,5 +1,26 @@
 # Design DNA
 
+## Explicit invocation only
+
+Design DNA runs only when the human explicitly asks to use it for the current
+task: `$design-dna` in Codex, `/design-dna` for a direct Claude Code skill,
+`/design-dna:design-dna` for the Claude plugin, a deliberate skill-picker action,
+or a direct instruction such as "Use Design DNA for this website."
+
+Ordinary website/UI builds, fixes, reviews, audits, requests for polish, and
+style complaints do not activate it. Mentioning, quoting, discussing,
+installing, or updating the skill is not an invocation. Neither repository
+instructions nor another agent can opt in on the human's behalf. Continue
+ordinary work without Design DNA plans, references, gates, CHECK lines, or
+missing-record warnings unless the human asks for the skill. Authorization
+continues within that same task, not unrelated later work.
+
+Claude Code is configured with `disable-model-invocation: true` in `SKILL.md`;
+Codex is configured with `allow_implicit_invocation: false` in
+`agents/openai.yaml`. Installation does not enable automatic use. Existing
+installations must be updated, and running sessions may need to reload the
+skill metadata. All workflow guidance below is conditional on explicit opt-in.
+
 **A web-design skill for coding agents, built to turn project evidence into
 specific, resolved websites instead of interchangeable first drafts.**
 
@@ -62,7 +83,7 @@ Six things make it different from a prompt that says "make it look nice":
   are reported from current authority and evidence rather than collapsed into
   one default state.
 
-The always-loaded entrypoint stays bounded. A separate decision router loads
+The discoverable metadata stays bounded; the full skill is loaded only on explicit invocation. A separate decision router loads
 only the guidance the current decision needs, so a font question does not drag
 in ecommerce, motion, localization, audited-study, and release machinery.
 
@@ -72,14 +93,14 @@ New here? [Quick start](docs/QUICK_START.md) ·
 
 ---
 
-> **Development-candidate status:** `13.6.0` is not a qualified release. Candidate source
+> **Development-candidate status:** `13.6.1` is not a qualified release. Candidate source
 > and package
 > metadata can identify a version, while a local, hash-bound test attestation
 > can establish only the checks it actually ran against that exact tree. Current
 > host discovery, install lifecycle, route behavior, independent evaluation,
 > CI, signatures, and strict release qualification each need their own current
 > evidence. Any retained earlier host, install, route, test, or validation
-> records are historical inputs, not 13.6.0 qualification; see
+> records are historical inputs, not 13.6.1 qualification; see
 > [the compatibility matrix](maintainer/compatibility/matrix.yml).
 
 Design DNA is a cross-host website-design skill for work that must feel
@@ -259,10 +280,9 @@ beside Project Contrast. It compares incompatible reference-backed roots before
 one takes over; it does not force every ordinary project through a three-concept
 presentation or authorize producer-invented alternatives.
 
-Both host integrations are designed for relevant natural-language discovery,
-but actual automatic loading is host- and version-dependent and must be
-observed in that environment. Use explicit invocation when Design DNA is
-required or when selection itself is part of the test.
+Both host integrations require explicit human invocation. Relevant natural-
+language website or UI requests must not select Design DNA automatically.
+Use the manual command or explicitly ask for Design DNA for the current task.
 
 The Claude route and slash command in this package are for **Claude Code**.
 Installing the local skill does not add it to ordinary conversations on

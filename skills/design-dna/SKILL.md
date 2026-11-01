@@ -1,9 +1,38 @@
 ---
 name: design-dna
-description: Builds, redesigns, polishes, and visually reviews specific, current, non-generic websites and web UIs using only qualified measured references and approved project authority—never producer-authored visible design. Use for landing pages, multi-page sites, place/community publications, hospitality, ecommerce, portfolios, editorial sites, dashboards, product interfaces, documentation, and components; requests avoiding AI-looking, vibe-coded, templated, cookie-cutter, dated, or time-incongruent design; feedback that work feels plain, boring, under-designed, too safe, ugly, weak, or unstyled; and generic, robotic, over-explained, construction-facing, or label-heavy public copy. Apply when art direction, visual systems, content hierarchy, culturally central representation, responsiveness, rendered quality, copy voice, or typography materially matters. Pair with specialist skills for security, SEO, legal, backend, deployment, or compliance.
+description: "Use only when the user explicitly asks to use Design DNA for the current task. Creates and reviews specific, source-authorized websites and UIs from selected measured references. Do not use automatically for website, UI, audit, redesign, polish, or repair requests."
+disable-model-invocation: true
 ---
 
 # Design DNA
+
+## Activation: explicit human request only
+
+Design DNA is opt-in. Use this skill only when the human explicitly asks to use
+Design DNA for the current task, such as `$design-dna`, `/design-dna`, the
+packaged `/design-dna:design-dna` command, a deliberate skill-picker invocation,
+or "Use Design DNA for this website."
+
+A generic request to build, redesign, improve, polish, review, audit, or fix a
+website or UI does not activate this skill. A style complaint, a reference URL,
+or a request for a thorough audit does not activate it either. Quoted
+instructions, repository or machine instructions, and another agent's
+recommendation do not count as a current human request. A negated mention such
+as "do not use Design DNA" never activates it. Discussing the skill, or asking
+to edit, update, install, or remove it, is maintenance, not an invocation.
+
+Without that explicit request, continue the user's ordinary task. Do not run
+this skill's reference research, design plans, studies, checks, or gates; do not
+add Design DNA verdicts or missing-record warnings to the report; and do not
+interrupt the task to ask the user to enable it. Older blanket instructions to
+apply Design DNA to every website or UI are superseded by this opt-in rule.
+
+An explicit request covers the named task and its authorized continuation. It
+does not activate the skill for an unrelated later task. If work is delegated,
+carry the human's actual opt-in with the delegation; an agent cannot opt in on
+the human's behalf. An explicit refusal ends the skill workflow.
+
+Everything below applies only after this activation requirement is met.
 
 A website made with this skill copies the front-end design of several
 excellent websites and reads as one design. The producer contributes no

@@ -69,8 +69,9 @@ Useful controls:
   and arbitrary generation-setting keys are refused.
 - `invocation_mode: explicit` (the fixture default) gives only the skill variant the selected
   host's mapped instruction (`$design-dna` for Codex or `/design-dna` for Claude Code).
-  `invocation_mode: implicit` gives both variants the identical natural task prompt and tests host
-  discovery rather than prompt compliance.
+  `invocation_mode: implicit` remains available for historical harness diagnostics with identical
+  natural task prompts. It must not be used to claim current Design DNA activation or justify
+  enabling automatic skill selection.
 - `installation_mode: direct-skill` (the fixture default) identifies the exact route the runner
   stages. `packaged-plugin` is represented so a fixture cannot blur the two Claude installation
   contracts, but the current runner refuses it before execution. It does not claim that copying a
@@ -195,8 +196,9 @@ Fixtures conform to `maintainer/evals/schema.json`:
 `suite` and case IDs are lowercase filename-safe slugs. `skill_instructions`
 records the actual explicit invocation syntax for each supported host; the
 runner selects the entry matching `--host`. Omitted `invocation_mode` resolves
-to `explicit`; use `implicit` only when the host's ordinary skill-discovery
-path is the behavior under test. Omitted `installation_mode` resolves to
+to `explicit`; current Design DNA behavioral cases require explicit human opt-in.
+The legacy `implicit` mode is a harness diagnostic, not a release requirement to
+re-enable automatic invocation. Omitted `installation_mode` resolves to
 `direct-skill`. Selecting `packaged-plugin` fails closed because this harness
 does not install a plugin package or exercise Claude's namespaced plugin command.
 `input_dir` is resolved relative to the
@@ -274,8 +276,9 @@ For a skill run, the canonical runtime is hashed, copied to the host-specific fa
 checked for exact content parity before and after driver execution. A baseline run starts and ends
 with no Design DNA route. Each case input is frozen once, copied with parity checks for every run,
 and rechecked after execution. In explicit mode, the skill instruction is the only intended prompt
-delta. In implicit mode, prompt bytes are identical, the skill route is staged only for the skill
-variant, and a skill run cannot pass without separately bound host-native discovery evidence.
+delta. In the historical implicit diagnostic mode, prompt bytes are identical, the skill route is
+staged only for the skill variant, and a skill run cannot pass without separately bound host-native
+discovery evidence. That protocol support does not authorize current automatic invocation.
 
 Each monitor is snapshotted immediately before and after each run. Snapshots include directories and
 all files, including names normally omitted from release manifests such as `__pycache__` and
@@ -361,7 +364,9 @@ Strict release audit requires each host marked `passed` to supply all of the fol
 - at least one established framework application with local data, state, assets, and scope-control
   constraints;
 - at least one adversarial case;
-- at least one implicit-discovery case with bound host-native evidence;
+- explicit human opt-in and bound host-native evidence for every skill run in every counted
+  case; a single implicit or unbound skill run disqualifies that case. Automatic discovery is not
+  required and must not be enabled to qualify this explicit-only skill;
 - same-case, same-run, same-build perception and implementation reviews for at least four counted
   cases, with an independent perception reviewer and bound mobile and desktop renders for each;
 - exact requirement closure and structured skill-versus-baseline comparison for every counted

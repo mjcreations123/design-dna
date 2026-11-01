@@ -140,7 +140,9 @@ three passed baseline runs. Record and interpret the exact artifact hashes and e
 hashes can demonstrate deterministic reliability and are neither an automatic failure nor proof of
 quality. Together the selected cases must cover Persuade, Experience, Operate, and Read, at least
 two scopes, one established framework application with local data and state, one adversarial case,
-and one implicit-discovery case with bound host-native evidence.
+and explicit human opt-in with bound host-native evidence for every skill run in every counted
+case. A single implicit or unbound skill run disqualifies that case. Automatic discovery is not
+required and must not be enabled to qualify this explicit-only skill.
 The counted set must also contain at least two distinct cases whose run-bound
 contract marks `expressive_perception_gate: true`; both need qualifying
 same-build perception evidence at the absolute score floor above. One strong
