@@ -660,13 +660,25 @@ mapping changed.
   `arbitrary_prominent_copy_fragment_emphasis`, which no longer appears in
   `skills/design-dna/policy/owner-defaults.yml`. Only the owner can reaffirm
   or retire that preference.
-- Not renewed, transcript not re-read: the `EVD-043`, `EVD-044`, and
-  `EVD-045` watch pages were retrieved and are public with the same publisher,
-  publication date, chapter list, and a duration that covers every cited
-  timestamp. Only `EVD-043` was opened in a browser: its transcript panel's
-  request returned HTTP 400, and only the first 46 seconds of captions were
-  readable. `EVD-044` and `EVD-045` were not opened in a browser. The cited
-  transcript passages and sampled frames of all three were not re-checked.
+- Renewed on transcript re-read: `EVD-043`, `EVD-044`, and `EVD-045` (90-day
+  intervals). Each watch page was opened in a browser and is public with the
+  same publisher. The `EVD-043` and `EVD-044` transcripts were read from the
+  transcript panel and the `EVD-045` transcript from the player's own English
+  caption track. The cited passages still carry each Observation: `EVD-043`
+  says purple gradients and scroll fades are not inherently bad (01:57), finds
+  the following line distracting (03:27-03:39), praises the card hover
+  animation (04:45-04:56), and names scroll hijacking (13:38), low-quality
+  assets (15:27), inconsistent visual language (15:55), animation for its own
+  sake (34:45), and QA (35:36). `EVD-044` says motion can help or distract
+  (01:33), names the Klavis/Strata naming confusion (09:02, 14:22), one main
+  CTA per scroll (09:33), clipped media (16:21, 21:00), praises Freya's clarity
+  and accessible demo while criticizing its scroll hijacking and "meet the
+  team" CTA (23:58-25:50), and discusses unhelpful waiting states (31:17-32:25)
+  and sign-in before exploration (30:35, 35:02). `EVD-045` says a card is not a
+  sin (about 02:10), compares exaggerated cards with the flat Work OS section
+  (02:36-03:04), and still lists the cited chapter titles from "You might not
+  need a card" through "Learn the basics of UI design". Sampled frames were not
+  re-captured; the videos are unchanged recordings.
 
 ### Limits
 

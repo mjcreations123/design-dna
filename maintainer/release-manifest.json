@@ -2,7 +2,7 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "13.7.0",
-  "distribution_sha256": "144c99307d0d988101e5f0b50bda5193c9809625bd9b5dd48555aa49dbcf1642",
+  "distribution_sha256": "cbb2541adf7575def1a984339f640163a788c5d52d2bd37aefb267a1da04deba",
   "content_sha256": "4fa58c17d5a950bc571b994895545df1eb9f81958ddd9ec744ed4e6d13043f25",
   "codex_plugin_manifest_sha256": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
   "claude_plugin_manifest_sha256": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
@@ -10,7 +10,7 @@
   "compatibility_matrix_sha256": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "144c99307d0d988101e5f0b50bda5193c9809625bd9b5dd48555aa49dbcf1642",
+    "distribution_tree": "cbb2541adf7575def1a984339f640163a788c5d52d2bd37aefb267a1da04deba",
     "runtime": "4fa58c17d5a950bc571b994895545df1eb9f81958ddd9ec744ed4e6d13043f25",
     "codex_plugin_manifest": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
     "claude_plugin_manifest": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
@@ -21,13 +21,13 @@
     "distribution_docs": "a38d7a1576aaf9215b41ec788646dc1c711fa951e4572219c5dc6ac0433d531b",
     "eval_contract": "657a31f4ee1d08ce4672a8516133782c1ebf4b75ef6b435deb66e7c1ea762cde",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
-    "evidence": "3bc49d0fefcdf2cea92fef8788c5d2b4435c49fa42e78b7429fe2a11562e2d3b",
+    "evidence": "68f525ad23e6116f010af0ee182cd2c835d4b3a6d01240758b042e0bd0c1a6c1",
     "maintainer_tooling": "6dfb982689646da940915ebb29033b25f5440f6ec85057d79be85fc3c5a7f1cc",
     "schemas": "6bd1b3eeca89bcaba0711b7cd4b65ed62e47a0e9f71a508e805c2bde9a09ff64",
     "tests": "328833f567590562950cf317b8bc584aed17de0c3cff269cd3fabf21ce788d02"
   },
-  "release_sha256": "42be62f868b3cf515e81c1794815241976edc495246e4c00ef2beec956f27cf1",
-  "generated_at": "2026-11-02T21:16:36.611499+00:00",
+  "release_sha256": "bb3458cbf89ea4c2dddedfce914a89ae934278039ad50443fa31542d7137ab94",
+  "generated_at": "2026-11-02T21:34:42.114636+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -3917,19 +3917,19 @@
       "path": "maintainer/evidence/cards/EVD-043.md",
       "type": "file",
       "size": 4046,
-      "sha256": "12a1f4689dffbb35c1e937beaf48c8ea44c16d5450aa05a39f243e0d2341446d"
+      "sha256": "54b976e071281d80f41bd2a98998c9bb9b2654649a379b88ba85f85ab5e4c137"
     },
     {
       "path": "maintainer/evidence/cards/EVD-044.md",
       "type": "file",
       "size": 4102,
-      "sha256": "f75c9b84f3c3c4b589c4b2440c7f269c0e016ca9ced06c3d96ab4ad370ab3658"
+      "sha256": "66858957ef7b6bc8b34f00162650f57d029ce60152e1cff2b8dfae566fce9b95"
     },
     {
       "path": "maintainer/evidence/cards/EVD-045.md",
       "type": "file",
       "size": 4023,
-      "sha256": "f230b76682e61498d36e3f56ea2f8464ed0c1210bf64b6127a063a7ec5e7d4e8"
+      "sha256": "89577c75de13be577c6337e1efe05e9825c9513ef99a9bc216a46ac858de52b7"
     },
     {
       "path": "maintainer/evidence/cards/EVD-046.md",
@@ -4072,8 +4072,8 @@
     {
       "path": "maintainer/evidence/research-log.md",
       "type": "file",
-      "size": 58961,
-      "sha256": "a6f16f8a8512b6e2c9bbf2a4d71d1e3b5536518b42ffef3eb7d3260d404d7d91"
+      "size": 59880,
+      "sha256": "de1f0eef0ebfb716085248637a936ba84506301098bebf9c9de88c11e062ab00"
     },
     {
       "path": "maintainer/evidence/snapshots",
@@ -4181,19 +4181,19 @@
       "path": "maintainer/evidence/snapshots/EVD-043.json",
       "type": "file",
       "size": 713,
-      "sha256": "46161de6e04fc5ef6cd2897926d35927c1262d33566c3ff6e5919e74d2c7111a"
+      "sha256": "35b931d18d8e01dfe3c174921344fad813d6afccc183a47fc43f10a895964465"
     },
     {
       "path": "maintainer/evidence/snapshots/EVD-044.json",
       "type": "file",
       "size": 687,
-      "sha256": "4c21913a724cf11402165b3e92ba90cd3dfb4cad927812e93a593e8f2acad2e4"
+      "sha256": "a153dcd67ee951d353ff3bf6010b703430a605ee6122dd128dbda4d3f4630928"
     },
     {
       "path": "maintainer/evidence/snapshots/EVD-045.json",
       "type": "file",
       "size": 701,
-      "sha256": "6afda6c8015e539753384680af8bb4e1be5df8e5878f2cc3bcaa2441b9b7be3c"
+      "sha256": "3126f5cde19878157ef49e709028e9e5541015770a91f1ad7479f0520ac6e8d6"
     },
     {
       "path": "maintainer/evidence/snapshots/EVD-046.json",
