@@ -169,5 +169,7 @@ signature as present merely to clear the check. The tool verifies records and
 measured behavior, while the review remains accountable human/agent judgment.
 
 Retain the first failed check and its captures, review them, then rerun after
-updating the review. Any visible code/content change requires a new capture
+updating the review. Captures are kept while the work is open; once the owner
+approves the design they are removed and these file and SHA-256 bindings stay
+as the record ([media retention](media-retention.md)). Any visible code/content change requires a new capture
 and review. Owner approval is always separate from review completion.

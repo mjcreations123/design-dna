@@ -1,5 +1,42 @@
 # Changelog
 
+## 13.7.0 - Development candidate
+
+Screenshots and recordings go once a design is approved (2026-11-02).
+
+The owner, 2026-11-02: "Once I approve a design, we don't need to keep all the
+screenshots anymore. You could delete them right away. You just need to look
+at them." On his machine the `.design-dna` folders were reported to hold
+about 131 GB of screenshots, recordings and captured browser-profile files
+against about 3.5 GB of text records.
+
+- `scripts/clean_media.mjs`: for one project whose design is approved, removes
+  images, screen recordings and raw capture frames from `.design-dna`, and
+  every captured browser profile (a folder holding `Local State` or
+  `Default/Preferences`). It keeps the text records (plan, sheets, studies,
+  check records, review, notes, logs, fonts) and writes each removed file's
+  size and SHA-256 to `.design-dna/retention.json`. A report is the default;
+  `--apply` removes; `--keep` protects listed material such as client-supplied
+  images.
+- It refuses and removes nothing unless `plan.json` records `approval`
+  `{by, date}` (the field `check_build.mjs` reports) or, for a project with no
+  approval record, the operator passes `--approved`. It also refuses a plan
+  that still says TODO, files written after the approval date, anything
+  written in the last ten minutes, an active legacy `.design-dna.lock`, and
+  `~/.design-dna` itself.
+- `SKILL.md` step 5 and `references/quality/media-retention.md`: captures are
+  working material while the work is open; after approval they are removed
+  and the text records keep the design traceable. A cleaned project is not
+  re-checkable as it stands; a revision starts with fresh studies.
+- Browser profiles: the current study and check tools already launch the
+  installed Chrome with a throwaway profile in the operating system's
+  temporary folder. The profiles found inside project folders came from
+  earlier ad hoc captures, not from these tools; no launch code changed.
+- Regression tests: `tests/test_clean_media.py`.
+- The global rules are unchanged: explicit opt-in, no producer design, no
+  reduced-rigor mode, installed Google Chrome only. The source patch does not
+  claim fresh real-host qualification.
+
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
 - Design DNA now requires an explicit human request for the current task.

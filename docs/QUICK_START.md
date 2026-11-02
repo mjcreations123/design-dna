@@ -27,6 +27,9 @@ skill metadata. All workflow guidance below is conditional on explicit opt-in.
 > `candidates_sheet.mjs` to choose from one image, full studies of the four selected only,
 > `plan_scaffold.mjs` for the measurable half of the plan. About half an hour.
 >
+> **13.7.0:** once the owner approves a design, `clean_media.mjs` deletes its screenshots,
+> recordings and captured browser profiles from `.design-dna` and keeps the text records.
+>
 > **13.3.0:** `check_build.mjs` prints five lines (CHECK (automated), FUNCTIONAL, REVIEW,
 > EVIDENCE, APPROVAL) and has an `--early` look; studies record observation gaps, drivers and
 > a sampled visible ground. Passing measurements never substitute for looking.
