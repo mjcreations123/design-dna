@@ -212,6 +212,10 @@ class ManageInstallTests(unittest.TestCase):
                 extra=["--browser-project", str(project)],
                 environment_overrides={
                     "DESIGN_DNA_BROWSER_EXECUTABLE": str(Path(sys.executable).resolve()),
+                    # The stand-in browser is this interpreter driven by a fake
+                    # Playwright module; since the owner's 2026-09-07 directive a
+                    # non-Chrome path needs his explicit per-run flag.
+                    "DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM": "1",
                     "NODE_PATH": "",
                 },
             )

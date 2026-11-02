@@ -2,6 +2,19 @@
 
 Run 2026-09-07T02:57Z with the 13.3.0 checker. Each block quotes the five lines verbatim. The Menucha build (port 4880) is the site for the plan-only cases.
 
+## Contents
+
+- missing-routes
+- duplicate-references
+- failed-study
+- invented-match
+- wrong-mobile
+- wrong-composition
+- crossing-law (the rejected build, registry corrected)
+- blank-stage (the Menucha demo before its stage fix, served on 4884)
+- What these runs prove and what they do not
+- quick-look-selected
+
 ## missing-routes
 
 ```

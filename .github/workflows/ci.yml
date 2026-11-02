@@ -132,10 +132,18 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
         working-directory: maintainer
-      - name: Locate Playwright Chromium
+      - name: Locate the installed Google Chrome
+        # Owner directive 2026-09-07: the skill drives the installed Google
+        # Chrome and refuses Playwright's bundled build without his per-run
+        # permission. The hosted runner image ships Google Chrome stable.
         shell: bash
         run: |
-          browser_path="$(node -e "process.stdout.write(require('./maintainer/node_modules/playwright').chromium.executablePath())")"
+          browser_path="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          if [ -z "$browser_path" ]; then
+            echo "Google Chrome is not installed on this runner." >&2
+            exit 1
+          fi
+          "$browser_path" --version
           printf 'DESIGN_DNA_BROWSER_EXECUTABLE=%s\n' "$browser_path" >> "$GITHUB_ENV"
       - name: Check the rendered-review program
         run: npm run check:rendered-review

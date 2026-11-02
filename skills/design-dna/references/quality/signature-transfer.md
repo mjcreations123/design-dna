@@ -3,6 +3,13 @@
 Use this with the existing reference sheet, plan and check. It adds no shared
 slots or new workflow stage. The plan is checked before the browser opens.
 
+## Contents
+
+- Study the region that matters
+- Add the obligation to the plan
+- Gaps: inspected or excluded
+- Review the captured result
+
 ## Study the region that matters
 
 First present ten suitable websites and wait for the user's part selections,

@@ -3137,6 +3137,33 @@ class ReferenceRegistryTests(unittest.TestCase):
                 if source["status"] == "active":
                     self.assertIn(source["retrieval"], {"fetch", "browser"})
 
+    def test_dated_corrections_and_aliases_are_validated_not_ignored(self) -> None:
+        # 13.3.0 records registry corrections on the row with their evidence.
+        corrected = registry_payload(registry_source(
+            aliases=["gallery.example"],
+            corrections=[{"date": "2026-09-06", "change": "url moved to the gallery's new domain",
+                          "evidence": "the old address answered 301 to the new one on 2026-09-06"}],
+        ))
+        corrected["corrections_note"] = "Rows carry dated corrections when a later fact contradicts the audit."
+        self.assertEqual([], INITIALIZER.reference_source_registry_failures(corrected))
+        for field, value, expected in (
+            ("aliases", [], "aliases must be a nonempty list"),
+            ("aliases", ["https://gallery.example/"], "aliases must be a nonempty list"),
+            ("corrections", [{"date": "2026-09-06", "change": "moved"}], "each correction needs"),
+            ("corrections", [{"date": "06/09/2026", "change": "url moved", "evidence": "a 301 answer"}], "ISO YYYY-MM-DD"),
+        ):
+            with self.subTest(field=field, value=value):
+                failures = INITIALIZER.reference_source_registry_failures(
+                    registry_payload(registry_source(**{field: value})))
+                self.assertTrue(any(expected in item for item in failures), failures)
+        unknown = registry_payload(registry_source(mirror="https://gallery.example/"))
+        self.assertTrue(any("unsupported shape" in item
+                            for item in INITIALIZER.reference_source_registry_failures(unknown)))
+        extra = registry_payload(registry_source())
+        extra["comment"] = "not part of the registry contract"
+        self.assertEqual(["Reference source registry must use the versioned public-source shape."],
+                         INITIALIZER.reference_source_registry_failures(extra))
+
     def test_restricted_access_never_counts_as_active(self) -> None:
         for access in (
             "login-required",

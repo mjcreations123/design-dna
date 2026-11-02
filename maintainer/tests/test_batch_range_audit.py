@@ -19,7 +19,9 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 AUDITOR = PACKAGE_ROOT / "skills" / "design-dna" / "scripts" / "batch_range_audit.py"
 CONTRACT_SCHEMA = PACKAGE_ROOT / "maintainer" / "schemas" / "batch-range.schema.json"
 REPORT_SCHEMA = PACKAGE_ROOT / "maintainer" / "schemas" / "batch-range-audit.schema.json"
-SKILL = PACKAGE_ROOT / "skills" / "design-dna" / "SKILL.md"
+# 13.0.0 replaced the runtime entrypoint with the study/plan/build/check
+# workflow and moved the 12.1 entrypoint, with its Batch Study row, here.
+SKILL = PACKAGE_ROOT / "skills" / "design-dna" / "references" / "legacy" / "SKILL-12.1-machinery.md"
 ROUTER = PACKAGE_ROOT / "skills" / "design-dna" / "references" / "router.md"
 WORKFLOW = PACKAGE_ROOT / "skills" / "design-dna" / "references" / "workflow.md"
 TEMPLATE = PACKAGE_ROOT / "skills" / "design-dna" / "templates" / "batch-range-template.json"

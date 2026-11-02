@@ -6,6 +6,12 @@ projects do not lose a referenced path. It is not an aesthetic blacklist and
 it is not a claim that the publisher personally authored rules that were only
 inferred from previous work.
 
+## Contents
+
+- Governing rule
+- Non-negotiable assurance boundaries
+- Aesthetic observations stay post-render
+
 ## Governing rule
 
 Motty's 2026-09-08 workflow replaces autonomous source/part selection: present

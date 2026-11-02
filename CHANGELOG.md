@@ -37,6 +37,43 @@ against about 3.5 GB of text records.
   reduced-rigor mode, installed Google Chrome only. The source patch does not
   claim fresh real-host qualification.
 
+CI repair (owner, 2026-11-02: "Fix it and then merge it"). CI had failed on
+every commit since 2026-09-06; the causes, fixed without skipping or loosening
+a check:
+
+- Python 3.10: the release runner reused unittest's shared loader, which kept
+  the first root's top-level directory, so the runtime tests never ran. Each
+  root now gets a fresh loader.
+- Linux and macOS: the attestation fixture ran only the synthetic Windows test
+  identities, so the suite was empty off Windows. It now carries one portable
+  test.
+- `SKILL.md` links the decision router again, with a contents map; the router
+  reaches the references the 13.0.0 rewrite left unlinked; the relocated 12.1
+  entrypoint's links resolve from `references/legacy/`; long runtime docs have
+  contents maps (recorded tool outputs under `tests/fixtures` are exempt).
+- Contract tests that read the 12.1 entrypoint now read it where 13.0.0 moved
+  it, and the absolutes check follows 13.4.1's removal of the superseded
+  recording settings. Both plugin descriptions name opt-in Connected Public
+  Experience again.
+- The project-state validator accepts the registry's dated `corrections`,
+  `aliases` and `corrections_note` (13.3.0) and validates their shape.
+- Browser policy: the rendered-browser CI job drives the runner's installed
+  Google Chrome; module-resolution tests that launch nothing pass the owner's
+  per-run flag for their stand-in executable, and new tests assert refusal
+  without it.
+- macOS: the lifecycle attester uses the canonical path of its own temporary
+  directory (`/var` is an alias), and process-group verification waits out the
+  transient EPERM of an exiting member instead of failing on it.
+- A bounded postprocess reports the study's original terminal cause when the
+  controller's watchdog ended it between heartbeats.
+- `packaging` 26.3 (the hosted Windows image's pipx requires it), with the
+  retained PyPI metadata refreshed; synthetic route-contract fixture pins
+  refreshed; the content-roles fixture's home link resolves.
+- Evidence: 13 overdue cards re-reviewed against their live sources (two at
+  their publishers' new addresses). EVD-021 (an owner default no longer in
+  `owner-defaults.yml`) and EVD-043/044/045 (video transcripts that could not
+  be re-read) remain overdue for the owner.
+
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
 - Design DNA now requires an explicit human request for the current task.

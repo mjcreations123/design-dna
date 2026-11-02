@@ -81,6 +81,10 @@ style prompt or preload post-render diagnostics before a candidate exists.
 | Capturing or probing a page for the gate | [Render harness](quality/render-harness.md): the shipped Playwright capture boundary, project-declared scenarios, capture limitations, and separate manual or specialist measurements. |
 | Scoped completion | [Engineering verification](quality/engineering-verification.md) and [evaluation](quality/evaluation.md). |
 | Production, launch, deployment, or external vendor claims | [Production readiness](quality/production-readiness.md) and every applicable specialist gate. |
+| Public copy that states numbers, credentials, outcomes, slogans, disclaimers, or explains its own design | [Public copy integrity](quality/public-copy-integrity.md) with [parseable text](quality/parseable-text.md). |
+| Repair or maintenance of an existing site rather than a new build | [Scoped maintenance](quality/scoped-maintenance.md). |
+| A project-local owner policy, or the bundled publisher defaults | [Owner-policy onboarding](owner-policy.md). |
+| A project still recorded with the retained 12.x machinery (state.json, gate.py, route manifests, profiles, modes) | [Legacy machinery](legacy/SKILL-12.1-machinery.md) with its [process spine](workflow.md), [direction start](quality/direction-start.md), [bounded source study](quality/bounded-source-study.md), [Enterprise Candidate](quality/enterprise-candidate.md), and the [persuade](modes/persuade.md), [experience](modes/experience.md), [read](modes/read.md) and [operate](modes/operate.md) modes. None of it is part of the current workflow. |
 
 Load [Claude behavior](platform-claude.md) or [Codex behavior](platform-codex.md)
 only when host capability or installation is uncertain.

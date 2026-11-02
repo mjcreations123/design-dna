@@ -624,3 +624,51 @@ gap it could support; none was treated as a visual style source.
 No reviewed source justified mandatory photos, a font family, a component
 shape, a complexity target, a style rotation, a universal page formula, or a
 beauty score. Those would replace one convergence basin with another.
+
+## 2026-11-02 overdue evidence-card re-review
+
+### Method
+
+Each overdue active card's `url` was retrieved again on 2026-11-02 and its
+Observation, retained excerpt, or maintainer summary was compared with the live
+text. A card was renewed only when the source answered at its recorded URL and
+still supported the card; renewal kept the card's previous review interval and
+rebound the dated snapshot by SHA-256. No claim, confidence, scope, or risk
+mapping changed.
+
+### Dispositions
+
+- Renewed on live retrieval: `EVD-007`, `EVD-014`, `EVD-022`, `EVD-027`
+  (88-day interval), `EVD-031`, `EVD-033`, `EVD-037`, `EVD-038`, `EVD-039`,
+  `EVD-041`, and `EVD-042` (90-day intervals). The `EVD-007` excerpt now
+  carries the page's current "(listed below)" wording. The W3C Hebrew draft
+  returned a bot challenge to a browser user agent and the full document to a
+  plain request. The Figma section once titled "Bring your design to Figma
+  Make" now reads "Bring your design, images, and other files to Figma Make";
+  the locator was left unchanged. shadcn's changelog still lists "Base UI as
+  the Default" under July 2026.
+- Renewed at the publisher's new address: `EVD-015` and `EVD-032` answer
+  with 301 Moved Permanently to the same publishers' new Carbon
+  (`/building-blocks/foundations/typography/overview/`) and Relume
+  (`relume.ai`) addresses. The destination text still supports both cards
+  (Carbon: neutral running text, colored type for links, actions, code,
+  warnings and alerts, italics for emphasis; Relume: style guides after a
+  sitemap and wireframes, multiple concepts, the top three shared with
+  descriptions), so each card and the `EVD-032` snapshot now record the new
+  URL with a 90-day interval. Publisher, claim and confidence are unchanged.
+- Not renewed, source missing: `EVD-021` cites the owner-policy key
+  `arbitrary_prominent_copy_fragment_emphasis`, which no longer appears in
+  `skills/design-dna/policy/owner-defaults.yml`. Only the owner can reaffirm
+  or retire that preference.
+- Not renewed, transcript not re-read: the `EVD-043`, `EVD-044`, and
+  `EVD-045` watch pages were retrieved and are public with the same publisher,
+  publication date, chapter list, and a duration that covers every cited
+  timestamp. Only `EVD-043` was opened in a browser: its transcript panel's
+  request returned HTTP 400, and only the first 46 seconds of captions were
+  readable. `EVD-044` and `EVD-045` were not opened in a browser. The cited
+  transcript passages and sampled frames of all three were not re-checked.
+
+### Limits
+
+A live retrieval confirms that a source still says what the card records. It
+does not upgrade a source's authority, sample, or transfer limits.

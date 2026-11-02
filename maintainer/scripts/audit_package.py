@@ -8710,8 +8710,12 @@ def main() -> int:
                         "path": relative.as_posix(),
                         "message": "Template token is allowed only in runtime templates.",
                     })
+            # Recorded tool outputs under tests/fixtures (a study's sheet.md)
+            # are evidence the skill never loads as guidance; editing them to
+            # add a map would falsify the record. Runtime guidance still needs one.
             if (
                 is_within(path, skill)
+                and not is_within(path, skill / "tests" / "fixtures")
                 and path.suffix.lower() == ".md"
                 and len(text.splitlines()) > 100
                 and not re.search(

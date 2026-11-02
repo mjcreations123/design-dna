@@ -377,7 +377,10 @@ def run_release_suites(plugin_root: Path) -> bool:
                 f"\n=== Design DNA release test root: {relative.as_posix()} ===\n"
             )
             sys.stderr.flush()
-            suite = unittest.defaultTestLoader.discover(
+            # A fresh loader per root: before Python 3.11 a loader keeps the
+            # first discover() call's top-level directory, so reusing the
+            # shared default loader made the second root "not importable".
+            suite = unittest.TestLoader().discover(
                 str(root),
                 pattern=TEST_PATTERN,
             )

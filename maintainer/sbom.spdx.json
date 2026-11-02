@@ -2,10 +2,10 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "design-dna-13.7.0-db8597c1df86",
-  "documentNamespace": "urn:uuid:36690f30-047e-508d-9891-a822d36f06ab",
+  "name": "design-dna-13.7.0-4fa58c17d5a9",
+  "documentNamespace": "urn:uuid:fe2856ad-a153-5e25-bee0-86860d12eb6e",
   "creationInfo": {
-    "created": "2026-11-02T06:12:02.443756Z",
+    "created": "2026-11-02T21:16:34.963031Z",
     "creators": [
       "Tool: design-dna-build-sbom-1.0.0",
       "Person: Motty"
@@ -27,7 +27,7 @@
       "copyrightText": "Copyright (c) 2026 Motty. All rights reserved.",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Person: Motty",
-      "sourceInfo": "Runtime tree canonical content SHA-256: db8597c1df861c73d37b4405dd83659fcaf631c75bc0163b0bf6baf0bca3adf6. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
+      "sourceInfo": "Runtime tree canonical content SHA-256: 4fa58c17d5a950bc571b994895545df1eb9f81958ddd9ec744ed4e6d13043f25. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
@@ -124,9 +124,9 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-Package-pypi-packaging-26.2-617c53663c57",
+      "SPDXID": "SPDXRef-Package-pypi-packaging-26.3-d6910605ef95",
       "name": "packaging",
-      "versionInfo": "26.2",
+      "versionInfo": "26.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -136,7 +136,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/packaging@26.2"
+          "referenceLocator": "pkg:pypi/packaging@26.3"
         }
       ],
       "primaryPackagePurpose": "LIBRARY",
@@ -144,11 +144,11 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e"
+          "checksumValue": "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661"
+          "checksumValue": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
         }
       ]
     },
@@ -1077,7 +1077,7 @@
     {
       "spdxElementId": "SPDXRef-Package-design-dna",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-pypi-packaging-26.2-617c53663c57"
+      "relatedSpdxElement": "SPDXRef-Package-pypi-packaging-26.3-d6910605ef95"
     },
     {
       "spdxElementId": "SPDXRef-Package-design-dna",

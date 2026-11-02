@@ -1,14 +1,14 @@
 {
   "tool": "observe_reference.mjs",
   "schema_version": 5,
-  "producer_script_sha256": "e1ca651a9dff2e7ee26e89c6d6efa4e23349533983b3ca5812380cce12549540",
+  "producer_script_sha256": "8ca092c5664b5a8f47c239865fd044a6bc7d53d508308fc77a4c2e9d7f63d59f",
   "runtime_identity": {
-    "observe_reference.mjs": "e1ca651a9dff2e7ee26e89c6d6efa4e23349533983b3ca5812380cce12549540",
+    "observe_reference.mjs": "8ca092c5664b5a8f47c239865fd044a6bc7d53d508308fc77a4c2e9d7f63d59f",
     "structure_probe.mjs": "d9a65985329fda4914a946e998234fb00e27b9e65ef436164fed73e02afc8db6",
-    "browser_evidence.mjs": "a03799c897f65cd2b3ac2866ccad1cf7cf687c1a112be31b215f71e21bd739ad",
-    "playwright_resolver.mjs": "a38a6b0db61e04ca384673c01ab44cd97d1c709e88092bf947fe3fee3453c789",
-    "source_surface_watch.mjs": "58751f528325095b0b80aabbee6bc9e67638778e965a2eedbea467998eda9117",
-    "source_study_controller.mjs": "045a19593db8d29eb0f15eacb724da90446e1b397d0b9b0cc580b80836b4acff"
+    "browser_evidence.mjs": "ca1e232a7202f1b3791280f93a7fb5a66e24c146dcca33608cfa4d622462fe3b",
+    "playwright_resolver.mjs": "e6406e31c4bddc3a1664630f90801bd8b4e6da7ed94c45c2d89293b66f13e12c",
+    "source_surface_watch.mjs": "ecbd2b710e53af6fd725e3ea43ae75420fd3644898e3652ca77e74ec86944800",
+    "source_study_controller.mjs": "59ea1f5f048d4bc8f4e36046d1bec5bb6ca7d95e6b87f02ab3c1115bb1732a8a"
   },
   "id": "strong-1",
   "url": "https://fixture-reference.invalid/",

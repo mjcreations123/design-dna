@@ -45,6 +45,18 @@ every claim traces to a record a program wrote or a screenshot a person saw.
 The standard is the visitor's experience. Measurements prove provenance and
 catch known failure shapes. They never substitute for looking.
 
+## Contents
+
+- Activation: explicit human request only
+- The owner's standing order: no producer design
+- The workflow: 1. research and present ten, 2. plan, 3. build, 4. check,
+  review, report, 5. once the owner approves, delete the screenshots and
+  recordings
+- The clock; what a report contains; reference selection; other standing
+  rules; what the tools prove; legacy machinery
+- Specialist guidance is reached through the
+  [decision router](references/router.md), loaded only for the decision at hand.
+
 ## The owner's standing order: no producer design
 
 Motty (MJ's Studio), 2026-09-03, after a build made "as a quick test" shipped
