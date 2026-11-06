@@ -2,32 +2,32 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "13.7.0",
-  "distribution_sha256": "6ecba453ef2830f9769143d5d43a41ade591a722cc253cda50102bca3e12a5e0",
+  "distribution_sha256": "922819c827bba039ebdeb9a7f071e5012ad14e2fc08d6502e59d84493e592958",
   "content_sha256": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
   "codex_plugin_manifest_sha256": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
   "claude_plugin_manifest_sha256": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-  "sbom_sha256": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400",
+  "sbom_sha256": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03",
   "compatibility_matrix_sha256": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "6ecba453ef2830f9769143d5d43a41ade591a722cc253cda50102bca3e12a5e0",
+    "distribution_tree": "922819c827bba039ebdeb9a7f071e5012ad14e2fc08d6502e59d84493e592958",
     "runtime": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
     "codex_plugin_manifest": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
     "claude_plugin_manifest": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-    "sbom": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400",
+    "sbom": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03",
     "compatibility_matrix": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "d6f57f6a40b26dfb721f64acd24e4b8526558270a3e7b80949eedb6a10cd4e51",
-    "distribution_docs": "f5cbbc4dc0e1cde41c0c754e3d180c6380eed852b10623ccd5f7142b1c908ebd",
+    "distribution_docs": "8a7e44e44593f3f80d4719d4402092fd730205456f6254a3ee2d7c43d7707101",
     "eval_contract": "657a31f4ee1d08ce4672a8516133782c1ebf4b75ef6b435deb66e7c1ea762cde",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "ad7f6660ea0b4bce83b17f97590185a6062ab1008545a75325aa7c29bc5450f0",
-    "maintainer_tooling": "6dfb982689646da940915ebb29033b25f5440f6ec85057d79be85fc3c5a7f1cc",
+    "maintainer_tooling": "c2d52f2d628aeebb2016d5852a29e2d4f02fdb39759c867dd2b4e9bbe8a05a7c",
     "schemas": "6bd1b3eeca89bcaba0711b7cd4b65ed62e47a0e9f71a508e805c2bde9a09ff64",
-    "tests": "328833f567590562950cf317b8bc584aed17de0c3cff269cd3fabf21ce788d02"
+    "tests": "14999e24328d4d97d95ea16a9d05a05db867430ca44e6c8d38168f1acf1775a2"
   },
-  "release_sha256": "e0537a0276b2a767dd778d4e28a118a627250c6e8355cdb88c6d76ee017731df",
-  "generated_at": "2026-11-06T09:03:31.183394+00:00",
+  "release_sha256": "0d07cc351ae2042e17e797abc4a5a40e599e268f0187fdef61307f2d0cd3dbd8",
+  "generated_at": "2026-11-06T10:29:19.480384+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -2026,8 +2026,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 143225,
-      "sha256": "d4f35781c60e2fe2a274a881b3eda884700611d3941c67f745eb905164299fa4"
+      "size": 143578,
+      "sha256": "b921c9e5bd3526098af14438e9e7ec2f31f02336109b8e75a569a14a6f1e1606"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -4367,7 +4367,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400"
+      "sha256": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03"
     },
     {
       "path": "maintainer/schemas",
@@ -4660,8 +4660,8 @@
     {
       "path": "maintainer/scripts/common.py",
       "type": "file",
-      "size": 20040,
-      "sha256": "af7b3fe6fb5bd60337bef67c687ca24de37029257319f5d015b4008e4c2b9ad0"
+      "size": 20068,
+      "sha256": "bb5189ae7cfc859bc40a15396ae56f31c1f540f606d9366d913c088ce3db90f9"
     },
     {
       "path": "maintainer/scripts/detect_routes.py",
@@ -4924,8 +4924,8 @@
     {
       "path": "maintainer/tests/test_maintainer_tools.py",
       "type": "file",
-      "size": 109868,
-      "sha256": "d2ba6a518eef1955e1c3c9bf6126a45dd10cbf7a430b3814ff0a20c5b7111b11"
+      "size": 111039,
+      "sha256": "7a29ae3f6ae829f7ed2b75eddd1745efb2d018124d97092e8f6164aa62724226"
     },
     {
       "path": "maintainer/tests/test_manage_install.py",

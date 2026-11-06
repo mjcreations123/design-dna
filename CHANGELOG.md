@@ -79,6 +79,11 @@ a check:
   its modal after the new document settles, because a same-tab navigation there
   can still hold page timers for a few hundred ms and the watcher correctly
   blocks a modal born inside that gap. On a Mac, a study can hit that block too.
+- CI package checks: the link check, manifest check and audit now skip
+  `.playwright-browsers`, the browser download CI keeps inside the workspace,
+  the same way they skip `node_modules`. They were counting it as release content,
+  which failed the audit and, on macOS, the link check. Earlier runs never showed
+  this because the tests failed first.
 
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
