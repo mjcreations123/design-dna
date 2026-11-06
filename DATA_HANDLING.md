@@ -73,7 +73,14 @@ redaction passed.
 
 ## Retention and deletion
 
-Design DNA does not schedule deletion for the operator. Keep the minimum
+Design DNA does not schedule deletion for the operator. Once the owner
+approves a design, `skills/design-dna/scripts/clean_media.mjs` removes that
+project's screenshots, screen recordings and captured browser profiles from
+`.design-dna`, keeps the text records, and writes what it removed (path, size,
+SHA-256) to `.design-dna/retention.json`; it refuses unapproved or in-progress
+work. See
+[media retention](skills/design-dna/references/quality/media-retention.md).
+Keep the minimum
 evidence needed for the stated review or release claim, record a retention
 owner and date, and remove expired artifacts from workspaces, backups, support
 packages, and shared storage. A backup or source-control history may preserve a

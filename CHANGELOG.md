@@ -1,5 +1,90 @@
 # Changelog
 
+## 13.7.0 - Development candidate
+
+Screenshots and recordings go once a design is approved (2026-11-02).
+
+The owner, 2026-11-02: "Once I approve a design, we don't need to keep all the
+screenshots anymore. You could delete them right away. You just need to look
+at them." On his machine the `.design-dna` folders were reported to hold
+about 131 GB of screenshots, recordings and captured browser-profile files
+against about 3.5 GB of text records.
+
+- `scripts/clean_media.mjs`: for one project whose design is approved, removes
+  images, screen recordings and raw capture frames from `.design-dna`, and
+  every captured browser profile (a folder holding `Local State` or
+  `Default/Preferences`). It keeps the text records (plan, sheets, studies,
+  check records, review, notes, logs, fonts) and writes each removed file's
+  size and SHA-256 to `.design-dna/retention.json`. A report is the default;
+  `--apply` removes; `--keep` protects listed material such as client-supplied
+  images.
+- It refuses and removes nothing unless `plan.json` records `approval`
+  `{by, date}` (the field `check_build.mjs` reports) or, for a project with no
+  approval record, the operator passes `--approved`. It also refuses a plan
+  that still says TODO, files written after the approval date, anything
+  written in the last ten minutes, an active legacy `.design-dna.lock`, and
+  `~/.design-dna` itself.
+- `SKILL.md` step 5 and `references/quality/media-retention.md`: captures are
+  working material while the work is open; after approval they are removed
+  and the text records keep the design traceable. A cleaned project is not
+  re-checkable as it stands; a revision starts with fresh studies.
+- Browser profiles: the current study and check tools already launch the
+  installed Chrome with a throwaway profile in the operating system's
+  temporary folder. The profiles found inside project folders came from
+  earlier ad hoc captures, not from these tools; no launch code changed.
+- Regression tests: `tests/test_clean_media.py`.
+- The global rules are unchanged: explicit opt-in, no producer design, no
+  reduced-rigor mode, installed Google Chrome only. The source patch does not
+  claim fresh real-host qualification.
+
+CI repair (owner, 2026-11-02: "Fix it and then merge it"). CI had failed on
+every commit since 2026-09-06; the causes, fixed without skipping or loosening
+a check:
+
+- Python 3.10: the release runner reused unittest's shared loader, which kept
+  the first root's top-level directory, so the runtime tests never ran. Each
+  root now gets a fresh loader.
+- Linux and macOS: the attestation fixture ran only the synthetic Windows test
+  identities, so the suite was empty off Windows. It now carries one portable
+  test.
+- `SKILL.md` links the decision router again, with a contents map; the router
+  reaches the references the 13.0.0 rewrite left unlinked; the relocated 12.1
+  entrypoint's links resolve from `references/legacy/`; long runtime docs have
+  contents maps (recorded tool outputs under `tests/fixtures` are exempt).
+- Contract tests that read the 12.1 entrypoint now read it where 13.0.0 moved
+  it, and the absolutes check follows 13.4.1's removal of the superseded
+  recording settings. Both plugin descriptions name opt-in Connected Public
+  Experience again.
+- The project-state validator accepts the registry's dated `corrections`,
+  `aliases` and `corrections_note` (13.3.0) and validates their shape.
+- Browser policy: the rendered-browser CI job drives the runner's installed
+  Google Chrome; module-resolution tests that launch nothing pass the owner's
+  per-run flag for their stand-in executable, and new tests assert refusal
+  without it.
+- macOS: the lifecycle attester uses the canonical path of its own temporary
+  directory (`/var` is an alias), and process-group verification waits out the
+  transient EPERM of an exiting member instead of failing on it.
+- A bounded postprocess reports the study's original terminal cause when the
+  controller's watchdog ended it between heartbeats.
+- `packaging` 26.3 (the hosted Windows image's pipx requires it), with the
+  retained PyPI metadata refreshed; synthetic route-contract fixture pins
+  refreshed; the content-roles fixture's home link resolves.
+- Evidence: every overdue card re-reviewed. 13 against their live sources (two
+  at their publishers' new addresses), EVD-043/044/045 by re-reading their video
+  transcripts, and EVD-021 after the owner reaffirmed it on 2026-11-06.
+- CI on macOS: GitHub's Mac machines bunch timers, which pushed the page's 50 ms
+  sampling timer past the watcher's 100 ms limit on about a quarter of ticks.
+  The workflow now turns that off on those machines (`kern.timer.coalescing_enabled=0`);
+  the timing rule itself is unchanged. The two-navigation watch test now opens
+  its modal after the new document settles, because a same-tab navigation there
+  can still hold page timers for a few hundred ms and the watcher correctly
+  blocks a modal born inside that gap. On a Mac, a study can hit that block too.
+- CI package checks: the link check, manifest check and audit now skip
+  `.playwright-browsers`, the browser download CI keeps inside the workspace,
+  the same way they skip `node_modules`. They were counting it as release content,
+  which failed the audit and, on macOS, the link check. Earlier runs never showed
+  this because the tests failed first.
+
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
 - Design DNA now requires an explicit human request for the current task.

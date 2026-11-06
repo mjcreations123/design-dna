@@ -2,10 +2,10 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "design-dna-13.6.1-98b140773d1f",
-  "documentNamespace": "urn:uuid:76ca5323-60ce-5201-a272-015871b69d38",
+  "name": "design-dna-13.7.0-beff112145f9",
+  "documentNamespace": "urn:uuid:0e723941-7772-5774-a0eb-a64288d31e3e",
   "creationInfo": {
-    "created": "2026-11-01T09:30:08.016184Z",
+    "created": "2026-11-06T10:29:18.410539Z",
     "creators": [
       "Tool: design-dna-build-sbom-1.0.0",
       "Person: Motty"
@@ -19,7 +19,7 @@
     {
       "SPDXID": "SPDXRef-Package-design-dna",
       "name": "design-dna",
-      "versionInfo": "13.6.1",
+      "versionInfo": "13.7.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "LicenseRef-DesignDNA-Proprietary",
@@ -27,12 +27,12 @@
       "copyrightText": "Copyright (c) 2026 Motty. All rights reserved.",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Person: Motty",
-      "sourceInfo": "Runtime tree canonical content SHA-256: 98b140773d1f264973cd7fab22bd8bfebad1f6c738cf696f1296ac0d9d39e9c3. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
+      "sourceInfo": "Runtime tree canonical content SHA-256: beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22. Maintainer dependencies are inventory only and are not bundled in the runtime skill. Python artifacts are SHA-256 locked; npm artifacts are integrity-locked by package-lock.json.",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:generic/design-dna@13.6.1"
+          "referenceLocator": "pkg:generic/design-dna@13.7.0"
         }
       ]
     },
@@ -124,9 +124,9 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-Package-pypi-packaging-26.2-617c53663c57",
+      "SPDXID": "SPDXRef-Package-pypi-packaging-26.3-d6910605ef95",
       "name": "packaging",
-      "versionInfo": "26.2",
+      "versionInfo": "26.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
@@ -136,7 +136,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/packaging@26.2"
+          "referenceLocator": "pkg:pypi/packaging@26.3"
         }
       ],
       "primaryPackagePurpose": "LIBRARY",
@@ -144,11 +144,11 @@
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e"
+          "checksumValue": "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661"
+          "checksumValue": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
         }
       ]
     },
@@ -1077,7 +1077,7 @@
     {
       "spdxElementId": "SPDXRef-Package-design-dna",
       "relationshipType": "DEPENDS_ON",
-      "relatedSpdxElement": "SPDXRef-Package-pypi-packaging-26.2-617c53663c57"
+      "relatedSpdxElement": "SPDXRef-Package-pypi-packaging-26.3-d6910605ef95"
     },
     {
       "spdxElementId": "SPDXRef-Package-design-dna",

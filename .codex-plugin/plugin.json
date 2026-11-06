@@ -1,7 +1,7 @@
 {
   "name": "design-dna",
-  "version": "13.6.1",
-  "description": "Explicit-request-only skill for specific, source-authorized website design. Use only when the human asks for Design DNA; generic website, UI, review, and audit requests do not activate it.",
+  "version": "13.7.0",
+  "description": "Specific, source-authorized web design with opt-in Connected Public Experience. Explicit-request-only: use only when the human asks for Design DNA, never for generic website, UI or audit requests.",
   "author": {
     "name": "Motty"
   },

@@ -34,6 +34,7 @@ LOCAL_TOOL_DIRECTORY_NAMES = frozenset({
     ".git",
     ".mypy_cache",
     ".nox",
+    ".playwright-browsers",
     ".pytest_cache",
     ".ruff_cache",
     ".tox",

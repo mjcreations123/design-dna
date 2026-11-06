@@ -79,6 +79,12 @@ jobs:
           }
       - name: Verify source recording encoder
         run: ffmpeg -version
+      # GitHub's macOS machines bunch the page's 50 ms sampling timer past the
+      # watcher's 100 ms limit (109 of 400 ticks measured on 2026-11-06, none
+      # with this off). This changes the CI machine; the timing rule stays strict.
+      - name: Turn off timer coalescing (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        run: sudo sysctl -w kern.timer.coalescing_enabled=0
       - name: Run and attest unit and adversarial tests with zero unwaived skips
         run: python -I -S -B maintainer/scripts/attest_tests.py --plugin-root . --output "${{ runner.temp }}/design-dna-test-attestation.json" --diagnostic-output "${{ runner.temp }}/design-dna-test-diagnostic.json"
       - name: Validate evidence
@@ -132,10 +138,18 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
         working-directory: maintainer
-      - name: Locate Playwright Chromium
+      - name: Locate the installed Google Chrome
+        # Owner directive 2026-09-07: the skill drives the installed Google
+        # Chrome and refuses Playwright's bundled build without his per-run
+        # permission. The hosted runner image ships Google Chrome stable.
         shell: bash
         run: |
-          browser_path="$(node -e "process.stdout.write(require('./maintainer/node_modules/playwright').chromium.executablePath())")"
+          browser_path="$(command -v google-chrome || command -v google-chrome-stable || true)"
+          if [ -z "$browser_path" ]; then
+            echo "Google Chrome is not installed on this runner." >&2
+            exit 1
+          fi
+          "$browser_path" --version
           printf 'DESIGN_DNA_BROWSER_EXECUTABLE=%s\n' "$browser_path" >> "$GITHUB_ENV"
       - name: Check the rendered-review program
         run: npm run check:rendered-review

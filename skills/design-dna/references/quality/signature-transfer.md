@@ -3,6 +3,13 @@
 Use this with the existing reference sheet, plan and check. It adds no shared
 slots or new workflow stage. The plan is checked before the browser opens.
 
+## Contents
+
+- Study the region that matters
+- Add the obligation to the plan
+- Gaps: inspected or excluded
+- Review the captured result
+
 ## Study the region that matters
 
 First present ten suitable websites and wait for the user's part selections,
@@ -169,5 +176,7 @@ signature as present merely to clear the check. The tool verifies records and
 measured behavior, while the review remains accountable human/agent judgment.
 
 Retain the first failed check and its captures, review them, then rerun after
-updating the review. Any visible code/content change requires a new capture
+updating the review. Captures are kept while the work is open; once the owner
+approves the design they are removed and these file and SHA-256 bindings stay
+as the record ([media retention](media-retention.md)). Any visible code/content change requires a new capture
 and review. Owner approval is always separate from review completion.

@@ -1456,6 +1456,16 @@ def terminate_process_tree(
         except ProcessLookupError:
             evidence["verified_empty"] = True
             break
+        except PermissionError as exc:
+            # macOS answers EPERM while a SIGKILLed, reparented member is
+            # still exiting (a zombie its new parent has not reaped). The
+            # group is not empty yet: keep waiting for ESRCH until the
+            # deadline instead of failing on that transient state.
+            if time.monotonic() >= deadline:
+                evidence["group_verification_error"] = str(exc)
+                break
+            time.sleep(0.05)
+            continue
         except OSError as exc:
             evidence["group_verification_error"] = str(exc)
             break

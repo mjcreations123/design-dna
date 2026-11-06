@@ -67,7 +67,7 @@ What it means, mechanically:
   leaves the requested website blocked. Gate results measure recorded
   compliance; they do not establish who authored a design.
 - One gate program has two mandatory phases against the same authoritative
-  [route-manifest file and complete planned route mapping](templates/route-manifest-template.json).
+  [route-manifest file and complete planned route mapping](../../templates/route-manifest-template.json).
   Keep the manifest's immutable `manifest_id`; it never contains a build ID.
   Use distinct immutable proof and final build IDs. First create the schema-2
   construction binding and append-only pre-code journal; without both, no
@@ -126,7 +126,7 @@ typed partial artifact and stop that run. Diagnose the named missing coverage
 before any fresh attempt; repeated unchanged failures do not justify another
 identical run. Never declare the recording floor sufficient; any remaining
 coverage gap blocks public selection. Read
-[bounded source study and internal proofs](references/quality/bounded-source-study.md)
+[bounded source study and internal proofs](../quality/bounded-source-study.md)
 for progress, retries, proof-only evidence, and reporting boundaries.
 
 If a source changes without visitor input, record it as a schema-2
@@ -179,7 +179,7 @@ than fitting citations to code that already exists.
 When the current brief and one generated proof-source observation are ready
 but the public reference study is still pending, a single local first-screen
 specimen may use the separate
-[`proof-slice-template.json`](templates/proof-slice-template.json):
+[`proof-slice-template.json`](../../templates/proof-slice-template.json):
 
 ```text
 python -B "<DESIGN_DNA_SKILL_ROOT>/scripts/gate.py" --project "<PROJECT_ROOT>" --build-id "<PROOF_BUILD_ID>" --phase proof-slice --proof-slice ".design-dna/proof-slice.json"
@@ -249,7 +249,7 @@ deliverable, never by weakening how it is researched, built, or verified.
 
 ## Assurance boundaries come first
 
-Read [the assurance boundaries](policy/absolutes.md) before substantial
+Read [the assurance boundaries](../../policy/absolutes.md) before substantial
 design work. They reserve low freedom for truth, rights, privacy, access,
 working behavior, evidence honesty, delivery authority, and explicit project
 contracts. They do not contain a font, palette, punctuation, layout, motion,
@@ -327,7 +327,7 @@ count follow uncertainty and stakes, with no fixed concept quota.
 3. The task, surface mode, content, stack, and delivery constraints.
 4. Project evidence and documented rationale for truth, task, and source fit;
    rationale alone is never visual authority.
-5. Bundled [publisher defaults](policy/owner-defaults.yml), then heuristics.
+5. Bundled [publisher defaults](../../policy/owner-defaults.yml), then heuristics.
 
 When same-tier sources conflict, preserve an established approved
 requirement, identify the accountable decision owner, and ask only when the
@@ -336,7 +336,7 @@ unresolved choice would materially change the result.
 ## Classify the work
 
 For an existing site with visible code, use
-[scoped maintenance](references/quality/scoped-maintenance.md) when the change
+[scoped maintenance](../quality/scoped-maintenance.md) when the change
 preserves its route scope. Freeze a current full census and the exact planned
 delta before editing. Do not pretend existing history was a code-free start.
 
@@ -372,10 +372,10 @@ rejected visual direction needs recovery; public status or route count alone
 does not select it. This chooses process depth and does not choose a house
 style. For
 Showcase work without an approved rendered direction, load [taste
-calibration](references/craft/taste-calibration.md) before generating the
+calibration](../craft/taste-calibration.md) before generating the
 first public surface.
 
-Read [Enterprise Candidate](references/quality/enterprise-candidate.md) before
+Read [Enterprise Candidate](../quality/enterprise-candidate.md) before
 the first visual candidate. It is an execution-quality default for public work:
 derive the scale, content depth, media role, interaction coverage, and visual
 ambition from the actual brief. Do not turn it into a fake
@@ -385,7 +385,7 @@ part of the build, not approval checkpoints the owner must rediscover through
 repeated feedback.
 
 For every fresh Enterprise Candidate public website, read
-[Reference-led direction](references/quality/reference-led-direction.md) before
+[Reference-led direction](../quality/reference-led-direction.md) before
 the first visual candidate and initialize with `--profile
 enterprise-candidate`. That reference owns the detailed research, capture,
 comparison, measurement, transfer, and review procedure; do not preload its
@@ -484,7 +484,7 @@ route and state with its cited reference evidence and confirms source lineage,
 brief fit, complete experience, rights, and dominant-grammar coherence.
 
 A prior result rejected as AI-looking, generic, ugly, or in bad taste selects
-at least Standard plus [taste calibration](references/craft/taste-calibration.md),
+at least Standard plus [taste calibration](../craft/taste-calibration.md),
 the convergence and specificity reviews. When the rejection reopens the visual
 premise, add Showcase as direction recovery; a contained defect that preserves
 the premise may remain Standard. A direct rejection of the visual answer
@@ -506,7 +506,7 @@ organizing answer, an authorized nearest-sibling comparison when available,
 and a rendered collision test. It does not require every project to change
 every surface ingredient, and an inherited product or brand system may
 truthfully use the lighter exemption recorded in the contract. Read
-[visual-grammar variance](references/quality/visual-grammar-variance.md) when
+[visual-grammar variance](../quality/visual-grammar-variance.md) when
 the complaint concerns the same hero, type posture, CTA treatment, containers,
 background panels, underlines, route rhythm, or mobile collapse. Compare the
 candidate with actual authorized output; whether the same layout could
@@ -519,14 +519,14 @@ website selects Showcase, not Direction Challenge. This escalation adds
 Direction Challenge beside Project Contrast; its roots and cross-root proof
 slices apply only to the declared challenge. It does not turn ordinary
 exploration into a standing three-concept rule. Read [Direction
-Challenge](references/quality/direction-challenge.md) before any polished-
+Challenge](../quality/direction-challenge.md) before any polished-
 example search or broad implementation.
 
 Identify every surface mode that describes the user's job: Persuade
-([modes/persuade](references/modes/persuade.md)), Experience
-([modes/experience](references/modes/experience.md)), Operate
-([modes/operate](references/modes/operate.md)), Read
-([modes/read](references/modes/read.md)). A hybrid route uses the guidance
+([modes/persuade](../modes/persuade.md)), Experience
+([modes/experience](../modes/experience.md)), Operate
+([modes/operate](../modes/operate.md)), Read
+([modes/read](../modes/read.md)). A hybrid route uses the guidance
 that answers its actual decisions. Name one primary job per route and any
 secondary jobs that materially change content, state, or review. When mode
 guidance pulls in different directions, the assurance boundaries and explicit
@@ -542,7 +542,7 @@ also closed to producer invention: the only available visual range comes from
 the current brief, recorded brand constraints, supplied work, and selected
 measured references. There is no producer-owned font, palette, style,
 geometry, ornament, layout, interaction, motion, section-order, or concept
-lane. Read [creative freedom](references/creative-freedom.md) as a hard
+lane. Read [creative freedom](../creative-freedom.md) as a hard
 source-authority lock: an unbound visible choice blocks implementation and
 release; it never authorizes an unsourced aesthetic choice.
 
@@ -553,7 +553,7 @@ release; it never authorizes an unsourced aesthetic choice.
 - Do not invent business facts, proof, people, metrics, reviews, assets,
   availability, or integrations. When unresolved material or behavior remains,
   label it where confusion could occur and track it in the
-  [placeholder register](templates/placeholder-register-template.md). For a
+  [placeholder register](../../templates/placeholder-register-template.md). For a
   sparse, fictional, or internal concept, use the approved fixture or claim
   ledger and actual behavior to distinguish context-free entry orientation from
   claim- or action-local status; do not fill every route with duplicate boundary
@@ -564,7 +564,7 @@ release; it never authorizes an unsourced aesthetic choice.
   authorizes live operation. A demo control works locally, explains its state,
   or is removed; it does not silently impersonate a live integration.
 - Treat typography as a designed system. Use the
-  [typography](references/craft/typography.md) protocol to assign, deliver,
+  [typography](../craft/typography.md) protocol to assign, deliver,
   and verify the source-bound roles the project actually needs. No family category,
   pairing count, hosting method, or shortlist size is globally required.
 - Make a deliberate media decision for every build. When physical or sensory
@@ -581,14 +581,14 @@ release; it never authorizes an unsourced aesthetic choice.
   must explain the specific visitor or truth benefit and record explicit
   owner/client approval with an ISO date.
 - Every visible string passes the
-  [parseable-text](references/quality/parseable-text.md) gate. Keep
+  [parseable-text](../quality/parseable-text.md) gate. Keep
   customer-facing copy relevant to the customer's subject or task. Do not
   expose design rationale, implementation residue, component names, or false
   system theater as visitor content. Truthful operational status, technical
   detail, or atmosphere remains valid when the audience needs it and its
   meaning is clear.
 - For Standard-or-stronger public builds, read
-  [Public copy integrity](references/quality/public-copy-integrity.md) before
+  [Public copy integrity](../quality/public-copy-integrity.md) before
   drafting prominent public language and close it in the final Enterprise
   Candidate review. A slogan, headline, or brand statement must earn its place
   through an approved voice or a concrete project/category/visitor anchor;
@@ -643,11 +643,11 @@ release; it never authorizes an unsourced aesthetic choice.
   with a real project basis. Form labels, navigation, captions, credits,
   legends, and operational status remain normal functional text. This is a
   hierarchy and copy rule, not a ban on the treatment itself; use
-  [parseable text](references/quality/parseable-text.md) and
-  [content IA](references/craft/content-ia.md) to review the relationship.
+  [parseable text](../quality/parseable-text.md) and
+  [content IA](../craft/content-ia.md) to review the relationship.
 - When an actual public launch or delivery scope introduces discovery,
   conversion, contact, transaction, location, policy, measurement, or promotion
-  decisions, load [launch completeness](references/quality/launch-completeness.md)
+  decisions, load [launch completeness](../quality/launch-completeness.md)
   after the direction exists and record only the relevant families. Do not make
   a fifteen-row marketing inventory the default input to every new design or
   manufacture a CTA, FAQ, promise, location, policy, tracker, or promotion.
@@ -685,7 +685,7 @@ release; it never authorizes an unsourced aesthetic choice.
   were actually captured and remain useful evidence.
 - When several unrelated studio builds are in scope and owner-authorized
   minimized history exists, consult the
-  [ledger](references/quality/ledger.md). Repetition is a review prompt, not
+  [ledger](../quality/ledger.md). Repetition is a review prompt, not
   an automatic veto; project and brand fit outrank novelty for its own sake.
 - When Project Contrast is active, settle the selected opening, dominant
   content operation, and body progression against a materially different
@@ -723,7 +723,7 @@ release; it never authorizes an unsourced aesthetic choice.
 - Direct owner rejection or observed user confusion reopens the affected
   work until the revised result is rendered and reviewed again.
 - For a substantial public build, complete the
-  [artifact credibility and cumulative-pattern review](references/quality/artifact-credibility.md)
+  [artifact credibility and cumulative-pattern review](../quality/artifact-credibility.md)
   on final wide and narrow captures. Ask whether the site plausibly operates
   for its claimed audience, whether business/category reality survives without
   the maker's rationale, and whether media, copy, typography, and recurring
@@ -747,7 +747,7 @@ release; it never authorizes an unsourced aesthetic choice.
 ## Start direction progressively
 
 For a substantial build or redesign, begin with [Direction
-start](references/quality/direction-start.md) before making the first visual
+start](../quality/direction-start.md) before making the first visual
 candidate. It covers the compact pre-direction decisions: non-negotiable
 boundaries, factual and delivery framing, proportional capability selection,
 and the exact trigger for Project Contrast or Direction Challenge. Any early
@@ -765,7 +765,7 @@ the first visual candidate, and unavailable evidence leaves direction blocked
 rather than authorizing producer design.
 
 Once grounding supports the selected reference mapping, load only the phase of
-[the workflow](references/workflow.md) that is now needed: proof,
+[the workflow](../workflow.md) that is now needed: proof,
 implementation, rendered revision, user validation, or delivery. The workflow
 retains the detailed requirements for each phase and the project-local records
 that make a consequential decision reviewable.
@@ -794,10 +794,10 @@ gate remain allowed and must stay visibly separate from accepted public work.
 
 Selection never waives the later gates. Standard-or-stronger work still needs
 the final rendered and engineering review, the [adversarial specificity
-review](references/quality/specificity-review.md), the [artifact credibility
-review](references/quality/artifact-credibility.md) for a public proposition,
+review](../quality/specificity-review.md), the [artifact credibility
+review](../quality/artifact-credibility.md) for a public proposition,
 and the applicable
-[preship gate](templates/preship-gate.md). Project Contrast and Direction
+[preship gate](../../templates/preship-gate.md). Project Contrast and Direction
 Challenge still require their project-local records and final proof boundaries;
 Batch Study still reaches command success only at `final_ready`. Ask only
 high-leverage concept questions whose answers would materially change
@@ -823,7 +823,7 @@ prompt: the work starts being assembled to dodge a list instead of to answer
 the brief, which is the mechanism that produces something safe, generic, and
 already covered by [the two axes](#separate-specificity-from-ambition).
 
-Open the [decision router](references/router.md) when a concrete decision or
+Open the [decision router](../router.md) when a concrete decision or
 risk arrives. Read the matching row and only the references it names; do not
 scan every row as a generation prompt. Return here after the decision closes.
 
@@ -853,10 +853,10 @@ Create only useful evidence records with `scripts/init_project_state.py`.
 The relevant workflow phase names its project-local record and template;
 do not create the full catalog for every project. Keep mutable records
 project-local with their stated privacy classification, follow
-[owner-policy onboarding](references/owner-policy.md) only when that opt-in
+[owner-policy onboarding](../owner-policy.md) only when that opt-in
 governance applies, and run the initializer's `--check-ready` gate before
 claiming records satisfy the selected capabilities. The
-[preship gate](templates/preship-gate.md) remains the final cross-project
+[preship gate](../../templates/preship-gate.md) remains the final cross-project
 record.
 
 `--check-prebuild` and `--check-ready` answer different claims. Prebuild is the
@@ -917,7 +917,7 @@ shrink. The scanner supplies bounded prompts and never replaces rendered proof.
 ## The gate, restated
 
 Nothing is presented as done until the applicable
-[preship gate](templates/preship-gate.md) passes on the rendered output. Bind
+[preship gate](../../templates/preship-gate.md) passes on the rendered output. Bind
 the exact build and every route, state, and wide/narrow viewport declared by
 the authoritative manifest, plus any additional risk-selected preference,
 typography, content, media, access, and engineering evidence. A violated assurance

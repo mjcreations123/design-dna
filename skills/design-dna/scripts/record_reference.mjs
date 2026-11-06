@@ -217,7 +217,12 @@ export async function runBoundedSourceSubprocess({
         sourceStudy.assertHealthy();
       }
     } catch (error) {
-      controllerError = error;
+      // The controller's own watchdog may terminate the study between two
+      // heartbeats. Report the study's original terminal cause (for example
+      // no progress), not the generic "already terminated" follow-up.
+      controllerError = error?.code === 'source-study-already-terminated' && sourceStudy.terminated
+        ? sourceStudy.terminate(error.code, error.message)
+        : error;
       child.kill('SIGKILL');
     }
   }, heartbeatMs);

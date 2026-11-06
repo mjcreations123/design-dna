@@ -45,6 +45,18 @@ every claim traces to a record a program wrote or a screenshot a person saw.
 The standard is the visitor's experience. Measurements prove provenance and
 catch known failure shapes. They never substitute for looking.
 
+## Contents
+
+- Activation: explicit human request only
+- The owner's standing order: no producer design
+- The workflow: 1. research and present ten, 2. plan, 3. build, 4. check,
+  review, report, 5. once the owner approves, delete the screenshots and
+  recordings
+- The clock; what a report contains; reference selection; other standing
+  rules; what the tools prove; legacy machinery
+- Specialist guidance is reached through the
+  [decision router](references/router.md), loaded only for the decision at hand.
+
 ## The owner's standing order: no producer design
 
 Motty (MJ's Studio), 2026-09-03, after a build made "as a quick test" shipped
@@ -86,12 +98,17 @@ measurements never substitute for visual quality. A build whose fonts, colors
 and mechanisms all trace to references and which still looks poor is a poor
 build, and the report says so first.
 
+Owner directive, 2026-11-02: screenshots and screen recordings are for
+looking at while the work is open. Once Motty approves a design they are
+deleted, and only the text records stay (step 5).
+
 ## The workflow
 
 Owner-directed selection (Motty, 2026-09-08) supersedes earlier autonomous
 selection, reference-count floors, source-spread quotas and motion quotas.
 Research → present ten → wait for the user's part-by-part choices → measure
-and plan those choices → build → check. No design or website slice is built
+and plan those choices → build → check → once the owner approves, delete the
+screenshots and recordings. No design or website slice is built
 before the user selects the parts. A request to build, hurry or test is not
 permission to skip that pause.
 
@@ -353,8 +370,9 @@ node <skill>/scripts/check_build.mjs --plan .design-dna/plan.json --studies .des
 
 Every run lands in `.design-dna/check/runs/<timestamp>/` with its frames,
 video, review sheet and `check.json`; the latest copies sit at the root. The
-failure history survives. The check prints five lines; quote all five
-verbatim in the report:
+failure history survives while the work is open; after approval its frames
+and videos go and its `check.json` records stay (step 5). The check prints
+five lines; quote all five verbatim in the report:
 
 - `CHECK PASS (automated)` or `CHECK FAIL (automated)`: the measurable
   comparisons. Inputs complete (route, recorded user selections, selected references studied at
@@ -420,6 +438,35 @@ line, and owner approval. Material problems are stated first and plainly.
 "Fonts and colors passed" never becomes "the site is ready". A known weak or
 rejected result is never described favorably because a metric improved.
 
+### 5. Once the owner approves: delete the screenshots and recordings
+
+Motty, 2026-11-02: "Once I approve a design, we don't need to keep all the
+screenshots anymore. You could delete them right away. You just need to look
+at them." And: "Make sure you don't delete anything that will have an actual
+effect on things that we are in the middle of working on."
+
+Screenshots, frames, contact sheets, review and candidates sheets, screen
+recordings and any captured browser profile are working material. When he
+approves the design, record it in the plan as `"approval": { "by": "Motty",
+"date": "YYYY-MM-DD" }` (never on his behalf, never before he says so), then:
+
+```
+node <skill>/scripts/clean_media.mjs --project .              # report: what would go, by folder
+node <skill>/scripts/clean_media.mjs --project . --apply      # remove it
+```
+
+What stays is the record that keeps the design traceable: `plan.json`, every
+`sheet.md` and `study.json`, `check.json` and `latest.json`, `review.md`,
+notes, logs and fonts. The tool writes each removed file's size and SHA-256 to
+`.design-dna/retention.json`. It refuses, removing nothing, when the plan has
+no approval or still says TODO, when anything was written after the approval
+date or in the last ten minutes, or when the folder is the owner record
+`~/.design-dna`. Read the report first; protect client-supplied images or
+anything the site loads from `.design-dna` with `--keep`. A cleaned project
+cannot be re-checked as it stands: a revision starts with fresh studies and a
+new approval. Details, including browser profiles, are in
+[media retention](references/quality/media-retention.md).
+
 ## The clock
 
 Keep research proportionate and give useful progress updates. Present the ten
@@ -438,6 +485,8 @@ Additional candidates are researched when the user requests them.
   study.json; `problems` and `functional_problems` in check.json), not
   summarized away.
 - What was not verified, in one plain sentence.
+- After approval, what `clean_media.mjs` removed (its totals) and the path of
+  `.design-dna/retention.json`, or why it refused.
 
 ## Reference selection is by design, not by industry
 
