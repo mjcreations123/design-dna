@@ -656,10 +656,13 @@ mapping changed.
   sitemap and wireframes, multiple concepts, the top three shared with
   descriptions), so each card and the `EVD-032` snapshot now record the new
   URL with a 90-day interval. Publisher, claim and confidence are unchanged.
-- Not renewed, source missing: `EVD-021` cites the owner-policy key
+- Renewed on owner reaffirmation: `EVD-021` cited the owner-policy key
   `arbitrary_prominent_copy_fragment_emphasis`, which no longer appears in
-  `skills/design-dna/policy/owner-defaults.yml`. Only the owner can reaffirm
-  or retire that preference.
+  `skills/design-dna/policy/owner-defaults.yml`. Asked on 2026-11-06 whether
+  the skill should still avoid coloring or styling one random word in a big
+  headline, the owner answered "Yes, keep that rule". The card now cites that
+  dated entry in the owner's record, with a 90-day interval. Its claim,
+  confidence, scope and risk mapping are unchanged.
 - Renewed on transcript re-read: `EVD-043`, `EVD-044`, and `EVD-045` (90-day
   intervals). Each watch page was opened in a browser and is public with the
   same publisher. The `EVD-043` and `EVD-044` transcripts were read from the

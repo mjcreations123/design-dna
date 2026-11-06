@@ -69,10 +69,9 @@ a check:
 - `packaging` 26.3 (the hosted Windows image's pipx requires it), with the
   retained PyPI metadata refreshed; synthetic route-contract fixture pins
   refreshed; the content-roles fixture's home link resolves.
-- Evidence: 13 overdue cards re-reviewed against their live sources (two at
-  their publishers' new addresses). EVD-021 (an owner default no longer in
-  `owner-defaults.yml`) and EVD-043/044/045 (video transcripts that could not
-  be re-read) remain overdue for the owner.
+- Evidence: every overdue card re-reviewed. 13 against their live sources (two
+  at their publishers' new addresses), EVD-043/044/045 by re-reading their video
+  transcripts, and EVD-021 after the owner reaffirmed it on 2026-11-06.
 
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 

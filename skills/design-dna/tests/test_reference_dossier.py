@@ -3238,12 +3238,12 @@ class ReferenceDossierTests(unittest.TestCase):
             fixture = DossierProject(temporary)
             sources = [DEFAULT_SOURCES[0], DEFAULT_SOURCES[2]]
             strong = [fixture.strong_row(rank, source=sources[(rank - 1) % 2]) for rank in (1, 2, 3, 4)]
-            compared = [fixture.candidate_row(rank, source=sources[(rank - 1) % 2], selected=True) for rank in (1, 2, 3)]
-            compared.append(fixture.candidate_row(4, source=sources[1], selected=False))
+            # A strong row must be a compared finalist, and each transfer carrier must cite its own rank.
+            compared = [fixture.candidate_row(rank, source=sources[(rank - 1) % 2], selected=True) for rank in (1, 2, 3, 4)]
             compared.append(fixture.candidate_row(5, source=DEFAULT_SOURCES[4], selected=False, host="rejected-five.example.test"))
             components = []
             for index, name in enumerate(REQUIRED_COMPONENTS):
-                rank = 1 if name in {"first screen", "display typeface"} or name in BEHAVIOUR_COMPONENTS else 2
+                rank = 3 if name == "display typeface" else 1 if name == "first screen" or name in BEHAVIOUR_COMPONENTS else 2
                 components.append(f"| {name} | {rank} | {SHEET_FRAME_CELL if name in BEHAVIOUR_COMPONENTS else f'strong-{rank}-frames/strong-{rank}-001-rest.png'} | {STRUCTURE_CELL} | {VALUES_CELL} | the primary route |")
             body = fixture.body(selected="1, 2, 3", strong_rows=strong, candidate_rows=compared, component_rows=components)
             self.assertEqual([], fixture.failures(body))
