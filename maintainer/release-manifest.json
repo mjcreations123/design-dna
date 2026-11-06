@@ -2,23 +2,23 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "13.7.0",
-  "distribution_sha256": "bb9fdb9d48135f37c168f2d39f442be193683083c0fbab9b908632577551b2a0",
-  "content_sha256": "ed774f0d6dc9ca5b96b0aa69f2394a067f56dd1468fc3855212e645d3b1ac71e",
+  "distribution_sha256": "6ecba453ef2830f9769143d5d43a41ade591a722cc253cda50102bca3e12a5e0",
+  "content_sha256": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
   "codex_plugin_manifest_sha256": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
   "claude_plugin_manifest_sha256": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-  "sbom_sha256": "aa87bd3ddd1ff35c2875dd62d03457355f195c8eff8244bea01174cf9bb45aad",
+  "sbom_sha256": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400",
   "compatibility_matrix_sha256": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "bb9fdb9d48135f37c168f2d39f442be193683083c0fbab9b908632577551b2a0",
-    "runtime": "ed774f0d6dc9ca5b96b0aa69f2394a067f56dd1468fc3855212e645d3b1ac71e",
+    "distribution_tree": "6ecba453ef2830f9769143d5d43a41ade591a722cc253cda50102bca3e12a5e0",
+    "runtime": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
     "codex_plugin_manifest": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
     "claude_plugin_manifest": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-    "sbom": "aa87bd3ddd1ff35c2875dd62d03457355f195c8eff8244bea01174cf9bb45aad",
+    "sbom": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400",
     "compatibility_matrix": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "d6f57f6a40b26dfb721f64acd24e4b8526558270a3e7b80949eedb6a10cd4e51",
-    "distribution_docs": "23d5d76719c00fc1490ae9600199184c2fc0bf20881350137907202f6f61baed",
+    "distribution_docs": "f5cbbc4dc0e1cde41c0c754e3d180c6380eed852b10623ccd5f7142b1c908ebd",
     "eval_contract": "657a31f4ee1d08ce4672a8516133782c1ebf4b75ef6b435deb66e7c1ea762cde",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "ad7f6660ea0b4bce83b17f97590185a6062ab1008545a75325aa7c29bc5450f0",
@@ -26,8 +26,8 @@
     "schemas": "6bd1b3eeca89bcaba0711b7cd4b65ed62e47a0e9f71a508e805c2bde9a09ff64",
     "tests": "328833f567590562950cf317b8bc584aed17de0c3cff269cd3fabf21ce788d02"
   },
-  "release_sha256": "950e4ceed194804c218484073a6a01de2947f6082f21af7c542ed2b5e2c82da3",
-  "generated_at": "2026-11-06T07:16:06.605234+00:00",
+  "release_sha256": "e0537a0276b2a767dd778d4e28a118a627250c6e8355cdb88c6d76ee017731df",
+  "generated_at": "2026-11-06T09:03:31.183394+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -1724,8 +1724,8 @@
     {
       "path": "tests/test_browser_evidence_hardening.py",
       "type": "file",
-      "size": 120414,
-      "sha256": "30cc71f733d81d16a566b78e0d4c59329c4c72919392b445f94900db60d7fd2c"
+      "size": 120901,
+      "sha256": "dc6dffa6236f6554c6656b819b69095356334353cbfd756f8425fba2a62ab150"
     },
     {
       "path": "tests/test_candidate_review.py",
@@ -1982,12 +1982,6 @@
       "sha256": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c"
     },
     {
-      "path": ".git",
-      "type": "file",
-      "size": 225,
-      "sha256": "c91087b80ab4a1d278262b8cffa02b6c950e83c5ab1c4ef20944e428c8c25c3d"
-    },
-    {
       "path": ".gitattributes",
       "type": "file",
       "size": 194,
@@ -2014,8 +2008,8 @@
     {
       "path": ".github/workflows/ci.yml",
       "type": "file",
-      "size": 6884,
-      "sha256": "405840470978872a71437c0f50fdb15c1f4ad92e2fa68cbcd9896b03eb17c139"
+      "size": 7272,
+      "sha256": "3351f253561791f8cd7e82a1a69da618be921c89720d195a25f8675639faa456"
     },
     {
       "path": ".github/workflows/evidence-review.yml",
@@ -2032,8 +2026,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 142661,
-      "sha256": "0245eb858e748e90a7d78767efeac0cae77d1192d6befbeb029a769bf664beec"
+      "size": 143225,
+      "sha256": "d4f35781c60e2fe2a274a881b3eda884700611d3941c67f745eb905164299fa4"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -4373,7 +4367,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "aa87bd3ddd1ff35c2875dd62d03457355f195c8eff8244bea01174cf9bb45aad"
+      "sha256": "d126db3c8196fab6d5c33c1af1a85683e40d4c745377e67d252f5052e1ff0400"
     },
     {
       "path": "maintainer/schemas",
@@ -6808,8 +6802,8 @@
     {
       "path": "skills/design-dna/tests/test_browser_evidence_hardening.py",
       "type": "file",
-      "size": 120414,
-      "sha256": "30cc71f733d81d16a566b78e0d4c59329c4c72919392b445f94900db60d7fd2c"
+      "size": 120901,
+      "sha256": "dc6dffa6236f6554c6656b819b69095356334353cbfd756f8425fba2a62ab150"
     },
     {
       "path": "skills/design-dna/tests/test_candidate_review.py",

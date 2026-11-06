@@ -72,6 +72,13 @@ a check:
 - Evidence: every overdue card re-reviewed. 13 against their live sources (two
   at their publishers' new addresses), EVD-043/044/045 by re-reading their video
   transcripts, and EVD-021 after the owner reaffirmed it on 2026-11-06.
+- CI on macOS: GitHub's Mac machines bunch timers, which pushed the page's 50 ms
+  sampling timer past the watcher's 100 ms limit on about a quarter of ticks.
+  The workflow now turns that off on those machines (`kern.timer.coalescing_enabled=0`);
+  the timing rule itself is unchanged. The two-navigation watch test now opens
+  its modal after the new document settles, because a same-tab navigation there
+  can still hold page timers for a few hundred ms and the watcher correctly
+  blocks a modal born inside that gap. On a Mac, a study can hit that block too.
 
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 

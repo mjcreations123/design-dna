@@ -645,6 +645,12 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
         self.assertEqual([], result["gaps"])
 
     def test_multiple_sequential_early_normal_watches_do_not_reuse_or_lose_a_watch(self) -> None:
+        # This test is about watch identity, so its modal appears after the new
+        # document has settled. Right after a same-tab navigation a slow machine
+        # can hold the page's timers for a few hundred ms (measured on GitHub's
+        # macOS runners, with or without an earlier watch), and the watcher then
+        # rightly refuses to clear a modal born inside that gap. The modal 10 ms
+        # into a first visit stays covered by the single-pass lineage test above.
         module_root = SKILL.parents[1] / "maintainer" / "node_modules"
         if not module_root.is_dir():
             self.skipTest("the maintained Playwright runtime is unavailable")
@@ -665,8 +671,8 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
               const selector = `#${{name}}-modal`;
               const early = await armEarlySourceSurfaceWatch(page, {{ ambientSelectors:[selector], baseline:{{ video_t_s:0 }},
                 captureEvidence:async (label) => ({{ label, video_t_s:0 }}) }});
-              await page.goto(`data:text/html,<main>${{name}}</main><script>setTimeout(() => {{ const modal=document.createElement('div'); modal.id='${{name}}-modal'; modal.setAttribute('role','dialog'); modal.style.cssText='position:fixed;inset:0;z-index:9'; document.body.append(modal); }}, 10)</script>`);
-              await page.waitForTimeout(35);
+              await page.goto(`data:text/html,<main>${{name}}</main><script>setTimeout(() => {{ const modal=document.createElement('div'); modal.id='${{name}}-modal'; modal.setAttribute('role','dialog'); modal.style.cssText='position:fixed;inset:0;z-index:9'; document.body.append(modal); }}, 250)</script>`);
+              await page.waitForTimeout(400);
               const watch = await adoptEarlySourceSurfaceWatch(page, early, {{ ambientSelectors:[selector], baseline:{{ video_t_s:1 }},
                 captureEvidence:async (label) => ({{ label, video_t_s:1 }}) }});
               await page.waitForTimeout(20);
