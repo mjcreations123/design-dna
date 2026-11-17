@@ -6086,6 +6086,10 @@ REFERENCE_SOURCE_REQUIRED_KEYS = {
     "curation",
     "curation_note",
 }
+# 13.3.0: a later fact that contradicts the audit is recorded on the row as a
+# dated correction, and a listing may live on an alias hostname.
+REFERENCE_SOURCE_OPTIONAL_KEYS = {"aliases", "corrections"}
+REFERENCE_SOURCE_CORRECTION_KEYS = {"date", "change", "evidence"}
 REFERENCE_SOURCE_STATUSES = {"active", "inactive"}
 REFERENCE_SOURCE_RETRIEVAL = {"fetch", "browser", "none"}
 ACTIVE_REFERENCE_SOURCE_RETRIEVAL = {"fetch", "browser"}
@@ -7864,10 +7868,18 @@ def reference_source_registry_failures(payload: object) -> list[str]:
     """Validate the maintained public-only inspiration source registry."""
 
     failures: list[str] = []
-    if not isinstance(payload, dict) or set(payload) != {
-        "schema_version", "audited_on", "policy", "sources"
-    }:
+    required = {"schema_version", "audited_on", "policy", "sources"}
+    if (
+        not isinstance(payload, dict)
+        or not required <= set(payload)
+        or set(payload) - required - {"corrections_note"}
+    ):
         return ["Reference source registry must use the versioned public-source shape."]
+    if "corrections_note" in payload and (
+        not isinstance(payload["corrections_note"], str)
+        or not non_placeholder(payload["corrections_note"])
+    ):
+        failures.append("Reference source registry corrections_note must be substantive text.")
     if payload.get("schema_version") != 1:
         failures.append("Reference source registry has an unsupported schema version.")
     audited_on = payload.get("audited_on")
@@ -7888,9 +7900,51 @@ def reference_source_registry_failures(payload: object) -> list[str]:
     active_count = 0
     for index, source in enumerate(sources, start=1):
         label = f"Reference source registry row {index}"
-        if not isinstance(source, dict) or set(source) != REFERENCE_SOURCE_REQUIRED_KEYS:
+        if (
+            not isinstance(source, dict)
+            or not REFERENCE_SOURCE_REQUIRED_KEYS <= set(source)
+            or set(source) - REFERENCE_SOURCE_REQUIRED_KEYS - REFERENCE_SOURCE_OPTIONAL_KEYS
+        ):
             failures.append(f"{label} has an unsupported shape.")
             continue
+        aliases = source.get("aliases", [])
+        if (
+            not isinstance(aliases, list)
+            or ("aliases" in source and not aliases)
+            or not all(
+                isinstance(alias, str)
+                and alias == alias.strip().lower()
+                and "." in alias
+                and not any(character in alias for character in "/: ")
+                for alias in aliases
+            )
+            or len(set(aliases)) != len(aliases)
+        ):
+            failures.append(f"{label} aliases must be a nonempty list of distinct bare hostnames.")
+        corrections = source.get("corrections", [])
+        if not isinstance(corrections, list) or ("corrections" in source and not corrections):
+            failures.append(f"{label} corrections must be a nonempty list of dated entries.")
+        else:
+            for correction in corrections:
+                if (
+                    not isinstance(correction, dict)
+                    or set(correction) != REFERENCE_SOURCE_CORRECTION_KEYS
+                    or not all(
+                        isinstance(correction[key], str) and non_placeholder(correction[key])
+                        for key in REFERENCE_SOURCE_CORRECTION_KEYS
+                    )
+                ):
+                    failures.append(
+                        f"{label} each correction needs a date, the change and its evidence."
+                    )
+                    continue
+                try:
+                    corrected_on = date.fromisoformat(correction["date"])
+                except ValueError:
+                    failures.append(f"{label} correction date must be ISO YYYY-MM-DD.")
+                    continue
+                if corrected_on > datetime.now(timezone.utc).date():
+                    failures.append(f"{label} correction date may not be in the future.")
         if source.get("curation") not in ("award", "curated", "submission"):
             failures.append(
                 f"{label} must declare curation as award, curated or "

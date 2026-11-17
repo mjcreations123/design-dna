@@ -16,6 +16,11 @@ SCRIPTS = SKILL / "scripts"
 RESOLVER = SCRIPTS / "playwright_resolver.mjs"
 PREFLIGHT = SCRIPTS / "browser_preflight.mjs"
 NODE = shutil.which("node")
+# The stand-in "browser" is this Python interpreter and nothing is launched.
+# Owner directive 2026-09-07: a path other than the installed Google Chrome
+# needs the explicit per-run permission flag, so the module-resolution tests
+# set it; the refusal without it is asserted separately below.
+STAND_IN_PERMISSION = {"DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM": "1"}
 
 
 def write_fake_playwright(
@@ -67,6 +72,8 @@ def run_preflight(script: Path, project: Path, *arguments: str, environment: dic
     child_environment = os.environ.copy()
     child_environment.pop("DESIGN_DNA_PLAYWRIGHT_MODULE_DIR", None)
     child_environment.pop("NODE_PATH", None)
+    child_environment.pop("DESIGN_DNA_ALLOW_BUNDLED_CHROMIUM", None)
+    child_environment.pop("DESIGN_DNA_BROWSER_EXECUTABLE", None)
     child_environment.update(environment or {})
     completed = subprocess.run(
         [NODE, str(script), *arguments],
@@ -117,6 +124,7 @@ class PlaywrightRuntimeResolutionTests(unittest.TestCase):
                 project,
                 "--browser-executable",
                 str(Path(sys.executable).resolve()),
+                environment=STAND_IN_PERMISSION,
             )
 
         self.assertEqual(0, code, payload)
@@ -140,14 +148,20 @@ class PlaywrightRuntimeResolutionTests(unittest.TestCase):
                 project,
                 "--browser-executable",
                 str(Path(sys.executable).resolve()),
-                environment={"DESIGN_DNA_PLAYWRIGHT_MODULE_DIR": str(explicit_modules.resolve())},
+                environment={
+                    "DESIGN_DNA_PLAYWRIGHT_MODULE_DIR": str(explicit_modules.resolve()),
+                    **STAND_IN_PERMISSION,
+                },
             )
 
         self.assertEqual(0, code, payload)
         self.assertEqual("environment-module-directory", payload["playwright"]["source"])
         self.assertEqual("explicit-1", payload["playwright"]["version"])
 
-    def test_project_local_module_uses_its_existing_bundled_executable_without_a_flag(self) -> None:
+    def test_project_local_bundled_executable_is_never_used_without_the_owner_flag(self) -> None:
+        # Before 2026-09-07 the module's bundled build was used automatically.
+        # The owner's directive replaced that: the installed Google Chrome is
+        # used when present, and a bundled build is refused without the flag.
         with tempfile.TemporaryDirectory(prefix="design-dna-automatic-browser-") as temporary:
             root = Path(temporary)
             preflight = install_shaped_scripts(root)
@@ -161,13 +175,36 @@ class PlaywrightRuntimeResolutionTests(unittest.TestCase):
 
             code, payload = run_preflight(preflight, project)
 
-        self.assertEqual(0, code, payload)
-        self.assertEqual("project-local-node-modules", payload["playwright"]["source"])
-        self.assertEqual("playwright", payload["browser"]["source"])
-        self.assertEqual(
-            hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest(),
-            payload["browser"]["sha256"],
-        )
+        if payload.get("ok"):
+            self.assertEqual(0, code, payload)
+            self.assertEqual("project-local-node-modules", payload["playwright"]["source"])
+            self.assertEqual("system-discovery", payload["browser"]["source"])
+            self.assertNotEqual(
+                hashlib.sha256(Path(sys.executable).read_bytes()).hexdigest(),
+                payload["browser"]["sha256"],
+            )
+        else:
+            self.assertEqual(3, code, payload)
+            self.assertEqual("bundled-chromium-forbidden", payload["error"]["code"])
+
+    def test_explicit_non_chrome_executable_is_refused_without_the_owner_flag(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-dna-stand-in-refused-") as temporary:
+            root = Path(temporary)
+            preflight = install_shaped_scripts(root)
+            project = root / "project"
+            project.mkdir()
+            write_fake_playwright(project / "node_modules", "project-local-1")
+
+            code, payload = run_preflight(
+                preflight,
+                project,
+                "--browser-executable",
+                str(Path(sys.executable).resolve()),
+            )
+
+        self.assertEqual(3, code, payload)
+        self.assertFalse(payload["ok"])
+        self.assertEqual("browser-not-installed-chrome", payload["error"]["code"])
 
     def test_invalid_explicit_module_directory_is_not_bypassed(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-dna-invalid-explicit-") as temporary:

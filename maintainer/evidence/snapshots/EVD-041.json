@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "evidence_id": "EVD-041",
-  "retrieved": "2026-07-30",
+  "retrieved": "2026-11-02",
   "url": "https://bradfrost.com/blog/post/design-system-components-recipes-and-snowflakes/",
   "locator": "Design system components, recipes, and snowflakes; Considerations",
   "content_kind": "maintainer_summary",

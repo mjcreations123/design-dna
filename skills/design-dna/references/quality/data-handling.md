@@ -32,7 +32,9 @@ the work in an approved local environment.
 Capture only what the decision requires. Remove credentials, query strings,
 personal data, confidential paths, and client material before sharing. Record
 the retention owner and date, then remove expired outputs from workspaces,
-backups, support packages, and shared storage.
+backups, support packages, and shared storage. A project's screenshots,
+recordings and captured browser profiles go once the owner approves its design;
+see [media retention](media-retention.md).
 
 This is an operational boundary, not legal advice or a privacy certification.
 Escalate regulated data, consent, retention, deletion, or incident questions to

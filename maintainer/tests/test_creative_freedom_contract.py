@@ -12,6 +12,9 @@ SKILL = PACKAGE_ROOT / "skills" / "design-dna"
 SCHEMAS = PACKAGE_ROOT / "maintainer" / "schemas"
 EVAL_FIXTURES = PACKAGE_ROOT / "maintainer" / "evals" / "fixtures"
 ROUTE_AUDIT = SKILL / "scripts" / "route_family_audit.py"
+# 13.0.0 replaced the runtime entrypoint with the study/plan/build/check
+# workflow and moved the 12.1 entrypoint, with these rules, here.
+LEGACY_SKILL = SKILL / "references" / "legacy" / "SKILL-12.1-machinery.md"
 
 
 def read(path: Path) -> str:
@@ -252,7 +255,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             .casefold()
             .split()
         )
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         preship = " ".join(
             read(SKILL / "templates" / "preship-gate.md")
             .casefold()
@@ -316,7 +319,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertIn("exact date or progress text", engineering)
 
     def test_preheading_labels_need_independent_information_not_default_scaffolding(self) -> None:
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         router = " ".join(
             read(SKILL / "references" / "router.md").casefold().split()
         )
@@ -356,7 +359,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         self.assertNotIn("never use an eyebrow", parseable)
 
     def test_private_design_reasoning_does_not_become_public_copy(self) -> None:
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         parseable = " ".join(
             read(SKILL / "references" / "quality" / "parseable-text.md")
             .casefold()
@@ -817,7 +820,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         )
 
     def test_showcase_requires_contrast_not_plural_full_alternatives(self) -> None:
-        skill = read(SKILL / "SKILL.md").casefold()
+        skill = read(LEGACY_SKILL).casefold()
         readme = read(PACKAGE_ROOT / "README.md").casefold()
         quick_start = read(PACKAGE_ROOT / "docs" / "QUICK_START.md").casefold()
         for name, document in (
@@ -916,7 +919,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         )
 
     def test_direction_phase_does_not_preload_post_render_diagnostics(self) -> None:
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         router = " ".join(
             read(SKILL / "references" / "router.md").casefold().split()
         )
@@ -1182,7 +1185,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
         workflow = " ".join(
             read(SKILL / "references" / "workflow.md").casefold().split()
         )
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         router = " ".join(
             read(SKILL / "references" / "router.md").casefold().split()
         )
@@ -1248,7 +1251,7 @@ class CreativeFreedomContractTests(unittest.TestCase):
             .casefold()
             .split()
         )
-        skill = " ".join(read(SKILL / "SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
 
         self.assertIn("provisional perception-and-stakes hypothesis", direction_start)
         self.assertIn("what an unprimed visitor might mistake this for", direction_start)

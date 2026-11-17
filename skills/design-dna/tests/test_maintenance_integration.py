@@ -123,15 +123,16 @@ class MaintenanceIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="dna-maintenance-integrated-") as temporary:
             fixture = source_fixture.DossierProject(temporary)
             sources = [source_fixture.DEFAULT_SOURCES[0], source_fixture.DEFAULT_SOURCES[2]]
-            strong = [fixture.strong_row(rank, source=sources[rank - 1]) for rank in (1, 2)]
-            compared = [fixture.candidate_row(rank, source=sources[rank - 1], selected=True) for rank in (1, 2)]
-            compared.append(fixture.candidate_row(3, source=source_fixture.DEFAULT_SOURCES[4], selected=False, host="rejected-three.example.test"))
+            # The cohort floor is four strong rows, five compared candidates and three selected ranks.
+            strong = [fixture.strong_row(rank, source=sources[(rank - 1) % 2]) for rank in (1, 2, 3, 4)]
+            compared = [fixture.candidate_row(rank, source=sources[(rank - 1) % 2], selected=True) for rank in (1, 2, 3, 4)]
+            compared.append(fixture.candidate_row(5, source=source_fixture.DEFAULT_SOURCES[4], selected=False, host="rejected-five.example.test"))
             components = []
             for name in source_fixture.REQUIRED_COMPONENTS:
-                rank = 1 if name in {"first screen", "display typeface"} or name in source_fixture.BEHAVIOUR_COMPONENTS else 2
+                rank = 3 if name == "display typeface" else 1 if name == "first screen" or name in source_fixture.BEHAVIOUR_COMPONENTS else 2
                 frame = source_fixture.SHEET_FRAME_CELL if name in source_fixture.BEHAVIOUR_COMPONENTS else f"strong-{rank}-frames/strong-{rank}-001-rest.png"
                 components.append(f"| {name} | {rank} | {frame} | {source_fixture.STRUCTURE_CELL} | {source_fixture.VALUES_CELL} | the primary route |")
-            body = fixture.body(selected="1, 2", strong_rows=strong, candidate_rows=compared, component_rows=components)
+            body = fixture.body(selected="1, 2, 3", strong_rows=strong, candidate_rows=compared, component_rows=components)
             fixture.record_path.write_text(body, encoding="utf-8")
             direction_fixture(fixture.project)
             self.assertEqual([], INITIALIZER.prebuild_failures(fixture.project, require_first_screen=False, require_construction=False))

@@ -169,10 +169,25 @@ def make_attestation_fixture(root: Path) -> Path:
         encoding="utf-8",
     )
     write_native_identity_fixture(maintainer / "tests")
+    write_portable_fixture_test(maintainer / "tests")
     return plugin
 
 
 NATIVE_FIXTURE_COUNT = len(applicability.WINDOWS_NATIVE_TEST_IDS) if platform.system() == "Windows" else 0
+# One ordinary test runs on every platform. Without it a bare fixture ran only
+# the synthetic Windows identities, so on Linux and macOS the suite was empty
+# and the attester (correctly) refused it as "ran no tests".
+PORTABLE_FIXTURE_COUNT = 1
+
+
+def write_portable_fixture_test(tests: Path) -> None:
+    (tests / "test_fixture_portable.py").write_text(
+        '"""One ordinary fixture case that runs on every platform."""\n'
+        "import unittest\n"
+        "class PortableFixture(unittest.TestCase):\n"
+        "    def test_portable_case(self):\n"
+        "        self.assertTrue(True)\n",
+        encoding="utf-8")
 
 
 def write_native_identity_fixture(tests: Path) -> None:
@@ -1356,7 +1371,7 @@ class TestAttestationTests(unittest.TestCase):
                 completed.stdout + completed.stderr,
             )
             record = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
+            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT + PORTABLE_FIXTURE_COUNT)
             self.assertEqual(
                 record["command"],
                 [
@@ -1444,7 +1459,7 @@ class TestAttestationTests(unittest.TestCase):
             # discovery with its injected empty suite.
             self.assertEqual(marker.read_text(encoding="utf-8"), "1")
             record = json.loads(output.read_text(encoding="utf-8"))
-            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT)
+            self.assertEqual(record["result"]["tests_run"], 2 + NATIVE_FIXTURE_COUNT + PORTABLE_FIXTURE_COUNT)
             self.assertEqual(
                 record["command"],
                 [

@@ -658,7 +658,10 @@ def create_attestation(plugin_root: Path) -> dict[str, object]:
     with tempfile.TemporaryDirectory(
         prefix="design-dna-lifecycle-attestation-"
     ) as temporary:
-        isolation = Path(temporary)
+        # The OS allocator can hand back an intrinsic alias (macOS /var ->
+        # /private/var). This tool owns the new directory, so it uses the
+        # canonical path; the reparse checks on everything inside still apply.
+        isolation = Path(temporary).resolve(strict=True)
         home = isolation / "home"
         sources = isolation / "sources"
         backup_root = home / ".design-dna" / "backups"

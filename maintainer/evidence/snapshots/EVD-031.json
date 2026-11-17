@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "evidence_id": "EVD-031",
-  "retrieved": "2026-08-02",
+  "retrieved": "2026-11-02",
   "url": "https://help.figma.com/hc/en-us/articles/31304412302231-Explore-Figma-Make",
   "locator": "What is Figma Make?; Bring your design to Figma Make; Copy a Figma Make preview as design layers; Create and publish a Make kit",
   "content_kind": "maintainer_summary",

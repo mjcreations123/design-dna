@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "evidence_id": "EVD-027",
-  "retrieved": "2026-07-28",
+  "retrieved": "2026-11-02",
   "url": "https://ui.shadcn.com/docs/theming",
   "locator": "Current theming tokens, preset configuration, and default neutral scaffold",
   "content_kind": "maintainer_summary",

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "evidence_id": "EVD-033",
-  "retrieved": "2026-07-29",
+  "retrieved": "2026-11-02",
   "url": "https://storybook.js.org/docs/writing-tests",
   "locator": "Component tests; Types of tests: interaction tests; Types of tests: visual tests",
   "content_kind": "maintainer_summary",

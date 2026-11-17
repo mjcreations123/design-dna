@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "evidence_id": "EVD-038",
-  "retrieved": "2026-07-30",
+  "retrieved": "2026-11-02",
   "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll-driven_animations",
   "locator": "Scroll-driven animations in action; Reference; Guides",
   "content_kind": "maintainer_summary",

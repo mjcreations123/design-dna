@@ -8,7 +8,7 @@
     "3.13",
     "3.14"
   ],
-  "retrieved_at": "2026-09-06T02:45:15.408Z",
+  "retrieved_at": "2026-11-02T21:06:06.276Z",
   "authority": "PyPI release JSON; publisher-retained metadata, not a package signature",
   "packages": [
     {
@@ -127,29 +127,29 @@
     },
     {
       "name": "packaging",
-      "version": "26.2",
-      "source_url": "https://pypi.org/pypi/packaging/26.2/json",
-      "source_response_sha256": "7eea47157cf6e38386b2a0026bd646cbff4b344f9399b22a89e15f5a79f54593",
-      "requires_python": ">=3.8",
+      "version": "26.3",
+      "source_url": "https://pypi.org/pypi/packaging/26.3/json",
+      "source_response_sha256": "4f190d2f0b312b3086058cee64ab4333bf3ce67fb78b4c2bdb43899049b29f4d",
+      "requires_python": ">=3.9",
       "requires_dist": [],
       "artifacts": [
         {
-          "filename": "packaging-26.2-py3-none-any.whl",
-          "url": "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl",
-          "sha256": "5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e",
-          "requires_python": ">=3.8",
+          "filename": "packaging-26.3-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "requires_python": ">=3.9",
           "yanked": false,
-          "size": 100195,
+          "size": 129956,
           "packagetype": "bdist_wheel",
           "python_version": "py3"
         },
         {
-          "filename": "packaging-26.2.tar.gz",
-          "url": "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz",
-          "sha256": "ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661",
-          "requires_python": ">=3.8",
+          "filename": "packaging-26.3.tar.gz",
+          "url": "https://files.pythonhosted.org/packages/7d/fa/3944b40b07da9ce895c0e6303a5ab7d53da063554f534556b134a54d6093/packaging-26.3.tar.gz",
+          "sha256": "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79",
+          "requires_python": ">=3.9",
           "yanked": false,
-          "size": 228134,
+          "size": 313412,
           "packagetype": "sdist",
           "python_version": "source"
         }
@@ -733,7 +733,7 @@
       "name": "rpds-py",
       "version": "0.30.0",
       "source_url": "https://pypi.org/pypi/rpds-py/0.30.0/json",
-      "source_response_sha256": "88d21ac3acf43dbc2b4d5204702ceeb8191691bcbb404879941fafe228d270a0",
+      "source_response_sha256": "3d483a85d90018b0d75e321e3795121cb4658e7e8296e5f2af3a27ed53f88d61",
       "requires_python": ">=3.10",
       "requires_dist": [],
       "artifacts": [

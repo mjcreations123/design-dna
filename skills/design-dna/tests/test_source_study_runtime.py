@@ -318,9 +318,16 @@ class SourceStudyControllerRuntimeTests(unittest.TestCase):
           try {
             for(const [id,limits] of [['total',{max_total_elapsed_ms:60,max_no_progress_ms:80}],['idle',{max_total_elapsed_ms:10000,max_no_progress_ms:80}]]) {
               let abortRequested=false;
-              const study=m.createSourceStudyController({output_dir:root,id,producer:'fixture.mjs',limits,
+              // The study clock holds still while the controller writes its
+              // first files, then runs in real time from the step call. A slow
+              // disk (GitHub's Windows machines) can spend the 60/80 ms budget
+              // on those writes, so the step itself would see the deadline
+              // already passed and the watchdog would never fire mid-step.
+              const anchor=Date.now();let runningSince=null;
+              const now=()=>runningSince===null?anchor:anchor+(Date.now()-runningSince);
+              const study=m.createSourceStudyController({output_dir:root,id,producer:'fixture.mjs',limits,now,
                 abort:()=>{abortRequested=true;return new Promise(()=>{});}});
-              const started=Date.now();
+              const started=Date.now();runningSince=started;
               try{await study.step('never-finishes',()=>new Promise(()=>{}),{timeout_ms:1500});}
               catch(error){results.push({id,code:error.code,elapsed:Date.now()-started,abortRequested,
                 failure:JSON.parse(fs.readFileSync(error.source_study_failure.file,'utf8'))});}

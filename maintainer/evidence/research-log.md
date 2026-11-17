@@ -624,3 +624,66 @@ gap it could support; none was treated as a visual style source.
 No reviewed source justified mandatory photos, a font family, a component
 shape, a complexity target, a style rotation, a universal page formula, or a
 beauty score. Those would replace one convergence basin with another.
+
+## 2026-11-02 overdue evidence-card re-review
+
+### Method
+
+Each overdue active card's `url` was retrieved again on 2026-11-02 and its
+Observation, retained excerpt, or maintainer summary was compared with the live
+text. A card was renewed only when the source answered at its recorded URL and
+still supported the card; renewal kept the card's previous review interval and
+rebound the dated snapshot by SHA-256. No claim, confidence, scope, or risk
+mapping changed.
+
+### Dispositions
+
+- Renewed on live retrieval: `EVD-007`, `EVD-014`, `EVD-022`, `EVD-027`
+  (88-day interval), `EVD-031`, `EVD-033`, `EVD-037`, `EVD-038`, `EVD-039`,
+  `EVD-041`, and `EVD-042` (90-day intervals). The `EVD-007` excerpt now
+  carries the page's current "(listed below)" wording. The W3C Hebrew draft
+  returned a bot challenge to a browser user agent and the full document to a
+  plain request. The Figma section once titled "Bring your design to Figma
+  Make" now reads "Bring your design, images, and other files to Figma Make";
+  the locator was left unchanged. shadcn's changelog still lists "Base UI as
+  the Default" under July 2026.
+- Renewed at the publisher's new address: `EVD-015` and `EVD-032` answer
+  with 301 Moved Permanently to the same publishers' new Carbon
+  (`/building-blocks/foundations/typography/overview/`) and Relume
+  (`relume.ai`) addresses. The destination text still supports both cards
+  (Carbon: neutral running text, colored type for links, actions, code,
+  warnings and alerts, italics for emphasis; Relume: style guides after a
+  sitemap and wireframes, multiple concepts, the top three shared with
+  descriptions), so each card and the `EVD-032` snapshot now record the new
+  URL with a 90-day interval. Publisher, claim and confidence are unchanged.
+- Renewed on owner reaffirmation: `EVD-021` cited the owner-policy key
+  `arbitrary_prominent_copy_fragment_emphasis`, which no longer appears in
+  `skills/design-dna/policy/owner-defaults.yml`. Asked on 2026-11-06 whether
+  the skill should still avoid coloring or styling one random word in a big
+  headline, the owner answered "Yes, keep that rule". The card now cites that
+  dated entry in the owner's record, with a 90-day interval. Its claim,
+  confidence, scope and risk mapping are unchanged.
+- Renewed on transcript re-read: `EVD-043`, `EVD-044`, and `EVD-045` (90-day
+  intervals). Each watch page was opened in a browser and is public with the
+  same publisher. The `EVD-043` and `EVD-044` transcripts were read from the
+  transcript panel and the `EVD-045` transcript from the player's own English
+  caption track. The cited passages still carry each Observation: `EVD-043`
+  says purple gradients and scroll fades are not inherently bad (01:57), finds
+  the following line distracting (03:27-03:39), praises the card hover
+  animation (04:45-04:56), and names scroll hijacking (13:38), low-quality
+  assets (15:27), inconsistent visual language (15:55), animation for its own
+  sake (34:45), and QA (35:36). `EVD-044` says motion can help or distract
+  (01:33), names the Klavis/Strata naming confusion (09:02, 14:22), one main
+  CTA per scroll (09:33), clipped media (16:21, 21:00), praises Freya's clarity
+  and accessible demo while criticizing its scroll hijacking and "meet the
+  team" CTA (23:58-25:50), and discusses unhelpful waiting states (31:17-32:25)
+  and sign-in before exploration (30:35, 35:02). `EVD-045` says a card is not a
+  sin (about 02:10), compares exaggerated cards with the flat Work OS section
+  (02:36-03:04), and still lists the cited chapter titles from "You might not
+  need a card" through "Learn the basics of UI design". Sampled frames were not
+  re-captured; the videos are unchanged recordings.
+
+### Limits
+
+A live retrieval confirms that a source still says what the card records. It
+does not upgrade a source's authority, sample, or transfer limits.

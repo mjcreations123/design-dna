@@ -32,6 +32,50 @@ class SuiteProcessTests(unittest.TestCase):
             environment=attest_tests.isolated_subprocess_environment(), timeout=timeout,
             redact=lambda value: attest_tests.redact_known_local_paths(value, plugin), announce=False)
 
+    def test_posix_group_verification_waits_out_a_transient_eperm(self):
+        # macOS answers EPERM while a killed, reparented group member is still
+        # exiting; emptiness is proven only by ESRCH, and EPERM until the
+        # deadline still fails. The POSIX branch is driven here with fakes so
+        # this regression runs on every platform.
+        class Exited:
+            pid = 4242
+
+            def poll(self):
+                return 0
+
+            def wait(self, timeout=None):
+                return 0
+
+        answers = iter([None, PermissionError(1, "Operation not permitted"),
+                        PermissionError(1, "Operation not permitted"), ProcessLookupError()])
+
+        def transient(pid, signal_number):
+            answer = next(answers)
+            if answer is not None:
+                raise answer
+
+        def persistent(pid, signal_number):
+            if signal_number == 0:
+                raise PermissionError(1, "Operation not permitted")
+
+        with patch.object(run_evals.os, "name", "posix"), \
+                patch.object(run_evals.os, "killpg", transient, create=True), \
+                patch.object(run_evals.signal, "SIGKILL", 9, create=True), \
+                patch.object(run_evals.time, "sleep", lambda _seconds: None):
+            evidence = run_evals.terminate_process_tree(Exited())
+        self.assertTrue(evidence["verified_empty"])
+        self.assertNotIn("group_verification_error", evidence)
+
+        clock = iter([0.0, 0.0, 10.0])
+        with patch.object(run_evals.os, "name", "posix"), \
+                patch.object(run_evals.os, "killpg", persistent, create=True), \
+                patch.object(run_evals.signal, "SIGKILL", 9, create=True), \
+                patch.object(run_evals.time, "sleep", lambda _seconds: None), \
+                patch.object(run_evals.time, "monotonic", lambda: next(clock)):
+            with self.assertRaises(run_evals.ToolFailure) as caught:
+                run_evals.terminate_process_tree(Exited())
+        self.assertIn("Operation not permitted", str(caught.exception))
+
     def test_normal_complete_streams_are_unchanged(self):
         with tempfile.TemporaryDirectory(prefix="dna-suite-complete-") as temporary:
             result = self.run_child(Path(temporary).resolve(), "import sys; sys.stdout.buffer.write(b'exact-out\\n'); sys.stderr.buffer.write(b'exact-err\\n')")

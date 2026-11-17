@@ -298,6 +298,30 @@ class ManifestTests(unittest.TestCase):
             }
             self.assertEqual(selected, {"docs/guide.md"})
 
+    def test_worktree_walk_prunes_the_ci_browser_download(self) -> None:
+        # CI keeps Playwright's browser inside the workspace. It is not package
+        # content, and on macOS it holds symlinks the walk would refuse.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            kept = root / "docs" / "guide.md"
+            browser = root / ".playwright-browsers" / "chromium-1" / "Framework"
+            kept.parent.mkdir()
+            browser.mkdir(parents=True)
+            kept.write_text("kept\n", encoding="utf-8")
+            (browser / "notes.md").write_text("browser file\n", encoding="utf-8")
+            try:
+                (browser / "Resources").symlink_to(browser, target_is_directory=True)
+            except OSError:
+                pass  # Windows without symlink rights still proves the pruning.
+            selected = {
+                path.relative_to(root).as_posix()
+                for path in walk_files(
+                    root,
+                    ignored_directory_names=LOCAL_TOOL_DIRECTORY_NAMES,
+                )
+            }
+            self.assertEqual(selected, {"docs/guide.md"})
+
     def test_windows_cloud_tag_is_allowed_but_name_surrogate_is_refused(self) -> None:
         directory_mode = 0o040755
         with patch.object(Path, "lstat", return_value=SimpleNamespace(

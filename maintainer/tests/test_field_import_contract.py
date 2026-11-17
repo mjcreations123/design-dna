@@ -7,6 +7,9 @@ from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 SKILL = PACKAGE_ROOT / "skills" / "design-dna"
+# 13.0.0 replaced the runtime entrypoint with the study/plan/build/check
+# workflow and moved the 12.1 entrypoint, which carries these contracts, here.
+LEGACY_SKILL = "references/legacy/SKILL-12.1-machinery.md"
 
 
 def read(relative_path: str) -> str:
@@ -360,7 +363,7 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
 
     def test_reference_count_follows_coverage_with_multiple_sources_and_counterevidence(self) -> None:
         for relative in (
-            "SKILL.md",
+            LEGACY_SKILL,
             "references/quality/reference-led-direction.md",
             "references/quality/enterprise-candidate.md",
             "references/quality/direction-start.md",
@@ -431,7 +434,7 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
                 self.assertIn(label, template)
 
     def test_first_screen_gate_blocks_generic_structure_before_scaling(self) -> None:
-        skill = read("SKILL.md")
+        skill = read(LEGACY_SKILL)
         led = read("references/quality/reference-led-direction.md")
         workflow = read("references/workflow.md")
         dossier = read("templates/reference-dossier-template.md")
@@ -447,7 +450,7 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
         self.assertIn("--phase final", skill)
 
     def test_no_shortcuts_rule_reduces_scope_never_quality(self) -> None:
-        skill = " ".join(read("SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         absolutes = " ".join(read("policy/absolutes.md").casefold().split())
         led = " ".join(
             read("references/quality/reference-led-direction.md").casefold().split()
@@ -458,9 +461,19 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
                 self.assertIn("time", document)
                 self.assertRegex(document, r"tokens?\b")
                 self.assertIn("cost", document)
+                self.assertRegex(document, r"block(?:s|ed|ing)?.{0,80}present")
+        for document in (skill, led, workflow):
+            with self.subTest(recording_settings=document[:40]):
                 self.assertRegex(document, r"90[- ]second")
                 self.assertRegex(document, r"15[- ]fps")
-                self.assertRegex(document, r"block(?:s|ed|ing)?.{0,80}present")
+        # 13.4.1 removed the superseded 90-second / 15-fps recording settings
+        # from the active assurance policy; the obligation itself stays.
+        self.assertIn("the current study's required recordings", absolutes)
+        self.assertIn(
+            "supersedes historical gate commands and recording settings; "
+            "it does not reduce the quality obligation",
+            absolutes,
+        )
 
         self.assertIn("mechanical repair (`quick` legacy cli identifier only)", skill)
         self.assertIn("cannot lower research, capture, review, or gate rigor", skill)
@@ -532,7 +545,7 @@ class ReferenceEvidenceContractTests(unittest.TestCase):
         self.assertIn("def reference_led_closure_label_failures", read("scripts/init_project_state.py"))
 
     def test_fresh_public_builds_initialize_the_enterprise_profile(self) -> None:
-        skill = " ".join(read("SKILL.md").casefold().split())
+        skill = " ".join(read(LEGACY_SKILL).casefold().split())
         self.assertIn("--profile enterprise-candidate", skill)
         self.assertIn("starts at standard plus enterprise candidate", skill)
         self.assertIn("def prebuild_warnings", read("scripts/init_project_state.py"))
