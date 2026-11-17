@@ -89,6 +89,12 @@ a check:
   GitHub's Mac machines rendering can stall past 180 ms, which left nothing yet
   for the watcher to record (twice on one Mac job). What the watcher must
   record is unchanged.
+- The source-study watchdog test now holds the study clock still while the
+  controller writes its first files, then runs it in real time from the step.
+  On a GitHub Windows machine those writes took longer than the 60/80 ms test
+  budget, so the step started already past its deadline and the watchdog never
+  fired mid-step. The limits, the real watchdog timer and all four checks are
+  unchanged.
 
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
