@@ -2,23 +2,23 @@
   "schema_version": 6,
   "package": "design-dna",
   "version": "13.7.0",
-  "distribution_sha256": "922819c827bba039ebdeb9a7f071e5012ad14e2fc08d6502e59d84493e592958",
-  "content_sha256": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
+  "distribution_sha256": "3f00098aa4c310fbb0b7c24b83a8d956f56452747d95ff0c48a5666bcb2c3950",
+  "content_sha256": "3328e47cae926bd798e96038ee9d0a064e93ba4df60375c8ffcd7a8cfebee06b",
   "codex_plugin_manifest_sha256": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
   "claude_plugin_manifest_sha256": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-  "sbom_sha256": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03",
+  "sbom_sha256": "20bc8c1f2abfc6a7eb1d554bda5362b83fde3fec4fd79fb3a0868b2eb819c7bb",
   "compatibility_matrix_sha256": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
   "trusted_adapters_sha256": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
   "components": {
-    "distribution_tree": "922819c827bba039ebdeb9a7f071e5012ad14e2fc08d6502e59d84493e592958",
-    "runtime": "beff112145f97aaf0ead9f159ebf00cc5c42cde47dc5ade62981eed202fcae22",
+    "distribution_tree": "3f00098aa4c310fbb0b7c24b83a8d956f56452747d95ff0c48a5666bcb2c3950",
+    "runtime": "3328e47cae926bd798e96038ee9d0a064e93ba4df60375c8ffcd7a8cfebee06b",
     "codex_plugin_manifest": "15d4abc26d7f83d95dd02bed6e4045832d2f42432908fb3c5084c868be64e54c",
     "claude_plugin_manifest": "2ff4ea20d12375df852fcc889e41df8fb1707c9d86cdd104b176934fb16579eb",
-    "sbom": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03",
+    "sbom": "20bc8c1f2abfc6a7eb1d554bda5362b83fde3fec4fd79fb3a0868b2eb819c7bb",
     "compatibility_matrix": "70ed67c6f75b05c5ec37d4d65232d875e2e8c69ffc11a84207099bad98ad6ce5",
     "trusted_adapters": "2c4afed7e6e730774b95ab66602dd71ddede2990306c58b28ea1b64c6e97b6f4",
     "compatibility_verification": "d6f57f6a40b26dfb721f64acd24e4b8526558270a3e7b80949eedb6a10cd4e51",
-    "distribution_docs": "8a7e44e44593f3f80d4719d4402092fd730205456f6254a3ee2d7c43d7707101",
+    "distribution_docs": "cd3e700c9dacdda6bc5c61b9962783c81b49d5b21ffaf932e26ad9fbb98d46b1",
     "eval_contract": "657a31f4ee1d08ce4672a8516133782c1ebf4b75ef6b435deb66e7c1ea762cde",
     "eval_proof": "391d3ce3f5a8171d9ea68a72525a7afb1df72bb40d361eac41dcb6b450a15a88",
     "evidence": "ad7f6660ea0b4bce83b17f97590185a6062ab1008545a75325aa7c29bc5450f0",
@@ -26,8 +26,8 @@
     "schemas": "6bd1b3eeca89bcaba0711b7cd4b65ed62e47a0e9f71a508e805c2bde9a09ff64",
     "tests": "14999e24328d4d97d95ea16a9d05a05db867430ca44e6c8d38168f1acf1775a2"
   },
-  "release_sha256": "0d07cc351ae2042e17e797abc4a5a40e599e268f0187fdef61307f2d0cd3dbd8",
-  "generated_at": "2026-11-06T10:29:19.480384+00:00",
+  "release_sha256": "c2f59a97b11dc67fdf7d11d713af800ee45b2b04d7226ee2dbd3fd3f404387f8",
+  "generated_at": "2026-11-17T02:50:58.623750+00:00",
   "files": [
     {
       "path": "SKILL.md",
@@ -1724,8 +1724,8 @@
     {
       "path": "tests/test_browser_evidence_hardening.py",
       "type": "file",
-      "size": 120901,
-      "sha256": "dc6dffa6236f6554c6656b819b69095356334353cbfd756f8425fba2a62ab150"
+      "size": 121780,
+      "sha256": "f7d17a4f7d76d1359fed9acf05dc3c45f7ea97c3e6a634f1fefc2efc3304682e"
     },
     {
       "path": "tests/test_candidate_review.py",
@@ -2026,8 +2026,8 @@
     {
       "path": "CHANGELOG.md",
       "type": "file",
-      "size": 143578,
-      "sha256": "b921c9e5bd3526098af14438e9e7ec2f31f02336109b8e75a569a14a6f1e1606"
+      "size": 143912,
+      "sha256": "b2ec91fd8449cdb9ea892f865eb83c83c4919abad4e048445ff812febd286423"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -4367,7 +4367,7 @@
       "path": "maintainer/sbom.spdx.json",
       "type": "file",
       "size": 41652,
-      "sha256": "6f9bcb052d976a7b5eeff795ed5be11cf74be49743901b7b205dc7366d0cee03"
+      "sha256": "20bc8c1f2abfc6a7eb1d554bda5362b83fde3fec4fd79fb3a0868b2eb819c7bb"
     },
     {
       "path": "maintainer/schemas",
@@ -6802,8 +6802,8 @@
     {
       "path": "skills/design-dna/tests/test_browser_evidence_hardening.py",
       "type": "file",
-      "size": 120901,
-      "sha256": "dc6dffa6236f6554c6656b819b69095356334353cbfd756f8425fba2a62ab150"
+      "size": 121780,
+      "sha256": "f7d17a4f7d76d1359fed9acf05dc3c45f7ea97c3e6a634f1fefc2efc3304682e"
     },
     {
       "path": "skills/design-dna/tests/test_candidate_review.py",

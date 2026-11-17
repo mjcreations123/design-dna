@@ -286,17 +286,27 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
             const page = await browser.newPage({{ viewport: {{ width: 900, height: 600 }} }});
             await page.setContent('<main>clean</main>');
             const watch = await startSourceSurfaceWatch(page, {{ baseline: {{ video_t_s: 0 }}, captureEvidence: async (label) => ({{ label, video_t_s: 0 }}) }});
-            await page.evaluate(async () => {{
+            // Wait for the page to start the transition rather than for a fixed
+            // time: a slow machine can hold rendering past 180 ms, and then there
+            // is nothing yet for the watcher to retain. The watcher listens in the
+            // capture phase on the document, so it hears transitionrun before
+            // this target listener does.
+            const pageSawTransitionRun = await page.evaluate(async () => {{
               const style = document.createElement('style');
               style.textContent = '#gate{{position:fixed;inset:0;z-index:9;opacity:1;transition:opacity 100ms linear}}#gate.fade{{opacity:.2}}';
               document.head.append(style);
               const node = document.createElement('div'); node.id = 'gate'; document.body.append(node);
+              const started = new Promise((resolve) => {{
+                node.addEventListener('transitionrun', () => resolve(true), {{ once: true }});
+                setTimeout(() => resolve(false), 10000);
+              }});
               node.animate([{{transform:'scale(1)'}}, {{transform:'scale(.99)'}}], {{duration:80}});
               await new Promise(requestAnimationFrame); await new Promise(requestAnimationFrame); node.classList.add('fade');
+              return started;
             }});
             await page.waitForTimeout(180);
             const report = await drainSourceSurfaceWatch(watch); await stopSourceSurfaceWatch(watch);
-            process.stdout.write(JSON.stringify({{ kinds: report.events.map((event) => event.kind), animation: report.animation_events.map((event) => event.event_type) }}));
+            process.stdout.write(JSON.stringify({{ page_saw_transitionrun: pageSawTransitionRun, kinds: report.events.map((event) => event.kind), animation: report.animation_events.map((event) => event.event_type) }}));
           }} finally {{ await browser.close(); }}
         """
         env = os.environ.copy()
@@ -305,6 +315,10 @@ class BrowserEvidenceBehaviorTests(unittest.TestCase):
         if done.returncode:
             self.fail(done.stderr or done.stdout)
         result = json.loads(done.stdout)
+        self.assertTrue(
+            result["page_saw_transitionrun"],
+            "the page never started the CSS transition, so the watcher had nothing to retain",
+        )
         self.assertIn("surface-waapi-active", result["kinds"])
         self.assertIn("surface-css-animation-event", result["kinds"])
         self.assertIn("transitionrun", result["animation"])

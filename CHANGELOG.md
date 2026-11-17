@@ -84,6 +84,11 @@ a check:
   the same way they skip `node_modules`. They were counting it as release content,
   which failed the audit and, on macOS, the link check. Earlier runs never showed
   this because the tests failed first.
+- The CSS transition test now waits until the page has started the transition
+  instead of a fixed 180 ms, and fails clearly if the page never starts it. On
+  GitHub's Mac machines rendering can stall past 180 ms, which left nothing yet
+  for the watcher to record (twice on one Mac job). What the watcher must
+  record is unchanged.
 
 ## 13.6.1 - Explicit invocation only (2026-11-01)
 
